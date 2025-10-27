@@ -1,31 +1,30 @@
-import React, { memo, SetStateAction } from 'react';
-import { FormikErrors, FormikTouched } from 'formik';
-import { TextField, Box, MenuItem, Grid, Card, CardContent, FormControlLabel, IconButton, Autocomplete } from '@mui/material';
 import {
+    Add as AddIcon,
+    AddLocationAlt,
+    Archive,
     Delete as DeleteIcon,
     DeleteForever as DeleteOff,
     DragHandle as DragHandleIcon,
-    Archive,
-    Unarchive,
-    AddLocationAlt,
     FileCopy,
+    Unarchive,
     WrongLocation,
-    Add as AddIcon,
 } from '@mui/icons-material';
-import _debounce from 'lodash.debounce';
+import { Autocomplete, Box, Card, CardContent, FormControlLabel, Grid, IconButton, MenuItem, TextField } from '@mui/material';
+import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
+import React, { memo, SetStateAction } from 'react';
+import { useQueryClient } from 'react-query';
+import { environment } from '../../../globals';
+import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { arrayTypes } from '../../../services/templates/entityTemplatesService';
+import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
+import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
 import { validPropertyTypes } from './AddFields';
 import { CommonFormInputProperties } from './commonInterfaces';
-import { MeltaCheckbox } from '../../MeltaCheckbox';
-import { arrayTypes } from '../../../services/templates/entityTemplatesService';
-import { MeltaTooltip } from '../../MeltaTooltip';
-import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
-import { environment } from '../../../globals';
-import { Switches } from './Property/Switches';
 import { PropertiesTypes } from './Property/PropertyTypes';
-import { useQueryClient } from 'react-query';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { Switches } from './Property/Switches';
 import { FilterEntitiesByCriteria } from './RelationshipReference/filterEntitiesByCriteria';
 
 const { mapSearchPropertiesLimit } = environment.map;
@@ -153,7 +152,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                     }));
                     updatedConstraints.push(newGroup);
 
-                    const updatedConstraintsWithoutEmptyGroups = updatedConstraints.filter((group) => group.properties.length > 0);
+                    const updatedConstraintsWithoutEmptyGroups = updatedConstraints.filter((group) => group.properties.length);
                     return updatedConstraintsWithoutEmptyGroups;
                 }
                 return prev;
@@ -258,7 +257,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     };
 
     return (
-        <Grid item alignSelf="stretch" marginBottom="1rem">
+        <Grid alignSelf="stretch" marginBottom="1rem">
             <Card
                 elevation={3}
                 sx={{
@@ -269,12 +268,12 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                 }}
             >
                 <CardContent sx={{ '&:last-child': { padding: 0 } }}>
-                    <Grid container justifyContent="space-between" wrap="nowrap" alignItems="center">
+                    <Grid container gap={2} wrap="nowrap" alignItems="center">
                         <Box>
                             <DragHandleIcon fontSize="large" />
                         </Box>
 
-                        <Grid container direction="column">
+                        <Grid container direction="column" width="100%">
                             <Grid container direction="column" marginBottom="0.5rem">
                                 <Grid
                                     container
@@ -362,7 +361,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             })}
                                     </TextField>
                                 </Grid>
-                                <Grid item container justifyContent="space-between" flexWrap="nowrap">
+                                <Grid justifyContent="space-between" flexWrap="nowrap">
                                     <PropertiesTypes
                                         entity={entity}
                                         value={value}
@@ -381,7 +380,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     />
                                 </Grid>
                             </Grid>
-                            <Grid item container justifyContent="space-between" marginTop={value.type === 'comment' ? '5px' : ''}>
+                            <Grid container justifyContent="space-between" marginTop={value.type === 'comment' ? '5px' : ''}>
                                 <Switches
                                     value={value}
                                     setValues={setValues}
@@ -463,10 +462,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     </MeltaTooltip>
                                 </Grid>
                             </Grid>
-                            <Grid item container justifyContent="space-between" alignItems="center" flexWrap="nowrap">
+                            <Grid container justifyContent="space-between" alignItems="center" flexWrap="nowrap">
                                 {unique && !value.identifier && value.type !== 'serialNumber' && (
                                     <Grid container direction="row">
-                                        <Grid item container alignItems="center" flexWrap="nowrap">
+                                        <Grid container alignItems="center" flexWrap="nowrap">
                                             <MeltaTooltip title={i18next.t('validation.uniqueTooltipTitle')}>
                                                 <FormControlLabel
                                                     control={
@@ -517,27 +516,29 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                             helperText={touchedUniqueGroupName && errorUniqueGroupName}
                                                             sx={{ marginRight: '5px' }}
                                                             fullWidth
-                                                            InputProps={{
-                                                                ...params.InputProps,
-                                                                endAdornment: (
-                                                                    <>
-                                                                        {params.InputProps.endAdornment}
-                                                                        {uniqueConstraintGroupName !== '' &&
-                                                                            params.inputProps.value === uniqueConstraintGroupName &&
-                                                                            uniqueConstraints?.some(
-                                                                                (group) => group.groupName === uniqueConstraintGroupName,
-                                                                            ) && (
-                                                                                <IconButton
-                                                                                    aria-label="delete"
-                                                                                    onClick={() => {
-                                                                                        deleteAndCreateEmptyGroup(uniqueConstraintGroupName);
-                                                                                    }}
-                                                                                >
-                                                                                    <DeleteIcon />
-                                                                                </IconButton>
-                                                                            )}
-                                                                    </>
-                                                                ),
+                                                            slotProps={{
+                                                                input: {
+                                                                    ...params.InputProps,
+                                                                    endAdornment: (
+                                                                        <>
+                                                                            {params.InputProps.endAdornment}
+                                                                            {uniqueConstraintGroupName !== '' &&
+                                                                                params.inputProps.value === uniqueConstraintGroupName &&
+                                                                                uniqueConstraints?.some(
+                                                                                    (group) => group.groupName === uniqueConstraintGroupName,
+                                                                                ) && (
+                                                                                    <IconButton
+                                                                                        aria-label="delete"
+                                                                                        onClick={() => {
+                                                                                            deleteAndCreateEmptyGroup(uniqueConstraintGroupName);
+                                                                                        }}
+                                                                                    >
+                                                                                        <DeleteIcon />
+                                                                                    </IconButton>
+                                                                                )}
+                                                                        </>
+                                                                    ),
+                                                                },
                                                             }}
                                                             onKeyDown={(e) => {
                                                                 e.stopPropagation();

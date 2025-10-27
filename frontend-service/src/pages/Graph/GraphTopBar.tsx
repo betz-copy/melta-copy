@@ -3,24 +3,25 @@ import { Grid, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material
 import { useTheme } from '@mui/material/styles';
 import i18next from 'i18next';
 import React from 'react';
-import { useQuery, useQueryClient } from 'react-query';
+import { useQueryClient } from 'react-query';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { CopyUrlButton } from '../../common/CopyUrlButton';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
 
 interface GraphTopBarProps {
     onReset: React.MouseEventHandler<HTMLButtonElement>;
     set3DView: (is3DView: boolean) => void;
     is3DView: boolean;
-    entityId: string;
     filteredEntityTemplates: IMongoEntityTemplatePopulated[];
     setFilteredEntityTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
+    templateId?: string;
+    childTemplateId?: string;
 }
 
-const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView, entityId }) => {
+const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView, templateId, childTemplateId }) => {
     const queryClient = useQueryClient();
 
     const theme = useTheme();
@@ -29,14 +30,10 @@ const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView,
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const templateIds = Array.from(entityTemplates.keys());
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 
-    const expanded = entityId ? { [entityId]: 1 } : {};
-    const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId, { templateIds, numberOfConnections: 1 }], () =>
-        getExpandedEntityByIdRequest(entityId!, expanded, { templateIds }),
-    );
+    const entityTemplate = childTemplateId ? childTemplates.get(childTemplateId) : templateId ? entityTemplates.get(templateId) : undefined;
 
-    const entityTemplate = expandedEntity ? entityTemplates.get(expandedEntity.entity.templateId || '') : undefined;
     return (
         <Grid
             container
@@ -49,7 +46,7 @@ const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView,
             boxShadow="0px 4px 4px #0000000D"
             sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
         >
-            <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
+            <Grid sx={{ display: 'flex', alignItems: 'center' }}>
                 <Typography
                     style={{
                         color: theme.palette.primary.main,
@@ -68,9 +65,9 @@ const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView,
                 </Typography>
             </Grid>
 
-            <Grid item>
+            <Grid>
                 <Grid container alignItems="center" spacing={0.8} wrap="nowrap">
-                    <Grid item>
+                    <Grid>
                         <ToggleButtonGroup value={is3DView ? '3D' : '2D'} size="small" sx={{ height: '2rem', marginX: '0.2rem' }}>
                             <ToggleButton
                                 value="3D"
@@ -96,11 +93,11 @@ const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView,
                         </ToggleButtonGroup>
                     </Grid>
 
-                    <Grid item>
+                    <Grid>
                         <CopyUrlButton style={{ color: theme.palette.primary.main }} />
                     </Grid>
 
-                    <Grid item>
+                    <Grid>
                         <IconButtonWithPopover popoverText={i18next.t('graph.reset')} iconButtonProps={{ onClick: onReset }}>
                             <ResetIcon color="primary" />
                         </IconButtonWithPopover>

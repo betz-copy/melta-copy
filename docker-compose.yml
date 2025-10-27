@@ -2,6 +2,8 @@ version: '3.8'
 
 secrets:
   npm_token:
+    # the token has an expiration date because gitlab is annoying
+    # currently the expiration date is 25/9/26
     file: ./npm_token_secret.txt
 
 services:
@@ -52,6 +54,7 @@ services:
       MONGO_URL: ${TEMPLATE_SERVICE_MONGO_URL}
       RABBIT_URL: ${RABBIT_URL}
       MONGO_RELATIONSHIP_TEMPLATES_COLLECTION_NAME: ${MONGO_RELATIONSHIP_TEMPLATES_COLLECTION_NAME}
+      MONGO_PRINTING_TEMPLATES_COLLECTION_NAME: ${MONGO_PRINTING_TEMPLATES_COLLECTION_NAME}
       MONGO_RULES_COLLECTION_NAME: ${MONGO_RULES_COLLECTION_NAME}
       MONGO_ENTITY_TEMPLATES_COLLECTION_NAME: ${MONGO_ENTITY_TEMPLATES_COLLECTION_NAME}
       MONGO_CHILD_TEMPLATES_COLLECTION_NAME: ${MONGO_CHILD_TEMPLATES_COLLECTION_NAME}
@@ -190,7 +193,7 @@ services:
   preview-service:
     build:
       context: .
-      dockerfile: Dockerfile.base
+      dockerfile: ./preview-service/Dockerfile
       args:
         SERVICE_NAME: 'preview-service'
     command: ['npm', 'run', 'start', '-w', 'preview-service']
@@ -235,10 +238,31 @@ services:
       MONGO_IFRAMES_COLLECTION_NAME: ${MONGO_IFRAMES_COLLECTION_NAME}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
 
+  mock-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_NAME: 'mock-service'
+    command: ['npm', 'run', 'start', '-w', 'mock-service']
+    environment:
+      TEMPLATE_SERVICE_URL: ${TEMPLATE_SERVICE_URL}
+      INSTANCE_SERVICE_URL: ${INSTANCE_SERVICE_URL}
+      USER_SERVICE_URL: ${USER_SERVICE_URL}
+      PROCESS_SERVICE_URL: ${PROCESS_SERVICE_URL}
+      STORAGE_SERVICE_URL: ${STORAGE_SERVICE_URL}
+      GANTT_SERVICE_URL: ${GANTT_SERVICE_URL}
+      WORKSPACES_SERVICE_URL: ${WORKSPACE_SERVICE_URL}
+      DASHBOARD_SERVICE_URL: ${DASHBOARD_SERVICE_URL}
+      USER_SERVICE_MANAGERS_KARTOFFEL_IDS: 5e5688324203fc40043591aa,61d37cb5e4de0300121e31ef
+      WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
+
   gateway-service:
     build:
       context: .
       dockerfile: gateway-service/Dockerfile
+      args:
+        SERVICE_NAME: 'gateway-service'
       secrets:
         - npm_token
     environment:
@@ -276,11 +300,10 @@ services:
 
   # frontend-service:
   #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.base
+  #     context: ./frontend-service
+  #     dockerfile: Dockerfile
   #     args:
   #       SERVICE_NAME: 'frontend-service'
-  #   command: ['npm', 'run', 'start', '-w', 'frontend-service']
 
   nginx:
     image: nginx:alpine
@@ -328,7 +351,6 @@ services:
     environment:
       PORT: 8000
       RABBIT_URL: ${RABBIT_URL}
-      REDIS_CONNECTION_URI: ${REDIS_HOST}
       ELASTIC_CLIENT_URL: ${SEMANTIC_ELASTIC_CLIENT_URL}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       MINIO_ENDPOINT: ${MINIO_ENDPOINT}

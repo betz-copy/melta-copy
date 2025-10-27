@@ -24,7 +24,7 @@ import { IKartoffelUser, IKartoffelUserDigitalIdentity } from '../../externalSer
 import StorageService from '../../externalServices/storageService';
 import UserService from '../../externalServices/userService';
 import { isProfileFileType, objectContains } from '../../utils';
-import { DigitalIdentitySourceDoesNotExistsError, KartoffelUserMissingDataError } from './error';
+import { ExternalUserNotFound, KartoffelUserMissingDataError } from './error';
 
 const {
     storageService: { usersGlobalBucketName },
@@ -54,7 +54,7 @@ class UsersManager {
         if (!profilePath) return null;
 
         if (profilePath === 'kartoffelProfile') {
-            return this.getKartoffelUserProfileRequest(user.externalMetadata.kartoffelId).catch(() => {
+            return this.getKartoffelUserProfileRequest(user.kartoffelId).catch(() => {
                 throw new BadRequestError('kartoffel profile not found');
             });
         }
@@ -101,6 +101,10 @@ class UsersManager {
         return UserService.updateUser(userId, { roleIds: updatedRoleIds });
     }
 
+    static async updateUserUnits(userId: string, units: IUser['units']): Promise<IUser> {
+        return UserService.updateUser(userId, { units } as Partial<IBaseUser>);
+    }
+
     private static validateDigitalIdentity(
         kartoffelId: string,
         digitalIdentity: Pick<IExternalUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'>,
@@ -115,37 +119,27 @@ class UsersManager {
 
     static async createUser(
         kartoffelId: string,
-        digitalIdentitySource: string,
         permissions: ICompactPermissions,
         workspaceId: string,
         roleIds?: string[],
+        units?: IUser['units'],
     ): Promise<IUser> {
         const existingUser = await UserService.getUserByExternalId(kartoffelId).catch(() => {});
 
-        if (existingUser?.externalMetadata.digitalIdentitySource === digitalIdentitySource)
-            return this.updateUserRoleIds(existingUser._id, workspaceId, permissions, roleIds);
+        if (existingUser) return this.updateUserRoleIds(existingUser._id, workspaceId, permissions, roleIds);
 
-        const {
-            _id,
-            displayName: _displayName,
-            existingDigitalIdentitySource: _existingDigitalIdentitySource,
-            preferences,
-            ...digitalIdentity
-        } = await this.getExternalUserDigitalIdentity(kartoffelId, digitalIdentitySource);
+        const { _id, displayName: _displayName, preferences, ...digitalIdentity } = await this.getExternalUser(kartoffelId);
 
         UsersManager.validateDigitalIdentity(kartoffelId, digitalIdentity);
 
         return UserService.createUser({
             ...(digitalIdentity as IUser),
             permissions,
-            externalMetadata: { kartoffelId, digitalIdentitySource },
+            kartoffelId,
             preferences,
             roleIds,
+            units,
         });
-    }
-
-    static async updateUserExternalMetadata(userId: string, externalMetadata: Partial<IBaseUser['externalMetadata']>): Promise<IUser> {
-        return UserService.updateUser(userId, { externalMetadata });
     }
 
     static async updateUserPreferencesMetadata(userId: string, preferences: Partial<IBaseUser['preferences']>, file?: UploadedFile) {
@@ -199,12 +193,11 @@ class UsersManager {
             _id,
             displayName: _displayName,
             permissions: _permissions,
-            existingDigitalIdentitySource: _existingDigitalIdentitySource,
             preferences: _preferences,
             ...digitalIdentity
-        } = await this.getExternalUserDigitalIdentity(user.externalMetadata.kartoffelId, user.externalMetadata.digitalIdentitySource);
+        } = await this.getExternalUser(user.kartoffelId);
 
-        UsersManager.validateDigitalIdentity(user.externalMetadata.kartoffelId, digitalIdentity);
+        UsersManager.validateDigitalIdentity(user.kartoffelId, digitalIdentity);
         if (objectContains(user, digitalIdentity)) return user;
 
         return UserService.updateUser(userId, digitalIdentity);
@@ -216,26 +209,20 @@ class UsersManager {
         if (isKartoffelUser) return kartoffelUsers;
 
         const normalizedKartoffelUsers = await Promise.all(kartoffelUsers.flatMap((kartoffelUser) => this.kartoffelUserToUser(kartoffelUser)));
-        return normalizedKartoffelUsers.filter(
-            (normalizedKartoffelUser) =>
-                !normalizedKartoffelUser.permissions[workspaceId || ''] ||
-                normalizedKartoffelUser.externalMetadata.digitalIdentitySource !== normalizedKartoffelUser.existingDigitalIdentitySource,
-        );
+        return normalizedKartoffelUsers.flat().filter((normalizedKartoffelUser) => !normalizedKartoffelUser.permissions[workspaceId || '']);
     }
 
-    private static kartoffelUserToUser(kartoffelUser: IKartoffelUser): Promise<IExternalUser>[] {
-        if (!kartoffelUser.digitalIdentities) throw new KartoffelUserMissingDataError(kartoffelUser._id);
+    private static async kartoffelUserToUser(kartoffelUser: IKartoffelUser): Promise<IExternalUser | never[]> {
+        if (!kartoffelUser.digitalIdentities?.length) return [];
 
-        return kartoffelUser.digitalIdentities.map((kartoffelDigitalIdentity) =>
-            this.kartoffelUserDigitalIdentityToExternalUser(kartoffelDigitalIdentity, kartoffelUser),
-        );
+        return this.kartoffelUserDigitalIdentityToExternalUser(kartoffelUser.digitalIdentities?.[0], kartoffelUser);
     }
 
-    private static async getExternalUserDigitalIdentity(kartoffelId: string, digitalIdentitySource: string): Promise<IExternalUser> {
+    private static async getExternalUser(kartoffelId: string): Promise<IExternalUser> {
         const kartoffelUser = await Kartoffel.getUserById(kartoffelId);
 
-        const kartoffelDigitalIdentity = kartoffelUser.digitalIdentities?.find((digitalIdentity) => digitalIdentity.source === digitalIdentitySource);
-        if (!kartoffelDigitalIdentity) throw new DigitalIdentitySourceDoesNotExistsError(digitalIdentitySource, kartoffelUser._id);
+        const kartoffelDigitalIdentity = kartoffelUser.digitalIdentities?.[0];
+        if (!kartoffelDigitalIdentity) throw new ExternalUserNotFound(kartoffelId);
 
         return this.kartoffelUserDigitalIdentityToExternalUser(kartoffelDigitalIdentity, kartoffelUser);
     }
@@ -263,14 +250,10 @@ class UsersManager {
             hierarchy,
             jobTitle,
             mail,
-            displayName: `[${digitalIdentity.source}] ${fullName} - ${hierarchy}/${jobTitle}`,
-            externalMetadata: {
-                kartoffelId,
-                digitalIdentitySource: digitalIdentity.source,
-            },
+            displayName: `${fullName} - ${hierarchy}/${jobTitle}`,
+            kartoffelId,
             preferences: existingUser.preferences,
             permissions: existingUser.permissions || {},
-            existingDigitalIdentitySource: existingUser.externalMetadata?.digitalIdentitySource,
         };
     }
 

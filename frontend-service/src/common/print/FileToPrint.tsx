@@ -12,19 +12,16 @@ const FileToPrint: React.FC<{
     file: IFile;
     onPreviewLoadingFinished: (error?: boolean) => void;
 }> = ({ file, onPreviewLoadingFinished }) => {
-    const [numOfPages, setNumOfPages] = useState(0);
     const fileRef = useRef<HTMLDivElement>(null);
+
+    const [numOfPages, setNumOfPages] = useState<number>(0);
     const [noSuchKeyError, setNoSuchKeyError] = useState<boolean>(false);
 
     const { data, isFetching: isPreviewLoading } = useFilePreview(file.id, file.contentType, setNoSuchKeyError);
-    const onLoadSuccess = ({ numPages }: { numPages: number }) => {
-        setNumOfPages(numPages);
-    };
+    const onLoadSuccess = ({ numPages }: { numPages: number }) => setNumOfPages(numPages);
 
     useEffect(() => {
-        if (file.contentType === 'image' && isPreviewLoading === false) {
-            onPreviewLoadingFinished();
-        }
+        if (file.contentType === 'image' && isPreviewLoading === false) onPreviewLoadingFinished();
     }, [isPreviewLoading === true]);
 
     useEffect(() => {
@@ -32,7 +29,7 @@ const FileToPrint: React.FC<{
     }, [noSuchKeyError === true]);
 
     return (
-        <Grid item ref={fileRef}>
+        <Grid ref={fileRef}>
             {file.contentType === 'image' ? (
                 <Box
                     sx={{
@@ -58,7 +55,6 @@ const FileToPrint: React.FC<{
                                     onRenderSuccess={() => {
                                         if (numOfPages !== 0 && i + 1 === numOfPages && isPreviewLoading === false) onPreviewLoadingFinished();
                                     }}
-                                    renderTextLayer={false}
                                 />
                             </div>
                         ))}

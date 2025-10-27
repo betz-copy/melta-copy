@@ -103,8 +103,11 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                                     onChange={(_e, selectedField) => {
                                         const selectedKey = selectedField?.key || '';
                                         const selectedProp = selectedEntityTemplate?.properties.properties[selectedKey];
-                                        const { format, type } = selectedProp || {};
-                                        const newFilterField = (format && initializedFilterField[format]) || (type && initializedFilterField[type]);
+                                        const { format, type, enum: enumValues } = selectedProp || {};
+                                        const newFilterField =
+                                            (enumValues && initializedFilterField['array']) ||
+                                            (format && initializedFilterField[format]) ||
+                                            (type && initializedFilterField[type]);
 
                                         const newFiltersArray = [...filters];
                                         newFiltersArray[index] = {
@@ -150,7 +153,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                                         !isNewProperty,
                                     )}
 
-                                <Grid item>
+                                <Grid>
                                     <IconButton onClick={() => handleRemoveFilter(filters, index, handleFilterChange)}>
                                         <Clear />
                                     </IconButton>

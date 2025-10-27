@@ -16,6 +16,7 @@ export interface IEntity {
         updatedAt: string;
         disabled: boolean;
     } & Record<string, any>;
+    coloredFields?: Record<string, string>;
 }
 
 export type IConnection = {
@@ -135,6 +136,7 @@ export interface ISearchBatchBody {
         [templateId: string]: {
             filter?: ISearchFilter;
             showRelationships?: boolean | Array<IMongoRelationshipTemplate['_id']>;
+            childTemplateId?: string;
         };
     };
     sort?: ISearchSort;
@@ -168,7 +170,8 @@ export interface ISearchEntitiesByLocationTemplatesBody {
 export interface ISearchEntitiesByLocationBody {
     textSearch?: string;
     templates: ISearchEntitiesByLocationTemplatesBody;
-    circle: Circle;
+    circle?: Circle;
+    polygon?: Polygon;
 }
 
 export interface ISearchResult {

@@ -3,15 +3,15 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, CircularProgress, Grid, Tab, Typography, useTheme } from '@mui/material';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
-import { useParams } from 'wouter';
-import { BlueTitle } from '../../common/BlueTitle';
+import { useParams, useSearchParams } from 'wouter';
 import { CustomIcon } from '../../common/CustomIcon';
 import CreateRelationshipDialog from '../../common/dialogs/createRelationshipDialog';
 import { ResetFilterButton } from '../../common/EntitiesPage/ResetFilterButton';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef, IConnection } from '../../common/EntitiesTableOfTemplate';
 import { EntityLink } from '../../common/EntityLink';
+import BlueTitle from '../../common/MeltaDesigns/BlueTitle';
 import { EntityTemplateTextComponent, RelationshipTitle } from '../../common/RelationshipTitle';
 import { TableButton } from '../../common/TableButton';
 import '../../css/pages.css';
@@ -26,10 +26,8 @@ import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '.
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
-import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { checkUserTemplatePermission } from '../../utils/permissions/instancePermissions';
-import { getAllAllowedEntities, getAllAllowedRelationships } from '../../utils/permissions/templatePermissions';
-import { populateRelationshipTemplate } from '../../utils/templates';
+import { getFullRelationshipTemplates } from '../../utils/templates';
 import { EntityDetails } from './components/EntityDetails';
 import { EntityTopBar } from './components/TopBar';
 import DeleteRelationshipDialog from './DeleteRelationshipDialog';
@@ -67,7 +65,7 @@ export const getButtonState = (
 
 const ConnectionsTableTitle: React.FC<{
     expandedEntity: IEntityExpanded;
-    connectionTemplate: IConnectionTemplateOfExpandedEntity;
+    connectionTemplate: Pick<INestedRelationshipTemplates, 'relationshipTemplate' | 'isExpandedEntityRelationshipSource'>;
 }> = ({ expandedEntity, connectionTemplate: { relationshipTemplate, isExpandedEntityRelationshipSource } }) => {
     return (
         <RelationshipTitle
@@ -90,7 +88,7 @@ const ConnectionsTableTitle: React.FC<{
 
 export const ConnectionsTable: React.FC<{
     expandedEntity: IEntityExpanded;
-    connectionTemplate: IConnectionTemplateOfExpandedEntity;
+    connectionTemplate: INestedRelationshipTemplates;
     templateIds: string[];
     isEditButtonsDisabled: boolean;
     disabledButtonText: string;
@@ -128,9 +126,10 @@ export const ConnectionsTable: React.FC<{
     const setQueryDataKey = [
         'getExpandedEntity',
         expandedEntity.entity.properties._id,
-        { [expandedEntity.entity.properties._id]: 1 },
+        { [expandedEntity.entity.properties._id]: { maxLevel: 1 } },
         { templateIds },
     ];
+
     const onCreateRelationship = (createdRelationship: IRelationship, sourceEntity: IEntity, destinationEntity: IEntity) => {
         const doesCreatedRelationshipWithCurrEntity = [createdRelationship.sourceEntityId, createdRelationship.destinationEntityId].includes(
             expandedEntity.entity.properties._id!,
@@ -177,16 +176,16 @@ export const ConnectionsTable: React.FC<{
 
     return (
         <Grid>
-            <Grid container item justifyContent="space-between" marginBottom="10px">
-                <Grid item container marginTop="10px" width="fit-content">
+            <Grid direction="column" justifyContent="space-between" marginBottom="10px">
+                <Grid container marginTop="10px" width="fit-content">
                     <ConnectionsTableTitle
                         expandedEntity={expandedEntity}
                         connectionTemplate={{ relationshipTemplate, isExpandedEntityRelationshipSource }}
                     />
                 </Grid>
 
-                <Grid item container justifyContent="space-between" alignItems="center">
-                    <Grid container item flexGrow={1} width={0} justifyContent="flex-start" alignItems="center">
+                <Grid container justifyContent="space-between" alignItems="center">
+                    <Grid container flexGrow={1} width={0} justifyContent="flex-start" alignItems="center">
                         <TableButton
                             iconButtonWithPopoverProps={{
                                 popoverText: i18next.t('entitiesTableOfTemplate.columns'),
@@ -199,9 +198,7 @@ export const ConnectionsTable: React.FC<{
 
                         <TableButton
                             iconButtonWithPopoverProps={{
-                                popoverText: isExpand
-                                    ? i18next.t('entitiesTableOfTemplate.expandLess')
-                                    : i18next.t('entitiesTableOfTemplate.expandMore'),
+                                popoverText: i18next.t(`entitiesTableOfTemplate.expand${isExpand ? 'Less' : 'More'}`),
                                 iconButtonProps: {
                                     onClick: () => {
                                         setIsExpand(!isExpand);
@@ -338,10 +335,13 @@ export const ConnectionsTable: React.FC<{
     );
 };
 
-export interface IConnectionTemplateOfExpandedEntity {
+export interface INestedRelationshipTemplates {
     relationshipTemplate: IMongoRelationshipTemplatePopulated;
     isExpandedEntityRelationshipSource: boolean; // for relationship that is of format currentEntityTemplate -> currentEntityTemplate, we want it twice, once with outgoing connections of expandedEntity, and once with incoming connections of expandedEntity
-    hasInstances?: boolean;
+    hasInstances: boolean;
+    depth: number;
+    parentRelationship?: IMongoRelationshipTemplatePopulated;
+    children: INestedRelationshipTemplates[];
 }
 
 const Entity: React.FC = () => {
@@ -358,21 +358,14 @@ const Entity: React.FC = () => {
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
 
-    const allowedEntityTemplates: IMongoEntityTemplatePopulated[] = getAllAllowedEntities(
-        Array.from(Array.from(entityTemplates.values())),
-        currentUser,
-    );
-    const allowedEntityTemplatesIds: string[] = allowedEntityTemplates.map((entity) => entity._id);
-    const allowedRelationships = getAllAllowedRelationships(Array.from(relationshipTemplates.values()), allowedEntityTemplatesIds);
+    const templateIds = childTemplateId ? [] : Array.from(entityTemplates.keys());
 
-    const templateIds = Array.from(entityTemplates.keys());
-
-    const expanded = entityId ? { [entityId]: 1 } : {};
+    const expanded = entityId ? { [entityId]: { maxLevel: 1 } } : {};
     const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId, expanded, { templateIds }], () =>
-        getExpandedEntityByIdRequest(entityId!, expanded, { templateIds }),
+        getExpandedEntityByIdRequest(entityId!, expanded, { templateIds, childTemplateId }),
     );
 
     const [selectedTabId, setSelectedTabId] = useState<string | null>(null);
@@ -396,58 +389,32 @@ const Entity: React.FC = () => {
         PermissionScope.write,
     );
 
-    const populatedRelationshipTemplates = allowedRelationships.map((currRelationshipTemplate) =>
-        populateRelationshipTemplate(currRelationshipTemplate, allowedEntityTemplates),
-    );
-    const connectionsTemplates: IConnectionTemplateOfExpandedEntity[] = [];
+    const connectionsTemplates = useMemo(() => {
+        if (!currentEntityTemplate) return;
 
-    populatedRelationshipTemplates.forEach((relationshipTemplate) => {
-        const hasInstances = !!expandedEntity?.connections.some(
-            (connection) => 'relationship' in connection && connection.relationship.templateId === relationshipTemplate._id,
-        );
+        return getFullRelationshipTemplates(relationshipTemplates, entityTemplates, currentEntityTemplate, 1, undefined, expandedEntity);
+    }, [currentEntityTemplate, expandedEntity]);
 
-        if (
-            !(
-                relationshipTemplate.isProperty &&
-                currentEntityTemplate?.properties.properties[relationshipTemplate.name]?.relationshipReference?.relationshipTemplateId ===
-                    relationshipTemplate._id
-            )
-        ) {
-            if (relationshipTemplate.sourceEntity._id === currentEntityTemplate?._id) {
-                connectionsTemplates.push({
-                    relationshipTemplate,
-                    isExpandedEntityRelationshipSource: true,
-                    hasInstances,
-                });
-            }
-            if (relationshipTemplate.destinationEntity._id === currentEntityTemplate?._id) {
-                connectionsTemplates.push({
-                    relationshipTemplate,
-                    isExpandedEntityRelationshipSource: false,
-                    hasInstances,
-                });
-            }
-        }
-    });
+    const categoriesWithConnectionsTemplates = useMemo(() => {
+        if (!connectionsTemplates) return;
 
-    const categoriesWithConnectionsTemplates = Array.from(categories.values(), (category) => {
-        return {
-            category,
-            connectionsTemplates: connectionsTemplates
-                .filter(({ relationshipTemplate, isExpandedEntityRelationshipSource }) => {
-                    const otherEntityTemplate = isExpandedEntityRelationshipSource
-                        ? relationshipTemplate.destinationEntity
-                        : relationshipTemplate.sourceEntity;
-                    return otherEntityTemplate.category._id === category._id;
-                })
-                .sort((a, b) => Number(b.hasInstances) - Number(a.hasInstances)),
-            relationshipCount:
+        return Array.from(categories.values(), (category) => {
+            return {
+                category,
+                connectionsTemplates: connectionsTemplates
+                    .filter(({ relationshipTemplate, isExpandedEntityRelationshipSource }) => {
+                        const otherEntityTemplate = isExpandedEntityRelationshipSource
+                            ? relationshipTemplate.destinationEntity
+                            : relationshipTemplate.sourceEntity;
+                        return otherEntityTemplate?.category._id === category._id;
+                    })
+                    .sort((a, b) => Number(b.hasInstances) - Number(a.hasInstances)),
                 // calculate the amount of the related connections of each entity
-                expandedEntity?.connections.filter((connection) => {
+                relationshipCount: expandedEntity?.connections.filter((connection) => {
                     const connectionRelationshipTemplate = relationshipTemplates.get(connection.relationship.templateId)!;
 
                     if (
-                        connectionRelationshipTemplate.isProperty &&
+                        connectionRelationshipTemplate?.isProperty &&
                         currentEntityTemplate?.properties.properties[connectionRelationshipTemplate.name]?.relationshipReference
                             ?.relationshipTemplateId === connectionRelationshipTemplate._id
                     )
@@ -456,15 +423,16 @@ const Entity: React.FC = () => {
                     if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id)
                         return entityTemplates.get(connection.sourceEntity.templateId)!.category._id === category._id;
 
-                    return entityTemplates.get(connection.destinationEntity.templateId)!.category._id === category._id;
+                    return entityTemplates.get(connection.destinationEntity.templateId)?.category._id === category._id;
                 }).length,
-        };
-    })
-        .filter((currCategory) => currCategory.connectionsTemplates?.length > 0)
-        .sort((a, b) => (b?.relationshipCount ?? 0) - (a?.relationshipCount ?? 0));
+            };
+        })
+            .filter((currCategory) => currCategory.connectionsTemplates?.length > 0)
+            .sort((a, b) => (b?.relationshipCount ?? 0) - (a?.relationshipCount ?? 0));
+    }, [connectionsTemplates, expandedEntity]);
 
     useEffect(() => {
-        if (categoriesWithConnectionsTemplates.length > 0 && selectedTabId === null) {
+        if (categoriesWithConnectionsTemplates && categoriesWithConnectionsTemplates.length > 0 && selectedTabId === null) {
             setSelectedTabId(categoriesWithConnectionsTemplates[0].category._id);
         }
     }, [categoriesWithConnectionsTemplates, selectedTabId]);
@@ -476,18 +444,22 @@ const Entity: React.FC = () => {
 
     return (
         <>
-            <EntityTopBar entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} connectionsTemplates={connectionsTemplates} />
+            <EntityTopBar
+                entityTemplate={currentEntityTemplate}
+                expandedEntity={expandedEntity}
+                connectionsTemplates={(connectionsTemplates ?? []).filter((relTemplate) => relTemplate.hasInstances)}
+            />
             <Grid className="pageMargin">
-                <Grid item marginTop="20px" data-tour="entity-details">
+                <Grid marginTop="20px" data-tour="entity-details">
                     <EntityDetails entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} />
                 </Grid>
-                {categoriesWithConnectionsTemplates.length > 0 && (
+                {categoriesWithConnectionsTemplates && categoriesWithConnectionsTemplates.length > 0 && (
                     <Grid data-tour="connected-entities" style={{ marginTop: '2rem' }}>
-                        <Grid item container xs={5} alignItems="center" gap="20px">
-                            <Grid item alignContent="center">
+                        <Grid container size={{ xs: 5 }} alignItems="center" gap="20px">
+                            <Grid alignContent="center">
                                 <RelationshipIcon />
                             </Grid>
-                            <Grid item>
+                            <Grid>
                                 <BlueTitle
                                     title={i18next.t('entityPage.relationshipTitle')}
                                     component="h5"
@@ -496,7 +468,7 @@ const Entity: React.FC = () => {
                                 />
                             </Grid>
                         </Grid>
-                        <Grid item>
+                        <Grid>
                             <TabContext value={selectedTabId ?? categoriesWithConnectionsTemplates[0]?.category._id}>
                                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                                     <TabList variant="scrollable" scrollButtons="auto" onChange={(_event, newValue) => setSelectedTabId(newValue)}>

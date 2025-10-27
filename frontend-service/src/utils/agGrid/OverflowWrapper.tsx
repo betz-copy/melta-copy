@@ -1,7 +1,7 @@
-import React, { useState, useRef, useLayoutEffect, createRef } from 'react';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import { MeltaTooltip } from '../../common/MeltaTooltip';
+import React, { createRef, useLayoutEffect, useRef, useState } from 'react';
+import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
 import { HighlightText } from '../HighlightText';
 
 interface IOverflowWrapperProps<T> {
@@ -82,12 +82,12 @@ const OverflowWrapper = <T extends any>({
         <Grid ref={containerRef} container wrap="wrap" alignItems="center" justifyItems="center" gap={`${itemsGap}px`} style={containerStyle}>
             {visibleItems.map((item, index) => (
                 // eslint-disable-next-line react/no-array-index-key
-                <Grid ref={itemRefs.current[index]} item key={`${getItemKey(item)}/${index}`}>
+                <Grid ref={itemRefs.current[index]} key={`${getItemKey(item)}/${index}`}>
                     {renderItem(item, index)}
                 </Grid>
             ))}
             {overflowItems.length > 0 && (
-                <Grid item style={{ cursor: 'pointer' }}>
+                <Grid style={{ cursor: 'pointer' }}>
                     <MeltaTooltip
                         title={overflowItems.map((item, index) => (
                             <Typography

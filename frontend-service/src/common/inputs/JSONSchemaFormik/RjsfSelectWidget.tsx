@@ -2,7 +2,6 @@
 import { WidgetProps, asNumber, getUiOptions, guessType } from '@rjsf/utils';
 import React from 'react';
 import MultipleSelect from '../MultipleSelect';
-import './form.css';
 
 const nums = new Set(['number', 'integer']);
 
@@ -52,23 +51,25 @@ const RjsfSelectWidget = ({
     ...textFieldProps
 }: WidgetProps) => {
     const { defaultValue } = options;
-    const { enumOptions: items } = getUiOptions(uiSchema) as {
-        enumOptions: Array<{
-            label: string;
-            value: string;
-            color?: string;
-        }>;
-    };
+    const { enumOptions: items = [] } =
+        (getUiOptions(uiSchema) as {
+            enumOptions?: Array<{
+                label: string;
+                value: string;
+                color?: string;
+            }>;
+        }) || {};
 
     let selectedValue: (typeof items)[number] | (typeof items)[number][] | null;
+
     if (multiple) {
-        if (Array.isArray(value)) {
+        if (Array.isArray(value) && items) {
             selectedValue = items.filter((opt) => value.includes(opt.value));
         } else {
             selectedValue = [];
         }
     } else {
-        selectedValue = items.find((opt) => opt.value === value) || null;
+        selectedValue = items ? items.find((opt) => opt.value === value) || null : null;
     }
 
     const _onBlur = (event: React.FocusEvent<HTMLInputElement>) => {
@@ -87,12 +88,14 @@ const RjsfSelectWidget = ({
         <MultipleSelect
             items={items}
             id={id}
+            schema={schema}
             disabled={disabled}
             readonly={readonly}
             multiple={multiple}
             selectedValue={selectedValue}
             onChange={(event, newVal) => {
                 event.preventDefault();
+
                 if (multiple) {
                     const mapped = (newVal as (typeof items)[number][]).map((opt) => processValue(schema, opt.value));
                     onChange(mapped.length ? mapped : defaultValue);

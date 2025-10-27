@@ -70,7 +70,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
 
     const [stepsData, setStepsData] = useState<IUpdateMultipleEntitiesResponse>({ succeededEntities: [], failedEntities: [] });
     const [selectedFields, setSelectedFields] = useState<Record<string, boolean>>({});
-    const isBrokenRules = (stepsData.brokenRulesEntities ?? []).length > 0;
+    const isBrokenRules = !!(stepsData.brokenRulesEntities ?? []).length;
     const [wasDirty, setWasDirty] = useState(false);
     const [initialValuePropsToFilter, setInitialValuePropsToFilter] = useState<Record<string, any>>(initialValues);
     const [entityData, setEntityData] = useState<{ propertiesToChange: EntityWizardValues; propertiesToRemove: string[] } | undefined>(undefined);
@@ -316,7 +316,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
     return (
         <Grid>
             <Grid container spacing={2} alignItems="center">
-                <Grid item>
+                <Grid>
                     <TableButton
                         iconButtonWithPopoverProps={{
                             popoverText: i18next.t(`entitiesTableOfTemplate.deleteWithRelationship${workspaceAdmin ? 'Reference' : ''}Warn`),
@@ -334,7 +334,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                     />
                 </Grid>
 
-                <Grid item>
+                <Grid>
                     <TableButton
                         iconButtonWithPopoverProps={{
                             popoverText: i18next.t('actions.edit'),
@@ -353,7 +353,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                 </Grid>
 
                 {selectedRowCount >= deleteEntitiesLimit && (
-                    <Grid item>
+                    <Grid>
                         <Typography color="error" variant="caption" fontSize="14px">
                             {i18next.t('entitiesTableOfTemplate.cantDeleteMoreThen', { limit: deleteEntitiesLimit })}
                         </Typography>

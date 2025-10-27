@@ -51,8 +51,8 @@ export const DraftWarningDialog: React.FC<{
                 <Divider sx={{ margin: '1rem' }} />
 
                 <DialogActions sx={{ padding: '1rem' }}>
-                    <Grid container flexDirection="row" flexWrap="nowrap" justifyContent="space-between">
-                        <Grid item>
+                    <Grid container flexDirection="row" flexWrap="nowrap" justifyContent="space-between" width="100%">
+                        <Grid>
                             <Button
                                 variant="outlined"
                                 sx={{ borderRadius: '8px' }}
@@ -69,17 +69,13 @@ export const DraftWarningDialog: React.FC<{
                                 {i18next.t(`draftSaveDialog.${isEditMode ? 'backToEdit' : 'exit'}`)}
                             </Button>
                         </Grid>
-                        <Grid item>
+                        <Grid>
                             <Button
                                 variant="contained"
                                 sx={{ borderRadius: '8px' }}
                                 onClick={() => {
                                     const filterProperties = {
-                                        ...Object.fromEntries(
-                                            Object.entries(values.properties).filter(
-                                                ([_key, value]) => typeof value === 'string' && !value.startsWith('data:image/png;base64,'),
-                                            ),
-                                        ),
+                                        ...values.properties,
                                         disabled: values.properties.disabled ?? false,
                                     };
                                     const newValues = { ...values, properties: filterProperties };

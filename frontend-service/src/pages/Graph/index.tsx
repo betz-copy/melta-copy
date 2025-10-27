@@ -59,6 +59,7 @@ const Graph: React.FC = () => {
 
     const { entityId } = useParams<{ entityId: string }>();
     const [searchParams, setSearchParams] = useSearchParams();
+    const childTemplateId = searchParams.get('childTemplateId') ?? undefined;
 
     const [nodeMenuState, setNodeMenuState] = useState<genericMenuState>();
     const [graphMenuState, setGraphMenuState] = useState<Omit<genericMenuState, 'node'>>();
@@ -72,7 +73,7 @@ const Graph: React.FC = () => {
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
     const [filteredEntityTemplates, setFilteredEntityTemplates] = useState<IMongoEntityTemplatePopulated[]>([
         ...entityTemplates.values(),
@@ -128,12 +129,24 @@ const Graph: React.FC = () => {
         });
     };
 
-    const expandedParams = {
-        [entityId]: 1,
-        ...JSON.parse(searchParams.get('expandedEntities')!),
+    const expandedParams: Record<string, { minLevel?: number; maxLevel: number }> = {
+        ...Object.fromEntries(
+            Object.entries(JSON.parse(searchParams.get('expandedEntities') || '{}')).map(([key, val]) => {
+                if (typeof val === 'number') {
+                    return [key, { maxLevel: val }];
+                }
+
+                return [key, val as { minLevel?: number; maxLevel: number }];
+            }),
+        ),
+        [entityId]: { maxLevel: 1 },
     };
 
-    const { refetch: getExpandedEntityById, error } = useQuery<IEntityExpanded>(
+    const {
+        refetch: getExpandedEntityById,
+        error,
+        data: expandedEntity,
+    } = useQuery<IEntityExpanded>(
         [
             'getExpandedEntity',
             entityId,
@@ -141,6 +154,7 @@ const Graph: React.FC = () => {
             {
                 disabled: false,
                 templateIds: filteredEntityTemplates.map((entityTemplate) => entityTemplate._id),
+                childTemplateId,
             },
             filterRecord,
         ],
@@ -151,6 +165,7 @@ const Graph: React.FC = () => {
                 {
                     disabled: false,
                     templateIds: filteredEntityTemplates.map((entityTemplate) => entityTemplate._id),
+                    childTemplateId,
                 },
                 filterRecord,
             ),
@@ -169,6 +184,9 @@ const Graph: React.FC = () => {
         setIsLoading(expandedEntity !== undefined);
 
         const nextBatch = currentBatchIndex + BatchSize;
+
+        if (!expandedEntity?.entity) return;
+
         let expandedEntityGraphData = await expandedEntityToGraphData(
             {
                 ...expandedEntity,
@@ -177,7 +195,7 @@ const Graph: React.FC = () => {
                         currentBatchIndex,
                         nextBatch > expandedEntity!.connections.length ? expandedEntity!.connections.length : nextBatch,
                     ) ?? [],
-                entity: expandedEntity!.entity,
+                entity: expandedEntity.entity,
             },
             entityTemplates,
             childTemplates,
@@ -193,7 +211,10 @@ const Graph: React.FC = () => {
     };
 
     const loadNextBatch = async () => {
-        const { expandedEntityGraphData, expandedEntity } = await createGraphData();
+        const graphData = await createGraphData();
+
+        if (!graphData) return;
+        const { expandedEntity, expandedEntityGraphData } = graphData;
 
         const shouldZoom = !(expandedEntity && expandedEntity?.connections.length < 1);
 
@@ -299,7 +320,7 @@ const Graph: React.FC = () => {
                         create3DNodeDetails(
                             node as INodeObject,
                             entityTemplates.get((node as INodeObject).templateId)! ||
-                                [...childTemplates.values()].find(({ parentTemplate }) => parentTemplate._id === node.templateId),
+                                [...childTemplates.values()].find(({ parentTemplate }) => parentTemplate._id === (node as INodeObject).templateId),
                             entityId === (node as INodeObject).data._id,
                             darkMode,
                         )
@@ -360,7 +381,8 @@ const Graph: React.FC = () => {
     return (
         <Box ref={ref} position="relative" height="100%" width="100%">
             <GraphTopBar
-                entityId={entityId}
+                templateId={expandedEntity?.entity.templateId}
+                childTemplateId={childTemplateId}
                 filteredEntityTemplates={filteredEntityTemplates}
                 setFilteredEntityTemplates={setFilteredEntityTemplates}
                 onReset={() => {

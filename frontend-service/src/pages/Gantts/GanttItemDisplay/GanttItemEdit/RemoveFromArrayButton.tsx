@@ -1,7 +1,7 @@
-import React from 'react';
-import { Box, IconButton } from '@mui/material';
 import { CloseOutlined as DeleteIcon } from '@mui/icons-material';
-import { MeltaTooltip } from '../../../../common/MeltaTooltip';
+import { Box, IconButton } from '@mui/material';
+import React from 'react';
+import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
 
 interface IRemoveFromArrayButtonProps {
     onRemove: () => void;

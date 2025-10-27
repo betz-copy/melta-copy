@@ -1,13 +1,12 @@
-import React, { SetStateAction } from 'react';
-import { Box, Switch, FormControlLabel } from '@mui/material';
-import _debounce from 'lodash.debounce';
+import { Box, FormControlLabel } from '@mui/material';
 import i18next from 'i18next';
-import { CommonFormInputProperties, IRelationshipReference } from '../commonInterfaces';
-import { commentColors } from '../../../inputs/JSONSchemaFormik/RjsfCommentWidget';
-import { ISearchFilter, IUniqueConstraintOfTemplate } from '../../../../interfaces/entities';
+import React, { SetStateAction } from 'react';
 import { useQueryClient } from 'react-query';
+import { ISearchFilter, IUniqueConstraintOfTemplate } from '../../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
-import SelectAutocomplete from '../../../inputs/SelectAutocomplete';
+import { MinimizedColorPicker } from '../../../inputs/MinimizedColorPicker';
+import MeltaSwitch from '../../../MeltaDesigns/MeltaSwitch';
+import { CommonFormInputProperties, IRelationshipReference } from '../commonInterfaces';
 
 export interface SwitchesProps {
     value: CommonFormInputProperties;
@@ -49,19 +48,20 @@ export const Switches: React.FC<SwitchesProps> = ({
 
     const isText = value.type === 'string' || value.type === 'text-area';
     const isComment = value.type === 'comment';
+    const isKartoffelImage = value.type === 'kartoffelUserField' && value?.expandedUserField?.kartoffelField === 'image';
     const isNewProperty = !initialValue;
-    const type = `properties[${index}].type`;
 
-    const required = `properties[${index}].required`;
-    const preview = `properties[${index}].preview`;
-    const hide = `properties[${index}].hide`;
-    const readOnly = `properties[${index}].readOnly`;
-    const identifier = `properties[${index}].identifier`;
-    const hideFromDetailsPage = `properties[${index}].hideFromDetailsPage`;
+    const property = `properties[${index}]`;
+    const type = `${property}.type`;
+    const required = `${property}.required`;
+    const preview = `${property}.preview`;
+    const hide = `${property}.hide`;
+    const readOnly = `${property}.readOnly`;
+    const identifier = `${property}.identifier`;
+    const hideFromDetailsPage = `${property}.hideFromDetailsPage`;
 
-    const calculateTime = `properties[${index}].calculateTime`;
+    const calculateTime = `${property}.calculateTime`;
     const isIdentifierAble = isText || value.type === 'number' || value.type === 'pattern' || value.type === 'serialNumber';
-    const commentColorsObj = Object.entries(commentColors).map(([label, val]) => ({ label, value: val }));
 
     // TODO: when upgrading the mongo version to v5, update the types and delete the (Omit<IRelationshipReference, 'filters'> & { filters?: string | ISearchFilter })[] type
     const relationshipRefs = Array.from(entityTemplates.values()).reduce(
@@ -70,9 +70,8 @@ export const Switches: React.FC<SwitchesProps> = ({
 
             const references = Object.values(properties).reduce(
                 (refAcc: (Omit<IRelationshipReference, 'filters'> & { filters?: string | ISearchFilter })[], property) => {
-                    if (property.format === 'relationshipReference' && property.relationshipReference)
-                        refAcc.push(property.relationshipReference);
-                    
+                    if (property.format === 'relationshipReference' && property.relationshipReference) refAcc.push(property.relationshipReference);
+
                     return refAcc;
                 },
                 [],
@@ -87,7 +86,7 @@ export const Switches: React.FC<SwitchesProps> = ({
         relationshipRefs.find((ref) => ref.relatedTemplateField === value.name && ref.relatedTemplateId === templateId) !== undefined,
     );
 
-    const createEmptyGroup = (fieldName) => {
+    const createEmptyGroup = (fieldName: string) => {
         setUniqueConstraints!((prev) => {
             const existingGroup = prev?.find((group) => group.groupName === '' && group.properties.includes(fieldName));
 
@@ -103,7 +102,7 @@ export const Switches: React.FC<SwitchesProps> = ({
         });
     };
 
-    const deletePropFromUniqueConstraints = (groupName, fieldName) => {
+    const deletePropFromUniqueConstraints = (groupName: string | undefined, fieldName: string) => {
         setUniqueConstraints!((prev) => {
             const updatedConstraints = (prev || [])
                 .map((group) => {
@@ -128,7 +127,7 @@ export const Switches: React.FC<SwitchesProps> = ({
             {value.required !== undefined && setValues && !isComment && value.type !== 'kartoffelUserField' && (
                 <FormControlLabel
                     control={
-                        <Switch
+                        <MeltaSwitch
                             id={required}
                             name={required}
                             onChange={(_e, checked) => {
@@ -161,7 +160,7 @@ export const Switches: React.FC<SwitchesProps> = ({
             )}
             <FormControlLabel
                 control={
-                    <Switch
+                    <MeltaSwitch
                         id={readOnly}
                         name={readOnly}
                         onChange={(_e, checked) => {
@@ -179,7 +178,7 @@ export const Switches: React.FC<SwitchesProps> = ({
             {value.preview !== undefined && !isComment && (
                 <FormControlLabel
                     control={
-                        <Switch
+                        <MeltaSwitch
                             id={preview}
                             name={preview}
                             onChange={onChange}
@@ -193,7 +192,7 @@ export const Switches: React.FC<SwitchesProps> = ({
             {value.hide !== undefined && (
                 <FormControlLabel
                     control={
-                        <Switch
+                        <MeltaSwitch
                             id={hide}
                             name={hide}
                             onChange={onChange}
@@ -212,7 +211,7 @@ export const Switches: React.FC<SwitchesProps> = ({
                 !isComment && (
                     <FormControlLabel
                         control={
-                            <Switch
+                            <MeltaSwitch
                                 id={String(unique)}
                                 name={String(unique)}
                                 checked={unique}
@@ -226,11 +225,8 @@ export const Switches: React.FC<SwitchesProps> = ({
                                         uniqueCheckbox: false,
                                     }));
 
-                                    if (checked) {
-                                        createEmptyGroup(value.name);
-                                    } else {
-                                        deletePropFromUniqueConstraints(uniqueConstraintGroupName, value.name);
-                                    }
+                                    if (checked) createEmptyGroup(value.name);
+                                    else deletePropFromUniqueConstraints(uniqueConstraintGroupName, value.name);
                                 }}
                             />
                         }
@@ -239,14 +235,14 @@ export const Switches: React.FC<SwitchesProps> = ({
                 )}
             {(value.type === 'date' || value.type === 'date-time') && 'calculateTime' in value && (
                 <FormControlLabel
-                    control={<Switch id={calculateTime} name={calculateTime} onChange={onChange} checked={value.calculateTime ?? false} />}
+                    control={<MeltaSwitch id={calculateTime} name={calculateTime} onChange={onChange} checked={value.calculateTime ?? false} />}
                     label={i18next.t('validation.calculateTime')}
                 />
             )}
             {isText && (
                 <FormControlLabel
                     control={
-                        <Switch
+                        <MeltaSwitch
                             id={type}
                             name={type}
                             onChange={(e) => {
@@ -267,7 +263,7 @@ export const Switches: React.FC<SwitchesProps> = ({
             {isIdentifierAble && supportIdentifier && (
                 <FormControlLabel
                     control={
-                        <Switch
+                        <MeltaSwitch
                             id={identifier}
                             name={identifier}
                             onChange={(_e, checked) => {
@@ -292,7 +288,7 @@ export const Switches: React.FC<SwitchesProps> = ({
                 <>
                     <FormControlLabel
                         control={
-                            <Switch
+                            <MeltaSwitch
                                 id={hideFromDetailsPage}
                                 name={hideFromDetailsPage}
                                 onChange={(_e, checked) => {
@@ -306,26 +302,35 @@ export const Switches: React.FC<SwitchesProps> = ({
                         }
                         label={i18next.t('validation.hideFromDetailsPage')}
                     />
-                    <SelectAutocomplete
-                        options={commentColorsObj}
-                        value={
-                            value.color
-                                ? {
-                                      value: value.color,
-                                      label: Object.entries(commentColors).find(([, val]) => val === value.color)?.[0]!,
-                                  }
-                                : commentColorsObj[0]
-                        }
-                        onValueChange={(newValue) => {
+                    <MinimizedColorPicker
+                        color={value.color}
+                        onColorChange={(newValue) => {
                             setValues?.((prev) => ({
                                 ...prev,
-                                color: newValue as string,
+                                color: newValue,
                             }));
                         }}
-                        colorsOptions={commentColors}
-                        disableClearable
-                        label={i18next.t('validation.colors.colors')}
-                        overrideSx={{ width: '150px' }}
+                        circleSize="1.6rem"
+                    />
+                </>
+            )}
+            {isKartoffelImage && (
+                <>
+                    <FormControlLabel
+                        control={
+                            <MeltaSwitch
+                                id={`${property}.isProfileImage`}
+                                name={`${property}.isProfileImage`}
+                                onChange={(_e, checked) => {
+                                    setValues?.((prev) => ({
+                                        ...prev,
+                                        isProfileImage: checked,
+                                    }));
+                                }}
+                                checked={value.isProfileImage ?? false}
+                            />
+                        }
+                        label={i18next.t('validation.isProfileImage')}
                     />
                 </>
             )}

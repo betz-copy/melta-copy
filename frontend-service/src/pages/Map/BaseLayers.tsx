@@ -1,11 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import * as Cesium from 'cesium';
+import { LayersTwoTone } from '@mui/icons-material';
 import { Box, Divider, FormControlLabel, Grid, IconButton, Radio, RadioGroup, Typography } from '@mui/material';
-import { Layers } from '@mui/icons-material';
+import * as Cesium from 'cesium';
 import i18next from 'i18next';
-import { MeltaTooltip } from '../../common/MeltaTooltip';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import MeltaCheckbox from '../../common/MeltaDesigns/MeltaCheckbox';
+import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
 import { BackendConfigState } from '../../services/backendConfigService';
-import { MeltaCheckbox } from '../../common/MeltaCheckbox';
 import { useDarkModeStore } from '../../stores/darkMode';
 
 type LayerProvider = {
@@ -79,14 +79,20 @@ export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any>; conf
                 alignItems: 'center',
                 justifyContent: 'center',
                 minWidth: 35,
-                minHeight: 35,
+                minHeight: 34,
                 borderRadius: 1,
                 bgcolor: 'background.paper',
             }}
         >
             <MeltaTooltip title={i18next.t('location.layers.map')}>
                 <IconButton size="small" onClick={() => setIsOpen((prev) => !prev)} sx={{ zIndex: 1001 }}>
-                    <Layers fontSize="small" sx={{ color: darkMode ? '#9398c2' : '#787c9e' }} />
+                    <LayersTwoTone
+                        sx={{
+                            height: 20,
+                            borderRadius: 7,
+                            color: darkMode ? '#9398c2' : '#1E2775',
+                        }}
+                    />
                 </IconButton>
             </MeltaTooltip>
 
@@ -110,7 +116,7 @@ export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any>; conf
                         zIndex: 1000,
                     }}
                 >
-                    <Grid item>
+                    <Grid>
                         <Typography variant="subtitle1">{i18next.t('location.layers.map')}</Typography>
                         <RadioGroup value={activeMapLayer} onChange={(e) => setActiveMapLayer(e.target.value)}>
                             {providers
@@ -126,7 +132,7 @@ export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any>; conf
                         </RadioGroup>
                     </Grid>
                     <Divider />
-                    <Grid item>
+                    <Grid>
                         <Typography variant="subtitle1">{i18next.t('location.layers.overlay')}</Typography>
                         {providers
                             .filter((provider) => provider.type === 'text')

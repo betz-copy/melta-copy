@@ -1,20 +1,20 @@
+import { useMatomo } from '@datapunt/matomo-tracker-react';
+import { Box, debounce, Grid, useScrollTrigger } from '@mui/material';
+import i18next from 'i18next';
 import React, { lazy, Suspense, useEffect, useRef } from 'react';
-import { useWorkspaceStore } from '../../stores/workspace';
-import { AuthService } from '../../services/authService';
 import { useQuery, useQueryClient } from 'react-query';
 import { Route, Switch, useLocation, useRoute } from 'wouter';
-import { useMatomo } from '@datapunt/matomo-tracker-react';
-import { useScrollTrigger, debounce, Box, Grid } from '@mui/material';
+import { LoadingAnimation } from '../../common/LoadingAnimation';
 import { environment } from '../../globals';
-import { MainBox } from '../../Main.styled';
-import ScrollToTop from '../../ScrollToTop';
-import i18next from 'i18next';
-import { getCurrentUserEntity } from '../../services/clientSideService';
 import { IChildTemplateMapPopulated } from '../../interfaces/childTemplates';
 import { IKartoffelUser } from '../../interfaces/users';
-import { Topbar } from './mainPage/Topbar';
+import { MainBox } from '../../Main.styled';
+import ScrollToTop from '../../ScrollToTop';
+import { AuthService } from '../../services/authService';
+import { getCurrentUserEntity } from '../../services/clientSideService';
 import { useClientSideUserStore } from '../../stores/clientSideUser';
-import { LoadingAnimation } from '../../common/LoadingAnimation';
+import { useWorkspaceStore } from '../../stores/workspace';
+import { Topbar } from './mainPage/Topbar';
 
 const UserNotExistsPage = lazy(() => import('./userNotExistsPage'));
 const ClientSideMainPage = lazy(() => import('./mainPage'));
@@ -25,7 +25,7 @@ const ClientSidePageInner: React.FC = () => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const setClientSideUser = useClientSideUserStore((state) => state.setClientSideUser);
 
-    const { usersInfoChildTemplateId, clientSideWorkspaceName } = workspace.metadata.clientSide;
+    const { usersInfoChildTemplateId, clientSideWorkspaceName, fullNameField } = workspace.metadata.clientSide;
     const user = AuthService.getUser();
 
     const queryClient = useQueryClient();
@@ -33,7 +33,7 @@ const ClientSidePageInner: React.FC = () => {
     const [location, navigate] = useLocation();
     const [entityMatch, entityParams] = useRoute('/entity/:entityId');
 
-    const childTemplates = queryClient.getQueryData<IChildTemplateMapPopulated>('getClientSideChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMapPopulated>('getClientSideChildTemplates')!;
     const usersInfoChildTemplate = childTemplates.get(usersInfoChildTemplateId);
 
     const {
@@ -48,7 +48,7 @@ const ClientSidePageInner: React.FC = () => {
         },
     });
 
-    const currentUser: IKartoffelUser = JSON.parse(currentUserFromClientSide?.properties.full_name || '{}');
+    const currentUser: IKartoffelUser = JSON.parse(currentUserFromClientSide?.properties[fullNameField] || '{}');
 
     useEffect(() => {
         if (currentUserFromClientSide) {
@@ -143,7 +143,7 @@ const ClientSidePageInner: React.FC = () => {
                             <Route path="client-side/user-not-exists">
                                 <UserNotExistsPage />
                             </Route>
-                            <Route path="simba/test.mlt">
+                            <Route path="client-side/main">
                                 <ClientSideMainPage />
                             </Route>
                             <Route path="client-side/entity/:entityId">

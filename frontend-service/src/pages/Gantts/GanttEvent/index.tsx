@@ -48,7 +48,7 @@ export const GanttEvent: React.FC<GanttEventProps> = ({ entityWithConnections: {
             sx={{ opacity: 1 }}
         >
             {expanded && (
-                <Grid item>
+                <Grid>
                     <Typography fontSize={18} sx={{ ...textStyle }}>
                         {entityTemplate.displayName}
                     </Typography>
@@ -73,7 +73,7 @@ export const GanttEvent: React.FC<GanttEventProps> = ({ entityWithConnections: {
                     include: true,
                     value: (
                         <Fragment key={connectedEntityTemplate._id}>
-                            <Grid item>
+                            <Grid>
                                 <Typography fontSize={14} sx={{ ...textStyle }}>
                                     {/* eslint-disable-next-line no-nested-ternary */}
                                     {connectedEntityTemplatesIndex ? (
@@ -87,7 +87,7 @@ export const GanttEvent: React.FC<GanttEventProps> = ({ entityWithConnections: {
                             </Grid>
 
                             {expanded && (
-                                <Grid item>
+                                <Grid>
                                     <Typography fontSize={18} sx={{ ...textStyle }}>
                                         {connectedEntityTemplate.displayName}
                                     </Typography>
@@ -97,7 +97,7 @@ export const GanttEvent: React.FC<GanttEventProps> = ({ entityWithConnections: {
                             {relevantRelationships.map((relationship, relationshipIndex) => (
                                 <Fragment key={relationship.otherEntity.properties._id}>
                                     {Boolean(relationshipIndex) && (
-                                        <Grid item>
+                                        <Grid>
                                             <Typography fontSize={7} sx={{ ...textStyle }}>
                                                 {ganttSettings.separators.entity}
                                             </Typography>

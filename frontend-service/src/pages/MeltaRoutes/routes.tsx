@@ -75,7 +75,7 @@ export const MeltaRoutesInner: React.FC = () => {
 
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
     const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
 
     const meltaPlus = useMeltaPlusStore((state) => state.meltaPlus);
@@ -207,7 +207,7 @@ export const MeltaRoutesInner: React.FC = () => {
                             </Route>
 
                             <Route path="/map">
-                                <Map />
+                                <Map isSideBarOpen={open} />
                             </Route>
 
                             <Route path="/charts/:templateId?/:chartId?/chart">

@@ -1,58 +1,55 @@
 import { styled, Typography } from '@mui/material';
 
-const StepNumberTypography = styled(Typography)<{ type: 'currentStep' | 'finishedStep' | 'futureStep'; direction: 'row' | 'column' }>(
-    ({ type, direction, theme }) => ({
-        height: direction === 'row' ? '40px' : '35px',
-        width: direction === 'row' ? '40px' : '35px',
-        zIndex: 1,
-        display: 'flex',
-        alignItems: 'center',
-        borderRadius: '50px',
-        justifyContent: 'center',
-        marginRight: direction === 'row' ? '1.5rem' : '1rem',
-        fontSize: '15px',
-        fontWeight: 700,
-        ...(type === 'currentStep' && {
-            backgroundColor: theme.palette.primary.main,
-            color: 'white',
-            boxShadow: '0px 1px 2px #00000029',
-        }),
-        ...(type === 'finishedStep' && {
-            border: `2px solid ${theme.palette.primary.main}`,
-            color: theme.palette.primary.main,
-            boxShadow: '0px 1px 2px #00000029',
-        }),
-        ...(type === 'futureStep' &&
-            (theme.palette.mode === 'dark'
-                ? {
-                      backgroundColor: 'rgb(180, 180, 180, 0.3)',
-                      color: '#282828',
-                  }
-                : {
-                      backgroundColor: '#E4E4E4',
-                      color: '#5B5B5B',
-                  })),
+const StepNumberTypography = styled(Typography)<{ type: 'currentStep' | 'finishedStep' | 'futureStep' }>(({ type, theme }) => ({
+    height: '35px',
+    width: '35px',
+    zIndex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    borderRadius: '50px',
+    justifyContent: 'center',
+    marginRight: '1rem',
+    fontSize: '14px',
+    fontWeight: 500,
+    ...(type === 'currentStep' && {
+        backgroundColor: theme.palette.primary.main,
+        color: 'white',
+        boxShadow: '0px 1px 2px #00000029',
     }),
-);
+    ...(type === 'finishedStep' && {
+        border: `2px solid ${theme.palette.primary.main}`,
+        color: theme.palette.primary.main,
+        boxShadow: '0px 1px 2px #00000029',
+    }),
+    ...(type === 'futureStep' && {
+        backgroundColor: theme.palette.mode === 'dark' ? '#3B3F66' : '#CCCFE5',
+        color: theme.palette.primary.main,
+    }),
+}));
 
-const StepNameTypography = styled(Typography)<{ type: 'currentStep' | 'finishedStep' | 'futureStep'; direction: 'row' | 'column' }>(
-    ({ type, theme, direction }) => {
-        let color;
+const StepNameTypography = styled(Typography)<{ type: 'currentStep' | 'finishedStep' | 'futureStep'; direction: 'row' | 'column' }>(({
+    type,
+    theme,
+    direction,
+}) => {
+    let color: string;
 
-        if (theme.palette.mode === 'dark') {
-            color = type === 'finishedStep' ? '#8f919b' : 'white';
-        } else {
-            // eslint-disable-next-line no-nested-ternary
-            color = type === 'finishedStep' ? '#a1a5b7' : direction === 'row' ? '#3f4254' : '#1E2775';
-        }
+    switch (type) {
+        case 'finishedStep':
+        case 'currentStep':
+            color = theme.palette.mode === 'dark' ? 'white' : theme.palette.text.primary;
+            break;
+        case 'futureStep':
+            color = theme.palette.mode === 'dark' ? '#A7ABC7' : '#53566E';
+            break;
+    }
 
-        return {
-            fontWeight: direction === 'row' ? 500 : 400,
-            fontSize: direction === 'row' ? '1.25rem' : '14px',
-            color,
-        };
-    },
-);
+    return {
+        fontWeight: type === 'currentStep' && direction === 'row' ? 500 : 400,
+        fontSize: '14px',
+        color,
+    };
+});
 
 const StepDescriptionTypography = styled(Typography)<{ type: 'currentStep' | 'finishedStep' | 'futureStep' }>(({ type }) => {
     const color = type === 'finishedStep' ? '#787C9E' : '#787C9E';

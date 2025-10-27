@@ -12,6 +12,7 @@ import {
     IUserPopulated,
     ValidationError,
 } from '@microservices/shared';
+import mapValues from 'lodash.mapvalues';
 import { flattenObject, typedObjectEntries } from '../../utils';
 import { transaction } from '../../utils/mongoose';
 import UsersManager from '../users/manager';
@@ -136,17 +137,24 @@ class PermissionsManager {
         const subQueries: FilterQuery<IPermission>[] = [];
 
         typedObjectEntries(subCompactPermissions).forEach(([type, metadata]) => {
-            subQueries.push({ type, workspaceId, ...flattenObject(metadata!, ['metadata']) });
+            const flattenMetadata = flattenObject(metadata!, ['metadata']);
+
+            const flattenMetadataFixed = mapValues(flattenMetadata, (value, key) => {
+                if (key.endsWith('scope') && value === PermissionScope.read) return [PermissionScope.read, PermissionScope.write];
+
+                return value;
+            });
+
+            subQueries.push({ type, workspaceId, ...flattenMetadataFixed });
         });
 
         if (workspaceIds && workspaceIds.length > 1) {
             workspaceIds.pop();
 
             workspaceIds.forEach((innerWorkspaceId) => {
-                subQueries.push({ type: PermissionType.admin, metadata: { scope: PermissionScope.write }, innerWorkspaceId });
+                subQueries.push({ type: PermissionType.admin, metadata: { scope: PermissionScope.write }, workspaceId: innerWorkspaceId });
             });
         }
-
         if (subQueries.length) query.$or = subQueries;
 
         return PermissionsModel.find(query).lean().exec();

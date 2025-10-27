@@ -1,35 +1,34 @@
 import { Clear as ClearIcon, Done as DoneIcon } from '@mui/icons-material';
 import { Button, Card, CardContent, CircularProgress, Divider, Grid } from '@mui/material';
+import { format } from 'date-fns';
 import { Form, Formik } from 'formik';
 import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import React, { useEffect, useMemo, useState } from 'react';
 import { EntityWizardValues } from '..';
 import { environment } from '../../../../globals';
-import { IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
+import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
 import { ICreateOrUpdateWithRuleBreachDialogState, IExternalErrors, IMutationProps } from '../../../../interfaces/CreateOrEditEntityDialog';
 import { IEntity } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { ActionTypes } from '../../../../interfaces/ruleBreaches/actionMetadata';
 import ActionOnEntityWithRuleBreachDialog from '../../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { useClientSideUserStore } from '../../../../stores/clientSideUser';
+import { UserState, useUserStore } from '../../../../stores/user';
 import { useWorkspaceStore } from '../../../../stores/workspace';
 import { filterFieldsFromPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { ajvValidate } from '../../../inputs/JSONSchemaFormik';
+import { IChooseTemplateMode } from '../ChooseTemplate';
 import { DraftWarningDialog } from '../draftWarningDialog';
 import { ExportFormats } from '../ExportFormats';
 import EditProps from './EditProps';
 import useDraftEntityDialogHook from './useDraft';
 import useMutationHandler from './useMutationHandler';
-import { IChooseTemplateMode } from '../ChooseTemplate';
-import { UserState, useUserStore } from '../../../../stores/user';
-
-const { signaturePrefix } = environment;
 
 export const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => {
     const templateFilesProperties = pickBy(
         entityTemplate.properties.properties,
-        (value) => (value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId',
+        (value) => ((value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId') && value.display !== false,
     );
     const templateFileKeys = Object.keys(templateFilesProperties);
     const requiredFilesNames = entityTemplate.properties.required.filter((name) => templateFileKeys.includes(name));
@@ -70,11 +69,22 @@ export const getInitialValuesWithDefaults = (initialCurrValues: EntityWizardValu
     const mergedProperties = {
         ...Object.fromEntries(
             Object.entries(template.properties.properties)
-                .map(([key, prop]) => {
-                    if (prop.format === 'user' && currentUser) properties[key] = JSON.stringify(currentUser);
-                    return [key, properties[key] ?? prop.defaultValue];
+                .map(([key, { defaultValue, format: formatProperty }]) => {
+                    if (
+                        (formatProperty === 'user' && currentUser && defaultValue === ByCurrentDefaultValue.byCurrentUser) ||
+                        ('filterByCurrentUserField' in template && template.filterByCurrentUserField === key)
+                    )
+                        // When preselecting a user - its _id shouldn't be the melta user id, but the kartoffelId should
+                        properties[key] = JSON.stringify({ ...currentUser, _id: currentUser?.kartoffelId });
+
+                    if ((formatProperty === 'date' || formatProperty === 'date-time') && defaultValue === ByCurrentDefaultValue.byCurrentDate) {
+                        const currentDate = new Date();
+                        properties[key] = formatProperty === 'date-time' ? currentDate.toISOString() : format(currentDate, 'yyyy-MM-dd');
+                    }
+
+                    return [key, properties[key] ?? defaultValue];
                 })
-                .filter(([_key, value]) => !!value),
+                .filter(([_key, value]) => value !== null && value !== undefined),
         ),
         disabled: properties.disabled ?? false,
     };
@@ -116,6 +126,7 @@ const CreateOrEditEntityDetails: React.FC<{
     const { payload, actionType } = mutationProps;
     const [isDraftDialogOpen, setIsDraftDialogOpen] = useState(false);
     const [wasDirty, setWasDirty] = useState(false);
+    const [isSubmitPressed, setIsSubmitPressed] = useState(false);
     const [initialValuePropsToFilter, setInitialValuePropsToFilter] = useState<Record<string, any>>({});
 
     const isEditMode = actionType === ActionTypes.UpdateEntity;
@@ -145,7 +156,7 @@ const CreateOrEditEntityDetails: React.FC<{
     const clientSideUserEntity: IEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
 
     const finalMutationProps = useMemo(() => {
-        if (Object.keys(clientSideUserEntity).length > 0) {
+        if (Object.keys(clientSideUserEntity).length) {
             return {
                 ...mutationProps,
                 actionType: ActionTypes.CreateClientSideEntity,
@@ -167,7 +178,6 @@ const CreateOrEditEntityDetails: React.FC<{
     const [deleteDraft, currentDraft, originalDrafts, createOrUpdateDraftDebounced, draftId] = useDraftEntityDialogHook(
         entityTemplate,
         setInitialValuePropsToFilter,
-        signaturePrefix,
         payload,
     );
 
@@ -211,11 +221,11 @@ const CreateOrEditEntityDetails: React.FC<{
                         <Form>
                             <Card>
                                 <CardContent>
-                                    <Grid container justifyContent="center">
+                                    <Grid justifyContent="center">
                                         <EditProps
                                             setFieldValue={setFieldValue}
                                             values={values}
-                                            errors={errors}
+                                            errors={isSubmitPressed ? errors : {}}
                                             touched={touched}
                                             setFieldTouched={setFieldTouched}
                                             initialValues={formInitialValues}
@@ -242,7 +252,6 @@ const CreateOrEditEntityDetails: React.FC<{
                                         <Divider orientation="horizontal" style={{ alignSelf: 'stretch', width: '100%' }} />
                                         <Grid
                                             container
-                                            item
                                             flexDirection="row"
                                             flexWrap="nowrap"
                                             justifyContent="space-between"
@@ -261,7 +270,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                                     templateId={values.template._id}
                                                 />
                                             ) : (
-                                                <Grid item xs={6}>
+                                                <Grid size={{ xs: 6 }}>
                                                     <Button
                                                         style={{ borderRadius: '7px' }}
                                                         variant="outlined"
@@ -272,23 +281,22 @@ const CreateOrEditEntityDetails: React.FC<{
                                                     </Button>
                                                 </Grid>
                                             )}
-                                            <Grid item xs={6} container justifyContent="space-between">
-                                                <Grid item container flexDirection="row" justifyContent="right">
-                                                    <Button
-                                                        style={{ borderRadius: '7px' }}
-                                                        type="submit"
-                                                        variant="contained"
-                                                        startIcon={isLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />}
-                                                        onClick={() =>
-                                                            Object.keys(errors).length > 0
-                                                                ? ''
-                                                                : setTimeout(() => (externalErrors ? undefined : handleClose()), 5000)
-                                                        }
-                                                        disabled={!dirty || isLoading}
-                                                    >
-                                                        {i18next.t('entityPage.save')}
-                                                    </Button>
-                                                </Grid>
+                                            <Grid size={{ xs: 6 }} container justifyContent="end">
+                                                <Button
+                                                    style={{ borderRadius: '7px' }}
+                                                    type="submit"
+                                                    variant="contained"
+                                                    startIcon={isLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />}
+                                                    onClick={() => {
+                                                        setIsSubmitPressed(true);
+                                                        Object.keys(errors).length
+                                                            ? ''
+                                                            : setTimeout(() => (externalErrors ? undefined : handleClose()), 5000);
+                                                    }}
+                                                    disabled={!dirty || isLoading}
+                                                >
+                                                    {i18next.t('entityPage.save')}
+                                                </Button>
                                             </Grid>
                                         </Grid>
                                     </Grid>

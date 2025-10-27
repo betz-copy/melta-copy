@@ -10,15 +10,17 @@ const ViewModeTextField: React.FC<ViewModeTextFieldProps> = ({ readOnly = false,
     return (
         <TextField
             {...rest}
-            value={value ?? (readOnly ? '-' : '')}
+            value={(value === '' || value == null) && readOnly ? '-' : (value ?? '')}
             variant={readOnly && !forceOutlined ? 'standard' : 'outlined'}
-            InputProps={{
-                ...InputProps,
-                readOnly,
-                ...(readOnly && { disableUnderline: true }),
-                style: {
-                    textOverflow: 'ellipsis',
-                    ...(InputProps?.style || {}),
+            slotProps={{
+                input: {
+                    ...InputProps,
+                    readOnly,
+                    ...(readOnly && { disableUnderline: true }),
+                    style: {
+                        textOverflow: 'ellipsis',
+                        ...(InputProps?.style || {}),
+                    },
                 },
             }}
         />

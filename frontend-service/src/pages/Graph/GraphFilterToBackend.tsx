@@ -1,7 +1,10 @@
+import { environment } from '../../globals';
 import { IFilterOfField, IFilterOfTemplate, IGraphFilterBody, IGraphFilterBodyBatch, ISearchFilter } from '../../interfaces/entities';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { filterModelToFilterOfTemplatePerField } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
-import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../utils/agGrid/interfaces';
+import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter, RelativeDateFilters } from '../../utils/agGrid/interfaces';
+
+const { relativeDateFilters } = environment;
 
 export interface IGraphFilterToBackendBody {
     [templateId: string]: { filter: ISearchFilter } | {};
@@ -73,14 +76,26 @@ export const handleRegexFilter = (filterValue: string, not: boolean = false): IA
 };
 
 export const handleDateFilter = (filterKeys: (keyof IFilterOfField)[], fieldFilter: IFilterOfField, filterType: string): IAGGridDateFilter => {
-    if (filterKeys.length === 2) {
+    if (
+        filterKeys.length === 2 ||
+        Object.values(fieldFilter).some((value) => value === RelativeDateFilters.untilToday || value === RelativeDateFilters.fromToday)
+    ) {
         const [dateFrom, dateTo] = filterKeys;
+
+        if (relativeDateFilters.includes(fieldFilter[dateFrom] as string)) {
+            return {
+                filterType: 'date',
+                type: fieldFilter[dateFrom],
+                dateFrom: fieldFilter[dateFrom],
+                dateTo: fieldFilter[dateTo],
+            } as IAGGridDateFilter;
+        }
 
         return {
             filterType: 'date',
             type: 'inRange',
-            dateFrom: fieldFilter[dateFrom] as string,
-            dateTo: fieldFilter[dateTo] as string,
+            dateFrom: fieldFilter[dateFrom],
+            dateTo: fieldFilter[dateTo],
         } as IAGGridDateFilter;
     }
 
@@ -92,7 +107,10 @@ export const handleDateFilter = (filterKeys: (keyof IFilterOfField)[], fieldFilt
     } as IAGGridDateFilter;
 };
 
-export const translateFieldFilter = (fieldFilter: IFilterOfField, { type, format }: IEntitySingleProperty): IGraphFilterBody['filterField'] => {
+export const translateFieldFilter = (
+    fieldFilter: IFilterOfField,
+    { type, format, enum: enumValues }: IEntitySingleProperty,
+): IGraphFilterBody['filterField'] => {
     const filterKeys = Object.keys(fieldFilter) as (keyof IFilterOfField)[];
     const [filterKey] = filterKeys;
     const filterValue = fieldFilter[filterKey];
@@ -104,10 +122,17 @@ export const translateFieldFilter = (fieldFilter: IFilterOfField, { type, format
         case 'boolean': {
             if (format === 'date-time' || format === 'date') return handleDateFilter(filterKeys, fieldFilter, filterType);
 
+            if (enumValues)
+                return {
+                    filterType: 'set',
+                    values: filterValue as (string | null)[],
+                } as IAGGridSetFilter;
+
             if (filterKey === '$rgx' && typeof filterValue === 'string') {
                 const regexFilter = handleRegexFilter(filterValue);
                 if (regexFilter) return regexFilter;
             }
+
             if (filterKey === '$not' && typeof filterValue === 'object') {
                 const notFilter = filterValue as IFilterOfField;
                 if ('$rgx' in notFilter) {

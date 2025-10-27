@@ -65,12 +65,12 @@ const ProcessTemplatesRow: React.FC = () => {
     );
 
     return (
-        <Grid item container marginBottom="30px" gap="30px">
+        <Grid container marginBottom="30px" gap="30px">
             <Grid container spacing={1} alignItems="center">
-                <Grid item>
+                <Grid>
                     <SearchInput onChange={setSearchText} borderRadius="7px" placeholder={i18next.t('globalSearch.searchProcesses')} />
                 </Grid>
-                <Grid item>
+                <Grid>
                     <CreateButton
                         onClick={() => setProcessTemplateWizardDialogState({ isWizardOpen: true, processTemplate: null })}
                         text={i18next.t('systemManagement.newProcessTemplate')}
@@ -123,4 +123,4 @@ const ProcessTemplatesRow: React.FC = () => {
     );
 };
 
-export { ProcessTemplatesRow };
+export default ProcessTemplatesRow;

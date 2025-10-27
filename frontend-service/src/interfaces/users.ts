@@ -15,15 +15,15 @@ export interface IBaseUser {
         mailsNotificationsTypes?: NotificationType[];
         profilePath?: string;
     };
-    externalMetadata: {
-        kartoffelId: string;
-        digitalIdentitySource: string;
-    };
+    kartoffelId: string;
+    userType?: string;
 }
 export interface IUser extends IBaseUser {
     permissions: ICompactPermissions;
     roleIds?: string[];
     displayName: string; // custom displayName, not of kartoffel: `${fullName} - ${hierarchy}/${jobTitle}`
+    units?: Record<string, string[]>;
+    isRoot?: boolean;
 }
 
 export interface IUserPopulated extends Omit<IUser, 'roleIds'> {
@@ -73,7 +73,7 @@ export interface ICurrentUser extends IUser {
     currentWorkspacePermissions: ISubCompactPermissions;
 }
 
-export type IExternalUser = Omit<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'> &
+export type IExternalUser = Omit<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail' | 'entityType'> &
     Partial<Pick<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'>>;
 
 export interface IKartoffelUserRole {

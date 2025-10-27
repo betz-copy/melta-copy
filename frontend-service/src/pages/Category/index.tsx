@@ -15,7 +15,7 @@ const Category: React.FC = () => {
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
     const childTemplatesList = Array.from(childTemplates.values());
 
     const category = categories.get(categoryId!)!;

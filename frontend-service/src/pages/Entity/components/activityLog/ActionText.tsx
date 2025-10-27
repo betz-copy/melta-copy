@@ -1,22 +1,22 @@
 /* eslint-disable no-nested-ternary */
-import { Chip, Grid, styled, Typography, useTheme } from '@mui/material';
+import { Grid, styled, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
-import { MeltaTooltip } from '../../../../common/MeltaTooltip';
+import { CoordinateSystem, LocationData } from '../../../../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
+import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
+import { NotificationColor } from '../../../../common/notificationColor';
 import RelationshipReferenceView from '../../../../common/RelationshipReferenceView';
+import { StatusDisplay } from '../../../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
-import { IActivityLog, IUpdateProcessStepMetadata } from '../../../../services/activityLogService';
-import { containsHTMLTags, getFirstLine, getNumLines } from '../../../../utils/HtmlTagsStringValue';
-import { getFilesName } from '../../../../utils/getFileName';
 import { IProcessDetails, IProcessSingleProperty } from '../../../../interfaces/processes/processTemplate';
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
-import { StatusDisplay } from '../../../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
-import { CoordinateSystem, LocationData } from '../../../../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
+import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
+import { IActivityLog, IUpdateProcessStepMetadata } from '../../../../services/activityLogService';
+import { getFilesName } from '../../../../utils/getFileName';
+import { containsHTMLTags, getFirstLine, getNumLines } from '../../../../utils/HtmlTagsStringValue';
 import { locationConverterToString } from '../../../../utils/map/convert';
-import { NotificationColor } from '../../../../common/notificationColor';
 import UserAvatar from '../../../../common/UserAvatar';
 
 const logColors = {
@@ -42,7 +42,7 @@ const logTitles = {
 };
 
 const TitleWithIcon = (action: string) => (
-    <Grid item container marginBottom="10px">
+    <Grid container marginBottom="10px">
         <NotificationColor color={logColors[action]} />
         <Typography variant="subtitle1" color="primary" fontWeight="400" fontSize="15px" paddingLeft="10px">
             {logTitles[action]}
@@ -68,7 +68,7 @@ const EmptyMetadataActionText: React.FC<{
     };
 
     return (
-        <Grid item minWidth="190px">
+        <Grid minWidth="190px">
             {TitleWithIcon(action)}
             <StyledTypography variant="body2">{logTexts[action]}</StyledTypography>
         </Grid>
@@ -97,7 +97,7 @@ const RelationshipMetadataActionText: React.FC<{
     const otherEntityTemplate = otherEntityTemplateId ? entityTemplates.get(otherEntityTemplateId) : undefined;
 
     return (
-        <Grid item container>
+        <Grid container>
             {TitleWithIcon(action)}
             <StyledTypography variant="body2" component="span">
                 {action === 'CREATE_RELATIONSHIP'
@@ -135,7 +135,7 @@ const DuplicateEntityMetadataActionText: React.FC<{
     const [_, navigate] = useLocation();
 
     return (
-        <Grid item minWidth="190px">
+        <Grid minWidth="190px">
             {TitleWithIcon('DUPLICATE_ENTITY')}
             <StyledTypography variant="body2" component="span">
                 {i18next.t('entityPage.activityLog.duplicateEntityFrom')}
@@ -231,16 +231,11 @@ const UpdateTextValue: React.FC<{
 
     const contentDisplayNameByTemplate = (content: string, inTooltip = false) => {
         if (isUserField()) {
-            if (inTooltip) return JSON.parse(value).fullName;
+            const user = JSON.parse(value);
 
-            return (
-                <Chip
-                    sx={{ marginLeft: '5px' }}
-                    size="small"
-                    avatar={<UserAvatar user={JSON.parse(value)} size={23} bgColor="1E2775" />}
-                    label={JSON.parse(value).fullName}
-                />
-            );
+            if (inTooltip) return user.fullName;
+
+            return <UserAvatar user={user} userIcon={{ size: 23 }} chip={{ size: 'small' }} shouldRenderTooltip={inTooltip} />;
         }
         if (isFileIdFormat()) {
             return getFilesName(content);
@@ -254,12 +249,12 @@ const UpdateTextValue: React.FC<{
 
     return value && typeof innerContent === 'string' ? (
         <MeltaTooltip
-            PopperProps={popperProps}
+            slotProps={{ popper: popperProps }}
             disableHoverListener={!innerContent}
             title={<Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>{contentDisplayNameByTemplate(innerContent, true)}</Grid>}
             placement="top-start"
         >
-            <Grid item marginBottom="5px">
+            <Grid marginBottom="5px">
                 <StyledTypography variant="body2" style={ellipsisStyle}>
                     {old ? i18next.t('entityPage.activityLog.from') : i18next.t('entityPage.activityLog.to')}{' '}
                     {contentDisplayNameByTemplate(innerContent)}
@@ -280,9 +275,9 @@ const UpdateEntityMetadataActionText: React.FC<{
 }> = ({ actionMetadata, entityTemplateProperties }) => {
     const theme = useTheme();
     return (
-        <Grid item container flexDirection="column">
+        <Grid container flexDirection="column">
             {TitleWithIcon('UPDATE_FIELDS')}
-            <Grid item minWidth="190px">
+            <Grid minWidth="190px">
                 <StyledTypography variant="body2" marginBottom="5px">
                     {actionMetadata.updatedFields.length === 1
                         ? i18next.t('entityPage.activityLog.updateField')
@@ -329,7 +324,7 @@ const UpdateStepProcessMetadataActionText: React.FC<{
     entityTemplate: IMongoStepTemplatePopulated;
 }> = ({ actionMetadata, entityTemplate }) => {
     return (
-        <Grid item minWidth="190px">
+        <Grid minWidth="190px">
             {actionMetadata?.updatedFields && actionMetadata?.updatedFields.length > 0 && (
                 <UpdateEntityMetadataActionText
                     actionMetadata={{ updatedFields: actionMetadata.updatedFields }}

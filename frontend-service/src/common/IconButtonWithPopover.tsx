@@ -1,6 +1,6 @@
 import { IconButton, SxProps, Theme } from '@mui/material';
-import React, { CSSProperties } from 'react';
-import { MeltaTooltip } from './MeltaTooltip';
+import React, { CSSProperties, ReactNode } from 'react';
+import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
 
 const IconButtonWithPopover: React.FC<{
     iconButtonProps?: React.ComponentProps<typeof IconButton>;
@@ -22,6 +22,7 @@ const IconButtonWithPopover: React.FC<{
         | 'top-start'
         | 'top';
     buttonStyle?: SxProps<Theme>;
+    children?: ReactNode;
 }> = ({ children, iconButtonProps, popoverText, disabledToolTip = false, disabled, style, placement = 'bottom', buttonStyle }) => {
     return (
         <MeltaTooltip title={popoverText} disableHoverListener={disabledToolTip} placement={placement}>

@@ -7,12 +7,13 @@ import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
 import ExecWithRuleBreachDialog from '../../common/dialogs/execWithRuleBreachDialog';
 import { IEntityExpanded } from '../../interfaces/entities';
 import { deleteRelationshipRequest } from '../../services/relationshipsService';
-import { IRuleMap } from '../../interfaces/rules';
+import { ActionOnFail, IRuleMap } from '../../interfaces/rules';
 import { IRuleBreach, IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
 import { ActionTypes, IDeleteRelationshipMetadata, IDeleteRelationshipMetadataPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
 import { createRuleBreachRequestRequest } from '../../services/ruleBreachesService';
 import { ErrorToast } from '../../common/ErrorToast';
 import { environment } from '../../globals';
+import { IErrorResponse } from '../../interfaces/error';
 
 const { errorCodes } = environment;
 
@@ -39,7 +40,7 @@ const DeleteRelationshipDialog: React.FC<{
         },
         {
             onError: (err: AxiosError) => {
-                const errorMetadata = err.response?.data?.metadata;
+                const errorMetadata = (err.response?.data as IErrorResponse)?.metadata;
                 if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
                     setDeleteWithRuleBreachDialogState({
                         isOpen: true,
@@ -78,7 +79,7 @@ const DeleteRelationshipDialog: React.FC<{
         },
         {
             onError: (err: AxiosError) => {
-                const errorMetadata = err.response?.data?.metadata;
+                const errorMetadata = (err.response?.data as IErrorResponse)?.metadata;
                 if (errorMetadata?.errorCode === environment.errorCodes) {
                     setDeleteWithRuleBreachDialogState({
                         isOpen: true,
@@ -110,10 +111,9 @@ const DeleteRelationshipDialog: React.FC<{
                     isSubmitting={isLoadingDeleteRelationship || isLoadingCreateRuleBreachRequest}
                     onCancel={() => setDeleteWithRuleBreachDialogState({ isOpen: false })}
                     onSubmit={async () => {
-                        const someBrokenRuleIsEnforcement = deleteWithRuleBreachDialogState.brokenRules!.some(({ ruleId }) => {
-                            const rule = rules.get(ruleId)!;
-                            return rule.actionOnFail === 'ENFORCEMENT';
-                        });
+                        const someBrokenRuleIsEnforcement = deleteWithRuleBreachDialogState.brokenRules!.some(
+                            ({ ruleId }) => rules.get(ruleId)!.actionOnFail === ActionOnFail.ENFORCEMENT,
+                        );
 
                         if (someBrokenRuleIsEnforcement) {
                             await createRuleBreachRequest();

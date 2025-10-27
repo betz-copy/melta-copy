@@ -120,7 +120,6 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
                                         setIsDimensionsChange={setIsDimensionsChange}
                                     >
                                         <Grid
-                                            item
                                             height="100%"
                                             width="100%"
                                             style={{

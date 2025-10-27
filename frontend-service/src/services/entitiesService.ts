@@ -49,11 +49,10 @@ export const loadEntitiesRequest = async (
         Object.entries(files).forEach(([key, value]) => {
             formData.append(key, value as Blob);
         });
+
     formData.append('templateId', isChildTemplate(template) ? template.parentTemplate._id : template._id);
 
-    if (isChildTemplate(template)) {
-        formData.append('childTemplateId', template._id);
-    }
+    if (isChildTemplate(template)) formData.append('childTemplateId', template._id);
 
     if (insertBrokenEntities) {
         const formattedInsertBrokenEntities = insertBrokenEntities.map((entity) => ({
@@ -153,10 +152,11 @@ export const editManyEntitiesByExcelRequest = async (
 
 export const getExpandedEntityByIdRequest = async (
     entityId: string,
-    expandedParams: { [key: string]: number },
+    expandedParams: Record<string, { minLevel?: number; maxLevel: number }>,
     options?: {
         disabled?: boolean;
         templateIds: string[];
+        childTemplateId?: string;
     },
     filterRecord: IGraphFilterBodyBatch = {},
 ) => {
@@ -365,13 +365,9 @@ const getBodyForUpdateRequest = async (
 
     formData.append('templateId', isChildTemplate(template) ? template.parentTemplate._id : template._id);
 
-    if (isChildTemplate(template)) {
-        formData.append('childTemplateId', template._id);
-    }
+    if (isChildTemplate(template)) formData.append('childTemplateId', template._id);
 
-    if (ignoredRules) {
-        formData.append('ignoredRules', JSON.stringify(ignoredRules));
-    }
+    if (ignoredRules) formData.append('ignoredRules', JSON.stringify(ignoredRules));
 
     return formData;
 };
@@ -511,13 +507,18 @@ export const deleteEntityRequest = async (deleteBody: IDeleteEntityBody) => {
     return data;
 };
 
-export const searchEntitiesOfTemplateRequest = async (templateId: string, searchBody: ISearchEntitiesOfTemplateBody) => {
-    const { data } = await axios.post<ISearchResult>(`${entities}/search/template/${templateId}`, searchBody);
+export const searchEntitiesOfTemplateRequest = async (templateId: string, searchBody: ISearchEntitiesOfTemplateBody, childTemplateId?: string[]) => {
+    const { data } = await axios.post<ISearchResult>(`${entities}/search/template/${templateId}`, { ...searchBody, childTemplateId });
     return data;
 };
 
-export const getCountByTemplateIdsRequest = async (templateIds: string[], textSearch: string = '', shouldSemanticSearch: boolean = false) => {
-    const { data } = await axios.post<ICountSearchResult[]>(`${entities}/count`, { templateIds, textSearch, shouldSemanticSearch });
+export const getCountByTemplateIdsRequest = async (
+    templateIds: string[],
+    childTemplateIds: string[] = [],
+    textSearch: string = '',
+    shouldSemanticSearch: boolean = false,
+) => {
+    const { data } = await axios.post<ICountSearchResult[]>(`${entities}/count`, { templateIds, childTemplateIds, textSearch, shouldSemanticSearch });
     return data;
 };
 

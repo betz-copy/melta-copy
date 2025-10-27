@@ -14,11 +14,9 @@
     "author": "Nadav Hammer",
     "license": "ISC",
     "dependencies": {
-        "@microservices/shared": "^1.0.0",
-        "mongoose": "^8.8.1"
+        "@microservices/shared": "^1.0.0"
     },
     "devDependencies": {
-        "@types/express": "^4.17.21",
         "@types/winston": "^2.4.4"
     }
 }

@@ -23,9 +23,12 @@ const GraphNodeMenu: React.FC<{
 }> = ({ graphData, filteredEntityTemplates, node, location, onCloseMenu, filterRecord, onSuccessExpandGraph }) => {
     const [_, navigate] = useLocation();
     const [searchParams, setSearchParams] = useSearchParams();
+    const childTemplateId = searchParams.get('childTemplateId') ?? undefined;
 
     const queryClient = useQueryClient();
-    const childEntityTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
+
+    const childEntityTemplate = [...childTemplates.values()].find(({ parentTemplate }) => parentTemplate._id === node.templateId);
 
     const expandedParams = JSON.parse(searchParams.get('expandedEntities')!) || {};
     const { refetch: getExpandedData } = useQuery<IEntityExpanded>(
@@ -33,11 +36,12 @@ const GraphNodeMenu: React.FC<{
             'getExpandedEntity',
             node.id,
             {
-                [node.id]: node.numberOfConnectionsExpanded + 1,
+                [node.id]: { maxLevel: node.numberOfConnectionsExpanded + 1 },
             },
             {
                 disabled: false,
                 templateIds: filteredEntityTemplates.map((entityTemplate) => entityTemplate._id),
+                childTemplateId,
             },
             filterRecord,
         ],
@@ -45,11 +49,12 @@ const GraphNodeMenu: React.FC<{
             getExpandedEntityByIdRequest(
                 node.id,
                 {
-                    [node.id]: node.numberOfConnectionsExpanded + 1,
+                    [node.id]: { maxLevel: node.numberOfConnectionsExpanded + 1 },
                 },
                 {
                     disabled: false,
                     templateIds: filteredEntityTemplates.map((entityTemplate) => entityTemplate._id),
+                    childTemplateId,
                 },
                 filterRecord,
             ),
@@ -77,9 +82,6 @@ const GraphNodeMenu: React.FC<{
                 onClick={() => {
                     onCloseMenu();
 
-                    const childEntityTemplate = [...childEntityTemplates.values()].find(
-                        ({ parentTemplate }) => parentTemplate._id === node.templateId,
-                    );
                     navigate(`/entity/${node.id}${childEntityTemplate ? `?childTemplateId=${childEntityTemplate._id}` : ''}`);
                 }}
             >
@@ -88,7 +90,7 @@ const GraphNodeMenu: React.FC<{
             <MenuItem
                 onClick={() => {
                     onCloseMenu();
-                    navigate(`/entity/${node.id}/graph`);
+                    navigate(`/entity/${node.id}/graph${childEntityTemplate ? `?childTemplateId=${childEntityTemplate._id}` : ''}`);
                 }}
             >
                 {i18next.t('graph.navigateToGraph')}

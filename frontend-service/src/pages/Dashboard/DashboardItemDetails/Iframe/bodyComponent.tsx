@@ -1,7 +1,7 @@
 import { Card, Grid } from '@mui/material';
 import React from 'react';
 import Iframe from 'react-iframe';
-import { BlueTitle } from '../../../../common/BlueTitle';
+import BlueTitle from '../../../../common/MeltaDesigns/BlueTitle';
 import { StepComponentProps } from '../../../../common/wizards';
 import { IFrameWizardValues } from '../../../../common/wizards/iFrame';
 import { useWorkspaceStore } from '../../../../stores/workspace';
@@ -11,7 +11,7 @@ const BodyComponent: React.FC<StepComponentProps<IFrameWizardValues>> = ({ value
     const { headlineTitleFontSize } = agGridMetaData.mainFontSizes;
 
     return (
-        <Grid item container width="100%" height="100%" alignItems="center" justifyContent="center">
+        <Grid container width="100%" height="100%" alignItems="center" justifyContent="center">
             {name && url && !errors.url && (
                 <Card
                     sx={{

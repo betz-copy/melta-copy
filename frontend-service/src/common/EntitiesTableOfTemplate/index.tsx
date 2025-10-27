@@ -68,6 +68,7 @@ import { useClientSideUserStore } from '../../stores/clientSideUser';
 import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { isChildTemplate } from '../../utils/templates';
 import { useUserStore } from '../../stores/user';
+import { IErrorResponse } from '../../interfaces/error';
 
 const { errorCodes } = environment;
 const { cacheBlockSize, maxConcurrentDatasourceRequests, actionPrefix, actionsWidth, rowCountInfiniteModeWithoutExpand } = environment.agGrid;
@@ -110,6 +111,7 @@ export const getDatasource = <Data extends any = EntityData>(
     clientSideUserEntityId?: string,
 ): IServerSideDatasource => {
     const parentTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;
+    const childTemplateId = isChildTemplate(template) ? template._id : undefined;
 
     return {
         async getRows(params: IServerSideGetRowsParams<Data>) {
@@ -143,6 +145,7 @@ export const getDatasource = <Data extends any = EntityData>(
                               // tableCount, // comment out  waiting for Itay
                               defaultFilter,
                           ),
+                          childTemplateId ? [childTemplateId] : [],
                       ),
             );
 
@@ -250,6 +253,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     disableFilter?: boolean;
     columnsToShow?: string[];
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
+    actionsColumnWidth?: number;
 };
 
 export type EntitiesTableOfTemplateRef<Data> = {
@@ -298,12 +302,13 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             disableFilter = false,
             columnsToShow,
             setUpdatedTemplateIds,
+            actionsColumnWidth,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
         const queryClient = useQueryClient();
         const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-        const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates');
+        const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates');
 
         const [_, navigate] = useLocation();
         const darkMode = useDarkModeStore((state) => state.darkMode);
@@ -435,6 +440,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             childEntityTemplateMap: childTemplates,
             currentUser,
             currentClientSideUser: clientSideUserEntity,
+            actionsColumnWidth,
+            darkMode,
         };
         const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
 
@@ -455,6 +462,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             },
             '.ag-cell-inline-editing input': {
                 border: 'none !important',
+            },
+            '.ag-theme-material .ag-header-cell-text': {
+                fontSize: '14px !important',
             },
         };
 
@@ -551,7 +561,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             api.refreshHeader();
             api.sizeColumnsToFit();
             // eslint-disable-next-line no-unused-expressions
-            Object.keys(defaultColumnWidths).length > 0 ? api.autoSizeColumns(columnsKeys) : api.autoSizeColumns(filteredColumns);
+            !!Object.keys(defaultColumnWidths).length ? api.autoSizeColumns(columnsKeys) : api.autoSizeColumns(filteredColumns);
 
             const columnStates = api.getColumnState().filter((col) => columnsKeys.includes(col.colId));
 
@@ -568,7 +578,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
             api.setColumnWidths(Object.entries(columnsWidth).map(([key, newWidth]) => ({ key, newWidth })));
 
-            if (Object.keys(columnsWidth).length > 0) {
+            if (Object.keys(columnsWidth).length) {
                 const updatedWidths = isRemovedFields ? columnsWidth : { ...defaultColumnWidths, ...columnsWidth };
                 localStorage.setItem(`${columnWidths}${saveStorageProps.pageType}-${template._id}`, JSON.stringify(updatedWidths));
                 setDefaultColumnWidths(updatedWidths);
@@ -593,7 +603,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     setUpdateWithRuleBreachDialogState({ isOpen: false });
                 },
                 onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
-                    const errorMetadata = err.response?.data?.metadata;
+                    const errorMetadata = (err.response?.data as IErrorResponse)?.metadata;
 
                     switch (errorMetadata?.errorCode) {
                         case errorCodes.failedConstraintsValidation:
@@ -749,6 +759,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         boxShadow: '-2px 2px 6px 0px rgba(30, 39, 117, 0.30)',
                     }}
                     ref={tableRef}
+                    width="100%"
                 >
                     <AgGridReact<Data>
                         ref={gridRef}

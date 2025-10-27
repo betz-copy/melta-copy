@@ -7,6 +7,8 @@ import hexToARGB from './colors';
 import excelConfig from './excelConfig';
 import { isIncludedColumn, isIncludedEditColumn } from './getFunctions';
 
+const { dateTime, date: dateFormat } = config.formats;
+
 interface IExcelStyle {
     columnHeader: {
         font: Partial<Excel.Font>;
@@ -146,7 +148,10 @@ const createWorksheet = async (workbook: Excel.Workbook, templateItem: TemplateI
         cell.font = excelStyle.columnHeader.font;
         cell.alignment = excelStyle.columnHeader.alignment;
 
-        const type = TypesToHebrew(Object.values(template.properties.properties).find((propertyTemplate) => propertyTemplate.title === cell.value)!);
+        const type =
+            externalColumns.find(({ header }) => header === cell.value) ??
+            TypesToHebrew(Object.values(template.properties.properties).find((propertyTemplate) => propertyTemplate.title === cell.value)!);
+
         cell.note = type;
         cell.fill = {
             type: 'pattern',
@@ -222,14 +227,9 @@ const styleAWorksheet = (
         cell.alignment = excelStyle.columnHeader.alignment;
     });
 
-    const { disabled } = template;
-    let additionalProps = {};
-    if (type === EntityTemplateType.Parent) {
-        const { createdAt, updatedAt } = template;
-        additionalProps = { createdAt, updatedAt };
-    }
+    const { disabled, createdAt, updatedAt } = template;
 
-    const allProperties: Record<string, IEntitySingleProperty> = Object.entries({ ...template.properties.properties, disabled, ...additionalProps })
+    const allProperties: Record<string, IEntitySingleProperty> = Object.entries({ ...template.properties.properties, disabled, createdAt, updatedAt })
         .filter(([key]) => displayColumns?.includes(key))
         .reduce((acc, [key, value]) => {
             acc[key] = value;
@@ -240,7 +240,9 @@ const styleAWorksheet = (
         rows.forEach((row, index) => {
             const rowIndex = index + skip;
             const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${rowIndex + SKIP_ROW_HEADER}`);
+
             if (!isIncludedEditColumn(value, row.disabled, disabled)) readOnlyCell(cell);
+
             if (row[key] !== undefined && value !== undefined) {
                 cell.alignment = excelStyle.cell.alignment;
                 cell.font = excelStyle.cell.font;
@@ -272,10 +274,10 @@ const styleAWorksheet = (
 
                             if (cellValue.includes(':')) {
                                 cell.value = date;
-                                cell.numFmt = 'dd/mm/yyyy hh:mm';
+                                cell.numFmt = dateTime;
                             } else {
                                 cell.value = new Date(date.setHours(0, 0, 0, 0));
-                                cell.numFmt = 'dd/mm/yyyy';
+                                cell.numFmt = dateFormat;
                             }
                         }
                     }

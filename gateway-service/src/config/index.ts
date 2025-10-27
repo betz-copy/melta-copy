@@ -71,7 +71,7 @@ const config = {
             accessTokenExpirationTime: env.get('ACCESS_TOKEN_EXPIRATION_TIME').default('1d').asString(),
             unauthorizedId: env.get('UNAUTHORIZED_ID').default('unauthorized').asString(),
             clientSideId: env.get('CLIENT_SIDE_ID').default('client-side').asString(),
-            clientSideEndURL: env.get('CLIENT_SIDE_END_URL').default('/simba/test.mlt').asString(), // TODO: yona - change to better unique url for client side end user
+            clientSideURLPrefix: env.get('CLIENT_SIDE_URL_PREFIX').default('/client-side/').asString(),
         },
         basicAuthentication: {
             // userId must be users of kartoffel with permissions in our permissions-api DB
@@ -95,6 +95,9 @@ const config = {
                 .get('TEMPLATE_SERVICE_RELATIONSHIPS_UPDATE_RULE_STATUS_BY_ID_ROUTE_SUFFIX')
                 .default('/status')
                 .asString(),
+        },
+        printingTemplates: {
+            basePrintingTemplatesRoute: env.get('TEMPLATE_SERVICE_PRINTING_TEMPLATES_BASE_ROUTE').default('/api/templates/print').asString(),
         },
         requestTimeout: env.get('ENTITY_TEMPLATE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
         userDoesntExistUnderReq: env.get('USER_NOT_EXIST_UNDER_REQUEST').default(`User doesn't exists under request`).asString(),
@@ -234,9 +237,19 @@ const config = {
         deleteUnusedFilesQueue: env.get('DELETE_UNUSED_FILES_QUEUE_NAME').default('delete-unused-files-queue').asString(),
         insertDocsSemanticQueue: env.get('INSERT_DOCS_SEMATIC_QUEUE').default('insert_documents_queue').asString(),
         deleteDocsSemanticQueue: env.get('DELETE_DOCS_SEMATIC_QUEUE').default('delete_documents_queue').asString(),
+        runRulesWithTodayFuncQueue: env.get('RUN_RULES_WITH_TODAY_FUNC_QUEUE_NAME').default('run-rules-with-today-func-queue').asString(),
+        runRulesWithTodayFuncQueuePrefetch: env.get('RUN_RULES_WITH_TODAY_FUNC_QUEUE_PREFETCH').default(1).asIntPositive(), // parallel limit shouldnt be more 1, because heavy on DB
+        createAlertForRuleWithTodayFuncQueue: env
+            .get('CREATE_ALERT_FOR_RULE_WITH_TODAY_FUNC_FAILURE_QUEUE_NAME')
+            .default('create-alert-for-rule-with-today-func-failure-queue')
+            .asString(),
     },
     mailerService: {
-        mailUser: env.get('NOTIFICATIONS_MAIL_FROM').default('hope39@ethereal.email').asString(),
+        mailUser: env.get('NOTIFICATIONS_MAIL_FROM').default('kendall.wiegand61@ethereal.email').asString(),
+    },
+    formats: {
+        date: env.get('DATE_FORMAT').default('dd/mm/yyyy').asString(),
+        dateTime: env.get('DATE_TIME_FORMAT').default('dd/mm/yyyy hh:mm').asString(),
     },
     logs: {
         format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),
@@ -314,10 +327,13 @@ const config = {
         usersInfoChildTemplateId: env.get('CLIENT_SIDE_USERS_INFO_TEMPLATE_ID').default('68347c4b1652e05582afa8b8').asString(),
         numOfPropsToShow: env.get('CLIENT_SIDE_NUM_OF_PROPS_TO_SHOW').default(9).asIntPositive(),
         clientSideWorkspaceName: env.get('CLIENT_SIDE_WORKSPACE_NAME').default('simba').asString(),
+        fullNameField: env.get('CLIENT_SIDE_USERS_INFO_FIELD').default('full_name').asString(),
     },
     mapPage: {
+        showMapPage: env.get('MAPPAGE_SHOW_MAP_PAGE').default('false').asBool(),
         sourceTemplateId: env.get('MAPPAGE_SOURCE_TEMPLATE_ID').default('68347c4b1652e05582afa8b8').asString(),
         destTemplateId: env.get('MAPPAGE_DEST_TEMPLATE_ID').default('68347c4b1652e05582afa8b8').asString(),
+        sourceFieldForColor: env.get('MAPPAGE_SOURCE_FIELD_FOR_COLOR').default('source_field_for_color').asString(),
     },
 };
 

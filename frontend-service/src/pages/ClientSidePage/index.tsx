@@ -34,7 +34,7 @@ const ClientSidePage: React.FC = () => {
 
     useQuery('getClientSideCategories', () => undefined, { enabled: false });
     useQuery('getClientSideEntityTemplates', () => undefined, { enabled: false });
-    useQuery('getClientSideChildEntityTemplates', () => undefined, { enabled: false });
+    useQuery('getClientSideChildTemplates', () => undefined, { enabled: false });
     useQuery('getClientSideRelationshipTemplates', () => undefined, { enabled: false });
 
     useQuery('getEntityTemplates', () => undefined, { enabled: false });
@@ -60,7 +60,7 @@ const ClientSidePage: React.FC = () => {
             onSuccess: ({ categories, entityTemplates, relationshipTemplates, childTemplates }) => {
                 queryClient.setQueryData<ICategoryMap>('getClientSideCategories', mapTemplates(categories));
                 queryClient.setQueryData<IEntityTemplateMap>('getClientSideEntityTemplates', mapTemplates(entityTemplates));
-                queryClient.setQueryData<IChildTemplateMapPopulated>('getClientSideChildEntityTemplates', mapTemplates(childTemplates));
+                queryClient.setQueryData<IChildTemplateMapPopulated>('getClientSideChildTemplates', mapTemplates(childTemplates));
                 queryClient.setQueryData<IRelationshipTemplateMap>('getClientSideRelationshipTemplates', mapTemplates(relationshipTemplates));
 
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', mapTemplates(entityTemplates));

@@ -7,7 +7,7 @@ import { DragDropContext } from 'react-beautiful-dnd';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
-import { CreateChildTemplateDialog } from '../../../common/dialogs/createChildTemplate';
+import ChildTemplateDialog, { IMutationWithPayload } from '../../../common/dialogs/ChildTemplateDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { InfiniteScroll } from '../../../common/InfiniteScroll';
 import SearchInput from '../../../common/inputs/SearchInput';
@@ -15,11 +15,11 @@ import { SelectCheckbox } from '../../../common/SelectCheckBox';
 import { EntityTemplateWizard } from '../../../common/wizards/entityTemplate';
 import { environment } from '../../../globals';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
-import { IChildTemplateMap, IMongoChildTemplatePopulated, TemplateItem } from '../../../interfaces/childTemplates';
+import { IChildTemplateMap, IChildTemplatePopulated, IMongoChildTemplatePopulated, TemplateItem } from '../../../interfaces/childTemplates';
 import { IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { updateCategoryTemplatesOrderRequest } from '../../../services/templates/categoriesService';
-import { deleteChildTemplate } from '../../../services/templates/childTemplatesService';
+import { deleteChildTemplate, updateChildTemplateStatusRequest } from '../../../services/templates/childTemplatesService';
 import {
     deleteEntityTemplateRequest,
     entityTemplateObjectToEntityTemplateForm,
@@ -114,7 +114,7 @@ const EntityTemplatesRow: React.FC = () => {
     const [addChildTemplateDialogState, setAddChildTemplateDialogState] = useState<{
         isWizardOpen: boolean;
         entityTemplate: IMongoEntityTemplatePopulated | null;
-        childTemplate?: IMongoChildTemplatePopulated;
+        mutationProps?: IMutationWithPayload;
     }>({
         isWizardOpen: false,
         entityTemplate: null,
@@ -124,6 +124,7 @@ const EntityTemplatesRow: React.FC = () => {
 
     const getEntityTemplatesToShowGroupedByCategories = (
         entityTemplatesToShow: IMongoEntityTemplatePopulated[],
+        searchText?: string,
     ): { category: IMongoCategory; entityTemplates: IMongoEntityTemplatePopulated[] }[] => {
         const categoriesToShowMapEntities: { category: IMongoCategory; entityTemplates: IMongoEntityTemplatePopulated[] }[] = [];
         categoriesToShow.forEach((category) => {
@@ -137,22 +138,50 @@ const EntityTemplatesRow: React.FC = () => {
             });
         });
 
-        return categoriesToShowMapEntities;
+        return categoriesToShowMapEntities.filter((categoryWithEntities) => (searchText ? categoryWithEntities.entityTemplates.length : true));
     };
 
-    const { mutateAsync: updateEntityTemplateStatusAsync } = useMutation(
-        ({ entityTemplateId, disabled }: { entityTemplateId: string; disabled: boolean }) =>
-            updateEntityTemplateStatusRequest(entityTemplateId, disabled),
+    const { mutateAsync: updateTemplateStatusAsync } = useMutation(
+        async ({ entityTemplateId, disabled, isChild }: { entityTemplateId: string; disabled: boolean; isChild?: boolean }) =>
+            isChild
+                ? await updateChildTemplateStatusRequest(entityTemplateId, disabled)
+                : await updateEntityTemplateStatusRequest(entityTemplateId, disabled),
         {
-            onSuccess: (data) => {
-                queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
-                queryClient.invalidateQueries(searchEntityTemplatesQueryKey);
-                if (data.disabled) toast.success(i18next.t('wizard.entityTemplate.disabledSuccessfully'));
-                else toast.success(i18next.t('wizard.entityTemplate.activatedSuccessfully'));
+            onSuccess: (data, { isChild, disabled }) => {
+                if (isChild) {
+                    const childTemplate = data as IChildTemplatePopulated;
+                    queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) =>
+                        childTemplateMap!.set(childTemplate._id, childTemplate),
+                    );
+                } else {
+                    const { entityTemplate, childTemplates } = data as {
+                        entityTemplate: IMongoEntityTemplatePopulated;
+                        childTemplates: IMongoChildTemplatePopulated[];
+                    };
+
+                    queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>
+                        entityTemplateMap!.set(entityTemplate._id, entityTemplate),
+                    );
+
+                    queryClient.invalidateQueries(searchEntityTemplatesQueryKey);
+
+                    queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) => {
+                        childTemplates.forEach((template) => (childTemplateMap ?? new Map()).set(template._id, template));
+
+                        return new Map(childTemplateMap);
+                    });
+                }
+                queryClient.invalidateQueries('getChildTemplates');
+
+                toast.success(i18next.t(`${isChild ? 'child' : 'wizard.entity'}Template.${disabled ? 'disabled' : 'activated'}Successfully`));
+
+                if (!disabled && !isChild) toast.warn(i18next.t('childTemplate.enableChildren'));
             },
-            onError: (_err, variables) => {
-                if (variables.disabled) toast.error(i18next.t('wizard.entityTemplate.failedToDisable'));
-                else toast.error(i18next.t('wizard.entityTemplate.failedToActivate'));
+            onError: (err, { disabled, isChild }) => {
+                if (((err as AxiosError).response?.data as any).message === 'Cannot enable child template under a disabled parent template')
+                    toast.error(i18next.t('childTemplate.enableUnderDisabledParent'));
+                else if (disabled) toast.error(i18next.t(`${isChild ? 'child' : 'wizard.entity'}Template.failedToDisable`));
+                else toast.error(i18next.t(`${isChild ? 'child' : 'wizard.entity'}Template.failedToActivate`));
             },
         },
     );
@@ -184,13 +213,13 @@ const EntityTemplatesRow: React.FC = () => {
 
     const { mutateAsync: deleteChildTemplateMutateAsync } = useMutation((id: string) => deleteChildTemplate(id), {
         onSuccess: async (_data, id) => {
-            queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', (prev) => {
+            queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (prev) => {
                 const updated = new Map(prev);
                 updated.delete(id);
                 return updated;
             });
 
-            queryClient.invalidateQueries('getChildEntityTemplates');
+            queryClient.invalidateQueries('getChildTemplates');
             queryClient.invalidateQueries('getEntityTemplates');
             setDeleteEntityTemplateDialogState({ isDialogOpen: false, entityTemplateId: null });
             toast.success(i18next.t('entityTemplatesRow.succeededToDeleteEntityTemplate'));
@@ -204,7 +233,7 @@ const EntityTemplatesRow: React.FC = () => {
         const templateId = deleteEntityTemplateDialogState.entityTemplateId;
         if (!templateId) return;
 
-        const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates');
+        const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates');
         const isChildTemplate = childTemplates?.has(templateId);
 
         try {
@@ -231,11 +260,10 @@ const EntityTemplatesRow: React.FC = () => {
                 queryClient,
             );
         },
-
         {
             onSuccess({ template: data, childTemplates }) {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
-                queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', (childTemplateMap) => {
+                queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) => {
                     childTemplates.forEach((child) => childTemplateMap!.set(child._id, child));
                     return childTemplateMap!;
                 });
@@ -267,7 +295,7 @@ const EntityTemplatesRow: React.FC = () => {
             return updateCategoryTemplatesOrderRequest(templateId, newIndex, srcCategoryId, newCategoryId);
         },
         {
-            onSuccess(data) {
+            onSuccess(data, { templateId }) {
                 queryClient.setQueryData<ICategoryMap>('getCategories', (categoryMap) => categoryMap!.set(data.newCategory._id, data.newCategory));
                 setCategoriesToShow(
                     categoriesToShow.map((category) => {
@@ -279,6 +307,19 @@ const EntityTemplatesRow: React.FC = () => {
                     }),
                 );
                 queryClient.invalidateQueries(searchEntityTemplatesQueryKey);
+                queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) => {
+                    Array.from(childTemplateMap!).forEach(([key, child]) => {
+                        const parentId = child.parentTemplate.category.toString();
+                        if (parentId === data.oldCategory._id && parentId !== data.newCategory._id && child.parentTemplate._id === templateId) {
+                            childTemplateMap!.set(key, {
+                                ...child,
+                                parentTemplate: { ...child.parentTemplate, category: data.newCategory._id },
+                            });
+                        }
+                    });
+
+                    return childTemplateMap!;
+                });
                 setLoadedEntityTemplateId('');
             },
             onError(error: AxiosError) {
@@ -323,12 +364,12 @@ const EntityTemplatesRow: React.FC = () => {
     }, [categories]);
 
     return (
-        <Grid item container>
+        <Grid container direction="column">
             <Grid container spacing={1} alignItems="center">
-                <Grid item>
+                <Grid>
                     <SearchInput placeholder={i18next.t('globalSearch.searchLabel')} borderRadius="7px" onChange={setSearchText} value={searchText} />
                 </Grid>
-                <Grid item>
+                <Grid>
                     <SelectCheckbox
                         title={i18next.t('categories')}
                         options={allowedCategoriesToShow}
@@ -341,7 +382,7 @@ const EntityTemplatesRow: React.FC = () => {
                         horizontalOrigin={156}
                     />
                 </Grid>
-                <Grid item>
+                <Grid>
                     <FilterButton
                         onClick={() => {
                             setSearchText('');
@@ -373,6 +414,7 @@ const EntityTemplatesRow: React.FC = () => {
                                         if (res === 0) return Number(a.disabled) - Number(b.disabled);
                                         return res;
                                     }),
+                                searchText,
                             ).splice(pageParam, infiniteScrollPageCount);
                         }}
                         onQueryError={(error) => {
@@ -389,12 +431,12 @@ const EntityTemplatesRow: React.FC = () => {
                         useContainer={false}
                     >
                         {(entityTemplatesWithCategory) => (
-                            <Grid item key={entityTemplatesWithCategory.category._id}>
+                            <Grid key={entityTemplatesWithCategory.category._id}>
                                 <CategoryEntitiesBox
                                     entityTemplatesWithCategory={entityTemplatesWithCategory}
                                     setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
                                     setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
-                                    updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
+                                    updateTemplateStatusAsync={updateTemplateStatusAsync}
                                     loadedEntityTemplateId={loadedEntityTemplateId}
                                     setAddActionsDialogState={setAddActionsToEntityTemplateDialogState}
                                     setAddChildTemplateDialogState={setAddChildTemplateDialogState}
@@ -428,11 +470,11 @@ const EntityTemplatesRow: React.FC = () => {
                 searchText={searchText}
                 categoriesToShow={categoriesToShow}
             />
-            <CreateChildTemplateDialog
+            <ChildTemplateDialog
                 open={addChildTemplateDialogState.isWizardOpen}
                 handleClose={() => setAddChildTemplateDialogState({ isWizardOpen: false, entityTemplate: null })}
                 entityTemplate={addChildTemplateDialogState.entityTemplate}
-                childTemplate={addChildTemplateDialogState.childTemplate}
+                mutationProps={addChildTemplateDialogState.mutationProps}
             />
         </Grid>
     );

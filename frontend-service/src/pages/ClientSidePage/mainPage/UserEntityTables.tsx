@@ -5,7 +5,7 @@ import { TemplateTablesViewResultsRef } from '../../../common/EntitiesPage/Templ
 import { useQuery, useQueryClient } from 'react-query';
 import { countEntitiesOfTemplatesByUserEntityId } from '../../../services/clientSideService';
 import { IEntitySingleProperty, IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { TemplateTable, TemplateTableRef } from '../../../common/EntitiesPage/TemplateTable';
+import TemplateTable, { TemplateTableRef } from '../../../common/EntitiesPage/TemplateTable';
 import { CircularProgress, Typography } from '@mui/material';
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
@@ -76,7 +76,7 @@ const UserEntityTables = forwardRef<UserEntityTablesRef, IUserEntityTablesProps>
                                 const parentTemplate = entityTemplates.get(childTemplate.parentTemplate._id);
                                 if (!parentTemplate) return null;
 
-                                const childTemplatePropertiesList = Object.keys(childTemplate.properties);
+                                const childTemplatePropertiesList = Object.keys(childTemplate.properties.properties);
                                 const childTemplateProperties = Object.fromEntries(
                                     Object.entries(parentTemplate.properties.properties).filter(([key]) => childTemplatePropertiesList.includes(key)),
                                 ) as Record<string, IEntitySingleProperty & { defaultValue?: any; isEditableByUser?: boolean }>;
@@ -85,13 +85,13 @@ const UserEntityTables = forwardRef<UserEntityTablesRef, IUserEntityTablesProps>
                                     (propertyKey) =>
                                         (childTemplateProperties[propertyKey] = {
                                             ...childTemplateProperties[propertyKey],
-                                            isEditableByUser: childTemplate.properties[propertyKey].isEditableByUser,
-                                            defaultValue: childTemplate.properties[propertyKey].defaultValue,
+                                            isEditableByUser: childTemplate.properties.properties[propertyKey].isEditableByUser,
+                                            defaultValue: childTemplate.properties.properties[propertyKey].defaultValue,
                                         }),
                                 );
 
-                                const defaultFilter = childTemplate.properties
-                                    ? Object.entries(childTemplate.properties).reduce(
+                                const defaultFilter = childTemplate.properties.properties
+                                    ? Object.entries(childTemplate.properties.properties).reduce(
                                           (acc, [key, prop]) => {
                                               if (prop.filters) {
                                                   const filters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
@@ -131,7 +131,7 @@ const UserEntityTables = forwardRef<UserEntityTablesRef, IUserEntityTablesProps>
                                     ),
                                 };
                                 return (
-                                    <Grid item key={childTemplate._id}>
+                                    <Grid key={childTemplate._id}>
                                         <TemplateTable
                                             ref={(el) => {
                                                 if (el) {

@@ -1,26 +1,34 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Grid } from '@mui/material';
-import * as Yup from 'yup';
-import i18next from 'i18next';
-import { useQuery } from 'react-query';
 import { AxiosError } from 'axios';
-import { toast } from 'react-toastify';
+import { isValid } from 'date-fns';
+import { FormikProps } from 'formik';
+import i18next from 'i18next';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend, getEmptyImage } from 'react-dnd-html5-backend';
-import { FormikProps } from 'formik';
-import { entityTemplateUniqueProperties, regexSchema, variableNameValidation } from '../../../utils/validation';
-import { EntityTemplateWizardValues } from './index';
-import { StepComponentHelpers, StepComponentProps } from '../index';
+import { useQuery } from 'react-query';
+import { toast } from 'react-toastify';
+import * as Yup from 'yup';
+import { environment } from '../../../globals';
 import { searchEntitiesOfTemplateRequest } from '../../../services/entitiesService';
 import { arrayTypes, basePropertyTypes, stringFormats } from '../../../services/templates/entityTemplatesService';
+import { entityTemplateUniqueProperties, regexSchema, variableNameValidation } from '../../../utils/validation';
 import { ErrorToast } from '../../ErrorToast';
-import { environment } from '../../../globals';
-import { FieldBlockDND } from './fieldBlock/FieldBlock';
+import { StepComponentHelpers, StepComponentProps } from '../index';
 import { CommonFormInputProperties, FieldProperty, GroupProperty, PropertyItem } from './commonInterfaces';
-import { getFieldData } from './fieldBlock/propertiesTypes';
+import { FieldBlockDND } from './fieldBlock/FieldBlock';
 import { ItemTypes } from './fieldBlock/interfaces';
+import { getFieldData } from './fieldBlock/propertiesTypes';
+import { EntityTemplateWizardValues } from './index';
 
-const { mapSearchPropertiesLimit } = environment.map;
+const {
+    relativeDateFilters,
+    filterOptions,
+    dateRegex,
+    dateTimeRegex,
+    map: { mapSearchPropertiesLimit },
+} = environment;
+
 const processStringFormats = [...stringFormats, 'entityReference'];
 const validPropertyTypes = [...basePropertyTypes, ...processStringFormats, ...arrayTypes, 'enum', 'serialNumber', 'pattern'];
 const dateNotificationTypes: string[] = ['day', 'week', 'twoWeeks', 'month', 'threeMonths', 'halfYear'];
@@ -73,10 +81,17 @@ const agGridNumberFilterSchema = Yup.object({
 
 const agGridDateFilterSchema = Yup.object({
     filterType: Yup.string().oneOf(['date']).required(),
-    type: Yup.string()
-        .oneOf(['equals', 'notEqual', 'lessThan', 'lessThanOrEqual', 'greaterThan', 'greaterThanOrEqual', 'inRange'])
+    type: Yup.string().oneOf(filterOptions.date).required(i18next.t('validation.required')),
+    dateFrom: Yup.string()
+        .when('type', {
+            is: (type: string) => relativeDateFilters.includes(type),
+            then: (schema) => schema.oneOf([...relativeDateFilters]),
+            otherwise: (schema) =>
+                schema.test('valid-date-format', 'must be YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss.sssZ', (value) => {
+                    return dateRegex.test(value!) || dateTimeRegex.test(value!) || isValid(new Date(value!));
+                }),
+        })
         .required(i18next.t('validation.required')),
-    dateFrom: Yup.string().required(i18next.t('validation.required')),
     dateTo: Yup.string().when('type', {
         is: 'inRange',
         then: (schema) => schema.required(i18next.t('validation.required')),
@@ -90,25 +105,28 @@ const agGridSetFilterSchema = Yup.object({
 });
 
 // Dynamic filter field validation based on `filterType`
-const filterFieldSchema = Yup.lazy((value: any) => {
-    switch (value?.filterType) {
-        case 'text':
-            return agGridTextFilterSchema;
-        case 'number':
-            return agGridNumberFilterSchema;
-        case 'date':
-            return agGridDateFilterSchema;
-        case 'set':
-            return agGridSetFilterSchema;
-        default:
-            return Yup.mixed().required(i18next.t('validation.required'));
-    }
-});
+export const filterFieldSchema = (isRequired: boolean = true) =>
+    Yup.lazy((value: any) => {
+        const makeOptional = (schema) => (isRequired ? schema : schema.notRequired().nullable());
+
+        switch (value?.filterType) {
+            case 'text':
+                return makeOptional(agGridTextFilterSchema);
+            case 'number':
+                return makeOptional(agGridNumberFilterSchema);
+            case 'date':
+                return makeOptional(agGridDateFilterSchema);
+            case 'set':
+                return makeOptional(agGridSetFilterSchema);
+            default:
+                return isRequired ? Yup.mixed().required(i18next.t('validation.required')) : Yup.mixed().notRequired().nullable();
+        }
+    });
 
 export const filtersSchema = Yup.array().of(
     Yup.object({
         filterProperty: Yup.string().required(i18next.t('validation.required')),
-        filterField: filterFieldSchema,
+        filterField: filterFieldSchema(),
     }),
 );
 
@@ -124,25 +142,28 @@ const extendedPropertySchema = propertiesBaseSchema.shape({
         }),
     relationshipReference: Yup.object().when('type', {
         is: 'relationshipReference',
-        then: Yup.object({
-            relatedTemplateId: Yup.string().required(i18next.t('validation.required')),
-            relatedTemplateField: Yup.string().required(i18next.t('validation.required')),
-            relationshipTemplateDirection: Yup.string().required(i18next.t('validation.required')),
-            filters: filtersSchema,
-        }),
+        then: () =>
+            Yup.object({
+                relatedTemplateId: Yup.string().required(i18next.t('validation.required')),
+                relatedTemplateField: Yup.string().required(i18next.t('validation.required')),
+                relationshipTemplateDirection: Yup.string().required(i18next.t('validation.required')),
+                filters: filtersSchema,
+            }),
     }),
     expandedUserField: Yup.object().when('type', {
         is: 'kartoffelUserField',
-        then: Yup.object({
-            relatedUserField: Yup.string().required(i18next.t('validation.required')),
-            kartoffelField: Yup.string().required(i18next.t('validation.required')),
-        }),
+        then: () =>
+            Yup.object({
+                relatedUserField: Yup.string().required(i18next.t('validation.required')),
+                kartoffelField: Yup.string().required(i18next.t('validation.required')),
+            }),
     }),
     mapSearch: Yup.boolean(),
     comment: Yup.string().when('type', {
         is: 'comment',
-        then: Yup.string().required(),
+        then: () => Yup.string().required(),
     }),
+    isProfilePicture: Yup.boolean(),
 });
 
 const fieldSchema = Yup.object({
@@ -170,7 +191,7 @@ const groupSchema = Yup.object({
             });
         }),
 });
-const fieldByTypeSchema = Yup.lazy((item: any): Yup.BaseSchema => {
+const fieldByTypeSchema = Yup.lazy((item: any) => {
     if (item?.type === 'field') return fieldSchema;
     if (item?.type === 'group') return groupSchema;
     return Yup.mixed().notRequired();
@@ -181,7 +202,7 @@ const propertiesSchema = Yup.array()
     .min(1, i18next.t('validation.oneField'))
     .test('hasActiveFields', i18next.t('validation.oneField'), (entries) => {
         if (!entries) return false;
-        return entries.some((item) => {
+        return (entries as PropertyItem[]).some((item) => {
             if (item.type === 'field') return !item.data?.deleted;
             if (item.type === 'group') return item.fields?.some((f) => !f.deleted);
             return false;
@@ -189,7 +210,7 @@ const propertiesSchema = Yup.array()
     })
     .test('hasNonArchivedFields', i18next.t('validation.oneField'), (entries) => {
         if (!entries) return false;
-        return entries.some((item) => {
+        return (entries as PropertyItem[]).some((item) => {
             if (item.type === 'field') return item.data?.archive !== true;
             if (item.type === 'group') return item.fields?.some((f) => f.archive !== true);
             return false;
@@ -198,7 +219,7 @@ const propertiesSchema = Yup.array()
     .test('mapSearchLimit', i18next.t('validation.mapSearchPropertiesLimit', { limit: mapSearchPropertiesLimit }), (entries) => {
         if (!entries) return true;
         let count = 0;
-        for (const item of entries) {
+        for (const item of entries as PropertyItem[]) {
             if (item.type === 'field' && item.data?.mapSearch) count++;
             if (item.type === 'group') {
                 count += item.fields?.filter((f) => f.mapSearch).length || 0;
@@ -276,7 +297,7 @@ export const FieldBlockWrapper = ({
             },
         },
     );
-    const areThereAnyInstances = isEditMode && areThereInstancesByTemplateIdResponse!.count > 0;
+    const areThereAnyInstances = isEditMode && !!areThereInstancesByTemplateIdResponse!.count;
 
     const getNewValues = (
         indexesInTypes: { index: number; type: PropertiesTypes; groupIndex?: number }[],
@@ -624,7 +645,6 @@ export const FieldBlockWrapper = ({
 
     return (
         <Grid
-            item
             style={{
                 opacity: isDragging ? 0.7 : 1,
                 alignSelf: 'stretch',
@@ -724,7 +744,7 @@ export const AddFieldsDND: React.FC<AddFieldsDNDProps> = ({
     );
 
     return (
-        <Grid container direction="column" alignItems="center" style={{ minHeight: '160px' }}>
+        <Grid container direction="column" alignItems="center" width="100%" style={{ minHeight: '160px' }}>
             {values.propertiesTypeOrder.map((itemId, index) => (
                 <FieldBlockWrapper
                     key={itemId}
@@ -770,4 +790,4 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
         </DndProvider>
     );
 };
-export { AddFields, addFieldsSchema, validPropertyTypes, dateNotificationTypes };
+export { AddFields, addFieldsSchema, dateNotificationTypes, validPropertyTypes };

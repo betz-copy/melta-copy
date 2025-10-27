@@ -1,22 +1,22 @@
-import React from 'react';
 import { Box, Divider, Grid, Typography, useTheme } from '@mui/material';
-import i18next from 'i18next';
-import { UseMutateAsyncFunction } from 'react-query';
 import { AxiosError } from 'axios';
-import { toast } from 'react-toastify';
+import i18next from 'i18next';
 import { noop } from 'lodash';
-import { BlueTitle } from '../../../common/BlueTitle';
+import React from 'react';
+import { UseMutateAsyncFunction } from 'react-query';
+import { toast } from 'react-toastify';
+import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
+import { FileToPrint } from '../../../common/print/FileToPrint';
+import { ProcessDetailsValues } from '../../../common/wizards/processInstance/ProcessDetails';
+import ProcessSummary from '../../../common/wizards/processInstance/ProcessSummaryStep';
+import ProcessStatus, { ReviewedAtProcessStatus } from '../../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
 import { IFile } from '../../../interfaces/preview';
 import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated } from '../../../interfaces/processes/processTemplate';
-import ProcessStatus, { ReviewedAtProcessStatus } from '../../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
-import ProcessSummary from '../../../common/wizards/processInstance/ProcessSummaryStep';
-import { ProcessComponentToPrint, StepComponentToPrint } from './ProcessComponentToPrint';
-import { getStepTemplateByStepInstance } from '../../../utils/processWizard/steps';
 import { getProcessByIdRequest } from '../../../services/processesService';
-import { ProcessDetailsValues } from '../../../common/wizards/processInstance/ProcessDetails';
-import { FileToPrint } from '../../../common/print/FileToPrint';
 import { useUserStore } from '../../../stores/user';
+import { getStepTemplateByStepInstance } from '../../../utils/processWizard/steps';
+import { ProcessComponentToPrint, StepComponentToPrint } from './ProcessComponentToPrint';
 
 const ComponentToPrint = React.forwardRef<
     HTMLDivElement,
@@ -72,7 +72,7 @@ const ComponentToPrint = React.forwardRef<
                     </Grid>
                     <Box paddingBottom="0.4rem" display="flex" justifyContent="space-between" alignItems="center" marginBottom={1}>
                         <Grid container alignItems="center" justifyContent="space-between" wrap="nowrap">
-                            <Grid item xs zeroMinWidth>
+                            <Grid size="grow">
                                 <Box display="flex" alignItems="center" flexWrap="wrap">
                                     <Typography component="h4" variant="h4" color={theme.palette.primary.main} fontWeight="800">
                                         {processInstance.name}
@@ -85,13 +85,13 @@ const ComponentToPrint = React.forwardRef<
                                     </Typography>
                                 </Box>
                             </Grid>
-                            <Grid item container xs="auto" alignItems="center" spacing={1}>
+                            <Grid container size={{ xs: 'auto' }} alignItems="center" spacing={1}>
                                 {processInstance.reviewedAt && (
-                                    <Grid item>
+                                    <Grid>
                                         <ReviewedAtProcessStatus instance={processInstance} isPrinting />
                                     </Grid>
                                 )}
-                                <Grid item>
+                                <Grid>
                                     <ProcessStatus instance={processInstance} isPrinting />
                                 </Grid>
                             </Grid>
@@ -105,7 +105,7 @@ const ComponentToPrint = React.forwardRef<
                         <Grid style={{ pageBreakInside: 'avoid' }} key={`${stepInstance._id}-${stepTemplate._id}`} marginTop={5}>
                             <Box paddingBottom="0.4rem" display="flex" justifyContent="space-between" alignItems="center" marginBottom={1}>
                                 <Grid container alignItems="center" justifyContent="space-between" wrap="nowrap">
-                                    <Grid item xs zeroMinWidth>
+                                    <Grid size="grow">
                                         <Box display="flex" alignItems="center" flexWrap="wrap">
                                             <Typography component="h4" variant="h4" color={theme.palette.primary.main} fontWeight="800">
                                                 {stepTemplate.displayName}
@@ -118,13 +118,13 @@ const ComponentToPrint = React.forwardRef<
                                             </Typography>
                                         </Box>
                                     </Grid>
-                                    <Grid item container xs="auto" alignItems="center" spacing={1}>
+                                    <Grid container size={{ xs: 'auto' }} alignItems="center" spacing={1}>
                                         {stepInstance.reviewedAt && (
-                                            <Grid item>
+                                            <Grid>
                                                 <ReviewedAtProcessStatus instance={stepInstance} isPrinting />
                                             </Grid>
                                         )}
-                                        <Grid item>
+                                        <Grid>
                                             <ProcessStatus instance={stepInstance} isPrinting />
                                         </Grid>
                                     </Grid>

@@ -1,23 +1,37 @@
-import { v4 as uuidv4 } from 'uuid';
-import neo4j, { QueryResult, Node as Neo4jNode, Relationship as Neo4jRelationship, Transaction } from 'neo4j-driver';
-import { fromZonedTime, toZonedTime } from 'date-fns-tz';
 import {
-    ValidationError,
     ActionErrors,
     IEntity,
     IEntityExpanded,
     IEntityWithDirectRelationships,
     IRelationship,
     SplitBy,
+    ValidationError,
 } from '@microservices/shared';
+import { fromZonedTime, toZonedTime } from 'date-fns-tz';
+import neo4j, { Node as Neo4jNode, Relationship as Neo4jRelationship, QueryResult, Transaction } from 'neo4j-driver';
+import { v4 as uuidv4 } from 'uuid';
 import config from '../../config';
 import EntityManager from '../../express/entities/manager';
 import { IFormulaCauses } from '../../express/rules/interfaces/formulaWithCauses';
 
 const {
-    polygon: { polygonPrefix, polygonSuffix },
-    srid,
-} = config.map;
+    map: {
+        polygon: { polygonPrefix, polygonSuffix },
+        srid,
+    },
+    timezone,
+    neo4j: {
+        stringPropertySuffix,
+        colorPropertySuffix,
+        booleanPropertySuffix,
+        filePropertySuffix,
+        locationCoordinateSystemSuffix,
+        usersFieldsPropertySuffix,
+        usersArrayOriginalAndSuffixFieldsMap,
+        userFieldPropertySuffix,
+        userOriginalAndSuffixFieldsMap,
+    },
+} = config;
 
 type Node = Neo4jNode<number>;
 type Relationship = Neo4jRelationship<number>;
@@ -30,35 +44,41 @@ type Relationship = Neo4jRelationship<number>;
 export const formatDate = (date: string) => {
     return date.slice(0, 10);
 };
-
-const normalizeFields = (properties: Record<string, any>): Record<string, any> => {
+/**
+ * Fix the values of an entity that is saved in neo4j to its original values.
+ * For example dates and fixing the user fields to be without the suffix.
+ */
+export const normalizeFields = (properties: Record<string, any>): { properties: Record<string, any>; coloredFields: Record<string, string> } => {
     const props = {};
+    const coloredFields = {};
 
     const usersArrayKeys: Set<string> = new Set<string>();
     const userKeys: Set<string> = new Set<string>();
 
     Object.entries(properties).forEach(([key, value]) => {
-        if (
-            key.endsWith(config.neo4j.stringPropertySuffix) ||
-            key.endsWith(config.neo4j.booleanPropertySuffix) ||
-            key.endsWith(config.neo4j.filePropertySuffix) ||
-            key.endsWith(config.neo4j.locationCoordinateSystemSuffix)
-        ) {
+        const suffixes = [stringPropertySuffix, booleanPropertySuffix, filePropertySuffix, locationCoordinateSystemSuffix];
+
+        if (suffixes.some((suffix) => key.endsWith(suffix))) return;
+
+        if (key.endsWith(colorPropertySuffix) && properties[key] !== undefined) coloredFields[key.slice(0, -colorPropertySuffix.length)] = value;
+
+        if (key.includes('.') && key.endsWith(`${usersFieldsPropertySuffix}`)) {
+            // Find the user field of the key (everything before the suffix)
+            const currentUserField = usersArrayOriginalAndSuffixFieldsMap.find(({ suffixFieldName }) =>
+                key.includes(suffixFieldName),
+            )!.suffixFieldName;
+            usersArrayKeys.add(key.split(currentUserField)[0]);
             return;
         }
 
-        if (key.includes('.') && key.endsWith(`${config.neo4j.usersFieldsPropertySuffix}`)) {
-            usersArrayKeys.add(key.split('.')[0]);
-            return;
-        }
-
-        if (key.includes('.') && key.endsWith(`${config.neo4j.userFieldPropertySuffix}`)) {
-            userKeys.add(key.split('.')[0]);
+        if (key.includes('.') && key.endsWith(`${userFieldPropertySuffix}`)) {
+            const currentUserField = userOriginalAndSuffixFieldsMap.find(({ suffixFieldName }) => key.includes(suffixFieldName))!.suffixFieldName;
+            userKeys.add(key.split(currentUserField)[0]);
             return;
         }
 
         if (value instanceof neo4j.types.LocalDateTime) {
-            props[key] = fromZonedTime(new Date(value.toString()), 'Asia/Jerusalem').toISOString();
+            props[key] = fromZonedTime(new Date(value.toString()), timezone).toISOString();
 
             return;
         }
@@ -70,7 +90,7 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
         }
 
         if (value instanceof neo4j.types.Point) {
-            props[key] = { location: `${value.x}, ${value.y}`, coordinateSystem: properties[`${key}${config.neo4j.locationCoordinateSystemSuffix}`] };
+            props[key] = { location: `${value.x}, ${value.y}`, coordinateSystem: properties[`${key}${locationCoordinateSystemSuffix}`] };
 
             return;
         }
@@ -78,7 +98,7 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
             const points = value.map((point) => `${point.x} ${point.y}`);
             props[key] = {
                 location: `${polygonPrefix}${points.join(',')}${polygonSuffix}`,
-                coordinateSystem: properties[`${key}${config.neo4j.locationCoordinateSystemSuffix}`],
+                coordinateSystem: properties[`${key}${locationCoordinateSystemSuffix}`],
             };
 
             return;
@@ -89,20 +109,20 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
 
     if (usersArrayKeys.size) {
         usersArrayKeys.forEach((userKey) => {
-            props[userKey] = properties[
-                `${userKey}${config.neo4j.usersArrayOriginalAndSuffixFieldsMap[0].suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`
-            ].map((_id, index) => {
-                const objToReturn: any = {};
+            props[userKey] = properties[`${userKey}${usersArrayOriginalAndSuffixFieldsMap[0].suffixFieldName}${usersFieldsPropertySuffix}`].map(
+                (_id: string, index: string | number) => {
+                    const objToReturn: any = {};
 
-                config.neo4j.usersArrayOriginalAndSuffixFieldsMap.forEach((userField) => {
-                    objToReturn[userField.originalFieldName] =
-                        properties[`${userKey}${userField.suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`][index];
-                });
+                    usersArrayOriginalAndSuffixFieldsMap.forEach((userField) => {
+                        objToReturn[userField.originalFieldName] =
+                            properties[`${userKey}${userField.suffixFieldName}${usersFieldsPropertySuffix}`][index];
+                    });
 
-                return JSON.stringify({
-                    ...objToReturn,
-                });
-            });
+                    return JSON.stringify({
+                        ...objToReturn,
+                    });
+                },
+            );
         });
     }
 
@@ -110,9 +130,8 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
         userKeys.forEach((userKey) => {
             const objToReturn: any = {};
 
-            config.neo4j.userOriginalAndSuffixFieldsMap.forEach((userField) => {
-                objToReturn[userField.originalFieldName] =
-                    properties[`${userKey}${userField.suffixFieldName}${config.neo4j.userFieldPropertySuffix}`];
+            userOriginalAndSuffixFieldsMap.forEach((userField) => {
+                objToReturn[userField.originalFieldName] = properties[`${userKey}${userField.suffixFieldName}${userFieldPropertySuffix}`];
             });
 
             props[userKey] = JSON.stringify({
@@ -121,7 +140,7 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
         });
     }
 
-    return props;
+    return { properties: props, coloredFields };
 };
 
 type ResponseType = 'singleResponse' | 'singleResponseNotNullable' | 'multipleResponses';
@@ -134,12 +153,12 @@ type Response<ResType extends ResponseType, Data> = ResType extends 'singleRespo
         : never;
 
 const nodeToEntity = (node: Node): IEntity => {
-    const entity = {
+    const { properties, coloredFields } = normalizeFields(node.properties);
+    return {
         templateId: node.labels[0],
-        properties: normalizeFields(node.properties),
+        properties: EntityManager.fixReturnedEntityReferencesFields(properties),
+        coloredFields,
     };
-
-    return EntityManager.fixReturnedEntityReferencesFields(entity);
 };
 
 export const normalizeReturnedEntity =
@@ -182,8 +201,12 @@ export const normalizeResponseTemplatesCount = (result: QueryResult): { template
     }));
 };
 
-export const normalizeRuleResult = (result: QueryResult) => {
+export const normalizeRuleResultOnEntity = (result: QueryResult) => {
     return result.records[0].toObject() as { value: boolean; formulaCauses: IFormulaCauses };
+};
+
+export const normalizeRuleResultsOnEntitiesOfTemplate = (result: QueryResult) => {
+    return result.records.map((ruleResult) => ruleResult.toObject() as { entityId: string; value: boolean; formulaCauses: IFormulaCauses });
 };
 
 export const normalizeReturnedRelationship =
@@ -196,7 +219,7 @@ export const normalizeReturnedRelationship =
 
             return {
                 templateId: type,
-                properties: normalizeFields(properties),
+                properties: normalizeFields(properties).properties,
                 sourceEntityId: sourceEntityProps._id,
                 destinationEntityId: destEntityProps._id,
             };
@@ -223,7 +246,7 @@ export const normalizeReturnedDeletedRelationship = (result: QueryResult) => {
 
     return {
         templateId: relationshipType,
-        properties: normalizeFields(relationshipProperties),
+        properties: normalizeFields(relationshipProperties).properties,
         sourceEntityId: sourceEntityProps._id,
         destinationEntityId: destEntityProps._id,
     };
@@ -268,7 +291,7 @@ export const normalizeReturnedRelAndEntities =
                 sourceEntity: nodeToEntity(sourceEntity),
                 relationship: {
                     templateId: relationship.type,
-                    properties: normalizeFields(relationship.properties),
+                    properties: normalizeFields(relationship.properties).properties,
                 },
                 destinationEntity: nodeToEntity(destinationEntity),
             };
@@ -285,7 +308,7 @@ const formatUndirectedRelationship = (relationship: Relationship, node1: Node, n
 
     return {
         templateId: relationship.type,
-        properties: normalizeFields(relationship.properties),
+        properties: normalizeFields(relationship.properties).properties,
         sourceEntityId: sourceNode.properties._id,
         destinationEntityId: destinationNode.properties._id,
     };
@@ -340,7 +363,7 @@ export const getNeo4jDateTime = (date = new Date()) => {
     keep date in DB in israel timezone. it's needed in rules formula "toDate" function to get date of datetime field, but in israel.
     for example, if event happened at 01:00, UTC will save it the day before, so "toDate" will bring the wrong date.
     */
-    const adjustedDate = toZonedTime(date, 'Asia/Jerusalem');
+    const adjustedDate = toZonedTime(date, timezone);
     return neo4j.types.LocalDateTime.fromStandardDate(adjustedDate);
 };
 export const getNeo4jDate = (date = new Date()) => neo4j.types.Date.fromStandardDate(date);

@@ -3,6 +3,7 @@ import { Request } from 'express';
 import DefaultController from '../../utils/express/controller';
 import InstancesService from '../../externalServices/instanceService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
+import config from '../../config';
 
 class ClientSideValidator extends DefaultController {
     private workspaceId: string;
@@ -33,7 +34,7 @@ class ClientSideValidator extends DefaultController {
         const instances = await this.instancesService.searchEntitiesOfTemplateRequest(usersInfoTemplateId, {
             skip: 0,
             limit: 1,
-            filter: { $and: [{ disabled: { $in: [false] } }, { full_name: { $eq: user.kartoffelId } }] },
+            filter: { $and: [{ disabled: { $in: [false] } }, { [config.clientSide.fullNameField]: { $eq: user.kartoffelId } }] },
             showRelationships: true,
             sort: [],
         });

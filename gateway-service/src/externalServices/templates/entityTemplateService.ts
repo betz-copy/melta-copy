@@ -8,6 +8,7 @@ import {
     IMongoBaseConfig,
     IMongoCategory,
     IMongoCategoryOrderConfig,
+    IMongoChildTemplatePopulated,
     IMongoEntityTemplate,
     IMongoEntityTemplatePopulated,
     IMongoRelationshipTemplate,
@@ -138,12 +139,6 @@ class EntityTemplateService extends TemplatesManagerService {
         return data;
     }
 
-    async updateChildEntityTemplateAction(templateId: string, actions: string) {
-        const { data } = await this.api.patch<IMongoEntityTemplatePopulated>(`${baseChildTemplatesRoute}/${templateId}/actions`, { actions });
-
-        return data;
-    }
-
     async convertToRelationshipField(entityTemplateId: string, relationshipTemplateId: string, updatedData: Omit<IEntityTemplate, 'disabled'>) {
         const { data } = await this.api.put<{
             updatedRelationShipTemplate: IMongoRelationshipTemplate;
@@ -215,7 +210,7 @@ class EntityTemplateService extends TemplatesManagerService {
 
     // child templates
     async getChildTemplateById(id: string) {
-        const { data } = await this.api.get<IChildTemplatePopulated>(`${baseChildTemplatesRoute}/${id}`);
+        const { data } = await this.api.get<IMongoChildTemplatePopulated>(`${baseChildTemplatesRoute}/${id}`);
         return data;
     }
 
@@ -243,6 +238,28 @@ class EntityTemplateService extends TemplatesManagerService {
 
     async updateChildTemplate(id: string, childTemplate: IChildTemplate) {
         const { data } = await this.api.put<IChildTemplatePopulated>(`${baseChildTemplatesRoute}/${id}`, childTemplate);
+        return data;
+    }
+
+    async updateChildEntityTemplateAction(templateId: string, actions: string) {
+        const { data } = await this.api.patch<IMongoEntityTemplatePopulated>(`${baseChildTemplatesRoute}/${templateId}/actions`, { actions });
+
+        return data;
+    }
+
+    async updateChildTemplateStatus(childTemplateId: string, disabledStatus: boolean) {
+        const { data } = await this.api.patch<IMongoEntityTemplatePopulated>(`${baseChildTemplatesRoute}/${childTemplateId}/status`, {
+            disabled: disabledStatus,
+        });
+
+        return data;
+    }
+
+    async multiUpdateChildTemplateStatusByParentId(parentId: string, disabledStatus: boolean) {
+        const { data } = await this.api.patch<IMongoEntityTemplatePopulated[]>(`${baseChildTemplatesRoute}/${parentId}/multiStatuses`, {
+            disabled: disabledStatus,
+        });
+
         return data;
     }
 }

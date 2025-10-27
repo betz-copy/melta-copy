@@ -22,7 +22,7 @@ const BodyComponent: React.FC<StepComponentProps<TableForm>> = ({ values }) => {
     const entitiesTableRef = React.useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
 
     const currentUser = useUserStore((state) => state.user);
-    const currentUserKartoffelId = currentUser?.externalMetadata?.kartoffelId;
+    const currentUserKartoffelId = currentUser?.kartoffelId;
 
     const { metadata } = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize } = metadata.agGrid;
@@ -37,7 +37,7 @@ const BodyComponent: React.FC<StepComponentProps<TableForm>> = ({ values }) => {
     const allFilters = useMemo(() => getFilterModal(memoizedFilter, childTemplateDefaultFilters), [memoizedFilter, childTemplateDefaultFilters]);
 
     return (
-        <Grid item container width="100%" height="70%" alignItems="center" justifyContent="center" paddingTop="20px">
+        <Grid container width="100%" height="70%" alignItems="center" justifyContent="center" paddingTop="20px">
             {values.templateId && (
                 <Card sx={{ width: '98%', height: 'fit-content', borderRadius: '7px', border: '1px #CCCFE5', gap: 2 }}>
                     <Typography variant="h5" fontWeight="450" color={theme.palette.primary.main} sx={{ textAlign: 'center', padding: '20px' }}>

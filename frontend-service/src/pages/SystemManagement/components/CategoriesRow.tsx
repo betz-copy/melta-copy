@@ -3,30 +3,30 @@ import { Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
+import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
-import { ViewingCard } from './Card';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { useUserStore } from '../../../stores/user';
-import { PermissionScope } from '../../../interfaces/permissions';
 import { ErrorToast } from '../../../common/ErrorToast';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
-import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { CategoryWizard } from '../../../common/wizards/category';
+import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
+import { IMongoCategoryOrderConfig } from '../../../interfaces/config';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { PermissionScope } from '../../../interfaces/permissions';
 import { categoryObjectToCategoryForm, deleteCategoryRequest } from '../../../services/templates/categoriesService';
+import { updateConfigCategoryOrderRequest } from '../../../services/templates/configService';
+import { useUserStore } from '../../../stores/user';
+import { useWorkspaceStore } from '../../../stores/workspace';
+import { allowedCategories } from '../../../utils/permissions/templatePermissions';
+import { mapCategories } from '../../../utils/templates';
 import { Box } from './Box';
+import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
-import { useWorkspaceStore } from '../../../stores/workspace';
-import { updateConfigCategoryOrderRequest } from '../../../services/templates/configService';
-import { IMongoCategoryOrderConfig } from '../../../interfaces/config';
-import { mapCategories } from '../../../utils/templates';
-import { allowedCategories } from '../../../utils/permissions/templatePermissions';
 
 interface CategoryCardProps {
     category: IMongoCategory;
@@ -85,19 +85,19 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
             width={250}
             title={
                 <Grid container direction="row" justifyContent="space-between" alignItems="center" paddingLeft="20px" flexWrap="nowrap">
-                    <Grid item container alignItems="center" gap="10px" flexBasis="90%">
-                        <Grid item>
+                    <Grid container alignItems="center" gap="10px" flexBasis="90%">
+                        <Grid>
                             <EntityTemplateColor entityTemplateColor={category.color} style={{ height: '18px' }} />
                         </Grid>
 
-                        <Grid item sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
+                        <Grid sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
                             {category.iconFileId ? (
                                 <CustomIcon color={theme.palette.primary.main} iconUrl={category.iconFileId} height="24px" width="24px" />
                             ) : (
                                 <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="small" />
                             )}
                         </Grid>
-                        <Grid item>
+                        <Grid>
                             <MeltaTooltip title={category.displayName}>
                                 <Typography
                                     style={{
@@ -115,7 +115,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
                             </MeltaTooltip>
                         </Grid>
                     </Grid>
-                    <Grid item container flexBasis="10%">
+                    <Grid container flexBasis="10%">
                         {isHoverOnCard && (
                             <CardMenu
                                 onOptionsIconClose={() => setIsHoverOnCard(false)}
@@ -224,13 +224,19 @@ const CategoriesRow: React.FC = () => {
 
     return (
         <DragDropContext onDragEnd={onDragEnd}>
-            <Droppable droppableId={workspace._id}>
+            <Droppable
+                direction="vertical"
+                droppableId={workspace._id}
+                isDropDisabled={false}
+                isCombineEnabled={false}
+                ignoreContainerClipping={false}
+            >
                 {(provided) => (
                     <Grid ref={provided.innerRef} {...provided.droppableProps}>
-                        <Grid item container gap="10px">
+                        <Grid container gap="10px">
                             <Box
                                 header={
-                                    <Grid item container justifyContent="space-between" alignItems="center" height="40px">
+                                    <Grid container justifyContent="space-between" alignItems="center" height="40px">
                                         <Typography
                                             style={{
                                                 fontSize: headlineSubTitleFontSize,
@@ -263,9 +269,11 @@ const CategoriesRow: React.FC = () => {
                                                 key={category._id}
                                                 index={index}
                                                 isDragDisabled={
-                                                    !currentUser.currentWorkspacePermissions.admin &&
-                                                    currentUser.currentWorkspacePermissions.instances?.categories[category._id].scope ===
-                                                        PermissionScope.read
+                                                    !!(
+                                                        !currentUser.currentWorkspacePermissions.admin &&
+                                                        currentUser.currentWorkspacePermissions.instances?.categories?.[category._id]?.scope ===
+                                                            PermissionScope.read
+                                                    )
                                                 }
                                             >
                                                 {(draggableProvided) => (
@@ -320,4 +328,4 @@ const CategoriesRow: React.FC = () => {
     );
 };
 
-export { CategoriesRow };
+export default CategoriesRow;

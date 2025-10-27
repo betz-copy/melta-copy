@@ -1,16 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import { Delete as DeleteIcon, DragHandle as DragHandleIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { AccordionDetails, AccordionSummary, Box, Button, Divider, Grid, IconButton, TextField, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { Delete as DeleteIcon } from '@mui/icons-material';
-import _debounce from 'lodash.debounce';
+import React, { useEffect, useState } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
-import { FieldEditCardProps, MemoFieldEditCard } from '../FieldEditCard';
-import { MemoAttachmentEditCard } from '../AttachmentEditCard';
-import { MeltaTooltip } from '../../../MeltaTooltip';
-import { CommonFormInputProperties, FieldProperty, GroupProperty, PropertyItem } from '../commonInterfaces';
 import { useDarkModeStore } from '../../../../stores/darkMode';
-import { DragHandle as DragHandleIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
+import MeltaTooltip from '../../../MeltaDesigns/MeltaTooltip';
+import { MemoAttachmentEditCard } from '../AttachmentEditCard';
+import { CommonFormInputProperties, FieldProperty, GroupProperty, PropertyItem } from '../commonInterfaces';
+import { FieldEditCardProps, MemoFieldEditCard } from '../FieldEditCard';
 import { AttachmentsProps, FieldBlockAccordion, FieldProps, GroupProps, ItemTypes } from './interfaces';
 
 export const getFieldData = (displayValuesCopy: any, fieldIndex: number, groupIndex?: number) => {
@@ -54,7 +52,6 @@ export const Attachment = ({ field, index, buildProps, onDrop }: AttachmentsProp
 
     return (
         <Grid
-            item
             style={{
                 opacity,
                 alignSelf: 'stretch',
@@ -120,7 +117,6 @@ export const Field = ({
 
     return (
         <Grid
-            item
             style={{
                 opacity,
                 alignSelf: 'stretch',
@@ -128,7 +124,7 @@ export const Field = ({
                 cursor: 'grab',
             }}
         >
-            <Grid item ref={ref} style={{ cursor: 'grab', transition: isDragging ? 'none' : 'box-shadow 0.1s ease', opacity }}>
+            <Grid ref={ref} style={{ cursor: 'grab', transition: isDragging ? 'none' : 'box-shadow 0.1s ease', opacity }}>
                 <MemoFieldEditCard
                     {...buildProps}
                     key={field.id}
@@ -146,6 +142,7 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
     group,
     index,
     moveField,
+    moveGroup,
     touched,
     errors,
     propertiesType,
@@ -163,7 +160,8 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
     initialValue,
 }: React.PropsWithChildren<GroupProps<PropertiesType, Values>>) => {
     const ref = React.useRef(null);
-    const [isGroupOpen, setIsGroupOpen] = useState(false);
+    const isNewProperty = !initialValue;
+    const [isGroupOpen, setIsGroupOpen] = useState(isNewProperty);
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const groupName = `properties[${index}].name`;
     const touchedName = touched?.[propertiesType]?.[index]?.name;
@@ -172,27 +170,34 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
     const touchedTitle = touched?.[propertiesType]?.[index]?.displayName;
     const errorTitle = (errors?.[propertiesType]?.[index] as GroupProperty)?.displayName;
 
-    const isNewProperty = !initialValue;
     const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
 
     const isGroupFieldBlockError = Boolean(touched?.[propertiesType]?.[index]) && Boolean(errors?.[propertiesType]?.[index]);
-    const [isExpanded, setIsExpanded] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(isNewProperty);
 
     const [, drop] = useDrop({
         accept: [ItemTypes.GROUP, ItemTypes.FIELD],
-        drop(item: CommonFormInputProperties & { index: number; parentId: string | null }, monitor) {
+        drop(item: (CommonFormInputProperties | GroupProperty) & { index: number; parentId: string | null }, monitor) {
             if (!ref.current || !monitor.isOver({ shallow: true })) return;
 
             const hoverIndex = index;
+            const isGroup = Array.isArray((item as GroupProperty).fields);
 
-            if (isGroupOpen) {
-                if (group.fields.length === 0 && item.parentId !== group.id) {
-                    moveField(item, 0, group.id);
-
-                    item.index = 0;
-                    item.parentId = group.id;
-                } else moveField(item, hoverIndex, group.id);
-            } else moveField(item, hoverIndex, null);
+            if (isGroup) {
+                const draggedIndex = item.index;
+                if (draggedIndex !== hoverIndex && moveGroup) {
+                    moveGroup(item as GroupProperty, hoverIndex);
+                }
+            } else {
+                const fieldItem = item as CommonFormInputProperties & { index: number; parentId: string | null };
+                if (isGroupOpen) {
+                    if (group.fields.length === 0 && fieldItem.parentId !== group.id) {
+                        moveField(fieldItem, 0, group.id);
+                        fieldItem.index = 0;
+                        fieldItem.parentId = group.id;
+                    } else moveField(fieldItem, hoverIndex, group.id);
+                } else moveField(fieldItem, hoverIndex, null);
+            }
         },
     });
 
@@ -224,7 +229,6 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
             ref={isExpanded ? ref : undefined}
         >
             <Grid
-                item
                 style={{
                     opacity,
                     alignSelf: 'stretch',
@@ -243,6 +247,7 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
                         border: isGroupFieldBlockError ? '1px solid red' : '',
                     }}
                     onChange={(_, expanded) => setIsExpanded(expanded)}
+                    defaultExpanded={isNewProperty}
                 >
                     <AccordionSummary
                         ref={!isExpanded ? ref : undefined}
@@ -263,7 +268,7 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
                             },
                         }}
                     >
-                        <Grid container wrap="nowrap">
+                        <Grid container wrap="nowrap" width="100%">
                             <Box style={{ display: 'flex', alignItems: 'center' }}>
                                 <DragHandleIcon fontSize="large" />
                             </Box>
@@ -305,15 +310,16 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
                             />
 
                             <MeltaTooltip
-                                title={i18next.t(`wizard.entityTemplate.${group.fields.length > 0 ? 'cantDeleteGroupWithFields' : 'deleteGroup'}`)}
+                                title={i18next.t(`wizard.entityTemplate.${group.fields.length ? 'cantDeleteGroupWithFields' : 'deleteGroup'}`)}
                             >
                                 <Grid>
                                     <IconButton
+                                        component="span"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             remove(index);
                                         }}
-                                        disabled={group.fields.length > 0}
+                                        disabled={!!group.fields.length}
                                     >
                                         <DeleteIcon />
                                     </IconButton>
@@ -322,8 +328,12 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
                         </Grid>
                     </AccordionSummary>
 
-                    <AccordionDetails ref={drop}>
-                        <Grid item marginBottom={3}>
+                    <AccordionDetails
+                        ref={(node) => {
+                            drop(node as any);
+                        }}
+                    >
+                        <Grid marginBottom={3}>
                             <Divider />
                         </Grid>
 

@@ -6,6 +6,7 @@ import i18next from 'i18next';
 import TemplateEntitiesAutocomplete from '../TemplateEntitiesAutocomplete';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { IEntity } from '../../../interfaces/entities';
+import { IChildTemplateMap } from '../../../interfaces/childTemplates';
 
 const RjsfTemplateReferenceWidget = ({
     id,
@@ -32,13 +33,20 @@ const RjsfTemplateReferenceWidget = ({
     const queryClient = useQueryClient();
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 
     const handleEntityInputChange = (_event: React.SyntheticEvent, newDisplayValue: string) => setInputValue(newDisplayValue);
 
     const handleBlur = () => onBlur(id, inputValue);
-    const relatedEntityTemplate = entityTemplates.get(schema.relationshipReference.relatedTemplateId);
 
-    if (!relatedEntityTemplate)
+    const { relatedTemplateId, filters } = schema.relationshipReference;
+
+    const relatedEntityTemplate = entityTemplates.get(relatedTemplateId);
+
+    const childTemplatesOfRelatedTemplate =
+        Array.from(childTemplates.values()).filter((child) => child.parentTemplate._id === relatedTemplateId) ?? [];
+
+    if (!relatedEntityTemplate && !childTemplatesOfRelatedTemplate.length)
         return (
             <TextField
                 color="primary"
@@ -49,24 +57,26 @@ const RjsfTemplateReferenceWidget = ({
                 required={required}
                 disabled
                 value={i18next.t('templateEntitiesAutocomplete.noWritePermissions')}
-                error={rawErrors.length > 0}
+                error={!!rawErrors.length}
             />
         );
 
     return (
         <TemplateEntitiesAutocomplete
             {...widgetProps}
-            template={relatedEntityTemplate}
+            template={childTemplatesOfRelatedTemplate.length ? childTemplatesOfRelatedTemplate[0].parentTemplate : relatedEntityTemplate!}
             showField={schema.relationshipReference.relatedTemplateField}
             value={value || null}
             label={label}
             onChange={handleEntityChange}
             onDisplayValueChange={handleEntityInputChange}
             displayValue={inputValue}
-            isError={rawErrors.length > 0}
+            isError={!!rawErrors.length}
             onBlur={handleBlur}
             disabled={disabled}
-            relationFilters={schema.relationshipReference.filters}
+            relationFilters={filters}
+            required={required}
+            isChildTemplate={!relatedEntityTemplate}
         />
     );
 };

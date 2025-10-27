@@ -23,6 +23,10 @@ class RabbitManager {
 
         await menash.send(rabbit.notificationQueue, { viewers, type, metadata }, { headers: { [workspaceIdHeaderName]: this.workspaceId } });
     }
+
+    async runRulesWithTodayFuncQueue() {
+        return menash.send(rabbit.runRulesWithTodayFuncQueue, {}, { headers: { [workspaceIdHeaderName]: this.workspaceId } });
+    }
 }
 
 export default RabbitManager;

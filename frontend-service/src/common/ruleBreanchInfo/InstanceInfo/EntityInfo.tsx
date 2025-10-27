@@ -27,10 +27,10 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({ entity, entityTemplate, 
     const entityTemplateColor = entityTemplate ? getEntityTemplateColor(entityTemplate) : '';
 
     const header = (subHeader = false) => (
-        <Grid item container gap="20px">
-            <Grid item>{!subHeader && <EntityTemplateColor entityTemplateColor={entityTemplateColor} style={{ height: '20px' }} />}</Grid>
+        <Grid container gap="20px">
+            <Grid>{!subHeader && <EntityTemplateColor entityTemplateColor={entityTemplateColor} style={{ height: '20px' }} />}</Grid>
             {subHeader && (
-                <Grid item>
+                <Grid>
                     {entityTemplate.iconFileId ? (
                         <CustomIcon iconUrl={entityTemplate.iconFileId} height="24px" width="24px" />
                     ) : (
@@ -38,7 +38,7 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({ entity, entityTemplate, 
                     )}
                 </Grid>
             )}
-            <Grid item>
+            <Grid>
                 <Typography
                     style={{
                         fontSize: headlineSubTitleFontSize,
@@ -65,6 +65,7 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({ entity, entityTemplate, 
         ) : (
             <EntityPropertiesInternal
                 properties={entity.properties}
+                coloredFields={entity.coloredFields}
                 entityTemplate={entityTemplate}
                 style={{
                     flexDirection: 'row',
@@ -83,7 +84,7 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({ entity, entityTemplate, 
 
     return (
         <Grid container onClick={() => setOpen((prev) => !prev)}>
-            <Grid item paddingTop="8px">
+            <Grid paddingTop="8px">
                 {open ? (
                     <ExpandLessIcon style={{ color: '#787C9E', width: '20px', height: '20px' }} />
                 ) : (
@@ -100,21 +101,19 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({ entity, entityTemplate, 
                     maxWidth: '460px',
                 }}
             >
-                <Grid item container alignItems="center" gap="5px">
+                <Grid container alignItems="center" gap="5px">
                     {header()}
                     <Collapse in={open} timeout="auto" unmountOnExit style={{ width: '460px' }}>
-                        <Grid container item gap="20px" width="100%" flexDirection="column">
+                        <Grid container gap="20px" width="100%" flexDirection="column">
                             <Divider orientation="horizontal" style={{ width: '95%', alignSelf: 'center' }} />
-                            <Grid container item flexDirection="row" flexWrap="nowrap">
-                                <Grid item width="5px">
+                            <Grid container flexDirection="row" flexWrap="nowrap">
+                                <Grid width="5px">
                                     <EntityTemplateColor entityTemplateColor={entityTemplateColor} style={{ height: '80px' }} />
                                 </Grid>
 
-                                <Grid container item flexDirection="column">
-                                    <Grid item>{header(true)}</Grid>
-                                    <Grid item paddingLeft="15px">
-                                        {entityPropertiesTooltip}
-                                    </Grid>
+                                <Grid container flexDirection="column" width="100%">
+                                    <Grid>{header(true)}</Grid>
+                                    <Grid paddingLeft="15px">{entityPropertiesTooltip}</Grid>
                                 </Grid>
                             </Grid>
                         </Grid>

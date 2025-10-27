@@ -1,26 +1,26 @@
 /* eslint-disable react/no-array-index-key */
-import React, { useState } from 'react';
-import { Box, Collapse, Grid, List, ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material';
-import { useQueryClient } from 'react-query';
-import i18next from 'i18next';
 import { ExpandLess as ExpandLessIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
+import { Box, Collapse, Grid, List, ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material';
+import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
+import React, { useState } from 'react';
+import { useQueryClient } from 'react-query';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IBrokenRulePopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { IMongoRule } from '../../../interfaces/rules';
-import { RuleIcon } from './RuleIcon';
-import { MeltaTooltip } from '../../MeltaTooltip';
-import { EntityInfo } from '../InstanceInfo/EntityInfo';
-import { RelationshipInfo } from '../InstanceInfo/RelationshipInfo';
-import { BrokenRuleActions } from './BrokenRuleActions';
-import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import {
     getActionsByFailureOnEntity,
     getActionsByFailureOnRelationship,
     getEntityForEntityInfo,
     getRelationshipForRelationshipInfo,
 } from '../../../utils/ruleBreach/ruleBreachActions';
+import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
+import { EntityInfo } from '../InstanceInfo/EntityInfo';
+import { RelationshipInfo } from '../InstanceInfo/RelationshipInfo';
+import { BrokenRuleActions } from './BrokenRuleActions';
+import { RuleIcon } from './RuleIcon';
 
 export const BrokenRuleFull: React.FC<{
     brokenRule: IBrokenRulePopulated;
@@ -71,7 +71,7 @@ export const BrokenRuleFull: React.FC<{
 
                             return (
                                 <Grid key={i}>
-                                    <Grid item>
+                                    <Grid>
                                         {causesWithoutMainEntity.length === 0 && (
                                             <>
                                                 <Grid paddingBottom="10px">
@@ -90,8 +90,8 @@ export const BrokenRuleFull: React.FC<{
                                             </>
                                         )}
                                     </Grid>
-                                    <Grid item>
-                                        {causesWithoutMainEntity.length > 0 && (
+                                    <Grid>
+                                        {!!causesWithoutMainEntity.length && (
                                             <>
                                                 {causesWithoutMainEntity.length > 1 && (
                                                     <Typography paddingLeft="15px">{i18next.t('ruleBreachInfo.relationshipsCombination')}</Typography>

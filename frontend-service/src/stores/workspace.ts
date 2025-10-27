@@ -40,11 +40,16 @@ export const defaultMetadata = {
         usersInfoChildTemplateId: '',
         numOfPropsToShow: 9,
         clientSideWorkspaceName: 'simba',
+        fullNameField: 'full_name',
     },
     mapPage: {
+        showMapPage: false,
         sourceTemplateId: '',
         destTemplateId: '',
+        sourceFieldForColor: '',
     },
+    unitsArray: [] as string[],
+    numOfRelationshipFieldsToShow: 2,
 } as const;
 
 export const useWorkspaceStore = create<WorkspaceState>((set) => ({

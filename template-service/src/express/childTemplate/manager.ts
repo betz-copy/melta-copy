@@ -4,6 +4,7 @@ import {
     IChildTemplatePopulated,
     IChildTemplatePopulatedFromDb,
     IMongoChildTemplate,
+    IMongoChildTemplatePopulated,
     NotFoundError,
 } from '@microservices/shared';
 import { FilterQuery } from 'mongoose';
@@ -25,7 +26,7 @@ class ChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate> {
         parentTemplatesIds?: string[];
         limit: number;
         skip: number;
-    }): Promise<IChildTemplatePopulated[]> {
+    }): Promise<IMongoChildTemplatePopulated[]> {
         const { search: displayName, ids, categoryIds, limit, skip, parentTemplatesIds } = searchQuery;
         const query: FilterQuery<IChildTemplate> = {};
 
@@ -73,7 +74,7 @@ class ChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate> {
             .findById(id)
             .populate<Pick<IChildTemplatePopulatedFromDb, 'category'>>('category')
             .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplateId'>>('parentTemplateId')
-            .orFail(new NotFoundError('Entity Child Template not found'))
+            .orFail(new NotFoundError('Child Template not found'))
             .lean()
             .exec();
 
@@ -99,7 +100,7 @@ class ChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate> {
 
         const updatedDoc = await this.model
             .findByIdAndUpdate(id, childTemplateToUpdate, { new: true })
-            .orFail(new NotFoundError('Entity Child Template not found'));
+            .orFail(new NotFoundError('Child Template not found'));
 
         return this.getChildTemplateById(updatedDoc._id);
     }
@@ -118,9 +119,34 @@ class ChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate> {
         return this.model
             .findByIdAndUpdate(id, { actions }, { new: true })
             .populate('category')
-            .orFail(new NotFoundError('Entity Child Template not found'))
+            .orFail(new NotFoundError('Child Template not found'))
             .lean()
             .exec();
+    }
+
+    async updateChildTemplateStatus(id: string, disabledStatus: boolean) {
+        const populatedWithParent = await this.model
+            .findByIdAndUpdate(id, { disabled: disabledStatus }, { new: true })
+            .populate<Pick<IChildTemplatePopulatedFromDb, 'category'>>('category')
+            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplateId'>>('parentTemplateId')
+            .orFail(new NotFoundError('Child Template not found'))
+            .lean()
+            .exec();
+
+        return populateChildTemplateWithParent(populatedWithParent);
+    }
+
+    async multiUpdateChildTemplateStatusByParentId(parentTemplateId: string, disabledStatus: boolean) {
+        await this.model.updateMany({ parentTemplateId }, { $set: { disabled: disabledStatus } });
+
+        const populatedWithParent = await this.model
+            .find({ parentTemplateId })
+            .populate<Pick<IChildTemplatePopulatedFromDb, 'category'>>('category')
+            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplateId'>>('parentTemplateId')
+            .lean()
+            .exec();
+
+        return populatedWithParent.map(populateChildTemplateWithParent);
     }
 }
 

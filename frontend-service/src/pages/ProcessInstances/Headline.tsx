@@ -1,15 +1,15 @@
-import React, { Dispatch, SetStateAction } from 'react';
-import { Grid, Typography, useTheme } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
+import { Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
+import React, { Dispatch, SetStateAction } from 'react';
+import BlueTitle from '../../common/MeltaDesigns/BlueTitle';
 import { TopBarGrid } from '../../common/TopBar';
-import { BlueTitle } from '../../common/BlueTitle';
-import { AddProcessButton } from './AddProcessButton';
-import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
-import './ProcessesList.css';
-import { useUserStore } from '../../stores/user';
 import { PermissionScope } from '../../interfaces/permissions';
+import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
+import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
+import { AddProcessButton } from './AddProcessButton';
+import './ProcessesList.css';
 
 const ProcessInstancesHeadline: React.FC<{
     onSearch: (value: string) => void;
@@ -32,9 +32,9 @@ const ProcessInstancesHeadline: React.FC<{
 
     return (
         <TopBarGrid sx={{ height: '3.6rem' }} container justifyContent="space-between" alignItems="center" wrap="nowrap">
-            <Grid item>
+            <Grid>
                 <Grid container spacing={5} wrap="nowrap" alignItems="center">
-                    <Grid item>
+                    <Grid>
                         <BlueTitle
                             title={i18next.t('pages.processInstances')}
                             component="h4"
@@ -45,7 +45,7 @@ const ProcessInstancesHeadline: React.FC<{
                 </Grid>
             </Grid>
 
-            <Grid item>
+            <Grid>
                 {(currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write ||
                     currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write) && (
                     <AddProcessButton style={{ background: theme.palette.primary.main, borderRadius: '5px', height: '35px' }}>

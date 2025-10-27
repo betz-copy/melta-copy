@@ -46,6 +46,7 @@ export interface CommonFormInputProperties {
     comment?: string;
     hideFromDetailsPage?: boolean;
     color?: string;
+    isProfileImage?: boolean;
 }
 
 export interface FieldProperty {

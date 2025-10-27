@@ -1,14 +1,13 @@
-import { Grid } from '@mui/material';
-import UserInfoCard from './UserInfoCard';
-import { Box } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import React, { useRef } from 'react';
-import ContactInfoCard from './ContactInfoCard';
-import UserEntityTables, { UserEntityTablesRef } from './UserEntityTables';
-import { useClientSideUserStore } from '../../../stores/clientSideUser';
 import { useQueryClient } from 'react-query';
 import { IChildTemplateMapPopulated } from '../../../interfaces/childTemplates';
+import { useClientSideUserStore } from '../../../stores/clientSideUser';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { getFirstXPropsKeys } from '../../../utils/templates';
+import ContactInfoCard from './ContactInfoCard';
+import UserEntityTables, { UserEntityTablesRef } from './UserEntityTables';
+import UserInfoCard from './UserInfoCard';
 
 const ClientSideMainPage: React.FC = () => {
     const clientSideUserEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
@@ -16,7 +15,7 @@ const ClientSideMainPage: React.FC = () => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { numOfPropsToShow, usersInfoChildTemplateId } = workspace.metadata.clientSide;
 
-    const childTemplates = queryClient.getQueryData<IChildTemplateMapPopulated>('getClientSideChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMapPopulated>('getClientSideChildTemplates')!;
     const usersInfoChildTemplate = childTemplates.get(usersInfoChildTemplateId)!;
 
     const userEntityTablesRef = useRef<UserEntityTablesRef>(null);
@@ -34,19 +33,19 @@ const ClientSideMainPage: React.FC = () => {
                 }}
             >
                 <Grid container paddingY="20px" alignItems="top" justifyContent="space-between" width="100%">
-                    <Grid item width="70%">
+                    <Grid width="70%">
                         <UserInfoCard
                             currentUserFromClientSide={clientSideUserEntity}
                             usersInfoChildTemplate={usersInfoChildTemplate}
                             overridePropertiesToShow={firstXPropsKeys}
                         />
                     </Grid>
-                    <Grid item width="28%">
+                    <Grid width="28%">
                         <ContactInfoCard />
                     </Grid>
-                    <Grid container item xs={12} justifyContent="center"></Grid>
+                    <Grid container size={{ xs: 12 }} justifyContent="center"></Grid>
                 </Grid>
-                <Grid container item xs={12} justifyContent="center">
+                <Grid container size={{ xs: 12 }} justifyContent="center">
                     <UserEntityTables
                         childTemplates={Array.from(childTemplates.values())}
                         currentUserFromClientSide={clientSideUserEntity}

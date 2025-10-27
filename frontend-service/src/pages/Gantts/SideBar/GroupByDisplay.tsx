@@ -1,16 +1,16 @@
-import React, { useMemo } from 'react';
 import { Grid, Typography } from '@mui/material';
 import { FormikProps } from 'formik';
-import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import lodashIsEqual from 'lodash.isequal';
-import { IBasicGantt, IGanttGroupBy } from '../../../interfaces/gantts';
+import React, { useMemo } from 'react';
+import { useQueryClient } from 'react-query';
 import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
+import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { RemoveFromArrayButton } from '../GanttItemDisplay/GanttItemEdit/RemoveFromArrayButton';
+import { IBasicGantt, IGanttGroupBy } from '../../../interfaces/gantts';
 import { filteredMap } from '../../../utils/filteredMap';
 import { EntityTemplateDisplay } from '../GanttItemDisplay/EntityTemplateDisplay';
-import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import { RemoveFromArrayButton } from '../GanttItemDisplay/GanttItemEdit/RemoveFromArrayButton';
 
 interface GroupByDisplayProps {
     groupBy: IGanttGroupBy;
@@ -40,7 +40,7 @@ export const GroupByDisplay: React.FC<GroupByDisplayProps> = ({ groupBy, formik,
 
     if (edit)
         return (
-            <Grid item container direction="column" padding="2rem" paddingTop="2rem" marginTop="0" position="relative" spacing={1.5} width="100%">
+            <Grid container direction="column" padding="2rem" paddingTop="2rem" marginTop="0" position="relative" spacing={1.5} width="100%">
                 <Typography display="inline">{i18next.t('gantts.groupByEntities')}</Typography>
 
                 <RemoveFromArrayButton
@@ -54,7 +54,7 @@ export const GroupByDisplay: React.FC<GroupByDisplayProps> = ({ groupBy, formik,
                     }}
                 />
 
-                <Grid item>
+                <Grid>
                     <FormikAutoComplete
                         formik={formik}
                         formikField="groupBy.entityTemplateId"
@@ -70,7 +70,7 @@ export const GroupByDisplay: React.FC<GroupByDisplayProps> = ({ groupBy, formik,
                     />
                 </Grid>
 
-                <Grid item>
+                <Grid>
                     <FormikAutoComplete
                         formik={formik}
                         formikField="groupBy.groupNameField"

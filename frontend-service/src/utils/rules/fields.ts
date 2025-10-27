@@ -1,4 +1,4 @@
-import { Fields, ImmutableTree, Field } from '@react-awesome-query-builder/mui';
+import { Field, Fields, ImmutableTree } from '@react-awesome-query-builder/mui';
 import lodashFindLast from 'lodash.findlast';
 import lodashIsEqual from 'lodash.isequal';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -13,6 +13,11 @@ import {
     populateRelationshipTemplate,
 } from '../templates';
 import { getAggVariablesInTree } from './getAggVariablesInTree';
+import i18next from 'i18next';
+import { ActionOnFail } from '../../interfaces/rules';
+import { environment } from '../../globals';
+
+const { formulaGetTodayVarName } = environment;
 
 const formatField = (
     key: string,
@@ -186,11 +191,22 @@ const getRelationshipFieldsConfigOfRule = (
     );
 };
 
+const getTodayFuncVariables = (actionOnFail: ActionOnFail) => {
+    // getToday() function is shown as variable. in order to be allowed in lhs of equations (https://github.com/ukrbublik/react-awesome-query-builder/issues/287)
+    // dont allow getToday() to use in relationshipfields (in aggregation functions).
+    // because rule will run every night on all entities of template, so to allow DB indexes to optimize query (of search failed entities)
+    // DB indexes optimization for rule w/ getToday not yet implemented, but to have the option in the future
+    if (actionOnFail === ActionOnFail.ENFORCEMENT) return {};
+
+    return { [formulaGetTodayVarName]: { type: 'date', label: 'TODAY( )', tooltip: i18next.t('wizard.rule.todayVariableInfo') } };
+};
+
 export const getFieldsConfigOfRule = (
     entityTemplateId: string,
     entityTemplates: IEntityTemplateMap,
     relationshipTemplates: IRelationshipTemplateMap,
     formula: ImmutableTree,
+    actionOnFail: ActionOnFail,
     currentUser: ICurrentUser,
 ): Fields => {
     const allowedEntityTemplates = getAllAllowedEntities(Array.from(entityTemplates.values()), currentUser);
@@ -203,7 +219,7 @@ export const getFieldsConfigOfRule = (
     const fieldsOfEntityTemplate = entityTemplateToFieldsConfig(entityTemplate, entityTemplates, {});
 
     const connectedTemplatesWithRelationship = allowedRelationships
-        .map((relationshipTemplate) => populateRelationshipTemplate(relationshipTemplate, allowedEntityTemplates))
+        .map((relationshipTemplate) => populateRelationshipTemplate(relationshipTemplate, entityTemplates))
         .filter(
             (relationshipTemplate) =>
                 isRelationshipConnectedToEntityTemplate(entityTemplate, relationshipTemplate) && !relationshipTemplate.isProperty,
@@ -226,8 +242,10 @@ export const getFieldsConfigOfRule = (
         { existingAggregationVariables: [], existingFieldsInUpperScopes: fieldsOfEntityTemplate },
         existingAggregationVariablesInTree,
     );
+
     return {
         ...fieldsOfEntityTemplate,
         ...relationshipFields,
+        ...getTodayFuncVariables(actionOnFail),
     };
 };

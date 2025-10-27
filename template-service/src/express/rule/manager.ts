@@ -1,5 +1,5 @@
-import { FilterQuery } from 'mongoose';
 import { DefaultManagerMongo, IMongoRule, IRule, NotFoundError } from '@microservices/shared';
+import { FilterQuery } from 'mongoose';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
 import RuleTemplateSchema from './model';
@@ -20,8 +20,30 @@ class RuleManager extends DefaultManagerMongo<IMongoRule> {
             .exec();
     }
 
-    async updateRuleById(ruleId: string, updatedFields: Pick<IRule, 'name' | 'description'>) {
-        return this.model.findByIdAndUpdate(ruleId, updatedFields, { new: true }).orFail(new NotFoundError('Rule not found')).lean().exec();
+    formatIndicatorRule(updatedFields: Omit<IRule, 'formula' | 'entityTemplateId' | 'disabled' | 'doesFormulaHaveTodayFunc'>) {
+        const $set: Record<string, any> = {};
+        const $unset: Record<string, any> = {};
+
+        for (const [key, value] of Object.entries(updatedFields)) {
+            if (value && typeof value === 'object' && value.display === false) {
+                $unset[key] = '';
+            } else {
+                $set[key] = value;
+            }
+        }
+
+        const update: Record<string, any> = {};
+        if (Object.keys($set).length) update.$set = $set;
+        if (Object.keys($unset).length) update.$unset = $unset;
+        return update;
+    }
+
+    async updateRuleById(ruleId: string, updatedFields: Omit<IRule, 'formula' | 'entityTemplateId' | 'disabled' | 'doesFormulaHaveTodayFunc'>) {
+        return this.model
+            .findByIdAndUpdate(ruleId, this.formatIndicatorRule(updatedFields), { new: true })
+            .orFail(new NotFoundError('Rule not found'))
+            .lean()
+            .exec();
     }
 
     async updateRuleStatusById(ruleId: string, disabled: boolean) {
@@ -41,12 +63,24 @@ class RuleManager extends DefaultManagerMongo<IMongoRule> {
         return this.model.create({ ...rule, disabled: false });
     }
 
-    async searchRules(searchBody: { search?: string; entityTemplateIds?: string[]; disabled?: boolean; limit: number; skip: number }) {
-        const { search, entityTemplateIds, disabled, limit, skip } = searchBody;
+    async searchRules(searchBody: {
+        search?: string;
+        entityTemplateIds?: string[];
+        doesFormulaHaveTodayFunc?: boolean;
+        disabled?: boolean;
+        limit: number;
+        skip: number;
+    }) {
+        const { search, entityTemplateIds, doesFormulaHaveTodayFunc, disabled, limit, skip } = searchBody;
         const query: FilterQuery<IMongoRule> = {};
 
         if (disabled !== undefined) {
             query.disabled = disabled;
+        }
+
+        if (doesFormulaHaveTodayFunc !== undefined) {
+            // eslint-disable-next-line no-underscore-dangle
+            query.doesFormulaHaveTodayFunc = doesFormulaHaveTodayFunc;
         }
 
         if (search) {

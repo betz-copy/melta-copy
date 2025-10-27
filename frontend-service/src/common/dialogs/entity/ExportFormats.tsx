@@ -61,21 +61,23 @@ export const ExportFormats: React.FC<{
                 }
             } else if (field.type === 'array' && field.items?.format === 'user') {
                 // Sometimes and somewhere users are sent as an array of stringified JSONs, and sometimes as an object with arrays of each user field.
-                const parsed = propertyCopy[fieldKey].map((field) => {
-                    try {
-                        return JSON.parse(field);
-                    } catch {
-                        return field;
-                    }
-                });
+                if (propertyCopy[fieldKey]) {
+                    const parsed = propertyCopy[fieldKey].map((field) => {
+                        try {
+                            return JSON.parse(field);
+                        } catch {
+                            return field;
+                        }
+                    });
 
-                propertyCopy[fieldKey] = {
-                    ids: parsed.map((user) => user._id),
-                    fullNames: parsed.map((user) => user.fullName),
-                    jobTitles: parsed.map((user) => user.jobTitle),
-                    hierarchies: parsed.map((user) => user.hierarchy),
-                    mails: parsed.map((user) => user.mail),
-                };
+                    propertyCopy[fieldKey] = {
+                        ids: parsed.map((user) => user._id),
+                        fullNames: parsed.map((user) => user.fullName),
+                        jobTitles: parsed.map((user) => user.jobTitle),
+                        hierarchies: parsed.map((user) => user.hierarchy),
+                        mails: parsed.map((user) => user.mail),
+                    };
+                }
             }
 
             const expandedField = propertyCopy?.[fieldKey];
@@ -132,8 +134,8 @@ export const ExportFormats: React.FC<{
     );
 
     return (
-        <Grid container item justifyContent={justifyContent} flexDirection="row" flexWrap="nowrap" spacing={2} alignItems="center">
-            <Grid item>
+        <Grid container justifyContent={justifyContent} flexDirection="row" flexWrap="nowrap" spacing={2} alignItems="center">
+            <Grid>
                 <Autocomplete
                     options={documentTemplateIds.map((fileName) => ({
                         label: getFileName(fileName),
@@ -166,7 +168,7 @@ export const ExportFormats: React.FC<{
                 />
             </Grid>
 
-            <Grid item>
+            <Grid>
                 <Button
                     sx={{
                         borderRadius: '0.5rem',

@@ -1,10 +1,12 @@
+import { AddCircleOutline as AddColorIcons, Circle as CircleIcon } from '@mui/icons-material';
+import { IconButton, Popover, Typography } from '@mui/material';
 import React, { CSSProperties, useRef, useState } from 'react';
-import { IconButton, Popover } from '@mui/material';
-import { Circle as CircleIcon, AddCircleOutline as AddColorIcons } from '@mui/icons-material';
 import { ColorPicker, IColorPickerProps } from './ColorPicker';
 
 interface IMinimizedColorPickerProps extends IColorPickerProps {
     circleSize: CSSProperties['width'];
+    error?: boolean;
+    helperText?: string;
 }
 
 export const MinimizedColorPicker: React.FC<IMinimizedColorPickerProps> = ({
@@ -12,6 +14,8 @@ export const MinimizedColorPicker: React.FC<IMinimizedColorPickerProps> = ({
     circleSize,
     style,
     onColorChange,
+    error,
+    helperText,
     ...restOfColorPickerProps
 }) => {
     const circleRef = useRef<HTMLButtonElement>(null);
@@ -20,8 +24,18 @@ export const MinimizedColorPicker: React.FC<IMinimizedColorPickerProps> = ({
     return (
         <>
             <IconButton ref={circleRef} onClick={() => setOpen(true)} sx={{ padding: '0.1rem', ...style }}>
-                {color ? <CircleIcon sx={{ color, fontSize: circleSize }} /> : <AddColorIcons sx={{ color: 'gray', fontSize: circleSize }} />}
+                {color ? (
+                    <CircleIcon sx={{ color: error ? '#d32f2f' : color, fontSize: circleSize }} />
+                ) : (
+                    <AddColorIcons sx={{ color: error ? '#d32f2f' : 'gray', fontSize: circleSize }} />
+                )}
             </IconButton>
+
+            {helperText && (
+                <Typography variant="caption" color={error ? 'error' : 'textSecondary'} sx={{ marginTop: '0.4rem' }}>
+                    {helperText}
+                </Typography>
+            )}
 
             <Popover
                 open={open}

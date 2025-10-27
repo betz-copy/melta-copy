@@ -22,7 +22,7 @@ export const ArchiveProcessNotification: React.FC<{ notificationMetadata: IArchi
                         : i18next.t('archiveProcessNotification.removeProcessFromArchive')}
                 </Typography>
             </Grid>
-            <Grid item>
+            <Grid>
                 <Typography display="inline">{`${i18next.t('archiveProcessNotification.theProcess')} `}</Typography>
                 <ProcessName process={process} />
                 <Typography display="inline">

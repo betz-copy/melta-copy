@@ -1,10 +1,10 @@
 /* eslint-disable no-nested-ternary */
-import { ListItemText, Typography, Grid, useTheme } from '@mui/material';
-import React from 'react';
 import { Hive as HiveIcon, Menu } from '@mui/icons-material';
+import { Grid, ListItemText, Typography, useTheme } from '@mui/material';
+import React from 'react';
 import { CustomIcon } from '../../CustomIcon';
-import { MeltaCheckbox } from '../../MeltaCheckbox';
-import { MeltaTooltip } from '../../MeltaTooltip';
+import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
+import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
 
 export type MenuItemContentProps<Option = any> = {
     checked?: boolean;
@@ -49,7 +49,7 @@ export const MenuItemContent: React.FC<MenuItemContentProps> = ({
                 </Grid>
             )}
             {showIcon ? (
-                option.iconFileId?.length > 0 ? (
+                !!option.iconFileId?.length ? (
                     <CustomIcon color={theme.palette.primary.main} iconUrl={option.iconFileId!} height="15px" width="15px" />
                 ) : (
                     <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="inherit" />

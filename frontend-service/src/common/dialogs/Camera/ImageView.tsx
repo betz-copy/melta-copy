@@ -1,17 +1,17 @@
 /* eslint-disable new-cap */
 /* eslint-disable import/no-extraneous-dependencies */
+import { Check as CheckIcon, Close as CloseIcon, FilterBAndW, PictureAsPdf } from '@mui/icons-material';
 import { Box, Dialog, DialogContent, Grid, IconButton, TextField } from '@mui/material';
-import React, { useRef, useState } from 'react';
-import { Check as CheckIcon, Close as CloseIcon, PictureAsPdf, FilterBAndW } from '@mui/icons-material';
-import i18next from 'i18next';
-import { Form, Formik, FormikProps } from 'formik';
-import { toast } from 'react-toastify';
-import { Cropper } from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
+import { Form, Formik, FormikProps } from 'formik';
+import i18next from 'i18next';
 import jsPDF from 'jspdf';
-import { MeltaTooltip } from '../../MeltaTooltip';
+import React, { useRef, useState } from 'react';
+import { Cropper } from 'react-cropper';
+import { toast } from 'react-toastify';
 import { filterImageData } from '../../../utils/filterImageData';
 import urlToFile from '../../fileConversions';
+import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
 
 interface IImageView {
     setStream: React.Dispatch<React.SetStateAction<MediaStream | null>>;
@@ -140,21 +140,22 @@ const ImageView: React.FC<IImageView> = ({
                         <img src={imgURL} alt="cameraPic" style={{ width: 1000, height: 775 }} />
                     )}
                 </Box>
-                <Formik initialValues={{ name: imgName }} onSubmit={async (value) => setImgName(value.name)}>
-                    {(formikProps: FormikProps<string>) => (
+                <Formik<{ name: string | null }> initialValues={{ name: imgName }} onSubmit={async (value) => setImgName(value.name)}>
+                    {(formikProps: FormikProps<{ name: string | null }>) => (
                         <Form style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                             <TextField
                                 label={usePdf ? i18next.t('camera.fileName') : i18next.t('camera.imgName')}
-                                value={imgName}
-                                onChange={(e) => setImgName(e.target.value)}
+                                value={formikProps.values.name}
+                                onChange={(e) => {
+                                    formikProps.setFieldValue('name', e.target.value);
+                                    setImgName(e.target.value);
+                                }}
                                 variant="standard"
                                 type="text"
                                 sx={{ width: 260 }}
                             />
-                            <IconButton disabled={!formikProps.values || !imgName} type="submit" onClick={() => uploadImgOrPdf()}>
-                                <CheckIcon
-                                    style={{ color: !formikProps.values || !imgName ? '#CCCFE5' : '#1E2775', width: '25px', height: '25px' }}
-                                />
+                            <IconButton disabled={!formikProps.values.name} type="submit" onClick={() => uploadImgOrPdf()}>
+                                <CheckIcon style={{ color: !formikProps.values.name ? '#CCCFE5' : '#1E2775', width: '25px', height: '25px' }} />
                             </IconButton>
                             <IconButton onClick={pdfClick}>
                                 <PictureAsPdf color={usePdf ? 'primary' : 'disabled'} />

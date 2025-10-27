@@ -1,8 +1,9 @@
+import { createController, ValidateRequest } from '@microservices/shared';
 import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
-import { createController, ValidateRequest } from '@microservices/shared';
 import config from '../../config';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
+import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 import TemplatesController from './controller';
 import TemplatesValidator from './middlewares';
 import {
@@ -10,33 +11,38 @@ import {
     createCategorySchema,
     createChildTemplateSchema,
     createEntityTemplateSchema,
+    createPrintingTemplateSchema,
     createRelationshipTemplateSchema,
     deleteCategorySchema,
+    deleteChildTemplateSchema,
     deleteEntityTemplateSchema,
     deleteFieldValueSchema,
+    deletePrintingTemplateSchema,
     deleteRelationshipTemplateSchema,
     deleteRuleByIdRequestSchema,
     getAllChildTemplatesSchema,
-    getCategoriesSchema,
-    searchChildTemplatesSchema,
     getAllConfigsSchema,
+    getCategoriesSchema,
     getConfigByTypeSchema,
+    getPrintingTemplateByIdSchema,
+    searchChildTemplatesSchema,
     searchEntityTemplatesOfUserFromParamsSchema,
     searchEntityTemplatesSchema,
+    searchPrintingTemplatesSchema,
     searchRulesRequestSchema,
     searchTemplatesRequestSchema,
     updateCategorySchema,
     updateCategoryTempOrderSchema,
+    updateChildTemplateSchema,
+    updateChildTemplateStatusSchema,
+    updateEntityTemplateActionSchema,
     updateEntityTemplateSchema,
     updateEntityTemplateStatusSchema,
     updateFieldValueSchema,
+    updatePrintingTemplateSchema,
     updateRelationshipTemplateSchema,
     updateRuleStatusByIdRequestSchema,
-    updateChildTemplateSchema,
-    deleteChildTemplateSchema,
-    updateEntityTemplateActionSchema,
 } from './validator.schema';
-import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 
 const {
     templateService: { url, requestTimeout, baseRoute },
@@ -294,11 +300,53 @@ templatesRouter.put(
     templatesControllerMiddleware.updateChildTemplate,
 );
 
+templatesRouter.patch(
+    '/child/:id/status',
+    ValidateRequest(updateChildTemplateStatusSchema),
+    templatesValidatorMiddleware.validateUserCanUpdateOrDeleteChildTemplate,
+    templatesValidatorMiddleware.validateCanEnableChildTemplate,
+    templatesControllerMiddleware.updateChildTemplateStatus,
+);
+
 templatesRouter.delete(
     '/child/:id',
     ValidateRequest(deleteChildTemplateSchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
     TemplatesServiceProxy,
+);
+
+// Printing Templates CRUD
+templatesRouter.post(
+    '/print',
+    ValidateRequest(createPrintingTemplateSchema),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    templatesControllerMiddleware.createPrintingTemplate,
+);
+templatesRouter.get('/print/all', AuthorizerControllerMiddleware.userCanReadTemplates, templatesControllerMiddleware.getAllPrintingTemplates);
+
+templatesRouter.get(
+    '/print/:id',
+    ValidateRequest(getPrintingTemplateByIdSchema),
+    AuthorizerControllerMiddleware.userCanReadTemplates,
+    templatesControllerMiddleware.getPrintingTemplateById,
+);
+templatesRouter.put(
+    '/print/:id',
+    ValidateRequest(updatePrintingTemplateSchema),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    templatesControllerMiddleware.updatePrintingTemplate,
+);
+templatesRouter.delete(
+    '/print/:id',
+    ValidateRequest(deletePrintingTemplateSchema),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    templatesControllerMiddleware.deletePrintingTemplate,
+);
+templatesRouter.post(
+    '/print/search',
+    ValidateRequest(searchPrintingTemplatesSchema),
+    AuthorizerControllerMiddleware.userCanReadTemplates,
+    templatesControllerMiddleware.searchPrintingTemplates,
 );
 
 export default templatesRouter;

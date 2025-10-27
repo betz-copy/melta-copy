@@ -1,24 +1,29 @@
 /* eslint-disable no-await-in-loop */
-import groupBy from 'lodash.groupby';
-import { Transaction } from 'neo4j-driver';
-import pickBy from 'lodash.pickby';
 import {
-    IMongoEntityTemplate,
-    IMongoRelationshipTemplate,
-    ActionTypes,
     ActionErrors,
+    ActionOnFail,
+    ActionTypes,
+    BadRequestError,
+    IAction,
+    IActivityLog,
+    IBrokenRule,
+    IBulkRuleMail,
     ICreateEntityMetadata,
     ICreateRelationshipMetadata,
     IDuplicateEntityMetadata,
-    IUpdateEntityMetadata,
-    IAction,
-    IBrokenRule,
-    IRequiredConstraint,
     IEntity,
+    IMongoEntityTemplate,
+    IMongoRelationshipTemplate,
     IRelationship,
-    IActivityLog,
-    BadRequestError,
+    IRequiredConstraint,
+    IRuleMail,
+    IUpdateEntityMetadata,
 } from '@microservices/shared';
+import groupBy from 'lodash.groupby';
+import _partition from 'lodash.partition';
+import pickBy from 'lodash.pickby';
+import { Transaction } from 'neo4j-driver';
+import config from '../../config';
 import ActivityLogProducer from '../../externalServices/activityLog/producer';
 import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
@@ -26,8 +31,8 @@ import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { EntitiesIdsRulesReasonsMap, RunRuleReason } from '../entities/interface';
 import EntityManager from '../entities/manager';
 import RelationshipManager from '../relationships/manager';
+import { IRuleFailure } from '../rules/interfaces';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
-import config from '../../config';
 
 const { brokenRulesFakeEntityIdPrefix } = config;
 
@@ -149,7 +154,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                 } else if (action.actionType === ActionTypes.UpdateEntity) {
                     const actionMetadata = action.actionMetadata as IUpdateEntityMetadata;
                     if (!actionMetadata.entityId.startsWith(brokenRulesFakeEntityIdPrefix)) {
-                        const entity = await this.entityManager.getEntityById(actionMetadata.entityId);
+                        const entity = await this.entityManager.getEntityByIdInTransaction(actionMetadata.entityId, transaction);
                         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(entity.templateId);
                         entitiesTemplatesIdsOfRules.add(entityTemplate._id);
 
@@ -399,7 +404,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
             [ActionTypes.UpdateEntity]: async (action) => {
                 const actionMetadata = action.actionMetadata as IUpdateEntityMetadata;
                 if (!actionMetadata.entityId.startsWith(brokenRulesFakeEntityIdPrefix)) {
-                    const entity = await this.entityManager.getEntityById(actionMetadata.entityId);
+                    const entity = await this.entityManager.getEntityByIdInTransaction(actionMetadata.entityId, transaction);
                     const entityTemplate = await this.entityTemplateService.getEntityTemplateById(entity.templateId);
 
                     entityTemplateIds.push(entityTemplate._id);
@@ -423,30 +428,67 @@ export class BulkActionManager extends DefaultManagerNeo4j {
         const constraints = await this.entityManager.getAllConstraints();
 
         actions.forEach((action, index) => {
-            if (action.actionType === ActionTypes.CreateEntity) {
-                const { templateId, properties } = action.actionMetadata as ICreateEntityMetadata;
-                const templateConstraint = constraints.find((constraint) => constraint.templateId === templateId);
+            const { templateId, properties } = action.actionMetadata as ICreateEntityMetadata;
+            const templateConstraint = constraints.find((constraint) => constraint.templateId === templateId);
 
-                if (templateConstraint) {
-                    const missingProperty = templateConstraint.requiredConstraints.find(
-                        (requiredProperty) => !Object.keys(properties).includes(requiredProperty),
-                    );
+            if (templateConstraint) {
+                const missingProperty = templateConstraint.requiredConstraints.find(
+                    (requiredProperty) => !Object.keys(properties).includes(requiredProperty),
+                );
 
-                    if (missingProperty) {
-                        const requiredConstraint: Omit<IRequiredConstraint, 'constraintName'> = {
-                            type: ActionErrors.required,
-                            templateId,
-                            property: missingProperty,
-                            index,
-                        };
-                        throw new BadRequestError('instance is missing required property', {
-                            errorCode: config.errorCodes.failedConstraintsValidation,
-                            constraint: requiredConstraint,
-                        });
-                    }
+                if (missingProperty) {
+                    const requiredConstraint: Omit<IRequiredConstraint, 'constraintName'> = {
+                        type: ActionErrors.required,
+                        templateId,
+                        property: missingProperty,
+                        index,
+                    };
+
+                    throw new BadRequestError('instance is missing required property', {
+                        errorCode: config.errorCodes.failedConstraintsValidation,
+                        constraint: requiredConstraint,
+                    });
                 }
             }
         });
+    }
+
+    async runUpdateColoredFieldsBulkInTransaction(
+        transaction: Transaction,
+        instances: (IEntity | IRelationship)[],
+        entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+        indicatorRules: IRuleFailure[],
+    ): Promise<(IEntity | IRelationship)[]> {
+        return Promise.all(
+            instances.map(async (instance) => {
+                if ('sourceEntityId' in instance || 'sourceEntity' in instance) return instance;
+
+                return (
+                    await this.entityManager.updateEntityByIdInnerTransaction(
+                        instance.properties._id,
+                        instance.properties,
+                        entitiesTemplatesByIds.get(instance.templateId)!,
+                        transaction,
+                        '',
+                        indicatorRules,
+                    )
+                ).updatedEntity;
+            }),
+        );
+    }
+
+    createEmailsForBulk(instances: (IEntity | IRelationship)[], indicatorRules: IRuleFailure[]) {
+        const emails: IBulkRuleMail[] = instances.flatMap((instance) => {
+            if ('sourceEntityId' in instance || 'sourceEntity' in instance) return [];
+
+            return indicatorRules.flatMap(({ rule }) => {
+                if (!rule.mail?.display) return [];
+
+                return { ...rule.mail, entity: instance };
+            });
+        });
+
+        return emails;
     }
 
     async runBulkOfActions(actions: IAction[], ignoredRules: IBrokenRule[], dryRun: boolean, userId?: string) {
@@ -467,7 +509,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                         relationshipTemplates.map((relationshipTemplate) => [relationshipTemplate._id, relationshipTemplate]),
                     );
 
-                    this.throwRequiredErrors(actions);
+                    await this.throwRequiredErrors(actions);
 
                     // collecting all the entitiesIds and their rules for preparation to search their related rules
                     const { entitiesIdsRulesReasonsMapBeforeRunActions, entitiesTemplatesIdsOfRules } = await this.getEntitiesIdsRulesReasonsBefore(
@@ -505,10 +547,24 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                         rulesByEntityTemplateIds,
                     );
 
+                    const [indicatorRules, rulesToThrowError]: [IRuleFailure[], IRuleFailure[]] = _partition(
+                        ruleFailuresAfterAll,
+                        ({ rule: { actionOnFail } }) => actionOnFail === ActionOnFail.INDICATOR,
+                    );
+
+                    const emails: IRuleMail[] = this.createEmailsForBulk(results, indicatorRules);
+
+                    const entitiesWithUpdatedColors = await this.runUpdateColoredFieldsBulkInTransaction(
+                        transaction,
+                        results,
+                        entitiesTemplatesByIds,
+                        indicatorRules,
+                    );
+
                     throwIfActionCausedRuleFailures(
                         ignoredRules,
                         ruleFailuresBeforeAll,
-                        ruleFailuresAfterAll,
+                        rulesToThrowError,
                         actions.map((action, index) => {
                             if (action.actionType === ActionTypes.CreateEntity || action.actionType === ActionTypes.DuplicateEntity)
                                 return { createdEntityId: results[index].properties._id };
@@ -526,19 +582,15 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                         await Promise.all(activityLogsPromises);
                     }
 
-                    return results;
+                    return { entitiesWithUpdatedColors, emails };
                 },
                 dryRun,
             )
-            .catch((err) => {
-                return this.entityManager.throwServiceErrorIfFailedConstraintsValidation(err);
-            });
+            .catch((err) => this.entityManager.throwServiceErrorIfFailedConstraintsValidation(err));
     }
 
     async runBulkOfActionsInMultipleTransactions(actionsGroups: IAction[][], ignoredRules: IBrokenRule[], dryRun: boolean, userId: string) {
-        const transactionsPromises = actionsGroups.map((actionsGroup) => {
-            return this.runBulkOfActions(actionsGroup, ignoredRules, dryRun, userId);
-        });
+        const transactionsPromises = actionsGroups.map((actionsGroup) => this.runBulkOfActions(actionsGroup, ignoredRules, dryRun, userId));
 
         return Promise.allSettled(transactionsPromises);
     }

@@ -1,9 +1,9 @@
 /* eslint-disable no-nested-ternary */
-import React, { useEffect, useState } from 'react';
-import { Autocomplete, TextField, Box, FormControl } from '@mui/material';
 import { Close } from '@mui/icons-material';
+import { Autocomplete, Box, FormControl, TextField } from '@mui/material';
+import React, { useEffect, useState } from 'react';
 import { ColoredEnumChip } from '../ColoredEnumChip';
-import { MeltaCheckbox } from '../MeltaCheckbox';
+import MeltaCheckbox from '../MeltaDesigns/MeltaCheckbox';
 
 export interface Option {
     value: string;
@@ -66,7 +66,7 @@ const SelectAutocomplete: React.FC<SelectAutocompleteProps> = ({
                                 }
                             />
                         )}
-                        <ColoredEnumChip label={option.label} color={colorsOptions?.[option.label] || 'default'} style={{ marginLeft: '8px' }} />
+                        <ColoredEnumChip label={option.label} enumColor={colorsOptions?.[option.label] || 'default'} style={{ marginLeft: '8px' }} />
                     </Box>
                 )}
                 renderTags={(tagValue, getTagProps) =>
@@ -76,7 +76,7 @@ const SelectAutocomplete: React.FC<SelectAutocompleteProps> = ({
                             <ColoredEnumChip
                                 key={key}
                                 label={option.label}
-                                color={colorsOptions?.[option.label] || 'default'}
+                                enumColor={colorsOptions?.[option.label] || 'default'}
                                 onDelete={onDelete}
                                 deleteIcon={<Close />}
                                 {...restTagProps}
@@ -94,8 +94,10 @@ const SelectAutocomplete: React.FC<SelectAutocompleteProps> = ({
                         variant="outlined"
                         error={false}
                         label={label}
-                        inputProps={{
-                            ...params.inputProps,
+                        slotProps={{
+                            htmlInput: {
+                                ...params.inputProps,
+                            },
                         }}
                     />
                 )}

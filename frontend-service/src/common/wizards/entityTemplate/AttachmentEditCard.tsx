@@ -1,13 +1,14 @@
-import React, { memo } from 'react';
-import { FormikErrors, FormikTouched } from 'formik';
 import { Delete as DeleteIcon, DeleteForever as DeleteOff, DragHandle as DragHandleIcon } from '@mui/icons-material';
-import { TextField, Box, Grid, Card, CardContent, Switch, FormControlLabel, IconButton, MenuItem } from '@mui/material';
+import { Box, Card, CardContent, FormControlLabel, Grid, IconButton, MenuItem, TextField } from '@mui/material';
+import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
-import { CommonFormInputProperties } from './commonInterfaces';
-import { MeltaTooltip } from '../../MeltaTooltip';
+import React, { memo } from 'react';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
+import MeltaSwitch from '../../MeltaDesigns/MeltaSwitch';
+import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
+import { CommonFormInputProperties } from './commonInterfaces';
 
 interface AttachmentEditCardProps {
     value: CommonFormInputProperties;
@@ -61,7 +62,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
     const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
 
     return (
-        <Grid item ref={dragRef} alignSelf="stretch" marginBottom="1rem">
+        <Grid ref={dragRef} alignSelf="stretch" marginBottom="1rem">
             <Card
                 elevation={3}
                 sx={{
@@ -72,12 +73,12 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                 }}
             >
                 <CardContent sx={{ '&:last-child': { padding: 0 } }}>
-                    <Grid container justifyContent="space-between" wrap="nowrap" alignItems="center">
+                    <Grid container gap={2} wrap="nowrap" alignItems="center">
                         <Box>
                             <DragHandleIcon fontSize="large" />
                         </Box>
 
-                        <Grid container direction="column">
+                        <Grid container direction="column" width="100%">
                             <Grid container wrap="nowrap">
                                 <TextField
                                     label={i18next.t('wizard.entityTemplate.attachmentName')}
@@ -129,7 +130,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                     {value.required !== undefined && (
                                         <FormControlLabel
                                             control={
-                                                <Switch
+                                                <MeltaSwitch
                                                     id={required}
                                                     name={required}
                                                     onChange={onChange}

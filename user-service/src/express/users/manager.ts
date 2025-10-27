@@ -15,7 +15,7 @@ class UsersManager {
     }
 
     static async getUserByExternalId(id: string, workspaceIds?: string[]): Promise<IUser> {
-        const baseUser = await UsersModel.findOne({ 'externalMetadata.kartoffelId': id }).orFail(new UserDoesNotExistError(id)).lean().exec();
+        const baseUser = await UsersModel.findOne({ kartoffelId: id }).orFail(new UserDoesNotExistError(id)).lean().exec();
         return this.baseUserToUser(baseUser, workspaceIds);
     }
 
@@ -39,7 +39,7 @@ class UsersManager {
                 { jobTitle: searchRegex },
                 { hierarchy: searchRegex },
                 { mail: searchRegex },
-                { 'externalMetadata.kartoffelId': searchRegex },
+                { kartoffelId: searchRegex },
             ];
 
             if (query.$or) {
@@ -53,7 +53,12 @@ class UsersManager {
         if (permissions || workspaceIds) {
             const simplePermissions = await PermissionsManager.searchBySubCompactPermissions(permissions ?? {}, workspaceIds);
             const relatedIds = new Set<string>(simplePermissions.map(({ relatedId }) => relatedId));
-            query.$or = [{ _id: { $in: [...relatedIds] } }, { roleIds: { $in: [...relatedIds] } }];
+            const searchByRelatedIds = [{ _id: { $in: [...relatedIds] } }, { roleIds: { $in: [...relatedIds] } }];
+
+            if (query.$or) {
+                query.$and = [{ $or: query.$or }, { $or: searchByRelatedIds }];
+                delete query.$or;
+            } else query.$or = searchByRelatedIds;
         }
 
         const users = await UsersModel.find(query, {}, { limit, skip: step * limit, sort })
@@ -151,7 +156,7 @@ class UsersManager {
                 { jobTitle: searchRegex },
                 { hierarchy: searchRegex },
                 { mail: searchRegex },
-                { 'externalMetadata.kartoffelId': searchRegex },
+                { kartoffelId: searchRegex },
             ];
 
             query.$or = searchQuery;

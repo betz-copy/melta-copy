@@ -5,7 +5,7 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { getFilterFieldReadonly } from '../../../../common/inputs/FilterInputs/ReadonlyFilterInput';
-import { MeltaTooltip } from '../../../../common/MeltaTooltip';
+import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
 import { FilterModelToFilterRecord } from '../../../../common/wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
 import { IChartType, IColumnOrLineMetaData, IMongoChart, INumberMetaData, IPieMetaData } from '../../../../interfaces/charts';
 import { ChartForm } from '../../../../interfaces/dashboard';
@@ -21,10 +21,10 @@ const renderMetaDtaChartByType = (option: IMongoChart) => {
 
             return (
                 <>
-                    <Grid item>
+                    <Grid>
                         {i18next.t('charts.xAxis')} : {columnLineData.xAxis.title}
                     </Grid>
-                    <Grid item>
+                    <Grid>
                         {i18next.t('charts.yAxis')} : {columnLineData.yAxis.title}
                     </Grid>
                 </>
@@ -33,10 +33,10 @@ const renderMetaDtaChartByType = (option: IMongoChart) => {
             const pieData = option.metaData as IPieMetaData;
             return (
                 <>
-                    <Grid item>
+                    <Grid>
                         {i18next.t('charts.dividedBy')}: {pieData.dividedByField}
                     </Grid>
-                    <Grid item>
+                    <Grid>
                         {i18next.t('charts.sumBy')} : {pieData.aggregationType.type}
                     </Grid>
                 </>
@@ -44,7 +44,7 @@ const renderMetaDtaChartByType = (option: IMongoChart) => {
         case IChartType.Number:
             const numberData = option.metaData as INumberMetaData;
             return (
-                <Grid item>
+                <Grid>
                     {i18next.t('charts.accumulateAccordingTo')} : {numberData.accumulator.type}
                 </Grid>
             );
@@ -117,7 +117,7 @@ const ChartAutoComplete: React.FC<{ formikProps: FormikProps<ChartForm & { _id?:
                     {...params}
                     fullWidth
                     label={i18next.t('dashboard.charts.chooseChart')}
-                    InputProps={{ ...params.InputProps, endAdornment: params.InputProps.endAdornment }}
+                    slotProps={{ input: { ...params.InputProps, endAdornment: params.InputProps.endAdornment } }}
                     sx={{ width: '95%' }}
                 />
             )}
@@ -125,28 +125,28 @@ const ChartAutoComplete: React.FC<{ formikProps: FormikProps<ChartForm & { _id?:
                 return (
                     <li {...props}>
                         <Grid container justifyContent="space-between" direction="row" spacing={1}>
-                            <Grid item key={option._id} xs={4} overflow="hidden">
+                            <Grid key={option._id} size={{ xs: 4 }} overflow="hidden">
                                 <MeltaTooltip placement="right" title={option.name}>
                                     <Typography overflow="hidden">{option.name}</Typography>
                                 </MeltaTooltip>
                             </Grid>
-                            <Grid item xs={0}>
+                            <Grid size={{ xs: 0 }}>
                                 <MeltaTooltip
                                     title={
                                         <Grid container direction="column" spacing={1}>
-                                            <Grid item>
+                                            <Grid>
                                                 {i18next.t('charts.name')} : {option.name}
                                             </Grid>
                                             {option.description && (
-                                                <Grid item>
+                                                <Grid>
                                                     {i18next.t('charts.description')} : {option.description}
                                                 </Grid>
                                             )}
-                                            <Grid item>
+                                            <Grid>
                                                 {i18next.t('charts.chartType')}: {i18next.t(`charts.types.${option.type}Chart`)}
                                             </Grid>
-                                            <Grid item>{renderMetaDtaChartByType(option)}</Grid>
-                                            <Grid item>
+                                            <Grid>{renderMetaDtaChartByType(option)}</Grid>
+                                            <Grid>
                                                 {i18next.t('charts.filters')} : {renderFilters(option.filter)}
                                             </Grid>
                                         </Grid>

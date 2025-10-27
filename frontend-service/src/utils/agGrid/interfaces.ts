@@ -1,3 +1,4 @@
+import { ByCurrentDefaultValue } from '../../interfaces/childTemplates';
 import { IUser } from '../../interfaces/users';
 
 export interface IAGGridTextFilter {
@@ -15,10 +16,34 @@ export interface IAGGidNumberFilter {
 
 export interface IAGGridDateFilter {
     filterType: 'date';
-    type: 'equals' | 'notEqual' | 'lessThan' | 'lessThanOrEqual' | 'greaterThan' | 'greaterThanOrEqual' | 'inRange' | 'blank' | 'notBlank';
+    type:
+        | 'equals'
+        | 'notEqual'
+        | 'lessThan'
+        | 'lessThanOrEqual'
+        | 'greaterThan'
+        | 'greaterThanOrEqual'
+        | 'thisWeek'
+        | 'thisMonth'
+        | 'thisYear'
+        | 'untilToday'
+        | 'fromToday'
+        | 'inRange'
+        | 'blank'
+        | 'notBlank';
     dateFrom: string | null;
     dateTo: string | null; // only inRange type
 }
+
+export enum RelativeDateFilters {
+    thisWeek = 'thisWeek',
+    thisMonth = 'thisMonth',
+    thisYear = 'thisYear',
+    untilToday = 'untilToday',
+    fromToday = 'fromToday',
+}
+
+export type IFilterDateType = Date | ByCurrentDefaultValue.byCurrentDate | RelativeDateFilters | null;
 
 export interface IAGGridSetFilter {
     filterType: 'set';

@@ -5,21 +5,21 @@ import fileDownload from 'js-file-download';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { BlueTitle } from '../../../common/BlueTitle';
 import { ResetFilterButton } from '../../../common/EntitiesPage/ResetFilterButton';
+import { getDefaultFilterFromTemplate } from '../../../common/EntitiesPage/TemplateTablesView';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../../common/EntitiesTableOfTemplate';
+import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
 import { TableButton } from '../../../common/TableButton';
 import { environment } from '../../../globals';
 import { TableMetaData } from '../../../interfaces/dashboard';
 import { IEntity } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { exportEntitiesRequest } from '../../../services/entitiesService';
+import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { filterModelToFilterOfTemplate, getFilterModal } from '../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
-import { getRelevantEntityTemplate } from '../DashboardItemDetails/Chart/BodyComponent';
-import { getDefaultFilterFromTemplate } from '../../../common/EntitiesPage/TemplateTablesView';
 import { isChildTemplate } from '../../../utils/templates';
-import { useUserStore } from '../../../stores/user';
+import { getRelevantEntityTemplate } from '../DashboardItemDetails/Chart/BodyComponent';
 
 const { excelExtension } = environment.loadExcel;
 
@@ -48,7 +48,7 @@ export const CardTitle = ({ title, description }: { title: string; description?:
 };
 
 const TableCard: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
-    const titleSectionHeight = 120;
+    const titleSectionHeight = 80;
 
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -60,14 +60,13 @@ const TableCard: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
     const { metadata: agGridMetaData } = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize } = agGridMetaData.agGrid;
 
-    const { externalMetadata } = useUserStore((state) => state.user);
-    const currentUserKartoffelId = externalMetadata?.kartoffelId;
+    const { kartoffelId } = useUserStore((state) => state.user);
 
     const [isFiltered, setIsFiltered] = useState(false);
     const memorizedFilter = useMemo(() => (metaData.filter ? JSON.parse(metaData.filter) : undefined), [metaData.filter]);
     const childTemplateFilter = useMemo(
-        () => getDefaultFilterFromTemplate(template, !!metaData.childTemplateId, currentUserKartoffelId),
-        [metaData.templateId, metaData.childTemplateId, currentUserKartoffelId],
+        () => getDefaultFilterFromTemplate(template, !!metaData.childTemplateId, kartoffelId),
+        [metaData.templateId, metaData.childTemplateId, kartoffelId],
     );
     const allFilters = useMemo(() => getFilterModal(memorizedFilter, childTemplateFilter), [memorizedFilter, childTemplateFilter]);
 
@@ -115,7 +114,7 @@ const TableCard: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
     }, []);
 
     return (
-        <Grid ref={containerRef} container item width="100%" height="100%" alignItems="center" justifyContent="center">
+        <Grid ref={containerRef} container width="100%" height="100%" alignItems="center" justifyContent="center">
             <Grid sx={{ width: '98%', height: '100%', borderRadius: '7px', border: '1px #CCCFE5', gap: 2 }}>
                 <CardTitle title={metaData.name} description={metaData.description} />
 
@@ -152,7 +151,8 @@ const TableCard: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
                             shouldSavePagination: false,
                             shouldSaveScrollPosition: false,
                         }}
-                        showNavigateToRowButton={false}
+                        showNavigateToRowButton
+                        actionsColumnWidth={125}
                         editable={false}
                         defaultFilter={allFilters}
                         columnsToShow={metaData.columns}

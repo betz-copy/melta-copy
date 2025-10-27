@@ -26,6 +26,7 @@ import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { PermissionScope } from '../../interfaces/permissions';
 import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
+import { IKartoffelUser } from '../../interfaces/users';
 import { exportEntitiesRequest } from '../../services/entitiesService';
 import { useClientSideUserStore } from '../../stores/clientSideUser';
 import { useDraftIdStore, useDraftsStore } from '../../stores/drafts';
@@ -35,19 +36,18 @@ import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '.
 import { getEntityTemplateColor } from '../../utils/colors';
 import { checkUserTemplatePermission } from '../../utils/permissions/instancePermissions';
 import { isChildTemplate } from '../../utils/templates';
-import { BlueTitle } from '../BlueTitle';
 import { CustomIcon } from '../CustomIcon';
 import { EntityWizardValues } from '../dialogs/entity';
 import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef, TablePageType } from '../EntitiesTableOfTemplate';
 import { EntityTemplateColor } from '../EntityTemplateColor';
+import BlueTitle from '../MeltaDesigns/BlueTitle';
 import { TableButton } from '../TableButton';
 import { AddEntityButton } from './Buttons/AddEntity';
 import { EditExcelButton } from './Buttons/EditExcel';
 import { LoadExcelButton } from './Buttons/LoadExcel';
 import { DraftCard } from './DraftCard';
 import { ResetFilterButton } from './ResetFilterButton';
-import { IKartoffelUser } from '../../interfaces/users';
 
 const {
     loadExcel: { excelExtension },
@@ -60,7 +60,7 @@ export const isUserHasWritePermissions = (
     currentUser: UserState['user'],
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
 ) =>
-    Object.keys(currentClientSideUser).length > 0 ||
+    !!Object.keys(currentClientSideUser).length ||
     checkUserTemplatePermission(currentUser.currentWorkspacePermissions, template.category._id, template._id, PermissionScope.write);
 
 const TemplateTable = forwardRef<
@@ -181,7 +181,7 @@ const TemplateTable = forwardRef<
         });
     };
 
-    const isLoadExcelDisabled = !userHasWritePermissions || checkIfLoadExcelIsDisabled();
+    const isLoadExcelDisabled = !userHasWritePermissions || checkIfLoadExcelIsDisabled() || template.disabled;
     const loadExcelTooltip = isLoadExcelDisabled
         ? i18next.t(!userHasWritePermissions ? 'permissions.dontHaveWritePermissionsToTemplate' : 'wizard.entity.loadEntities.tableCantLoadEntities')
         : undefined;
@@ -191,19 +191,19 @@ const TemplateTable = forwardRef<
         return Object.values(properties).some((property) => property.identifier);
     };
 
-    const isEditExcelDisabled = !userHasWritePermissions || !checkIfEditExcelIsDisabled();
+    const isEditExcelDisabled = !userHasWritePermissions || !checkIfEditExcelIsDisabled() || template.disabled;
     const editExcelTooltip = isEditExcelDisabled
         ? i18next.t(!userHasWritePermissions ? 'permissions.dontHaveWritePermissionsToTemplate' : 'wizard.entity.loadEntities.tableCantEditExcel')
         : undefined;
 
     return (
-        <Grid container minWidth="fit-content">
-            <Grid container justifyContent="space-between" width="fit-content" minWidth="fit-content">
-                <Grid item container xs={5} alignItems="center" minWidth="fit-content" gap="10px">
-                    <Grid item minWidth="fit-content">
+        <Grid container minWidth="fit-content" width="100%">
+            <Grid container direction="column" width="100%" minWidth="fit-content">
+                <Grid container size={{ xs: 5 }} justifyContent="start" alignItems="center" minWidth="fit-content" gap="10px">
+                    <Grid minWidth="fit-content">
                         <EntityTemplateColor entityTemplateColor={entityTemplateColor} />
                     </Grid>
-                    <Grid item minWidth="fit-content" sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
+                    <Grid minWidth="fit-content" sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
                         {template.iconFileId ? (
                             <CustomIcon iconUrl={template.iconFileId} height={height} width={width} color={theme.palette.primary.main} />
                         ) : (
@@ -216,7 +216,7 @@ const TemplateTable = forwardRef<
                             />
                         )}
                     </Grid>
-                    <Grid item minWidth="fit-content" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                    <Grid minWidth="fit-content" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
                         <BlueTitle
                             style={{
                                 minWidth: 'fit-content',
@@ -231,143 +231,143 @@ const TemplateTable = forwardRef<
                         />
                     </Grid>
                 </Grid>
-            </Grid>
 
-            <Grid container flexDirection="row" alignItems="center">
-                <Grid container item flexGrow={1} width={0} justifyContent="flex-start" alignItems="center">
-                    <TableButton
-                        iconButtonWithPopoverProps={{
-                            popoverText: i18next.t('entitiesTableOfTemplate.columns'),
-                            iconButtonProps: {
-                                onClick: () => {
-                                    entitiesTableRef.current?.showSideBar();
+                <Grid container direction="row" alignItems="center" justifyContent="space-between">
+                    <Grid container>
+                        <TableButton
+                            iconButtonWithPopoverProps={{
+                                popoverText: i18next.t('entitiesTableOfTemplate.columns'),
+                                iconButtonProps: {
+                                    onClick: () => {
+                                        entitiesTableRef.current?.showSideBar();
 
-                                    trackEvent({
-                                        category: 'template-action',
-                                        action: 'show sidebar click',
-                                    });
+                                        trackEvent({
+                                            category: 'template-action',
+                                            action: 'show sidebar click',
+                                        });
+                                    },
                                 },
-                            },
-                        }}
-                        icon={<TableRowsOutlined fontSize="small" />}
-                        text={i18next.t('entitiesTableOfTemplate.columns')}
-                    />
+                            }}
+                            icon={<TableRowsOutlined fontSize="small" />}
+                            text={i18next.t('entitiesTableOfTemplate.columns')}
+                        />
 
-                    <TableButton
-                        iconButtonWithPopoverProps={{
-                            popoverText: isExpand ? i18next.t('entitiesTableOfTemplate.expandLess') : i18next.t('entitiesTableOfTemplate.expandMore'),
-                            iconButtonProps: {
-                                onClick: () => {
-                                    handleExpandClick();
-                                    trackEvent({
-                                        category: 'template-action',
-                                        action: isExpand ? 'off' : 'on',
-                                    });
+                        <TableButton
+                            iconButtonWithPopoverProps={{
+                                popoverText: i18next.t(`entitiesTableOfTemplate.expand${isExpand ? 'Less' : 'More'}`),
+                                iconButtonProps: {
+                                    onClick: () => {
+                                        handleExpandClick();
+                                        trackEvent({
+                                            category: 'template-action',
+                                            action: isExpand ? 'off' : 'on',
+                                        });
+                                    },
                                 },
-                            },
-                        }}
-                        icon={isExpand ? <CloseFullscreenRounded fontSize="small" /> : <Expand fontSize="small" />}
-                        text={i18next.t(`entitiesTableOfTemplate.expand${isExpand ? 'Less' : 'More'}Title`)}
-                    />
+                            }}
+                            icon={isExpand ? <CloseFullscreenRounded fontSize="small" /> : <Expand fontSize="small" />}
+                            text={i18next.t(`entitiesTableOfTemplate.expand${isExpand ? 'Less' : 'More'}Title`)}
+                        />
 
-                    <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={!isFiltered} />
+                        <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={!isFiltered} />
 
-                    <TableButton
-                        iconButtonWithPopoverProps={{
-                            popoverText: i18next.t('entitiesTableOfTemplate.downloadOneTable'),
-                            iconButtonProps: {
-                                onClick: () => {
-                                    handleDownloadClick();
+                        <TableButton
+                            iconButtonWithPopoverProps={{
+                                popoverText: i18next.t('entitiesTableOfTemplate.downloadOneTable'),
+                                iconButtonProps: {
+                                    onClick: () => {
+                                        handleDownloadClick();
+                                    },
                                 },
-                            },
-                        }}
-                        icon={isExportingTableToExcelFile ? <CircularProgress size="24px" /> : <Download fontSize="small" />}
-                        text={isExportingTableToExcelFile ? '' : i18next.t('entitiesTableOfTemplate.downloadOneTableTitle')}
-                    />
+                            }}
+                            icon={isExportingTableToExcelFile ? <CircularProgress size="24px" /> : <Download fontSize="small" />}
+                            text={isExportingTableToExcelFile ? '' : i18next.t('entitiesTableOfTemplate.downloadOneTableTitle')}
+                        />
 
-                    <TableButton
-                        iconButtonWithPopoverProps={{
-                            popoverText: i18next.t('entitiesTableOfTemplate.multipleSelect'),
-                            iconButtonProps: {
-                                onClick: () => {
-                                    setMultipleSelect(!multipleSelect);
-                                    if (!(isExpand && !multipleSelect)) setIsExpand(!isExpand);
+                        <TableButton
+                            iconButtonWithPopoverProps={{
+                                popoverText: i18next.t('entitiesTableOfTemplate.multipleSelect'),
+                                iconButtonProps: {
+                                    onClick: () => {
+                                        setMultipleSelect(!multipleSelect);
+                                        if (!(isExpand && !multipleSelect)) setIsExpand(!isExpand);
+                                    },
                                 },
-                            },
-                        }}
-                        icon={<SelectMultipleIcon fontSize="small" />}
-                        text={i18next.t('entitiesTableOfTemplate.multipleSelect')}
-                        disableButton={!userHasWritePermissions}
-                    />
-                    <TableButton
-                        iconButtonWithPopoverProps={{
-                            popoverText: i18next.t('pages.charts'),
-                            iconButtonProps: { onClick: () => navigate(`/charts/${template._id}`) },
-                        }}
-                        icon={<BarChart fontSize="small" />}
-                        text={i18next.t('pages.charts')}
-                    />
-                </Grid>
+                            }}
+                            icon={<SelectMultipleIcon fontSize="small" />}
+                            text={i18next.t('entitiesTableOfTemplate.multipleSelect')}
+                            disableButton={!userHasWritePermissions}
+                        />
+                        <TableButton
+                            iconButtonWithPopoverProps={{
+                                popoverText: i18next.t('pages.charts'),
+                                iconButtonProps: { onClick: () => navigate(`/charts/${template._id}`) },
+                            }}
+                            icon={<BarChart fontSize="small" />}
+                            text={i18next.t('pages.charts')}
+                        />
+                    </Grid>
 
-                <Grid container item flexGrow={1} width={0} justifyContent="flex-end" alignItems="center">
-                    {page !== TablePageType.clientSide && (
-                        <EditExcelButton
-                            disabled={isEditExcelDisabled}
+                    <Grid container>
+                        {page !== TablePageType.clientSide && (
+                            <EditExcelButton
+                                disabled={isEditExcelDisabled}
+                                initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
+                                onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
+                                popoverText={editExcelTooltip}
+                            >
+                                <EditNote
+                                    fontSize="small"
+                                    sx={{
+                                        opacity: isEditExcelDisabled ? 0.3 : 1,
+                                        pointerEvents: isEditExcelDisabled ? 'none' : 'auto',
+                                    }}
+                                />
+                                {i18next.t('entitiesTableOfTemplate.editExcelTitle')}
+                            </EditExcelButton>
+                        )}
+                        <LoadExcelButton
+                            disabled={isLoadExcelDisabled}
                             initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
                             onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
-                            popoverText={editExcelTooltip}
+                            popoverText={loadExcelTooltip}
                         >
-                            <EditNote
+                            <Upload
                                 fontSize="small"
                                 sx={{
-                                    opacity: isEditExcelDisabled ? 0.3 : 1,
-                                    pointerEvents: isEditExcelDisabled ? 'none' : 'auto',
+                                    opacity: isLoadExcelDisabled ? 0.3 : 1,
+                                    pointerEvents: isLoadExcelDisabled ? 'none' : 'auto',
                                 }}
                             />
-                            {i18next.t('entitiesTableOfTemplate.editExcelTitle')}
-                        </EditExcelButton>
-                    )}
-                    <LoadExcelButton
-                        disabled={isLoadExcelDisabled}
-                        initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
-                        onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
-                        popoverText={loadExcelTooltip}
-                    >
-                        <Upload
-                            fontSize="small"
-                            sx={{
-                                opacity: isLoadExcelDisabled ? 0.3 : 1,
-                                pointerEvents: isLoadExcelDisabled ? 'none' : 'auto',
+                            {i18next.t('entitiesTableOfTemplate.loadEntitiesTitle')}
+                        </LoadExcelButton>
+                        <AddEntityButton
+                            initialStep={1}
+                            disabled={!userHasWritePermissions || template.disabled}
+                            initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
+                            style={{
+                                display: 'flex',
+                                gap: '0.25rem',
+                                borderRadius: '5px',
+                                fontSize: '0.75rem',
+                                color: theme.palette.primary.main,
                             }}
-                        />
-                        {i18next.t('entitiesTableOfTemplate.loadEntitiesTitle')}
-                    </LoadExcelButton>
-                    <AddEntityButton
-                        initialStep={1}
-                        disabled={!userHasWritePermissions || template.disabled}
-                        initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
-                        style={{
-                            display: 'flex',
-                            gap: '0.25rem',
-                            borderRadius: '5px',
-                            fontSize: '0.75rem',
-                            color: theme.palette.primary.main,
-                        }}
-                        popoverText={template.disabled ? i18next.t('permissions.EntityTemplateDisplay') : undefined}
-                        onSuccessCreate={() => {
-                            entitiesTableRef.current?.refreshServerSide();
+                            popoverText={template.disabled ? i18next.t('permissions.EntityTemplateDisplay') : undefined}
+                            onSuccessCreate={() => {
+                                entitiesTableRef.current?.refreshServerSide();
 
-                            trackEvent({
-                                category: 'template-action',
-                                action: 'add entity click',
-                            });
-                        }}
-                        setUpdatedEntities={setUpdatedEntities}
-                        setUpdatedTemplateIds={setUpdatedTemplateIds}
-                    >
-                        <AddCircle fontSize="small" sx={{ opacity: !userHasWritePermissions ? 0.3 : 1 }} />
-                        {i18next.t('entitiesTableOfTemplate.addEntityTitle')}
-                    </AddEntityButton>
+                                trackEvent({
+                                    category: 'template-action',
+                                    action: 'add entity click',
+                                });
+                            }}
+                            setUpdatedEntities={setUpdatedEntities}
+                            setUpdatedTemplateIds={setUpdatedTemplateIds}
+                        >
+                            <AddCircle fontSize="small" sx={{ opacity: !userHasWritePermissions ? 0.3 : 1 }} />
+                            {i18next.t('entitiesTableOfTemplate.addEntityTitle')}
+                        </AddEntityButton>
+                    </Grid>
                 </Grid>
             </Grid>
             <Grid
@@ -388,7 +388,7 @@ const TemplateTable = forwardRef<
                         return 0;
                     })
                     .map((draft) => (
-                        <Grid item key={draft.uniqueId} sx={{ flex: '0 0 auto', minWidth: '200px' }}>
+                        <Grid key={draft.uniqueId} sx={{ flex: '0 0 auto', minWidth: '200px' }}>
                             <DraftCard
                                 draft={draft}
                                 openEditDialog={() => {
@@ -408,7 +408,6 @@ const TemplateTable = forwardRef<
                         </Grid>
                     ))}
             </Grid>
-
             <Box sx={{ marginBottom: '30px', width: '100%' }}>
                 <EntitiesTableOfTemplate
                     ref={entitiesTableRef}
@@ -457,8 +456,18 @@ const TemplateTable = forwardRef<
                     setUpdatedTemplateIds={setUpdatedTemplateIds}
                 />
             </Box>
-
-            <Dialog open={editDialog.isOpen} maxWidth={template.documentTemplatesIds?.length ? 'lg' : 'md'}>
+            <Dialog
+                open={editDialog.isOpen}
+                maxWidth={Object.keys(template.properties.properties).length === 1 ? 'sm' : 'md'}
+                fullWidth
+                slotProps={{
+                    paper: {
+                        sx: {
+                            overflow: 'hidden',
+                        },
+                    },
+                }}
+            >
                 <CreateOrEditEntityDetails
                     mutationProps={{
                         ...(editDialog.isEditMode
@@ -497,4 +506,4 @@ const TemplateTable = forwardRef<
     );
 });
 
-export { TemplateTable };
+export default TemplateTable;

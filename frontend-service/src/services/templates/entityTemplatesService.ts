@@ -1,9 +1,7 @@
 /* eslint-disable no-nested-ternary */
-import i18next from 'i18next';
 import { QueryClient } from 'react-query';
 import { v4 as uuid } from 'uuid';
 import axios from '../../axios';
-import { commentColors } from '../../common/inputs/JSONSchemaFormik/RjsfCommentWidget';
 import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from '../../common/wizards/entityTemplate';
 import {
     FilterModelToFilterRecord,
@@ -20,7 +18,6 @@ import {
     ISearchEntityTemplateQuery,
 } from '../../interfaces/entityTemplates';
 import { getFileName } from '../../utils/getFileName';
-import { BackendConfigState } from '../backendConfigService';
 
 const { entityTemplates } = environment.api;
 
@@ -139,6 +136,7 @@ const entityTemplateObjectToEntityTemplateForm = (
             mapSearch: mapSearchProperties?.includes(key) || undefined,
             fieldGroup: !value.archive ? fieldGroup : undefined,
             hideFromDetailsPage: value.hideFromDetailsPage || undefined,
+            isProfileImage: value.isProfileImage || undefined,
             comment: value.comment,
             color: value.color,
         };
@@ -197,7 +195,7 @@ const entityTemplateObjectToEntityTemplateForm = (
 
     if (archiveProperties.length !== 0 && !propertiesTypeOrder.includes('archiveProperties')) propertiesTypeOrder.push('archiveProperties');
 
-    const documentTemplates = documentTemplatesIds?.map((documentTemplateId) => ({ name: documentTemplateId } as File));
+    const documentTemplates = documentTemplatesIds?.map((documentTemplateId) => ({ name: documentTemplateId }) as File);
 
     if (iconFileId) {
         const file: Partial<File> = { name: iconFileId };
@@ -298,8 +296,6 @@ export const extractGroups = (
 };
 
 export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode: boolean, queryClient: QueryClient): IEntityTemplate => {
-    const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
-
     const { properties, attachmentProperties, archiveProperties, propertiesTypeOrder, documentTemplatesIds, fieldGroups, ...restOfProperties } =
         values;
     const serialsUniqueConstraints: string[][] = [];
@@ -347,6 +343,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             identifier,
             mapSearch,
             hideFromDetailsPage,
+            isProfileImage,
             color,
             comment,
             expandedUserField,
@@ -397,7 +394,8 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 archive,
                 identifier,
                 hideFromDetailsPage,
-                color: comment && !color ? commentColors[i18next.t('validation.colors.blue')] : color,
+                isProfileImage,
+                color: comment && !color ? '#4752B6' : color,
                 uniqueItems: type === 'enumArray' || type === 'users' ? true : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
@@ -442,9 +440,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     enumPropertiesColors[name][option] = enumColor;
                 });
             }
-            if (type === 'unitField') {
-                schema.properties[name].enum = [...(config?.units || [])];
-            }
         },
     );
 
@@ -473,6 +468,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             archive,
             mapSearch,
             hideFromDetailsPage,
+            isProfileImage,
             color,
             comment,
             expandedUserField,
@@ -508,6 +504,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 archive,
                 identifier,
                 hideFromDetailsPage,
+                isProfileImage,
                 color: comment && !color ? '#4752B6' : color,
                 uniqueItems: type === 'enumArray' || type === 'users' ? true : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
@@ -665,9 +662,12 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
 };
 
 const updateEntityTemplateStatusRequest = async (entityTemplateId: string, disabledStatus: boolean) => {
-    const { data } = await axios.patch<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}/status`, {
-        disabled: disabledStatus,
-    });
+    const { data } = await axios.patch<{ entityTemplate: IMongoEntityTemplatePopulated; childTemplates: IMongoChildTemplatePopulated[] }>(
+        `${entityTemplates}/${entityTemplateId}/status`,
+        {
+            disabled: disabledStatus,
+        },
+    );
     return data;
 };
 

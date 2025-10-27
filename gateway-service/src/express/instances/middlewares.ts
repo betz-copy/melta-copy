@@ -1,4 +1,5 @@
 import {
+    ActionOnFail,
     ForbiddenError,
     IAction,
     IBrokenRule,
@@ -71,12 +72,12 @@ class InstancesValidator extends DefaultController {
     async validateHasPermissionsToEntitiesInTemplates(user: Express.User, templateIds: string[]) {
         const permissions = await this.authorizer.getWorkspacePermissions(user.id);
 
-        const [allowedEntityTemplates, allowedChildEntityTemplates] = await Promise.all([
+        const [allowedEntityTemplates, allowedChildTemplates] = await Promise.all([
             this.getAllowedEntityTemplatesForInstances(permissions, user.id),
             this.getAllowedChildTemplatesForInstances(permissions),
         ]);
 
-        const allowedEntityTemplateIds = [...allowedEntityTemplates.map(({ _id }) => _id), ...allowedChildEntityTemplates.map(({ _id }) => _id)];
+        const allowedEntityTemplateIds = [...allowedEntityTemplates.map(({ _id }) => _id), ...allowedChildTemplates.map(({ _id }) => _id)];
 
         const unauthorizedTemplates = templateIds.filter((templateId) => !allowedEntityTemplateIds.includes(templateId));
         if (unauthorizedTemplates.length > 0) {
@@ -93,17 +94,23 @@ class InstancesValidator extends DefaultController {
     }
 
     async validateUserCanSearchEntitiesBatch(req: Request) {
-        await this.validateHasPermissionsToEntitiesInTemplates(req.user!, Object.keys(req.body.templates));
+        const templateIds = Object.entries(req.body.templates ?? {}).map(([templateId, template]) => {
+            if (typeof template === 'object' && template !== null && 'childTemplateId' in template)
+                return (template.childTemplateId as string | undefined) ?? templateId;
+            return templateId;
+        });
+
+        await this.validateHasPermissionsToEntitiesInTemplates(req.user!, templateIds);
     }
 
     async validateUserCanSearchEntitiesByTemplates(req: Request) {
-        const { templateIds } = req.body;
-        await this.validateHasPermissionsToEntitiesInTemplates(req.user!, templateIds);
+        const { templateIds, childTemplateIds } = req.body;
+        await this.validateHasPermissionsToEntitiesInTemplates(req.user!, [...templateIds, ...childTemplateIds]);
     }
 
     async validateUserCanSearchEntitiesOfTemplate(req: Request) {
         const { templateId } = req.params;
-        await this.validateHasPermissionsToEntitiesInTemplates(req.user!, [templateId]);
+        await this.validateHasPermissionsToEntitiesInTemplates(req.user!, req.body.childTemplateId || [templateId]);
     }
 
     async validateUserCanExportEntities(req: Request) {
@@ -122,8 +129,7 @@ class InstancesValidator extends DefaultController {
         const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
 
         const childTemplates = await this.getAllowedChildTemplatesForInstances(userPermissions);
-        const childTemplate =
-            childTemplates.find(({ _id }) => _id === childTemplateId) || childTemplates.find(({ parentTemplate: { _id } }) => _id === templateId);
+        const childTemplate = childTemplates.find(({ _id }) => _id === childTemplateId);
 
         if (
             !userPermissions.admin?.scope &&
@@ -194,7 +200,7 @@ class InstancesValidator extends DefaultController {
         const { id } = req.params;
         const { templateId } = await this.instancesService.getEntityInstanceById(id);
 
-        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.read);
+        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.read, undefined, req.body.childTemplateId);
     }
 
     async validateUserCanGetChart(req: Request) {
@@ -285,7 +291,7 @@ class InstancesValidator extends DefaultController {
             ignoredRules.map((ignoredRule) => this.relationshipsTemplateService.getRuleById(ignoredRule.ruleId)),
         );
 
-        if (ignoredRulesPopulated.some((rule) => rule.actionOnFail !== 'WARNING')) {
+        if (ignoredRulesPopulated.some((rule) => rule.actionOnFail !== ActionOnFail.WARNING)) {
             throw new ForbiddenError('a user without rule permissions only ignore "WARNING" rules', {});
         }
     }

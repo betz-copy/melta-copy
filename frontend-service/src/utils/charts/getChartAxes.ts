@@ -84,19 +84,23 @@ export const initialValues: IChart = {
 
 const aggregationSchema = Yup.object({
     type: Yup.mixed<IAggregationType>().oneOf(Object.values(IAggregationType)).required('validation.required'),
+
     byField: Yup.string()
         .nullable()
-        .when('type', {
-            is: (type: IAggregationType) =>
-                [
-                    IAggregationType.CountDistinct,
-                    IAggregationType.Average,
-                    IAggregationType.Sum,
-                    IAggregationType.Minimum,
-                    IAggregationType.Maximum,
-                ].includes(type),
-            then: Yup.string().required(i18next.t('validation.required')).nullable(),
-            otherwise: Yup.string().optional().nullable(),
+        .when('type', (typeValue, schema) => {
+            const requiresByField = [
+                IAggregationType.CountDistinct,
+                IAggregationType.Average,
+                IAggregationType.Sum,
+                IAggregationType.Minimum,
+                IAggregationType.Maximum,
+            ].includes(typeValue as unknown as IAggregationType);
+
+            if (requiresByField) {
+                return schema.required(i18next.t('validation.required')).nullable();
+            }
+
+            return schema.optional().nullable();
         }),
 });
 
@@ -138,7 +142,7 @@ export const chartValidationSchema = Yup.object({
     description: Yup.string(),
     type: Yup.mixed<IChartType>().oneOf(Object.values(IChartType)).required(i18next.t('validation.required')),
     metaData: Yup.mixed()
-        .when('type', (type: IChartType, schema: Yup.AnySchema) => schema.concat(getMetaDataSchema(type)))
+        .when('type', (type, schema) => schema.concat(getMetaDataSchema(type as unknown as IChartType)))
         .required('metaData is required'),
     permission: Yup.mixed<IPermission>().oneOf(Object.values(IPermission)).required(i18next.t('validation.required')),
     templateId: Yup.string().required(i18next.t('validation.required')),

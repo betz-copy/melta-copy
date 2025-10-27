@@ -2,9 +2,9 @@ import { Loop } from '@mui/icons-material';
 import { Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import { BlueTitle } from '../../../common/BlueTitle';
 import { GlobalSearchBar } from '../../../common/EntitiesPage/Headline';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
+import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
 import { TopBarGrid } from '../../../common/TopBar';
 import { useWorkspaceStore } from '../../../stores/workspace';
 
@@ -19,9 +19,9 @@ const DashboardHeader: React.FC<{
 
     return (
         <TopBarGrid sx={{ height: '3.6rem' }} container justifyContent="space-between" alignItems="center" wrap="nowrap">
-            <Grid item>
+            <Grid>
                 <Grid container spacing={5} wrap="nowrap" alignItems="center">
-                    <Grid item>
+                    <Grid>
                         <BlueTitle
                             title={title}
                             component="h4"
@@ -29,7 +29,7 @@ const DashboardHeader: React.FC<{
                             style={{ fontSize: workspace.metadata.mainFontSizes.headlineTitleFontSize }}
                         />
                     </Grid>
-                    <Grid item>
+                    <Grid>
                         <Grid container wrap="nowrap" gap="15px">
                             <GlobalSearchBar
                                 onSearch={(searchValue) => setTextSearch(searchValue || undefined)}
@@ -42,9 +42,9 @@ const DashboardHeader: React.FC<{
                 </Grid>
             </Grid>
 
-            <Grid item>
+            <Grid>
                 <Grid container spacing={1} wrap="nowrap" alignItems="center">
-                    <Grid item>
+                    <Grid>
                         <IconButtonWithPopover
                             popoverText={i18next.t('dashboard.resetToDefault')}
                             iconButtonProps={{
@@ -58,7 +58,7 @@ const DashboardHeader: React.FC<{
                             </Typography>
                         </IconButtonWithPopover>
                     </Grid>
-                    <Grid item>
+                    <Grid>
                         <AddNewItem />
                     </Grid>
                 </Grid>

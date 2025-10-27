@@ -24,4 +24,11 @@ const deleteChildTemplate = async (id: string) => {
     return data;
 };
 
-export { createChildTemplate, updateChildTemplate, getAllChildTemplates, deleteChildTemplate };
+const updateChildTemplateStatusRequest = async (childTemplateId: string, disabledStatus: boolean) => {
+    const { data } = await axios.patch<IMongoChildTemplatePopulated>(`${childTemplates}/${childTemplateId}/status`, {
+        disabled: disabledStatus,
+    });
+    return data;
+};
+
+export { createChildTemplate, updateChildTemplate, getAllChildTemplates, deleteChildTemplate, updateChildTemplateStatusRequest };

@@ -14,7 +14,7 @@ const ColumnOrLineChart: React.FC<{
 }> = ({ formik, entityTemplate, disabled }) => {
     return (
         <Grid container direction="column" spacing={2.5}>
-            <Grid item>
+            <Grid>
                 <AxisInput
                     formikField="metaData.xAxis.field"
                     titleFormikField="metaData.xAxis.title"
@@ -25,7 +25,7 @@ const ColumnOrLineChart: React.FC<{
                     readonly={disabled}
                 />
             </Grid>
-            <Grid item>
+            <Grid>
                 <AxisInput
                     formikField="metaData.yAxis.field"
                     titleFormikField="metaData.yAxis.title"

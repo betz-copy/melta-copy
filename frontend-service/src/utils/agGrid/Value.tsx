@@ -1,26 +1,27 @@
-import React, { useEffect, useState } from 'react';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { IconButton, Grid, Popover, Typography } from '@mui/material';
+import { Grid, IconButton, Popover, Typography } from '@mui/material';
 import i18next from 'i18next';
+import React, { useEffect, useState } from 'react';
 import { ColoredEnumChip } from '../../common/ColoredEnumChip';
 import { VerifyLink } from '../../common/VerifyLink';
-import { getFirstLine, getNumLines, containsHTMLTags, renderHTML } from '../HtmlTagsStringValue';
-import { CalculateDateDifference } from './CalculateDateDifference';
-import { getFixedNumber, isStartWithHebrewLetter } from '../stringValues';
 import { HighlightText } from '../HighlightText';
+import { containsHTMLTags, getFirstLine, getNumLines, renderHTML } from '../HtmlTagsStringValue';
+import { getFixedNumber, isStartWithHebrewLetter } from '../stringValues';
+import { CalculateDateDifference } from './CalculateDateDifference';
 
 const Value: React.FC<{
     hideValue: boolean;
     value: string;
-    color?: string | null;
+    enumColor?: string;
+    color?: string;
     calculateTime?: boolean;
     isNumberField?: boolean;
     searchValue?: string;
-}> = ({ hideValue, value, color, calculateTime, isNumberField, searchValue }) => {
+}> = ({ hideValue, value, enumColor, color, calculateTime, isNumberField, searchValue }) => {
     const containsHtmlTags = containsHTMLTags(value);
-    const [hideField, setHideField] = useState(true);
+    const [hideField, setHideField] = useState<boolean>(true);
     const [anchorEl, setAnchorEl] = useState<HTMLDivElement | HTMLButtonElement | null>(null);
-    const [numLines, setNumLines] = useState(0);
+    const [numLines, setNumLines] = useState<number>(0);
 
     useEffect(() => {
         if (containsHtmlTags) {
@@ -29,24 +30,19 @@ const Value: React.FC<{
         }
     }, [containsHtmlTags, value]);
 
-    const handleClick = () => {
-        setHideField((curr) => !curr);
-    };
+    const handleClick = () => setHideField((curr) => !curr);
 
-    const handleDoubleClick = (event: React.MouseEvent<HTMLDivElement | HTMLButtonElement>) => {
-        setAnchorEl(event.currentTarget);
-    };
+    const handleDoubleClick = (event: React.MouseEvent<HTMLDivElement | HTMLButtonElement>) => setAnchorEl(event.currentTarget);
 
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
+    const handleClose = () => setAnchorEl(null);
 
     const open = Boolean(anchorEl);
 
     let innerContent: string | React.JSX.Element | undefined;
 
     if (hideValue && hideField) innerContent = <>••••••••</>;
-    else if (color || color === 'default') innerContent = <ColoredEnumChip label={value} color={color} searchValue={searchValue} />;
+    else if ((enumColor || enumColor === 'default') && value.length)
+        innerContent = <ColoredEnumChip label={value} enumColor={enumColor} searchValue={searchValue} color={color} />;
     else if (containsHtmlTags) innerContent = getFirstLine(value);
     else if (calculateTime && value) innerContent = <CalculateDateDifference date={value} searchValue={searchValue} />;
     else if (isNumberField && value) innerContent = getFixedNumber(Number(value));
@@ -56,14 +52,13 @@ const Value: React.FC<{
 
     if (containsHtmlTags) popoverText = renderHTML(value);
     else if (calculateTime) popoverText = <CalculateDateDifference date={value} />;
-    else popoverText = <VerifyLink>{value} </VerifyLink>;
+    else popoverText = <VerifyLink color={color}>{value} </VerifyLink>;
 
     const textDirection = containsHtmlTags || calculateTime ? true : isStartWithHebrewLetter(value);
 
     return (
         <Grid container justifyContent="space-between" alignItems="center">
             <Grid
-                item
                 sx={{
                     fontFamily: 'Rubik',
                     overflow: 'hidden',
@@ -73,7 +68,7 @@ const Value: React.FC<{
                 }}
                 onDoubleClick={handleDoubleClick}
             >
-                <HighlightText text={innerContent} searchedText={searchValue} isLink />
+                <HighlightText text={innerContent} searchedText={searchValue} isLink color={color} />
                 {(!hideValue || !hideField) && numLines > 1 && (
                     <IconButton onClick={handleDoubleClick} disableRipple>
                         <Typography style={{ color: '#9398C2', fontSize: '13px', lineHeight: '11.85px' }}>{i18next.t('actions.viewMore')}</Typography>
@@ -104,6 +99,7 @@ const Value: React.FC<{
                         fontWeight: 200,
                         fontSize: '15px',
                         direction: textDirection ? 'rtl' : 'ltr',
+                        color,
                     }}
                 >
                     {popoverText}
@@ -111,7 +107,7 @@ const Value: React.FC<{
             </Popover>
 
             {hideValue && (
-                <Grid item>
+                <Grid>
                     <IconButton onClick={handleClick}>
                         {hideField ? <VisibilityOff style={{ color: '#9398C2' }} /> : <Visibility style={{ color: '#9398C2' }} />}
                     </IconButton>

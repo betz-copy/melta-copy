@@ -1,15 +1,14 @@
+import { ArrowLeftRounded } from '@mui/icons-material';
 import { Collapse, Grid, IconButton, Typography, useTheme } from '@mui/material';
-import React, { useState } from 'react';
-import ArrowLeftRoundedIcon from '@mui/icons-material/ArrowLeftRounded';
 import { FormikProps } from 'formik';
-import { _cloneObject } from '@ag-grid-community/core';
-import { permissionTypeCheckboxProps } from './instancesPermissionsCard';
-import { PermissionData } from '../../interfaces/users';
+import React, { useState } from 'react';
 import { PermissionScope } from '../../interfaces/permissions';
+import { PermissionData } from '../../interfaces/users';
 import { getChangedTemplatePermission } from '../../utils/permissions/instancePermissions';
 import { entityTemplatePermissionDialog } from '../../utils/permissions/permissionOfUserDialog';
 import PermissionScopeBtn from './PermissionScopeBtn';
 import EntityTemplateCheckboxPermission from './entityTemplateCheckboxPermission';
+import { permissionTypeCheckboxProps } from './instancesPermissionsCard';
 
 const CategoryCheckboxPermission: React.FC<{
     categoryDisplayName: string;
@@ -43,8 +42,8 @@ const CategoryCheckboxPermission: React.FC<{
         );
 
     return (
-        <Grid item container>
-            <Grid xs={6} display="flex" alignItems="center">
+        <Grid container paddingY={0.5}>
+            <Grid size={{ xs: 6 }} display="flex" alignItems="center">
                 <IconButton
                     aria-label="arrowLeftRounded"
                     onClick={() => {
@@ -53,11 +52,11 @@ const CategoryCheckboxPermission: React.FC<{
                     size="small"
                     sx={{ color: theme.palette.primary.main, padding: '0', marginRight: '5px', transform: '180deg', boxSizing: 'border-box' }}
                 >
-                    <ArrowLeftRoundedIcon sx={{ rotate: openEntitiesList ? '-90deg' : '0deg', transition: 'rotate 0.5s' }} />
+                    <ArrowLeftRounded sx={{ rotate: openEntitiesList ? '-90deg' : '0deg', transition: 'rotate 0.5s' }} />
                 </IconButton>
                 <Typography>{categoryDisplayName}</Typography>
             </Grid>
-            <Grid xs={3}>
+            <Grid size={{ xs: 3 }}>
                 <PermissionScopeBtn
                     viewMode={viewMode}
                     defaultChecked={permissionType.read.checked}
@@ -65,12 +64,12 @@ const CategoryCheckboxPermission: React.FC<{
                     disabled={disabled || permissionType.write.checked}
                     indeterminate={
                         !categoryPermissions.scope &&
-                        Object.keys(templatesPermissions ?? {}).length > 0 &&
+                        !!Object.keys(templatesPermissions ?? {}).length &&
                         Object.keys(templatesPermissions ?? {}).length <= entityTemplates.length
                     }
                 />
             </Grid>
-            <Grid xs={3}>
+            <Grid size={{ xs: 3 }}>
                 <PermissionScopeBtn
                     viewMode={viewMode}
                     defaultChecked={permissionType.write.checked}
@@ -78,14 +77,14 @@ const CategoryCheckboxPermission: React.FC<{
                     disabled={disabled}
                     indeterminate={
                         categoryPermissions.scope !== PermissionScope.write &&
-                        Object.values(templatesPermissions ?? {}).filter((templatePermission) => templatePermission.scope === PermissionScope.write)
-                            .length > 0 &&
+                        !!Object.values(templatesPermissions ?? {}).filter((templatePermission) => templatePermission.scope === PermissionScope.write)
+                            .length &&
                         Object.values(templatesPermissions ?? {}).filter((templatePermission) => templatePermission.scope === PermissionScope.write)
                             .length <= entityTemplates.length
                     }
                 />
             </Grid>
-            <Grid xs={12}>
+            <Grid size={{ xs: 12 }}>
                 <Collapse in={openEntitiesList}>
                     {entityTemplates
                         .sort((a, _) => Number(a.isParentTemplateInDifferentCategory))

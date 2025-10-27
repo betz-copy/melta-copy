@@ -3,16 +3,16 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import { InfiniteScroll } from '../../../../common/InfiniteScroll';
+import DateRange from '../../../../common/inputs/DateRange';
+import MultipleSelect from '../../../../common/inputs/MultipleSelect';
 import { environment } from '../../../../globals';
 import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { getActivityLogRequest, IActivityLog } from '../../../../services/activityLogService';
-import ActivityLogRow from './ActivityLogRow';
 import { IProcessDetails } from '../../../../interfaces/processes/processTemplate';
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
-import DateRange from '../../../../common/inputs/DateRange';
-import MultipleSelect from '../../../../common/inputs/MultipleSelect';
+import { getActivityLogRequest, IActivityLog } from '../../../../services/activityLogService';
 import { FilterButton } from '../../../SystemManagement/components/FilterButton';
+import ActivityLogRow from './ActivityLogRow';
 
 const { infiniteScrollPageCount } = environment.activityLog;
 
@@ -69,7 +69,6 @@ const ActivitiesContent: React.FC<{
         <>
             <Grid container flexDirection="column" alignItems="center" marginBottom="20px">
                 <Grid
-                    item
                     sx={{
                         marginBottom: '20px',
                     }}
@@ -81,25 +80,27 @@ const ActivitiesContent: React.FC<{
                         sx={{ borderRadius: '7px', width: '300px' }}
                         placeholder={i18next.t('globalSearch.searchInHistory')}
                         value={searchInput}
-                        InputProps={{
-                            endAdornment: (
-                                <InputAdornment
-                                    position="end"
-                                    sx={{
-                                        fontWeight: '400',
-                                        letterSpacing: '0em',
-                                        lineHeight: '16px',
-                                        gap: '10px',
-                                    }}
-                                >
-                                    <img src="/icons/search-gray.svg" style={{ alignSelf: 'center', height: '18px' }} />
-                                </InputAdornment>
-                            ),
-                            startAdornment: <InputAdornment position="start" />,
+                        slotProps={{
+                            input: {
+                                endAdornment: (
+                                    <InputAdornment
+                                        position="end"
+                                        sx={{
+                                            fontWeight: '400',
+                                            letterSpacing: '0em',
+                                            lineHeight: '16px',
+                                            gap: '10px',
+                                        }}
+                                    >
+                                        <img src="/icons/search-gray.svg" style={{ alignSelf: 'center', height: '18px' }} />
+                                    </InputAdornment>
+                                ),
+                                startAdornment: <InputAdornment position="start" />,
+                            },
                         }}
                     />
                 </Grid>
-                <Grid item width="300px" marginBottom="20px">
+                <Grid width="300px" marginBottom="20px">
                     <MultipleSelect
                         items={items}
                         id="1"
@@ -108,7 +109,8 @@ const ActivitiesContent: React.FC<{
                         multiple
                         selectedValue={selectedValue}
                         onChange={(_event, newVal) => {
-                            setActivitiesFilterValue(newVal.map((val) => val.value));
+                            if (newVal === null) return;
+                            setActivitiesFilterValue(Array.isArray(newVal) ? newVal.map((val) => val.value) : [newVal.value]);
                         }}
                         textFieldProps={{}}
                         required={false}
@@ -117,10 +119,9 @@ const ActivitiesContent: React.FC<{
                         variant="outlined"
                         rawErrors={[]}
                         label={i18next.t('entityPage.activityLog.activityType')}
-                        value={activitiesFilterValue}
                     />
                 </Grid>
-                <Grid item width="300px" marginBottom="10px">
+                <Grid width="300px" marginBottom="10px">
                     <DateRange
                         onStartDateChange={setStartDateInput}
                         onEndDateChange={setEndDateInput}
@@ -131,7 +132,7 @@ const ActivitiesContent: React.FC<{
                         borderRadius="20px"
                     />
                 </Grid>
-                <Grid item alignSelf="flex-start" marginLeft="25px">
+                <Grid alignSelf="flex-start" marginLeft="25px">
                     <FilterButton
                         displayIcon={false}
                         disabled={!searchInput && !startDateInput && !endDateInput && (!activitiesFilterValue || !activitiesFilterValue.length)}

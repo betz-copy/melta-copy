@@ -71,7 +71,12 @@ const hebrew = {
     },
     updateEntityActionInfo: {
         updatingEntity: ' עדכון ישות',
+        createEntity: 'יצירת ישות',
+        duplicateEntity: 'שכפול ישות ',
         updatingEntityStatus: ' עדכון סטטוס ישות',
+    },
+    cronjobActionInfo: {
+        theEntity: 'הישות',
     },
     dateAboutToExpireNotification: {
         dateAboutToExpireHeadline: 'שים לב,\n',

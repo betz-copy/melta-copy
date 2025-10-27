@@ -1,8 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
-import { ForbiddenError, PermissionScope, NotFoundError } from '@microservices/shared';
+import { ForbiddenError, NotFoundError, PermissionScope, ValidationError } from '@microservices/shared';
+import { Request } from 'express';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import RelationshipsTemplateService from '../../externalServices/templates/relationshipsTemplateService';
-import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';
+import { Authorizer } from '../../utils/authorizer';
 import DefaultController from '../../utils/express/controller';
 
 class TemplatesValidator extends DefaultController {
@@ -138,34 +138,42 @@ class TemplatesValidator extends DefaultController {
             });
     }
 
-    async validateUserCanUpdateOrDeleteChildTemplate(req: RequestWithPermissionsOfUserId, _res: Response, next: NextFunction): Promise<void> {
-        try {
-            const childTemplateId = req.params.id;
-            const childTemplates = await this.entityTemplateService.getAllChildTemplates();
-            const childTemplate = childTemplates.find((template) => template._id === childTemplateId);
+    // Printing Templates
+    async validateUserCanCreatePrintingTemplate(req: Request) {
+        return this.validateUserCanCreateRuleTemplate(req);
+    }
 
-            if (!childTemplate) {
-                throw new NotFoundError('Child Template not found');
-            }
+    async validateUserCanUpdateOrDeletePrintingTemplate(req: Request) {
+        return this.validateUserCanUpdateOrDeleteRuleTemplate(req);
+    }
 
-            if (typeof childTemplate.category !== 'string' && typeof childTemplate.category !== 'object') {
-                throw new NotFoundError('Child Template category is invalid');
-            }
+    // Child Templates
+    async validateUserCanUpdateOrDeleteChildTemplate(req: Request): Promise<void> {
+        const childTemplateId = req.params.id;
+        const childTemplate = await this.entityTemplateService.getChildTemplateById(childTemplateId);
 
-            if (req.permissionsOfUserId?.admin?.scope === PermissionScope.write) {
-                return next();
-            }
+        if (typeof childTemplate.category !== 'string' && typeof childTemplate.category !== 'object')
+            throw new NotFoundError('Child Template category is invalid');
 
-            const hasWritePermission = req.permissionsOfUserId?.instances?.categories[childTemplate.category._id]?.scope === PermissionScope.write;
+        const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
 
-            if (!hasWritePermission) {
-                throw new ForbiddenError('User does not have permission to modify this child template');
-            }
+        if (
+            !userPermissions.admin?.scope &&
+            userPermissions.instances?.categories[childTemplate.category._id]?.scope !== PermissionScope.write &&
+            userPermissions.instances?.categories[childTemplate.category._id]?.entityTemplates[childTemplate._id]?.scope !== PermissionScope.write
+        )
+            throw new ForbiddenError('user not authorized', {
+                metadata: `user does not have write permission on child template ${childTemplate}`,
+            });
+    }
 
-            return next();
-        } catch (error) {
-            return next(error);
-        }
+    async validateCanEnableChildTemplate(req: Request): Promise<void> {
+        const { disabled } = req.body;
+        const childTemplateId = req.params.id;
+        const childTemplate = await this.entityTemplateService.getChildTemplateById(childTemplateId);
+
+        if (!disabled && childTemplate?.parentTemplate.disabled)
+            throw new ValidationError('Cannot enable child template under a disabled parent template');
     }
 }
 

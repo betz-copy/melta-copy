@@ -103,20 +103,16 @@ const singleTree = (
     onClick: () => void,
 ) => (
     <Tree
-        flattenedTree={firstTree.flattenedTree}
         preSelectedItemsIds={selectedTemplates.map(({ _id }) => _id)}
         getItemId={getOptionId}
         getItemLabel={getOptionLabel}
-        multi
+        allowMultiSelect
         treeItems={firstTree.tree}
         filteredTreeItems={firstTree.filteredTree}
         onSelectItems={(ids) => {
-            const filteredFirstOptions = firstTree.flattenedTree.filter((option) => ids.includes(getOptionId(option)));
-            setSelectedTemplates((prev) => {
-                const prevIds = prev.map(getOptionId);
-                const filteredSecondOptions = secondTree.flattenedTree.filter((option) => prevIds.includes(getOptionId(option)));
-                return [...filteredFirstOptions, ...filteredSecondOptions];
-            });
+            const newTree = [...firstTree.flattenedTree, ...secondTree.flattenedTree].filter((option) => ids.includes(getOptionId(option)));
+
+            setSelectedTemplates(newTree);
             onClick();
         }}
     />
@@ -154,7 +150,7 @@ const TemplatesSelectGrid: React.FC<{
 
     return (
         <Grid container gap="10px">
-            <Grid item>
+            <Grid>
                 <Box sx={{ marginBottom: '20px', overflowY: 'auto', ...floatingBoxStyle }}>
                     <Button
                         className={classes.button}
@@ -193,8 +189,9 @@ const TemplatesSelectGrid: React.FC<{
                         >
                             {i18next.t('graph.filterTitle')}
                         </Typography>
-                        <Search value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={false} templatesSelectGrid />
-
+                        <Grid justifyItems="center">
+                            <Search value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={false} templatesSelectGrid />
+                        </Grid>
                         <Box style={{ maxHeight: '25rem', paddingBottom: '5px', overflowY: 'auto', overflowX: 'hidden' }}>
                             <SelectAll
                                 allOptionIds={templates.map(getOptionId)}
@@ -234,7 +231,7 @@ const TemplatesSelectGrid: React.FC<{
                 )}
             </Grid>
             {!!secondTree?.filteredTree?.length && (
-                <Grid item>
+                <Grid>
                     <Box style={{ marginTop: '4.4rem' }}>
                         {openFilter && showAll && (
                             <Box sx={{ zIndex: '100', position: 'absolute', width: '235px', ...floatingBoxStyle }}>

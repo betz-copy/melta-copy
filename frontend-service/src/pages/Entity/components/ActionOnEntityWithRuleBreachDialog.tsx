@@ -23,12 +23,13 @@ import {
     IUpdateMultipleEntitiesMetadataPopulated,
 } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
-import { IRuleMap } from '../../../interfaces/rules';
+import { ActionOnFail, IRuleMap } from '../../../interfaces/rules';
 import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesService';
 import { environment } from '../../../globals';
 import { IRuleBreachRequestPopulated } from '../../../interfaces/ruleBreaches/ruleBreachRequest';
 import { groupActionsByEntityId, groupBrokenRulesByEntity } from '../../../utils/loadEntities';
 import { IBrokenRuleEntity } from '../../../interfaces/excel';
+import { IErrorResponse } from '../../../interfaces/error';
 
 const { errorCodes } = environment;
 
@@ -211,7 +212,7 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
             ),
         {
             onError: (err: AxiosError) => {
-                const errorMetadata = err.response?.data?.metadata;
+                const errorMetadata = (err.response?.data as IErrorResponse)?.metadata;
                 if (errorMetadata?.errorCode === errorCodes) {
                     onUpdatedRuleBlock(errorMetadata.brokenRules, errorMetadata.rawBrokenRules);
                 }
@@ -231,10 +232,7 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
             isSubmitting={isLoadingActionOnEntity || isLoadingCreateRuleBreachRequest}
             onCancel={handleClose}
             onSubmit={async () => {
-                const someBrokenRuleIsEnforcement = brokenRules.some(({ ruleId }) => {
-                    const rule = rules.get(ruleId)!;
-                    return rule.actionOnFail === 'ENFORCEMENT';
-                });
+                const someBrokenRuleIsEnforcement = brokenRules.some(({ ruleId }) => rules.get(ruleId)!.actionOnFail === ActionOnFail.ENFORCEMENT);
 
                 if (someBrokenRuleIsEnforcement) {
                     if (actionType === ActionTypes.UpdateMultipleEntities) {

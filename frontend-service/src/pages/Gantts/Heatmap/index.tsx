@@ -40,9 +40,9 @@ export const Heatmap: React.FC<IHeatmapProps> = ({ ganttEvents, groupByEntityRes
                 padding: '2rem',
             }}
         >
-            <Grid item container spacing={2}>
+            <Grid container spacing={2}>
                 {Object.values(heatmapColors).map((color) => (
-                    <Grid item key={color}>
+                    <Grid key={color}>
                         <Typography fontSize={18} display="inline">
                             {`${i18next.t(`gantts.heatmapColors.${color}`)} - `}
                         </Typography>
@@ -53,17 +53,15 @@ export const Heatmap: React.FC<IHeatmapProps> = ({ ganttEvents, groupByEntityRes
                 ))}
             </Grid>
 
-            <Grid item>
+            <Grid>
                 <ViewingBox minHeight="82vh">
-                    <Grid item container>
-                        <Masonry columns={5} spacing={2}>
-                            {heatmapData.map((heatmapBox) => (
-                                <Grid item key={heatmapBox.id}>
-                                    <HeatmapBox heatmapBox={heatmapBox} />
-                                </Grid>
-                            ))}
-                        </Masonry>
-                    </Grid>
+                    <Masonry columns={5} spacing={2}>
+                        {heatmapData.map((heatmapBox) => (
+                            <Grid key={heatmapBox.id}>
+                                <HeatmapBox heatmapBox={heatmapBox} />
+                            </Grid>
+                        ))}
+                    </Masonry>
                 </ViewingBox>
             </Grid>
         </Grid>

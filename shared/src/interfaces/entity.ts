@@ -2,13 +2,15 @@ import { Readable } from 'stream';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from './entityTemplate';
 import { IRelationship } from './relationship';
 import { IMongoRelationshipTemplate } from './relationshipTemplate';
-import { IBrokenRule, IBrokenRulePopulated, IActionPopulated, IAction, ActionErrors, IFailedEntity } from './ruleBreach';
+import { IBulkRuleMail } from './rule';
+import { ActionErrors, IAction, IActionPopulated, IBrokenRule, IBrokenRulePopulated, IFailedEntity } from './ruleBreach';
 import { ICreateEntityMetadata } from './ruleBreach/actionMetadata';
-import { IAgGridTextFilter, IAgGridNumberFilter, IAgGridDateFilter, IAgGridSetFilter } from './ruleBreach/agGrid';
+import { IAgGridDateFilter, IAgGridNumberFilter, IAgGridSetFilter, IAgGridTextFilter } from './ruleBreach/agGrid';
 
 export interface IEntity {
     templateId: string;
     properties: Record<string, any>;
+    coloredFields?: Record<string, string>;
 }
 
 export type IConnection = {
@@ -16,6 +18,11 @@ export type IConnection = {
     sourceEntity: IEntity;
     destinationEntity: IEntity;
 };
+
+export interface IBulkOfActions {
+    instances: IEntity | IRelationship[];
+    emails: IBulkRuleMail[];
+}
 
 export interface IEntityExpanded {
     entity: IEntity;
@@ -176,6 +183,7 @@ export interface ISearchBatchBody {
         [templateId: string]: {
             filter?: ISearchFilter;
             showRelationships: boolean | Array<IMongoRelationshipTemplate['_id']>;
+            childTemplateId?: string;
         };
     };
     sort: ISearchSort;
@@ -234,6 +242,7 @@ export interface IEntityWithIgnoredRules extends ICreateEntityMetadata {
 export interface ITemplateSearchBody {
     textSearch?: string;
     templateIds: string[];
+    childTemplateIds?: string[];
 }
 
 export interface IExportEntitiesBody {

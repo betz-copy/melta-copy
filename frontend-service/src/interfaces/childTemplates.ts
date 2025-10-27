@@ -1,3 +1,4 @@
+import { IAGGridFilter } from '../common/wizards/entityTemplate/commonInterfaces';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../utils/agGrid/interfaces';
 import { IMongoCategory } from './categories';
 import { IEntitySingleProperty, IMongoEntityTemplate, IMongoEntityTemplatePopulated } from './entityTemplates';
@@ -11,9 +12,9 @@ export interface IFieldFilter {
 }
 
 export enum ChipType {
-    Filter = 'filter',
-    Default = 'default',
-    EditByUser = 'editByUser',
+    Filter = 'filters',
+    Default = 'defaultValue',
+    EditByUser = 'isEditableByUser',
 }
 
 export type AllowedChipType = Exclude<ChipType, ChipType.EditByUser>;
@@ -33,11 +34,16 @@ export enum ViewType {
     categoryPage = 'categoryPage',
     userPage = 'userPage',
 }
+export enum ByCurrentDefaultValue {
+    byCurrentUser = 'byCurrentUser',
+    byCurrentDate = 'byCurrentDate',
+}
 
 export interface IChildTemplateProperty {
-    defaultValue?: string | number | boolean | Date | string[];
+    defaultValue?: string | number | boolean | Date | string[] | ByCurrentDefaultValue;
     filters?: Record<string, unknown>;
     isEditableByUser?: boolean;
+    display?: boolean;
 }
 
 export interface IChildTemplate {
@@ -67,6 +73,12 @@ export type IChildTemplateMap = Map<string, IChildTemplatePopulated>;
 export interface IChildTemplatePopulatedFromDb extends Omit<IMongoChildTemplate, 'category' | 'parentTemplateId'> {
     parentTemplate: IMongoEntityTemplatePopulated;
     category: IMongoCategory;
+}
+
+export type IChildTemplateFormProperty = Omit<IChildTemplateProperty, 'filters'> & { filters?: IAGGridFilter[] };
+
+export interface IChildTemplateForm extends Omit<IChildTemplatePopulatedFromDb, 'properties'> {
+    properties: { properties: Record<string, IChildTemplateFormProperty> };
 }
 
 export interface IChildTemplatePopulated

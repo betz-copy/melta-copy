@@ -5,6 +5,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Draggable, Droppable } from 'react-beautiful-dnd';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { defaultEntityTemplatePopulated } from '.';
+import { IMutationWithPayload } from '../../../common/dialogs/ChildTemplateDialog';
 import { IMongoCategory } from '../../../interfaces/categories';
 import { IChildTemplateMap, IMongoChildTemplatePopulated, TemplateItem } from '../../../interfaces/childTemplates';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
@@ -44,15 +45,20 @@ interface CategoryEntitiesBoxProps {
         React.SetStateAction<{
             isWizardOpen: boolean;
             entityTemplate: IMongoEntityTemplatePopulated | null;
-            childTemplate?: IMongoChildTemplatePopulated;
+            mutationProps?: IMutationWithPayload;
         }>
     >;
-    updateEntityTemplateStatusAsync: UseMutateAsyncFunction<
-        IMongoEntityTemplatePopulated,
+    updateTemplateStatusAsync: UseMutateAsyncFunction<
+        | IMongoChildTemplatePopulated
+        | {
+              entityTemplate: IMongoEntityTemplatePopulated;
+              childTemplates: IMongoChildTemplatePopulated[];
+          },
         unknown,
         {
             entityTemplateId: string;
             disabled: boolean;
+            isChild?: boolean;
         },
         unknown
     >;
@@ -66,14 +72,14 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
     setDeleteEntityTemplateDialogState,
     setAddActionsDialogState,
     setAddChildTemplateDialogState,
-    updateEntityTemplateStatusAsync,
+    updateTemplateStatusAsync,
     loadedEntityTemplateId,
     searchText,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const currentUser = useUserStore((state) => state.user);
     const queryClient = useQueryClient();
-    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates');
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates');
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
 
     const [isHoverOnBox, setIsHoverOnBox] = useState(false);
@@ -99,7 +105,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
         const currentCategoryId = entityTemplatesWithCategory.category._id;
 
         return allChildTemplates.filter((child) => {
-            const matchesCategory = child.category._id === currentCategoryId;
+            const matchesCategory = child.category._id === currentCategoryId || child.parentTemplate.category.toString() === currentCategoryId;
             const matchesSearch = searchText === '' || (child.displayName ?? '').toLowerCase().includes(searchText.toLowerCase());
             return matchesCategory && matchesSearch;
         });
@@ -121,22 +127,25 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
 
     const categoryChildTemplatesFiltered = useMemo(() => {
         return categoryChildTemplates.filter((child) => {
-            if (child.parentTemplate?.category._id === entityTemplatesWithCategory.category._id) {
-                return true;
-            }
-
+            if (child.parentTemplate?.category.toString() === entityTemplatesWithCategory.category._id) return true;
             return child.category._id === entityTemplatesWithCategory.category._id;
         });
     }, [categoryChildTemplates, entityTemplates, entityTemplatesWithCategory]);
 
     return (
-        <Droppable droppableId={entityTemplatesWithCategory.category._id}>
+        <Droppable
+            direction="vertical"
+            droppableId={entityTemplatesWithCategory.category._id}
+            isDropDisabled={false}
+            isCombineEnabled={false}
+            ignoreContainerClipping={false}
+        >
             {(provided) => (
                 <Grid ref={provided.innerRef} {...provided.droppableProps}>
                     <Box
                         key={entityTemplatesWithCategory.category._id}
                         header={
-                            <Grid item container justifyContent="space-between" alignItems="center" height="40px" width="284px">
+                            <Grid container justifyContent="space-between" alignItems="center" height="40px" width="284px">
                                 <Grid
                                     ref={containerWrapperRef}
                                     contentEditable={isEditableCategory}
@@ -223,7 +232,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                             setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
                                                             setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
                                                             setAddActionsDialogState={setAddActionsDialogState}
-                                                            updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
+                                                            updateTemplateStatusAsync={updateTemplateStatusAsync}
                                                             setAddChildTemplateDialogState={setAddChildTemplateDialogState}
                                                             entityHasWritePermission={entityHasWritePermission}
                                                             isDisabledView={false}
@@ -234,41 +243,49 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                 </Grid>
                                             )}
                                         </Draggable>
-                                        {templateChildTemplates.map((childTemplate) => (
-                                            <Grid
-                                                key={childTemplate._id}
-                                                sx={{
-                                                    pl: 4,
-                                                    position: 'relative',
-                                                }}
-                                            >
-                                                <SubdirectoryArrowLeft
+                                        {templateChildTemplates.map((childTemplate) => {
+                                            const isDisabled = childTemplate.category._id !== entityTemplatesWithCategory.category._id;
+
+                                            return (
+                                                <Grid
+                                                    key={childTemplate._id}
                                                     sx={{
-                                                        position: 'absolute',
-                                                        left: '6px',
-                                                        top: '50%',
-                                                        transform: 'translateY(-50%)',
-                                                        color: theme.palette.primary.main,
+                                                        pl: 4,
+                                                        position: 'relative',
+                                                        opacity: isDisabled ? 0.6 : 1,
                                                     }}
-                                                />
-                                                <EntityTemplateCard
-                                                    entityTemplate={{
-                                                        ...entityTemplate,
-                                                        _id: childTemplate._id,
-                                                    }}
-                                                    setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
-                                                    setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
-                                                    setAddActionsDialogState={setAddActionsDialogState}
-                                                    updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
-                                                    setAddChildTemplateDialogState={setAddChildTemplateDialogState}
-                                                    entityHasWritePermission={entityHasWritePermission}
-                                                    isDisabledView={entityTemplate.category._id !== entityTemplatesWithCategory.category._id}
-                                                    isChildTemplate={true}
-                                                    title={childTemplate.displayName}
-                                                    categoryColor={entityTemplatesWithCategory.category.color}
-                                                />
-                                            </Grid>
-                                        ))}
+                                                >
+                                                    <SubdirectoryArrowLeft
+                                                        sx={{
+                                                            position: 'absolute',
+                                                            left: '6px',
+                                                            top: '50%',
+                                                            transform: 'translateY(-50%)',
+                                                            color: theme.palette.primary.main,
+                                                        }}
+                                                    />
+                                                    <EntityTemplateCard
+                                                        entityTemplate={{
+                                                            ...entityTemplate,
+                                                            category: childTemplate.category,
+                                                            _id: childTemplate._id,
+                                                            disabled: childTemplates?.get(childTemplate._id)!.disabled!,
+                                                        }}
+                                                        parentDisabled={entityTemplate.disabled}
+                                                        setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
+                                                        setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
+                                                        setAddActionsDialogState={setAddActionsDialogState}
+                                                        updateTemplateStatusAsync={updateTemplateStatusAsync}
+                                                        setAddChildTemplateDialogState={setAddChildTemplateDialogState}
+                                                        entityHasWritePermission={entityHasWritePermission}
+                                                        isDisabledView={isDisabled}
+                                                        isChildTemplate={true}
+                                                        title={childTemplate.displayName}
+                                                        categoryColor={entityTemplatesWithCategory.category.color}
+                                                    />
+                                                </Grid>
+                                            );
+                                        })}
                                     </React.Fragment>
                                 );
                             })}
@@ -286,7 +303,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                             setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
                                             setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
                                             setAddActionsDialogState={setAddActionsDialogState}
-                                            updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
+                                            updateTemplateStatusAsync={updateTemplateStatusAsync}
                                             setAddChildTemplateDialogState={setAddChildTemplateDialogState}
                                             entityHasWritePermission={false}
                                             isDisabledView={true}
@@ -320,7 +337,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                 setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
                                                 setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
                                                 setAddActionsDialogState={setAddActionsDialogState}
-                                                updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
+                                                updateTemplateStatusAsync={updateTemplateStatusAsync}
                                                 setAddChildTemplateDialogState={setAddChildTemplateDialogState}
                                                 entityHasWritePermission={false}
                                                 isDisabledView={childTemplate.category._id !== entityTemplatesWithCategory.category._id}

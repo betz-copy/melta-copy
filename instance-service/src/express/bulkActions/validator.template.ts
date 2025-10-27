@@ -12,6 +12,7 @@ import {
     IEntity,
     ActionErrors,
     ValidationError,
+    CoordinateSystem,
 } from '@microservices/shared';
 import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
@@ -37,6 +38,15 @@ ajv.addFormat('user', {
 });
 ajv.addFormat('text-area', /.*/);
 ajv.addFormat('relationshipReference', /.*/);
+ajv.addFormat('location', {
+    type: 'string',
+    validate: (location) => {
+        const locationObj = JSON.parse(location);
+        return (
+            locationObj.location && (locationObj.coordinateSystem === CoordinateSystem.UTM || locationObj.coordinateSystem === CoordinateSystem.WGS84)
+        );
+    },
+});
 addFormats(ajv);
 ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
 ajv.addKeyword({
@@ -55,6 +65,11 @@ ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',
 });
+ajv.addKeyword({
+    keyword: 'isProfileImage',
+    type: 'boolean',
+});
+
 ajv.addKeyword({ keyword: 'user', type: 'string' });
 ajv.addKeyword({ keyword: 'expandedUserField', type: 'string' });
 ajv.addKeyword({

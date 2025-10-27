@@ -16,6 +16,7 @@ import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { isChildTemplate } from '../../utils/templates';
 import { InfiniteScroll } from '../InfiniteScroll';
 import { getDefaultFilterFromTemplate } from './TemplateTablesView';
+import { useWorkspaceStore } from '../../stores/workspace';
 
 const { infiniteScrollPageCount } = environment.entitiesCardsView;
 
@@ -40,22 +41,23 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
     useImperativeHandle(ref, () => ({ refetch }));
 
     const currentUser = useUserStore((state) => state.user);
-    const currentUserKartoffelId = currentUser?.externalMetadata?.kartoffelId;
-    const currentUserUnit = currentUser?.unit;
+    const currentWorkspace = useWorkspaceStore((state) => state.workspace);
+    const currentUserKartoffelId = currentUser?.kartoffelId;
+    const currentUserUnit = currentUser?.units?.[currentWorkspace._id] ?? [];
 
     return (
         <Grid container direction="column" spacing={4}>
-            <Grid item>
+            <Grid>
                 <Grid container direction="column" spacing={1}>
                     {entitiesCount !== null && (
-                        <Grid item sx={{ color: '#70757a' }}>
+                        <Grid sx={{ color: '#70757a' }}>
                             {i18next.t('entitiesCardView.numberOfSearchResults.approximately')}
                             {entitiesCount} {i18next.t('entitiesCardView.numberOfSearchResults.results')}
                         </Grid>
                     )}
                 </Grid>
             </Grid>
-            <Grid item>
+            <Grid>
                 <Grid container>
                     <InfiniteScroll<
                         IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string]; childTemplateId?: string }
@@ -68,7 +70,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                             let entities: (IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string] })[] = [];
                             let count = 0;
 
-                            if (parentTemplates.length > 0) {
+                            if (parentTemplates.length) {
                                 const result = await getEntitiesWithDirectConnections({
                                     skip: startRow,
                                     limit: infiniteScrollPageCount,
@@ -92,6 +94,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                                         [template.parentTemplate._id!]: {
                                             showRelationships: false,
                                             filter,
+                                            childTemplateId: template._id,
                                         },
                                     },
                                     shouldSemanticSearch: convertToBool(urlSemanticSearch!),
@@ -126,7 +129,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                     >
                         {({ entity, minioFileIdsWithTexts, childTemplateId }) => {
                             const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
-                            const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+                            const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 
                             const entityTemplate = entityTemplates?.get(entity.templateId)!;
                             const childEntityTemplate = childTemplateId ? childTemplates?.get(childTemplateId)! : undefined;

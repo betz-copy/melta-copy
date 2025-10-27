@@ -1,7 +1,12 @@
+import { formatDate, isValid as isValidDate, parse } from 'date-fns';
 import { FormikErrors } from 'formik';
+import { isEqual } from 'lodash';
 import React from 'react';
+import { environment } from '../globals';
+import { ByCurrentDefaultValue } from '../interfaces/childTemplates';
 import { ViewMode } from '../interfaces/dashboard';
 import { IEntitySingleProperty } from '../interfaces/entityTemplates';
+import { IUser } from '../interfaces/users';
 import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../utils/agGrid/interfaces';
 import { DateFilterInput } from './inputs/FilterInputs/DateFilterInput';
 import { MultipleSelectFilterInput } from './inputs/FilterInputs/MultipleSelectFilterInput';
@@ -10,7 +15,11 @@ import { ReadOnlyFilterInput } from './inputs/FilterInputs/ReadonlyFilterInput';
 import { SelectFilterInput } from './inputs/FilterInputs/SelectFilterInput';
 import { TextFilterInput } from './inputs/FilterInputs/TextFilterInput';
 import { IAGGridFilter, IFilterTemplate } from './wizards/entityTemplate/commonInterfaces';
-import { IUser } from '../interfaces/users';
+
+const {
+    relativeDateFilters,
+    formats: { loggingDate, loggingDateTime },
+} = environment;
 
 export const initializedFilterField: Record<string, IAGGridFilter> = {
     'date-time': { filterType: 'date', type: 'equals', dateFrom: null, dateTo: null },
@@ -30,9 +39,14 @@ export const isValidAGGridFilter = (filter: IAGGridFilter | undefined): boolean 
         case 'number':
             return filter.filter !== undefined || (filter.type === 'inRange' && filter.filterTo !== undefined);
         case 'date':
-            return filter.dateFrom !== null && (filter.type !== 'inRange' || filter.dateTo !== null);
+            if (!filter.dateFrom) return false;
+            if (relativeDateFilters.includes(filter.type) || filter.dateFrom === ByCurrentDefaultValue.byCurrentDate) return true;
+
+            const isDateFromValid = isValidDate(parse(filter.dateFrom, loggingDate, new Date()));
+
+            return filter.type === 'inRange' ? isDateFromValid && filter.dateTo !== null : isDateFromValid;
         case 'set':
-            return Array.isArray(filter.values) && filter.values.length > 0;
+            return Array.isArray(filter.values) && !!filter.values.length;
         default:
             return false;
     }
@@ -147,7 +161,7 @@ const handleTypedFilterTypeChange = (
 
 const handleCheckboxChange = (
     filters: IFilterTemplate[],
-    option: string | IUser,
+    options: (string | null | IUser)[],
     checked: boolean,
     filterField: IAGGridSetFilter,
     index: number,
@@ -155,9 +169,10 @@ const handleCheckboxChange = (
 ) => {
     const currentValues = filterField.values || [];
 
-    let updatedValues: (string | IUser | null)[];
-    if (checked) updatedValues = currentValues.includes(option) ? currentValues : [...currentValues, option];
-    else updatedValues = currentValues.filter((item) => item !== option);
+    let updatedValues: (string | null | IUser)[];
+
+    if (checked) updatedValues = Array.from(new Set([...currentValues, ...options]));
+    else updatedValues = currentValues.filter((value) => !options.some((option) => isEqual(option, value)));
 
     handleFilterFieldChange(filters, index, { values: updatedValues }, onChange);
 };
@@ -184,19 +199,27 @@ export const renderFilterInput = (
     const notIncludedFormats = ['fileId', 'signature', 'comment', ...(!userInput ? ['user'] : [])];
     if (items?.format === 'fileId' || (!userInput && items?.format === 'user') || notIncludedFormats.includes(format ?? '')) return null;
 
-    if (propEnum)
+    const enumOptions = propEnum ?? items?.enum;
+
+    if (enumOptions)
         return (
-            <SelectFilterInput
-                filterField={field.filterType === 'text' ? (field as IAGGridTextFilter) : undefined}
-                enumOptions={propEnum}
-                handleFilterFieldChange={(updatedField, condition) => {
-                    if (updatedField && (updatedField.filterType === 'text' || updatedField.filterType === 'number')) {
-                        handleFilterFieldChange(filters, index, updatedField, onChange, condition);
-                    }
-                }}
-                error={Boolean(touched && (filterErrors as IAGGridTextFilter)?.filter)}
-                helperText={(filterErrors as IAGGridTextFilter)?.filter}
+            <MultipleSelectFilterInput
+                filterField={field.filterType === 'set' ? field : undefined}
+                handleCheckboxChange={(options: (string | null)[], checked: boolean) =>
+                    handleCheckboxChange(filters, options, checked, filter.filterField as IAGGridSetFilter, index, onChange)
+                }
+                enumOptions={enumOptions}
                 readOnly={Boolean(readonly)}
+                isError={Boolean(touched && (filterErrors as IAGGridSetFilter)?.values)}
+                helperText={
+                    touched
+                        ? typeof filterErrors === 'string'
+                            ? filterErrors
+                            : Array.isArray((filterErrors as IAGGridSetFilter)?.values)
+                              ? (filterErrors as IAGGridSetFilter).values.filter(Boolean).join(', ')
+                              : ''
+                        : ''
+                }
             />
         );
 
@@ -206,12 +229,15 @@ export const renderFilterInput = (
                 filterField={field?.filterType === 'date' ? (field as IAGGridDateFilter) : undefined}
                 handleFilterTypeChange={(newType) => handleTypedFilterTypeChange(filters, 'date', index, newType, field, onChange)}
                 handleDateChange={(newValue, isStartDate) => {
+                    const dateFormat = format === 'date-time' ? loggingDateTime : loggingDate;
+                    const dateString = newValue ? (typeof newValue === 'string' ? newValue : formatDate(newValue, dateFormat)) : null;
+
                     handleFilterFieldChange(
                         filters,
                         index,
                         {
                             ...field,
-                            ...(isStartDate ? { dateFrom: newValue } : { dateTo: newValue }),
+                            ...(isStartDate ? { dateFrom: dateString } : { dateTo: dateString }),
                         } as IAGGridDateFilter,
                         onChange,
                     );
@@ -237,35 +263,13 @@ export const renderFilterInput = (
             />
         );
 
-    if (items && items?.enum)
-        return (
-            <MultipleSelectFilterInput
-                filterField={field.filterType === 'set' ? field : undefined}
-                handleCheckboxChange={(option: string, checked: boolean) =>
-                    handleCheckboxChange(filters, option, checked, filter.filterField as IAGGridSetFilter, index, onChange)
-                }
-                enumOptions={items?.enum}
-                readOnly={Boolean(readonly)}
-                isError={Boolean(touched && (filterErrors as IAGGridSetFilter)?.values)}
-                helperText={
-                    touched
-                        ? typeof filterErrors === 'string'
-                            ? filterErrors
-                            : Array.isArray((filterErrors as IAGGridSetFilter)?.values)
-                            ? (filterErrors as IAGGridSetFilter).values.filter(Boolean).join(', ')
-                            : ''
-                        : ''
-                }
-            />
-        );
-
     if (items?.format === 'user' && type === 'array' && userInput)
         return (
             <MultipleUserFilterInput
                 filterField={field?.filterType === 'set' ? field : undefined}
                 inputValue={userInput.value}
                 setInputValue={userInput.set}
-                handleCheckboxChange={(option: string | IUser, checked: boolean) =>
+                handleCheckboxChange={(option: (string | IUser)[], checked: boolean) =>
                     handleCheckboxChange(filters, option, checked, filter.filterField as IAGGridSetFilter, index, onChange)
                 }
                 readOnly={Boolean(readonly)}
@@ -275,8 +279,8 @@ export const renderFilterInput = (
                         ? typeof filterErrors === 'string'
                             ? filterErrors
                             : Array.isArray((filterErrors as IAGGridSetFilter)?.values)
-                            ? (filterErrors as IAGGridSetFilter).values.filter(Boolean).join(', ')
-                            : ''
+                              ? (filterErrors as IAGGridSetFilter).values.filter(Boolean).join(', ')
+                              : ''
                         : ''
                 }
             />

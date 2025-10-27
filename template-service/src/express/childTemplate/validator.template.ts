@@ -59,19 +59,25 @@ class ChildTemplateValidator extends DefaultController<IMongoChildTemplate, Chil
         return relationshipReferenceIdsMap;
     };
 
-    private cleanActionCode = (action: string, entitiesTemplatesByIds: Map<string, TemplateItem>) => {
+    private cleanActionCode = (action: string, entitiesTemplatesByIds: Map<string, TemplateItem>, templateId: string) => {
         const defaultCode = [
             '/// To throw a custom error in your code, use the following syntax:',
             '// throw new CustomError("Your error message")',
             '',
-            `${generateInterfaceWithRelationships(entitiesTemplatesByIds)}`,
+            `${generateInterfaceWithRelationships(templateId, entitiesTemplatesByIds)}`,
             '',
             'function updateEntity(entityId: string, properties: Record<string, any>): void {',
             '  // updates entity in data base',
             '}',
         ].join('\n');
 
-        return action.slice(defaultCode.length + 1);
+        const lastBraceInDefault = defaultCode.lastIndexOf('}');
+
+        const braceIndex = action.indexOf('}', lastBraceInDefault);
+
+        const startIndex = braceIndex + 2; // Skip } and first \n, keeping the second \n
+
+        return action.slice(startIndex);
     };
 
     validateActionCode = async (req: Request) => {
@@ -99,7 +105,7 @@ class ChildTemplateValidator extends DefaultController<IMongoChildTemplate, Chil
         // todo: ensure that the code doesn't use in global variables
         const entityTemplatesByIds = await this.getAllRelationshipReferencesEntityTemplates(templateId);
 
-        addPropertyToRequest(req, 'actions', this.cleanActionCode(actions, entityTemplatesByIds));
+        addPropertyToRequest(req, 'actions', this.cleanActionCode(actions, entityTemplatesByIds, templateId));
     };
 }
 

@@ -1,72 +1,100 @@
-import React, { CSSProperties } from 'react';
-import { Grid, tooltipClasses, useTheme, Typography } from '@mui/material';
-import { useQueryClient } from 'react-query';
-import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
-import { Link } from 'wouter';
+import { AppRegistration as DefaultEntityTemplateIcon, VisibilityOff } from '@mui/icons-material';
+import { Grid, tooltipClasses, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import { MeltaTooltip } from './MeltaTooltip';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
-import { EntityPropertiesInternal } from './EntityProperties';
-import { CustomIcon } from './CustomIcon';
-import { getEntityTemplateColor } from '../utils/colors';
-import { ColoredEnumChip } from './ColoredEnumChip';
+import React, { CSSProperties } from 'react';
+import { useQueryClient } from 'react-query';
+import { Link } from 'wouter';
+import { IChildTemplateMap } from '../interfaces/childTemplates';
 import { IEntity } from '../interfaces/entities';
+import { IEntityTemplateMap } from '../interfaces/entityTemplates';
+import { useUserStore } from '../stores/user';
 import { useWorkspaceStore } from '../stores/workspace';
+import { getEntityTemplateColor } from '../utils/colors';
 import { locationConverterToString } from '../utils/map/convert';
+import { isWorkspaceAdmin } from '../utils/permissions/instancePermissions';
+import { ColoredEnumChip } from './ColoredEnumChip';
+import { CustomIcon } from './CustomIcon';
+import { EntityPropertiesInternal } from './EntityProperties';
 import { CoordinateSystem } from './inputs/JSONSchemaFormik/RjsfLocationWidget';
+import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
+import { isEntityFitsToChildTemplate } from '../utils/childTemplates';
 interface RelationshipReferenceViewProps {
     entity: IEntity | string;
     relatedTemplateId: string;
     relatedTemplateField: string;
     style?: CSSProperties;
     searchValue?: string;
+    color?: string;
 }
-const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ entity, relatedTemplateId, relatedTemplateField, searchValue }) => {
+const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
+    entity,
+    relatedTemplateId,
+    relatedTemplateField,
+    searchValue,
+    color,
+}) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
+    const currentUser = useUserStore((state) => state.user);
+    const currentUserKartoffelId = currentUser?.kartoffelId;
+
     const { height, width } = workspace.metadata.iconSize;
     const queryClient = useQueryClient();
     const theme = useTheme();
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const allowedChildTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 
-    const relatedEntityTemplate: IMongoEntityTemplatePopulated = entityTemplates.get(relatedTemplateId!)!;
+    const childTemplatesOfRelatedTemplate =
+        Array.from(allowedChildTemplates.values()).filter((child) => child.parentTemplate._id === relatedTemplateId) ?? [];
+
+    const template = entityTemplates.get(relatedTemplateId!);
+    const relatedEntityTemplate = template ?? childTemplatesOfRelatedTemplate[0]?.parentTemplate;
     const entityTemplateColor = relatedEntityTemplate ? getEntityTemplateColor(relatedEntityTemplate) : undefined;
 
-    if (!relatedEntityTemplate) {
+    const adjustedChildTemplate = childTemplatesOfRelatedTemplate.find((child) =>
+        isEntityFitsToChildTemplate(
+            child,
+            !template,
+            entity,
+            currentUserKartoffelId,
+            currentUser?.units?.[workspace._id] ?? [],
+            isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
+        ),
+    );
+
+    if (!template && !adjustedChildTemplate)
         return (
             <Grid container alignItems="center" justifyContent="flex-start" height="100%" paddingTop={1.5}>
                 <MeltaTooltip
-                    PopperProps={{
-                        sx: {
-                            [`& .${tooltipClasses.tooltip}`]: {
-                                fontSize: '1rem',
-                                color: '#F2F4FA',
-                                backgroundColor: '#F2F4FA !important',
-                                boxShadow: 10,
+                    slotProps={{
+                        popper: {
+                            sx: {
+                                [`& .${tooltipClasses.tooltip}`]: {
+                                    fontSize: '1rem',
+                                    color: '#F2F4FA',
+                                    backgroundColor: '#F2F4FA !important',
+                                    boxShadow: 10,
+                                },
                             },
                         },
-                    }}
-                    slotProps={{
                         arrow: { style: { color: '#F2F4FA' } },
                     }}
                     arrow
                     placement="top"
                     title={<Typography color="primary">{i18next.t('templateEntitiesAutocomplete.noWritePermissions')}</Typography>}
                 >
-                    <VisibilityOffIcon sx={{ height, width, color: theme.palette.action.disabled }} />
+                    <VisibilityOff sx={{ height, width, color: theme.palette.action.disabled }} />
                 </MeltaTooltip>
             </Grid>
         );
-    }
 
-    if (typeof entity === 'string') {
+    if (typeof entity === 'string')
         return (
             <Grid display="inline-block" overflow={'hidden'} textOverflow={'ellipsis'}>
                 <ColoredEnumChip
                     key={entity}
                     label={entity}
-                    color={entityTemplateColor}
+                    enumColor={color ?? entityTemplateColor}
                     icon={
                         relatedEntityTemplate.iconFileId ? (
                             <CustomIcon iconUrl={relatedEntityTemplate.iconFileId} height={height} width={width} color={theme.palette.primary.main} />
@@ -80,15 +108,15 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
                             />
                         )
                     }
+                    color={color}
                 />
             </Grid>
         );
-    }
 
     const relationshipObjectToField = (): string => {
         if (relatedEntityTemplate.properties.properties[relatedTemplateField].format === 'location') {
             return entity.properties[`${relatedTemplateField}_coordinateSystem`] === CoordinateSystem.UTM
-                ? locationConverterToString(entity.properties[relatedTemplateField].location, CoordinateSystem.WGS84, CoordinateSystem.UTM) ?? ''
+                ? (locationConverterToString(entity.properties[relatedTemplateField].location, CoordinateSystem.WGS84, CoordinateSystem.UTM) ?? '')
                 : entity.properties[relatedTemplateField].location;
         }
 
@@ -121,17 +149,17 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
     return (
         <Grid>
             <MeltaTooltip
-                PopperProps={{
-                    sx: {
-                        [`& .${tooltipClasses.tooltip}`]: {
-                            fontSize: '1rem',
-                            color: '#F2F4FA',
-                            backgroundColor: '#F2F4FA !important',
-                            boxShadow: 10,
+                slotProps={{
+                    popper: {
+                        sx: {
+                            [`& .${tooltipClasses.tooltip}`]: {
+                                fontSize: '1rem',
+                                color: '#F2F4FA',
+                                backgroundColor: '#F2F4FA !important',
+                                boxShadow: 10,
+                            },
                         },
                     },
-                }}
-                slotProps={{
                     arrow: { style: { color: '#F2F4FA' } },
                 }}
                 arrow
@@ -142,7 +170,8 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
                     ) : (
                         <EntityPropertiesInternal
                             properties={entity.properties}
-                            entityTemplate={relatedEntityTemplate}
+                            coloredFields={entity.coloredFields}
+                            entityTemplate={template ?? adjustedChildTemplate!}
                             showPreviewPropertiesOnly
                             mode="normal"
                             textWrap
@@ -151,14 +180,14 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
                 }
             >
                 <Link
-                    href={`/entity/${entity.properties._id}`}
+                    href={`/entity/${entity.properties._id}${!template ? `?childTemplateId=${adjustedChildTemplate?._id}` : ''}`}
                     style={{ color: theme.palette.primary.main, textDecoration: 'inherit', fontWeight: 'bold' }}
                 >
                     <Grid display="inline-block" overflow={'hidden'} textOverflow={'ellipsis'} width={'100%'}>
                         <ColoredEnumChip
                             key={field}
                             label={field}
-                            color={entityTemplateColor}
+                            enumColor={entityTemplateColor}
                             icon={
                                 relatedEntityTemplate.iconFileId ? (
                                     <CustomIcon
@@ -177,6 +206,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
                                     />
                                 )
                             }
+                            color={color}
                             searchValue={searchValue}
                         />
                     </Grid>

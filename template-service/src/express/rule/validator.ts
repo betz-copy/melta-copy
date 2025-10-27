@@ -19,7 +19,9 @@ import {
     IAggregationGroup,
     DefaultController,
     defaultValidationOptions,
+    IFormula,
 } from '@microservices/shared';
+import { flatten } from 'flat';
 import { joiValidate } from '../../utils/joi';
 import EntityTemplateManager from '../entityTemplate/manager';
 import { RelationshipTemplateManager } from '../relationshipTemplate/manager';
@@ -90,7 +92,7 @@ const sumAggFunctionSchema = Joi.object({
 
 const regularFunctionSchema = Joi.object({
     isRegularFunction: Joi.boolean().valid(true).required(),
-    functionType: Joi.string().valid('toDate', 'addToDate', 'addToDateTime', 'subFromDate', 'subFromDateTime').required(),
+    functionType: Joi.string().valid('toDate', 'addToDate', 'addToDateTime', 'subFromDate', 'subFromDateTime', 'getToday').required(),
     arguments: Joi.array().items(Joi.object()).required(),
 });
 
@@ -357,6 +359,17 @@ class RuleValidator extends DefaultController<IMongoRelationshipTemplate, Relati
                 return 'dateTime';
             }
 
+            case 'getToday': {
+                assert(funcArguments.length === 0, 'getToday function mustnt contain arguments');
+
+                // dont allow getToday() to use in relationshipfields (in aggregation functions).
+                // because rule will run every night on all entities of template, so to allow DB indexes to optimize query (of search failed entities)
+                // DB indexes optimization for rule w/ getToday not yet implemented, but to have the option in the future
+                assert(aggregationGroupsContext.length === 0, 'getToday function is not allowed inside aggregation, because of performance issues');
+
+                return 'date';
+            }
+
             default:
                 throw new Error('Shouldnt reach here. functionType must be one of allowed types');
         }
@@ -409,7 +422,7 @@ class RuleValidator extends DefaultController<IMongoRelationshipTemplate, Relati
 
         (groupData.subFormulas as Array<any>).forEach((subFormula) => {
             // eslint-disable-next-line no-use-before-define -- circular recursive functions
-            return this.validateFormula(subFormula, relevantTemplates, aggregationGroupsContext);
+            this.validateFormula(subFormula, relevantTemplates, aggregationGroupsContext);
         });
     }
 
@@ -443,7 +456,7 @@ class RuleValidator extends DefaultController<IMongoRelationshipTemplate, Relati
         if (formulaData.isAggregationGroup) this.validateAggregationGroup(formulaData, relevantTemplates, aggregationGroupsContext);
     }
 
-    private async validateAndGetRelevantTemplates(rule: IRule): Promise<IRelevantTemplates> {
+    private async validateAndGetRelevantTemplates(rule: Omit<IRule, 'disabled' | 'doesFormulaHaveTodayFunc'>): Promise<IRelevantTemplates> {
         const entityTemplate = await this.entityTemplateManager.getTemplateById(rule.entityTemplateId);
 
         const relationshipTemplatesOfEntityAsSource = (await this.manager.searchTemplates({
@@ -475,7 +488,13 @@ class RuleValidator extends DefaultController<IMongoRelationshipTemplate, Relati
         return { entityTemplate, connectionsTemplatesOfEntityTemplate };
     }
 
-    async validateRuleFormula(rule: IRule) {
+    doesFormulaHaveTodayFunc(formula: IFormula) {
+        const flattedFormula = flatten<IFormula, Record<string, any>>(formula);
+
+        return Object.keys(flattedFormula).some((key) => key.endsWith('functionType') && flattedFormula[key] === 'getToday');
+    }
+
+    async validateRuleFormula(rule: Omit<IRule, 'disabled' | 'doesFormulaHaveTodayFunc'>) {
         const relevantTemplates = await this.validateAndGetRelevantTemplates(rule);
 
         this.validateFormula(rule.formula, relevantTemplates, []);
@@ -483,6 +502,9 @@ class RuleValidator extends DefaultController<IMongoRelationshipTemplate, Relati
 
     async validateRuleFormulaMiddleware(req: Request) {
         await this.validateRuleFormula(req.body);
+
+        // eslint-disable-next-line no-underscore-dangle
+        req.body.doesFormulaHaveTodayFunc = this.doesFormulaHaveTodayFunc(req.body.formula);
     }
 }
 

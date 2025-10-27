@@ -19,20 +19,20 @@ import { useQueryClient } from 'react-query';
 import { InfoTypography } from '../../../common/InfoTypography';
 import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
 import { ViewModeTextField } from '../../../common/inputs/ViewModeTextField';
-import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { StepComponentProps } from '../../../common/wizards';
 import { IChart, IPermission } from '../../../interfaces/charts';
+import { IChildTemplateMap } from '../../../interfaces/childTemplates';
 import { ChartForm, DashboardItemType, ViewMode } from '../../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { useUserStore } from '../../../stores/user';
 import { initialValues } from '../../../utils/charts/getChartAxes';
 import { dashboardInitialValues } from '../../../utils/dashboard/formik';
 import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
+import { getRelevantEntityTemplate } from '../../Dashboard/DashboardItemDetails/Chart/BodyComponent';
 import ChartAutoComplete from '../../Dashboard/DashboardItemDetails/Chart/chartsAutoComplete';
 import { ChangeTemplate, ConfirmEditPermissionCommonItem } from '../../Dashboard/Dialogs';
 import { ChartTypesEdit } from './ChartTypesEdit';
-import { getRelevantEntityTemplate } from '../../Dashboard/DashboardItemDetails/Chart/BodyComponent';
-import { IChildTemplateMap } from '../../../interfaces/childTemplates';
 
 const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: boolean; viewMode: ViewMode }> = (props) => {
     const { isDashboardPage, viewMode } = props;
@@ -42,8 +42,8 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
     const theme = useTheme();
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childEntityTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
-    const entityTemplateOptions = [...entityTemplates.keys(), ...childEntityTemplates.keys()];
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
+    const entityTemplateOptions = [...entityTemplates.keys(), ...childTemplates.keys()];
 
     const [chartMode, setChartMode] = useState<'new' | 'exist'>(values._id && viewMode === ViewMode.Add ? 'exist' : 'new');
     const [permissionDialogWarningOpen, setPermissionDialogWarningOpen] = useState<boolean>(false);
@@ -61,7 +61,7 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
     return (
         <Grid container direction="column" spacing={3} wrap="nowrap">
             {isDashboardPage && (
-                <Grid item>
+                <Grid>
                     <FormikAutoComplete
                         formik={props}
                         formikField={values.childTemplateId ? 'childTemplateId' : 'templateId'}
@@ -72,16 +72,16 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                                 setChangeTemplateWarning({
                                     isOpen: true,
                                     newTemplate: newValue,
-                                    fatherTemplateId: childEntityTemplates.get(newValue as string)?.parentTemplate._id,
+                                    fatherTemplateId: childTemplates.get(newValue as string)?.parentTemplate._id,
                                 });
                             else {
-                                const childTemplate = newValue ? childEntityTemplates.get(newValue as string) : undefined;
+                                const childTemplate = newValue ? childTemplates.get(newValue as string) : undefined;
                                 const templateId = childTemplate?.parentTemplate._id || newValue || '';
                                 setFieldValue('templateId', templateId);
                                 if (!!childTemplate) setFieldValue('childTemplateId', newValue!);
                             }
                         }}
-                        getOptionLabel={(id) => childEntityTemplates.get(id)?.displayName || entityTemplates.get(id)?.displayName || id}
+                        getOptionLabel={(id) => childTemplates.get(id)?.displayName || entityTemplates.get(id)?.displayName || id}
                         multiple={false}
                         readonly={viewMode === ViewMode.ReadOnly}
                         style={{ width: 295 }}
@@ -91,7 +91,7 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
             {values.templateId && (
                 <>
                     {isDashboardPage && viewMode === ViewMode.Add && (
-                        <Grid item>
+                        <Grid>
                             <FormControl sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                                 <Typography fontSize="14px" fontWeight="14px" color={theme.palette.text.primary}>
                                     {i18next.t('dashboard.charts.createChart')}
@@ -138,14 +138,14 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                     )}
 
                     {chartMode === 'new' || viewMode !== ViewMode.Add ? (
-                        <Grid item container direction="column" spacing={4}>
+                        <Grid container direction="column" spacing={4}>
                             {isDashboardPage && viewMode === ViewMode.Add && (
-                                <Grid item>
+                                <Grid>
                                     <Divider />
                                 </Grid>
                             )}
-                            <Grid item container direction="column" spacing={2}>
-                                <Grid item>
+                            <Grid container direction="column" spacing={2}>
+                                <Grid>
                                     <ViewModeTextField
                                         id="name"
                                         name="name"
@@ -159,7 +159,7 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                                         readOnly={viewMode === ViewMode.ReadOnly}
                                     />
                                 </Grid>
-                                <Grid item>
+                                <Grid>
                                     <ViewModeTextField
                                         id="description"
                                         name="description"
@@ -176,17 +176,17 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                                     />
                                 </Grid>
 
-                                <Grid item marginTop={2}>
+                                <Grid marginTop={2}>
                                     <ChartTypesEdit formik={props} entityTemplate={template} disabled={viewMode === ViewMode.ReadOnly} />
                                 </Grid>
 
-                                <Grid item container direction="column" spacing={2}>
-                                    <Grid item>
+                                <Grid container direction="column" spacing={2}>
+                                    <Grid>
                                         <Typography fontSize="14px" fontWeight="14px" color="#9398C2">
                                             {i18next.t('charts.permissions')}
                                         </Typography>
                                     </Grid>
-                                    <Grid item>
+                                    <Grid>
                                         <ToggleButtonGroup
                                             exclusive
                                             id="permissions"
@@ -227,14 +227,14 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                                     </Grid>
                                 </Grid>
                                 {values.permission === IPermission.Protected && (
-                                    <Grid item>
+                                    <Grid>
                                         <InfoTypography text={i18next.t('dashboard.charts.permissionWarning')} />
                                     </Grid>
                                 )}
                             </Grid>
                         </Grid>
                     ) : (
-                        <Grid item>
+                        <Grid>
                             <ChartAutoComplete formikProps={props} />
                         </Grid>
                     )}

@@ -1,18 +1,18 @@
 /* eslint-disable react/no-array-index-key */
 /* eslint-disable no-param-reassign */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Autocomplete, Grid, TextField, Typography, useTheme } from '@mui/material';
-import i18next from 'i18next';
-import { useInfiniteQuery } from 'react-query';
-import { toast } from 'react-toastify';
 import { _debounce } from '@ag-grid-community/core';
 import { InfoOutlined } from '@mui/icons-material';
-import { getEntitiesWithDirectConnections } from '../../../services/entitiesService';
-import { IEntity } from '../../../interfaces/entities';
-import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import { Autocomplete, Grid, TextField, Typography, useTheme } from '@mui/material';
+import i18next from 'i18next';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useInfiniteQuery } from 'react-query';
+import { toast } from 'react-toastify';
 import { EntityPropertiesInternal } from '../../../common/EntityProperties';
+import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
+import { IEntity } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { getEntitiesWithDirectConnections } from '../../../services/entitiesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { getLocationProperties } from '../../../utils/map';
 
@@ -25,7 +25,7 @@ const LocationAutoCompleteOption: React.FC<LocationAutoCompleteOptionProps> = ({
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return (
-        <Grid container item alignItems="center" justifyContent="space-between" paddingX="10px">
+        <Grid container alignItems="center" justifyContent="space-between" paddingX="10px">
             <Typography
                 style={{
                     textOverflow: 'ellipsis',
@@ -101,15 +101,11 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
     );
 
     useEffect(() => {
-        if (!inputValue && Object.keys(templatesObject).length > 0) {
-            setInputValue(' ');
-        }
+        if (!inputValue && Object.keys(templatesObject).length) setInputValue(' ');
     }, [templatesObject, inputValue]);
 
     useEffect(() => {
-        if (data) {
-            setSearchResults(data.pages.flatMap(({ entities }) => entities.map(({ entity }) => entity)));
-        }
+        if (data) setSearchResults(data.pages.flatMap(({ entities }) => entities.map(({ entity }) => entity)));
     }, [data]);
 
     const debouncedSearch = useCallback(
@@ -141,7 +137,7 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
     );
 
     useEffect(() => {
-        if (data) {
+        if (data)
             setSearchResults(
                 data.pages
                     .flatMap(({ entities }) => entities.map(({ entity }) => entity))
@@ -149,8 +145,7 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
                         Object.values(getLocationProperties(entity, selectedTemplates).locationProperties || {}).some((value) => value !== undefined),
                     ),
             );
-        }
-    }, [data, selectedTemplates]);
+    }, [data]);
 
     return (
         <Autocomplete
@@ -171,26 +166,28 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
                     fontSize: '14px',
                 },
             }}
-            onInputChange={(event, _newInputValue, reason) => {
-                if (reason === 'reset') {
-                    setInputValue('');
-                } else if (reason === 'clear') {
+            onInputChange={(_event, newInputValue, reason) => {
+                if (reason === 'clear') {
+                    setInputValue(' ');
                     onClear();
-                } else debouncedSearch((event.target as HTMLInputElement).value);
+                } else debouncedSearch(newInputValue);
             }}
             renderInput={(params) => (
                 <TextField
                     {...params}
                     sx={{
                         backgroundColor: theme.palette.background.default,
+                        borderRadius: '7px',
                         width: 400,
-                        borderRadius: '10px',
                     }}
                     placeholder={i18next.t('globalSearch.searchInPage')}
                     size="small"
                     variant="outlined"
                 />
             )}
+            onChange={(_event, newValue) => {
+                if (newValue) handleEntityClick(newValue);
+            }}
             renderOption={(props, option) => {
                 const { template, locationTemplateProperties, locationProperties } = getLocationProperties(option, selectedTemplates);
                 if (!template) return false;
@@ -198,9 +195,9 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
                 return (
                     <li {...props} ref={props['data-option-index'] === searchResults.length - 1 ? lastElementRef : null}>
                         <Grid container direction="row" alignItems="center">
-                            <Grid item container direction="column" onClick={() => handleEntityClick(option)}>
-                                <Grid item container alignSelf="center" direction="row" spacing={1}>
-                                    <Grid item>
+                            <Grid container direction="column">
+                                <Grid container alignSelf="center" direction="row" spacing={1}>
+                                    <Grid>
                                         <MeltaTooltip
                                             title={
                                                 template.propertiesPreview.length === 0 ? (
@@ -208,6 +205,7 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
                                                 ) : (
                                                     <EntityPropertiesInternal
                                                         properties={option.properties}
+                                                        coloredFields={option.coloredFields}
                                                         entityTemplate={template}
                                                         mode="white"
                                                         textWrap
@@ -218,11 +216,11 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
                                             <InfoOutlined sx={{ color: '#166BD4' }} />
                                         </MeltaTooltip>
                                     </Grid>
-                                    <Grid item>
+                                    <Grid>
                                         <Typography fontWeight={600}>{template.displayName}</Typography>
                                     </Grid>
                                 </Grid>
-                                <Grid item container direction="column" spacing={1}>
+                                <Grid container direction="column" spacing={1}>
                                     {template.mapSearchProperties
                                         ? template.mapSearchProperties.map((key, index) => (
                                               <LocationAutoCompleteOption

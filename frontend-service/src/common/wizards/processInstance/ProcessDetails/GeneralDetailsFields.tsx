@@ -1,11 +1,15 @@
 /* eslint-disable no-nested-ternary */
 import { Autocomplete, Grid, TextField } from '@mui/material';
+import { DatePicker, LocalizationProvider, PickersLocaleText } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { he } from 'date-fns/locale';
 import i18next from 'i18next';
 import React from 'react';
-import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { BlueTitle } from '../../../BlueTitle';
+import { environment } from '../../../../globals';
 import { useDarkModeStore } from '../../../../stores/darkMode';
+import BlueTitle from '../../../MeltaDesigns/BlueTitle';
+
+const { date } = environment.formats;
 
 export const GeneralDetailsFields = ({
     processTemplatesMap,
@@ -38,7 +42,7 @@ export const GeneralDetailsFields = ({
     };
 
     return (
-        <Grid item width="100%">
+        <Grid width="100%">
             {!viewMode && (
                 <BlueTitle
                     title={i18next.t('wizard.processInstance.generalDetails')}
@@ -48,7 +52,7 @@ export const GeneralDetailsFields = ({
                 />
             )}
             <Grid container spacing={3} width="100%">
-                <Grid item width="100%">
+                <Grid width="100%">
                     <Autocomplete
                         id="template"
                         options={Array.from(processTemplatesMap.values())}
@@ -68,17 +72,21 @@ export const GeneralDetailsFields = ({
                                 fullWidth
                                 name="template"
                                 variant={variant}
-                                InputProps={{
-                                    ...params.InputProps,
-                                    disableUnderline: !!viewMode,
-                                    endAdornment: viewMode ? null : params.InputProps.endAdornment,
+                                slotProps={{
+                                    input: {
+                                        ...params.InputProps,
+                                        disableUnderline: !!viewMode,
+                                        endAdornment: viewMode ? null : params.InputProps.endAdornment,
+                                    },
+                                    inputLabel: {
+                                        shrink: viewMode || undefined,
+                                    },
                                 }}
-                                InputLabelProps={{
-                                    shrink: viewMode || undefined,
-                                }}
-                                label={i18next.t(
-                                    processInstance ? 'wizard.processInstance.processTemplate' : 'processInstancesPage.chooseProcessTemplate',
-                                )}
+                                label={
+                                    i18next.t(
+                                        processInstance ? 'wizard.processInstance.processTemplate' : 'processInstancesPage.chooseProcessTemplate',
+                                    ) as string
+                                }
                                 helperText={touched.template ? errors.template : ''}
                                 error={touched.template && Boolean(errors.template)}
                                 onBlur={handleBlur}
@@ -87,88 +95,96 @@ export const GeneralDetailsFields = ({
                     />
                 </Grid>
                 {!viewMode && (
-                    <Grid item width={viewMode ? '50%' : '100%'} minWidth={viewMode ? '100px' : undefined}>
+                    <Grid width={viewMode ? '50%' : '100%'} minWidth={viewMode ? '100px' : undefined}>
                         <TextField
                             id="name"
                             name="name"
                             size="small"
                             sx={textFieldStyle}
                             fullWidth
-                            label={i18next.t('wizard.processInstance.processInstanceName')}
+                            label={i18next.t('wizard.processInstance.processInstanceName') as string}
                             value={values.name}
                             variant={variant}
-                            InputLabelProps={{
-                                shrink: viewMode || undefined,
+                            slotProps={{
+                                input: {
+                                    readOnly: viewMode,
+                                },
+                                inputLabel: {
+                                    shrink: viewMode || undefined,
+                                },
                             }}
                             onChange={(e) => setFieldValue('name', e.target.value)}
                             helperText={touched.name ? errors.name : ''}
                             error={touched.name && Boolean(errors.name)}
                             onBlur={handleBlur}
-                            InputProps={{
-                                readOnly: viewMode,
-                            }}
                         />
                     </Grid>
                 )}
-                <Grid item width={viewMode ? '50%' : '100%'} minWidth={viewMode ? '100px' : undefined}>
-                    <LocalizationProvider dateAdapter={AdapterDateFns}>
-                        <DatePicker
-                            maxDate={values.endDate}
-                            label={i18next.t('wizard.processInstance.processInstanceStartDate')}
-                            value={values.startDate}
-                            onChange={(newStartDate) => {
-                                setFieldValue('startDate', newStartDate);
-                            }}
-                            disableOpenPicker={viewMode}
-                            InputProps={{ disableUnderline: viewMode }}
-                            renderInput={(params) => (
-                                <TextField
-                                    size="small"
-                                    sx={textFieldStyle}
-                                    fullWidth
-                                    variant={variant}
-                                    InputLabelProps={{
-                                        shrink: viewMode || undefined,
-                                    }}
-                                    {...params}
-                                    error={touched.startDate && Boolean(errors.startDate)}
-                                    helperText={touched.startDate ? errors.startDate : ''}
-                                    onBlur={() => setFieldTouched('startDate')}
-                                />
-                            )}
-                            readOnly={viewMode}
-                        />
-                    </LocalizationProvider>
-                </Grid>
-                <Grid item width={viewMode ? '50%' : '100%'} minWidth={viewMode ? '100px' : undefined}>
-                    <LocalizationProvider dateAdapter={AdapterDateFns}>
-                        <DatePicker
-                            minDate={values.startDate}
-                            label={i18next.t('wizard.processInstance.processInstanceEndDate')}
-                            value={values.endDate}
-                            onChange={(newEndDate) => {
-                                setFieldValue('endDate', newEndDate);
-                            }}
-                            disableOpenPicker={viewMode}
-                            InputProps={{ disableUnderline: viewMode }}
-                            renderInput={(params) => (
-                                <TextField
-                                    size="small"
-                                    sx={textFieldStyle}
-                                    variant={variant}
-                                    fullWidth
-                                    InputLabelProps={{
-                                        shrink: viewMode || undefined,
-                                    }}
-                                    {...params}
-                                    error={touched.endDate && Boolean(errors.endDate)}
-                                    helperText={touched.endDate ? errors.endDate : ''}
-                                    onBlur={() => setFieldTouched('endDate')}
-                                />
-                            )}
-                            readOnly={viewMode}
-                        />
-                    </LocalizationProvider>
+                <Grid container direction={viewMode ? 'row' : 'column'} wrap="nowrap">
+                    <Grid width={viewMode ? '50%' : '100%'} minWidth={viewMode ? '100px' : undefined}>
+                        <LocalizationProvider
+                            dateAdapter={AdapterDateFns}
+                            adapterLocale={he}
+                            localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true }) as PickersLocaleText}
+                        >
+                            <DatePicker
+                                maxDate={values.endDate}
+                                label={i18next.t('wizard.processInstance.processInstanceStartDate')}
+                                value={values.startDate}
+                                onChange={(newStartDate) => setFieldValue('startDate', newStartDate)}
+                                slots={{ textField: (params) => <TextField {...params} />, openPickerIcon: viewMode ? () => null : undefined }}
+                                slotProps={{
+                                    textField: {
+                                        size: 'small',
+                                        fullWidth: true,
+                                        variant,
+                                        sx: textFieldStyle,
+                                        InputLabelProps: { shrink: viewMode || undefined },
+                                        inputProps: { readOnly: viewMode },
+                                        onBlur: () => setFieldTouched('startDate'),
+                                        error: touched.startDate && Boolean(errors.startDate),
+                                        helperText: touched.startDate ? errors.startDate : '',
+                                        InputProps: { disableUnderline: viewMode },
+                                    },
+                                }}
+                                readOnly={viewMode}
+                                enableAccessibleFieldDOMStructure={false}
+                                format={date}
+                            />
+                        </LocalizationProvider>
+                    </Grid>
+                    <Grid width={viewMode ? '50%' : '100%'} minWidth={viewMode ? '100px' : undefined}>
+                        <LocalizationProvider
+                            dateAdapter={AdapterDateFns}
+                            adapterLocale={he}
+                            localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true }) as PickersLocaleText}
+                        >
+                            <DatePicker
+                                minDate={values.startDate}
+                                format={date}
+                                enableAccessibleFieldDOMStructure={false}
+                                label={i18next.t('wizard.processInstance.processInstanceEndDate')}
+                                value={values.endDate}
+                                onChange={(newEndDate) => setFieldValue('endDate', newEndDate)}
+                                slots={{ textField: (params) => <TextField {...params} />, openPickerIcon: viewMode ? () => null : undefined }}
+                                slotProps={{
+                                    textField: {
+                                        size: 'small',
+                                        fullWidth: true,
+                                        variant,
+                                        sx: textFieldStyle,
+                                        InputLabelProps: { shrink: viewMode || undefined },
+                                        inputProps: { readOnly: viewMode },
+                                        onBlur: () => setFieldTouched('endDate'),
+                                        error: touched.endDate && Boolean(errors.endDate),
+                                        helperText: touched.endDate ? errors.endDate : '',
+                                        InputProps: { disableUnderline: viewMode },
+                                    },
+                                }}
+                                readOnly={viewMode}
+                            />
+                        </LocalizationProvider>
+                    </Grid>
                 </Grid>
             </Grid>
         </Grid>

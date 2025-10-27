@@ -4,7 +4,17 @@ import { ICountSearchResult, IFilterOfField, IFilterOfTemplate, ISearchEntitiesO
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getDayEnd, getDayStart } from '../date';
 import { addDefaultFieldsToTemplate } from '../templates';
-import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridFilterModel, IAGGridRequest, IAGGridSort, IAGGridTextFilter } from './interfaces';
+import {
+    IAGGidNumberFilter,
+    IAGGridDateFilter,
+    IAGGridFilterModel,
+    IAGGridRequest,
+    IAGGridSort,
+    IAGGridTextFilter,
+    RelativeDateFilters,
+} from './interfaces';
+
+const { relativeDateFilters, fileIdLength } = environment;
 
 export const setFilterToFilterOfTemplate = (field: string, values: (string | null)[]): IFilterOfTemplate => {
     return { [field]: { $in: values } };
@@ -44,17 +54,17 @@ export const textFilterOfFileToFilterTemplate = (field: string, { type, filter }
 
     switch (type) {
         case 'equals':
-            return { [field]: { $rgx: `.{${environment.fileIdLength}}${escapeRegExp(filter!)}` } };
+            return { [field]: { $rgx: `.{${fileIdLength}}${escapeRegExp(filter!)}` } };
         case 'notEqual':
-            return { [field]: { $not: { $rgx: `.{${environment.fileIdLength}}${escapeRegExp(filter!)}` } } };
+            return { [field]: { $not: { $rgx: `.{${fileIdLength}}${escapeRegExp(filter!)}` } } };
         case 'contains':
-            return { [field]: { $rgx: `.{${environment.fileIdLength}}.*${escapeRegExp(filter!)}.*` } };
+            return { [field]: { $rgx: `.{${fileIdLength}}.*${escapeRegExp(filter!)}.*` } };
         case 'notContains':
-            return { [field]: { $not: { $rgx: `.{${environment.fileIdLength}}.*${escapeRegExp(filter!)}.*` } } };
+            return { [field]: { $not: { $rgx: `.{${fileIdLength}}.*${escapeRegExp(filter!)}.*` } } };
         case 'startsWith':
-            return { [field]: { $rgx: `^.{${environment.fileIdLength}}${escapeRegExp(filter!)}.*` } };
+            return { [field]: { $rgx: `^.{${fileIdLength}}${escapeRegExp(filter!)}.*` } };
         case 'endsWith':
-            return { [field]: { $rgx: `.{${environment.fileIdLength}}.*${escapeRegExp(filter!)}` } };
+            return { [field]: { $rgx: `.{${fileIdLength}}.*${escapeRegExp(filter!)}` } };
         case 'blank':
             return { [field]: { $eq: null } };
         case 'notBlank':
@@ -90,10 +100,29 @@ export const numberFilterToFilterOfTemplate = (field: string, { type, filter, fi
     }
 };
 
+const timezoneOffset = new Date().getTimezoneOffset() * 60 * 1000;
+
+const getRelativeDateFilter = (field: string, type: IAGGridDateFilter['type']) => {
+    switch (type) {
+        case RelativeDateFilters.thisWeek:
+        case RelativeDateFilters.thisMonth:
+        case RelativeDateFilters.thisYear:
+            return { [field]: { $gte: type, $lte: type } };
+        case RelativeDateFilters.untilToday:
+            return { [field]: { $lte: type } };
+        case RelativeDateFilters.fromToday:
+            return { [field]: { $gte: type } };
+        default:
+            throw new Error('Invalid relative date filter');
+    }
+};
+
 export const dateFilterToFilterOfTemplate = (
     field: string,
     { type, dateFrom: dateFromString, dateTo: dateToString }: IAGGridDateFilter,
 ): IFilterOfTemplate => {
+    if (relativeDateFilters.includes(type)) return getRelativeDateFilter(field, type);
+
     if (!dateFromString) {
         switch (type) {
             case 'blank':
@@ -105,7 +134,7 @@ export const dateFilterToFilterOfTemplate = (
         }
     }
 
-    const dateFrom = new Date(dateFromString).toISOString().split('T')[0];
+    const dateFrom = new Date(new Date(dateFromString).getTime() - timezoneOffset).toISOString().split('T')[0];
 
     switch (type) {
         case 'equals':
@@ -122,7 +151,7 @@ export const dateFilterToFilterOfTemplate = (
             return { [field]: { $gte: dateFrom } };
         case 'inRange':
             // eslint-disable-next-line no-case-declarations
-            const dateTo = new Date(dateToString!).toISOString().split('T')[0];
+            const dateTo = new Date(new Date(dateToString!).getTime() - timezoneOffset).toISOString().split('T')[0];
             return { [field]: { $gte: dateFrom, $lte: dateTo } };
         default:
             throw new Error('Invalid supported ag-grid filter type method');
@@ -133,6 +162,8 @@ export const dateTimeFilterToFilterOfTemplate = (
     field: string,
     { type, dateFrom: dateFromString, dateTo: dateToString }: IAGGridDateFilter,
 ): IFilterOfTemplate => {
+    if (relativeDateFilters.includes(type)) return getRelativeDateFilter(field, type);
+
     if (!dateFromString) {
         switch (type) {
             case 'blank':

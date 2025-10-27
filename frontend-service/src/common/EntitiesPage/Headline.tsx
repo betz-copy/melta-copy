@@ -1,28 +1,33 @@
-import { AutoAwesome, Search, TableChartOutlined } from '@mui/icons-material';
-import AddIcon from '@mui/icons-material/Add';
-import CardsViewIcon from '@mui/icons-material/RecentActors';
-import DownloadIcon from '@mui/icons-material/VerticalAlignBottomOutlined';
 import { GridApi } from '@ag-grid-community/core';
+import { useMatomo } from '@datapunt/matomo-tracker-react';
+import {
+    Add as AddIcon,
+    AutoAwesome,
+    AutoAwesomeOutlined,
+    RecentActors as CardsViewIcon,
+    VerticalAlignBottomOutlined as DownloadIcon,
+    Search,
+    TableChartOutlined,
+} from '@mui/icons-material';
 import { BaseTextFieldProps, Box, CircularProgress, Grid, IconButton, ToggleButton, ToggleButtonGroup, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import { debounce } from 'lodash';
-import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
-import { useMatomo } from '@datapunt/matomo-tracker-react';
+import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
+import { IMongoCategory } from '../../interfaces/categories';
+import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import SearchInput from '../inputs/SearchInput';
-import { IMongoCategory } from '../../interfaces/categories';
-import { useWorkspaceStore } from '../../stores/workspace';
-import TemplatesSelectCheckbox from '../templatesSelectCheckbox';
-import { BlueTitle } from '../BlueTitle';
-import { MeltaTooltip } from '../MeltaTooltip';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { useWorkspaceStore } from '../../stores/workspace';
+import { convertToBool } from '../../utils/convertStringToBool';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
-import { convertToBool } from '../../utils/convertStringToBool';
+import { isChildTemplate } from '../../utils/templates';
+import SearchInput from '../inputs/SearchInput';
+import BlueTitle from '../MeltaDesigns/BlueTitle';
+import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
+import TemplatesSelectCheckbox from '../templatesSelectCheckbox';
 import { AddEntityButton } from './Buttons/AddEntity';
-import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 
 export const GlobalSearchBar: React.FC<{
     inputValue?: string;
@@ -112,7 +117,7 @@ export const GlobalSearchBar: React.FC<{
                     }
                     sx={{ padding: 0, paddingLeft: 0.5 }}
                 >
-                    {boolUrl ? <AutoAwesome color="primary" /> : <AutoAwesomeOutlinedIcon />}
+                    {boolUrl ? <AutoAwesome color="primary" /> : <AutoAwesomeOutlined />}
                 </IconButton>
             </MeltaTooltip>
         ),
@@ -201,7 +206,9 @@ const EntitiesPageHeadline = <T extends IMongoEntityTemplatePopulated | IMongoCh
 
     const onSuccessCreate = (entity: IEntity) => {
         const handleTemplatesTablesView = () => {
-            const template = entityTemplateSelectCheckboxProps.templates.find((entityTemplate) => entityTemplate._id === entity.templateId);
+            const template = entityTemplateSelectCheckboxProps.templates.find(
+                (entityTemplate) => (isChildTemplate(entityTemplate) ? entityTemplate.parentTemplate?._id : entityTemplate._id) === entity.templateId,
+            );
 
             if (template) {
                 try {
@@ -250,7 +257,7 @@ const EntitiesPageHeadline = <T extends IMongoEntityTemplatePopulated | IMongoCh
             alignItems="center"
             wrap="nowrap"
         >
-            <Grid item>
+            <Grid>
                 <Grid container direction="row" display="flex" wrap="nowrap" alignItems="center">
                     <BlueTitle
                         title={pageTitle}
@@ -258,9 +265,9 @@ const EntitiesPageHeadline = <T extends IMongoEntityTemplatePopulated | IMongoCh
                         variant="h4"
                         style={{ fontSize: workspace.metadata.mainFontSizes.headlineTitleFontSize }}
                     />
-                    <Grid item paddingLeft="3rem" paddingTop="5px">
-                        <Grid item container wrap="nowrap" gap="15px">
-                            <Grid item data-tour="template-filter">
+                    <Grid paddingLeft="3rem" paddingTop="5px">
+                        <Grid container wrap="nowrap" gap="15px">
+                            <Grid data-tour="template-filter">
                                 <TemplatesSelectCheckbox
                                     title={i18next.t('entityTemplatesCheckboxLabel')}
                                     templates={entityTemplateSelectCheckboxProps.templates}
@@ -273,7 +280,7 @@ const EntitiesPageHeadline = <T extends IMongoEntityTemplatePopulated | IMongoCh
                                     toTopBar
                                 />
                             </Grid>
-                            <Grid item data-tour="search-input">
+                            <Grid data-tour="search-input">
                                 <GlobalSearchBar
                                     inputValue={searchInput}
                                     setInputValue={setSearchInput}
@@ -289,9 +296,9 @@ const EntitiesPageHeadline = <T extends IMongoEntityTemplatePopulated | IMongoCh
                     </Grid>
                 </Grid>
             </Grid>
-            <Grid item>
+            <Grid>
                 <Grid container spacing={1} wrap="nowrap" alignItems="center" justifyContent="center">
-                    <Grid item>
+                    <Grid>
                         <ToggleButtonGroup
                             value={viewModeProps.viewMode}
                             onChange={handleToggleChange}
@@ -313,7 +320,7 @@ const EntitiesPageHeadline = <T extends IMongoEntityTemplatePopulated | IMongoCh
                         </ToggleButtonGroup>
                     </Grid>
                     {excelExportProps && (
-                        <Grid item>
+                        <Grid>
                             <IconButton
                                 style={{ background: theme.palette.primary.main, borderRadius: '7px', width: '135px', height: '35px' }}
                                 onClick={() => {
@@ -336,7 +343,7 @@ const EntitiesPageHeadline = <T extends IMongoEntityTemplatePopulated | IMongoCh
                             </IconButton>
                         </Grid>
                     )}
-                    <Grid item>
+                    <Grid>
                         <AddEntityButton
                             disabledToolTip
                             style={{

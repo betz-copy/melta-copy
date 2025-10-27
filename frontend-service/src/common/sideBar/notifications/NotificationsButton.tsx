@@ -1,9 +1,9 @@
+import { Notifications as NotificationsIcon } from '@mui/icons-material';
 import { Grid, IconButton } from '@mui/material';
 import React from 'react';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import { NotificationCount } from './NotificationCount';
 import { INotificationGroupCountDetails } from '../../../interfaces/notifications';
-import { MeltaTooltip } from '../../MeltaTooltip';
+import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
+import { NotificationCount } from './NotificationCount';
 
 interface NotificationsButtonProps {
     notificationCountDetails: INotificationGroupCountDetails;
@@ -29,7 +29,7 @@ export const NotificationsButton: React.FC<NotificationsButtonProps> = ({
             >
                 <IconButton onClick={onClick} sx={{ borderRadius: 10, margin: '0.2rem', paddingBottom: '0', paddingX: '0.5rem' }}>
                     <Grid container alignItems="center" justifyContent="space-between" spacing={1}>
-                        <Grid item position="relative">
+                        <Grid container position="relative">
                             <NotificationsIcon sx={{ color: iconColor, fontSize: 30, width: '30px', height: '30px' }} />
                             <NotificationCount
                                 notificationCount={notificationCountDetails.total}

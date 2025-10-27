@@ -16,14 +16,14 @@ import _debounce from 'lodash.debounce';
 import React, { useCallback, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { BlueTitle } from '../../common/BlueTitle';
+import BlueTitle from '../../common/MeltaDesigns/BlueTitle';
 import UserAutocomplete from '../../common/inputs/UserAutocomplete';
 import { PermissionScope } from '../../interfaces/permissions';
 import { IMongoUser, IUser } from '../../interfaces/users';
 import { createUserRequest, searchUsersByPermissions } from '../../services/userService';
+import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { PermissionsDialogCard } from './permissionsDialogCard';
-import { useUserStore } from '../../stores/user';
 
 interface IPermissionsDialogProps {
     open: boolean;
@@ -58,8 +58,7 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
     const { mutate: giveUserPermissionsToWorkspace } = useMutation({
         mutationFn: () =>
             createUserRequest(
-                searchedUser!.externalMetadata.kartoffelId,
-                searchedUser!.externalMetadata.digitalIdentitySource,
+                searchedUser!.kartoffelId,
                 {
                     [workspace._id]: { admin: { scope: PermissionScope.write } },
                 },
@@ -89,7 +88,7 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
         >
             <DialogTitle>
                 <Grid container>
-                    <Grid item>
+                    <Grid>
                         <BlueTitle
                             title={`${i18next.t('permissions.dialog.title')} ${
                                 workspace.name === '' && workspace.path === '/'
@@ -101,7 +100,7 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
                         />
                     </Grid>
                     {hasPermissionsToModify() && (
-                        <Grid item container flex={1} justifyContent="flex-end">
+                        <Grid container flex={1} justifyContent="flex-end">
                             <Button
                                 variant="contained"
                                 onClick={() => setAddUserOpened((prev) => !prev)}
@@ -163,7 +162,6 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
                 }}
             >
                 <Grid
-                    item
                     container
                     flexDirection="column"
                     flexWrap="nowrap"
@@ -173,7 +171,7 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
                     border="1px solid rgba(0, 0, 0, 0.12)"
                     borderRadius="10px"
                 >
-                    <Grid item width="100%" marginBottom="15px">
+                    <Grid width="100%" marginBottom="15px">
                         <TextField
                             onChange={(e) => {
                                 setSearchText(e.target.value);
@@ -182,20 +180,22 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
                             sx={{ borderRadius: '7px', width: '100%' }}
                             label={i18next.t('permissions.searchUser')}
                             value={searchText}
-                            InputProps={{
-                                endAdornment: (
-                                    <InputAdornment
-                                        position="end"
-                                        sx={{
-                                            fontWeight: '400',
-                                            letterSpacing: '0em',
-                                            lineHeight: '16px',
-                                            gap: '10px',
-                                        }}
-                                    >
-                                        <img src="/icons/search-gray.svg" style={{ alignSelf: 'center', height: '18px' }} />
-                                    </InputAdornment>
-                                ),
+                            slotProps={{
+                                input: {
+                                    endAdornment: (
+                                        <InputAdornment
+                                            position="end"
+                                            sx={{
+                                                fontWeight: '400',
+                                                letterSpacing: '0em',
+                                                lineHeight: '16px',
+                                                gap: '10px',
+                                            }}
+                                        >
+                                            <img src="/icons/search-gray.svg" style={{ alignSelf: 'center', height: '18px' }} />
+                                        </InputAdornment>
+                                    ),
+                                },
                             }}
                         />
                     </Grid>
@@ -203,9 +203,9 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
                     {isLoading ? (
                         <CircularProgress size={50} />
                     ) : users.length ? (
-                        <Grid item container flexDirection="column" height="100%" width="100%" flexWrap="nowrap" overflow="auto" padding="5px">
+                        <Grid container flexDirection="column" height="100%" width="100%" flexWrap="nowrap" overflow="auto" padding="5px">
                             {users.map((user) => (
-                                <Grid item key={user._id}>
+                                <Grid key={user._id}>
                                     <PermissionsDialogCard
                                         user={user}
                                         workspaceId={workspace._id}

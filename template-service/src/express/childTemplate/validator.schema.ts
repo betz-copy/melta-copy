@@ -1,4 +1,4 @@
-import { MongoIdSchema, searchFilterSchema, variableNameValidation } from '@microservices/shared';
+import { MongoIdSchema, searchFilterSchema, variableNameValidation, ViewType } from '@microservices/shared';
 import Joi from 'joi';
 
 const childTemplatePropertySchema = Joi.object({
@@ -9,20 +9,21 @@ const childTemplatePropertySchema = Joi.object({
         return value;
     }),
     isEditableByUser: Joi.boolean(),
+    display: Joi.boolean(),
 });
 
 const childEntityTemplateSchema = {
     name: variableNameValidation.required(),
     displayName: Joi.string().required(),
-    description: Joi.string(),
+    description: Joi.string().allow(''),
     parentTemplateId: MongoIdSchema.required(),
     category: MongoIdSchema.required(),
     properties: Joi.object({
-        properties: Joi.object().pattern(Joi.string(), childTemplatePropertySchema).required(),
+        properties: Joi.object().pattern(Joi.string(), childTemplatePropertySchema).min(1).required(),
     }).required(),
     disabled: Joi.boolean().default(false),
     actions: Joi.string(),
-    viewType: Joi.string().valid('categoryPage', 'userPage').required(),
+    viewType: Joi.string().valid(ViewType.categoryPage, ViewType.userPage).required(),
     isFilterByCurrentUser: Joi.boolean().default(false),
     filterByCurrentUserField: Joi.string(),
     filterByUnitUserField: Joi.string(),
@@ -106,5 +107,27 @@ export const updateEntityTemplateActionSchema = Joi.object({
     query: {},
     params: {
         templateId: MongoIdSchema.required(),
+    },
+});
+
+// PUT /api/entities/child/:templateId/status
+export const updateChildTemplateStatusSchema = Joi.object({
+    body: {
+        disabled: Joi.boolean().required(),
+    },
+    query: {},
+    params: {
+        templateId: MongoIdSchema.required(),
+    },
+});
+
+// PUT /api/entities/child/:parentId/multiStatuses
+export const multiUpdateChildTemplateStatusByParentIdSchema = Joi.object({
+    body: {
+        disabled: Joi.boolean().required(),
+    },
+    query: {},
+    params: {
+        parentId: MongoIdSchema.required(),
     },
 });

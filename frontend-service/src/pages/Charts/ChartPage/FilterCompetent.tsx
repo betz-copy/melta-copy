@@ -61,7 +61,6 @@ const FilterCompetent = <T extends TableForm | ChartForm>({
                         <Grid key={fieldBase}>
                             <Grid sx={{ borderRadius: '10px', backgroundColor }}>
                                 <Grid
-                                    item
                                     sx={{
                                         height: !readonly ? '90px' : undefined,
                                         display: 'flex',
@@ -79,9 +78,11 @@ const FilterCompetent = <T extends TableForm | ChartForm>({
                                             onChange={(_e, selectedField) => {
                                                 const selectedKey = selectedField || '';
                                                 const selectedProp = entityTemplate?.properties.properties[selectedKey];
-                                                const { format, type } = selectedProp || {};
+                                                const { format, type, enum: enumValues } = selectedProp || {};
                                                 const newFilterField =
-                                                    (format && initializedFilterField[format]) || (type && initializedFilterField[type]);
+                                                    (enumValues && initializedFilterField['array']) ||
+                                                    (format && initializedFilterField[format]) ||
+                                                    (type && initializedFilterField[type]);
 
                                                 const newFiltersArray = [...filters];
                                                 newFiltersArray[index] = {
@@ -101,6 +102,7 @@ const FilterCompetent = <T extends TableForm | ChartForm>({
                                             isOptionEqualToValue={(option, value) => option === value}
                                             getOptionDisabled={(option) => {
                                                 const propertyTemplate = entityTemplate?.properties.properties[option];
+
                                                 if (propertyTemplate?.format === 'relationshipReference') {
                                                     const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId!;
                                                     return !entityTemplates?.get(relatedTemplateId);
@@ -127,8 +129,8 @@ const FilterCompetent = <T extends TableForm | ChartForm>({
                                 </Grid>
 
                                 {filterType && (
-                                    <Grid item container justifyContent="center">
-                                        <Grid item style={{ width: '90%', paddingBottom: '10px' }}>
+                                    <Grid container justifyContent="center">
+                                        <Grid style={{ width: '90%', paddingBottom: '10px' }}>
                                             {renderFilterInput(
                                                 filters,
                                                 filter,

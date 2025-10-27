@@ -22,6 +22,7 @@ import {
     isSumAggFunction,
     IMongoEntityTemplate,
 } from '@microservices/shared';
+import { getNeo4jDate } from '../../utils/neo4j/lib';
 import { CypherQuery } from './interfaces';
 import config from '../../config';
 
@@ -130,30 +131,36 @@ const generateNeo4jQueryFromRegularFunction = (
             parameters: dateTimeArgument.parameters,
         };
     }
-    if (
-        func.functionType === 'addToDate' ||
-        func.functionType === 'addToDateTime' ||
-        func.functionType === 'subFromDate' ||
-        func.functionType === 'subFromDateTime'
-    ) {
+    if (['addToDate', 'addToDateTime', 'subFromDate', 'subFromDateTime'].includes(func.functionType)) {
         const [dateArgument, durationArgument] = funcArguments;
 
-        const operator = func.functionType === 'addToDate' || func.functionType === 'addToDateTime' ? '+' : '-';
+        const operator = ['addToDate', 'addToDateTime'].includes(func.functionType) ? '+' : '-';
 
         return {
             cypherCalculation: `
             ${dateArgument.cypherCalculation}
             ${durationArgument.cypherCalculation}
-            WITH *, ${dateArgument.resultValueVariableName} ${operator} ${durationArgument.resultValueVariableName} as ${resultValueVariableName},
-            { arguments: [${dateArgument.resultCausesVariableName}, ${durationArgument.resultCausesVariableName}], resultValue: ${resultValueVariableName} } as ${resultCausesVariableName}
+            WITH *, ${dateArgument.resultValueVariableName} ${operator} ${durationArgument.resultValueVariableName} as ${resultValueVariableName}
+            WITH *, { arguments: [${dateArgument.resultCausesVariableName}, ${durationArgument.resultCausesVariableName}], resultValue: ${resultValueVariableName} } as ${resultCausesVariableName}
             `,
             resultValueVariableName,
             resultCausesVariableName,
             parameters: { ...dateArgument.parameters, ...durationArgument.parameters },
         };
     }
+    if (func.functionType === 'getToday') {
+        return {
+            cypherCalculation: `
+            WITH *, $getTodayFuncValue as ${resultValueVariableName}
+            WITH *, { arguments: [], resultValue: ${resultValueVariableName} } as ${resultCausesVariableName}
+            `,
+            resultValueVariableName,
+            resultCausesVariableName,
+            parameters: {},
+        };
+    }
 
-    throw new Error('invalid functionType, shouldnt reach here');
+    throw new Error(`invalid functionType, shouldn't reach here`);
 };
 
 // duration is of format "[nY][nM][nD][nH]" (square brackets means optional)
@@ -178,7 +185,13 @@ const generateNeo4jQueryFromConstant = (constant: IConstant, resultVariableNameP
     const resultValueVariableName = `${resultVariableNamePrefix}${resultValueVariableNameSuffix}`;
     const resultCausesVariableName = `${resultVariableNamePrefix}${resultCausesVariableNameSuffix}`;
 
-    if (constant.type === 'string' || constant.type === 'date' || constant.type === 'dateTime') {
+    if (constant.type === 'date') {
+        cypherCalculationResultValue = `date($${resultValueVariableName})`;
+        parameters = { [resultValueVariableName]: constant.value };
+    } else if (constant.type === 'dateTime') {
+        cypherCalculationResultValue = `localdatetime($${resultValueVariableName})`;
+        parameters = { [resultValueVariableName]: constant.value };
+    } else if (constant.type === 'string') {
         cypherCalculationResultValue = `$${resultValueVariableName}`;
         parameters = { [resultValueVariableName]: constant.value };
     } else if (constant.type === 'number') {
@@ -555,6 +568,44 @@ export const generateNeo4jRuleQueryOnEntity = (rule: IMongoRule, entityId: strin
         `,
         resultValueVariableName: formulaQuery.resultValueVariableName,
         resultCausesVariableName: formulaQuery.resultCausesVariableName,
-        parameters: { entityId, ...formulaQuery.parameters },
+        parameters: {
+            entityId,
+            ...formulaQuery.parameters,
+            // eslint-disable-next-line no-underscore-dangle
+            getTodayFuncValue: rule.doesFormulaHaveTodayFunc ? getNeo4jDate(new Date()) : undefined,
+        },
+    };
+};
+
+// used for cronjob rules (with getToday func) that need to check all entities of template at once
+export const generateNeo4jRuleQueryOnEntitiesOfTemplate = (
+    rule: IMongoRule,
+    entityTemplate: IMongoEntityTemplate,
+    getTodayFuncValue: Date,
+    returnOnlyFailedResults: boolean = true,
+): CypherQuery => {
+    const { entityTemplateId, formula } = rule;
+
+    const entityVariableName = `\`${entityTemplateId}\``;
+    const variablesForSubQueries = [entityVariableName];
+
+    const formulaQuery = generateNeo4jQueryFromFormula(formula, variablesForSubQueries, 'formula_', entityTemplate);
+
+    return {
+        cypherCalculation: `
+        MATCH (${entityVariableName}: \`${entityTemplateId}\`)
+        
+        ${formulaQuery.cypherCalculation}
+
+        ${returnOnlyFailedResults ? `WHERE ${formulaQuery.resultValueVariableName} = false` : ''}
+
+        return ${entityVariableName}._id as entityId, ${formulaQuery.resultValueVariableName} as value, ${formulaQuery.resultCausesVariableName} as formulaCauses
+        `,
+        resultValueVariableName: formulaQuery.resultValueVariableName,
+        resultCausesVariableName: formulaQuery.resultCausesVariableName,
+        parameters: {
+            ...formulaQuery.parameters,
+            getTodayFuncValue: getNeo4jDate(getTodayFuncValue),
+        },
     };
 };

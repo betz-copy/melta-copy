@@ -8,7 +8,7 @@ import pickBy from 'lodash.pickby';
 import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
-import { BlueTitle } from '../../../common/BlueTitle';
+import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
 import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { getInitialValuesWithDefaults } from '../../../common/dialogs/entity/CreateOrEditEntityDialog';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
@@ -17,6 +17,7 @@ import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchema
 import { environment } from '../../../globals';
 import { IEntity, IUniqueConstraint } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IErrorResponse } from '../../../interfaces/error';
 import { ActionTypes, IAction, IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { updateEntityRequestForMultiple } from '../../../services/entitiesService';
@@ -75,7 +76,7 @@ const EditEntityDetails: React.FC<{
             },
             onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
                 if (err.response?.status === StatusCodes.REQUEST_TOO_LONG) setExternalErrors((prev) => ({ ...prev, files: true }));
-                const errorMetadata = err.response?.data?.metadata;
+                const errorMetadata = (err.response?.data as IErrorResponse)?.metadata;
 
                 if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
                     const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
@@ -142,7 +143,7 @@ const EditEntityDetails: React.FC<{
                                 <CardContent>
                                     <Grid container justifyContent="center">
                                         <Grid container>
-                                            <Grid item xs={12} sm={8}>
+                                            <Grid size={{ xs: 12, sm: 8 }}>
                                                 <BlueTitle
                                                     title={`${i18next.t('actions.editment')} ${entityTemplate.displayName}`}
                                                     component="h6"
@@ -166,12 +167,12 @@ const EditEntityDetails: React.FC<{
                                                 )}
                                             </Grid>
                                             {templateFileKeys.length > 0 && (
-                                                <Grid item xs={12} sm={4}>
+                                                <Grid size={{ xs: 12, sm: 4 }}>
                                                     <Grid container>
-                                                        <Grid item xs={1}>
+                                                        <Grid size={{ xs: 1 }}>
                                                             <Divider orientation="vertical" style={{ height: '100%', width: '5px' }} />
                                                         </Grid>
-                                                        <Grid item xs={10}>
+                                                        <Grid size={{ xs: 10 }}>
                                                             <BlueTitle
                                                                 title={i18next.t('wizard.entityTemplate.attachments')}
                                                                 component="h6"
@@ -192,7 +193,7 @@ const EditEntityDetails: React.FC<{
                                                             )}
                                                             <>
                                                                 {Object.entries(templateFilesProperties).map(([key, value], index) => (
-                                                                    <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
+                                                                    <Grid key={key} marginTop={index > 0 ? 5 : 0}>
                                                                         {value.items === undefined ? (
                                                                             <InstanceSingleFileInput
                                                                                 fileFieldName={`attachmentsProperties.${key}`}
@@ -230,8 +231,9 @@ const EditEntityDetails: React.FC<{
                                             flexWrap="nowrap"
                                             justifyContent="space-between"
                                             padding="25px 15px 0px 15px"
+                                            width="100%"
                                         >
-                                            <Grid item>
+                                            <Grid>
                                                 <Button
                                                     style={{ borderRadius: '7px' }}
                                                     variant="outlined"
@@ -241,7 +243,7 @@ const EditEntityDetails: React.FC<{
                                                     {i18next.t('entityPage.cancel')}
                                                 </Button>
                                             </Grid>
-                                            <Grid item>
+                                            <Grid>
                                                 <Button
                                                     style={{ borderRadius: '7px' }}
                                                     type="submit"

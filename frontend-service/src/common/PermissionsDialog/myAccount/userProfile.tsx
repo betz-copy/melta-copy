@@ -1,11 +1,10 @@
 import { Grid, IconButton } from '@mui/material';
-import React, { useState } from 'react';
 import i18next from 'i18next';
-import UserAvatar from '../../UserAvatar';
-import { UserProfilePicker } from '../../inputs/userProfilePicker';
-import { defaultInputType, isProfileFile } from '../../../utils/userProfile';
+import React, { useState } from 'react';
 import { IUser } from '../../../interfaces/users';
-import { MeltaTooltip } from '../../MeltaTooltip';
+import { defaultInputType, isProfileFile } from '../../../utils/userProfile';
+import { UserProfilePicker } from '../../inputs/userProfilePicker';
+import UserAvatar from '../../UserAvatar';
 
 const UserProfile: React.FC<{
     existingUser: IUser;
@@ -16,24 +15,31 @@ const UserProfile: React.FC<{
     setProfilePreference: (profilePreference: { profilePath?: string; icon?: any }) => void;
 }> = ({ existingUser, editProfile, setProfilePreference, setEditProfile }) => {
     const [userProfileImage, setUserProfileImage] = useState<string>();
-    const [isDefaultProfile, setIsDefaultProfile] = useState<boolean>(false);
+    const [isDefaultProfile, setIsDefaultProfile] = useState<boolean>(!existingUser.preferences.profilePath);
 
     return (
         <Grid container display="flex" justifyContent="center" padding={2}>
-            <Grid item width="100%" display="flex" justifyItems="start">
-                <MeltaTooltip title={i18next.t(`user.${editProfile ? 'close' : 'edit'}`)} placement="left">
-                    <IconButton
-                        onClick={() => {
-                            setEditProfile(!editProfile);
+            <Grid width="100%" display="flex" justifyItems="start">
+                <IconButton
+                    onClick={() => {
+                        setEditProfile(!editProfile);
+                    }}
+                >
+                    <UserAvatar
+                        userIcon={{ size: 100, profileImage: userProfileImage, isDefaultProfile: isDefaultProfile }}
+                        shouldRenderChip={false}
+                        tooltip={{
+                            title: i18next.t(`user.${editProfile ? 'close' : 'edit'}`),
+                            placement: 'left',
+                            displayUserImage: false,
                         }}
-                    >
-                        <UserAvatar user={existingUser} size={100} userProfileImage={userProfileImage} isDefaultProfile={isDefaultProfile} addBorder />
-                    </IconButton>
-                </MeltaTooltip>
+                        user={existingUser}
+                    />
+                </IconButton>
             </Grid>
 
             {editProfile && (
-                <Grid item marginTop={2}>
+                <Grid marginTop={2}>
                     <UserProfilePicker
                         user={existingUser}
                         onPick={(value?: any) => {

@@ -1,25 +1,23 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Add as AddIcon, Delete as DeleteIcon, DragHandle as DragHandleIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { AccordionDetails, AccordionSummary, Grid, IconButton, Typography, useTheme } from '@mui/material';
-import * as Yup from 'yup';
-import i18next from 'i18next';
-import { ExpandMore as ExpandMoreIcon, Delete as DeleteIcon, DragHandle as DragHandleIcon } from '@mui/icons-material';
-import AddIcon from '@mui/icons-material/Add';
-import _debounce from 'lodash.debounce';
 import { FieldArray, FormikErrors } from 'formik';
-import { v4 as uuid } from 'uuid';
+import i18next from 'i18next';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { getEmptyImage, HTML5Backend } from 'react-dnd-html5-backend';
+import { v4 as uuid } from 'uuid';
+import * as Yup from 'yup';
 import { processTemplateUniquePropertiesSteps, variableNameValidation } from '../../../utils/validation';
-import { ProcessTemplateWizardValues } from './index';
+import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
+import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
+import { FieldBlockDND } from '../entityTemplate/fieldBlock/FieldBlock';
+import { FieldBlockAccordion, ItemTypes } from '../entityTemplate/fieldBlock/interfaces';
 import { StepComponentProps } from '../index';
+import { fieldDetailsSchema, initialFieldCardDataOnAdd, useAreThereProcessInstancesByTemplateId } from './AddDetailsFields';
+import { ProcessTemplateWizardValues } from './index';
 import StepsApproversBlock from './StepsApproversBlock';
 import StepsIconBlock from './StepsIconBlock';
 import { StepsNameBlock } from './StepsNameBlock';
-import { FieldBlockDND } from '../entityTemplate/fieldBlock/FieldBlock';
-import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
-import { fieldDetailsSchema, initialFieldCardDataOnAdd, useAreThereProcessInstancesByTemplateId } from './AddDetailsFields';
-import { MeltaTooltip } from '../../MeltaTooltip';
-import { FieldBlockAccordion, ItemTypes } from '../entityTemplate/fieldBlock/interfaces';
 
 const stepTemplateUniqueNames = (value, context: Yup.TestContext) => {
     if (!value) return true;
@@ -59,9 +57,9 @@ const addStepsFieldsSchema = Yup.object({
                 ),
                 reviewers: Yup.array().of(Yup.object({})).min(1, i18next.t('validation.oneField')),
                 icon: Yup.object({
-                    name: Yup.string().nullable(true).optional(),
+                    name: Yup.string().nullable().optional(),
                 }),
-                disableAddingReviewers: Yup.boolean().nullable(true).optional(),
+                disableAddingReviewers: Yup.boolean().nullable().optional(),
                 name: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
                 displayName: Yup.string().required(i18next.t('validation.required')),
             }),
@@ -130,7 +128,6 @@ const FieldBlockStepWarper = ({
 
     return (
         <Grid
-            item
             style={{
                 opacity: isDragging ? 0.5 : 1,
                 alignSelf: 'stretch',
@@ -147,13 +144,13 @@ const FieldBlockStepWarper = ({
                     }}
                     // eslint-disable-next-line react/no-array-index-key
                     key={index}
-                    TransitionProps={{ unmountOnExit: true }} // performance issues with many steps
+                    slotProps={{ transition: { unmountOnExit: true } }} // performance issues with many steps
                 >
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                         <DragHandleIcon />
                         <Typography>{` ${i18next.t('wizard.processTemplate.level')}: ${values.steps[index].displayName || ''}`}</Typography>
                     </AccordionSummary>
-                    <Grid item sx={{ mt: '7px' }}>
+                    <Grid sx={{ mt: '7px' }}>
                         <StepsNameBlock
                             values={values}
                             errors={errors}
@@ -166,7 +163,7 @@ const FieldBlockStepWarper = ({
                     </Grid>
                     <AccordionDetails>
                         <Grid container direction="column" alignItems="stretch" spacing={1}>
-                            <Grid item>
+                            <Grid>
                                 <FieldBlockDND
                                     propertiesType="properties"
                                     values={step}
@@ -195,7 +192,7 @@ const FieldBlockStepWarper = ({
                                     locationSearchFields={{ show: false, disabled: false }}
                                 />
                             </Grid>
-                            <Grid item>
+                            <Grid>
                                 <FieldBlockDND
                                     propertiesType="attachmentProperties"
                                     values={step}
@@ -224,7 +221,7 @@ const FieldBlockStepWarper = ({
                                     locationSearchFields={{ show: false, disabled: false }}
                                 />
                             </Grid>
-                            <Grid item>
+                            <Grid>
                                 <StepsApproversBlock
                                     touched={touched.steps?.[index]}
                                     values={values}
@@ -238,7 +235,7 @@ const FieldBlockStepWarper = ({
                                     isDisableAddingReviewers={step.disableAddingReviewers || false}
                                 />
                             </Grid>
-                            <Grid item>
+                            <Grid>
                                 <StepsIconBlock
                                     touched={touched.steps?.[index]}
                                     values={values}

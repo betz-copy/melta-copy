@@ -60,7 +60,7 @@ export const GanttItemEdit: React.FC<IGanttItemEditProps> = ({ ganttItem, index,
                 {({ remove }) => <RemoveFromArrayButton tooltip={i18next.t('gantts.actions.deleteItem')} onRemove={() => remove(index)} />}
             </FieldArray>
 
-            <Grid item>
+            <Grid>
                 <FormikAutoComplete
                     formik={formik}
                     formikField={`${itemEntityTemplateKey}.id`}
@@ -77,7 +77,7 @@ export const GanttItemEdit: React.FC<IGanttItemEditProps> = ({ ganttItem, index,
                 />
             </Grid>
 
-            <Grid item>
+            <Grid>
                 <FormikAutoComplete
                     formik={formik}
                     formikField={`${itemEntityTemplateKey}.startDateField`}
@@ -86,7 +86,7 @@ export const GanttItemEdit: React.FC<IGanttItemEditProps> = ({ ganttItem, index,
                     getOptionLabel={(option) => entityTemplate?.properties.properties[option]?.title || ''}
                 />
             </Grid>
-            <Grid item>
+            <Grid>
                 <FormikAutoComplete
                     formik={formik}
                     formikField={`${itemEntityTemplateKey}.endDateField`}
@@ -96,7 +96,7 @@ export const GanttItemEdit: React.FC<IGanttItemEditProps> = ({ ganttItem, index,
                 />
             </Grid>
 
-            <Grid item>
+            <Grid>
                 <FormikAutoComplete
                     multiple
                     hideSelectedOptions
@@ -110,7 +110,7 @@ export const GanttItemEdit: React.FC<IGanttItemEditProps> = ({ ganttItem, index,
             </Grid>
 
             {Boolean(values.groupBy) && (
-                <Grid item>
+                <Grid>
                     <FormikAutoComplete
                         formik={formik}
                         formikField={`${itemKey}.groupByRelationshipId`}

@@ -2,27 +2,35 @@ import { Box, Button, CircularProgress, DialogActions, DialogContent, DialogTitl
 import { Form, Formik, FormikProps } from 'formik';
 import i18next from 'i18next';
 import _cloneDeep from 'lodash.clonedeep';
+import _debounce from 'lodash.debounce';
 import _isEqual from 'lodash.isequal';
-import React from 'react';
+import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
-import _debounce from 'lodash.debounce';
 
 import { IUser, PermissionData, RelatedPermission } from '../../interfaces/users';
-import { createUserRequest, getAllWorkspaceRolesRequest, syncPermissionsRequest, updateUserRoleIdsRequest } from '../../services/userService';
+import {
+    createUserRequest,
+    getAllWorkspaceRolesRequest,
+    syncPermissionsRequest,
+    updateUserRoleIdsRequest,
+    updateUserUnitsRequest,
+} from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 import UserAutocomplete from '../inputs/UserAutocomplete';
 
-import { didPermissionsChange, userHasNoPermissions, createDialogCategories } from '../../utils/permissions/permissionOfUserDialog';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import ManagePermissions from './managePermissions';
-import { BlueTitle } from '../BlueTitle';
-import RoleAutocomplete from '../inputs/RoleAutocomplete';
-import { deletePermissions } from '../../pages/PermissionsManagement/components/deleteDialog';
+import _ from 'lodash';
 import { IChildTemplateMap } from '../../interfaces/childTemplates';
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
+import { deletePermissions } from '../../pages/PermissionsManagement/components/deleteDialog';
+import { createDialogCategories, isPermissionsEquals, userHasNoPermissions } from '../../utils/permissions/permissionOfUserDialog';
+import BlueTitle from '../MeltaDesigns/BlueTitle';
+import RoleAutocomplete from '../inputs/RoleAutocomplete';
+import UnitAutocomplete from '../inputs/UnitAutocomplete';
+import ManagePermissions from './managePermissions';
 
 export const defaultEmptyUser = {
     _id: '',
@@ -34,13 +42,29 @@ export const defaultEmptyUser = {
     preferences: {
         darkMode: false,
     },
-    externalMetadata: {
-        kartoffelId: '',
-        digitalIdentitySource: '',
-    },
+    kartoffelId: '',
     permissions: {},
     displayName: '',
+    units: {},
 } as IUser;
+
+export const getDefaultEmptyUser = (workspaceId: string) => ({
+    _id: '',
+    fullName: '',
+    jobTitle: '',
+    hierarchy: '',
+    mail: '',
+    profile: '',
+    preferences: {
+        darkMode: false,
+    },
+    kartoffelId: '',
+    permissions: {},
+    displayName: '',
+    units: {
+        [workspaceId]: [],
+    },
+});
 
 const MyPermissions: React.FC<{
     handleClose: () => void;
@@ -52,22 +76,18 @@ const MyPermissions: React.FC<{
     const setUser = useUserStore((state) => state.setUser);
     const workspace = useWorkspaceStore((state) => state.workspace);
     const darkMode = useDarkModeStore((state) => state.darkMode);
+    const [searchText, setSearchText] = useState('');
 
     const queryClient = useQueryClient();
     const allUsers = queryClient.getQueryData<IUser[]>('getAllUsers');
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
+
+    const { unitsArray } = workspace.metadata;
 
     const { mutate: createUser } = useMutation(
-        (formUser: IUser) =>
-            createUserRequest(
-                formUser.externalMetadata.kartoffelId,
-                formUser.externalMetadata.digitalIdentitySource,
-                formUser.permissions,
-                workspace._id,
-                formUser.roleIds,
-            ),
+        (formUser: IUser) => createUserRequest(formUser.kartoffelId, formUser.permissions, workspace._id, formUser.roleIds, formUser.units),
         {
             onError: (error) => {
                 console.error('failed to upsert permission. error:', error);
@@ -97,6 +117,19 @@ const MyPermissions: React.FC<{
             },
         },
     );
+
+    const { mutate: updateUserUnits } = useMutation((formUser: IUser) => updateUserUnitsRequest(formUser._id, workspace._id, formUser.units), {
+        onError: (error) => {
+            console.error('failed to upsert permission. error:', error);
+            toast.error(i18next.t('permissions.permissionsOfUserDialog.failedToEditPermissionsOfUser'));
+        },
+        onSuccess: (newUser) => {
+            onSuccess?.(newUser);
+            queryClient.invalidateQueries('allIFrames');
+            toast.success(i18next.t('permissions.permissionsOfUserDialog.succeededToUpdatePermission'));
+            handleClose();
+        },
+    });
 
     const { mutateAsync: deletePermissionsOfUser } = useMutation(
         () => syncPermissionsRequest(existingUser!._id, RelatedPermission.User, { [workspace._id]: deletePermissions }, true),
@@ -141,16 +174,16 @@ const MyPermissions: React.FC<{
         },
     );
 
-    const { data: workspaceRoles, refetch: searchRolesOptions } = useQuery(
-        ['getAllWorkspaceRolesRequest', existingUser],
-        () => getAllWorkspaceRolesRequest([workspace._id]),
-        {
-            enabled: !!workspace,
-            staleTime: Infinity,
-            cacheTime: Infinity,
-            retry: false,
-        },
-    );
+    const {
+        data: workspaceRoles,
+        refetch: searchRolesOptions,
+        isLoading,
+    } = useQuery(['getAllWorkspaceRolesRequest', existingUser], () => getAllWorkspaceRolesRequest([workspace._id]), {
+        enabled: !!workspace,
+        staleTime: Infinity,
+        cacheTime: Infinity,
+        retry: false,
+    });
 
     const searchRolesOptionsDebounced = _debounce(searchRolesOptions, 1000);
 
@@ -158,7 +191,7 @@ const MyPermissions: React.FC<{
 
     return (
         <Formik
-            initialValues={existingUser ? _cloneDeep(existingUser) : defaultEmptyUser}
+            initialValues={existingUser ? _cloneDeep(existingUser) : (getDefaultEmptyUser(workspace._id) as IUser)}
             validationSchema={Yup.object({
                 fullName: Yup.string().nullable().required(i18next.t('validation.required')),
             }).unknown(true)}
@@ -173,11 +206,15 @@ const MyPermissions: React.FC<{
                 const currentRole = workspaceRoles?.find((role) => formUser.roleIds?.includes(role._id));
 
                 if (mode === 'create') createUser(formUser);
-                else if (prevRole == undefined && currentRole === undefined)
-                    syncUserPermissions(formUser); // update personal permissions (without roles)
                 else {
-                    if (prevRole === undefined && !!currentRole) deletePermissionsOfUser(); // when role added instead of personal permissions, remove personal permissions
-                    updateUserRoleId(formUser); // role changed, added or deleted
+                    if (!_.isEqual(existingUser?.units, formUser.units)) updateUserUnits(formUser); // units changed, added or deleted
+
+                    if (!_.isEqual(existingUser?.permissions, formUser.permissions)) {
+                        syncUserPermissions(formUser); // update personal permissions (without roles)
+                    } else {
+                        if (prevRole === undefined && !!currentRole) deletePermissionsOfUser(); // when role added instead of personal permissions, remove personal permissions
+                        updateUserRoleId(formUser); // role changed, added or deleted
+                    }
                 }
             }}
         >
@@ -243,30 +280,59 @@ const MyPermissions: React.FC<{
                                         helperText={touched.roleIds ? errors.roleIds : ''}
                                         enableClear={mode !== 'view'}
                                         refetch={searchRolesOptionsDebounced}
+                                        isLoading={isLoading}
                                     />
                                 </Box>
                             )}
 
+                            <Box sx={{ bgcolor: darkMode ? '#242424' : 'white', marginBottom: '15px', marginTop: '5px' }}>
+                                <UnitAutocomplete
+                                    value={values.units?.[workspace._id] ?? []}
+                                    options={unitsArray}
+                                    onChange={(_e, chosenUnits, reason) => {
+                                        if (reason === 'clear') {
+                                            setFieldValue('units', {
+                                                ...values.units,
+                                                [workspace._id]: [],
+                                            });
+                                            return;
+                                        }
+
+                                        setFieldValue('units', {
+                                            ...values.units,
+                                            [workspace._id]: chosenUnits ?? [],
+                                        });
+                                    }}
+                                    onBlur={handleBlur}
+                                    readOnly={mode === 'view'}
+                                    isError={Boolean(touched.roleIds && errors.roleIds)}
+                                    helperText={touched.roleIds ? errors.roleIds : ''}
+                                    enableClear={mode !== 'view'}
+                                    isLoading={isLoading}
+                                />
+                            </Box>
+
                             {/* dont show management permissions to regular user (if dont have at all) */}
                             <ManagePermissions
                                 mode={mode}
-                                dialogPermissionData={createDialogCategories([...entityTemplates.values()], [...childTemplates.values()])}
+                                dialogPermissionData={createDialogCategories([...entityTemplates.values()], [...childTemplates.values()], searchText)}
                                 formikProps={formikProps as FormikProps<PermissionData>}
                                 workspace={workspace}
                                 disableCheckboxes={!!formikRole}
+                                searchText={{ value: searchText, set: setSearchText }}
                             />
                         </DialogContent>
 
                         <DialogActions sx={{ direction: 'rtl', marginRight: '1rem', marginBottom: '0.5rem' }}>
-                            <Grid container justifyContent="space-between" marginTop="15px">
+                            <Grid container justifyContent="space-between" marginTop="15px" width="100%">
                                 <Grid>
                                     {mode !== 'view' && (
                                         <Button
                                             type="submit"
                                             disabled={
-                                                isSubmitting ||
-                                                didPermissionsChange(initialValues.permissions, values.permissions) ||
-                                                userHasNoPermissions(values.permissions[workspace._id])
+                                                userHasNoPermissions(values.permissions[workspace._id]) &&
+                                                isPermissionsEquals(initialValues.permissions, values.permissions) &&
+                                                _.isEqual(initialValues.units, values.units)
                                             }
                                             variant="contained"
                                         >

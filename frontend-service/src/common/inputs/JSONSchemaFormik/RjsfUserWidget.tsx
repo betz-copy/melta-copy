@@ -1,8 +1,6 @@
-import { Grid } from '@mui/material';
 import { WidgetProps } from '@rjsf/utils';
-import React, { useState } from 'react';
-import { IKartoffelUser, IKartoffelUserStringFields, IUser } from '../../../interfaces/users';
-import UserAutocomplete from '../UserAutocomplete';
+import React, { useEffect, useState } from 'react';
+import { UserInput } from '../UserInput';
 
 const RjsfUserWidget = ({
     disabled,
@@ -12,58 +10,56 @@ const RjsfUserWidget = ({
     onBlur,
     onFocus,
     id,
-    autoFocus,
+    autofocus,
     options,
     onChange,
+    uiSchema,
+    hideLabel,
+    readonly,
+    hideError,
+    formContext,
+    required,
     ...textFieldProps
 }: WidgetProps) => {
-    const handleOnChange = options.updateExpandedUserFields as (user: IKartoffelUserStringFields | null, values: any) => void;
     const [currentUser, setCurrentUser] = useState(value ? JSON.parse(value) : undefined);
-    if (!currentUser) {
-        if (handleOnChange) handleOnChange(null, options.globalValues);
-    }
 
-    const handleUserChange = (_event: React.SyntheticEvent, chosenUser: IKartoffelUser | null) => {
-        if (!chosenUser) {
-            setCurrentUser(undefined);
-            return;
-        }
-        const formattedUser: IKartoffelUserStringFields = {
-            ...chosenUser,
-            mobilePhone: chosenUser.mobilePhone?.join(','),
-            phone: chosenUser.phone?.join(','),
-        };
-        if (handleOnChange) handleOnChange(formattedUser, options.globalValues);
+    const handleOnChange = options.updateExpandedUserFields;
 
-        setCurrentUser(formattedUser);
-    };
+    useEffect(() => {
+        if (!currentUser && handleOnChange) handleOnChange(null, options.globalValues);
+    }, [currentUser, handleOnChange, options.globalValues]);
 
     return (
-        <Grid>
-            <UserAutocomplete
-                mode="kartoffel"
-                value={
-                    currentUser
-                        ? { _id: currentUser._id, displayName: `${currentUser.fullName} - ${currentUser.hierarchy}`, ...currentUser }
-                        : undefined
-                }
-                label={label}
-                onChange={(_event: React.SyntheticEvent, chosenUser: IUser | null) => handleUserChange(_event, chosenUser)}
-                onBlur={({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, newValue)}
-                onFocus={({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, newValue)}
-                autoFocus={autoFocus}
-                isError={rawErrors.length > 0}
-                disabled={disabled}
-                enableClear
-                onDisplayValueChange={(_, newDisplayValue) => {
-                    if (newDisplayValue === '') {
-                        if (handleOnChange) handleOnChange(null, options.globalValues);
-                        setCurrentUser(undefined);
-                    }
-                }}
-                textFieldProps={textFieldProps}
-            />
-        </Grid>
+        <UserInput
+            value={
+                currentUser
+                    ? {
+                          _id: currentUser._id,
+                          displayName: `${currentUser.fullName} - ${currentUser.hierarchy}`,
+                          userType: currentUser.entityType,
+                          ...currentUser,
+                      }
+                    : undefined
+            }
+            label={label}
+            onBlur={({ target: { value: newValue } }) => onBlur(id, newValue)}
+            onFocus={({ target: { value: newValue } }) => onFocus(id, newValue)}
+            autoFocus={autofocus}
+            isError={!!rawErrors.length}
+            disabled={disabled}
+            required={required}
+            textFieldProps={{
+                ...textFieldProps,
+                uischema: uiSchema,
+                hidelabel: hideLabel?.toString(),
+                readOnly: readonly,
+                hideerror: hideError,
+                formcontext: formContext,
+            }}
+            values={options.globalValues}
+            currentUser={{ value: currentUser, set: setCurrentUser }}
+            handleOnChange={handleOnChange}
+        />
     );
 };
 

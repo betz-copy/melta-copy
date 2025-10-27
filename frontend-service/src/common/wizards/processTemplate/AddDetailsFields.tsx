@@ -81,7 +81,7 @@ const AddDetailsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues,
 
     return (
         <Grid container direction="column" alignItems="stretch" spacing={1}>
-            <Grid item>
+            <Grid>
                 <FieldBlock
                     propertiesType="detailsProperties"
                     values={values}
@@ -100,14 +100,14 @@ const AddDetailsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues,
                     supportChangeToRequiredWithInstances={false}
                     supportArrayFields={false}
                     supportDeleteForExistingInstances
-                    supportRelationshipReference
+                    supportRelationshipReference={false}
                     supportUserType={false}
                     supportConvertingToMultipleFields={false}
                     locationSearchFields={{ show: false, disabled: false }}
                 />
             </Grid>
 
-            <Grid item>
+            <Grid>
                 <FieldBlock
                     propertiesType="detailsAttachmentProperties"
                     values={values}

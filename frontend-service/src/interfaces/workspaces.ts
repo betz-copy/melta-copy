@@ -42,11 +42,16 @@ export interface IMetadata {
         usersInfoChildTemplateId: string;
         numOfPropsToShow: number;
         clientSideWorkspaceName: 'simba' | 'azarim';
+        fullNameField: string;
     };
     mapPage: {
+        showMapPage: boolean;
         sourceTemplateId: string;
         destTemplateId: string;
+        sourceFieldForColor: string;
     };
+    unitsArray: string[];
+    numOfRelationshipFieldsToShow: number;
 }
 
 export interface IWorkspace {

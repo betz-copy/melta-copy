@@ -1,12 +1,12 @@
-import React, { useMemo } from 'react';
-import { Grid, Typography } from '@mui/material';
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
+import { Grid, Typography } from '@mui/material';
 import { CSSProperties } from '@mui/styles';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import React, { useMemo } from 'react';
 import { CustomIcon } from '../../../common/CustomIcon';
-import { FieldsDisplay } from './FieldsDisplay';
-import { getEntityTemplateColor } from '../../../utils/colors';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../../stores/darkMode';
+import { getEntityTemplateColor } from '../../../utils/colors';
+import { FieldsDisplay } from './FieldsDisplay';
 
 interface IEntityTemplateDisplayProps {
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -38,7 +38,7 @@ export const EntityTemplateDisplay: React.FC<IEntityTemplateDisplayProps> = ({
     const displayColor = useMemo(() => color || getEntityTemplateColor(entityTemplate), [entityTemplate, color]);
 
     return (
-        <Grid item container direction="column" alignItems="center" spacing={0.2}>
+        <Grid container direction="column" alignItems="center" spacing={0.2}>
             {expanded && topNote && (
                 <Typography fontSize={noteFontSize} fontWeight="bold" color={noteColor} noWrap>
                     {topNote}
@@ -46,7 +46,6 @@ export const EntityTemplateDisplay: React.FC<IEntityTemplateDisplayProps> = ({
             )}
 
             <Grid
-                item
                 container
                 alignItems="center"
                 justifyContent="center"
@@ -77,14 +76,14 @@ export const EntityTemplateDisplay: React.FC<IEntityTemplateDisplayProps> = ({
             {expanded && (
                 <>
                     {subTitle && (
-                        <Grid item>
+                        <Grid>
                             <Typography fontSize={14} fontWeight={650} color={displayColor} noWrap>
                                 {subTitle}
                             </Typography>
                         </Grid>
                     )}
 
-                    <Grid item>
+                    <Grid>
                         <FieldsDisplay entityTemplate={entityTemplate} fieldsToShow={fieldsToShow} color={displayColor} fontSize={main ? 14 : 12} />
                     </Grid>
                 </>

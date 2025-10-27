@@ -17,6 +17,7 @@ import { IRuleBreach } from '../../../../interfaces/ruleBreaches/ruleBreach';
 import { createEntityClientSideRequest } from '../../../../services/clientSideService';
 import { createEntityRequest, updateEntityRequestForMultiple } from '../../../../services/entitiesService';
 import { isChildTemplate } from '../../../../utils/templates';
+import { IErrorResponse } from '../../../../interfaces/error';
 
 const { errorCodes } = environment;
 
@@ -42,7 +43,7 @@ const useMutationHandler = (
         newEntityData?: EntityWizardValues | undefined,
     ) => {
         if (err.response?.status === StatusCodes.REQUEST_TOO_LONG) setExternalErrors((prev) => ({ ...prev, files: true }));
-        const errorMetadata = err.response?.data?.metadata;
+        const errorMetadata = (err.response?.data as IErrorResponse)?.metadata;
 
         switch (errorMetadata?.errorCode) {
             case errorCodes.failedConstraintsValidation: {
@@ -129,10 +130,10 @@ const useMutationHandler = (
         },
     );
 
-    if (Object.keys(clientSideUserEntity || {}).length > 0) {
+    if (Object.keys(clientSideUserEntity || {}).length) {
         const queryClient = useQueryClient();
 
-        const childTemplates = queryClient.getQueryData<IChildTemplateMapPopulated>('getClientSideChildEntityTemplates')!;
+        const childTemplates = queryClient.getQueryData<IChildTemplateMapPopulated>('getClientSideChildTemplates')!;
         childTemplate = Array.from(childTemplates.values()).find((childTemplate) => childTemplate.parentTemplate._id === entityTemplate._id);
     }
     const { isLoading: isClientSideCreateLoading, mutateAsync: clientSideCreateMutation } = useMutation(
@@ -179,7 +180,7 @@ const useMutationHandler = (
                 mutationPromise,
                 {
                     pending: `${i18next.t(`actions.${isUpdate ? 'update' : 'create'}`)} ${
-                        entityTemplate.displayName.length > 0 ? entityTemplate.displayName : i18next.t('entity')
+                        !!entityTemplate.displayName.length ? entityTemplate.displayName : i18next.t('entity')
                     }`,
                     success: {
                         render({ data }: { data?: IEntity }) {
@@ -212,7 +213,7 @@ const useMutationHandler = (
                                     <Button
                                         variant="text"
                                         onClick={() => {
-                                            if (data) onError?.({ ...values, properties: { ...data?.properties } });
+                                            if (data) onError?.(values);
                                         }}
                                         sx={{ marginRight: '5px' }}
                                     >
@@ -223,10 +224,7 @@ const useMutationHandler = (
                         },
                     },
                 },
-                {
-                    autoClose: false,
-                    style: { width: '335px' },
-                },
+                { style: { width: '335px' } },
             );
 
             mutationPromise.finally(resolve);

@@ -1,6 +1,6 @@
 import {
-    ControlPoint as AddIcon,
     Add,
+    ControlPoint as AddIcon,
     Delete as DeleteIcon,
     DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
     DoNotDisturbOnOutlined as DoNotDisturbOnOutlinedIcon,
@@ -8,14 +8,14 @@ import {
     Edit as EditIcon,
     MoreVertOutlined as OptionsIcon,
 } from '@mui/icons-material';
-import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
+import { CompareArrows } from '@mui/icons-material';
 import { Grid, IconButton, Menu } from '@mui/material';
 import i18next from 'i18next';
 import React, { MouseEventHandler, useMemo, useState } from 'react';
-import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
+import { MenuButton } from '../../../common/MenuButton';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
-import { MenuButton } from '../../../common/MenuButton';
 
 export const CardMenu: React.FC<{
     onOptionsIconClose?: () => void;
@@ -28,6 +28,7 @@ export const CardMenu: React.FC<{
         tooltipTitle: string;
         editTooltipTitle?: string;
         disableForReadPermissions?: boolean;
+        disabledErrorTooltip?: string;
     };
     onDisableClick?: MouseEventHandler;
     onDuplicateClick?: MouseEventHandler;
@@ -183,7 +184,7 @@ export const CardMenu: React.FC<{
                                     handleClose(e);
                                 }}
                                 text={i18next.t('actions.convertToRelationShipFieldClick')}
-                                icon={<CompareArrowsIcon color="action" />}
+                                icon={<CompareArrows color="action" />}
                                 disabled={disabledProps?.isEditDisabled}
                             />
                         </Grid>
@@ -191,7 +192,7 @@ export const CardMenu: React.FC<{
                 )}
 
                 {onDisableClick && (
-                    <MeltaTooltip placement="left" title={editTooltipTitle} disableHoverListener={!disabledProps?.disableForReadPermissions}>
+                    <MeltaTooltip placement="left" title={disabledProps?.disabledErrorTooltip} disableHoverListener={!disabledProps?.disabledErrorTooltip}>
                         <Grid>
                             <MenuButton
                                 onClick={(e) => {
@@ -206,7 +207,7 @@ export const CardMenu: React.FC<{
                                         <DoNotDisturbOnOutlinedIcon color="action" />
                                     )
                                 }
-                                disabled={disabledProps?.disableForReadPermissions}
+                                disabled={!!disabledProps?.disabledErrorTooltip || disabledProps?.disableForReadPermissions}
                             />
                         </Grid>
                     </MeltaTooltip>

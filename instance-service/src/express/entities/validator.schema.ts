@@ -112,13 +112,22 @@ export const getExpandedGraphByIdRequestSchema = Joi.object({
         disabled: Joi.boolean().default(null),
         templateIds: Joi.array().items(Joi.string()).required(),
         numberOfConnections: Joi.number().default(0),
-        expandedParams: Joi.object().pattern(Joi.string(), Joi.number().min(1)).default({}),
+        expandedParams: Joi.object()
+            .pattern(
+                Joi.string(),
+                Joi.object({
+                    minLevel: Joi.number().integer().min(1).max(Joi.ref('maxLevel')).optional(),
+                    maxLevel: Joi.number().integer().min(1).required(),
+                }),
+            )
+            .default({}),
         filters: Joi.object()
             .pattern(Joi.string(), {
                 filter: searchFilterSchema,
             })
             .default({}),
         userId: Joi.string().required(),
+        childTemplateId: Joi.string(),
     },
     params: {
         id: Joi.string().required(),
@@ -441,4 +450,10 @@ export const enumerateNewSerialNumberFieldsRequestSchema = Joi.object({
     params: {
         templateId: Joi.string().required(),
     },
+});
+
+export const runRulesWithTodayFuncRequestSchema = Joi.object({
+    body: {},
+    query: {},
+    params: {},
 });

@@ -1,0 +1,90 @@
+.quill {
+    display: flex;
+    flex-direction: column-reverse;
+    border-radius: 10px;
+    transition: 'border-color 0.3s';
+    direction: rtl;
+    max-height: 200px;
+    height: 200px;
+}
+.ql-container {
+    border-top: none !important;
+    border-right: none !important;
+    border-left: none !important;
+    border-bottom: 1px solid #ccc !important;
+}
+
+.quill .ql-container.ql-snow {
+    border: none !important;
+    max-height: 400px;
+    overflow: auto;
+    direction: rtl;
+}
+
+.quill .ql-toolbar + .ql-container.ql-snow {
+    border-right: none !important;
+    border-left: none !important;
+    border-bottom: 1px solid #ccc !important;
+}
+.ql-toolbar.ql-snow {
+    border: none !important;
+}
+.ql-toolbar.ql-snow .ql-align-right li ul {
+    text-align: left;
+    direction: ltr;
+}
+.ql-align-right ul li,
+.ql-align-right ol li {
+    /* direction: rtl; */
+    text-align: left;
+    list-style-position: inside;
+}
+
+.ql-align-center {
+    text-align: center;
+}
+
+.ql-align-left {
+    text-align: left;
+}
+
+.ql-direction-rtl {
+    direction: rtl;
+}
+
+.ql-container {
+    max-height: 400px;
+    /* height: 150px; */
+    overflow: auto;
+    direction: rtl;
+}
+
+.ql-editor {
+    /* direction: rtl;  */
+    font-family: 'Rubik';
+    font-size: 14px;
+}
+
+.center-rtl-list {
+    text-align: center;
+    direction: rtl;
+    padding: 0;
+    margin: 0;
+    list-style-position: inside;
+}
+
+.center-rtl-list li {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px 0; /* Add some padding for better spacing */
+}
+
+.center-rtl-list li::marker {
+    /* Ensure marker aligns with the text */
+    margin-left: 8px; /* Adjust as needed */
+}
+
+/* .ql-editor:not(:empty)::before {
+    display: none;
+  } */

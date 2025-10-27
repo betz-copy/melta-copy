@@ -3,7 +3,7 @@ import { Grid, Box, Tab, useTheme } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import i18next from 'i18next';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
-import { useSearchParams } from '../utils/hooks/useSearchParams';
+import { useSearchParams } from '../../utils/hooks/useSearchParams';
 
 const MeltaTabs: React.FC<{
     defaultTab: string;
@@ -37,7 +37,7 @@ const MeltaTabs: React.FC<{
         >
             <TabContext value={tabValue}>
                 <Grid container direction="column">
-                    <Grid item>
+                    <Grid>
                         <TabList onChange={(_event, newValue) => setSearchParams({ tab: newValue })} scrollButtons="auto" variant="scrollable">
                             {allowedTabs.map((tabName) => (
                                 <Tab
@@ -55,7 +55,7 @@ const MeltaTabs: React.FC<{
                             ))}
                         </TabList>
                     </Grid>
-                    <Grid item>
+                    <Grid>
                         {Object.entries(tabsComponentsMapping).map(([tabName, tabComponent]) => {
                             return (
                                 <TabPanel key={tabName} value={tabName}>

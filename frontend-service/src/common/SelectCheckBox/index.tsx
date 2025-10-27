@@ -1,5 +1,5 @@
 /* eslint-disable no-nested-ternary */
-import { Box, FormControl, Select, Typography, useTheme } from '@mui/material';
+import { Box, FormControl, Grid, Select, Typography, useTheme } from '@mui/material';
 import lodashUniqby from 'lodash.uniqby';
 import React, { Dispatch, Key, PropsWithChildren, SetStateAction, useCallback, useState } from 'react';
 import { DropResult } from 'react-beautiful-dnd';
@@ -232,7 +232,10 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
                     },
                 }}
             >
-                {!isSelectDisabled && !hideSearchBar && <Search value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />}
+                <Grid container justifyContent="center">
+                    {!isSelectDisabled && !hideSearchBar && <Search value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />}
+                </Grid>
+
                 {hideChooseAll ? (
                     <Typography color={theme.palette.primary.main} fontFamily="Rubik" fontWeight={400} marginX="16px" marginY="8px">
                         {title}
@@ -260,14 +263,13 @@ const SelectCheckbox = <Option extends {}, Group extends any = Option>({
                         if (onDragEnd) return onDragEnd(transformedDrag);
                         return onDragEndDefault(transformedDrag);
                     }}
-                    isSelectDisabled={isSelectDisabled}
+                    isSelectable={!isSelectDisabled}
                     selectAll={!hideChooseAll}
-                    flattenedTree={[...(groupsProps.useGroups ? (groupsProps.groups as any[]) : []), ...options]}
                     preSelectedItemsIds={selectedOptionIds}
                     getItemId={getOptionId}
                     getItemLabel={getOptionLabel}
                     filteredTreeItems={filteredTree()}
-                    multi
+                    allowMultiSelect
                     treeItems={treeItems()}
                     isDraggable={!isDraggableDisabled}
                     onSelectItems={(ids) => {

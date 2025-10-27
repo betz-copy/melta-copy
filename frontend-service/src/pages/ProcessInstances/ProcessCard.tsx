@@ -1,44 +1,41 @@
-import React, { useEffect, useState } from 'react';
+import { Archive, Delete, Edit, ScatterPlotOutlined as HiveIcon, MoreVertSharp, Unarchive } from '@mui/icons-material';
 import {
     Box,
     Card,
     CardContent,
     Grid,
-    Typography,
-    styled,
     IconButton,
     Menu,
     Skeleton,
-    Stepper,
     Step,
     StepConnector,
+    Stepper,
+    Typography,
     stepConnectorClasses,
+    styled,
     useTheme,
 } from '@mui/material';
-import { ScatterPlotOutlined as HiveIcon, Unarchive, Edit } from '@mui/icons-material';
-import { useMutation, useQueryClient } from 'react-query';
-import DeleteIcon from '@mui/icons-material/Delete';
-import MoreVertSharpIcon from '@mui/icons-material/MoreVertSharp';
-import i18next from 'i18next';
-import ArchiveIcon from '@mui/icons-material/Archive';
 import CircularProgress from '@mui/material/CircularProgress';
 import { AxiosError } from 'axios';
+import i18next from 'i18next';
+import React, { useEffect, useState } from 'react';
+import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { CustomIcon } from '../../common/CustomIcon';
-import { IMongoStepTemplatePopulated } from '../../interfaces/processes/stepTemplate';
-import { IMongoProcessInstancePopulated, Status, StatusColors, StatusColorsNames } from '../../interfaces/processes/processInstance';
-import { IMongoStepInstancePopulated } from '../../interfaces/processes/stepInstance';
-import { IProcessTemplateMap } from '../../interfaces/processes/processTemplate';
-import ProcessInstanceWizard from '../../common/wizards/processInstance';
-import { archiveProcessRequest, deleteProcessRequest, updateProcessRequest } from '../../services/processesService';
-import { MenuButton } from '../../common/MenuButton';
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
-import { MeltaTooltip } from '../../common/MeltaTooltip';
-import { Print } from './print';
-import { ProcessDetailsValues } from '../../common/wizards/processInstance/ProcessDetails';
 import { ErrorToast } from '../../common/ErrorToast';
-import { getFontColor } from '../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
+import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
+import { MenuButton } from '../../common/MenuButton';
+import ProcessInstanceWizard from '../../common/wizards/processInstance';
 import CreateOrEditProcess from '../../common/wizards/processInstance/CreateOrEditProcessDialog';
+import { ProcessDetailsValues } from '../../common/wizards/processInstance/ProcessDetails';
+import { getFontColor } from '../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
+import { IMongoProcessInstancePopulated, Status, StatusColors, StatusColorsNames } from '../../interfaces/processes/processInstance';
+import { IProcessTemplateMap } from '../../interfaces/processes/processTemplate';
+import { IMongoStepInstancePopulated } from '../../interfaces/processes/stepInstance';
+import { IMongoStepTemplatePopulated } from '../../interfaces/processes/stepTemplate';
+import { archiveProcessRequest, deleteProcessRequest, updateProcessRequest } from '../../services/processesService';
+import { Print } from './print';
 
 export const StyledCard = styled(Card)(({ theme }) => ({
     background: theme.palette.mode === 'light' ? '#FFFFFF 0% 0% no-repeat padding-box' : undefined,
@@ -107,7 +104,7 @@ export const StepIcon: React.FC<{
 
     return (
         <MeltaTooltip
-            componentsProps={{
+            slotProps={{
                 tooltip: {
                     sx: {
                         bgcolor: 'rgba(181, 181, 181, 0.9)',
@@ -170,7 +167,7 @@ const StepIconComponent = (
     stepId: string,
 ) => (
     <Grid container flexDirection="column" justifyContent="center" width="100%" gap="10px">
-        <Grid item key={stepId}>
+        <Grid key={stepId}>
             <StepIcon
                 step={stepInstance}
                 stepTemplate={stepTemplate}
@@ -287,11 +284,10 @@ const ProcessCard: React.FC<{
             <StyledCard onClick={() => setOpen({ isOpen: true })}>
                 {!isLoading ? (
                     <CardContent>
-                        <Grid container direction="column" alignItems="center" justifyContent="center" spacing={1}>
-                            <Grid item container direction="row" justifyContent="space-between" alignItems="center" wrap="nowrap" spacing={1}>
-                                <Grid container item alignItems="center">
+                        <Grid direction="column" alignItems="center" justifyContent="center" spacing={1}>
+                            <Grid container direction="row" justifyContent="space-between" alignItems="center" wrap="nowrap" spacing={1}>
+                                <Grid container alignItems="center">
                                     <Grid
-                                        item
                                         sx={{
                                             height: '20px',
                                             width: '3px',
@@ -299,17 +295,17 @@ const ProcessCard: React.FC<{
                                             borderRadius: '20px',
                                         }}
                                     />
-                                    <Grid item sx={{ paddingLeft: '5px' }}>
+                                    <Grid sx={{ paddingLeft: '5px' }}>
                                         <Typography component="h6" variant="h6" noWrap color={theme.palette.primary.main}>
                                             {currProcessInstance.name}
                                         </Typography>
                                     </Grid>
                                 </Grid>
-                                <Grid item>
+                                <Grid>
                                     {isEditMode && (
                                         <>
                                             <IconButton onClick={handleClick}>
-                                                <MoreVertSharpIcon />
+                                                <MoreVertSharp />
                                             </IconButton>
 
                                             <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleCloseMenu}>
@@ -328,7 +324,7 @@ const ProcessCard: React.FC<{
                                                         setDeleteDialogState(true);
                                                     }}
                                                     text={i18next.t('actions.delete')}
-                                                    icon={isDeleteProcessLoading ? <CircularProgress size={20} /> : <DeleteIcon color="action" />}
+                                                    icon={isDeleteProcessLoading ? <CircularProgress size={20} /> : <Delete color="action" />}
                                                 />
                                                 <MenuButton
                                                     onClick={async (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
@@ -347,7 +343,7 @@ const ProcessCard: React.FC<{
                                                         ) : currProcessInstance.archived ? (
                                                             <Unarchive color="action" />
                                                         ) : (
-                                                            <ArchiveIcon color="action" />
+                                                            <Archive color="action" />
                                                         )
                                                     }
                                                 />
@@ -366,15 +362,15 @@ const ProcessCard: React.FC<{
                                     )}
                                 </Grid>
                             </Grid>
-                            <Grid item container justifyContent="space-between">
-                                <Grid item>
+                            <Grid container justifyContent="space-between">
+                                <Grid>
                                     <Typography fontSize="12px" sx={{ color: '#787C9E' }} noWrap>
                                         {`${i18next.t('processInstancesPage.process')}: ${
                                             processTemplatesMap.get(currProcessInstance.templateId)!.displayName
                                         }`}
                                     </Typography>
                                 </Grid>
-                                <Grid item>
+                                <Grid>
                                     <Typography fontSize="12px" sx={{ color: '#787C9E' }} noWrap>
                                         {`${new Date(currProcessInstance.startDate).toLocaleDateString('he-IL', {
                                             year: '2-digit',
@@ -388,7 +384,7 @@ const ProcessCard: React.FC<{
                                     </Typography>
                                 </Grid>
                             </Grid>
-                            <Grid item justifyContent="center">
+                            <Grid justifyContent="center">
                                 <Stepper sx={{ flexWrap: 'wrap' }} connector={<StepperConnector />} alternativeLabel>
                                     {currProcessInstance.steps.map((step, index) => {
                                         const stepTemplate = processTemplate.steps[index];
@@ -402,16 +398,16 @@ const ProcessCard: React.FC<{
                                                     alignSelf="center"
                                                     gap="10px"
                                                 >
-                                                    <Grid item>{StepIconComponent(step, stepTemplate, setOpen, step.status, step._id)}</Grid>
+                                                    <Grid>{StepIconComponent(step, stepTemplate, setOpen, step.status, step._id)}</Grid>
                                                 </Grid>
                                             </Step>
                                         );
                                     })}
                                 </Stepper>
                             </Grid>
-                            <Grid item container justifyContent="space-between">
-                                <Grid item />
-                                <Grid item>
+                            <Grid container justifyContent="space-between">
+                                <Grid />
+                                <Grid>
                                     <Typography fontSize="12px" sx={{ color: '#787C9E' }} noWrap>
                                         {`${i18next.t('processInstancesPage.createdAt')}: ${new Date(processInstance.createdAt).toLocaleDateString(
                                             'he-IL',
@@ -429,22 +425,22 @@ const ProcessCard: React.FC<{
                 ) : (
                     <CardContent>
                         <Grid container direction="column" alignItems="center" justifyContent="center" spacing={2}>
-                            <Grid item container direction="row" justifyContent="center" alignItems="center" spacing={1}>
-                                <Grid item>
+                            <Grid container direction="row" justifyContent="center" alignItems="center" spacing={1}>
+                                <Grid>
                                     <Skeleton variant="circular" width={15} height={15} />
                                 </Grid>
-                                <Grid item>
+                                <Grid>
                                     <Skeleton variant="rectangular" height={20} />
                                 </Grid>
                             </Grid>
 
-                            <Grid item container flexWrap="nowrap" justifyContent="center" spacing={4} paddingTop={1} paddingBottom={1}>
+                            <Grid container flexWrap="nowrap" justifyContent="center" spacing={4} paddingTop={1} paddingBottom={1}>
                                 {currProcessInstance.steps.map(({ _id }) => (
-                                    <Grid container item key={_id} alignItems="center" direction="column" spacing={1}>
-                                        <Grid item>
+                                    <Grid container key={_id} alignItems="center" direction="column" spacing={1}>
+                                        <Grid>
                                             <Skeleton variant="circular" width={60} height={60} />
                                         </Grid>
-                                        <Grid item>
+                                        <Grid>
                                             <Skeleton variant="text" width={30} height={15} />
                                         </Grid>
                                     </Grid>

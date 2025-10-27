@@ -1,17 +1,17 @@
-import React from 'react';
-import { Box, Dialog, Grid, Typography } from '@mui/material';
-import { useQueryClient } from 'react-query';
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
+import { Box, Dialog, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
+import React from 'react';
+import { useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
+import { CustomIcon } from '../../../common/CustomIcon';
+import { EntityProperties } from '../../../common/EntityProperties';
+import FlexBox from '../../../common/FlexBox';
+import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { IEntity } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { EntityProperties } from '../../../common/EntityProperties';
-import { CustomIcon } from '../../../common/CustomIcon';
-import { getEntityTemplateColor } from '../../../utils/colors';
-import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
-import FlexBox from '../../../common/FlexBox';
 import { useWorkspaceStore } from '../../../stores/workspace';
+import { getEntityTemplateColor } from '../../../utils/colors';
 
 type props = {
     open: boolean;
@@ -55,7 +55,7 @@ const EntityMapDialog = ({ open, onClose, entityWithMatchingField }: props) => {
                     </FlexBox>
                 </IconButtonWithPopover>
             </Box>
-            <Grid item xs={8} container alignItems="center" padding="20px">
+            <Grid size={{ xs: 8 }} container alignItems="center" padding="20px">
                 <EntityProperties
                     entityTemplate={entityTemplate}
                     properties={entityWithMatchingField.node.properties}
@@ -69,6 +69,7 @@ const EntityMapDialog = ({ open, onClose, entityWithMatchingField }: props) => {
                         width: '100%',
                     }}
                     viewFirstLineOfLongText
+                    coloredFields={entityWithMatchingField.node.coloredFields}
                 />
             </Grid>
         </Dialog>

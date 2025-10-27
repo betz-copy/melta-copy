@@ -4,10 +4,10 @@ import '../css/realtionshipTitle.css';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IMongoRelationshipTemplatePopulated } from '../interfaces/relationshipTemplates';
 import { useDarkModeStore } from '../stores/darkMode';
+import { useWorkspaceStore } from '../stores/workspace';
 import { getEntityTemplateColor } from '../utils/colors';
 import { EntityTemplateColor } from './EntityTemplateColor';
-import { MeltaTooltip } from './MeltaTooltip';
-import { useWorkspaceStore } from '../stores/workspace';
+import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
 
 const ArrowTail: React.FC = () => {
     const theme = useTheme();
@@ -68,7 +68,7 @@ export const EntityTemplateTextComponent: React.FC<{ entityTemplate: IMongoEntit
 
     return (
         <Grid container flexWrap="nowrap" alignItems="center">
-            <Grid item>
+            <Grid>
                 <EntityTemplateColor entityTemplateColor={entityTemplateColor} style={{ height: '18px' }} />
             </Grid>
             <TextComponent title={entityTemplate.displayName} style={style} />
@@ -92,14 +92,14 @@ const RelationshipTitle: React.FC<{
             style={{ ...style, borderRadius: '10px', backgroundColor: darkMode ? '#212121' : '#FFF' }}
             color={darkMode ? '#FFF' : '#000'}
         >
-            <Grid item marginRight="20px">
+            <Grid marginRight="20px">
                 {EntityTemplateTextComponentOverride ? (
                     <EntityTemplateTextComponentOverride entityTemplate={relationshipTemplate.sourceEntity} isRelationshipSource />
                 ) : (
                     <EntityTemplateTextComponent entityTemplate={relationshipTemplate.sourceEntity} />
                 )}
             </Grid>
-            <Grid item container flexWrap="nowrap" alignItems="center">
+            <Grid container flexWrap="nowrap" alignItems="center">
                 <ArrowTail />
 
                 <TextComponent
@@ -114,7 +114,7 @@ const RelationshipTitle: React.FC<{
 
                 <ArrowHead />
             </Grid>
-            <Grid item marginLeft="20px">
+            <Grid marginLeft="20px">
                 {EntityTemplateTextComponentOverride ? (
                     <EntityTemplateTextComponentOverride entityTemplate={relationshipTemplate.destinationEntity} isRelationshipSource={false} />
                 ) : (

@@ -1,49 +1,43 @@
-import React, { SetStateAction, useEffect, useRef, useState } from 'react';
-import { FormikErrors, FormikTouched } from 'formik';
 import {
-    TextField,
-    Box,
-    MenuItem,
-    Grid,
-    FormControlLabel,
-    IconButton,
-    Chip,
-    Autocomplete,
-    Typography,
-    ToggleButtonGroup,
-    ToggleButton,
-    Popover,
-    Backdrop,
-    CircularProgress,
-    ThemeProvider,
-    FormHelperText,
-    createTheme,
-} from '@mui/material';
-import {
-    Delete as DeleteIcon,
-    NotificationsActive as NotificationsActiveIcon,
-    NotificationsOff as NotificationsOffIcon,
     Alarm as CustomAlertIcon,
     Update as DailyAlertIcon,
+    Delete as DeleteIcon,
     Edit as EditIcon,
+    NotificationsActive as NotificationsActiveIcon,
+    NotificationsOff as NotificationsOffIcon,
 } from '@mui/icons-material';
-import _debounce from 'lodash.debounce';
+import {
+    Autocomplete,
+    Backdrop,
+    Box,
+    Chip,
+    CircularProgress,
+    FormControlLabel,
+    FormHelperText,
+    Grid,
+    IconButton,
+    MenuItem,
+    Popover,
+    TextField,
+    ToggleButton,
+    ToggleButtonGroup,
+    Typography,
+} from '@mui/material';
+import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
-import { stateToHTML } from 'draft-js-export-html';
-import MUIRichTextEditor from 'mui-rte';
-import { convertToRaw, EditorState } from 'draft-js';
+import React, { SetStateAction, useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { dateNotificationTypes } from '.././AddFields';
-import { MinimizedColorPicker } from '../../../inputs/MinimizedColorPicker';
-import { MeltaCheckbox } from '../../../MeltaCheckbox';
-import { AreYouSureDialog } from '../../../dialogs/AreYouSureDialog';
-import { MeltaTooltip } from '../../../MeltaTooltip';
-import KartoffelUserField from '.././KartoffelUserField';
-import { getInitialValue, useMuiRteTheme } from '../../../inputs/JSONSchemaFormik/RjsfTextAreaWidget';
-import { CommonFormInputProperties } from '../commonInterfaces';
-import { deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../../services/templates/entityTemplatesService';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import { deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../../services/templates/entityTemplatesService';
+import { AreYouSureDialog } from '../../../dialogs/AreYouSureDialog';
+import { MinimizedColorPicker } from '../../../inputs/MinimizedColorPicker';
+import TextArea from '../../../inputs/TextArea';
+import MeltaCheckbox from '../../../MeltaDesigns/MeltaCheckbox';
+import MeltaTooltip from '../../../MeltaDesigns/MeltaTooltip';
+import { dateNotificationTypes } from '.././AddFields';
+import KartoffelUserField from '.././KartoffelUserField';
+import { CommonFormInputProperties } from '../commonInterfaces';
 import RelationshipReferenceField from '../RelationshipReference/RelationshipReferenceField';
 
 enum dateNotificationOptions {
@@ -124,9 +118,6 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
     const [open, setOpen] = useState<boolean>(false);
     const [openDelete, setOpenDelete] = useState<boolean>(false);
 
-    const [commentValue, setCommentValue] = useState(getInitialValue(value.comment));
-    const [commentEditorFocused, setCommentEditorFocused] = useState(false);
-    const [rawCommentContent, setRawCommentContent] = useState('');
     const [errorComment, setErrorComment] = useState(
         (typeof errors === 'string' && (errors as string)?.includes('comment')) || Boolean(errors?.comment),
     );
@@ -139,14 +130,6 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
 
     const chipRefs = useRef<(HTMLDivElement | null)[]>([]);
     const MemoizedIconButton = React.memo(IconButton);
-
-    const theme = createTheme();
-    Object.assign(theme, useMuiRteTheme(errorComment));
-
-    useEffect(() => {
-        setRawCommentContent(JSON.stringify(convertToRaw(commentValue.getCurrentContent())));
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     useEffect(() => {
         setErrorComment((typeof errors === 'string' && (errors as string)?.includes('comment')) || Boolean(errors?.comment));
@@ -260,11 +243,9 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
         const trimValue = localOption.trim();
         setEditError('');
         if (value.options[tagIndex] === trimValue) setEditIndex(null);
-        else if (trimValue.length === 0) {
-            setEditError('errorPage.emptyInputError');
-        } else if (value.options.includes(trimValue)) {
-            setEditError('errorPage.duplicateValue');
-        } else if (checkIfOldEnumValue) {
+        else if (trimValue.length === 0) setEditError('errorPage.emptyInputError');
+        else if (value.options.includes(trimValue)) setEditError('errorPage.duplicateValue');
+        else if (checkIfOldEnumValue) {
             handleUpdateEnumField(templateId, tagIndex, trimValue, value);
             return;
         } else {
@@ -345,48 +326,35 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
                         const lastValue = currValue.pop();
                         const trimmedValue = lastValue ? [...currValue, lastValue.trim()] : [];
 
-                        if (isDisabled) {
-                            updateOldDisabledEnumVals(trimmedValue);
-                        } else {
+                        if (isDisabled) updateOldDisabledEnumVals(trimmedValue);
+                        else {
                             setValues?.((prev) => ({
                                 ...prev,
                                 options: trimmedValue,
                             }));
                         }
                     }}
-                    isOptionEqualToValue={(option, inputValue) => {
-                        return option.trim() === inputValue.trim() || option.trim().length === 0;
-                    }}
-                    renderTags={(tagValue, getTagProps) =>
+                    isOptionEqualToValue={(option, inputValue) => option.trim() === inputValue.trim() || option.trim().length === 0}
+                    renderValue={(tagValue, getTagProps) =>
                         tagValue.map((option, tagIndex) => {
                             const chipDisabled = isDisabled && initialOptionArray.length > tagIndex;
                             return (
                                 <Box position="relative" key={option}>
                                     <>
-                                        {chipDisabled ? (
-                                            <Chip
-                                                variant="outlined"
-                                                label={option}
-                                                {...getTagProps({ index: tagIndex })}
-                                                onDelete={undefined}
-                                                icon={value.optionColors && <Box width="1.3rem" />}
-                                                sx={{ position: 'relative', pr: supportEditEnum ? '22px' : '3px' }}
-                                                ref={(ref) => {
-                                                    chipRefs.current[tagIndex] = ref;
-                                                }}
-                                            />
-                                        ) : (
-                                            <Chip
-                                                variant="outlined"
-                                                label={option}
-                                                {...getTagProps({ index: tagIndex })}
-                                                icon={value.optionColors && <Box width="1.3rem" />}
-                                                sx={{ position: 'relative', pr: supportEditEnum ? '32px' : '3px' }}
-                                                ref={(ref) => {
-                                                    chipRefs.current[tagIndex] = ref;
-                                                }}
-                                            />
-                                        )}
+                                        <Chip
+                                            variant="outlined"
+                                            label={option}
+                                            {...getTagProps({ index: tagIndex })}
+                                            onDelete={chipDisabled ? undefined : getTagProps({ index: tagIndex }).onDelete}
+                                            icon={value.optionColors && <Box width="1.3rem" />}
+                                            sx={{
+                                                position: 'relative',
+                                                pr: supportEditEnum ? (chipDisabled ? '22px' : '32px') : '3px',
+                                            }}
+                                            ref={(ref) => {
+                                                chipRefs.current[tagIndex] = ref;
+                                            }}
+                                        />
                                         {value.optionColors && (
                                             <MinimizedColorPicker
                                                 color={value.optionColors[option]}
@@ -442,10 +410,12 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
                                             vertical: 'top',
                                             horizontal: 'center',
                                         }}
-                                        PaperProps={{
-                                            style: {
-                                                zIndex: 10000,
-                                                borderRadius: '10px',
+                                        slotProps={{
+                                            paper: {
+                                                style: {
+                                                    zIndex: 10000,
+                                                    borderRadius: '10px',
+                                                },
                                             },
                                         }}
                                     >
@@ -488,9 +458,7 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
                                                 <IconButton
                                                     size="small"
                                                     onClick={() => {
-                                                        if (!isDeleteLoading) {
-                                                            setOpenDelete(true);
-                                                        }
+                                                        if (!isDeleteLoading) setOpenDelete(true);
                                                     }}
                                                     disabled={isDeleteLoading}
                                                 >
@@ -523,7 +491,7 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
                 />
             )}
             {value.type === 'pattern' && (
-                <>
+                <Grid container justifyContent="space-between" flexWrap="nowrap">
                     <TextField
                         label={i18next.t('propertyTypes.pattern')}
                         id={pattern}
@@ -553,7 +521,7 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
                         fullWidth
                         disabled={value.deleted}
                     />
-                </>
+                </Grid>
             )}
             {value.type === 'serialNumber' && (
                 <TextField
@@ -574,27 +542,18 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
                 />
             )}
             {isComment && (
-                <ThemeProvider theme={theme}>
-                    <Grid position="relative" width="99.5%">
-                        <MUIRichTextEditor
-                            id={value.id}
-                            label={i18next.t('propertyTypes.comment')}
-                            controls={['title', 'bold', 'italic', 'underline', 'strikethrough', 'numberList', 'bulletList']}
-                            onChange={(state: EditorState) => {
-                                setCommentValue(state);
-                                const newValue = state.getCurrentContent().getPlainText();
-                                const htmlContent = stateToHTML(state.getCurrentContent());
-
-                                setFieldValue('comment', newValue === '' ? '' : htmlContent);
-                            }}
-                            defaultValue={rawCommentContent}
-                            toolbar={commentEditorFocused}
-                            onFocus={() => setCommentEditorFocused(true)}
-                            onBlur={() => setCommentEditorFocused(false)}
-                        />
-                        {errorComment && <FormHelperText error>{i18next.t('validation.required')}</FormHelperText>}
-                    </Grid>
-                </ThemeProvider>
+                <Grid position="relative" width="99.5%">
+                    <TextArea
+                        id={value.id}
+                        value={value.comment}
+                        label={i18next.t('propertyTypes.comment')}
+                        onChange={(editorContentAsHtml: string) =>
+                            setFieldValue('comment', editorContentAsHtml === '<p><br></p>' ? '' : editorContentAsHtml)
+                        }
+                        placeholder={i18next.t('propertyTypes.comment')}
+                    />
+                    {errorComment && <FormHelperText error>{i18next.t('validation.required')}</FormHelperText>}
+                </Grid>
             )}
             {value.type === 'relationshipReference' && supportRelationshipReference && (
                 <RelationshipReferenceField
@@ -621,7 +580,7 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
                 'dateNotification' in value &&
                 (value.dateNotification !== undefined ? (
                     <Grid container direction="row">
-                        <Grid container item direction="row">
+                        <Grid container direction="row">
                             <IconButton
                                 onClick={() => setFieldValue('dateNotification', undefined)}
                                 sx={{ borderRadius: 10 }}
@@ -705,12 +664,10 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
                 }}
                 onYes={() => {
                     if (openDelete) handleDelete(editIndex!);
-                    else {
-                        handleSaveEdit(editIndex!);
-                    }
+                    else handleSaveEdit(editIndex!);
                 }}
                 isLoading={isLoading}
-                body={`${i18next.t('areYouSureDialog.enumChangeDisclaimer')} ${entity}`}
+                body={`${i18next.t('draftSaveDialog.enumChangeDisclaimer')} ${entity}`}
             />
         </>
     );

@@ -1,18 +1,20 @@
 /* eslint-disable import/no-extraneous-dependencies */
+import { useTheme } from '@mui/material';
 import { Form as JSONSchemaForm } from '@rjsf/mui';
-import { ErrorSchema, UiSchema, WidgetProps } from '@rjsf/utils';
+import { ErrorSchema, RegistryWidgetsType, RJSFSchema, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import Ajv, { ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
 import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import i18next from 'i18next';
-import { cloneDeep } from 'lodash';
-import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import React, { memo, useEffect, useState } from 'react';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IKartoffelUser } from '../../../interfaces/users';
+import { environment } from '../../../globals';
+import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { useWorkspaceStore } from '../../../stores/workspace';
 import { matchValueAgainstFilter } from '../../../utils/filters';
+import { uiSchemaUtils } from './ utils';
 import './form.css';
 import InputAccordion from './InputAccordion';
 import RjsfCheckboxWidget from './RjsfCheckboxWidget';
@@ -26,32 +28,59 @@ import RjsfTemplateReferenceWidget from './RjsfTemplateReferenceWidget';
 import RjsfTextAreaWidget from './RjsfTextAreaWidget';
 import RjsfUserArrayWidget from './RjsfUserArrayWidget';
 import RjsfUserWidget from './RjsfUserWidget';
+import RjsfUserAvatarWidget from './RjsfUserAvarWidget';
+
+const { dateRegex } = environment;
+
+export type LeafError = { _errors?: string[] };
+
+export type ErrorMessage<T extends string | LeafError> = {
+    [key: string]: T | ErrorMessage<T>;
+};
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
-        if (ajvError.keyword === 'required') {
-            return [ajvError.params.missingProperty, i18next.t('validation.required')];
-        }
+        if (ajvError.keyword === 'required') return [ajvError.params.missingProperty, i18next.t('validation.required')];
 
         const field = ajvError.instancePath.slice(1); // for example: /field1/subfield2
         const schemaOfField = schema.properties[field];
-        if (ajvError.keyword === 'format') {
+        if (ajvError.keyword === 'format')
             return [field, `${i18next.t('validation.mustBeEqualToFormat')}  ${i18next.t(`propertyTypes.${ajvError.params.format}`)}`];
-        }
 
-        if (ajvError.keyword === 'pattern') {
-            return [field, schemaOfField.patternCustomErrorMessage!];
-        }
+        if (ajvError.keyword === 'pattern') return [field, schemaOfField.patternCustomErrorMessage!];
 
         return [field, ajvError.message];
     });
     return Object.fromEntries(formikErrorsEntries);
 };
 
+const convertErrorsToNestedGroups = <T extends ErrorMessage<string> | ErrorSchema<{}>>(
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+    originalErrors: T,
+) => {
+    const finalErrors = { ...originalErrors };
+
+    template?.fieldGroups?.forEach((fieldGroup) => {
+        fieldGroup.fields.forEach((field) => {
+            if (originalErrors[field]) finalErrors[fieldGroup.name] = { ...(finalErrors[fieldGroup.name] ?? {}), [field]: originalErrors[field] };
+        });
+    });
+
+    return finalErrors;
+};
+
 export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'], data: Record<string, any>): FormikErrors<any> => {
     const ajv = new Ajv({ allErrors: true });
     addFormats(ajv);
 
+    ajv.addFormat('date', {
+        type: 'string',
+        validate: (value: string) => value === ByCurrentDefaultValue.byCurrentDate || dateRegex.test(value),
+    });
+    ajv.addFormat('date-time', {
+        type: 'string',
+        validate: (value: string) => value === ByCurrentDefaultValue.byCurrentDate || !isNaN(Date.parse(value)),
+    });
     ajv.addFormat('fileId', /.*/);
     ajv.addFormat('signature', /.*/);
     ajv.addFormat('kartoffelUserField', /.*/);
@@ -59,6 +88,8 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     ajv.addFormat('user', {
         type: 'string',
         validate: (user) => {
+            if (user === ByCurrentDefaultValue.byCurrentUser) return true;
+
             try {
                 const userObj = JSON.parse(user);
                 return userObj._id && userObj.fullName && userObj.jobTitle && userObj.hierarchy && userObj.mail;
@@ -90,12 +121,15 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         'filters',
         'defaultValue',
         'isFilterByCurrentUser',
+        'filterByCurrentUserField',
+        'filterByUnitUserField',
         'isFilterByUserUnit',
+        'display',
+        'isProfileImage',
     ].forEach((keyword) => ajv.addKeyword({ keyword }));
 
     ajv.addKeyword({
         keyword: 'identifier',
-        type: 'string',
         schema: false,
         validate: (v) => v !== undefined,
         errors: false,
@@ -122,29 +156,59 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         if (typeof parsedFilter !== 'object' || parsedFilter === null) return;
 
         const value = data[field];
-        if (!matchValueAgainstFilter({ [field]: value }, parsedFilter)) {
+        if (!matchValueAgainstFilter({ [field]: value }, parsedFilter))
             childTemplateFilterErrors[field] = i18next.t('validation.fieldFilterCondition');
-        }
     });
 
     return { ...formikErrors, ...childTemplateFilterErrors };
 };
 
-const formikErrorsToRjsfExtraErrors = (formikErrors: Record<string, string>): ErrorSchema<{}> => {
-    // assuming no complex fields (nested/array). need recursion for nested fields
+const formikErrorsToRjsfExtraErrorsRec = (
+    formikErrors: ErrorMessage<string> | string,
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+): ErrorSchema<{}> => {
+    if (typeof formikErrors === 'string') return { __errors: [formikErrors] };
 
-    return mapValues(formikErrors, (errorMessage) => ({ __errors: [errorMessage] }));
+    if (Array.isArray(formikErrors)) return formikErrors.map((err) => formikErrorsToRjsfExtraErrorsRec(err, template));
+
+    if (typeof formikErrors === 'object' && formikErrors !== null) {
+        const newObj: Record<string, any> = {};
+        for (const key in formikErrors) {
+            newObj[key] = formikErrorsToRjsfExtraErrorsRec(formikErrors[key], template);
+        }
+        return newObj;
+    }
+
+    return formikErrors;
 };
 
-const mergeErrorSchemas = (errors1: ErrorSchema<{}>, errors2: ErrorSchema<{}>) => {
-    const merged = { ...errors1 };
-    for (const key in errors2) {
-        if (errors2.hasOwnProperty(key)) {
-            if (!merged[key]) merged[key] = errors2[key];
-            else merged[key].__errors = [...new Set([...merged[key].__errors, ...errors2[key].__errors])];
-        }
-    }
-    return merged;
+const formikErrorsToRjsfExtraErrors = (
+    formikErrors: ErrorMessage<string> | string,
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+): ErrorSchema<{}> => {
+    const nestedErrors = convertErrorsToNestedGroups(template, formikErrors);
+    return formikErrorsToRjsfExtraErrorsRec(nestedErrors, template);
+};
+
+const mergeErrorSchemas = (
+    errors1: ErrorSchema<{}>,
+    errors2: ErrorSchema<{}>,
+    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+): ErrorSchema<{}> => {
+    const merged = Object.entries(errors2).reduce(
+        (acc, [key, value]) => {
+            if (!acc?.[key]?.__errors) {
+                acc[key] = { __errors: [value] };
+            } else {
+                acc[key].__errors = [...new Set([...acc[key]._errors, value])];
+            }
+
+            return acc;
+        },
+        { ...errors1 },
+    );
+
+    return convertErrorsToNestedGroups(template, merged);
 };
 
 const getComponent = (
@@ -159,9 +223,7 @@ const getComponent = (
             const { label, disabled, name, value, schema, onChange } = props;
             const [checked, setChecked] = useState(checkboxProps.isFieldChecked(name));
 
-            if (schema.format === 'comment') {
-                return <Component {...props} />;
-            }
+            if (schema.format === 'comment') return <Component {...props} />;
 
             if (checked && schema.type === 'boolean' && (value === null || value === undefined)) onChange(Boolean(value));
 
@@ -182,10 +244,9 @@ const getComponent = (
         return getWrappedComponent;
     }
 
-    const getWrappedComponent: React.FC<WidgetProps> = (props: WidgetProps) => {
-        return <Component {...props} readonly={!props.schema.isEditableByUser && props.readonly} />;
-    };
-
+    const getWrappedComponent: React.FC<WidgetProps> = (props: WidgetProps) => (
+        <Component {...props} readonly={!props.schema.isEditableByUser && props.readonly} />
+    );
     return getWrappedComponent;
 };
 
@@ -193,8 +254,8 @@ interface JSONSchemaFormFormikProps {
     schema: IMongoEntityTemplatePopulated['properties'];
     values: any;
     setValues: FormikHelpers<any>['setValues'];
-    errors: FormikErrors<any>;
-    uniqueErrors?: FormikErrors<any>;
+    errors: FormikErrors<{}>;
+    uniqueErrors?: FormikErrors<{}>;
     touched: FormikTouched<any>;
     setFieldTouched: FormikHelpers<any>['setFieldTouched'];
     isEditMode?: boolean;
@@ -213,16 +274,17 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     setValues,
     errors,
     uniqueErrors,
-    touched,
     setFieldTouched,
     isEditMode = false,
     toPrint = false,
     checkboxProps,
 }) => {
+    const theme = useTheme();
+
     useEffect(() => {
         // define 100% width to text-area field
         const containerDiv = document.querySelectorAll(
-            '#json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root > .MuiGrid-root',
+            '#json-schema > .rjsf-field.rjsf-field-object > .MuiFormControl-root > .MuiGrid-root > .MuiGrid-root',
         );
         containerDiv.forEach((innerDiv) => {
             const biggerFieldCss = innerDiv.querySelector('.fullWidth') || checkboxProps;
@@ -235,14 +297,10 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
         });
     }, [values.template]);
 
-    const rjsfExtraErrors = formikErrorsToRjsfExtraErrors(errors as Record<string, string>);
-    const ajvExtraErrorsOnlyTouched: ErrorSchema<{}> = pickBy(rjsfExtraErrors, (_value, key) => touched[key]);
-    const rjsfExtraUniqueErrors = formikErrorsToRjsfExtraErrors(uniqueErrors as Record<string, string>);
+    const rjsfExtraErrors = formikErrorsToRjsfExtraErrors(errors ?? {}, values.template);
+    const rjsfExtraUniqueErrors = formikErrorsToRjsfExtraErrors(uniqueErrors ?? {}, values.template);
 
-    const notTouchedUnique: ErrorSchema<{}> = pickBy(rjsfExtraUniqueErrors, (_value, key) => !touched[key]);
-    const mergedErrors: ErrorSchema<{}> = mergeErrorSchemas(ajvExtraErrorsOnlyTouched, notTouchedUnique);
-
-    const Widgets = React.useMemo(
+    const Widgets: RegistryWidgetsType = React.useMemo(
         () => ({
             CommentWidget: getComponent(RjsfCommentWidget, checkboxProps),
             SelectWidget: getComponent(RjsfSelectWidget, checkboxProps),
@@ -257,126 +315,81 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             UserArrayWidget: getComponent(RjsfUserArrayWidget, checkboxProps),
             CheckboxWidget: getComponent(RjsfCheckboxWidget, checkboxProps),
             SignatureWidget: getComponent(RjsfSignatureWidgets, checkboxProps),
+            UserAvatarWidget: getComponent(RjsfUserAvatarWidget, checkboxProps),
         }),
         [],
     );
+
+    const schemaWithGroups = values.template?.fieldGroups?.reduce((acc, { fields, displayName, name }) => {
+        const properties = fields.reduce((acc, field) => {
+            const propertyInSchema = schema.properties[field];
+            if (!propertyInSchema) return acc;
+
+            propertyInSchema.default = values.properties[field] || propertyInSchema.defaultValue;
+
+            delete schema.properties[field];
+            return { ...acc, [field]: propertyInSchema };
+        }, {});
+
+        return {
+            ...acc,
+            [name]: {
+                type: 'object',
+                title: displayName,
+                properties,
+            },
+        };
+    }, {} as RJSFSchema);
+
+    schema.properties = { ...schema.properties, ...(schemaWithGroups ?? {}) };
+
+    const workspaceStore = useWorkspaceStore((state) => state.workspace);
 
     return (
         <JSONSchemaForm
             id="json-schema"
             schema={schema}
-            uiSchema={mapValues(schema.properties, (propertySchema, propertyKey): UiSchema => {
-                const defaultValue = values.template?.properties?.properties?.[propertyKey].defaultValue ?? undefined;
-                if (propertySchema.archive) return {};
-                if (propertySchema.format === 'comment')
-                    return {
-                        'ui:options': {
-                            hide: schema.hide.includes(propertyKey),
-                        },
-                        'ui:classNames': 'fullWidth',
-                        'ui:widget': 'CommentWidget',
-                    };
-                if (propertySchema.format === 'signature')
-                    return {
-                        'ui:widget': 'SignatureWidget',
-                        'ui:classNames': 'fullWidth',
-                    };
-                if (propertySchema.readOnly)
-                    return {
-                        'ui:options': {
-                            disabled: true,
-                            defaultValue,
-                        },
-                    };
-                if (propertySchema.serialCurrent !== undefined)
-                    return {
-                        'ui:options': {
-                            inputType: 'text',
-                            disabled: true,
-                            hardCodedValue: isEditMode ? undefined : i18next.t('wizard.entity.serialNumberAutoGenerated'),
-                        },
-                    };
-
-                if (propertySchema.items?.enum || propertySchema?.enum) {
-                    return {
-                        'ui:widget': 'SelectWidget',
-                        'ui:options': {
-                            defaultValue,
-                            enumOptions: (propertySchema.items?.enum || propertySchema?.enum)!.map((option) => ({
-                                label: option,
-                                value: option,
-                                color: values.template?.enumPropertiesColors?.[propertyKey]?.[option],
-                            })),
-                        },
-                    };
-                }
-
-                if (propertySchema.type === 'array' && propertySchema.items?.format === 'user') {
-                    return {
-                        'ui:widget': 'UserArrayWidget',
-                        'ui:options': {
-                            defaultValue,
-                        },
-                    };
-                }
-                if (propertySchema.format === 'user') {
-                    return {
-                        'ui:widget': 'UserWidget',
-                        'ui:options': {
-                            globalValues: values,
-                            updateExpandedUserFields: (user: IKartoffelUser | null, curValues: any) => {
-                                const userFieldsToUpdate = Object.keys(schema.properties).filter(
-                                    (key) => schema.properties[key].expandedUserField?.relatedUserField === propertyKey,
-                                );
-
-                                const clonedValues = cloneDeep(curValues);
-
-                                const propertiesToUpdate = clonedValues.properties;
-
-                                userFieldsToUpdate.forEach((key) => {
-                                    const kartoffelField = schema.properties[key].expandedUserField?.kartoffelField;
-                                    propertiesToUpdate[key] = user && kartoffelField ? user[kartoffelField] : undefined;
-                                });
-
-                                propertiesToUpdate[propertyKey] = user
-                                    ? JSON.stringify({
-                                          _id: user?._id || user?.id,
-                                          fullName: user?.fullName,
-                                          jobTitle: user?.jobTitle,
-                                          hierarchy: user?.hierarchy,
-                                          mail: user?.mail,
-                                      })
-                                    : undefined;
-
-                                setValues({
-                                    ...propertiesToUpdate,
-                                });
-                            },
-                        },
-                    };
-                }
-                if (propertySchema.format === 'text-area')
-                    return {
-                        'ui:widget': 'TextAreaWidget',
-                        'ui:classNames': 'fullWidth',
-                        'ui:options': { toPrint, defaultValue },
-                    };
-                if (propertySchema.format === 'relationshipReference')
-                    return {
-                        'ui:widget': 'TemplateReferenceWidget',
-                    };
-                if (propertySchema.format === 'location')
-                    return {
-                        'ui:widget': 'LocationWidget',
-                    };
-                return {
-                    'ui:options': { defaultValue },
-                };
-            })}
+            uiSchema={uiSchemaUtils(schema, values, setValues, isEditMode, toPrint, theme.palette.primary.main, workspaceStore.metadata.unitsArray)}
             onChange={({ formData }) => {
-                Object.entries(formData).forEach(([key, value]) => {
+                Object.entries(formData as Record<string, IEntitySingleProperty>).forEach(([key, value]) => {
                     if (JSON.stringify(value) === JSON.stringify([undefined]) || JSON.stringify(value) === JSON.stringify([null])) {
                         formData[key] = undefined;
+                    }
+                    // if the value is an object without properties, we assume it's a grouped field and flatten it
+                    // rjsf library does support grouped fields, but we do not save them as so in the db.
+                    if (value && typeof value === 'object' && !value.properties && schema.properties[key]?.format !== 'location') {
+                        for (const [groupedKey, groupedValue] of Object.entries(value)) {
+                            formData[groupedKey] = groupedValue;
+                        }
+                    }
+                });
+
+                Object.entries(formData as Record<string, IEntitySingleProperty>).forEach(([key, value]) => {
+                    if (JSON.stringify(value) === JSON.stringify([undefined]) || JSON.stringify(value) === JSON.stringify([null])) {
+                        formData[key] = undefined;
+                    }
+                    // if the value is an object without properties, we assume it's a grouped field and flatten it
+                    // rjsf library does support grouped fields, but we do not save them as so in the db.
+                    if (
+                        value &&
+                        typeof value === 'object' &&
+                        !value.properties &&
+                        schema.properties[key] &&
+                        schema.properties[key]?.format !== 'location'
+                    ) {
+                        for (const [groupedKey, groupedValue] of Object.entries(value)) {
+                            if (Array.isArray(groupedValue)) {
+                                const isPlaceHolderArray = groupedValue.length === 1 && (groupedValue[0] === undefined || groupedValue[0] === null);
+
+                                if (groupedValue.length === 0) {
+                                    formData[groupedKey] = [undefined];
+                                } else if (!isPlaceHolderArray) {
+                                    formData[groupedKey] = groupedValue;
+                                }
+                            } else {
+                                formData[groupedKey] = groupedValue;
+                            }
+                        }
                     }
                 });
 
@@ -393,7 +406,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 emptyObjectFields: 'skipEmptyDefaults', // library has for array a default empty array ([]). disable this
             }}
             validator={validator}
-            extraErrors={mergedErrors}
+            extraErrors={mergeErrorSchemas(rjsfExtraErrors, rjsfExtraUniqueErrors, values.template)}
             tagName="div"
             readonly={readonly}
             widgets={Widgets}

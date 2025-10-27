@@ -8,6 +8,7 @@ import {
     deleteRelationshipMetadataSchema,
     updateEntityMetadataSchema,
     updateEntityStatusMetadataSchema,
+    cronjobMetadataSchema as cronjobRunMetadataSchema,
 } from './schemas/actionMetadata';
 
 export const validateActionMetadata: joi.CustomValidator = (value, helpers) => {
@@ -32,6 +33,9 @@ export const validateActionMetadata: joi.CustomValidator = (value, helpers) => {
             break;
         case ActionTypes.UpdateStatus:
             schema = updateEntityStatusMetadataSchema;
+            break;
+        case ActionTypes.CronjobRun:
+            schema = cronjobRunMetadataSchema;
             break;
 
         default:

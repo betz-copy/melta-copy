@@ -1,16 +1,17 @@
-import React, { ReactElement, useEffect } from 'react';
 import { Box } from '@mui/material';
 import i18next from 'i18next';
-import { CategoriesRow } from './components/CategoriesRow';
-import EntityTemplatesRow from './entityTemplatesRow';
-import { RelationshipTemplatesRow } from './components/RelationshipTemplatesRow';
-import { RulesRow } from './components/RulesRow';
-import { ProcessTemplatesRow } from './components/ProcessTemplates/ProcessTemplatesRow';
+import React, { ReactElement, useEffect } from 'react';
+import MeltaTabs from '../../common/MeltaDesigns/MeltaTabs';
 import '../../css/pages.css';
-import { useUserStore } from '../../stores/user';
 import { PermissionScope } from '../../interfaces/permissions';
-import { ConfigurationManagement } from './components/ConfigurationManagement';
-import MeltaTabs from '../../common/MeltaTabs';
+import { useUserStore } from '../../stores/user';
+import CategoriesRow from './components/CategoriesRow';
+import ConfigurationManagement from './components/ConfigurationManagement';
+import PrintingTemplatesRow from './components/PrintingTemplatesRow';
+import ProcessTemplatesRow from './components/ProcessTemplates/ProcessTemplatesRow';
+import RelationshipTemplatesRow from './components/RelationshipTemplatesRow';
+import RulesRow from './components/RulesRow';
+import EntityTemplatesRow from './entityTemplatesRow';
 
 const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
     useEffect(() => setTitle(i18next.t('pages.systemManagement')), [setTitle]);
@@ -23,6 +24,7 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
         relationshipTemplates: <RelationshipTemplatesRow />,
         rules: <RulesRow />,
         processTemplates: <ProcessTemplatesRow />,
+        printingTemplates: <PrintingTemplatesRow />,
         configurationManagement: <ConfigurationManagement />,
     };
 
@@ -41,6 +43,9 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
             currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write,
         processTemplates:
             currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write ||
+            currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write,
+        printingTemplates:
+            currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write ||
             currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write,
         configurationManagement: !!currentUser.currentWorkspacePermissions.admin,
     };

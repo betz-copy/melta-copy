@@ -27,6 +27,7 @@ import { ChooseIcon } from './ChooseIcon';
 import { FieldGroupData, IFilterTemplate, PropertyItem } from './commonInterfaces';
 import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
 import { UploadExportFormats } from './UploadExportFormats';
+import { IErrorResponse } from '../../../interfaces/error';
 
 const { errorCodes } = environment;
 
@@ -69,6 +70,7 @@ export interface EntityTemplateFormInputProperties {
     hideFromDetailsPage?: boolean;
     comment?: string;
     color?: string;
+    isProfileImage?: boolean;
 }
 
 type EntityTemplatePropertyByType = { type: 'field'; data: EntityTemplateFormInputProperties };
@@ -84,6 +86,7 @@ export interface EntityTemplateWizardValues
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
     icon?: fileDetails;
     documentTemplatesIds?: File[];
+    enumPropertiesColors?: string[];
 }
 
 const EntityTemplateWizard: React.FC<
@@ -134,7 +137,7 @@ const EntityTemplateWizard: React.FC<
         {
             onSuccess: async ({ template: data, childTemplates }) => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
-                queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', (childTemplateMap) => {
+                queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) => {
                     childTemplates.forEach((child) => childTemplateMap!.set(child._id, child));
                     return childTemplateMap!;
                 });
@@ -146,7 +149,7 @@ const EntityTemplateWizard: React.FC<
 
                     try {
                         const childTemplates: IMongoChildTemplatePopulated[] = await getAllChildTemplates();
-                        queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', mapTemplates(childTemplates, 'name'));
+                        queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', mapTemplates(childTemplates, 'name'));
                     } catch (error) {
                         toast.error(i18next.t('wizard.failedToUpdateSystemData'));
                     }
@@ -176,7 +179,7 @@ const EntityTemplateWizard: React.FC<
                 handleClose();
             },
             onError: (error: AxiosError, entityTemplateValues) => {
-                const errorMetadata = error.response?.data?.metadata;
+                const errorMetadata = (error.response?.data as IErrorResponse)?.metadata;
 
                 if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToDeleteField) {
                     const { type, property, relatedTemplateName } = errorMetadata;

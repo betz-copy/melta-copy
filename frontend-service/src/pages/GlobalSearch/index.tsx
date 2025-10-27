@@ -17,7 +17,7 @@ const GlobalSearch: React.FC<{}> = () => {
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 
     const allowedCategories = currentUser.currentWorkspacePermissions.admin
         ? Array.from(categories.values())

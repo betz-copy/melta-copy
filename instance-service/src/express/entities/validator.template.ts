@@ -5,6 +5,7 @@ import {
     FilterLogicalOperator,
     getFilterFromChildTemplate,
     IEntitySingleProperty,
+    IEntityTemplate,
     IFilterGroup,
     IFilterOfField,
     IMongoEntityTemplate,
@@ -24,8 +25,8 @@ import { isValid as isValidDate, parse } from 'date-fns';
 import { format as formatFns, formatInTimeZone as formatFnsInTimeZone } from 'date-fns-tz';
 import { Request } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import FilterValidation from '../../error';
 import config from '../../config';
+import FilterValidation from '../../error';
 import ChildTemplateManagerService from '../../externalServices/templates/childTemplateManager';
 import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
@@ -35,7 +36,7 @@ import { trycatch } from '../../utils/lib';
 import { getNeo4jDate, getNeo4jDateTime, getNeo4jLocation } from '../../utils/neo4j/lib';
 import { IGetExpandedEntityBody } from './interface';
 
-const { neo4j, ajvCustomFormats } = config;
+const { neo4j, ajvCustomFormats, timezone } = config;
 
 const ajv = new Ajv();
 
@@ -68,6 +69,10 @@ ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
 ajv.addKeyword({
     keyword: 'dateNotification',
     type: 'number',
+});
+ajv.addKeyword({
+    keyword: 'isProfileImage',
+    type: 'boolean',
 });
 ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
@@ -227,6 +232,8 @@ export class EntityValidator extends DefaultController {
     }
 
     private strictIsValidDateString(dateString: string, expectedFormat: string) {
+        if (neo4j.relativeDateFilters.includes(dateString)) return true;
+
         const parsedDate = parse(dateString, expectedFormat, new Date());
         return isValidDate(parsedDate) && dateString === formatFns(parsedDate, expectedFormat);
     }
@@ -491,7 +498,7 @@ export class EntityValidator extends DefaultController {
 
 // same format as dates shown in UI
 const formatDateTimeForFullTextSearch = (date: Date) => {
-    return formatFnsInTimeZone(date, 'Asia/Jerusalem', 'dd/MM/yyyy, HH:mm:ss');
+    return formatFnsInTimeZone(date, timezone, 'dd/MM/yyyy, HH:mm:ss');
 };
 
 const formatDateForFullTextSearch = (date: Date) => {
@@ -508,97 +515,126 @@ export const getFilesName = (files: string[]): string => {
     return fileNames.join(', ');
 };
 
-export const addStringFieldsAndNormalizeSpecialStringValues = (
+/**
+ * Prepares the entityProperties to be inserted to neo4j.
+ * Adds suffixes to special keys (such as booleans and users)
+ * And changes some of the values to strings (dates, users, bools etc...)
+ * @param recursiveRelationshipReference
+ * @returns flattened entity (i.e. an object with no nested properties, using key paths as keys).
+ */
+export const addStringFieldsAndNormalizeSpecialStringValues = async (
     entityProperties: Record<string, any>,
-    entityTemplate: IMongoEntityTemplate,
+    entityTemplate: IMongoEntityTemplate | IEntityTemplate,
+    entityTemplateService: EntityTemplateManagerService,
+    coloredFields?: Record<string, string>,
     recursiveRelationshipReference = false,
-): Record<string, any> => {
-    const normalizedEntity = {};
+): Promise<Record<string, any>> => {
+    const normalizedEntity: Record<string, any> = {};
 
-    Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
-        if (!(key in entityProperties)) {
-            if (value.type === 'boolean') {
-                normalizedEntity[key] = false;
-                normalizedEntity[`${key}${neo4j.booleanPropertySuffix}`] = neo4j.booleanHeNoValue;
+    await Promise.all(
+        Object.entries(entityTemplate.properties.properties).map(async ([key, value]) => {
+            if (Object.keys(coloredFields ?? {}).includes(key) && entityProperties[key] !== undefined)
+                normalizedEntity[`${key}${neo4j.colorPropertySuffix}`] = coloredFields?.[key];
+
+            if (!(key in entityProperties)) {
+                if (value.type === 'boolean') {
+                    normalizedEntity[key] = false;
+                    normalizedEntity[`${key}${neo4j.booleanPropertySuffix}`] = neo4j.booleanHeNoValue;
+                }
+                return;
             }
 
-            return;
-        }
+            const propertyValue = entityProperties[key];
+            const { type, format, items } = value;
 
-        const propertyValue = entityProperties[key];
-        const { type, format, items } = value;
-        if (format === 'user') {
-            config.neo4j.userOriginalAndSuffixFieldsMap.forEach((userField) => {
-                normalizedEntity[`${key}${userField.suffixFieldName}${config.neo4j.userFieldPropertySuffix}`] =
-                    JSON.parse(propertyValue)[userField.originalFieldName];
-            });
-            return;
-        }
-
-        if (type === 'array' && items?.format === 'user') {
-            config.neo4j.usersArrayOriginalAndSuffixFieldsMap.forEach((userField) => {
-                normalizedEntity[`${key}${userField.suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`] = propertyValue.map(
-                    (user) => JSON.parse(user)[userField.originalFieldName],
-                );
-            });
-
-            return;
-        }
-
-        // For Neo4j fulltext search (supports only string properties)
-        if (type !== 'string') {
-            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = String(propertyValue);
-        }
-
-        if (type === 'boolean') {
-            normalizedEntity[`${key}${neo4j.booleanPropertySuffix}`] = propertyValue ? neo4j.booleanHeYesValue : neo4j.booleanHeNoValue;
-        }
-
-        if (type === 'array' && value.items?.format === 'fileId') {
-            normalizedEntity[`${key}${neo4j.filePropertySuffix}`] = propertyValue.map((fileId: string) => getFileName(fileId));
-        }
-
-        if (type === 'string' && (format === 'fileId' || format === 'signature')) {
-            normalizedEntity[`${key}${neo4j.filePropertySuffix}`] = getFileName(propertyValue);
-        }
-
-        if (type === 'string' && format === 'date') {
-            normalizedEntity[key] = getNeo4jDate(new Date(propertyValue));
-            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = formatDateForFullTextSearch(new Date(propertyValue));
-
-            return;
-        }
-
-        if (type === 'string' && format === 'date-time') {
-            normalizedEntity[key] = getNeo4jDateTime(new Date(propertyValue));
-            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = formatDateTimeForFullTextSearch(new Date(propertyValue));
-
-            return;
-        }
-
-        if (type === 'string' && format === 'relationshipReference' && typeof propertyValue === 'object') {
-            if (recursiveRelationshipReference) {
-                normalizedEntity[key] = propertyValue.properties[value.relationshipReference!.relatedTemplateField] || propertyValue.properties._id;
-            } else {
-                normalizedEntity[`${key}.templateId${neo4j.relationshipReferencePropertySuffix}`] = value.relationshipReference!.relatedTemplateId;
-                Object.entries(propertyValue).forEach(([innerKey, innerProperty]) => {
-                    normalizedEntity[`${key}.properties.${innerKey}${neo4j.relationshipReferencePropertySuffix}`] = innerProperty;
+            if (format === 'user') {
+                config.neo4j.userOriginalAndSuffixFieldsMap.forEach(({ suffixFieldName, originalFieldName }) => {
+                    normalizedEntity[`${key}${suffixFieldName}${config.neo4j.userFieldPropertySuffix}`] =
+                        JSON.parse(propertyValue)[originalFieldName];
                 });
+                return;
             }
 
-            return;
-        }
-        if (type === 'string' && format === 'location') {
-            const location = typeof propertyValue === 'string' ? JSON.parse(propertyValue) : propertyValue;
-            normalizedEntity[key] = getNeo4jLocation(location.location, entityProperties, key);
-            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = location.location;
-            normalizedEntity[`${key}${neo4j.locationCoordinateSystemSuffix}`] = location.coordinateSystem;
+            if (type === 'array' && items?.format === 'user') {
+                config.neo4j.usersArrayOriginalAndSuffixFieldsMap.forEach(({ suffixFieldName, originalFieldName }) => {
+                    normalizedEntity[`${key}${suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`] = propertyValue.map(
+                        (user: string) => JSON.parse(user)[originalFieldName],
+                    );
+                });
+                return;
+            }
 
-            return;
-        }
+            // For Neo4j fulltext search (supports only string properties)
+            if (type !== 'string') {
+                normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = String(propertyValue);
+            }
 
-        normalizedEntity[key] = propertyValue;
-    });
+            if (type === 'boolean') {
+                normalizedEntity[`${key}${neo4j.booleanPropertySuffix}`] = propertyValue ? neo4j.booleanHeYesValue : neo4j.booleanHeNoValue;
+            }
+
+            if (type === 'array' && items?.format === 'fileId') {
+                normalizedEntity[`${key}${neo4j.filePropertySuffix}`] = propertyValue.map((fileId: string) => getFileName(fileId));
+            }
+
+            if (type === 'string' && (format === 'fileId' || format === 'signature')) {
+                normalizedEntity[`${key}${neo4j.filePropertySuffix}`] = getFileName(propertyValue);
+            }
+
+            if (type === 'string' && format === 'date') {
+                const date = new Date(propertyValue);
+                normalizedEntity[key] = getNeo4jDate(date);
+                normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = formatDateForFullTextSearch(date);
+                return;
+            }
+
+            if (type === 'string' && format === 'date-time') {
+                const dateTime = new Date(propertyValue);
+                normalizedEntity[key] = getNeo4jDateTime(dateTime);
+                normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = formatDateTimeForFullTextSearch(dateTime);
+                return;
+            }
+
+            if (type === 'string' && format === 'relationshipReference' && typeof propertyValue === 'object') {
+                let relationShipPropValue: Record<string, any> = 'properties' in propertyValue ? propertyValue.properties : propertyValue;
+
+                if (recursiveRelationshipReference) {
+                    const relatedEntityTemplate = await entityTemplateService.getEntityTemplateById(propertyValue.templateId);
+
+                    const hasNestedRelationship = Object.values(relatedEntityTemplate.properties.properties).some(
+                        ({ format: nestedFormat }) => nestedFormat === 'relationshipReference',
+                    );
+
+                    relationShipPropValue = await addStringFieldsAndNormalizeSpecialStringValues(
+                        propertyValue.properties,
+                        relatedEntityTemplate,
+                        entityTemplateService,
+                        coloredFields,
+                        hasNestedRelationship,
+                    );
+                }
+
+                normalizedEntity[`${key}.templateId${neo4j.relationshipReferencePropertySuffix}`] = value.relationshipReference!.relatedTemplateId;
+                Object.entries(relationShipPropValue).forEach(([innerKey, innerProperty]) => {
+                    if (innerKey !== 'coloredProperties')
+                        normalizedEntity[`${key}.properties.${innerKey}${neo4j.relationshipReferencePropertySuffix}`] = innerProperty;
+                });
+
+                return;
+            }
+
+            if (type === 'string' && format === 'location') {
+                const location = typeof propertyValue === 'string' ? JSON.parse(propertyValue) : propertyValue;
+
+                normalizedEntity[key] = getNeo4jLocation(location.location, entityProperties, key);
+                normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = location.location;
+                normalizedEntity[`${key}${neo4j.locationCoordinateSystemSuffix}`] = location.coordinateSystem;
+                return;
+            }
+
+            normalizedEntity[key] = propertyValue;
+        }),
+    );
 
     return normalizedEntity;
 };

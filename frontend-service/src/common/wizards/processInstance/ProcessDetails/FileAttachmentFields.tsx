@@ -1,14 +1,14 @@
-import React from 'react';
-import { FormikErrors, FormikProps } from 'formik';
 import { Box, Grid, Typography } from '@mui/material';
+import { FormikErrors, FormikProps } from 'formik';
 import i18next from 'i18next';
-import { ProcessStepValues } from '../ProcessSteps';
+import React from 'react';
 import { ProcessDetailsValues } from '.';
 import { IProcessSingleProperty } from '../../../../interfaces/processes/processTemplate';
-import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
-import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 import OpenPreview from '../../../FilePreview/OpenPreview';
-import { BlueTitle } from '../../../BlueTitle';
+import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
+import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
+import BlueTitle from '../../../MeltaDesigns/BlueTitle';
+import { ProcessStepValues } from '../ProcessSteps';
 
 type ProcessFormikProps = ProcessStepValues | ProcessDetailsValues;
 
@@ -34,7 +34,7 @@ const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({
 }) => (
     <>
         {Object.entries(templateFileProperties).map(([key, value], index) => (
-            <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
+            <Grid key={key} marginTop={index > 0 ? 5 : 0}>
                 {value.items === undefined ? (
                     <InstanceSingleFileInput
                         key={key}
@@ -81,14 +81,12 @@ export const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFi
                 }
                 return (
                     <Grid container spacing={1} display="flex" flexDirection="column" key={fieldName}>
-                        <Grid item>
+                        <Grid>
                             <Typography display="inline" variant="body1">
                                 {title}:
                             </Typography>
                         </Grid>
-                        <Grid item maxWidth="170px">
-                            {attachments}
-                        </Grid>
+                        <Grid maxWidth="170px">{attachments}</Grid>
                     </Grid>
                 );
             })}

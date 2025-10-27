@@ -1,4 +1,3 @@
-import { MatomoProvider } from '@datapunt/matomo-tracker-react';
 import Bowser from 'bowser';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
@@ -11,17 +10,18 @@ import './css/index.css';
 import './css/loading.css';
 import { environment } from './globals';
 import Main from './Main';
+import { useMatomoInstance } from './matomo';
+import MatomoWrapper, { MatomoTracker } from './matomoWrapper';
+import ClientSidePage from './pages/ClientSidePage';
 import ErrorPage from './pages/ErrorPage';
 import { AuthService } from './services/authService';
 import { BackendConfigState, getBackendConfigRequest } from './services/backendConfigService';
 import { getMyUserRequest } from './services/userService';
 import { getById, getWorkspaceHierarchyIds } from './services/workspacesService';
-import { useUserStore } from './stores/user';
 import { useDarkModeStore } from './stores/darkMode';
+import { useUserStore } from './stores/user';
 import { useWorkspaceStore } from './stores/workspace';
 import { getWorkspacePermissions } from './utils/permissions';
-import { useMatomoInstance } from './matomo';
-import ClientSidePage from './pages/ClientSidePage';
 
 const App: React.FC = () => {
     const [isLoadingUser, setIsLoadingUser] = useState(true);
@@ -130,11 +130,7 @@ const App: React.FC = () => {
 
     if (isErrorBackendConfig) return <ErrorPage errorText={i18next.t('errorPage.systemUnavailable')} />;
 
-    return (
-        <MatomoProvider value={matomoInstance!}>
-            <Main />;
-        </MatomoProvider>
-    );
+    return <MatomoWrapper matomoInstance={matomoInstance! as MatomoTracker} children={<Main />} />;
 };
 
 export default App;

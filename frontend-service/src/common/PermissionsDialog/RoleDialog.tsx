@@ -3,23 +3,23 @@ import { Form, Formik, FormikProps } from 'formik';
 import i18next from 'i18next';
 import _cloneDeep from 'lodash.clonedeep';
 import _isEqual from 'lodash.isequal';
-import React from 'react';
+import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
 
-import { PermissionData, RelatedPermission } from '../../interfaces/users';
 import { IRole } from '../../interfaces/roles';
+import { PermissionData, RelatedPermission } from '../../interfaces/users';
 import { createRoleRequest, getAllWorkspaceRolesRequest, syncPermissionsRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 
-import { didPermissionsChange, userHasNoPermissions, createDialogCategories } from '../../utils/permissions/permissionOfUserDialog';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import ManagePermissions from './managePermissions';
-import { BlueTitle } from '../BlueTitle';
 import { IChildTemplateMap } from '../../interfaces/childTemplates';
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
+import { createDialogCategories, isPermissionsEquals, userHasNoPermissions } from '../../utils/permissions/permissionOfUserDialog';
+import BlueTitle from '../MeltaDesigns/BlueTitle';
+import ManagePermissions from './managePermissions';
 
 const RoleDialog: React.FC<{
     handleClose: () => void;
@@ -31,6 +31,7 @@ const RoleDialog: React.FC<{
     const setUser = useUserStore((state) => state.setUser);
     const workspace = useWorkspaceStore((state) => state.workspace);
     const darkMode = useDarkModeStore((state) => state.darkMode);
+    const [searchText, setSearchText] = useState('');
 
     const defaultEmptyRole = {
         permissions: {},
@@ -40,7 +41,7 @@ const RoleDialog: React.FC<{
     const queryClient = useQueryClient();
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 
     const { data: workspaceRoles, refetch: refetchWorkspaceRoles } = useQuery(
         ['getAllWorkspaceRolesRequest', workspace],
@@ -148,17 +149,19 @@ const RoleDialog: React.FC<{
                                     onChange={({ target: { value: newValue } }) => setFieldValue('name', newValue)}
                                     onBlur={handleBlur}
                                     label={i18next.t('permissions.roleHeaderName')}
-                                    InputLabelProps={{
-                                        shrink: mode === 'view' || undefined,
-                                        style: {
-                                            fontSize: '14px',
+                                    slotProps={{
+                                        inputLabel: {
+                                            shrink: mode === 'view' || undefined,
+                                            style: {
+                                                fontSize: '14px',
+                                            },
                                         },
-                                    }}
-                                    inputProps={{
-                                        readOnly: mode === 'view',
-                                        style: {
-                                            textOverflow: 'ellipsis',
-                                            fontSize: '14px',
+                                        htmlInput: {
+                                            readOnly: mode === 'view',
+                                            style: {
+                                                textOverflow: 'ellipsis',
+                                                fontSize: '14px',
+                                            },
                                         },
                                     }}
                                     disabled={mode === 'edit'}
@@ -170,9 +173,10 @@ const RoleDialog: React.FC<{
                             {/* dont show management permissions to regular user (if dont have at all) */}
                             <ManagePermissions
                                 mode={mode}
-                                dialogPermissionData={createDialogCategories([...entityTemplates.values()], [...childTemplates.values()])}
+                                dialogPermissionData={createDialogCategories([...entityTemplates.values()], [...childTemplates.values()], searchText)}
                                 formikProps={formikProps as FormikProps<PermissionData>}
                                 workspace={workspace}
+                                searchText={{ value: searchText, set: setSearchText }}
                             />
                         </DialogContent>
 
@@ -184,7 +188,7 @@ const RoleDialog: React.FC<{
                                             type="submit"
                                             disabled={
                                                 isSubmitting ||
-                                                didPermissionsChange(initialValues.permissions, values.permissions) ||
+                                                isPermissionsEquals(initialValues.permissions, values.permissions) ||
                                                 userHasNoPermissions(values.permissions[workspace._id])
                                             }
                                             variant="contained"

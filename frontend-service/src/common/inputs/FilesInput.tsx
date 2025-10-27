@@ -1,12 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { IconButton, Grid, useTheme, Typography, Button, Box, Divider } from '@mui/material';
-import { CloseOutlined as DeleteIcon, Visibility, Upload } from '@mui/icons-material';
-import { Accept, useDropzone } from 'react-dropzone';
+import { CloseOutlined as DeleteIcon, Upload, Visibility } from '@mui/icons-material';
+import { Box, Button, Divider, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import FileIcon from '../FilePreview/FileIcon';
-import { getFileExtension } from '../../utils/getFileType';
-import OpenPreview from '../FilePreview/OpenPreview';
+import React, { useEffect, useRef, useState } from 'react';
+import { Accept, useDropzone } from 'react-dropzone';
 import { getFileName } from '../../utils/getFileName';
+import { getFileExtension } from '../../utils/getFileType';
+import FileIcon from '../FilePreview/FileIcon';
+import OpenPreview from '../FilePreview/OpenPreview';
 import { LoadingFilesInput } from './LoadingFilesInput';
 
 interface FilesInputProps {
@@ -81,6 +81,7 @@ const FilesInput: React.FC<FilesInputProps> = ({
         BorderRadius: '10px',
         padding: '10px',
         height: errorText ? '200px' : '100%',
+        width: '100%',
         display: 'flex',
         justifyContext: 'center',
         alignItems: 'center',
@@ -102,23 +103,23 @@ const FilesInput: React.FC<FilesInputProps> = ({
 
     return (
         <Grid container flexDirection="column" justifyContent="space-around" width="100%" ref={inputRef}>
-            <Grid item>
+            <Grid>
                 <Typography style={{ color: '#9398C2' }}>{inputText}</Typography>
             </Grid>
 
-            <Grid item container sx={inputStyle} {...getRootProps()}>
+            <Grid container sx={inputStyle} {...getRootProps()}>
                 <input {...getInputProps()} />
-                {files.length > 0 ? (
-                    <Grid item flexWrap="wrap" overflow="auto" width="100%">
+                {!!files.length ? (
+                    <Grid flexWrap="wrap" overflow="auto" width="100%">
                         {files.map((file: FilesInputProps['files'][number], index) => (
                             // eslint-disable-next-line react/no-array-index-key
-                            <Grid key={`${file.name}-${index}`} item container justifyContent="space-between" alignItems="center" width="100%">
-                                <Grid item container xs={1} justifyContent="center" paddingTop="5px">
-                                    <Grid item>
+                            <Grid key={`${file.name}-${index}`} container justifyContent="space-between" alignItems="center" width="100%">
+                                <Grid container size={{ xs: 1 }} justifyContent="center" paddingTop="5px">
+                                    <Grid>
                                         <FileIcon extension={getFileExtension(file.name)} style={{ height: '20px' }} />
                                     </Grid>
                                 </Grid>
-                                <Grid item xs={10}>
+                                <Grid size={{ xs: 10 }}>
                                     <Typography
                                         style={{
                                             overflow: 'hidden',
@@ -130,8 +131,8 @@ const FilesInput: React.FC<FilesInputProps> = ({
                                         {isFileFromInput(file) ? file.name : getFileName(file.name)}
                                     </Typography>
                                 </Grid>
-                                <Grid item container xs={1}>
-                                    <Grid container item justifyContent="flex-end" alignItems="center" wrap="nowrap">
+                                <Grid size={{ xs: 1 }}>
+                                    <Grid container justifyContent="flex-end" alignItems="center" wrap="nowrap">
                                         {!isFileFromInput(file) && (
                                             <OpenPreview fileId={file.name} img={<Visibility fontSize="small" />} showText={false} />
                                         )}
@@ -145,13 +146,13 @@ const FilesInput: React.FC<FilesInputProps> = ({
                         ))}
                     </Grid>
                 ) : (
-                    <Grid item container sx={innerInputStyle}>
+                    <Grid container sx={innerInputStyle}>
                         {isDragActive ? (
                             <Typography color="#9398C2" fontSize="14px" fontWeight={400} marginX="auto">
                                 {i18next.t('input.imagePicker.dropFile')}
                             </Typography>
                         ) : (
-                            <Grid item sx={fileTextStyle}>
+                            <Grid sx={fileTextStyle}>
                                 <Box display="flex" flexDirection="column" alignItems="center" position="relative">
                                     <img src="/icons/upload-files.svg" alt="Upload Files" style={{ width: '130%' }} />
                                     <Typography
@@ -205,7 +206,7 @@ const FilesInput: React.FC<FilesInputProps> = ({
                 )}
 
                 {errorText && (
-                    <Grid item>
+                    <Grid>
                         <p id="error" style={{ color: '#d32f2f', margin: 0, padding: 0 }}>
                             {errorText}
                         </p>

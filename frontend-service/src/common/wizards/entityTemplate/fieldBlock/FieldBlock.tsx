@@ -545,7 +545,9 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                 <>
                     <div
                         key={propertiesType}
-                        ref={drop}
+                        ref={(node) => {
+                            drop(node as any);
+                        }}
                         style={{
                             display: 'flex',
                             flexDirection: 'column',
@@ -567,6 +569,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                                                     group={item}
                                                     index={index}
                                                     moveField={moveField}
+                                                    moveGroup={moveGroup}
                                                     touched={touched}
                                                     errors={errors}
                                                     propertiesType={propertiesType}
@@ -653,13 +656,13 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                 title={i18next.t('systemManagement.deleteField')}
                 body={`${i18next.t('systemManagement.warningOnDeleteField')}
                                 ${
-                                    selectedIndexesToRemove.length > 0 &&
+                                    !!selectedIndexesToRemove.length &&
                                     getFieldData(orderedItemsRef.current, selectedIndexesToRemove[0].index, selectedIndexesToRemove[0].groupIndex)
                                         ?.title
                                 }
                                 ${i18next.t('systemManagement.continueWarningOnDeleteField')} ${
-                    (initialValues as unknown as IMongoEntityTemplatePopulated)?.displayName
-                }`}
+                                    (initialValues as unknown as IMongoEntityTemplatePopulated)?.displayName
+                                }`}
                 onYes={() => (onDeleteSure ? onDeleteSure(setShowAreUSureDialogForRemoveProperty) : onSimpleDeleteSure())}
             />
         </FieldBlockAccordion>
