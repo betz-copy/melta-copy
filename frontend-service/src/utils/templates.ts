@@ -18,8 +18,8 @@ export const populateRelationshipTemplate = (
     groupChildTemplate?: Record<string, IChildTemplatePopulated[]>,
 ): IMongoRelationshipTemplatePopulated => {
     return {
-        sourceEntity: entityTemplates.get(sourceEntityId) ?? getFakeParentByChildren(sourceEntityId, groupChildTemplate),
-        destinationEntity: entityTemplates.get(destinationEntityId) ?? getFakeParentByChildren(destinationEntityId, groupChildTemplate),
+        sourceEntity: entityTemplates.get(sourceEntityId) ?? getFakeParentByChildren(sourceEntityId, groupChildTemplate)!,
+        destinationEntity: entityTemplates.get(destinationEntityId) ?? getFakeParentByChildren(destinationEntityId, groupChildTemplate)!,
         ...restOfRelationshipTemplate,
     };
 };
@@ -55,16 +55,17 @@ const getFakeParentByChildren = (id: string, groupChildTemplate?: Record<string,
                 relevantProperties[key] = value;
                 propertiesOrder.push(key);
             } else if (relevantProperties[key] && value.filters) {
-                relevantProperties[key].filters = relevantProperties[key].filters
+                const prevFilters = relevantProperties[key].filters;
+                relevantProperties[key].filters = prevFilters
                     ? JSON.stringify({
-                          $or: [...JSON.parse(relevantProperties[key].filters).$or, JSON.parse(value.filters).$or],
+                          $or: [...JSON.parse(prevFilters).$or, ...JSON.parse(value.filters).$or],
                       })
                     : value.filters;
             }
         });
     });
 
-    if (!relevantGroup.length) return {};
+    if (!relevantGroup.length) return undefined;
 
     return {
         ...relevantGroup[0],

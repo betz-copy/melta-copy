@@ -28,6 +28,7 @@ import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
 import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
+import { combineFilters } from '../utils/filters';
 import { locationConverterToString } from '../utils/map/convert';
 import { isChildTemplate } from '../utils/templates';
 
@@ -166,7 +167,7 @@ export const getExpandedEntityByIdRequest = async (
     const { data } = await axios.post<IEntityExpanded>(`${entities}/expanded/${entityId}`, {
         ...options,
         expandedParams,
-        filters: { ...filters, ...childTemplateFilters },
+        filters: combineFilters(filters['filter'],childTemplateFilters ),
     });
     return data;
 };

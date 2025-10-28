@@ -25,16 +25,18 @@ const DeletableEntityViewerCard: React.FC<{ entity: IEntity; onDelete: () => voi
     const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
     const childTemplatesOfParent = childTemplates.values().filter(({ parentTemplate: { _id } }) => entity.templateId === _id);
 
-    const childTemplate = childTemplatesOfParent?.find((child) =>
-        isEntityFitsToChildTemplate(
-            child,
-            !entityTemplates.get(entity.templateId),
-            entity.properties._id,
-            currentUserKartoffelId,
-            currentUser?.units?.[workspace._id] ?? [],
-            isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
-        ),
-    );
+    const childTemplate = entity.childTemplateId
+        ? childTemplates.get(entity.childTemplateId)
+        : childTemplatesOfParent?.find((child) =>
+              isEntityFitsToChildTemplate(
+                  child,
+                  !entityTemplates.get(entity.templateId),
+                  entity.properties._id,
+                  currentUserKartoffelId,
+                  currentUser?.units?.[workspace._id] ?? [],
+                  isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
+              ),
+          );
 
     const entityTemplate = entityTemplates.get(entity.templateId) ?? childTemplate;
 

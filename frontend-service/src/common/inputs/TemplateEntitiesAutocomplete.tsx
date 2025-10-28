@@ -9,10 +9,11 @@ import { environment } from '../../globals';
 import { IChildTemplateMap, IChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { IEntity, ISearchEntitiesOfTemplateBody, ISearchFilter } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IWorkspace } from '../../interfaces/workspaces';
 import { searchEntitiesOfTemplateClientSideRequest } from '../../services/clientSideService';
 import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
 import { useClientSideUserStore } from '../../stores/clientSideUser';
-import { useUserStore } from '../../stores/user';
+import { UserState, useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { locationConverterToString } from '../../utils/map/convert';
 import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
@@ -24,11 +25,10 @@ import { CoordinateSystem } from './JSONSchemaFormik/RjsfLocationWidget';
 
 export const getChildTemplatesFilter = (
     childTemplatesOfRelatedTemplate: IChildTemplatePopulated[],
+    workspace: IWorkspace,
     isChildTemplate?: boolean,
+    currentUser?: UserState['user'],
 ): ISearchFilter | undefined => {
-    const currentUser = useUserStore((state) => state.user);
-    const workspace = useWorkspaceStore((state) => state.workspace);
-
     const currentUserKartoffelId = currentUser?.kartoffelId;
 
     const childTemplatesFilters = childTemplatesOfRelatedTemplate
@@ -38,7 +38,7 @@ export const getChildTemplatesFilter = (
                 true,
                 currentUserKartoffelId,
                 currentUser?.units?.[workspace._id] ?? [],
-                isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
+                isWorkspaceAdmin(currentUser?.permissions?.[workspace._id] ?? {}),
             ),
         )
         .filter((f): f is ISearchFilter => !!f);
@@ -84,6 +84,9 @@ const TemplateEntitiesAutocomplete: React.FC<{
     required,
     isChildTemplate,
 }) => {
+    const currentUser = useUserStore((state) => state.user);
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const clientSideUserEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
 
     const { cacheBlockSize } = environment.agGrid;
@@ -99,7 +102,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
 
     const parseAndAddDisabled = (filters: string | undefined): ISearchFilter => {
         const disabledCondition: ISearchFilter = { $and: { disabled: { $eq: false } } };
-        const childTemplatesFilter = getChildTemplatesFilter(childTemplatesOfRelatedTemplate, isChildTemplate);
+        const childTemplatesFilter = getChildTemplatesFilter(childTemplatesOfRelatedTemplate, workspace, isChildTemplate, currentUser);
         const filtersArray: ISearchFilter[] = [];
 
         if (filters) {

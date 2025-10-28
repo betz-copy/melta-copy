@@ -18,7 +18,7 @@ import { TableButton } from '../../common/TableButton';
 import '../../css/pages.css';
 import { ICategoryMap } from '../../interfaces/categories';
 import { IChildTemplateMap, IChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { IEntity, IEntityExpanded } from '../../interfaces/entities';
+import { IEntity, IEntityExpanded, ISearchFilter } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { PermissionScope } from '../../interfaces/permissions';
 import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
@@ -369,14 +369,18 @@ const Entity: React.FC = () => {
 
     const groupChildTemplate = groupChildTemplatesByParent(childTemplates, entityTemplates);
 
-    const filters: any = Object.fromEntries(
-        Object.entries(groupChildTemplate)
-            .map(([key, children]) => {
-                const filter = getChildTemplatesFilter(children, true);
-                return filter ? [key, { filter }] : null;
-            })
-            .filter((entry): entry is [string, { filter: any }] => entry !== null),
-    );
+    const filters: any =
+        Object.entries(groupChildTemplate).length > 0
+            ? Object.fromEntries(
+                  Object.entries(groupChildTemplate)
+                      .map(([key, children]) => {
+                          const childFilter = getChildTemplatesFilter(children, true);
+                          if (!childFilter) return null;
+                          return [key, { filter: childFilter }] as const;
+                      })
+                      .filter((f): f is readonly [string, { filter: ISearchFilter }] => f !== null),
+              )
+            : undefined;
 
     const expanded = entityId ? { [entityId]: { maxLevel: 1 } } : {};
     const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId, expanded, { templateIds }], () =>
