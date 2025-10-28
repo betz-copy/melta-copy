@@ -1,4 +1,4 @@
-import { connection, Model, Schema } from 'mongoose';
+import { connection, Model } from 'mongoose';
 
 abstract class DefaultManagerMongo<T> {
     public model: Model<T>;
@@ -6,7 +6,8 @@ abstract class DefaultManagerMongo<T> {
     constructor(
         protected workspaceId: string,
         private collectionName: string,
-        private modelSchema: Schema,
+        // TODO return Schema type when mongoose fixes their types
+        private modelSchema: any,
     ) {
         this.model = connection.useDb(this.workspaceId, { useCache: true }).model<T>(this.collectionName, this.modelSchema);
     }
