@@ -253,15 +253,10 @@ class InstancesValidator extends DefaultController {
         });
 
         await Promise.all(
-            relatedTemplates.map((template) =>
-                this.validateUserPermissionForEntityInstance(
-                    req,
-                    template._id,
-                    PermissionScope.write,
-                    template.category._id,
-                    childTemplatesOfParents[0]._id,
-                ),
-            ),
+            relatedTemplates.map(({ _id, category }) => {
+                const childTemplateId = childTemplatesOfParents.find(({ parentTemplate }) => parentTemplate._id === _id)?._id;
+                return this.validateUserPermissionForEntityInstance(req, _id, PermissionScope.write, category._id, childTemplateId);
+            }),
         );
     }
 
@@ -274,9 +269,10 @@ class InstancesValidator extends DefaultController {
         });
 
         await Promise.all(
-            relatedTemplates.map(({ _id, category }) =>
-                this.validateUserPermissionForEntityInstance(req, _id, PermissionScope.write, category._id, childTemplatesOfParents[0]._id),
-            ),
+            relatedTemplates.map(({ _id, category }) => {
+                const childTemplateId = childTemplatesOfParents.find(({ parentTemplate }) => parentTemplate._id === _id)?._id;
+                this.validateUserPermissionForEntityInstance(req, _id, PermissionScope.write, category._id, childTemplateId);
+            }),
         );
     }
 

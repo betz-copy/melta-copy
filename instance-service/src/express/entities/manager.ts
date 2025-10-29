@@ -1292,7 +1292,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
     handleDeleteErrors(allowedEntitiesToDelete: IEntity[], deleteAllRelationships?: boolean) {
         if (allowedEntitiesToDelete.length >= deleteEntitiesMaxLimit)
-            throw new BadRequestError(`cant delete more then ${deleteEntitiesMaxLimit} instances`);
+            throw new BadRequestError(`can't delete more then ${deleteEntitiesMaxLimit} instances`);
 
         if (!allowedEntitiesToDelete.length) {
             if (deleteAllRelationships)

@@ -266,7 +266,11 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         const childTemplatesPopulated = await this.getAllowedChildEntitiesTemplates(permissionsOfUserId);
 
-        const allowedRelationshipsTemplates = await this.getAllowedRelationshipTemplates([...allowedEntityTemplatesIds]);
+        const allowedChildTemplatesIds = childTemplatesPopulated
+            .map(({ parentTemplate: { _id } }) => _id)
+            .filter((id) => !allowedEntityTemplatesIds.includes(id));
+
+        const allowedRelationshipsTemplates = await this.getAllowedRelationshipTemplates([...allowedEntityTemplatesIds, ...allowedChildTemplatesIds]);
         const { allowedRelationshipTemplatesBecauseOfRules, allowedEntityTemplatesIdsByOneRelationship } = await this.getAllowedTemplatesAndRules(
             allowedEntityTemplatesIds,
             allowedRelationshipsTemplates,
