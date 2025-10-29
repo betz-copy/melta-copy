@@ -252,12 +252,11 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     private async getRelatedTemplates(template: IMongoChildTemplatePopulated | IMongoEntityTemplatePopulated, userId: string) {
         const relatedTemplatesObject = Object.entries(template.properties.properties)
-            .filter(([, property]) => property.format === 'relationshipReference')
+            .filter(([, property]) => property.format === 'relationshipReference' && property.relationshipReference?.relatedTemplateId)
             .map(([fieldName, property]) => ({
                 fieldName,
-                relatedTemplateId: property.relationshipReference?.relatedTemplateId,
-            }))
-            .filter((item): item is { fieldName: string; relatedTemplateId: string } => Boolean(item.fieldName && item.relatedTemplateId));
+                relatedTemplateId: property.relationshipReference!.relatedTemplateId,
+            }));
 
         const relatedTemplates = await this.entityTemplateService.searchEntityTemplates(userId, {
             ids: relatedTemplatesObject.map((relatedTemplate) => relatedTemplate.relatedTemplateId),
