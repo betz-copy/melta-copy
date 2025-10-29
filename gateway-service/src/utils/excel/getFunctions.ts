@@ -100,7 +100,12 @@ export const isIncludedColumn = (propertyTemplate: IEntitySingleProperty | (IEnt
 };
 
 export const isIncludedEditColumn = (propertyTemplate: IEntitySingleProperty, entityDisabled: boolean, templateDisabled: boolean) =>
-    !propertyTemplate.readOnly && !propertyTemplate.identifier && !entityDisabled && !templateDisabled && isIncludedColumn(propertyTemplate);
+    !propertyTemplate.readOnly &&
+    !propertyTemplate.identifier &&
+    !entityDisabled &&
+    !templateDisabled &&
+    isIncludedColumn(propertyTemplate) &&
+    propertyTemplate.format !== 'relationshipReference';
 
 type IFailedProperties = {
     key: string;

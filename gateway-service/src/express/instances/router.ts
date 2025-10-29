@@ -90,6 +90,7 @@ InstancesRouter.post(
     busboyMiddleware,
     ValidateRequest(loadEntitiesSchema),
     InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
+    InstancesValidatorMiddleware.validateUserCanLoadExcel,
     InstancesControllerMiddleware.loadEntities,
 );
 

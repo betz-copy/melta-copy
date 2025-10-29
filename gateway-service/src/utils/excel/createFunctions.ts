@@ -1,5 +1,13 @@
 /* eslint-disable no-param-reassign */
-import { CoordinateSystem, EntityTemplateType, IEntity, IEntitySingleProperty, locationConverterToString, TemplateItem } from '@microservices/shared';
+import {
+    CoordinateSystem,
+    EntityTemplateType,
+    IEntity,
+    IEntitySingleProperty,
+    IMongoEntityTemplatePopulated,
+    locationConverterToString,
+    TemplateItem,
+} from '@microservices/shared';
 import Excel, { Cell } from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
 import config from '../../config/index';
@@ -119,7 +127,32 @@ export const indexToExcelColumn = (index: number): string => {
 //     }
 // };
 
-const createWorksheet = async (workbook: Excel.Workbook, templateItem: TemplateItem, displayColumns?: string[], headersOnly?: boolean) => {
+const showRelationshipRefColumn = (
+    propertyKey: string,
+    propertyTemplate: IEntitySingleProperty,
+    templatesMap: Record<string, IMongoEntityTemplatePopulated>,
+    requiredConstraints: string[],
+) => {
+    if (propertyTemplate.format !== 'relationshipReference') return true;
+
+    const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId;
+    const relatedTemplate = templatesMap[relatedTemplateId!];
+    const identifierField = Object.entries(relatedTemplate!.properties.properties).find(([_key, value]) => value.identifier)?.[0];
+    const isRequiredProperty = requiredConstraints?.includes(propertyKey);
+
+    if (!identifierField && !isRequiredProperty) return false;
+
+    return true;
+};
+
+const createWorksheet = async (
+    workbook: Excel.Workbook,
+    templateItem: TemplateItem,
+    templatesMap: Record<string, IMongoEntityTemplatePopulated>,
+    requiredConstraints: string[],
+    displayColumns?: string[],
+    headersOnly?: boolean,
+) => {
     const { metaData: template } = templateItem;
 
     const worksheet = workbook.addWorksheet(template.displayName);
@@ -129,7 +162,9 @@ const createWorksheet = async (workbook: Excel.Workbook, templateItem: TemplateI
     let columnIndex = 0; // TODO: make data validation work in office excel
 
     Object.entries(template.properties.properties).forEach(([propertyKey, propertyTemplate]) => {
-        const shouldAddColumn = headersOnly ? isIncludedColumn(propertyTemplate) : displayColumns?.includes(propertyKey);
+        const shouldAddColumn = headersOnly
+            ? showRelationshipRefColumn(propertyKey, propertyTemplate, templatesMap, requiredConstraints) && isIncludedColumn(propertyTemplate)
+            : displayColumns?.includes(propertyKey);
 
         if (shouldAddColumn) {
             // TODO: make data validation work in office excel

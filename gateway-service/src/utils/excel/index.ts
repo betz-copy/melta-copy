@@ -55,7 +55,10 @@ export const classifyEntityErrors = (
 ) => {
     if (error instanceof ServiceError && error.code === StatusCodes.NOT_FOUND) {
         failedEntities.push({
-            properties: entity.properties,
+            properties: {
+                ...entity.properties,
+                ...(originalEntity || {}),
+            },
             errors: [{ type: ActionErrors.notFound, metadata: error.metadata as INotFoundRelationshipRefError }],
         });
     }
@@ -74,7 +77,10 @@ export const classifyEntityErrors = (
                 const properties = propertiesMatch ? propertiesMatch[1].replace(/`/g, '').split(', ') : [];
 
                 failedEntities.push({
-                    properties: entity.properties,
+                    properties: {
+                        ...entity.properties,
+                        ...(originalEntity || {}),
+                    },
                     errors: [
                         {
                             type: ActionErrors.unique,
@@ -89,13 +95,19 @@ export const classifyEntityErrors = (
             switch (constraint.type) {
                 case ActionErrors.unique:
                     failedEntities.push({
-                        properties: entity.properties,
+                        properties: {
+                            ...entity.properties,
+                            ...(originalEntity || {}),
+                        },
                         errors: [{ type: ActionErrors.unique, metadata: constraint }],
                     });
                     break;
                 case ActionErrors.required:
                     failedEntities.push({
-                        properties: entity.properties,
+                        properties: {
+                            ...entity.properties,
+                            ...(originalEntity || {}),
+                        },
                         errors: [{ type: ActionErrors.required, metadata: constraint }],
                     });
                     break;

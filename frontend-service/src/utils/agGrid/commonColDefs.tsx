@@ -54,9 +54,9 @@ const isPropertyInvalid = <Data extends any = EntityData>(
             case ActionErrors.validation: {
                 return (error.metadata as IValidationError).path.slice(1).includes(property);
             }
-            case ActionErrors.notFound: {
-                return (error.metadata as IRequiredConstraint).property === property;
-            }
+            case ActionErrors.relationshipRefNotFound:
+                return (error.metadata as INotFoundRelationshipRefError).property === property;
+
             default:
                 break;
         }
@@ -90,11 +90,11 @@ const errorColDef = <Data extends any = EntityData>(
             } else message = metadata.message;
             break;
         }
-        case ActionErrors.notFound: {
-            const metadata = error.metadata as INotFoundRelationshipRefError;
+        case ActionErrors.relationshipRefNotFound: {
+            const { relatedTemplateId, relatedIdentifier } = error.metadata as INotFoundRelationshipRefError;
             message = i18next.t('wizard.entity.loadEntities.relatedEntityNotFound', {
-                templateName: entityTemplatesMap?.get(metadata.relatedTemplateId)?.name,
-                propertyName: metadata.relatedIdentifier,
+                templateName: entityTemplatesMap?.get(relatedTemplateId)?.displayName,
+                propertyName: relatedIdentifier,
             });
             break;
         }
@@ -332,10 +332,10 @@ export const relatedTemplateColDef = <Data extends any = EntityData>(
         field,
         headerName: value.title,
         cellRenderer: (props: ICellRendererParams<Data, IEntity | undefined>) => {
-            if (!props.value) return null;
             const error = isPropertyInvalid(props, field, ignoreType);
 
             if (error) return errorColDef(props, error, value, entityTemplates);
+            if (!props.value) return null;
 
             return (
                 <RelationshipReferenceView

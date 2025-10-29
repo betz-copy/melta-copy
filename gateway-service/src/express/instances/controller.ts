@@ -24,7 +24,7 @@ class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async exportEntities(req: Request, res: Response) {
-        const filePath = await this.manager.exportEntities(req.body);
+        const filePath = await this.manager.exportEntities(req.body, req.user!.id);
         try {
             await promisify(res.sendFile.bind(res))(filePath);
         } finally {

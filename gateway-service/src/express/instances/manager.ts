@@ -7,6 +7,7 @@ import {
     BadRequestError,
     combineFilters,
     EntityTemplateType,
+    FilterLogicalOperator,
     getFilterFromChildTemplate,
     IAction,
     IBrokenRule,
@@ -141,7 +142,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return { props, files: filesToUpload };
     }
 
-    async exportEntities(exportEntitiesBody: IExportEntitiesBody) {
+    async exportEntities(exportEntitiesBody: IExportEntitiesBody, userId: string) {
         const { workbook, filePath } = await createWorkbook(exportEntitiesBody.fileName);
 
         const workspace = await WorkspaceService.getById(this.workspaceId);
@@ -149,7 +150,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const workspacePath = `${path}/${name}${type}`;
 
         try {
-            await this.addWorksheetsToWB(exportEntitiesBody, workbook, { path: workspacePath, id: this.workspaceId });
+            await this.addWorksheetsToWB(exportEntitiesBody, workbook, { path: workspacePath, id: this.workspaceId }, userId);
             await workbook.commit();
         } catch (err) {
             await fsp.unlink(filePath);
@@ -162,6 +163,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         { templates, textSearch }: IExportEntitiesBody,
         workbook: stream.xlsx.WorkbookWriter,
         workspace: { path: string; id: string },
+        userId: string,
     ): Promise<void> {
         const tasks = Object.entries(templates).map(
             async ([templateId, { filter, sort, displayColumns, headersOnly, insertEntities, isChildTemplate }]) => {
@@ -169,7 +171,18 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                     ? { type: EntityTemplateType.Child, metaData: await this.entityTemplateService.getChildTemplateById(templateId) }
                     : { type: EntityTemplateType.Parent, metaData: await this.entityTemplateService.getEntityTemplateById(templateId) };
 
-                await this.createWorksheet(workbook, template, filter, sort, textSearch, workspace, displayColumns, headersOnly, insertEntities);
+                await this.createWorksheet(
+                    workbook,
+                    template,
+                    filter,
+                    sort,
+                    textSearch,
+                    workspace,
+                    userId,
+                    displayColumns,
+                    headersOnly,
+                    insertEntities,
+                );
             },
         );
 
@@ -244,14 +257,36 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         sort: ISearchSort | undefined,
         textSearch: string | undefined,
         workspace: { path: string; id: string },
+        userId: string,
         displayColumns?: string[],
         headersOnly?: boolean,
         insertEntities?: Record<string, any>[],
     ) {
         const { type, metaData: template } = templateItem;
         const parentTemplate = type === EntityTemplateType.Child ? template.parentTemplate : template;
+        const { requiredConstraints } = await this.service.getConstraintsOfTemplate(parentTemplate._id);
 
-        const worksheet = await createWorksheet(workbook, templateItem, displayColumns, headersOnly || !!insertEntities);
+        const relatedTemplates = Object.entries(template.properties.properties)
+            .filter(([, property]) => property.format === 'relationshipReference')
+            .map(([fieldName, property]) => ({
+                fieldName,
+                relatedTemplateId: property.relationshipReference?.relatedTemplateId,
+            }))
+            .filter((item): item is { fieldName: string; relatedTemplateId: string } => Boolean(item.fieldName && item.relatedTemplateId));
+
+        const templates = await this.entityTemplateService.searchEntityTemplates(userId, {
+            ids: relatedTemplates.map((relatedTemplate) => relatedTemplate.relatedTemplateId),
+        });
+        const templatesMap = keyBy(templates, '_id');
+
+        const worksheet = await createWorksheet(
+            workbook,
+            templateItem,
+            templatesMap,
+            requiredConstraints,
+            displayColumns,
+            headersOnly || !!insertEntities,
+        );
         const { searchEntitiesChunkSize } = config.service;
 
         if (headersOnly) return;
@@ -355,35 +390,53 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const serialStarters = getSerialStarters(template);
         const succeededEntities: IEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
-        const searchBody: ISearchBatchBody = { skip: 0, limit: entities!.length, templates: {} };
+        const searchBody: ISearchBatchBody = { skip: 0, limit: entities!.length * relatedTemplates.length, templates: {} };
         const relatedTemplatesWithIdentifier: { fieldName: string; relatedTemplateId: string; identifierField: string }[] = [];
+        const orFiltersByTemplate: Record<string, ISearchFilter> = {};
 
         relatedTemplates.forEach(({ fieldName, relatedTemplateId }) => {
-            const relatedTemplate: IMongoEntityTemplatePopulated = templatesMap[relatedTemplateId || '']!;
+            const relatedTemplate: IMongoEntityTemplatePopulated = templatesMap[relatedTemplateId!]!;
             const identifierField = Object.entries(relatedTemplate!.properties.properties).find(([_key, value]) => value.identifier)?.[0];
+
+            if (!identifierField) return;
+
             relatedTemplatesWithIdentifier.push({ fieldName, relatedTemplateId, identifierField: identifierField || '' });
 
-            const entitiesValues = entities?.map((entity) => entity.properties[fieldName]);
+            const entitiesValues = entities?.map((entity) => entity.properties[fieldName]).filter((value) => value !== undefined && value !== null);
 
-            const orFilters = {
-                $or: (entitiesValues ?? []).map((value) => ({
-                    [identifierField || '']: { $eq: value },
+            if (!entitiesValues?.length) return;
+
+            const newOrFilters = {
+                $or: entitiesValues.map((value) => ({
+                    [identifierField]: { $eq: value },
                 })),
             };
 
-            const templateFilter: ISearchFilter = {
-                $and: [{ disabled: { $eq: false } }, orFilters],
-            };
-
-            searchBody.templates = {
-                ...searchBody.templates,
-                [relatedTemplateId]: { filter: templateFilter, showRelationships: false },
+            const existingOr = orFiltersByTemplate[relatedTemplateId]?.[FilterLogicalOperator.OR] ?? [];
+            orFiltersByTemplate[relatedTemplateId] = {
+                [FilterLogicalOperator.OR]: [...existingOr, ...newOrFilters.$or],
             };
         });
 
         let searchResults: ISearchResult = { count: 0, entities: [] };
 
-        if (relatedTemplatesWithIdentifier.length) searchResults = await this.service.searchEntitiesBatch(searchBody);
+        if (relatedTemplatesWithIdentifier.length) {
+            Object.entries(orFiltersByTemplate).forEach(([key, value]) => {
+                const templateFilter: ISearchFilter = {
+                    $and: [{ disabled: { $eq: false } }, value],
+                };
+
+                searchBody.templates = {
+                    ...searchBody.templates,
+                    [key]: {
+                        filter: templateFilter,
+                        showRelationships: false,
+                    },
+                };
+            });
+
+            searchResults = await this.service.searchEntitiesBatch(searchBody);
+        }
 
         const handleCreateEntity = async (entityWithIgnoredRules: IEntityWithIgnoredRules) => {
             const { ignoredRules, ...entity } = entityWithIgnoredRules;
@@ -394,6 +447,8 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
                 if (relatedTemplatesWithIdentifier.length > 0) {
                     Object.entries(entity.properties).forEach(([key, value]) => {
+                        if (value === undefined || value === null) return;
+
                         const match = relatedTemplatesWithIdentifier.find((rel) => rel.fieldName === key && !!rel.identifierField && !!value);
                         if (!match) return;
 
