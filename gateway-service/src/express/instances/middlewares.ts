@@ -248,11 +248,15 @@ class InstancesValidator extends DefaultController {
 
     async validateUserCanCreateRelationshipInstance(req: Request) {
         const relatedTemplates = await this.getRelatedTemplatesFromRelationshipInstance(req.body.relationshipInstance);
+        const childTemplatesOfParents = await this.entityTemplateService.searchChildTemplates({
+            parentTemplatesIds: relatedTemplates.map(({ _id }) => _id),
+        });
 
         await Promise.all(
-            relatedTemplates.map((template) =>
-                this.validateUserPermissionForEntityInstance(req, template._id, PermissionScope.write, template.category._id),
-            ),
+            relatedTemplates.map(({ _id, category }) => {
+                const childTemplateId = childTemplatesOfParents.find(({ parentTemplate }) => parentTemplate._id === _id)?._id;
+                return this.validateUserPermissionForEntityInstance(req, _id, PermissionScope.write, category._id, childTemplateId);
+            }),
         );
     }
 
@@ -260,10 +264,15 @@ class InstancesValidator extends DefaultController {
         const relationshipInstance = await this.instancesService.getRelationshipInstanceById(req.params.id);
         const relatedTemplates = await this.getRelatedTemplatesFromRelationshipInstance(relationshipInstance);
 
+        const childTemplatesOfParents = await this.entityTemplateService.searchChildTemplates({
+            parentTemplatesIds: relatedTemplates.map(({ _id }) => _id),
+        });
+
         await Promise.all(
-            relatedTemplates.map((template) =>
-                this.validateUserPermissionForEntityInstance(req, template._id, PermissionScope.write, template.category._id),
-            ),
+            relatedTemplates.map(({ _id, category }) => {
+                const childTemplateId = childTemplatesOfParents.find(({ parentTemplate }) => parentTemplate._id === _id)?._id;
+                this.validateUserPermissionForEntityInstance(req, _id, PermissionScope.write, category._id, childTemplateId);
+            }),
         );
     }
 

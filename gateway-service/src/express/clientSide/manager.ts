@@ -80,7 +80,7 @@ class ClientSideManager extends DefaultManagerProxy<null> {
     }
 
     async getExpandedEntityById(entityId: string, expandedParams: { [key: string]: number }, options?: { templateIds: string[] }, userId?: string) {
-        const expandedEntity = await this.instancesService.getExpandedEntityByIdRequest(
+        return this.instancesService.getExpandedEntityByIdRequest(
             entityId,
             expandedParams,
             {
@@ -88,8 +88,6 @@ class ClientSideManager extends DefaultManagerProxy<null> {
             },
             userId,
         );
-
-        return expandedEntity;
     }
 
     async countEntitiesOfTemplatesByUserEntityId(templateIds: string[], userEntityId: string) {

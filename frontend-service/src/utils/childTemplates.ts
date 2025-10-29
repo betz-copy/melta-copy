@@ -72,7 +72,7 @@ export const isEntityFitsToChildTemplate = (
         if (prop.isFilterByUserUnit && currentUserUnit && !isUserAdmin && !currentUserUnit.includes(value)) return false;
 
         if (prop.filters) {
-            const parsed = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
+            const parsed = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;            
 
             if (parsed && !matchValueAgainstFilter({ [key]: value }, parsed)) return false;
         }

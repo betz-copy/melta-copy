@@ -63,6 +63,7 @@ class TemplatesValidator extends DefaultController {
             this.getRelatedCategoriesFromRelationshipTemplate(sourceEntityId, destinationEntityId),
             this.authorizer.getWorkspacePermissions(req.user!.id),
         ]);
+
         const categoriesOfEntitiesWithWritePermission = relatedCategories.filter(
             (categoryId) =>
                 userPermissions.admin ||

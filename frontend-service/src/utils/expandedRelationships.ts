@@ -26,6 +26,7 @@ export const sortTemplatesChildrenToParents = (
             depth,
             parent.relationshipTemplate,
             data,
+            {},
             true,
         );
 

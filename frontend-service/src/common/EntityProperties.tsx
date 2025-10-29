@@ -509,7 +509,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
             {imageOfKartoffelKeys.map((key) => getUserAvatar(entityTemplate, key, properties, { size: 120, border: 4 }))}
             {showDivider && <Divider title={dividerTitle} sx={{ marginY: '1rem' }} />}
             <Box sx={{ marginY: '1rem' }}>{dividerTitle && <BlueTitle title={dividerTitle} component="p" variant="subtitle1" />}</Box>
-            <Grid container style={{ ...style, alignItems: textWrap ? 'flex-start' : 'center', alignContent: 'center' }}>
+            <Grid container width="100%" style={{ ...style, alignItems: textWrap ? 'flex-start' : 'center', alignContent: 'center' }}>
                 {showByGroups && entityTemplate.fieldGroups ? (
                     propertiesOrderedToShow.map((propertyKey) => {
                         const group = entityTemplate.fieldGroups?.find((g) => g.fields.includes(propertyKey));

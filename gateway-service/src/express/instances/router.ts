@@ -62,6 +62,7 @@ InstancesRouter.post(
     InstancesValidatorMiddleware.validateUserCanSearchEntitiesOfTemplate,
     InstancesControllerMiddleware.searchEntitiesOfTemplate,
 );
+
 InstancesRouter.post('/entities/chart/:templateId', InstancesValidatorMiddleware.validateUserCanGetChart, InstanceManagerProxy);
 
 InstancesRouter.post(
@@ -119,6 +120,7 @@ InstancesRouter.put(
 );
 
 InstancesRouter.get('/entities/:id', InstancesValidatorMiddleware.validateUserCanReadEntityInstance, InstanceManagerProxy);
+
 InstancesRouter.get('/entities/constraints/:templateId', AuthorizerControllerMiddleware.userCanReadTemplates, InstanceManagerProxy);
 
 InstancesRouter.post(
@@ -135,6 +137,7 @@ InstancesRouter.post(
     InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
     InstancesControllerMiddleware.createEntityInstance,
 );
+
 InstancesRouter.put(
     '/entities/:id',
     busboyMiddleware,
@@ -143,6 +146,7 @@ InstancesRouter.put(
     InstancesValidatorMiddleware.validateUserCanIgnoreRules,
     InstancesControllerMiddleware.updateEntityInstance,
 );
+
 InstancesRouter.post(
     '/entities/:id/duplicate',
     busboyMiddleware,
@@ -150,12 +154,14 @@ InstancesRouter.post(
     InstancesValidatorMiddleware.validateUserCanWriteEntityInstance,
     InstancesControllerMiddleware.duplicateEntityInstance,
 );
+
 InstancesRouter.post(
     '/entities/delete/bulk',
     ValidateRequest(deleteEntityInstancesSchema),
     InstancesValidatorMiddleware.validateUserCanWriteBulkEntityInstances,
     InstancesControllerMiddleware.deleteEntityInstances,
 );
+
 InstancesRouter.patch(
     '/entities/:id/status',
     ValidateRequest(updateEntityStatusSchema),
@@ -179,6 +185,7 @@ InstancesRouter.post(
 
 // relationships (Instances)
 InstancesRouter.get('/relationships/count', AuthorizerControllerMiddleware.userCanReadTemplates, InstanceManagerProxy);
+
 InstancesRouter.post(
     '/relationships',
     ValidateRequest(createRelationshipSchema),
@@ -186,7 +193,9 @@ InstancesRouter.post(
     InstancesValidatorMiddleware.validateUserCanIgnoreRules,
     InstancesControllerMiddleware.createRelationshipInstance,
 );
+
 InstancesRouter.put('/relationships/:id', InstancesValidatorMiddleware.validateUserCanUpdateOrDeleteRelationshipInstance, InstanceManagerProxy);
+
 InstancesRouter.delete(
     '/relationships/:id',
     ValidateRequest(deleteRelationshipSchema),
@@ -194,6 +203,7 @@ InstancesRouter.delete(
     InstancesValidatorMiddleware.validateUserCanIgnoreRules,
     InstancesControllerMiddleware.deleteRelationshipInstance,
 );
+
 InstancesRouter.post('/bulk', InstancesValidatorMiddleware.validateUserCanWriteBulkEntityInstance, InstancesControllerMiddleware.runBulkOfActions);
 
 export default InstancesRouter;
