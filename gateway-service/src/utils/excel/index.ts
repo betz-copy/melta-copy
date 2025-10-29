@@ -53,15 +53,16 @@ export const classifyEntityErrors = (
     allBrokenRulesEntities: IBrokenRuleEntity[],
     originalEntity?: IEntity['properties'],
 ) => {
-    if (error instanceof ServiceError && error.code === StatusCodes.NOT_FOUND) {
+    const properties = {
+        ...entity.properties,
+        ...(originalEntity || {}),
+    };
+
+    if (error instanceof ServiceError && error.code === StatusCodes.NOT_FOUND)
         failedEntities.push({
-            properties: {
-                ...entity.properties,
-                ...(originalEntity || {}),
-            },
+            properties,
             errors: [{ type: ActionErrors.notFound, metadata: error.metadata as INotFoundRelationshipRefError }],
         });
-    }
 
     if (error instanceof AxiosError) {
         if (!error.response) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'no error. response in axiosError', error);
@@ -74,17 +75,14 @@ export const classifyEntityErrors = (
                 const templateId = templateIdMatch ? templateIdMatch[1] : '';
 
                 const propertiesMatch = error.message.match(loadExcel.propertiesRegex);
-                const properties = propertiesMatch ? propertiesMatch[1].replace(/`/g, '').split(', ') : [];
+                const propertiesError = propertiesMatch ? propertiesMatch[1].replace(/`/g, '').split(', ') : [];
 
                 failedEntities.push({
-                    properties: {
-                        ...entity.properties,
-                        ...(originalEntity || {}),
-                    },
+                    properties,
                     errors: [
                         {
                             type: ActionErrors.unique,
-                            metadata: { type: ActionErrors.unique, constraintName: '', templateId, properties, uniqueGroupName: '' },
+                            metadata: { type: ActionErrors.unique, constraintName: '', templateId, properties: propertiesError, uniqueGroupName: '' },
                         },
                     ],
                 });
@@ -95,19 +93,13 @@ export const classifyEntityErrors = (
             switch (constraint.type) {
                 case ActionErrors.unique:
                     failedEntities.push({
-                        properties: {
-                            ...entity.properties,
-                            ...(originalEntity || {}),
-                        },
+                        properties,
                         errors: [{ type: ActionErrors.unique, metadata: constraint }],
                     });
                     break;
                 case ActionErrors.required:
                     failedEntities.push({
-                        properties: {
-                            ...entity.properties,
-                            ...(originalEntity || {}),
-                        },
+                        properties,
                         errors: [{ type: ActionErrors.required, metadata: constraint }],
                     });
                     break;
@@ -136,10 +128,7 @@ export const classifyEntityErrors = (
             ],
             entities: [
                 {
-                    properties: {
-                        ...entity.properties,
-                        ...(originalEntity || {}),
-                    },
+                    properties,
                 },
             ],
         });

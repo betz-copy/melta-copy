@@ -250,6 +250,24 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return entities;
     }
 
+    private async getRelatedTemplates(template: IMongoChildTemplatePopulated | IMongoEntityTemplatePopulated, userId: string) {
+        const relatedTemplatesObject = Object.entries(template.properties.properties)
+            .filter(([, property]) => property.format === 'relationshipReference')
+            .map(([fieldName, property]) => ({
+                fieldName,
+                relatedTemplateId: property.relationshipReference?.relatedTemplateId,
+            }))
+            .filter((item): item is { fieldName: string; relatedTemplateId: string } => Boolean(item.fieldName && item.relatedTemplateId));
+
+        const relatedTemplates = await this.entityTemplateService.searchEntityTemplates(userId, {
+            ids: relatedTemplatesObject.map((relatedTemplate) => relatedTemplate.relatedTemplateId),
+        });
+
+        const relatedTemplatesMap = keyBy(relatedTemplates, '_id');
+
+        return { relatedTemplatesObject, relatedTemplatesMap };
+    }
+
     private async createWorksheet(
         workbook: stream.xlsx.WorkbookWriter,
         templateItem: TemplateItem,
@@ -266,23 +284,12 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const parentTemplate = type === EntityTemplateType.Child ? template.parentTemplate : template;
         const { requiredConstraints } = await this.service.getConstraintsOfTemplate(parentTemplate._id);
 
-        const relatedTemplates = Object.entries(template.properties.properties)
-            .filter(([, property]) => property.format === 'relationshipReference')
-            .map(([fieldName, property]) => ({
-                fieldName,
-                relatedTemplateId: property.relationshipReference?.relatedTemplateId,
-            }))
-            .filter((item): item is { fieldName: string; relatedTemplateId: string } => Boolean(item.fieldName && item.relatedTemplateId));
-
-        const templates = await this.entityTemplateService.searchEntityTemplates(userId, {
-            ids: relatedTemplates.map((relatedTemplate) => relatedTemplate.relatedTemplateId),
-        });
-        const templatesMap = keyBy(templates, '_id');
+        const { relatedTemplatesMap } = await this.getRelatedTemplates(template, userId);
 
         const worksheet = await createWorksheet(
             workbook,
             templateItem,
-            templatesMap,
+            relatedTemplatesMap,
             requiredConstraints,
             displayColumns,
             headersOnly || !!insertEntities,
@@ -357,53 +364,25 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return templateItem;
     }
 
-    async loadEntities(
-        templateId: string,
+    async handleRelationshipRefLoadExcel(
+        template: IMongoChildTemplatePopulated | IMongoEntityTemplatePopulated,
         userId: string,
-        childTemplateId?: string,
-        files?: UploadedFile[],
-        insertBrokenEntities?: IEntityWithIgnoredRules[],
+        entities: IEntityWithIgnoredRules[] | undefined,
     ) {
-        let entities = insertBrokenEntities;
-        const { metaData: template, type } = await this.handleTemplate(templateId, childTemplateId);
+        const { relatedTemplatesMap, relatedTemplatesObject } = await this.getRelatedTemplates(template, userId);
 
-        const relatedTemplates = Object.entries(template.properties.properties)
-            .filter(([, property]) => property.format === 'relationshipReference')
-            .map(([fieldName, property]) => ({
-                fieldName,
-                relatedTemplateId: property.relationshipReference?.relatedTemplateId,
-            }))
-            .filter((item): item is { fieldName: string; relatedTemplateId: string } => Boolean(item.fieldName && item.relatedTemplateId));
-
-        const templates = await this.entityTemplateService.searchEntityTemplates(userId, {
-            ids: relatedTemplates.map((relatedTemplate) => relatedTemplate.relatedTemplateId),
-        });
-        const templatesMap = keyBy(templates, '_id');
-
-        const failedEntities: IFailedEntity[] = [];
-
-        if (files && !entities) {
-            const workspace = await WorkspaceService.getById(this.workspaceId);
-            entities = await getAllEntitiesFromExcel(files, template, failedEntities, workspace);
-        }
-
-        const serialStarters = getSerialStarters(template);
-        const succeededEntities: IEntity[] = [];
-        const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
-        const searchBody: ISearchBatchBody = { skip: 0, limit: entities!.length * relatedTemplates.length, templates: {} };
+        const searchBody: ISearchBatchBody = { skip: 0, limit: entities!.length * relatedTemplatesObject.length, templates: {} };
         const relatedTemplatesWithIdentifier: { fieldName: string; relatedTemplateId: string; identifierField: string }[] = [];
         const orFiltersByTemplate: Record<string, ISearchFilter> = {};
 
-        relatedTemplates.forEach(({ fieldName, relatedTemplateId }) => {
-            const relatedTemplate: IMongoEntityTemplatePopulated = templatesMap[relatedTemplateId!]!;
+        relatedTemplatesObject.forEach(({ fieldName, relatedTemplateId }) => {
+            const relatedTemplate: IMongoEntityTemplatePopulated = relatedTemplatesMap[relatedTemplateId!]!;
             const identifierField = Object.entries(relatedTemplate!.properties.properties).find(([_key, value]) => value.identifier)?.[0];
-
             if (!identifierField) return;
 
-            relatedTemplatesWithIdentifier.push({ fieldName, relatedTemplateId, identifierField: identifierField || '' });
+            relatedTemplatesWithIdentifier.push({ fieldName, relatedTemplateId, identifierField });
 
             const entitiesValues = entities?.map((entity) => entity.properties[fieldName]).filter((value) => value !== undefined && value !== null);
-
             if (!entitiesValues?.length) return;
 
             const newOrFilters = {
@@ -416,27 +395,48 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             orFiltersByTemplate[relatedTemplateId] = {
                 [FilterLogicalOperator.OR]: [...existingOr, ...newOrFilters.$or],
             };
+
+            const templateFilter: ISearchFilter = {
+                $and: [{ disabled: { $eq: false } }, orFiltersByTemplate[relatedTemplateId]],
+            };
+            searchBody.templates = {
+                ...searchBody.templates,
+                [relatedTemplateId]: {
+                    filter: templateFilter,
+                    showRelationships: false,
+                },
+            };
         });
 
-        let searchResults: ISearchResult = { count: 0, entities: [] };
+        const searchResults: ISearchResult = relatedTemplatesWithIdentifier.length
+            ? await this.service.searchEntitiesBatch(searchBody)
+            : { count: 0, entities: [] };
 
-        if (relatedTemplatesWithIdentifier.length) {
-            Object.entries(orFiltersByTemplate).forEach(([key, value]) => {
-                const templateFilter: ISearchFilter = {
-                    $and: [{ disabled: { $eq: false } }, value],
-                };
+        return { searchResults, relatedTemplatesWithIdentifier };
+    }
 
-                searchBody.templates = {
-                    ...searchBody.templates,
-                    [key]: {
-                        filter: templateFilter,
-                        showRelationships: false,
-                    },
-                };
-            });
+    async loadEntities(
+        templateId: string,
+        userId: string,
+        childTemplateId?: string,
+        files?: UploadedFile[],
+        insertBrokenEntities?: IEntityWithIgnoredRules[],
+    ) {
+        let entities = insertBrokenEntities;
+        const { metaData: template, type } = await this.handleTemplate(templateId, childTemplateId);
 
-            searchResults = await this.service.searchEntitiesBatch(searchBody);
+        const failedEntities: IFailedEntity[] = [];
+
+        if (files && !entities) {
+            const workspace = await WorkspaceService.getById(this.workspaceId);
+            entities = await getAllEntitiesFromExcel(files, template, failedEntities, workspace);
         }
+
+        const serialStarters = getSerialStarters(template);
+        const succeededEntities: IEntity[] = [];
+        const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
+
+        const { searchResults, relatedTemplatesWithIdentifier } = await this.handleRelationshipRefLoadExcel(template, userId, entities);
 
         const handleCreateEntity = async (entityWithIgnoredRules: IEntityWithIgnoredRules) => {
             const { ignoredRules, ...entity } = entityWithIgnoredRules;
@@ -449,19 +449,20 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                     Object.entries(entity.properties).forEach(([key, value]) => {
                         if (value === undefined || value === null) return;
 
-                        const match = relatedTemplatesWithIdentifier.find((rel) => rel.fieldName === key && !!rel.identifierField && !!value);
-                        if (!match) return;
+                        const relatedTemplate = relatedTemplatesWithIdentifier.find((rel) => rel.fieldName === key && rel.identifierField);
+                        if (!relatedTemplate) return;
+
+                        const { identifierField, relatedTemplateId } = relatedTemplate;
 
                         const foundEntity = searchResults.entities.find(
-                            ({ entity: result }) =>
-                                result.templateId === match.relatedTemplateId && result.properties[match.identifierField] === value,
+                            ({ entity: result }) => result.templateId === relatedTemplateId && result.properties[identifierField] === value,
                         );
 
                         if (!foundEntity)
                             throw new NotFoundError(`Related entity not found for ${key} with value ${value}`, {
                                 property: key,
-                                relatedTemplateId: match.relatedTemplateId,
-                                relatedIdentifier: match.identifierField,
+                                relatedTemplateId,
+                                relatedIdentifier: identifierField,
                             } as INotFoundRelationshipRefError);
 
                         entity.properties = { ...entity.properties, [key]: foundEntity ? foundEntity.entity.properties._id : undefined };

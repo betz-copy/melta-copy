@@ -130,13 +130,13 @@ export const indexToExcelColumn = (index: number): string => {
 const showRelationshipRefColumn = (
     propertyKey: string,
     propertyTemplate: IEntitySingleProperty,
-    templatesMap: Record<string, IMongoEntityTemplatePopulated>,
+    relatedTemplatesMap: Record<string, IMongoEntityTemplatePopulated>,
     requiredConstraints: string[],
 ) => {
     if (propertyTemplate.format !== 'relationshipReference') return true;
 
     const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId;
-    const relatedTemplate = templatesMap[relatedTemplateId!];
+    const relatedTemplate = relatedTemplatesMap[relatedTemplateId!];
     const identifierField = Object.entries(relatedTemplate!.properties.properties).find(([_key, value]) => value.identifier)?.[0];
     const isRequiredProperty = requiredConstraints?.includes(propertyKey);
 
@@ -148,7 +148,7 @@ const showRelationshipRefColumn = (
 const createWorksheet = async (
     workbook: Excel.Workbook,
     templateItem: TemplateItem,
-    templatesMap: Record<string, IMongoEntityTemplatePopulated>,
+    relatedTemplatesMap: Record<string, IMongoEntityTemplatePopulated>,
     requiredConstraints: string[],
     displayColumns?: string[],
     headersOnly?: boolean,
@@ -163,7 +163,7 @@ const createWorksheet = async (
 
     Object.entries(template.properties.properties).forEach(([propertyKey, propertyTemplate]) => {
         const shouldAddColumn = headersOnly
-            ? showRelationshipRefColumn(propertyKey, propertyTemplate, templatesMap, requiredConstraints) && isIncludedColumn(propertyTemplate)
+            ? showRelationshipRefColumn(propertyKey, propertyTemplate, relatedTemplatesMap, requiredConstraints) && isIncludedColumn(propertyTemplate)
             : displayColumns?.includes(propertyKey);
 
         if (shouldAddColumn) {
