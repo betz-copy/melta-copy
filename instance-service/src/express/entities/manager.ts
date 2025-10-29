@@ -1108,7 +1108,7 @@ class EntityManager extends DefaultManagerNeo4j {
         const fixSearchBody = filters ?? {};
 
         const childTemplates = await this.childTemplateManagerService.searchChildTemplates();
-        const templateIdsWithChildren = [...templateIds, ...childTemplates.map(({ parentTemplate: { _id } }) => _id)];
+        const templateIdsWithChildren = Array.from(new Set([...templateIds, ...childTemplates.map(({ parentTemplate: { _id } }) => _id)]));
 
         const initialCypherQuery = await expandEntityToNeoQuery(fixSearchBody, id, templateIdsWithChildren, expandedParams, entityTemplatesMap, id);
 

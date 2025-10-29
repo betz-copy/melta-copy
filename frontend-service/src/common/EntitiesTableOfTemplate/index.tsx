@@ -112,7 +112,7 @@ export const getDatasource = <Data = EntityData>(
     childTemplatesOfParentIds?: string[],
 ): IServerSideDatasource => {
     const parentTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;
-    const childTemplateIds = isChildTemplate(template) ? (childTemplatesOfParentIds ?? [template._id]) : undefined;
+    const childTemplateIds = isChildTemplate(template) ? (childTemplatesOfParentIds ?? [template._id]) : [];
 
     return {
         async getRows(params: IServerSideGetRowsParams<Data>) {
@@ -146,7 +146,7 @@ export const getDatasource = <Data = EntityData>(
                               // tableCount, // comment out  waiting for Itay
                               defaultFilter,
                           ),
-                          childTemplateIds?.length ? childTemplateIds : [],
+                          childTemplateIds,
                       ),
             );
 

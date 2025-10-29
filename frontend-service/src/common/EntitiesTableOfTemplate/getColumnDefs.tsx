@@ -115,8 +115,6 @@ export const getColumnDefs = <Data = EntityData>({
     workspace,
     childTemplatesOfParent,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
-    const currentUserKartoffelId = currentUser?.kartoffelId;
-
     const invisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
     const lastColumnIndex = Object.keys(defaultColumnsOrder).length - invisibleColumnsAmount - 2;
     const firstTwoPropsOrder = template.propertiesOrder.slice(0, 2);
@@ -132,7 +130,7 @@ export const getColumnDefs = <Data = EntityData>({
                 child,
                 !template,
                 entityId,
-                currentUserKartoffelId,
+                currentUser?.kartoffelId,
                 currentUser?.units?.[workspace._id] ?? [],
                 isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
             ),

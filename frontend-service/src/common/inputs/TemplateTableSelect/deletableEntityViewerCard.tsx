@@ -59,7 +59,7 @@ const DeletableEntityViewerCard: React.FC<{ entity: IEntity; onDelete: () => voi
                 slotProps={{ title: { variant: 'h4' } }}
             />
             <CardContent>
-                {/* if no entityTemplate, didn't find template of entity in react-query state */}
+                {/* If no entityTemplate, didn't find template of entity in react-query state */}
                 {!entityTemplate ? (
                     entity.properties._id
                 ) : (
