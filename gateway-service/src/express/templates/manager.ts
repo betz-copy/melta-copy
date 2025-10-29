@@ -742,8 +742,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             (key) => updatedTemplateData.properties.properties[key].serialCurrent !== undefined,
         );
 
-        // eslint-disable-next-line no-prototype-builtins
-        const newSerialNumberFields = updatedSerialNumberFields.filter((key) => !Object.hasOwn(currTemplate.properties.properties, key));
+        const newSerialNumberFields = updatedSerialNumberFields.filter((key) => !(key in currTemplate.properties.properties));
 
         if (newSerialNumberFields.length) {
             const newSerialNumberValues = {};
