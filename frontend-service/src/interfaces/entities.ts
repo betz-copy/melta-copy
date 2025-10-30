@@ -10,6 +10,7 @@ import { ISemanticSearchResult } from './semanticSearch';
 
 export interface IEntity {
     templateId: string;
+    childTemplateId?:string;
     properties: {
         _id: string;
         createdAt: string;

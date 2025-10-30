@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noThenProperty: Joi must have the "then" prop so we can't follow this rule :( */
 import { ActionOnFail, MongoIdSchema } from '@microservices/shared';
 import Joi from 'joi';
 
@@ -17,15 +18,19 @@ export const mailSchema = Joi.object({
 
 const indicatorCondition = Joi.object({ actionOnFail: Joi.valid(ActionOnFail.INDICATOR) }).unknown();
 
-const indicatorSchema = Joi.object().custom((value, helpers) => {
-    const fieldColorDisplay = value.fieldColor?.display === true;
-    const mailDisplay = value.fieldColor.display === true;
-    if (!fieldColorDisplay && !mailDisplay) {
-        return helpers.error('indicator.custom');
-    }
+const indicatorSchema = Joi.object()
+    .custom((value, helpers) => {
+        const fieldColorDisplay = value.fieldColor?.display === true;
+        const mailDisplay = value.mail?.display === true;
+        if (!fieldColorDisplay && !mailDisplay) {
+            return helpers.error('indicator.custom');
+        }
 
-    return value;
-});
+        return value;
+    })
+    .messages({
+        'indicator.custom': 'At least one indicator must be chosen',
+    });
 
 const nonIndicatorSchema = Joi.object({
     fieldColor: Joi.forbidden(),

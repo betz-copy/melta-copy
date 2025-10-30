@@ -34,7 +34,7 @@ import { useLocation } from 'wouter';
 import '../../css/resizeTable.css';
 import '../../css/table.css';
 import { environment } from '../../globals';
-import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { IChildTemplateMap, IChildTemplatePopulated, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { EntityData, IDeleteEntityBody, IEntity, IEntityExpanded, ISearchFilter, IUniqueConstraint } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IErrorResponse } from '../../interfaces/error';
@@ -109,9 +109,10 @@ export const getDatasource = <Data = EntityData>(
     defaultFilter?: ISearchFilter,
     pageType?: string,
     clientSideUserEntityId?: string,
+    childTemplatesOfParentIds?: string[],
 ): IServerSideDatasource => {
     const parentTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;
-    const childTemplateId = isChildTemplate(template) ? template._id : undefined;
+    const childTemplateIds = isChildTemplate(template) ? (childTemplatesOfParentIds ?? [template._id]) : [];
 
     return {
         async getRows(params: IServerSideGetRowsParams<Data>) {
@@ -145,7 +146,7 @@ export const getDatasource = <Data = EntityData>(
                               // tableCount, // comment out  waiting for Itay
                               defaultFilter,
                           ),
-                          childTemplateId ? [childTemplateId] : [],
+                          childTemplateIds,
                       ),
             );
 
@@ -181,6 +182,7 @@ export const getRowModelProps = <Data = EntityData>(
     defaultFilter?: ISearchFilter,
     pageType?: string,
     clientSideUserEntityId?: string,
+    childTemplatesOfParentIds?: string[],
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
     if (rowModelType === 'clientSide') {
         return {
@@ -201,6 +203,7 @@ export const getRowModelProps = <Data = EntityData>(
             defaultFilter,
             pageType,
             clientSideUserEntityId,
+            childTemplatesOfParentIds,
         ),
         cacheBlockSize: rowModelType === 'serverSide' ? cacheBlockSize : undefined,
         pagination: rowModelType === 'serverSide',
@@ -254,6 +257,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     columnsToShow?: string[];
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
     actionsColumnWidth?: number;
+    childTemplatesOfParent?: IChildTemplatePopulated[];
 };
 
 export type EntitiesTableOfTemplateRef<Data> = {
@@ -303,6 +307,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             columnsToShow,
             setUpdatedTemplateIds,
             actionsColumnWidth,
+            childTemplatesOfParent,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
@@ -442,8 +447,11 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             currentClientSideUser: clientSideUserEntity,
             actionsColumnWidth,
             darkMode,
+            workspace,
+            childTemplatesOfParent,
         };
         const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
+        const childTemplatesOfParentIds = childTemplatesOfParent?.map(({ _id }) => _id);
 
         const datasourceOnFail = (err: unknown) => {
             toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
@@ -719,8 +727,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     defaultFilter as ISearchFilter | undefined,
                     saveStorageProps.pageType,
                     clientSideUserEntity?.properties?._id,
+                    childTemplatesOfParentIds,
                 ),
-            [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances, defaultFilter],
+            [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances, defaultFilter, childTemplatesOfParentIds],
         );
 
         const statusPanels = useMemo(() => {

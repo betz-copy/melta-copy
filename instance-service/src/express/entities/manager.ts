@@ -1107,7 +1107,10 @@ class EntityManager extends DefaultManagerNeo4j {
         const { disabled, templateIds, expandedParams, filters } = reqBody;
         const fixSearchBody = filters ?? {};
 
-        const initialCypherQuery = await expandEntityToNeoQuery(fixSearchBody, id, templateIds, expandedParams, entityTemplatesMap, id);
+        const childTemplates = await this.childTemplateManagerService.searchChildTemplates();
+        const templateIdsWithChildren = Array.from(new Set([...templateIds, ...childTemplates.map(({ parentTemplate: { _id } }) => _id)]));
+
+        const initialCypherQuery = await expandEntityToNeoQuery(fixSearchBody, id, templateIdsWithChildren, expandedParams, entityTemplatesMap, id);
 
         const initialExpandedEntity = await this.neo4jClient.readTransaction(
             initialCypherQuery.cypherQuery,
@@ -1115,19 +1118,16 @@ class EntityManager extends DefaultManagerNeo4j {
             initialCypherQuery.parameters,
         );
 
-        if (!initialExpandedEntity) {
-            throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
-        }
-        if (JSON.stringify(expandedParams) === '{}') {
-            return initialExpandedEntity;
-        }
+        if (!initialExpandedEntity) throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
+
+        if (JSON.stringify(expandedParams) === '{}') return initialExpandedEntity;
 
         const filterRes = await getExpandedFilteredGraphRecursively(
             this.neo4jClient,
             disabled || null,
             initialExpandedEntity,
             fixSearchBody,
-            templateIds,
+            templateIdsWithChildren,
             expandedParams,
             entityTemplatesMap,
         );
@@ -1292,7 +1292,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
     handleDeleteErrors(allowedEntitiesToDelete: IEntity[], deleteAllRelationships?: boolean) {
         if (allowedEntitiesToDelete.length >= deleteEntitiesMaxLimit)
-            throw new BadRequestError(`cant delete more then ${deleteEntitiesMaxLimit} instances`);
+            throw new BadRequestError(`can't delete more then ${deleteEntitiesMaxLimit} instances`);
 
         if (!allowedEntitiesToDelete.length) {
             if (deleteAllRelationships)

@@ -7,11 +7,12 @@ import React, { memo } from 'react';
 import { UseMutateAsyncFunction } from 'react-query';
 import { Link } from 'wouter';
 import { environment } from '../../globals';
-import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { IChildTemplateMap, IChildTemplatePopulated, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { EntityData, IEntity } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
 import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
+import { IWorkspace } from '../../interfaces/workspaces';
 import { CardMenu } from '../../pages/SystemManagement/components/CardMenu';
 import { UserState } from '../../stores/user';
 import {
@@ -29,7 +30,8 @@ import {
     userArrayColDef,
     userColDef,
 } from '../../utils/agGrid/commonColDefs';
-import { getChildrenWithWritePermission } from '../../utils/childTemplates';
+import { getChildrenWithWritePermission, isEntityFitsToChildTemplate } from '../../utils/childTemplates';
+import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
 import { isChildTemplate } from '../../utils/templates';
 import { emptyEntityTemplate } from '../dialogs/entity';
 import { IChooseTemplateMode } from '../dialogs/entity/ChooseTemplate';
@@ -75,6 +77,8 @@ export interface IGetColumnDefsOptions<Data> {
     currentClientSideUser: IEntity;
     actionsColumnWidth?: number;
     darkMode: boolean;
+    workspace: IWorkspace;
+    childTemplatesOfParent?: IChildTemplatePopulated[];
 }
 
 export const getColumnDefs = <Data = EntityData>({
@@ -108,6 +112,8 @@ export const getColumnDefs = <Data = EntityData>({
     currentClientSideUser,
     actionsColumnWidth = 200,
     darkMode,
+    workspace,
+    childTemplatesOfParent,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const invisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
     const lastColumnIndex = Object.keys(defaultColumnsOrder).length - invisibleColumnsAmount - 2;
@@ -117,6 +123,18 @@ export const getColumnDefs = <Data = EntityData>({
         (propertyOrder) =>
             !template.properties.properties[propertyOrder]?.comment && template.properties.properties[propertyOrder]?.display !== false,
     );
+
+    const getChildTemplateId = (entityId: string) =>
+        childTemplatesOfParent?.find((child) =>
+            isEntityFitsToChildTemplate(
+                child,
+                !template,
+                entityId,
+                currentUser?.kartoffelId,
+                currentUser?.units?.[workspace._id] ?? [],
+                isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
+            ),
+        );
 
     const columnDefs = filteredProperties.map((property) => {
         const propertyTemplate = { ...template.properties.properties[property] };
@@ -408,6 +426,9 @@ export const getColumnDefs = <Data = EntityData>({
             cellRenderer: memo<{ data: Data }>(({ data }) => {
                 const entity = getEntityPropertiesData(data);
                 const { disabled: disabledEntity } = entity;
+                const childTemplateURLQuery = isChildTemplate(template)
+                    ? `?childTemplateId=${getChildTemplateId(getEntityPropertiesData(data)._id!)?._id ?? template._id}`
+                    : '';
 
                 const destTemplate = addRelationshipReferenceButtonProps
                     ? (childEntityTemplateMap?.get(addRelationshipReferenceButtonProps) ??
@@ -438,24 +459,18 @@ export const getColumnDefs = <Data = EntityData>({
                                 <Link
                                     href={`/${pageType === environment.clientSideId ? `${environment.clientSideId}/entity` : 'entity'}/${
                                         getEntityPropertiesData(data)._id
-                                    }${
-                                        pageType === environment.clientSideId
-                                            ? ''
-                                            : isChildTemplate(template)
-                                              ? `?childTemplateId=${template._id}`
-                                              : ''
-                                    }`}
+                                    }${pageType === environment.clientSideId ? '' : childTemplateURLQuery}`}
                                     onClick={(e) => {
                                         if (!hasPermissionToTemplate) e.preventDefault();
                                     }}
                                     data-tour="entity-page"
                                 >
                                     <IconButtonWithPopover
-                                        popoverText={
+                                        popoverText={i18next.t(
                                             !hasPermissionToTemplate
-                                                ? i18next.t('permissions.dontHavePermissionToEntityPage')
-                                                : i18next.t('entitiesTableOfTemplate.navigateToEntityPage')
-                                        }
+                                                ? 'permissions.dontHavePermissionToEntityPage'
+                                                : 'entitiesTableOfTemplate.navigateToEntityPage',
+                                        )}
                                         disabled={!hasPermissionToTemplate}
                                     >
                                         <img src="/icons/read-more-icon.svg" />
@@ -500,9 +515,7 @@ export const getColumnDefs = <Data = EntityData>({
                         {onNavigateToRow && pageType !== environment.clientSideId && (
                             <Grid>
                                 <Link
-                                    href={`/entity/${getEntityPropertiesData(data)._id}/graph${
-                                        isChildTemplate(template) ? `?childTemplateId=${template._id}` : ''
-                                    }`}
+                                    href={`/entity/${getEntityPropertiesData(data)._id}/graph${childTemplateURLQuery}`}
                                     onClick={(e) => {
                                         if (disabledEntity) e.preventDefault();
                                     }}
@@ -525,14 +538,9 @@ export const getColumnDefs = <Data = EntityData>({
                             <Grid>
                                 <CardMenu
                                     onDuplicateClick={() => {
-                                        navigate(
-                                            `/entity/${getRowId(data)}/duplicate${
-                                                isChildTemplate(template) ? `?childTemplateId=${template._id}` : ''
-                                            }`,
-                                            {
-                                                state: { entityTemplate: template, expandedEntity: { entity: data } },
-                                            },
-                                        );
+                                        navigate(`/entity/${getRowId(data)}/duplicate${childTemplateURLQuery}`, {
+                                            state: { entityTemplate: template, expandedEntity: { entity: data } },
+                                        });
                                     }}
                                     onDeleteClick={() => {
                                         setSelectedRow(getRowId(data));
