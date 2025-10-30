@@ -49,7 +49,7 @@ class InstancesController extends DefaultController<InstancesManager> {
     async getChangedEntitiesFromExcel(req: Request, res: Response) {
         const { templateId, childTemplateId } = req.body;
 
-        res.json(await this.manager.getChangedEntitiesFromExcel(templateId, req.files?.[0] || req.file!, childTemplateId));
+        res.json(await this.manager.getChangedEntitiesFromExcel(templateId, req.files?.[0] || req.file!, req.user!.id, childTemplateId));
     }
 
     async editManyEntitiesByExcel(req: Request, res: Response) {

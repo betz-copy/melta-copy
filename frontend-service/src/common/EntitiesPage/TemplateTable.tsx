@@ -181,15 +181,14 @@ const TemplateTable = forwardRef<
         const requiredProperties = new Set(template.properties.required);
 
         return Object.entries(properties).some(([key, property]) => {
-            if (!requiredProperties.has(key)) return false;
-
-            if (property.format === 'fileId') return true;
+            if (property.format === 'fileId' && requiredProperties.has(key)) return true;
 
             if (property.format === 'relationshipReference') {
                 const relatedTemplateId = property.relationshipReference?.relatedTemplateId;
                 const relatedTemplate = entityTemplates.get(relatedTemplateId!);
 
-                const hasIdentifier = Object.values(relatedTemplate?.properties?.properties ?? {}).some((prop: any) => !!prop.identifier);
+                const hasIdentifier = Object.values(relatedTemplate?.properties?.properties ?? {}).some((prop) => !!prop.identifier);
+
                 return !hasIdentifier;
             }
 

@@ -140,9 +140,7 @@ const showRelationshipRefColumn = (
     const identifierField = Object.entries(relatedTemplate!.properties.properties).find(([_key, value]) => value.identifier)?.[0];
     const isRequiredProperty = requiredConstraints?.includes(propertyKey);
 
-    if (!identifierField && !isRequiredProperty) return false;
-
-    return true;
+    return !!(identifierField || isRequiredProperty);
 };
 
 const createWorksheet = async (
