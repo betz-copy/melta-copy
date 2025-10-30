@@ -128,8 +128,9 @@ const EntityTemplateWizard: React.FC<
     const currentWorkspace = useWorkspaceStore((state) => state.workspace);
     const [exportFormats, setExportFormats] = useState(false);
     const [showAccountDisplay, setShowAccountDisplay] = useState<boolean>(false);
-    const [isTransferTemplate, setIsTransferTemplate] = useState<boolean>(false); // for open the step of transfer
-    const [walletTransfer, setWalletTransfer] = useState(false); // for checkbox of if transfer or regular template
+    const [isTransferTemplate, setIsTransferTemplate] = useState<boolean>(false);
+    const [walletTransfer, setWalletTransfer] = useState(false);
+    const [walletTransferSchema, setWalletTransferSchema] = useState<any>(undefined);
 
     useEffect(() => {
         setExportFormats(false);
@@ -143,19 +144,20 @@ const EntityTemplateWizard: React.FC<
         });
 
         setShowAccountDisplay(hasAccountBalanceKey ?? false);
+    }, [initialValues.properties, open]);
 
+    useEffect(() => {
         setWalletTransfer(!!initialValues.walletTransfer || false);
+        setWalletTransferSchema(walletTransfer ? walletTransferSettingsSchema() : undefined);
 
         setIsTransferTemplate(!!initialValues.walletTransfer || false);
-    }, [initialValues.properties, open]);
+    }, [open]);
 
     const currentTemplateId = isEditMode ? (initialValues as EntityTemplateWizardValues & { _id: string })._id : undefined;
     const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates') || new Map();
 
     const createTemplateSettingsSchema = useCreateOrEditTemplateNameSchema(templates, currentTemplateId);
-    const walletTransferSchema = walletTransferSettingsSchema();
 
-    // shirel submit function
     const { isLoading, mutateAsync } = useMutation(
         async (entityTemplate: EntityTemplateWizardValues) => {
             if (isEditMode) {
@@ -300,14 +302,6 @@ const EntityTemplateWizard: React.FC<
             ),
             validationSchema: addFieldsSchema,
         },
-        ...(exportFormats
-            ? [
-                  {
-                      label: i18next.t('wizard.entityTemplate.exportDocuments'),
-                      component: (props) => <UploadExportFormats {...props} />,
-                  } satisfies StepType<EntityTemplateWizardValues>,
-              ]
-            : []),
         ...(isTransferTemplate
             ? [
                   {
@@ -317,10 +311,20 @@ const EntityTemplateWizard: React.FC<
                               {...props}
                               showAccountDisplay={showAccountDisplay}
                               walletTransfer={{ value: walletTransfer, set: setWalletTransfer }}
+                              isEditMode={isEditMode}
                           />
                       ),
-                      validationSchema: walletTransfer ? walletTransferSchema : undefined,
+                      alignItems: 'start',
+                      validationSchema: walletTransferSchema,
                   },
+              ]
+            : []),
+        ...(exportFormats
+            ? [
+                  {
+                      label: i18next.t('wizard.entityTemplate.exportDocuments'),
+                      component: (props) => <UploadExportFormats {...props} />,
+                  } satisfies StepType<EntityTemplateWizardValues>,
               ]
             : []),
     ];

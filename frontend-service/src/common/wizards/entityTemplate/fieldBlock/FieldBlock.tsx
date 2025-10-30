@@ -83,6 +83,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
     userPropertiesInTemplate,
     showAccountDisplay = false,
     hasAccountBalanceField,
+    isAlreadyWalletTemplate,
     setIsTransferTemplate,
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
     // copy of values of formik in order to show changes on inputs fast (formik rerenders are slow)
@@ -464,6 +465,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
             onDuplicateKartoffelField,
             propertiesType,
             hasAccountBalanceField,
+            isAlreadyWalletTemplate,
         };
     };
 

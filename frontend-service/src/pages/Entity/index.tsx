@@ -433,30 +433,24 @@ const Entity: React.FC = () => {
                                 sx={{
                                     display: 'flex',
                                     justifyContent: 'flex-end',
-                                    alignItems: 'flex-end',
-                                    p: 0,
-                                    m: 0,
                                 }}
                             >
                                 <TabList
                                     onChange={(_event, newValue) => setSelectTransfersOrConnections(newValue)}
                                     TabIndicatorProps={{ style: { display: 'none' } }}
                                     sx={{
-                                        minHeight: 'auto',
-                                        p: 0,
-                                        m: 0,
-                                        gap: 0,
                                         '& .MuiTab-root': {
                                             minWidth: 'auto',
                                             p: 1,
                                         },
+                                        mb: 0,
                                     }}
                                 >
                                     <Tab icon={<RelationshipIcon />} value="walletTransfers" />
                                     <Tab icon={<AccountBalanceWallet />} value="connectionsByCategories" />
                                 </TabList>
                             </Box>
-                            <TabPanel value="walletTransfers">
+                            <TabPanel value="walletTransfers" sx={{ p: 0 }}>
                                 <EntityConnections
                                     currentEntityTemplate={currentEntityTemplate}
                                     expandedEntity={expandedEntity}
@@ -465,7 +459,7 @@ const Entity: React.FC = () => {
                                     getButtonStateByRelatedTemplate={getButtonStateByRelatedTemplate}
                                 />
                             </TabPanel>
-                            <TabPanel value="connectionsByCategories">
+                            <TabPanel value="connectionsByCategories" sx={{ p: 0 }}>
                                 <WalletTransfers
                                     connectionsTemplates={connectionsTemplates}
                                     templateId={currentEntityTemplate._id}

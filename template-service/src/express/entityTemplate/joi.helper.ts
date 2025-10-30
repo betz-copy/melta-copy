@@ -218,7 +218,7 @@ export const innerWalletTransferSchema = Joi.object({
     to: Joi.string().required(),
     amount: Joi.string().required(),
     description: Joi.string().required(),
-});
+}).allow(null);
 
 const customOrderPropertiesValidation: Joi.CustomValidator = (propertiesOrder: string[], helpers) => {
     const { properties } = helpers.state.ancestors[0].properties;

@@ -59,7 +59,7 @@ export interface IProperties {
     hide: string[];
 }
 
-interface IWalletTransfer {
+export interface IWalletTransfer {
     from: string;
     to: string;
     description: string;
@@ -87,7 +87,7 @@ export interface IEntityTemplate {
     documentTemplatesIds?: string[];
     mapSearchProperties?: string[];
     fieldGroups?: IFieldsGroup[];
-    walletTransfer?: IWalletTransfer;
+    walletTransfer?: IWalletTransfer | null;
 }
 
 export interface IEntityTemplatePopulated extends Omit<IEntityTemplate, 'category'> {

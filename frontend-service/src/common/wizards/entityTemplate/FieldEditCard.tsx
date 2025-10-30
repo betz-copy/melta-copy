@@ -69,6 +69,7 @@ export interface FieldEditCardProps {
     propertiesType: string;
     showAccountDisplay?: boolean;
     hasAccountBalanceField?: boolean;
+    isAlreadyWalletTemplate?: boolean;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -111,6 +112,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     propertiesType,
     showAccountDisplay,
     hasAccountBalanceField,
+    isAlreadyWalletTemplate,
 }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -403,6 +405,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     hasIdentifier={hasIdentifier}
                                     showAccountDisplay={showAccountDisplay}
                                     hasAccountBalanceField={hasAccountBalanceField}
+                                    isAlreadyWalletTemplate={isAlreadyWalletTemplate}
                                 />
                                 <Grid display="flex">
                                     {locationSearchFields?.show &&

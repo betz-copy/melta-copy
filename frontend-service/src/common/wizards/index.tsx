@@ -35,7 +35,7 @@ export type StepType<T extends object> = {
         next?: { text?: string; onClick?: (values: T, formikHelpers: FormikHelpers<T>) => Promise<void> | void; disabled?: boolean };
     };
     invisibleBeforeStep?: boolean;
-    alignItems?: 'start';
+    alignItems?: 'start' | string;
 };
 
 const Wizard = <T extends object>({
@@ -136,7 +136,7 @@ const Wizard = <T extends object>({
                                 direction={direction}
                                 showPrevSteps={showPrevSteps}
                             />
-                            {steps[activeStep].stepperActions?.hide !== 'all' && (
+                            {steps[activeStep]?.stepperActions?.hide !== 'all' && (
                                 <Box sx={{ position: 'sticky', bottom: 0 }}>
                                     <StepperActions
                                         step={steps[activeStep]}

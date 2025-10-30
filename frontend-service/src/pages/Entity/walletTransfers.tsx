@@ -85,7 +85,6 @@ export const WalletTransfers: React.FC<any> = ({
 
             const nonCurrentWalletEntity = sourceIsWallet ? destinationEntity : sourceEntity;
             const nonCurrentWalletTemplate = sourceIsWallet ? relationshipTemplate.destinationEntity : relationshipTemplate.sourceEntity;
-            console.log({ sourceIsWallet, relationshipTemplate });
 
             const createdAt = new Date((connection.relationship.properties as any).createdAt).getTime();
             const direction = sourceIsWallet ? 'to' : 'from';
@@ -106,15 +105,44 @@ export const WalletTransfers: React.FC<any> = ({
         .sort((a, b) => b._sortKey - a._sortKey)
         .map(({ _sortKey, ...rest }) => rest);
 
+    function calculateBalancesFromCurrent(transfers: WalletTransferData[], currentBalance: number) {
+        let balance = Number(currentBalance);
+
+        const withBalances: WalletTransferData[] = transfers.map((t) => {
+            const walletTransferAmountKey = t.template?.walletTransfer?.amount;
+
+            const amount = Number(walletTransferAmountKey ? t.entity?.properties?.[walletTransferAmountKey] : 0);
+
+            const rowWithBalance = {
+                ...t,
+                balanceAtThatTime: balance,
+            };
+
+            balance += t.direction === 'to' ? amount : -amount;
+
+            return rowWithBalance;
+        });
+
+        const initialRow: WalletTransferData = {
+            template: {} as any,
+            entity: expandedEntity.entity,
+            direction: 'initial',
+            balanceAtThatTime: balance,
+        } as WalletTransferData;
+
+        return [...withBalances, initialRow];
+    }
+
+    const orderedConnectionEntitiesWithBalances = calculateBalancesFromCurrent(orderedConnectionEntities, currentEntityBalance);
+
     const getRowModelProps = <Data extends any = WalletTransferData>(paginationPageSize: number): React.ComponentProps<typeof AgGridReact<Data>> => {
         return {
             rowModelType: 'clientSide',
-            rowData: orderedConnectionEntities as Data[],
+            rowData: orderedConnectionEntitiesWithBalances as Data[],
             pagination: true,
             paginationPageSize,
         };
     };
-    let runningBalance = 0;
 
     const columnDefs = [
         {
@@ -159,7 +187,26 @@ export const WalletTransfers: React.FC<any> = ({
         {
             field: 'transfer.entity',
             headerName: i18next.t('entityPage.walletTransfer.entity'),
-            valueGetter: (params: any) => params.data?.entity.properties[params.data?.template.walletTransfer[params.data?.direction]] ?? '',
+            valueGetter: (params: any) => {
+                console.log({ params });
+
+                return params.data?.template.walletTransfer
+                    ? (params.data?.entity.properties[params.data?.template.walletTransfer[params.data?.direction]].properties.name ?? '')
+                    : '';
+            },
+            // cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
+            //     const error = isPropertyInvalid(props, field, ignoreType);
+            //     if (error) return errorColDef(props, error, value);
+            //     return (
+            //         <Value
+            //             searchValue={searchValue}
+            //             hideValue={hideValue}
+            //             value={props.value ?? ''}
+            //             enumColor={(props.value && enumColorOptions?.[props.value]) ?? 'default'}
+            //             color={getColor(props, field)}
+            //         />
+            //     );
+            // },
             filter: 'agTextColumnFilter',
         },
         {
@@ -182,27 +229,10 @@ export const WalletTransfers: React.FC<any> = ({
             filter: 'agTextColumnFilter',
         },
         {
-            field: 'transfer.accountBalance',
+            field: 'balanceAtThatTime',
             headerName: i18next.t('entityPage.walletTransfer.accountBalance'),
-            valueGetter: (params) => {
-                if (params.node.rowIndex === 0) {
-                    // start from the *current* wallet balance
-                    runningBalance = Number(currentEntityBalance);
-                }
 
-                const amount = Number(params.data?.entity?.properties?.[params.data?.template.walletTransfer?.amount] ?? 0);
-
-                // We move BACKWARD in time, so we show the balance *after* the current transaction,
-                // then update for the next (earlier) one.
-
-                // Apply the transaction (backwards):
-                // "to"  → money went OUT → subtract
-                // "from" → money came IN → add
-                runningBalance += params.data?.direction === 'to' ? -amount : +amount;
-
-                // Return this transaction's resulting balance
-                return runningBalance.toLocaleString();
-            },
+            valueFormatter: (p) => p.value?.toLocaleString(),
             filter: 'agTextColumnFilter',
         },
         {
@@ -224,7 +254,8 @@ export const WalletTransfers: React.FC<any> = ({
 
                 const entityId = data.entity.properties._id;
                 const entityLink = `/entity/${entityId}${isChildTemplate(data.template) ? `?childTemplateId=${data.template._id}` : ''}`;
-                console.log({ data });
+
+                if (Object.keys(data.template || {}).length === 0) return;
 
                 return (
                     <Grid container flexWrap="nowrap">

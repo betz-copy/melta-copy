@@ -273,6 +273,16 @@ export const FieldBlockWrapper = ({
 }) => {
     const hasActions = Boolean(initialValues?.actions);
 
+    const isAlreadyWalletTemplate = (Object.values(initialValues.properties) as PropertyItem[]).some((property) => {
+        if (property.type === 'field') {
+            return !!property.data.accountBalance;
+        }
+        if (property.type === 'group') {
+            return property.fields.some((field) => !!field.accountBalance);
+        }
+        return false;
+    });
+
     const hasAccountBalanceField = (Object.values(values.properties) as PropertyItem[]).some((property) => {
         if (property.type === 'field') {
             return !!property.data.accountBalance;
@@ -731,6 +741,7 @@ export const FieldBlockWrapper = ({
                     onDeleteSure={onDeleteSure}
                     showAccountDisplay={showAccountDisplay}
                     hasAccountBalanceField={hasAccountBalanceField}
+                    isAlreadyWalletTemplate={isAlreadyWalletTemplate}
                     setIsTransferTemplate={setIsTransferTemplate}
                 />
             </div>

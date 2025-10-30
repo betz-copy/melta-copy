@@ -259,15 +259,20 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         session?: ClientSession,
     ) {
         let entityTemplateToUpdate = { ...currentEntityTemplate, ...updatedTemplateData };
-        console.log(1, { entityTemplateToUpdate });
 
         if (this.hasRelationshipsProperties(entityTemplateToUpdate)) {
             entityTemplateToUpdate = await this.upsertRelationshipsProperties(entityTemplateToUpdate, session, true);
         }
-        console.log(2, { entityTemplateToUpdate });
+
+        const updateData: any = { ...entityTemplateToUpdate };
+
+        if (entityTemplateToUpdate.walletTransfer === null) {
+            updateData.$unset = { walletTransfer: '' };
+            delete updateData.walletTransfer;
+        }
 
         const updatedEntityTemplate = await this.model
-            .findByIdAndUpdate(id, entityTemplateToUpdate, {
+            .findByIdAndUpdate(id, updateData, {
                 new: true,
                 overwrite: true,
                 session,
@@ -318,7 +323,6 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         });
 
         const currentEntityTemplate = await this.getTemplateById(id);
-        console.log({ updatedTemplateData });
 
         const newEntityTemplate = session
             ? await this.updateEntityTemplateInTransaction(id, currentEntityTemplate, updatedTemplateData, allowToDeleteRelationshipFields, session)
@@ -355,7 +359,6 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
                 }),
             );
         }
-        console.log({ newEntityTemplate });
 
         return newEntityTemplate;
     }

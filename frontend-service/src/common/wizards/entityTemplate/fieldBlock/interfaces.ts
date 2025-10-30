@@ -112,5 +112,6 @@ export interface FieldBlockProps<PropertiesType extends string, Values extends R
     onDeleteSure?: (setShowAreUSureDialogForRemoveProperty: (v: boolean) => void) => void;
     showAccountDisplay?: boolean;
     hasAccountBalanceField?: boolean;
+    isAlreadyWalletTemplate?: boolean;
     setIsTransferTemplate?: (val: boolean) => void;
 }

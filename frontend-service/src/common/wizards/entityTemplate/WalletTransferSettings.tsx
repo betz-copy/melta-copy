@@ -10,6 +10,11 @@ import { StepComponentProps } from '../index';
 import { getIn } from 'formik';
 import { CommonFormInputProperties } from './commonInterfaces';
 import { IWalletTransferPopulated } from '../../../interfaces/entityTemplates';
+import { useQuery } from 'react-query';
+import { searchEntitiesOfTemplateRequest } from '../../../services/entitiesService';
+import { AxiosError } from 'axios';
+import { toast } from 'react-toastify';
+import { ErrorToast } from '../../ErrorToast';
 
 export const walletTransferSettingsSchema = () => {
     return Yup.object({
@@ -19,7 +24,7 @@ export const walletTransferSettingsSchema = () => {
                 .test('different-from-and-to', i18next.t('validation.differentDestinations'), function (fromValue) {
                     const { to } = this.parent as { to?: CommonFormInputProperties };
                     if (!fromValue || !to) return true;
-                    return fromValue.name !== to.name;
+                    return fromValue.name ? fromValue.name !== to.name : fromValue !== to;
                 }),
 
             to: Yup.mixed<CommonFormInputProperties>()
@@ -27,27 +32,43 @@ export const walletTransferSettingsSchema = () => {
                 .test('different-from-and-to', i18next.t('validation.differentDestinations'), function (toValue: any) {
                     const { from } = this.parent as { from?: CommonFormInputProperties };
                     if (!toValue || !from) return true;
-                    return toValue.name !== from.name;
+                    return toValue.name ? toValue.name !== from.name : toValue !== from;
                 }),
 
             description: Yup.string().required(i18next.t('validation.required')),
 
             amount: Yup.string().required(i18next.t('validation.required')),
-        }).test('at-least-one-relationshipReference', 'Either From or To must be relationshipReference', (values) => {
-            if (!values) return false;
+        }).test('at-least-one-relationshipReference', i18next.t('validation.eitherFromOrToRelationshipReference'), function (values) {
+            if (!values) return true;
 
             const { from, to } = values as IWalletTransferPopulated;
-            return from.type === 'relationshipReference' || to.type === 'relationshipReference';
+
+            if (!from || !to || typeof from === 'string' || typeof to === 'string') return true;
+
+            const isValid = from.type === 'relationshipReference' || to.type === 'relationshipReference';
+
+            if (!isValid) {
+                const errorMessage = i18next.t('validation.eitherFromOrToRelationshipReference');
+
+                const errors = [
+                    this.createError({ path: `${this.path}.from`, message: errorMessage }),
+                    this.createError({ path: `${this.path}.to`, message: errorMessage }),
+                ];
+
+                return new Yup.ValidationError(errors);
+            }
+
+            return true;
         }),
     });
 };
 
 export const WalletTransferSettings: React.FC<
-    StepComponentProps<EntityTemplateWizardValues> & {
+    StepComponentProps<EntityTemplateWizardValues & { _id: string }, 'isEditMode'> & {
         showAccountDisplay: boolean;
         walletTransfer: { value: boolean; set: (val: boolean) => void };
     }
-> = ({ values, errors, showAccountDisplay, touched, setFieldValue, walletTransfer, setFieldTouched }) => {
+> = ({ values, errors, showAccountDisplay, touched, setFieldValue, walletTransfer, setFieldTouched, isEditMode }) => {
     const allFields = values.properties.flatMap((property) => {
         if (property.type === 'field') {
             return [property.data];
@@ -78,6 +99,24 @@ export const WalletTransferSettings: React.FC<
     const fromKeyName = typeof from === 'string' ? from : from?.name;
     const toKeyName = typeof to === 'string' ? to : to?.name;
 
+    const { data: areThereInstancesByTemplateIdResponse } = useQuery(
+        ['areThereInstancesByTemplateId', values._id],
+        () =>
+            searchEntitiesOfTemplateRequest(values._id, {
+                skip: 0,
+                limit: 1,
+            }),
+        {
+            enabled: isEditMode,
+            initialData: { count: 1, entities: [] },
+            onError: (error: AxiosError) => {
+                console.error('failed to check areThereInstancesByTemplateId. error:', error);
+                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('systemManagement.defaultCantEdit')} />);
+            },
+        },
+    );
+    const areThereAnyInstances = isEditMode && areThereInstancesByTemplateIdResponse!.count > 0;
+
     return (
         <Grid container direction="column">
             <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
@@ -85,16 +124,27 @@ export const WalletTransferSettings: React.FC<
                     checked={walletTransfer.value}
                     onChange={(e) => {
                         walletTransfer.set(e.target.checked);
+                        if (!e.target.checked) {
+                            setFieldValue('walletTransfer', null);
+                        }
                     }}
-                    disabled={showAccountDisplay}
+                    disabled={showAccountDisplay || areThereAnyInstances}
                 />
                 <Typography>{i18next.t('wizard.entityTemplate.walletTransfer.transfer')}</Typography>
-                <MeltaTooltip title={showAccountDisplay ? 'לא ניתן כי נבחר כתצוגת ארנק' : 'תבנית יישות העברה '}>
+                <MeltaTooltip
+                    title={
+                        showAccountDisplay
+                            ? i18next.t('wizard.entityTemplate.walletTransfer.walletCantBeTransfer')
+                            : areThereAnyInstances
+                              ? i18next.t('wizard.entityTemplate.cannotEditWithInstances')
+                              : i18next.t('wizard.entityTemplate.walletTransfer.template')
+                    }
+                    variant="bubble"
+                >
                     <InfoOutlined
                         sx={{
                             fontSize: 16,
                             opacity: 0.7,
-                            cursor: 'help',
                             ml: 1,
                         }}
                     />
@@ -109,7 +159,15 @@ export const WalletTransferSettings: React.FC<
                             value={incomingFields.find((option) => option.name === fromKeyName) ?? null}
                             getOptionLabel={(option) => option.title}
                             onBlur={() => setFieldTouched('walletTransfer.from')}
-                            sx={{ width: '250px' }}
+                            sx={{
+                                width: 250,
+                                '& .MuiInputBase-root.Mui-disabled': {
+                                    backgroundColor: '#F3F5F9',
+                                },
+                                '& .MuiInputLabel-root.Mui-disabled': {
+                                    color: '#BBBED8',
+                                },
+                            }}
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
@@ -119,15 +177,14 @@ export const WalletTransferSettings: React.FC<
                                     label={i18next.t('wizard.entityTemplate.walletTransfer.source')}
                                 />
                             )}
-                            disabled={walletTransfer.value === false}
+                            disabled={walletTransfer.value === false || areThereAnyInstances}
                         />
-                        {walletTransfer.value && values.walletTransfer?.to?.type === 'relationshipReference' && (
-                            <MeltaTooltip title="ערך ההעברה ירד מהיתרה של יישות הארנק המקושרת">
+                        {walletTransfer.value && values.walletTransfer?.from?.type === 'relationshipReference' && (
+                            <MeltaTooltip title={i18next.t('wizard.entityTemplate.walletTransfer.fromWallet')} variant="bubble">
                                 <InfoOutlined
                                     sx={{
                                         fontSize: 16,
                                         opacity: 0.7,
-                                        cursor: 'help',
                                         ml: 1,
                                     }}
                                 />
@@ -141,7 +198,15 @@ export const WalletTransferSettings: React.FC<
                             value={outgoingFields.find((option) => option.name === toKeyName) ?? null}
                             getOptionLabel={(option) => option.title}
                             onBlur={() => setFieldTouched('walletTransfer.to')}
-                            sx={{ width: '250px' }}
+                            sx={{
+                                width: 250,
+                                '& .MuiInputBase-root.Mui-disabled': {
+                                    backgroundColor: '#F3F5F9',
+                                },
+                                '& .MuiInputLabel-root.Mui-disabled': {
+                                    color: '#BBBED8',
+                                },
+                            }}
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
@@ -151,15 +216,14 @@ export const WalletTransferSettings: React.FC<
                                     label={i18next.t('wizard.entityTemplate.walletTransfer.destination')}
                                 />
                             )}
-                            disabled={!walletTransfer.value}
+                            disabled={!walletTransfer.value || areThereAnyInstances}
                         />
-                        {walletTransfer.value && values.walletTransfer?.from?.type === 'relationshipReference' && (
-                            <MeltaTooltip title="ערך ההעברה יתווסף ליתרה של יישות הארנק המקושרת">
+                        {walletTransfer.value && values.walletTransfer?.to?.type === 'relationshipReference' && (
+                            <MeltaTooltip title={i18next.t('wizard.entityTemplate.walletTransfer.toWallet')} variant="bubble">
                                 <InfoOutlined
                                     sx={{
                                         fontSize: 16,
                                         opacity: 0.7,
-                                        cursor: 'help',
                                         ml: 1,
                                     }}
                                 />
@@ -175,7 +239,15 @@ export const WalletTransferSettings: React.FC<
                             value={allNumFields.find((option) => option.name === values.walletTransfer?.amount) ?? null}
                             getOptionLabel={(option) => option.title}
                             onBlur={() => setFieldTouched('walletTransfer.amount')}
-                            sx={{ width: '250px' }}
+                            sx={{
+                                width: 250,
+                                '& .MuiInputBase-root.Mui-disabled': {
+                                    backgroundColor: '#F3F5F9',
+                                },
+                                '& .MuiInputLabel-root.Mui-disabled': {
+                                    color: '#BBBED8',
+                                },
+                            }}
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
@@ -185,7 +257,7 @@ export const WalletTransferSettings: React.FC<
                                     label={i18next.t('wizard.entityTemplate.walletTransfer.amount')}
                                 />
                             )}
-                            disabled={!walletTransfer.value}
+                            disabled={!walletTransfer.value || areThereAnyInstances}
                         />
                     </Grid>
                     <Grid>
@@ -195,7 +267,15 @@ export const WalletTransferSettings: React.FC<
                             value={allTextFields.find((option) => option.name === values.walletTransfer?.description) ?? null}
                             getOptionLabel={(option) => option.title}
                             onBlur={() => setFieldTouched('walletTransfer.description')}
-                            sx={{ width: '250px' }}
+                            sx={{
+                                width: 250,
+                                '& .MuiInputBase-root.Mui-disabled': {
+                                    backgroundColor: '#F3F5F9',
+                                },
+                                '& .MuiInputLabel-root.Mui-disabled': {
+                                    color: '#BBBED8',
+                                },
+                            }}
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
@@ -205,7 +285,7 @@ export const WalletTransferSettings: React.FC<
                                     label={i18next.t('wizard.entityTemplate.walletTransfer.description')}
                                 />
                             )}
-                            disabled={!walletTransfer.value}
+                            disabled={!walletTransfer.value || areThereAnyInstances}
                         />
                     </Grid>
                 </Grid>

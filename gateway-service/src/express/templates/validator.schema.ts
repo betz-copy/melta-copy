@@ -152,7 +152,7 @@ export const updateEntityTemplateSchema = Joi.object({
         documentTemplatesIds: ExtendedJoi.stringToArray(),
         mapSearchProperties: ExtendedJoi.stringToArray(),
         fieldGroups: ExtendedJoi.stringToArray(),
-        walletTransfer: ExtendedJoi.stringToObject(),
+        walletTransfer: ExtendedJoi.stringToObject().allow(null),
     },
     query: {},
     params: {

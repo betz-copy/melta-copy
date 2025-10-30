@@ -23,8 +23,6 @@ const AgGridTable = forwardRef<AgGridTableRef<unknown>, AgGridTableProps<unknown
         { defaultColDef, columnDefs, getRowId, rowModelProps, quickFilterText }: AgGridTableProps<Data>,
         ref: ForwardedRef<AgGridTableRef<Data>>,
     ) => {
-        console.log({ rowModelProps });
-
         const darkMode = useDarkModeStore((state) => state.darkMode);
         const workspace = useWorkspaceStore((state) => state.workspace);
         const gridRef = useRef<AgGridReact<Data>>(null);

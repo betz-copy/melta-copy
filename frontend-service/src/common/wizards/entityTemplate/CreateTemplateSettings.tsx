@@ -14,6 +14,8 @@ import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
 import { StepComponentProps } from '../index';
 import { ChooseCategory } from './ChooseCategory';
 import { CreateTemplateName } from './CreateTemplateName';
+import { IWalletTransfer } from '../../../interfaces/entityTemplates';
+import { PropertyItem } from './commonInterfaces';
 
 export const useCreateOrEditTemplateNameSchema = (templates: Map<any, any>, currentTemplateId?: string) => {
     const otherTemplates = Array.from(templates.values()).filter((template) => template._id !== currentTemplateId);
@@ -36,7 +38,7 @@ export const useCreateOrEditTemplateNameSchema = (templates: Map<any, any>, curr
     });
 };
 
-const CreateTemplateSettings = <Values extends { name: string; displayName: string; properties; _id: string }>(
+const CreateTemplateSettings = <Values extends { name: string; displayName: string; properties; _id: string; walletTransfer?: IWalletTransfer }>(
     props: React.PropsWithChildren<StepComponentProps<Values, 'isEditMode'>> & {
         exportFormats: { value: boolean; set: (val: boolean) => void };
         showAccountDisplay: { value: boolean; set: (val: boolean) => void };
@@ -58,7 +60,18 @@ const CreateTemplateSettings = <Values extends { name: string; displayName: stri
             },
         },
     );
-    const areThereAnyInstances = props.isEditMode && areThereInstancesByTemplateIdResponse!.count > 0;
+
+    const hasAccountBalanceField = (Object.values(props.values.properties) as PropertyItem[]).some((property) => {
+        if (property.type === 'field') {
+            return !!property.data.accountBalance;
+        }
+        if (property.type === 'group') {
+            return property.fields.some((field) => !!field.accountBalance);
+        }
+        return false;
+    });
+
+    const areThereAnyInstances = props.isEditMode && areThereInstancesByTemplateIdResponse!.count > 0 && hasAccountBalanceField;
 
     return (
         <Grid container direction="column" spacing={4}>
@@ -104,15 +117,23 @@ const CreateTemplateSettings = <Values extends { name: string; displayName: stri
                                 );
                             }
                         }}
-                        disabled={areThereAnyInstances}
+                        disabled={areThereAnyInstances || !!props.values.walletTransfer}
                     />
-                    <Typography>{i18next.t('wizard.entityTemplate.walletDisplay')}</Typography>
-                    <MeltaTooltip title={areThereAnyInstances ? 'לתבנית זו קיימים מופעים לכן לא ניתן לערוך' : 'תצוגת ארנק בלה בלה '}>
+                    <Typography>{i18next.t('wizard.entityTemplate.wallet.walletDisplay')}</Typography>
+                    <MeltaTooltip
+                        title={
+                            props.values.walletTransfer
+                                ? i18next.t('wizard.entityTemplate.wallet.transferCantBeWallet')
+                                : areThereAnyInstances
+                                  ? i18next.t('wizard.entityTemplate.cannotEditWithInstances')
+                                  : 'תצוגת ארנק בלה בלה '
+                        }
+                        variant="bubble"
+                    >
                         <InfoOutlined
                             sx={{
                                 fontSize: 16,
                                 opacity: 0.7,
-                                cursor: 'help',
                                 ml: 1,
                             }}
                         />
@@ -126,12 +147,11 @@ const CreateTemplateSettings = <Values extends { name: string; displayName: stri
                         }}
                     />
                     <Typography>{i18next.t('wizard.entityTemplate.exportDocumentsSelect')}</Typography>
-                    <MeltaTooltip title="fdgdg">
+                    <MeltaTooltip title={i18next.t('wizard.entityTemplate.exportDocuments')} variant="bubble">
                         <InfoOutlined
                             sx={{
                                 fontSize: 16,
                                 opacity: 0.7,
-                                cursor: 'help',
                                 ml: 1,
                             }}
                         />

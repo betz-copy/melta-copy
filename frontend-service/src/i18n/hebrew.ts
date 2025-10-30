@@ -4,6 +4,7 @@ import { WorkspaceTypes } from '../interfaces/workspaces';
 import { muiDatePickersLocaleText } from '../utils/datePickers';
 
 export default {
+    featuresList: ['ניהול משתמשים מתקדם', 'תמיכה במובייל', 'דוחות בזמן אמת'],
     myPermissions: 'ההרשאות שלי',
     personalDetails: 'פרטים אישיים',
     myAccount: 'החשבון שלי',
@@ -255,7 +256,7 @@ export default {
             editDisabled: 'לא ניתן לערוך תבנית העברה',
             deleteDisabled: 'לא ניתן למחוק תבנית העברה',
             createdAt: 'תאריך',
-            entity: 'מקור\יעד',
+            entity: 'מקור/יעד',
             description: 'תיאור',
             amount: 'כמות',
             accountBalance: 'יתרת חשבון',
@@ -718,7 +719,6 @@ export default {
             filterType: '',
             relatedUser: 'משתמש מקושר',
             fieldDisplay: 'שדה להצגה',
-            walletDisplay: 'תצוגת ארנק',
             kartoffelUserFields: {
                 displayName: 'שם לתצוגה',
                 identityCard: 'מספר זהות',
@@ -745,15 +745,23 @@ export default {
                 hierarchy: 'היררכיה',
                 image: 'תמונה',
             },
+            wallet: {
+                walletDisplay: 'תצוגת ארנק',
+                transferCantBeWallet: 'לא ניתן להגדיר תבנית העברה כארנק',
+            },
             walletTransfer: {
                 destination: 'יעד',
                 source: 'מקור',
                 amount: 'ערך העברה',
                 description: 'תיאור העברה',
-                exportDocuments: 'פורמטים לייצוא',
                 walletTransferSettings: 'הגדרות העברה לארנק',
                 transfer: 'העברה לארנק',
+                walletCantBeTransfer: 'לא ניתן להגדיר תבנית ארנק כתבנית העברה',
+                template: 'תבנית העברה ',
+                fromWallet: 'ערך ההעברה ירד מהיתרה של יישות הארנק המקושרת',
+                toWallet: 'ערך ההעברה יתווסף ליתרה של יישות הארנק המקושרת',
             },
+            cannotEditWithInstances: 'לא ניתן לערוך תבנית בעלת יישיות',
         },
         relationshipTemplate: {
             createTitle: 'יצירת תבנית קשר',
@@ -1081,6 +1089,7 @@ export default {
         colors: { colors: 'צבע הערה', red: 'אדום', orange: 'כתום', yellow: 'צהוב', green: 'ירוק', blue: 'כחול', black: 'שחור' },
         invalidProperty: 'שדה לא תקין',
         differentDestinations: 'מקור ויעד לא יכולים להיות זהים',
+        eitherFromOrToRelationshipReference: 'נדרש לבחור קשר לתבנית ארנק כמקור או כיעד (או בשניהם)',
         isProfileImage: 'תמונת פרופיל',
     },
     propertyTypes: {

@@ -26,6 +26,7 @@ export interface SwitchesProps {
     hasIdentifier?: boolean;
     showAccountDisplay?: boolean;
     hasAccountBalanceField?: boolean;
+    isAlreadyWalletTemplate?: boolean;
 }
 
 export const Switches: React.FC<SwitchesProps> = ({
@@ -46,6 +47,7 @@ export const Switches: React.FC<SwitchesProps> = ({
     hasIdentifier,
     showAccountDisplay,
     hasAccountBalanceField,
+    isAlreadyWalletTemplate,
 }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -342,7 +344,7 @@ export const Switches: React.FC<SwitchesProps> = ({
                                     });
                                 }}
                                 checked={value.accountBalance ?? false}
-                                disabled={(hasAccountBalanceField && !value.accountBalance) || areThereAnyInstances}
+                                disabled={(hasAccountBalanceField && !value.accountBalance) || (areThereAnyInstances && isAlreadyWalletTemplate)}
                             />
                         }
                         label={i18next.t('propertyTypes.accountBalance')}
