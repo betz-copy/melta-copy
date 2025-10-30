@@ -1417,9 +1417,15 @@ class EntityManager extends DefaultManagerNeo4j {
         return runRulesOnEntity(transaction, entity.properties._id, relevantRulesOfEntity, entityTemplate);
     };
 
-    getNeighborsOfUpdatedEntityForRule = (transaction: Transaction, entityId: string) =>
+    getNeighborsOfUpdatedEntityForRuleInTransaction = (transaction: Transaction, entityId: string) =>
         runInTransactionAndNormalize(
             transaction,
+            `MATCH (e {_id: '${entityId}'})-[r]-(neighbor) RETURN type(r) as rTemplate, neighbor`,
+            normalizeNeighborsOfEntityForRule,
+        );
+
+    getNeighborsOfUpdatedEntityForRule = (entityId: string) =>
+        this.neo4jClient.readTransaction(
             `MATCH (e {_id: '${entityId}'})-[r]-(neighbor) RETURN type(r) as rTemplate, neighbor`,
             normalizeNeighborsOfEntityForRule,
         );
@@ -1429,7 +1435,7 @@ class EntityManager extends DefaultManagerNeo4j {
         updatedEntity: IEntity,
         updatedProperties: string[],
     ): Promise<IRuleFailure[]> => {
-        const neighborsOfUpdatedEntity = await this.getNeighborsOfUpdatedEntityForRule(transaction, updatedEntity.properties._id);
+        const neighborsOfUpdatedEntity = await this.getNeighborsOfUpdatedEntityForRuleInTransaction(transaction, updatedEntity.properties._id);
 
         const ruleFailuresForEachNeighborPromises = neighborsOfUpdatedEntity.map(async ({ relationshipTemplate, neighborOfEntity }) => {
             return this.runRulesOnEntityDependentViaAggregation(
