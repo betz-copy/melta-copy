@@ -13,7 +13,7 @@ export const Swap: React.FC<ISwapProps> = ({ condition, isTrue = <div />, isFals
 
     useEffect(() => {
         setTimeout(() => setShow(condition), animationTime);
-    }, [condition]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [condition]);
 
     if (show)
         return (

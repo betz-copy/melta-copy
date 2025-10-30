@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 // original code taken from https://github.com/PavelDoGreat/WebGL-Fluid-Simulation
 
 export const webGLFluidSimulation = (canvas) => {

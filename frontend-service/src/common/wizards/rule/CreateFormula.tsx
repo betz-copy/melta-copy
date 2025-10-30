@@ -114,7 +114,6 @@ const CreateFormula: React.FC<StepComponentProps<RuleWizardValues>> = ({ values,
                 ...MuiConfig.widgets,
                 dateDuration: {
                     type: 'dateDuration',
-                    // eslint-disable-next-line react/no-unstable-nested-components
                     factory: (props) => <MuiTextWidget {...(props as TextWidgetProps)} />,
                     customProps: {
                         // todo: check customProps works with mui
@@ -124,7 +123,6 @@ const CreateFormula: React.FC<StepComponentProps<RuleWizardValues>> = ({ values,
                 },
                 dateTimeDuration: {
                     type: 'dateTimeDuration',
-                    // eslint-disable-next-line react/no-unstable-nested-components
                     factory: (props) => <MuiTextWidget {...(props as TextWidgetProps)} />,
                     customProps: {
                         pattern: dateTimeDurationRegExp.source,
@@ -165,7 +163,6 @@ const CreateFormula: React.FC<StepComponentProps<RuleWizardValues>> = ({ values,
                 // getToday -- TODO: currently getToday function is as variable in fieldsConfig (because raqb doesnt support lhs functions see raqb issue #287. need to upgrade version)
             },
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [entityTemplateId, entityTemplates, relationshipTemplates, formula]);
 
     const [formulaHasGetTodayFunc, setFormulaHasGetTodayFunc] = useState(jsonTreeHasTodayVar(Utils.getTree(values.formula) as JsonItem));
@@ -174,7 +171,7 @@ const CreateFormula: React.FC<StepComponentProps<RuleWizardValues>> = ({ values,
         setFieldValue('formula', immutableTree);
 
         setFormulaHasGetTodayFunc(jsonTreeHasTodayVar(Utils.getTree(immutableTree) as JsonItem));
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    }, []);
 
     const renderBuilder = useCallback((props: BuilderProps) => {
         return (

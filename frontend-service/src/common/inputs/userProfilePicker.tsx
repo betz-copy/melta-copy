@@ -106,7 +106,6 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({
                     <Box style={{ border: '1px solid #ccc', borderRadius: '8px' }}>
                         <Grid container sx={{ display: 'flex', justifyContent: 'space-evenly' }}>
                             {allAvatarPaths.map((iconName, index) => (
-                                // eslint-disable-next-line react/no-array-index-key
                                 <Grid key={index} padding={2}>
                                     <Avatar
                                         src={`${environment.avatarIconPath}${iconName}`}

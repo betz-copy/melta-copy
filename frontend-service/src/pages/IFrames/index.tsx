@@ -1,4 +1,3 @@
-/* eslint-disable react/no-array-index-key */
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
@@ -60,7 +59,6 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
 
         localStorage.setItem(sideBarOpenKey, `${isSideBarOpen}`);
         setIsDimensionsChange(true);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isSideBarOpen]);
 
     return (

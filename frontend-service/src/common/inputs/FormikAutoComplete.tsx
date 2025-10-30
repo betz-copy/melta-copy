@@ -71,7 +71,6 @@ export const FormikAutoComplete = <T,>({
             )}
             renderTags={(tags, getTagProps) =>
                 tags.map((option, index) => (
-                    // eslint-disable-next-line react/jsx-key
                     <Chip {...getTagProps({ index })} variant="outlined" label={getOptionLabel ? getOptionLabel(option) : String(option)} />
                 ))
             }

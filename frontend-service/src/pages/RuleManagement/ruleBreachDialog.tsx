@@ -157,7 +157,6 @@ const RuleBreachDialog: React.FC<{
                                     <Grid container paddingRight="15px">
                                         {ruleBreach.actions.map((action, index) => {
                                             return (
-                                                // eslint-disable-next-line react/no-array-index-key
                                                 <Grid container key={index} spacing={2}>
                                                     <Grid>
                                                         <Typography>{index + 1}.</Typography>

@@ -17,7 +17,6 @@ import './utils/agGrid';
 import './utils/cesiumLicense';
 
 if (import.meta.hot) {
-    // eslint-disable-next-line no-console
     import.meta.hot.on('vite:beforeUpdate', () => console.clear());
 }
 

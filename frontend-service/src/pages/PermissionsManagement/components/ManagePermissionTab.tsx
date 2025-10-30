@@ -42,7 +42,6 @@ const ManagePermissionTab: React.FC<{ permissionType: RelatedPermission; searchP
 
     const permissionsTableRef = useRef<PermissionsTableRef<PermissionData>>(null);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const debouncedSetQuickFilterText = useCallback(
         _debounce((value: string) => setQuickFilterText(value), 1000),
         [setQuickFilterText],

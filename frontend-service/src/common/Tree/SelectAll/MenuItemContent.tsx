@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 import { Hive as HiveIcon, Menu } from '@mui/icons-material';
 import { Grid, ListItemText, Typography, useTheme } from '@mui/material';
 import React from 'react';

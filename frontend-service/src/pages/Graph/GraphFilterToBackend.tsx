@@ -14,7 +14,6 @@ export const filterModelToFilterOfGraph = (filterModel: IGraphFilterBodyBatch): 
     const groupedByTemplate = Object.values(filterModel).reduce(
         (acc: Record<string, IFilterOfTemplate[]>, { selectedTemplate, selectedProperty, filterField }) => {
             const { _id, properties } = selectedTemplate;
-            // eslint-disable-next-line no-param-reassign
             acc[_id] = acc[_id] || [];
 
             if (selectedProperty && filterField) {

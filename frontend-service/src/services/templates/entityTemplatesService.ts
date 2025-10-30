@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 import { QueryClient } from 'react-query';
 import { v4 as uuid } from 'uuid';
 import axios from '../../axios';

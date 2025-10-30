@@ -1,5 +1,3 @@
-/* eslint-disable no-param-reassign */
-
 // original code taken from https://codepen.io/iiSeptum/pen/qBZeLg
 
 /**

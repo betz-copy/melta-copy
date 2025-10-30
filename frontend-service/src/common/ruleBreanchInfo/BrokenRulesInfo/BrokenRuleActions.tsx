@@ -1,5 +1,3 @@
-/* eslint-disable react/no-array-index-key */
-
 import { ExpandLess as ExpandLessIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { Collapse, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';

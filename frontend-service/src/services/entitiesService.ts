@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { mapValues } from 'lodash';
 import axios from '../axios';
 import { EntityWizardValues } from '../common/dialogs/entity';
@@ -167,7 +166,7 @@ export const getExpandedEntityByIdRequest = async (
     const { data } = await axios.post<IEntityExpanded>(`${entities}/expanded/${entityId}`, {
         ...options,
         expandedParams,
-        filters: combineFilters(filters['filter'],childTemplateFilters ),
+        filters: combineFilters(filters['filter'], childTemplateFilters),
     });
     return data;
 };
@@ -324,7 +323,6 @@ const getBodyForUpdateRequest = async (
     formData.append(
         'properties',
         JSON.stringify(
-            // eslint-disable-next-line consistent-return
             mapValues(newEntityData.properties, (property, key) => {
                 switch (template.properties.properties[key]?.format) {
                     case 'relationshipReference':

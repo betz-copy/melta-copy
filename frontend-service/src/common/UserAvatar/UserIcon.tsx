@@ -29,7 +29,6 @@ const UserIcon: React.FC<UserIconProps> = ({
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const { trackEvent } = useMatomo();
 
-    // eslint-disable-next-line no-nested-ternary
     const fontColor = !bgColor ? '#1E2775' : darkMode ? 'black' : 'white';
 
     return (

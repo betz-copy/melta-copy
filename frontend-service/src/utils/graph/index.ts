@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import uniqBy from 'lodash.uniqby';
 import { GraphData, LinkObject, NodeObject } from 'react-force-graph-2d';
 

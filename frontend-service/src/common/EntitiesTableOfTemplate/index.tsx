@@ -1,5 +1,3 @@
-/* eslint-disable no-param-reassign */
-/* eslint-disable no-case-declarations */
 import {
     BodyScrollEvent,
     CellEditingStoppedEvent,
@@ -275,7 +273,7 @@ export type EntitiesTableOfTemplateRef<Data> = {
 };
 
 const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, EntitiesTableOfTemplateProps<unknown>>(
-    <Data,>(
+    <Data extends any>(
         {
             template,
             onRowSelected,
@@ -568,7 +566,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
             api.refreshHeader();
             api.sizeColumnsToFit();
-            // eslint-disable-next-line no-unused-expressions
             Object.keys(defaultColumnWidths).length ? api.autoSizeColumns(columnsKeys) : api.autoSizeColumns(filteredColumns);
 
             const columnStates = api.getColumnState().filter((col) => columnsKeys.includes(col.colId));

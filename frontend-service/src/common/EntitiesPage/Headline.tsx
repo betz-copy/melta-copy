@@ -67,7 +67,6 @@ export const GlobalSearchBar: React.FC<{
 
     const [debouncedSearchValue, setDebouncedSearchValue] = useState(inputValue ?? '');
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const debouncedSearch = useCallback(
         debounce((value: string) => {
             if (value !== valueForSearchButtonRef.current) {

@@ -365,7 +365,6 @@ const entityTemplates: IEntityTemplateMock[] = [
     },
     {
         name: 'check',
-        // eslint-disable-next-line quotes
         displayName: "צ'ק",
         category: {
             name: 'money',

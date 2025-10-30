@@ -1,6 +1,3 @@
-/* eslint-disable react/jsx-no-duplicate-props */
-/* eslint-disable import/no-extraneous-dependencies */
-/* eslint-disable no-underscore-dangle */
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import { IconButton, InputAdornment, TextField } from '@mui/material';
 import { getDisplayLabel, WidgetProps } from '@rjsf/utils';

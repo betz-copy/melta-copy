@@ -142,7 +142,6 @@ const FieldBlockStepWarper = ({
                     style={{
                         border: isFieldBlockTouched && errors.steps?.[index] ? '1px solid red' : '',
                     }}
-                    // eslint-disable-next-line react/no-array-index-key
                     key={index}
                     slotProps={{ transition: { unmountOnExit: true } }} // performance issues with many steps
                 >

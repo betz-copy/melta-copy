@@ -28,7 +28,6 @@ const CalculateDateDifference: React.FC<{ date: string; searchValue?: string }> 
         }, secondsUntilSecondOfDate * 1000);
 
         return () => clearTimeout(initialTimeoutId);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {

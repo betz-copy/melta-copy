@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import { BadRequestError, IChildTemplatePopulated, IEntity, IMongoEntityTemplate, ValidationError } from '@microservices/shared';
 import { isDate } from 'date-fns';
 import { formatDate } from 'date-fns/format';

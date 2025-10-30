@@ -19,7 +19,7 @@ export const useSearchParams = <T extends Record<string, string>>(defaultValue?:
 
     useEffect(() => {
         if (!searchString && defaultValue) setSearchParams(defaultValue, true);
-    }, [searchString]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [searchString]);
 
     return [new URLSearchParams((searchString || defaultValue) ?? {}), setSearchParams] as const;
 };

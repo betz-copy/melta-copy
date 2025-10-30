@@ -31,7 +31,6 @@ const RuleBreachInfo: React.FC<{
             </Grid>
             {actions.map((action, index) => {
                 return (
-                    // eslint-disable-next-line react/no-array-index-key
                     <Grid container key={index} borderBottom={actions.length > 1 ? 0.2 : 0} borderColor="#d3d3d3" spacing={2}>
                         {actions.length > 1 && (
                             <Grid>

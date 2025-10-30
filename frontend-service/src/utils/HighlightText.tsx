@@ -9,7 +9,6 @@ export const HighlightText: React.FC<{ text?: string | React.JSX.Element; search
     color,
     isLink = false,
 }) => {
-    // eslint-disable-next-line react/jsx-no-useless-fragment
     if ((typeof text !== 'string' && typeof text !== 'number') || !searchedText)
         return isLink ? <VerifyLink color={color}>{text}</VerifyLink> : <Typography color={color}>{text}</Typography>;
 

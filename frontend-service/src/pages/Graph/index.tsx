@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { Backdrop, Box, Button, CircularProgress } from '@mui/material';
 import { forceManyBody } from 'd3-force';
 import i18next from 'i18next';
@@ -234,7 +233,6 @@ const Graph: React.FC = () => {
 
     useEffect(() => {
         loadNextBatch();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentBatchIndex, initialExpandedEntity, is3DGraph, entityId, filteredEntityTemplates, load, filterRecord]);
 
     const renderTooltip = (node: NodeObject) => {

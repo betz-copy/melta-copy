@@ -1,4 +1,3 @@
-/* eslint-disable no-extra-boolean-cast */
 import { Clear as ClearIcon, Done as DoneIcon, Edit as EditIcon } from '@mui/icons-material';
 import { Box, Button, CircularProgress, Grid, InputLabel, TextField, Typography } from '@mui/material';
 import { AxiosError } from 'axios';

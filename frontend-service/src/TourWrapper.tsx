@@ -1,5 +1,3 @@
-/* eslint-disable react/no-unstable-nested-components */
-
 import { StepType, TourProvider } from '@reactour/tour';
 import i18next from 'i18next';
 import React, { ReactNode } from 'react';

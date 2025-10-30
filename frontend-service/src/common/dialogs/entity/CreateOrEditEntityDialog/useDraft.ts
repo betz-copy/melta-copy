@@ -20,7 +20,6 @@ const useDraftEntityDialogHook = (
     const draftId = useDraftIdStore((state) => state.draftId);
     const setDraftId = useDraftIdStore((state) => state.setDraftId);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const originalDrafts = useMemo(() => cloneDeep(drafts), []);
 
     const currentDraft = useMemo(
@@ -28,7 +27,6 @@ const useDraftEntityDialogHook = (
         [drafts, entityTemplate._id, entityTemplate.category._id, draftId],
     );
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const createOrUpdateDraftDebounced = useCallback(
         debounce((newValues: EntityWizardValues, newDraftId: string) => {
             let uniqueDraftId = newDraftId;

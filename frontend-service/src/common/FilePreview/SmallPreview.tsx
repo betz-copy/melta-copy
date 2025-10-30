@@ -112,7 +112,6 @@ const SmallPreview: React.FC<IPreviewProps> = ({ file, sx }) => {
                 <Skeleton variant="rectangular" sx={{ borderRadius: '1rem' }} />
             </Box>
         );
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [loading, data]);
 
     return (

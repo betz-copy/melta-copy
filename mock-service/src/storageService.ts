@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 import FormData = require('form-data'); // TODO: yona - Check if could replace with es6 import
 
 import axios from 'axios';

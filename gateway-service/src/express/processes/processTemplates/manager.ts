@@ -234,7 +234,6 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
         let skip = 0;
 
         do {
-            // eslint-disable-next-line no-await-in-loop
             instancesChunk = await this.service.searchProcessInstances({
                 ...query,
                 templateIds: [templateId],

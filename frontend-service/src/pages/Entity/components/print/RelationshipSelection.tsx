@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unstable-nested-components */
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
 import { Grid, Typography } from '@mui/material';
 import { RichTreeViewPro, TreeItemProps } from '@mui/x-tree-view-pro';

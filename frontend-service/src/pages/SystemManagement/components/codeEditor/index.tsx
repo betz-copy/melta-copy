@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/rules-of-hooks */
 import { CloseOutlined, ContentCopy, Done } from '@mui/icons-material';
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, Typography } from '@mui/material';
 import { AxiosError } from 'axios';

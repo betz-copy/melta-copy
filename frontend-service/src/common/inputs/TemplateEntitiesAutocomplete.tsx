@@ -151,12 +151,10 @@ const TemplateEntitiesAutocomplete: React.FC<{
 
     useEffect(() => {
         if (data) {
-            // eslint-disable-next-line @typescript-eslint/no-shadow
             setAllEntities(data.pages.flatMap((page) => page.entities.map((entity) => entity.entity)));
         }
     }, [data]);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const debouncedSearch = useCallback(
         _debounce((debounedValue: string) => {
             setInputValue(debounedValue);

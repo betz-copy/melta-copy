@@ -285,7 +285,6 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
 
         const tempColors = Object.keys({ ...value.optionColors }).reduce((acc, key) => {
             if (newOptions.includes(key) && value.optionColors) {
-                // eslint-disable-next-line no-param-reassign
                 acc[key] = value.optionColors[key];
             }
             return acc;

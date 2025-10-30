@@ -129,7 +129,6 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
             }
             setFieldValue('steps', setInitialStepsObject(values.template.steps));
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [values.template?._id]);
 
     return (

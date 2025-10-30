@@ -150,7 +150,6 @@ export const dateFilterToFilterOfTemplate = (
         case 'greaterThanOrEqual':
             return { [field]: { $gte: dateFrom } };
         case 'inRange': {
-            // eslint-disable-next-line no-case-declarations
             const dateTo = new Date(new Date(dateToString!).getTime() - timezoneOffset).toISOString().split('T')[0];
             return { [field]: { $gte: dateFrom, $lte: dateTo } };
         }
@@ -192,7 +191,6 @@ export const dateTimeFilterToFilterOfTemplate = (
         case 'greaterThanOrEqual':
             return { [field]: { $gte: getDayStart(dateFrom).toISOString() } }; // include this day
         case 'inRange': {
-            // eslint-disable-next-line no-case-declarations
             const dateTo = new Date(dateToString!);
             return { [field]: { $gte: getDayStart(dateFrom).toISOString(), $lte: getDayEnd(dateTo).toISOString() } };
         }

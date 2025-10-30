@@ -27,7 +27,6 @@ export const BrokenRulesInfo: React.FC<{
                         {brokenRules.map((brokenRule, index) => {
                             const ruleTemplate = rules.get(brokenRule.ruleId)!;
                             return isCompact ? (
-                                // eslint-disable-next-line react/no-array-index-key
                                 <BrokenRuleCompact key={`${brokenRule.ruleId}/${index}`} brokenRule={brokenRule} ruleTemplate={ruleTemplate} />
                             ) : (
                                 <Grid
@@ -38,7 +37,6 @@ export const BrokenRulesInfo: React.FC<{
                                     }}
                                 >
                                     <BrokenRuleFull
-                                        // eslint-disable-next-line react/no-array-index-key
                                         key={`${brokenRule.ruleId}/${index}`}
                                         brokenRule={brokenRule}
                                         ruleTemplate={ruleTemplate}

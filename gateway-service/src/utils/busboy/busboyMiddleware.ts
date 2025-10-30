@@ -1,4 +1,3 @@
-/* eslint-disable consistent-return */
 import { UploadedFile } from '@microservices/shared';
 import Busboy from 'busboy';
 import { NextFunction, Request, Response } from 'express';

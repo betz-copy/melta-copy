@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { IEntity, IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@microservices/shared';
 import Excel from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
@@ -127,7 +126,6 @@ const createWorksheet = async (
     const { properties } = template.properties;
 
     const sheetColumns: Partial<Excel.Column>[] = [];
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let columnIndex = 0; // TODO: make data validation work in office excel
 
     Object.entries(properties).forEach(([propertyKey, propertyTemplate]) => {

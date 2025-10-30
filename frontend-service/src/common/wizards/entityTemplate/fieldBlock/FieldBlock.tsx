@@ -102,7 +102,6 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         orderedItemsRef.current = values[propertiesType];
     }, [values[propertiesType]]);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const updateFormikDebounced = useCallback(
         _debounce(() => {
             setFieldValue(propertiesType, [...orderedItemsRef.current], true);

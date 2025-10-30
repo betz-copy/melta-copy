@@ -19,7 +19,7 @@ interface IHeatmapProps {
 export const Heatmap: React.FC<IHeatmapProps> = ({ ganttEvents, groupByEntityResources, onInit }) => {
     useEffect(() => {
         if (onInit) onInit();
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    }, []);
 
     const heatmapData = useMemo(
         () => groupByEntityResources && getGanttHeatmapData(ganttEvents, groupByEntityResources),

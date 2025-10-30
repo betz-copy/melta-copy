@@ -1,4 +1,3 @@
-/* eslint-disable consistent-return */
 import i18next from 'i18next';
 import cloneDeep from 'lodash.clonedeep';
 import * as Yup from 'yup';
@@ -57,7 +56,6 @@ export const getEntitiesSearchBody = (
             disabled: { $eq: false },
         };
 
-        // eslint-disable-next-line no-param-reassign
         currTemplates[item.entityTemplate.id] = {
             filter: showEntitiesWithoutEndDate
                 ? {

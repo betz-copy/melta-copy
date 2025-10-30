@@ -118,7 +118,7 @@ const App: React.FC = () => {
         };
 
         initUser();
-    }, [setUser, navigate, workspaceStore]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [setUser, navigate, workspaceStore]);
 
     if (isClientSide) return <ClientSidePage />;
 

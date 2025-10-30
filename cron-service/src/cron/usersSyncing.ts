@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import { IEntity, IMongoEntityTemplatePopulated, logger, WorkspaceTypes } from '@microservices/shared';
 import { keyBy } from 'lodash';
 import schedule from 'node-schedule';
@@ -120,7 +118,6 @@ export const updateKartoffelFields = async () => {
 
                             const entityById = entitiesMapById[entity.properties._id];
 
-                            // eslint-disable-next-line consistent-return
                             return instanceService.updateEntityInstance(
                                 entity.properties._id,
                                 {

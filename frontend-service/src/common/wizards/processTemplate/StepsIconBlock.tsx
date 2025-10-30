@@ -1,5 +1,3 @@
-/* eslint-disable react/no-array-index-key */
-
 import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { AccordionDetails, AccordionSummary, Grid, Typography } from '@mui/material';
 import { FormikErrors } from 'formik';

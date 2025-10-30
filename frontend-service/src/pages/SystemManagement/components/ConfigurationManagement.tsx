@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-shadow */
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { useMemo, useState } from 'react';
@@ -56,7 +55,6 @@ const ConfigurationManagement: React.FC = () => {
 
     const filteredFields = useMemo(() => {
         return collectFilteredFields(configs);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [configs, updatedConfigs, searchText]);
 
     return (

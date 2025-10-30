@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-globals */
 import { Autocomplete, InputAdornment, TextField } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';

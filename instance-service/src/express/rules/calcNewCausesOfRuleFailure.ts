@@ -91,7 +91,6 @@ const getCausesOfRegularFunction = (
     }
 
     const argumentsNewCauses = regularFunctionCauses.arguments.map((argumentCauses, index) =>
-        // eslint-disable-next-line no-use-before-define
         getNewCausesOfArgument(argumentCauses, regularFunctionCausesBeforeAction?.arguments[index], regularFunction.arguments[index]),
     );
 
@@ -175,7 +174,6 @@ export const getCausesOfGroup = (groupCauses: IGroupCauses, groupCausesBeforeAct
     const relevantSubFormulasCauses = groupCauses.subFormulas.filter(({ resultValue }) => groupCauses.resultValue === resultValue);
 
     const subFormulasNewCauses = relevantSubFormulasCauses.map((subFormulaCauses, index) =>
-        // eslint-disable-next-line no-use-before-define
         getCausesOfFormula(subFormulaCauses, groupCausesBeforeAction?.subFormulas[index], group.subFormulas[index]),
     );
 

@@ -46,7 +46,6 @@ const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>
 
     useEffect(() => {
         setFieldValue('categoryIds', selectedCategories);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedCategories]);
 
     return (

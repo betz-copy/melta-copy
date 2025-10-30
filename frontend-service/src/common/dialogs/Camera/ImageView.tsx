@@ -1,5 +1,3 @@
-/* eslint-disable new-cap */
-/* eslint-disable import/no-extraneous-dependencies */
 import { Check as CheckIcon, Close as CloseIcon, FilterBAndW, PictureAsPdf } from '@mui/icons-material';
 import { Box, Dialog, DialogContent, Grid, IconButton, TextField } from '@mui/material';
 import 'cropperjs/dist/cropper.css';

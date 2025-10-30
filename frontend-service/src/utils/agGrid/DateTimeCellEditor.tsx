@@ -28,7 +28,6 @@ const DateTimeCellEditor: React.FC<DateTimeCellEditorProps> = ({ value, onValueC
 
     const handleDateChange = (newValue: Date | null) => {
         setSelectedValue(newValue);
-        // eslint-disable-next-line no-nested-ternary
         onValueChange(newValue === null ? null : dateOrDateTime === 'date' ? format(newValue, 'yyyy-MM-dd') : newValue);
     };
 

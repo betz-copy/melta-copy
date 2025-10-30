@@ -129,7 +129,6 @@ const PrintOptionsDialog: React.FC<{
                 return { ...acc, [file.id]: true };
             }, {}),
         );
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedFiles]);
 
     useEffect(() => {

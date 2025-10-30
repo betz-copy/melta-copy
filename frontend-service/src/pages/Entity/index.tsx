@@ -394,7 +394,7 @@ const Entity: React.FC = () => {
 
         setCurrentStep((currStep) => currStep + 1);
         setDisabledActions(false);
-    }, [expandedEntity]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [expandedEntity]);
 
     const isEntityDisabled = !!expandedEntity?.entity.properties.disabled;
     const currentEntityTemplate = childTemplateId
@@ -578,7 +578,6 @@ const Entity: React.FC = () => {
 
                                                     return (
                                                         <ConnectionsTable
-                                                            // eslint-disable-next-line react/no-array-index-key
                                                             key={connectedRelationshipTemplateIndex}
                                                             expandedEntity={expandedEntity}
                                                             templateIds={templateIds}

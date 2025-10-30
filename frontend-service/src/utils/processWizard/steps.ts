@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { IMongoProcessInstancePopulated, StepsObjectPopulated } from '../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 import { IMongoStepInstancePopulated } from '../../interfaces/processes/stepInstance';

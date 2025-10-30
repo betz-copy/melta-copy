@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { Grid } from '@mui/material';
 import React from 'react';
 import { IEntity } from '../../../interfaces/entities';

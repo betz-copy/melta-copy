@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { CoordinateSystem, EntityTemplateType, IEntity, IEntitySingleProperty, locationConverterToString, TemplateItem } from '@microservices/shared';
 import Excel, { Cell } from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
@@ -125,7 +124,6 @@ const createWorksheet = async (workbook: Excel.Workbook, templateItem: TemplateI
     const worksheet = workbook.addWorksheet(template.displayName);
 
     const sheetColumns: Partial<Excel.Column>[] = [];
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let columnIndex = 0; // TODO: make data validation work in office excel
 
     Object.entries(template.properties.properties).forEach(([propertyKey, propertyTemplate]) => {

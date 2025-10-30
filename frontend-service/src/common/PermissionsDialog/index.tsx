@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 import { Close as CloseIcon } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Button, Dialog, Grid, IconButton, Tab } from '@mui/material';

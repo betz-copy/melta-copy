@@ -30,7 +30,6 @@ export const DraftCard: React.FC<{ draft: Draft; openEditDialog: () => void }> =
                 .map((displayProperty) => displayProperty.toString().replace(replaceHtmlTagsRegex, '').substring(0, 50))
                 .join(' / ')
                 .substring(0, 750) || i18next.t('draftSaveDialog.emptyDraft'),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
         [displayProperties],
     );
 

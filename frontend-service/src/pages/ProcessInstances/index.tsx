@@ -28,7 +28,6 @@ const ProcessInstancesPage: React.FC = () => {
     const [statusFilter, setStatusFilter] = useState<'all' | Status | 'archived'>('all');
     const [isWaitingForMeFilterOn, setIsWaitingForMeFilterOn] = useState<boolean>(true);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const onSearch = useCallback(
         debounce((newSearchInput: string) => {
             setSearchInput(newSearchInput);

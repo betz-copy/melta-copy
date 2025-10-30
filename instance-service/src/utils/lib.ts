@@ -6,7 +6,6 @@ import pickBy from 'lodash.pickby';
 import { pipeline } from 'stream';
 import { promisify } from 'util';
 
-// eslint-disable-next-line import/prefer-default-export
 export const promisePipe = promisify(pipeline);
 
 export const isBoolean = (value: string) => value === 'true' || value === 'false';

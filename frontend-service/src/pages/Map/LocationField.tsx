@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { Close, Delete, PentagonTwoTone, PlaceTwoTone } from '@mui/icons-material';
 import { ToggleButton, ToggleButtonGroup, useTheme } from '@mui/material';
 import * as Cesium from 'cesium';

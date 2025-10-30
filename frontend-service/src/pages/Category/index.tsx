@@ -112,7 +112,6 @@ const Category: React.FC = () => {
             ]);
             return [...existingTemplateIds, ...templatesToAddIds];
         });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [allAuthorizedTemplatesMap.size, category._id]);
 
     return (

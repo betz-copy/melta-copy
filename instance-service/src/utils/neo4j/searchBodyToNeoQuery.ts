@@ -192,7 +192,6 @@ const notFilterOfField = (
     parametersParentVariableName: string,
     fieldTemplate: IEntitySingleProperty,
 ): CypherQueryWithParameters => {
-    // eslint-disable-next-line no-use-before-define -- recursive use
     const filterOfFieldQuery = filterOfFieldToNeoQuery(field, innerFilterOfField, parametersParentVariableName, fieldTemplate);
 
     return { cypherQuery: `NOT (${filterOfFieldQuery.cypherQuery})`, parameters: filterOfFieldQuery.parameters };
@@ -345,7 +344,6 @@ const filterOfTemplateToNeoQuery = (
         .filter(([_field, filterOfField]) => Boolean(filterOfField))
         .map(([filterKey, filterOfField]) => {
             if (filterKey === FilterLogicalOperator.AND || filterKey === FilterLogicalOperator.OR) {
-                // eslint-disable-next-line no-use-before-define
                 return filterLogicalOperatorsToNeoQuery(filterKey, filterOfField, parametersParentVariableName, entityTemplate);
             }
 

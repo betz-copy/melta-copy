@@ -337,7 +337,6 @@ const ProcessCard: React.FC<{
                                                         currProcessInstance.archived ? i18next.t('actions.unArchived') : i18next.t('actions.archived')
                                                     }
                                                     icon={
-                                                        // eslint-disable-next-line no-nested-ternary
                                                         isLodingArchiveProcess ? (
                                                             <CircularProgress size={20} />
                                                         ) : currProcessInstance.archived ? (

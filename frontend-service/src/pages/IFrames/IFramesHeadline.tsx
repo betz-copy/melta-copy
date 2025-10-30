@@ -36,7 +36,6 @@ const IFramesPageHeadline: React.FC<{
 
     useEffect(() => {
         setAllIFramesAllowed(queryClient.getQueryData('allIFrames')!);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [iFramesOrder]);
 
     const resetIFramesDimensions = () => {

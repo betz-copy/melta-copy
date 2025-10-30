@@ -23,7 +23,6 @@ export default ({ valueSources, valueSrc, title, setValueSrc }: ValueSourcesProp
     };
 
     const toggleOpenClose = (event) => {
-        // eslint-disable-next-line no-unused-expressions
         anchorEl ? handleClose() : handleOpen(event);
     };
 
@@ -32,7 +31,6 @@ export default ({ valueSources, valueSrc, title, setValueSrc }: ValueSourcesProp
         handleClose();
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-shadow
     const renderOptions = (valueSources) =>
         valueSources.map(([srcKey, info]) => {
             const isSelected = valueSrc === srcKey || (!valueSrc && srcKey === 'value');

@@ -37,7 +37,6 @@ export default ({
     const renderOptions = (fields, level = 0) =>
         Object.keys(fields).map((fieldKey) => {
             const field = fields[fieldKey];
-            // eslint-disable-next-line @typescript-eslint/no-shadow
             const { items, path, label, disabled, matchesType, tooltip } = field;
             const prefix = '\u00A0\u00A0'.repeat(level);
             let finalLabel = (
@@ -109,7 +108,6 @@ export default ({
 
     const hasValue = selectedKey != null;
     let tooltipText = selectedAltLabel || selectedFullLabel;
-    // eslint-disable-next-line eqeqeq
     if (tooltipText == selectedLabel) tooltipText = null;
     let res = (
         <Select

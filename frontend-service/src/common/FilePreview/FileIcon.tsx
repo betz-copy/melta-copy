@@ -17,7 +17,6 @@ const FileIcon: React.FC<FileIconProps> = ({ extension, style }) => {
         case 'jpeg':
         case 'png':
         case 'gif':
-            // eslint-disable-next-line jsx-a11y/img-redundant-alt
             return <img src="/icons/files/image.svg" style={style} alt="Image Icon" />;
         case 'mp4':
         case 'avi':

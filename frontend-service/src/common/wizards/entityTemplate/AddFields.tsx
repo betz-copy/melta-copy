@@ -624,7 +624,6 @@ export const FieldBlockWrapper = ({
             if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
 
             moveItem(dragIndex, hoverIndex);
-            // eslint-disable-next-line no-param-reassign
             item.index = hoverIndex;
         },
     });

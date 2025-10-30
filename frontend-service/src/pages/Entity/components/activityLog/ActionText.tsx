@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 import { Grid, styled, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';

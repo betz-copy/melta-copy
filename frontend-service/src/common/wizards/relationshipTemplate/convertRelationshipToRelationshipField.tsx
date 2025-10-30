@@ -75,13 +75,11 @@ const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleC
                 }}
             >
                 {(formik) => {
-                    // eslint-disable-next-line react-hooks/rules-of-hooks
                     useEffect(() => {
                         if (relationshipTemplate) {
                             formik.setFieldValue('fieldName', relationshipTemplate.name);
                             formik.setFieldValue('displayFieldName', relationshipTemplate.displayName);
                         }
-                        // eslint-disable-next-line react-hooks/exhaustive-deps
                     }, [relationshipTemplate]);
 
                     return (

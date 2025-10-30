@@ -199,7 +199,6 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
                             }}
                         />
                     </Grid>
-                    {/* eslint-disable-next-line no-nested-ternary */}
                     {isLoading ? (
                         <CircularProgress size={50} />
                     ) : users.length ? (

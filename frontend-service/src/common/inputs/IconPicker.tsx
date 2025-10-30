@@ -33,7 +33,6 @@ const IconPicker: React.FC<IconPickerProps> = ({ width, height, iconsPerPage, se
 
     const borderColor = `rgb(211, 211, 211, ${darkMode ? 0.4 : 1})`;
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const searchDebounced = useCallback(
         _debounce((str: string) => {
             setPage(1);

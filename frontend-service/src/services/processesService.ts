@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import mapValues from 'lodash.mapvalues';
 import axios from '../axios';
 import urlToFile from '../common/fileConversions';

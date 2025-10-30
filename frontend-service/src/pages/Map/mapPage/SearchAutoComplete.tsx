@@ -1,6 +1,3 @@
-/* eslint-disable react/no-array-index-key */
-/* eslint-disable no-param-reassign */
-/* eslint-disable react-hooks/exhaustive-deps */
 import { _debounce } from '@ag-grid-community/core';
 import { InfoOutlined } from '@mui/icons-material';
 import { Autocomplete, Grid, TextField, Typography, useTheme } from '@mui/material';

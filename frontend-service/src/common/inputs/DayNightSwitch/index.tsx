@@ -63,7 +63,7 @@ export const DayNightSwitch: React.FC<DayNightSwitchProps> = ({ checked, onClick
             .to('#day-content', { duration: animationDuration * 0.5, opacity: 0.5 }, animationDuration * 1.5);
 
         toNightAnimation.reverse();
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
         if (checked) {
@@ -71,11 +71,10 @@ export const DayNightSwitch: React.FC<DayNightSwitchProps> = ({ checked, onClick
         } else {
             toNightAnimation.reverse();
         }
-    }, [checked]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [checked]);
 
     return (
         <div className="layout">
-            {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
             <label className="container">
                 <input id="input" type="checkbox" onClick={onClick} />
                 <span className="checkmark">

@@ -1,4 +1,3 @@
-/* eslint-disable no-plusplus */
 import {
     ActionTypes,
     BadRequestError,
@@ -657,7 +656,6 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                 files,
                 (action.actionMetadata as ICreateEntityMetadata).properties,
             );
-            // eslint-disable-next-line no-param-reassign
             (action.actionMetadata as ICreateEntityMetadata).properties = propertiesWithFiles;
             return;
         }
@@ -667,7 +665,6 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                 files,
                 (action.actionMetadata as IUpdateEntityMetadata).updatedFields,
             );
-            // eslint-disable-next-line no-param-reassign
             (action.actionMetadata as IUpdateEntityMetadata).updatedFields = updatedFieldsWithFiles;
             return;
         }
@@ -687,7 +684,6 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                 ...duplicatedFilesProperties,
             });
 
-            // eslint-disable-next-line no-param-reassign
             (action.actionMetadata as IDuplicateEntityMetadata).properties = propertiesWithFiles;
             return;
         }

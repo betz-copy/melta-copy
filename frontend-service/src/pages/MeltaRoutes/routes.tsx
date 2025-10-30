@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { Box, Button, debounce, useScrollTrigger } from '@mui/material';
 import { useTour } from '@reactour/tour';

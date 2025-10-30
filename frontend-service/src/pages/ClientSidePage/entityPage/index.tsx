@@ -38,7 +38,7 @@ const ClientSideEntityPage: React.FC = () => {
 
     useEffect(() => {
         if (!expandedEntity) return;
-    }, [expandedEntity]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [expandedEntity]);
 
     if (!expandedEntity) return <CircularProgress />;
 

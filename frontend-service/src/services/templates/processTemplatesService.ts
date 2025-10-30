@@ -159,7 +159,6 @@ const addAttachmentProperties = (
     attachmentProperties.forEach(({ name, title, type, required, deleted }) => {
         if (!deleted) {
             const { required: requiredFile, ...attachmentProperty } = createFileAttachmentProperty(type, required);
-            // eslint-disable-next-line no-param-reassign
             properties[name] = {
                 title,
                 ...attachmentProperty,

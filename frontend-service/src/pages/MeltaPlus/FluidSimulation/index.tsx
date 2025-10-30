@@ -27,7 +27,6 @@ const FluidSimulation: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<
 
         setEventListeners(eventListeners, true);
 
-        // eslint-disable-next-line consistent-return
         return () => setEventListeners(eventListeners, false);
     }, [canvasRef]);
 

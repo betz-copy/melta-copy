@@ -1,5 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
-/* eslint-disable no-param-reassign */
 import {
     BadRequestError,
     ConfigTypes,
@@ -1362,7 +1360,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const { createdAt: _createdAt, updatedAt: _updatedAt, _id, disabled: _disabled, ...rest } = template;
         Object.entries(template.properties.properties).forEach(([_name, value]) => {
             if (value.relationshipReference?.filters && typeof value.relationshipReference.filters === 'string') {
-                // eslint-disable-next-line no-param-reassign
                 value.relationshipReference.filters = JSON.parse(value.relationshipReference.filters);
             }
         });
@@ -1388,7 +1385,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const curentTemplateEnum = template.properties.properties[values.name].enum || values.options;
         let templateEnumFieldValues = [...curentTemplateEnum];
         if (update) templateEnumFieldValues[valueIndex] = field;
-        // eslint-disable-next-line @typescript-eslint/no-shadow
         else templateEnumFieldValues = templateEnumFieldValues.filter((_value, index) => valueIndex !== index);
         const templateWithoutProperties: Omit<IEntityTemplatePopulated, 'disabled' | '_id'> = this.removeBasicFields(template);
         if (template.enumPropertiesColors?.[values.name]?.[fieldValue] !== undefined) {
@@ -1437,7 +1433,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const templateEnumFieldValuesRB = [...values.options];
         templateEnumFieldValuesRB[index] = fieldValue;
         if (!templateWithoutProperties.properties.properties[values.name].items)
-            // eslint-disable-next-line no-param-reassign
             template.properties.properties[values.name].enum = templateEnumFieldValuesRB;
         const rollBackTemplateWithoutProperties: Omit<IEntityTemplatePopulated, 'disabled' | '_id'> = this.removeBasicFields(template);
         try {

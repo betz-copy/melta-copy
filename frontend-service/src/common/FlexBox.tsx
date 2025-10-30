@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 import { Stack, StackProps, useTheme } from '@mui/material';
 import React, { forwardRef } from 'react';
 

@@ -13,9 +13,7 @@ export const createWorkspace = async (workspace: Omit<IWorkspace, '_id'>) => {
 export const createWorkspaces = async (workspaces: Omit<IWorkspace, '_id'>[]) => {
     const mainWorkspaces: IWorkspace[] = [];
 
-    // eslint-disable-next-line no-restricted-syntax
     for (const workspace of workspaces) {
-        // eslint-disable-next-line no-await-in-loop
         const mainWorkspace = await createWorkspace(workspace);
         mainWorkspaces.push(mainWorkspace);
     }

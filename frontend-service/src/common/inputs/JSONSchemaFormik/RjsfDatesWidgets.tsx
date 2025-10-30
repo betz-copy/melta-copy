@@ -1,5 +1,3 @@
-/* eslint-disable consistent-return */
-/* eslint-disable no-underscore-dangle */
 import { styled, TextField, TextFieldProps } from '@mui/material';
 import { DateTimePickerToolbar, dateTimePickerToolbarClasses, LocalizationProvider, PickersLocaleText } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';

@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import { useTheme } from '@mui/material';
 import { Form as JSONSchemaForm } from '@rjsf/mui';
 import { ErrorSchema, RegistryWidgetsType, RJSFSchema, WidgetProps } from '@rjsf/utils';

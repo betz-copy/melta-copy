@@ -1,6 +1,3 @@
-/* eslint-disable jsx-a11y/no-static-element-interactions */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
-/* eslint-disable jsx-a11y/anchor-is-valid */
 import { ArrowBackIos, ArrowForwardIos, History, Toc } from '@mui/icons-material';
 import { Box, Button, Divider, Grid, Step, StepConnector, Stepper, stepConnectorClasses, styled, Typography } from '@mui/material';
 import i18next from 'i18next';
@@ -123,7 +120,6 @@ const Steps: React.FC<IStepsProp> = ({
 
     useEffect(() => {
         setScrollByStepIndex(currStepInstanceIndex);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currStepInstanceIndex]);
 
     return (
@@ -221,7 +217,6 @@ const Steps: React.FC<IStepsProp> = ({
 
                                                         <Typography
                                                             color={
-                                                                // eslint-disable-next-line no-nested-ternary
                                                                 currStepInstance?._id === stepInstance._id
                                                                     ? darkMode
                                                                         ? '#b7bef7'

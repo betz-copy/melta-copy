@@ -1,6 +1,3 @@
-/* eslint-disable class-methods-use-this */
-/* eslint-disable no-continue */
-/* eslint-disable no-await-in-loop */
 import {
     ActionOnFail,
     ActionsLog,
@@ -1073,7 +1070,6 @@ class EntityManager extends DefaultManagerNeo4j {
             acc[key.replace(config.neo4j.relationshipReferencePropertySuffix, '')] = value;
         });
 
-        // eslint-disable-next-line no-param-reassign
         acc = unflatten(acc);
 
         Object.entries(acc).forEach(([key, value]) => {

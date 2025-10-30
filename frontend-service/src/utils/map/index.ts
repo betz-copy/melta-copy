@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { Cartesian3 } from 'cesium';
 import { environment } from '../../globals';
 import { IEntity, SplitBy } from '../../interfaces/entities';

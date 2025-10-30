@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { CircleTwoTone as CircleIcon, Close, StraightenTwoTone as DistanceIcon, PentagonTwoTone as PolygonIcon } from '@mui/icons-material';
 import { Grid, ToggleButton, ToggleButtonGroup, useTheme } from '@mui/material';
 import * as Cesium from 'cesium';

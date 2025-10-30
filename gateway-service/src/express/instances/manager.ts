@@ -1,7 +1,3 @@
-/* eslint-disable no-param-reassign */
-/* eslint-disable no-continue */
-/* eslint-disable no-plusplus */
-/* eslint-disable no-await-in-loop */
 import {
     ActionTypes,
     BadRequestError,
@@ -294,7 +290,6 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 acc[key] = { ...value, serialCurrent: serialStarters[key] + succeededIndex };
                 return acc;
             }, {});
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { category, _id, createdAt, updatedAt, disabled, ...restOfEntityTemplate } = template;
         await this.entityTemplateService.updateEntityTemplate(template._id, {
             ...restOfEntityTemplate,
@@ -602,7 +597,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         if (emails) this.sendIndicatorRuleEmailForCreation(createdEntity, userId, emails);
 
-        return {...createdEntity, childTemplateId};
+        return { ...createdEntity, childTemplateId };
     }
 
     private async deleteUnusedFiles(currentEntity: IEntity, instanceData: IEntity, files: UploadedFile[]) {

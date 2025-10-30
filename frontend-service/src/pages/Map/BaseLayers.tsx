@@ -68,7 +68,6 @@ export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any>; conf
                 }),
             );
         });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeMapLayer, activeTextLayers, providers]);
 
     return (

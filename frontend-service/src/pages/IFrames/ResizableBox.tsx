@@ -42,7 +42,6 @@ const Resizable: React.FC<ResizeBoxProps> = ({ children, id, isSideBarOpen = fal
             setDimensions(getDimensions());
             setIsDimensionsChange(false);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isDimensionsChange]);
 
     const onResizeStart = () => {
