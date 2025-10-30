@@ -1,19 +1,20 @@
-import { Express } from 'express';
-import { StatusCodes } from 'http-status-codes';
-import mongoose from 'mongoose';
-import * as request from 'supertest';
-import { ServiceError } from '../src/express/error';
 import {
     CreateProcessReqBody,
     IMongoProcessInstancePopulated,
+    IMongoProcessTemplatePopulated,
+    IMongoStepInstance,
     IProcessInstance,
+    ServiceError,
     Status,
     UpdateProcessReqBody,
-} from '../src/express/instances/processes/interface';
-import { IMongoStepInstance, UpdateStepReqBody } from '../src/express/instances/steps/interface';
+    UpdateStepReqBody,
+} from '@microservices/shared';
+import { Express } from 'express';
+import { StatusCodes } from 'http-status-codes';
+import mongoose from 'mongoose';
+import request from 'supertest';
 import StepInstanceManager from '../src/express/instances/steps/manager';
 import Server from '../src/express/server';
-import { IMongoProcessTemplatePopulated } from '../src/express/templates/processes/interface';
 import processInstanceExample1, { errStepsPropertiesExample1, stepsPropertiesExample1 } from './mock/instances';
 import processTemplateExample1 from './mock/templates';
 
@@ -26,18 +27,16 @@ const randomMongoId = () => {
 const removeAllCollections = async () => {
     const collections = Object.keys(mongoose.connection.collections);
 
-    // eslint-disable-next-line no-restricted-syntax
     for (const collectionName of collections) {
         const collection = mongoose.connection.collections[collectionName];
-        // eslint-disable-next-line no-await-in-loop
         await collection.deleteMany({});
     }
 };
 
 const prepareProcessTemplateToUpdate = (processTemplate: IMongoProcessTemplatePopulated) => {
-    const { _id, createdAt: processCreatedAt, updatedAt: processUpdatedAt, ...cleanTemplateProcess } = JSON.parse(JSON.stringify(processTemplate));
+    const { _id, ...cleanTemplateProcess } = JSON.parse(JSON.stringify(processTemplate));
     const cleanSteps = cleanTemplateProcess.steps.map((step) => {
-        const { createdAt, updatedAt, ...cleanStep } = step;
+        const { ...cleanStep } = step;
         return cleanStep;
     });
     return { ...cleanTemplateProcess, steps: cleanSteps };
@@ -76,7 +75,7 @@ const prepareDataForUpdateProcessInstance = (
 };
 const errPropertiesType = (instanceProperties: Record<string, any>): Record<string, any> => {
     return Object.entries(instanceProperties).reduce((acc, [key, value]) => {
-        let newValue;
+        let newValue: any;
 
         if (typeof value === 'number') {
             newValue = String(value);
@@ -396,13 +395,13 @@ describe('Test Process Service', () => {
                 const response = await request(app).put(`/api/processes/instances/${processInstance._id}`).send(updatedData);
 
                 expect(response.status).toBe(okStatus);
-                const { updatedAt, steps, reviewedAt, ...updatedProcessInstance } = response.body as IMongoProcessInstancePopulated;
+                const { updatedAt, steps, ...updatedProcessInstance } = response.body as IMongoProcessInstancePopulated;
                 const { updatedAt: originalUpdatedAt, steps: originalSteps, ...originalProcessWithoutUpdatedAt } = processInstance;
                 expect(updatedProcessInstance).toStrictEqual(originalProcessWithoutUpdatedAt);
                 expect(new Date(updatedAt).getTime()).toBeGreaterThan(new Date(originalUpdatedAt).getTime());
                 steps.forEach((step, index) => {
-                    const { updatedAt: stepUpdatedAt, reviewers: updatedReviewers, ...stepWithoutUpdatedAt } = step;
-                    const { updatedAt: originalStepUpdatedAt, reviewers: originalReviewers, ...originalStepWithoutUpdatedAt } = originalSteps[index];
+                    const { updatedAt: stepUpdatedAt, ...stepWithoutUpdatedAt } = step;
+                    const { updatedAt: originalStepUpdatedAt, ...originalStepWithoutUpdatedAt } = originalSteps[index];
 
                     expect({ ...stepWithoutUpdatedAt }).toEqual(originalStepWithoutUpdatedAt);
 
@@ -514,9 +513,7 @@ describe('Test Process Service', () => {
                     );
                 });
                 it('should update step status and return step with status 200', async () => {
-                    // eslint-disable-next-line no-restricted-syntax
                     for (const { _id } of processInstance.steps) {
-                        // eslint-disable-next-line no-await-in-loop
                         const response = await request(app)
                             .patch(`/api/processes/instances/steps/${_id}`)
                             .send({
@@ -525,12 +522,11 @@ describe('Test Process Service', () => {
                                     reviewerId: randomMongoId(),
                                     processId: processInstance._id,
                                 },
-                            } as UpdateStepReqBody);
+                            } as unknown as UpdateStepReqBody);
 
                         expect(response.status).toBe(okStatus);
                         expect(response.body.status).toBe(Status.Rejected);
 
-                        // eslint-disable-next-line no-await-in-loop
                         const { status: processInstanceStatus } = (await request(app).get(`/api/processes/instances/${processInstance._id}`)).body;
                         expect(processInstanceStatus).toBe(Status.Rejected);
                         throw new ServiceError(undefined, 'test error', { error: response.error });
@@ -538,9 +534,7 @@ describe('Test Process Service', () => {
                 });
                 it('should update step status and return step with status 200', async () => {
                     const comments = 'test-test-test';
-                    // eslint-disable-next-line no-restricted-syntax
                     for (const { _id } of processInstance.steps) {
-                        // eslint-disable-next-line no-await-in-loop
                         const response = await request(app)
                             .patch(`/api/processes/instances/steps/${_id}`)
                             .send({
@@ -550,7 +544,7 @@ describe('Test Process Service', () => {
                                     processId: processInstance._id,
                                 },
                                 comments,
-                            } as UpdateStepReqBody);
+                            } as unknown as UpdateStepReqBody);
 
                         expect(response.status).toBe(okStatus);
                         expect(response.body.status).toBe(Status.Approved);
@@ -567,9 +561,7 @@ describe('Test Process Service', () => {
                     });
                     const { body: instanceBody } = await request(app).post('/api/processes/instances').send(instanceToCreate);
 
-                    // eslint-disable-next-line no-restricted-syntax
                     for (const { _id } of processInstance.steps) {
-                        // eslint-disable-next-line no-await-in-loop
                         const response = await request(app)
                             .patch(`/api/processes/instances/steps/${_id}`)
                             .send({

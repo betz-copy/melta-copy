@@ -7,7 +7,7 @@ export const withTransaction = async <Func extends (session: ClientSession) => P
     const session = await startSession();
 
     try {
-        let ret;
+        let ret: any;
         await session.withTransaction(async () => {
             ret = await func(session);
         });
@@ -23,7 +23,6 @@ export const withTransaction = async <Func extends (session: ClientSession) => P
 export const transformObjectIdKeysToString = (doc: any) => {
     _forEach(doc, (val, key) => {
         if (val instanceof Types.ObjectId) {
-            // eslint-disable-next-line no-param-reassign
             doc[key] = val.toString();
         }
     });

@@ -99,7 +99,6 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
 
         Object.entries(targetTemplate.properties.properties).forEach(([_name, value]) => {
             if (value.relationshipReference?.filters && typeof value.relationshipReference.filters === 'string') {
-                // eslint-disable-next-line no-param-reassign
                 value.relationshipReference.filters = JSON.parse(value.relationshipReference.filters);
             }
         });
@@ -143,7 +142,6 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
                             session,
                         );
 
-                        // eslint-disable-next-line no-param-reassign
                         fixedEntityTemplate.properties.properties[propertyName].relationshipReference!.relationshipTemplateId =
                             upsertedRelationshipTemplate._id.toString();
                     }
@@ -157,7 +155,6 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
     async createTemplate(templateData: Omit<IEntityTemplate, 'disabled'>) {
         Object.entries(templateData.properties.properties).forEach(([_name, value]) => {
             if (value.relationshipReference?.filters && typeof value.relationshipReference.filters === 'object') {
-                // eslint-disable-next-line no-param-reassign
                 value.relationshipReference.filters = JSON.stringify(value.relationshipReference.filters);
             }
         });
@@ -310,7 +307,6 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
     ) {
         Object.entries(updatedTemplateData.properties.properties).forEach(([_name, value]) => {
             if (value.relationshipReference?.filters && typeof value.relationshipReference.filters === 'object') {
-                // eslint-disable-next-line no-param-reassign
                 value.relationshipReference.filters = JSON.stringify(value.relationshipReference.filters);
             }
         });

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import { NextFunction, Request, Response } from 'express';
 import config from '../../config';
 import { FunctionKey } from '../../types';

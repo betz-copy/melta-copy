@@ -1,8 +1,7 @@
+import { pipeline } from 'node:stream';
+import { promisify } from 'node:util';
 import { Awaited } from '@microservices/shared';
-import { pipeline } from 'stream';
-import { promisify } from 'util';
 
-// eslint-disable-next-line import/prefer-default-export
 export const promisePipe = promisify(pipeline);
 
 export const trycatch = async <Func extends (...args: any[]) => any>(func: Func, ...args: Parameters<Func>) => {

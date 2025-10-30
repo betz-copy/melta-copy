@@ -1,5 +1,3 @@
-/* eslint-disable no-param-reassign */
-
 import { ServiceError } from '@microservices/shared';
 import _forEach from 'lodash.foreach';
 import { ClientSession, startSession, Types } from 'mongoose';
@@ -9,7 +7,7 @@ export const withTransaction = async <Func extends (session: ClientSession) => P
     const session = await startSession();
 
     try {
-        let ret;
+        let ret: any;
         await session.withTransaction(async () => {
             ret = await func(session);
         });
@@ -17,7 +15,6 @@ export const withTransaction = async <Func extends (session: ClientSession) => P
     } finally {
         const { err: endSessionErr } = await trycatch(() => session.endSession());
         if (endSessionErr) {
-            // eslint-disable-next-line no-unsafe-finally
             throw new ServiceError(undefined, 'failed to end session. possible resource leak', { error: endSessionErr });
         }
     }
@@ -26,7 +23,6 @@ export const withTransaction = async <Func extends (session: ClientSession) => P
 export const transformObjectIdKeysToString = (doc: any) => {
     _forEach(doc, (val, key) => {
         if (val instanceof Types.ObjectId) {
-            // eslint-disable-next-line no-param-reassign
             doc[key] = val.toString();
         }
     });

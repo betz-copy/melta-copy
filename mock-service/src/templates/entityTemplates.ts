@@ -17,7 +17,6 @@ export const createEntityTemplates = async (workspaceId: string, entityTemplates
 
     for (const entityTemplate of entityTemplatesToCreate) {
         const categoryId = categories.find((category) => category.name === entityTemplate.category.name)?._id;
-        // eslint-disable-next-line no-await-in-loop
         const response = await axiosInstance.post<IMongoEntityTemplateWithConstraintsPopulated>(url + createEntityTemplateRoute, {
             ...entityTemplate,
             category: categoryId,

@@ -1,13 +1,10 @@
-/* eslint-disable no-await-in-loop */
-/* eslint-disable no-restricted-syntax */
-
+import { IUser } from '@microservices/shared';
 import { Express } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import * as mongoose from 'mongoose';
-import * as request from 'supertest';
-import { config } from '../src/config';
+import request from 'supertest';
+import config from '../src/config';
 import Server from '../src/express/server';
-import { IUser } from '../src/express/users/interface';
 
 const { mongo } = config;
 
@@ -25,11 +22,10 @@ const userData1: Omit<IUser, '_id'> = {
     preferences: {
         darkMode: true,
     },
-    externalMetadata: {
-        kartoffelId: fakeObjectId,
-        digitalIdentitySource: '?',
-    },
+    kartoffelId: fakeObjectId,
+
     permissions: {},
+    displayName: 'aaa',
 };
 
 const userData2: Omit<IUser, '_id'> = {
@@ -40,11 +36,9 @@ const userData2: Omit<IUser, '_id'> = {
     preferences: {
         darkMode: false,
     },
-    externalMetadata: {
-        kartoffelId: fakeObjectId2,
-        digitalIdentitySource: '?',
-    },
+    kartoffelId: fakeObjectId2,
     permissions: {},
+    displayName: 'aaa',
 };
 
 const userData3: Omit<IUser, '_id'> = {
@@ -55,10 +49,8 @@ const userData3: Omit<IUser, '_id'> = {
     preferences: {
         darkMode: true,
     },
-    externalMetadata: {
-        kartoffelId: fakeObjectId3,
-        digitalIdentitySource: '?',
-    },
+    displayName: 'aaa',
+    kartoffelId: fakeObjectId3,
     permissions: {},
 };
 

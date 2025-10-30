@@ -15,7 +15,6 @@ export const initializeMongo = async () => {
 export const transformObjectIdKeysToString = (doc: any) => {
     _forEach(doc, (val, key) => {
         if (val instanceof Types.ObjectId) {
-            // eslint-disable-next-line no-param-reassign
             doc[key] = val.toString();
         }
     });

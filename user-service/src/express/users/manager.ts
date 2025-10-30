@@ -1,5 +1,3 @@
-/* eslint-disable no-param-reassign */
-
 import { IBaseUser, IRole, ISubCompactPermissions, IUser, IUserAgGridRequest, IUserPopulated, RelatedPermission } from '@microservices/shared';
 import { FilterQuery } from 'mongoose';
 import { typedObjectEntries } from '../../utils';
@@ -26,7 +24,6 @@ class UsersManager {
         workspaceIds: string[] | undefined,
         limit: number,
         step: number,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         { displayName, permissionsManagement, templatesManagement, rulesManagement, processesManagement, ...query }: FilterQuery<IBaseUser> = {},
         { displayName: displayNameSort }: Record<string, number> = {},
     ): Promise<{ users: IBaseUser[]; count: number }> {

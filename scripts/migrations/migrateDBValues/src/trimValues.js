@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import mongoose from 'mongoose';
 import neo4j from 'neo4j-driver';
 import { getTrimmedValueAggregation, trimValuesInMongoAggregation } from './aggregation.js';
@@ -76,7 +75,6 @@ const trimValuesInDB = async (dbName) => {
 };
 
 const trimValuesMongo = async (dbList) => {
-    // eslint-disable-next-line no-return-await
     await Promise.all(dbList.map(async (database) => await trimValuesInDB(database.name)));
 
     console.log('finish trim mongo');

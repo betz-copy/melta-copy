@@ -1,9 +1,8 @@
-/* eslint-disable no-new */
-import 'elastic-apm-node/start';
 import { logger } from '@microservices/shared';
-import * as http from 'http';
+import 'elastic-apm-node/start';
 import menash from 'menashmq';
 import { Client } from 'minio';
+import * as http from 'node:http';
 import config from './config';
 import Server from './express/server';
 import { declareTopology } from './utils/rabbit';
@@ -26,7 +25,6 @@ const initializeRabbit = async () => {
 };
 
 const main = async () => {
-    // eslint-disable-next-line no-new
     new Client({
         endPoint,
         port,

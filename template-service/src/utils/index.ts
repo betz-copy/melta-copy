@@ -1,7 +1,6 @@
-import { pipeline } from 'stream';
-import { promisify } from 'util';
+import { pipeline } from 'node:stream';
+import { promisify } from 'node:util';
 
-// eslint-disable-next-line import/prefer-default-export
 export const promisePipe = promisify(pipeline);
 
 export const trycatch = async <Func extends (...args: any[]) => any>(func: Func, ...args: Parameters<Func>) => {

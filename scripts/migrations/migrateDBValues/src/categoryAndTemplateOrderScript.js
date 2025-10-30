@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { ObjectId } from 'mongodb';
 import mongoose from 'mongoose';
 import config from './config/index.js';
@@ -112,7 +110,7 @@ const setCategoryAndTemplateOrder = async (dbList) => {
                         type: 'categoryOrder',
                         order: categoryIds,
                     });
-                } catch (error) {
+                } catch (_error) {
                     console.log(`Failed to create categoryOrder at workspace ${db.databaseName}`);
                 }
 
