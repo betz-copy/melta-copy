@@ -41,7 +41,12 @@ const { invalidDate, invalidTime } = config.loadExcel;
 
 export const locationFormatError = 'location format not valid';
 
-const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntitySingleProperty, isEditMode: boolean) => {
+const formatExcel = (
+    value: Excel.CellValue | string,
+    propertyTemplate: IEntitySingleProperty,
+    isEditMode: boolean,
+    relatedTemplatesMap: Record<string, IMongoEntityTemplatePopulated>,
+) => {
     const { type, format } = propertyTemplate;
     if (value === null) return undefined;
 
@@ -71,6 +76,16 @@ const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntityS
                 const location = { location: locationConverterToString(locationString), coordinateSystem };
                 return isEditMode ? location : JSON.stringify(location);
             }
+
+            if (format === 'relationshipReference') {
+                const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId;
+                if (!relatedTemplateId) return value;
+                const relatedTemplate = relatedTemplatesMap[relatedTemplateId];
+                const identifierField = Object.entries(relatedTemplate!.properties.properties).find(([_key, val]) => val.identifier)?.[0];
+
+                const formattedValue = formatExcel(value, relatedTemplate!.properties.properties[identifierField!], isEditMode, relatedTemplatesMap);
+                return formattedValue;
+            }
             return value?.toString();
         case 'array':
             if (propertyTemplate.items && propertyTemplate.items.type === 'string' && typeof value === 'object' && 'richText' in value)
@@ -86,20 +101,25 @@ const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntityS
 };
 
 export const isIncludedColumn = (propertyTemplate: IEntitySingleProperty | (IEntitySingleProperty & IChildTemplateProperty)) => {
-    const formats = ['relationshipReference', 'fileId', 'signature', 'user', 'comment', 'kartoffelUserField', 'unitField'];
+    const forbiddenFormats = ['fileId', 'signature', 'user', 'comment', 'kartoffelUserField', 'unitField'];
     const itemsFormats = ['fileId', 'user'];
 
-    const unValidFormats =
-        formats.includes(propertyTemplate.format ?? '') ||
+    const invalidFormats =
+        forbiddenFormats.includes(propertyTemplate.format ?? '') ||
         (propertyTemplate.type === 'array' && itemsFormats.includes(propertyTemplate.items?.format ?? ''));
     const isSerialNumber = propertyTemplate.type === 'number' && !!propertyTemplate.serialCurrent;
     const isDisplay = 'display' in propertyTemplate ? !!propertyTemplate.display : true;
 
-    return !unValidFormats && !isSerialNumber && isDisplay;
+    return !invalidFormats && !isSerialNumber && isDisplay;
 };
 
 export const isIncludedEditColumn = (propertyTemplate: IEntitySingleProperty, entityDisabled: boolean, templateDisabled: boolean) =>
-    !propertyTemplate.readOnly && !propertyTemplate.identifier && !entityDisabled && !templateDisabled && isIncludedColumn(propertyTemplate);
+    !propertyTemplate.readOnly &&
+    !propertyTemplate.identifier &&
+    !entityDisabled &&
+    !templateDisabled &&
+    isIncludedColumn(propertyTemplate) &&
+    propertyTemplate.format !== 'relationshipReference';
 
 type IFailedProperties = {
     key: string;
@@ -160,6 +180,7 @@ const readExcelFile = async (
     files: UploadedFile[],
     template: IMongoEntityTemplatePopulated | IChildTemplatePopulated,
     failedEntities: IFailedEntity[],
+    relatedTemplatesMap: Record<string, IMongoEntityTemplatePopulated>,
     entitiesFileLimit = config.loadExcel.entitiesFileLimit,
     oldEntities: IEntityWithDirectRelationships[] = [],
 ) => {
@@ -195,7 +216,7 @@ const readExcelFile = async (
                 Object.entries(columns).forEach(([key, value], columnIndex) => {
                     const cellValue = row.getCell(columnIndex + 1).value;
                     try {
-                        const formatCellValue = formatExcel(cellValue, value, isEditMode);
+                        const formatCellValue = formatExcel(cellValue, value, isEditMode, relatedTemplatesMap);
                         if (formatCellValue === invalidDate) {
                             failedProperties.push({ key, value, cellValue, format: 'date' });
                             isFailed = true;

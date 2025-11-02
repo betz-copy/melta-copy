@@ -861,6 +861,7 @@ export default {
                 filesWrongTemplate: 'חלק מקבצים אלו לא מתאימים לתבנית',
                 wrongFileType: 'חלק מקבצים אלו לא קבצי אקסל',
                 notValid: 'שדה חייב להיות מסוג',
+                relatedEntityNotFound: 'לא נמצאה ישות בתבנית "{{templateName}}" עם ערך זה בשדה "{{propertyName}}" - שדה מזהה ייחודי',
             },
             multipleUpdate: {
                 title: 'עריכת ישויות',

@@ -330,7 +330,7 @@ export class EntityValidator extends DefaultController {
     private validateSortOfSearchBatch(searchBody: ISearchBatchBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>) {
         const templateIds = Object.keys(searchBody.templates);
 
-        searchBody.sort.forEach(({ field }, sortIndex) => {
+        searchBody.sort?.forEach(({ field }, sortIndex) => {
             templateIds.forEach((templateId, templateIndex) => {
                 const fieldTemplate = entityTemplatesMap.get(templateId)!.properties.properties[field];
                 if (!fieldTemplate) {

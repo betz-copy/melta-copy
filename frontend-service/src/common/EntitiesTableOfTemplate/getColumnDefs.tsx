@@ -241,6 +241,7 @@ export const getColumnDefs = <Data = EntityData>({
                 isLastColumn,
                 entityTemplates,
                 hideColumn,
+                ignoreType,
                 searchValue,
                 editable,
                 propertyTemplate.relationshipReference!.filters,
