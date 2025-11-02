@@ -140,7 +140,7 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
     }, [editIndex]);
 
     const { mutate: updateEnumField, isLoading } = useMutation(
-        (mutationArgs: { id: string; tagIndex: number; option: string; fieldValue: any }) => {
+        (mutationArgs: { id: string; tagIndex: number; option: string; fieldValue: CommonFormInputProperties }) => {
             const { id, tagIndex, option, fieldValue } = mutationArgs;
             return updateEnumFieldRequest(id, fieldValue.options[tagIndex], fieldValue, option);
         },
@@ -253,7 +253,7 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
             const newOptions = value.options.map((option, valIndex) => (valIndex === tagIndex ? trimValue : option));
 
             if (oldColor) {
-                const newOptionColors = { ...value.optionColors! };
+                const newOptionColors = { ...value.optionColors };
                 delete newOptionColors[value.options[tagIndex]];
                 setValues?.((prev) => ({
                     ...prev,
@@ -297,12 +297,10 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
         }));
     };
 
-    const handleUpdateEnumField = (id: string, tagIndex: number, option: string, fieldValue: any) => {
-        updateEnumField({ id, tagIndex, option, fieldValue });
-    };
+    const handleUpdateEnumField = (id: string, tagIndex: number, option: string, fieldValue: CommonFormInputProperties) => updateEnumField({ id, tagIndex, option, fieldValue });
 
-    const handleDeleteEnumField = (id: string, tagIndex: number, fieldValue: any) => {
-        if (fieldValue.options.length <= 1 || initialOptionArray.length <= 1) {
+    const handleDeleteEnumField = (id: string, tagIndex: number, fieldValue: CommonFormInputProperties) => {
+        if (fieldValue.options.length || initialOptionArray.length) {
             setAtLeastOneItem(i18next.t('entityPage.atLeastOneItem'));
             setEditIndex(null);
             setTimeout(() => {
@@ -340,62 +338,62 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
                             const chipDisabled = isDisabled && initialOptionArray.length > tagIndex;
                             return (
                                 <Box position="relative" key={option}>
-                                    <>
-                                        <Chip
-                                            variant="outlined"
-                                            label={option}
-                                            {...getTagProps({ index: tagIndex })}
-                                            onDelete={chipDisabled ? undefined : getTagProps({ index: tagIndex }).onDelete}
-                                            icon={value.optionColors && <Box width="1.3rem" />}
-                                            sx={{
-                                                position: 'relative',
-                                                pr: supportEditEnum ? (chipDisabled ? '22px' : '32px') : '3px',
+
+                                    <Chip
+                                        variant="outlined"
+                                        label={option}
+                                        {...getTagProps({ index: tagIndex })}
+                                        onDelete={chipDisabled ? undefined : getTagProps({ index: tagIndex }).onDelete}
+                                        icon={value.optionColors && <Box width="1.3rem" />}
+                                        sx={{
+                                            position: 'relative',
+                                            pr: supportEditEnum ? (chipDisabled ? '22px' : '32px') : '3px',
+                                        }}
+                                        ref={(ref) => {
+                                            chipRefs.current[tagIndex] = ref;
+                                        }}
+                                    />
+                                    {value.optionColors && (
+                                        <MinimizedColorPicker
+                                            color={value.optionColors[option]}
+                                            onColorChange={(newColor) => {
+                                                setFieldValue('optionColors', {
+                                                    ...value.optionColors,
+                                                    [option]: newColor,
+                                                });
                                             }}
-                                            ref={(ref) => {
-                                                chipRefs.current[tagIndex] = ref;
+                                            circleSize="1.6rem"
+                                            style={{
+                                                position: 'absolute',
+                                                top: 4.5,
+                                                left: 4.2,
+                                                zIndex: 10000,
                                             }}
                                         />
-                                        {value.optionColors && (
-                                            <MinimizedColorPicker
-                                                color={value.optionColors[option]}
-                                                onColorChange={(newColor) => {
-                                                    setFieldValue('optionColors', {
-                                                        ...value.optionColors,
-                                                        [option]: newColor,
-                                                    });
-                                                }}
-                                                circleSize="1.6rem"
-                                                style={{
-                                                    position: 'absolute',
-                                                    top: 4.5,
-                                                    left: 4.2,
-                                                    zIndex: 10000,
-                                                }}
-                                            />
-                                        )}
-                                        {supportEditEnum && (
-                                            <MemoizedIconButton
-                                                onClick={() => {
-                                                    setEditError('');
-                                                    setEditIndex(tagIndex);
-                                                    setLocalOption(value.options[tagIndex]);
-                                                }}
-                                                sx={{
-                                                    position: 'absolute',
-                                                    top: '50%',
-                                                    right: '8px',
-                                                    transform: 'translateY(-50%)',
-                                                    zIndex: 2000,
-                                                    backgroundColor: 'transparent',
-                                                    width: '1.6rem',
-                                                    height: '1.6rem',
-                                                    padding: 0,
-                                                }}
-                                            >
-                                                <EditIcon />
-                                            </MemoizedIconButton>
-                                        )}
-                                    </>
+                                    )}
+                                    {supportEditEnum && (
+                                        <MemoizedIconButton
+                                            onClick={() => {
+                                                setEditError('');
+                                                setEditIndex(tagIndex);
+                                                setLocalOption(value.options[tagIndex]);
+                                            }}
+                                            sx={{
+                                                position: 'absolute',
+                                                top: '50%',
+                                                right: '8px',
+                                                transform: 'translateY(-50%)',
+                                                zIndex: 2000,
+                                                backgroundColor: 'transparent',
+                                                width: '1.6rem',
+                                                height: '1.6rem',
+                                                padding: 0,
+                                            }}
+                                        >
+                                            <EditIcon />
+                                        </MemoizedIconButton>
+                                    )}
+
                                     <Popover
                                         open={editIndex === tagIndex}
                                         anchorEl={chipRefs.current[tagIndex]}
@@ -472,7 +470,7 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
                                             )}
                                         </Box>
                                     </Popover>
-                                </Box>
+                                </Box >
                             );
                         })
                     }
@@ -490,93 +488,104 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
                     disabled={value.deleted}
                 />
             )}
-            {value.type === 'pattern' && (
-                <Grid container justifyContent="space-between" flexWrap="nowrap">
+            {
+                value.type === 'pattern' && (
+                    <Grid container justifyContent="space-between" flexWrap="nowrap">
+                        <TextField
+                            label={i18next.t('propertyTypes.pattern')}
+                            id={pattern}
+                            name={pattern}
+                            value={value.pattern}
+                            onChange={onChange}
+                            error={touchedPattern && Boolean(errorPattern)}
+                            helperText={touchedPattern && errorPattern}
+                            disabled={isDisabled || value.deleted}
+                            dir="ltr"
+                            sx={{ marginRight: '5px' }}
+                            fullWidth
+                        />
+                        <TextField
+                            label={i18next.t('wizard.entityTemplate.customErrorMessage')}
+                            id={patternCustomErrorMessage}
+                            name={patternCustomErrorMessage}
+                            value={value.patternCustomErrorMessage}
+                            onChange={onChange}
+                            error={touchedPatternCustomErrorMessage && Boolean(errorPatternCustomErrorMessage)}
+                            helperText={
+                                touchedPatternCustomErrorMessage && errorPatternCustomErrorMessage
+                                    ? errorPatternCustomErrorMessage
+                                    : i18next.t('wizard.entityTemplate.customErrorMessageHelperText')
+                            }
+                            sx={{ marginRight: '5px' }}
+                            fullWidth
+                            disabled={value.deleted}
+                        />
+                    </Grid>
+                )
+            }
+            {
+                value.type === 'serialNumber' && (
                     <TextField
-                        label={i18next.t('propertyTypes.pattern')}
-                        id={pattern}
-                        name={pattern}
-                        value={value.pattern}
-                        onChange={onChange}
-                        error={touchedPattern && Boolean(errorPattern)}
-                        helperText={touchedPattern && errorPattern}
+                        label={i18next.t('wizard.entityTemplate.serialStarter')}
+                        id={serialStarter}
+                        name={serialStarter}
+                        value={value.serialStarter}
+                        onChange={(e) => {
+                            setFieldValue('serialStarter', Number(e.target.value));
+                        }}
+                        type="number"
+                        error={touchedSerialStarter && Boolean(errorSerialStarter)}
+                        helperText={touchedSerialStarter && errorSerialStarter}
                         disabled={isDisabled || value.deleted}
                         dir="ltr"
                         sx={{ marginRight: '5px' }}
                         fullWidth
                     />
-                    <TextField
-                        label={i18next.t('wizard.entityTemplate.customErrorMessage')}
-                        id={patternCustomErrorMessage}
-                        name={patternCustomErrorMessage}
-                        value={value.patternCustomErrorMessage}
-                        onChange={onChange}
-                        error={touchedPatternCustomErrorMessage && Boolean(errorPatternCustomErrorMessage)}
-                        helperText={
-                            touchedPatternCustomErrorMessage && errorPatternCustomErrorMessage
-                                ? errorPatternCustomErrorMessage
-                                : i18next.t('wizard.entityTemplate.customErrorMessageHelperText')
-                        }
-                        sx={{ marginRight: '5px' }}
-                        fullWidth
-                        disabled={value.deleted}
+                )
+            }
+            {
+                isComment && (
+                    <Grid position="relative" width="99.5%">
+                        <TextArea
+                            id={value.id}
+                            value={value.comment}
+                            label={i18next.t('propertyTypes.comment')}
+                            onChange={(editorContentAsHtml: string) =>
+                                setFieldValue('comment', editorContentAsHtml === '<p><br></p>' ? '' : editorContentAsHtml)
+                            }
+                            placeholder={i18next.t('propertyTypes.comment')}
+                        />
+                        {errorComment && <FormHelperText error>{i18next.t('validation.required')}</FormHelperText>}
+                    </Grid>
+                )
+            }
+            {
+                value.type === 'relationshipReference' && supportRelationshipReference && (
+                    <RelationshipReferenceField
+                        value={value}
+                        index={index}
+                        touched={touched}
+                        errors={errors}
+                        setFieldValue={setFieldValue}
+                        isDisabled={isDisabled}
                     />
-                </Grid>
-            )}
-            {value.type === 'serialNumber' && (
-                <TextField
-                    label={i18next.t('wizard.entityTemplate.serialStarter')}
-                    id={serialStarter}
-                    name={serialStarter}
-                    value={value.serialStarter}
-                    onChange={(e) => {
-                        setFieldValue('serialStarter', Number(e.target.value));
-                    }}
-                    type="number"
-                    error={touchedSerialStarter && Boolean(errorSerialStarter)}
-                    helperText={touchedSerialStarter && errorSerialStarter}
-                    disabled={isDisabled || value.deleted}
-                    dir="ltr"
-                    sx={{ marginRight: '5px' }}
-                    fullWidth
-                />
-            )}
-            {isComment && (
-                <Grid position="relative" width="99.5%">
-                    <TextArea
-                        id={value.id}
-                        value={value.comment}
-                        label={i18next.t('propertyTypes.comment')}
-                        onChange={(editorContentAsHtml: string) =>
-                            setFieldValue('comment', editorContentAsHtml === '<p><br></p>' ? '' : editorContentAsHtml)
-                        }
-                        placeholder={i18next.t('propertyTypes.comment')}
+                )
+            }
+            {
+                value.type === 'kartoffelUserField' && (
+                    <KartoffelUserField
+                        value={value}
+                        index={index}
+                        touched={touched}
+                        errors={errors}
+                        setFieldValue={setFieldValue}
+                        isDisabled={isDisabled}
+                        userPropertiesInTemplate={userPropertiesInTemplate}
                     />
-                    {errorComment && <FormHelperText error>{i18next.t('validation.required')}</FormHelperText>}
-                </Grid>
-            )}
-            {value.type === 'relationshipReference' && supportRelationshipReference && (
-                <RelationshipReferenceField
-                    value={value}
-                    index={index}
-                    touched={touched}
-                    errors={errors}
-                    setFieldValue={setFieldValue}
-                    isDisabled={isDisabled}
-                />
-            )}
-            {value.type === 'kartoffelUserField' && (
-                <KartoffelUserField
-                    value={value}
-                    index={index}
-                    touched={touched}
-                    errors={errors}
-                    setFieldValue={setFieldValue}
-                    isDisabled={isDisabled}
-                    userPropertiesInTemplate={userPropertiesInTemplate}
-                />
-            )}
-            {(value.type === 'date' || value.type === 'date-time') &&
+                )
+            }
+            {
+                (value.type === 'date' || value.type === 'date-time') &&
                 'dateNotification' in value &&
                 (value.dateNotification !== undefined ? (
                     <Grid container direction="row">
@@ -655,7 +664,8 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
                     <IconButton onClick={() => setFieldValue('dateNotification', null)} sx={{ borderRadius: 10 }} disabled={value.deleted}>
                         <NotificationsOffIcon />
                     </IconButton>
-                ))}
+                ))
+            }
             <AreYouSureDialog
                 open={open || openDelete}
                 handleClose={() => {
