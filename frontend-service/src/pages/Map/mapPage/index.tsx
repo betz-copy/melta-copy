@@ -35,7 +35,7 @@ enum ShapeType {
     Line = 'line',
 }
 
-enum CameraFocusType {
+export enum CameraFocusType {
     Circle = 'circle',
     Polygon = 'polygon',
     Search = 'search',
@@ -202,7 +202,8 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                 }
 
                 default:
-                    if (!circle.center && !circle.radius && !polygon.length) camera.flyTo({ destination: jerusalemCoordinates, duration: 1.5 });
+                    if (!circle.center && !circle.radius && !polygon.length && !shapeType)
+                        camera.flyTo({ destination: jerusalemCoordinates, duration: 1.5 });
             }
         };
 
@@ -398,6 +399,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
         setShapeType(null);
         setCameraFocus(null);
         setSearchShape({ circle: emptyCircle, polygon: [], line: [] });
+        setFilters({ autoSearch: '', listFields: {} });
     };
 
     const isDrawingShape = (shape: ShapeType | null) => shape === ShapeType.Circle || shape === ShapeType.Polygon;
@@ -498,10 +500,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                             }}
                         >
                             <MapFilters
-                                moveToEntityLocations={(entities: IEntity[]) => {
-                                    setFilterResult(entities);
-                                    setCameraFocus(CameraFocusType.Search);
-                                }}
+                                moveToEntityLocations={(entities: IEntity[]) => setFilterResult(entities)}
                                 entityTemplateMap={entityTemplateMap}
                                 darkMode={darkMode}
                                 clearAutocompleteSearch={() => {
@@ -519,6 +518,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                                         ...(isSearchShape && { total: totalCount }),
                                     },
                                 )}
+                                setCameraFocus={setCameraFocus}
                             />
 
                             {config && <BaseLayers viewerRef={viewerRef} config={config} />}

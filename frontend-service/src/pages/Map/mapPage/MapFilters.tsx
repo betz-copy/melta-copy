@@ -13,6 +13,7 @@ import { FilterLogicalOperator, IEntity, IFilterOfField } from '../../../interfa
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { getEntitiesWithDirectConnections } from '../../../services/entitiesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
+import { CameraFocusType } from '.';
 
 type Props = {
     moveToEntityLocations: (entity: IEntity[]) => void;
@@ -26,6 +27,7 @@ type Props = {
     sourceTemplate?: IMongoEntityTemplatePopulated;
     isSearchShape?: boolean;
     applyFilterWithShapeSearch: (filters: { autoSearch: string; listFields: Record<string, IFilterOfField['$in']> }) => void;
+    setCameraFocus: (value: React.SetStateAction<CameraFocusType | null>) => void;
     numOfViewedEntitiesText?: string;
 };
 
@@ -37,6 +39,7 @@ const MapFilters = ({
     filters,
     isSearchShape,
     applyFilterWithShapeSearch,
+    setCameraFocus,
     numOfViewedEntitiesText,
 }: Props) => {
     const theme = useTheme();
@@ -228,7 +231,10 @@ const MapFilters = ({
                         disabled={!Object.entries(filters.value.listFields).length && filters.value.autoSearch.length < 2}
                         variant="contained"
                         sx={{ width: 'auto', alignSelf: 'end', borderRadius: '7px' }}
-                        onClick={() => (isSearchShape ? applyFilterWithShapeSearch(filters.value) : refetch())}
+                        onClick={() => {
+                            setCameraFocus(CameraFocusType.Search);
+                            isSearchShape ? applyFilterWithShapeSearch(filters.value) : refetch();
+                        }}
                     >
                         {i18next.t('location.search')}
                     </Button>
