@@ -4,18 +4,20 @@
         "source.fixAll.eslint": "explicit"
     },
     "editor.formatOnSave": true,
-    "[javascript]": {
-        "editor.defaultFormatter": "biomejs.biome"
-    },
+    "editor.defaultFormatter": "biomejs.biome",
     "[typescript]": {
-        "editor.defaultFormatter": "biomejs.biome"
+        "editor.defaultFormatter": "vscode.typescript-language-features"
     },
-    "[json]": {
-        "editor.defaultFormatter": "biomejs.biome"
+    "[typescriptreact]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features"
     },
-    "[html]": {
-        "editor.defaultFormatter": "biomejs.biome"
+    "[javascript]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features"
     },
+    "[javascriptreact]": {
+        "editor.defaultFormatter": "vscode.typescript-language-features"
+    },
+    "biome.formatOnSave": true,
     "[yaml]": {
         "editor.defaultFormatter": "biomejs.biome",
         "editor.insertSpaces": true,
