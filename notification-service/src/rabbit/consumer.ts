@@ -1,8 +1,8 @@
-import { ConsumerMessage } from 'menashmq';
 import { basicValidateRequest, logger } from '@microservices/shared';
+import { ConsumerMessage } from 'menashmq';
+import config from '../config';
 import NotificationsManager from '../express/notifications/manager';
 import { notificationSchema } from '../utils/joi/schemas/notification';
-import config from '../config';
 
 const {
     service: { workspaceIdHeaderName },

@@ -1,5 +1,6 @@
+import { ValidateRequest, wrapController } from '@microservices/shared';
 import { Router } from 'express';
-import { wrapController, ValidateRequest } from '@microservices/shared';
+import UsersController from './controller';
 import {
     createUserRequestSchema,
     getUserByExternalIdRequestSchema,
@@ -9,7 +10,6 @@ import {
     updateUserRequestSchema,
     updateUsersBulkRequestSchema,
 } from './validator.schema';
-import UsersController from './controller';
 
 const usersRouter: Router = Router();
 

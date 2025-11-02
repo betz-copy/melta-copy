@@ -1,5 +1,5 @@
+import { MongoIdSchema, ProcessPropertyFormats, variableNameValidation } from '@microservices/shared';
 import * as Joi from 'joi';
-import { ProcessPropertyFormats, MongoIdSchema, variableNameValidation } from '@microservices/shared';
 import config from '../config';
 import ajv from './ajv';
 

@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 /* eslint-disable no-underscore-dangle */
 import { Client, estypes } from '@elastic/elasticsearch';
-import { logger, ISemanticSearchResult } from '@microservices/shared';
+import { ISemanticSearchResult, logger } from '@microservices/shared';
 import config from '../../config';
 import { IElasticDoc } from '../../express/semantics/interface';
 

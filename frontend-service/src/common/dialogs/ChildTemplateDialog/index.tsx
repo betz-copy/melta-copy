@@ -83,7 +83,7 @@ const ChildTemplateDialog: React.FC<{
 
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
-    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 
     const [selectFilterByFieldDialog, setSelectFilterByFieldDialog] = React.useState<{ open: boolean; mode: FilterMode }>({
         open: false,
@@ -142,14 +142,14 @@ const ChildTemplateDialog: React.FC<{
             return createChildTemplate(templateData);
         },
         onSuccess: (data) => {
-            queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', (prevData) => {
+            queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (prevData) => {
                 const newMap = new Map(prevData || new Map());
                 newMap.set(data._id, data);
                 return newMap;
             });
 
             Promise.all([
-                queryClient.invalidateQueries('getChildEntityTemplates'),
+                queryClient.invalidateQueries('getChildTemplates'),
                 queryClient.invalidateQueries('getEntityTemplates'),
                 queryClient.invalidateQueries('searchEntityTemplates'),
             ]).then(() => {

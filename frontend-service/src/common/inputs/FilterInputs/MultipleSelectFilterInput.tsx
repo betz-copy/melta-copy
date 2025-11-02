@@ -1,8 +1,8 @@
 import { Checkbox, Chip, Grid, ListItemText, MenuItem } from '@mui/material';
+import i18next from 'i18next';
 import React from 'react';
 import { IAGGridSetFilter } from '../../../utils/agGrid/interfaces';
 import { StyledFilterInput } from './StyledFilterInput';
-import i18next from 'i18next';
 
 interface MultipleSelectFilterInputProps {
     filterField: IAGGridSetFilter | undefined;

@@ -6,14 +6,14 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { AreYouSureDialog } from '../../../../common/dialogs/AreYouSureDialog';
 import { ErrorToast } from '../../../../common/ErrorToast';
+import { InfiniteScroll } from '../../../../common/InfiniteScroll';
 import SearchInput from '../../../../common/inputs/SearchInput';
 import { ProcessTemplateWizard } from '../../../../common/wizards/processTemplate';
+import { environment } from '../../../../globals';
 import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
 import { deleteProcessTemplateRequest, processTemplateObjectToProcessTemplateForm } from '../../../../services/templates/processTemplatesService';
 import { CreateButton } from '../CreateButton';
 import { ProcessTemplateCard } from './ProcessTemplateCard';
-import { InfiniteScroll } from '../../../../common/InfiniteScroll';
-import { environment } from '../../../../globals';
 
 const ProcessTemplatesRow: React.FC = () => {
     const { infiniteScrollPageCount } = environment.processInstances;

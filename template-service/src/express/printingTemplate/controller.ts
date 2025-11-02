@@ -1,5 +1,5 @@
-import { Request, Response } from 'express';
 import { DefaultController, IMongoPrintingTemplate } from '@microservices/shared';
+import { Request, Response } from 'express';
 import { PrintingTemplateManager } from './manager';
 
 class PrintingTemplateController extends DefaultController<IMongoPrintingTemplate, PrintingTemplateManager> {

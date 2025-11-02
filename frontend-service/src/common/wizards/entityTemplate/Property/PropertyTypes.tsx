@@ -36,8 +36,8 @@ import TextArea from '../../../inputs/TextArea';
 import MeltaCheckbox from '../../../MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../../../MeltaDesigns/MeltaTooltip';
 import { dateNotificationTypes } from '.././AddFields';
-import KartoffelUserField from '.././KartoffelUserField';
 import { CommonFormInputProperties } from '../commonInterfaces';
+import KartoffelUserField from '.././KartoffelUserField';
 import RelationshipReferenceField from '../RelationshipReference/RelationshipReferenceField';
 
 enum dateNotificationOptions {

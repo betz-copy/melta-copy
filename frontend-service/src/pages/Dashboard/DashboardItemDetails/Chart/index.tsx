@@ -7,12 +7,12 @@ import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation, useParams } from 'wouter';
 import * as Yup from 'yup';
-import DashboardItemDetails from '..';
 import { ErrorToast } from '../../../../common/ErrorToast';
 import { filtersSchema } from '../../../../common/wizards/entityTemplate/AddFields';
 import { FilterModelToFilterRecord } from '../../../../common/wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
 import { environment } from '../../../../globals';
 import { IMongoChart, IPermission } from '../../../../interfaces/charts';
+import { IChildTemplateMap } from '../../../../interfaces/childTemplates';
 import { ChartForm, DashboardItemType, TabStepComponent, ViewMode } from '../../../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { createChart, deleteChart, editChart, getChartById } from '../../../../services/chartsService';
@@ -23,8 +23,8 @@ import { chartValidationSchema } from '../../../../utils/charts/getChartAxes';
 import { dashboardInitialValues, filterDocumentToFilterBackend } from '../../../../utils/dashboard/formik';
 import ChartSideBar from '../../../Charts/ChartPage/ChartSideBar';
 import FilterSideBar from '../../../Charts/ChartPage/filterSideBar';
+import DashboardItemDetails from '..';
 import BodyComponent from './BodyComponent';
-import { IChildTemplateMap } from '../../../../interfaces/childTemplates';
 
 const { dashboardPath, chartPath } = environment.dashboard;
 
@@ -40,8 +40,8 @@ const Chart: React.FC = () => {
     const { isDashboardPage = false, dashboardId = '' } = window.history.state ?? {};
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childEntityTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
-    const childTemplate = childEntityTemplates.get(templateId ?? '');
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
+    const childTemplate = childTemplates.get(templateId ?? '');
     const currTemplateId = childTemplate ? childTemplate.parentTemplate._id : templateId;
 
     const { data: chart, isLoading: isLoadingGetChart } = useQuery(['getChart', chartId], () => getChartById(chartId!), {
@@ -120,8 +120,8 @@ const Chart: React.FC = () => {
             isDashboardPage
                 ? ''
                 : childTemplate
-                ? childEntityTemplates.get(childTemplate._id)?.displayName
-                : entityTemplates.get(currTemplateId!)?.displayName
+                  ? childTemplates.get(childTemplate._id)?.displayName
+                  : entityTemplates.get(currTemplateId!)?.displayName
         } `;
 
         return { path, title };

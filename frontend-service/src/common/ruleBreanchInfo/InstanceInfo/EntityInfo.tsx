@@ -4,11 +4,11 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { IEntity } from '../../../interfaces/entities';
 import { IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { useWorkspaceStore } from '../../../stores/workspace';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { CustomIcon } from '../../CustomIcon';
 import { EntityPropertiesInternal } from '../../EntityProperties';
 import { EntityTemplateColor } from '../../EntityTemplateColor';
-import { useWorkspaceStore } from '../../../stores/workspace';
 
 interface EntityInfoProps {
     entity: IEntity | null;

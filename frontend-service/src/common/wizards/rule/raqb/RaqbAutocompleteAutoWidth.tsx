@@ -1,5 +1,5 @@
+import { FieldProps, MuiWidgets } from '@react-awesome-query-builder/mui';
 import React, { useEffect, useRef, useState } from 'react';
-import { MuiWidgets, FieldProps } from '@react-awesome-query-builder/mui';
 
 const { MuiFieldAutocomplete } = MuiWidgets;
 

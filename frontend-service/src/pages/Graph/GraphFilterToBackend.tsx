@@ -2,7 +2,7 @@ import { environment } from '../../globals';
 import { IFilterOfField, IFilterOfTemplate, IGraphFilterBody, IGraphFilterBodyBatch, ISearchFilter } from '../../interfaces/entities';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { filterModelToFilterOfTemplatePerField } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
-import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../utils/agGrid/interfaces';
+import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter, RelativeDateFilters } from '../../utils/agGrid/interfaces';
 
 const { relativeDateFilters } = environment;
 
@@ -20,9 +20,7 @@ export const filterModelToFilterOfGraph = (filterModel: IGraphFilterBodyBatch): 
             if (selectedProperty && filterField) {
                 const propertyTemplate = properties.properties[selectedProperty];
                 acc[_id].push(filterModelToFilterOfTemplatePerField(propertyTemplate, selectedProperty, filterField));
-            } else {
-                acc[_id].push({});
-            }
+            } else acc[_id].push({});
 
             return acc;
         },
@@ -76,7 +74,10 @@ export const handleRegexFilter = (filterValue: string, not: boolean = false): IA
 };
 
 export const handleDateFilter = (filterKeys: (keyof IFilterOfField)[], fieldFilter: IFilterOfField, filterType: string): IAGGridDateFilter => {
-    if (filterKeys.length === 2) {
+    if (
+        filterKeys.length === 2 ||
+        Object.values(fieldFilter).some((value) => value === RelativeDateFilters.untilToday || value === RelativeDateFilters.fromToday)
+    ) {
         const [dateFrom, dateTo] = filterKeys;
 
         if (relativeDateFilters.includes(fieldFilter[dateFrom] as string)) {

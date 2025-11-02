@@ -1,6 +1,6 @@
 import { JsonGroup, JsonItem, JsonRuleGroupExt, RuleProperties } from '@react-awesome-query-builder/mui';
-import { FunctionObject } from './interfaces';
 import { environment } from '../../globals';
+import { FunctionObject } from './interfaces';
 
 const { formulaGetTodayVarName } = environment;
 

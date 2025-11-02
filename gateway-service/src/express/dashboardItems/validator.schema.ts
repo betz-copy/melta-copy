@@ -1,5 +1,5 @@
-import Joi from 'joi';
 import { DashboardItemType, searchFilterSchema } from '@microservices/shared';
+import Joi from 'joi';
 
 const TableMetaDataSchema = Joi.object({
     name: Joi.string().required(),

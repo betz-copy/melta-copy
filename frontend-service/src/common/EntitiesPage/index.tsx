@@ -1,25 +1,25 @@
-import React, { useEffect, useRef, useState } from 'react';
-import i18next from 'i18next';
 import { Box, Grid } from '@mui/material';
+import i18next from 'i18next';
+import fileDownload from 'js-file-download';
 import _debounce from 'lodash.debounce';
 import mapValues from 'lodash.mapvalues';
+import React, { useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
-import fileDownload from 'js-file-download';
 import { toast } from 'react-toastify';
 import { IMongoCategory } from '../../interfaces/categories';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { EntitiesPageHeadline } from './Headline';
-import TemplateTablesView, { TemplateTablesViewRef } from './TemplateTablesView';
-import { exportEntitiesRequest } from '../../services/entitiesService';
-import CardsView, { CardsViewRef } from './CardsView';
-import { IEntity, IExportEntitiesBody } from '../../interfaces/entities';
-import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
-import { useSearchParams } from '../../utils/hooks/useSearchParams';
-import { convertToBool } from '../../utils/convertStringToBool';
-import { LocalStorage } from '../../utils/localStorage';
 import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { IEntity, IExportEntitiesBody } from '../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { exportEntitiesRequest } from '../../services/entitiesService';
+import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
+import { convertToBool } from '../../utils/convertStringToBool';
+import { useSearchParams } from '../../utils/hooks/useSearchParams';
+import { LocalStorage } from '../../utils/localStorage';
 import { isChildTemplate } from '../../utils/templates';
 import { TablePageType } from '../EntitiesTableOfTemplate';
+import CardsView, { CardsViewRef } from './CardsView';
+import { EntitiesPageHeadline } from './Headline';
+import TemplateTablesView, { TemplateTablesViewRef } from './TemplateTablesView';
 
 type EntitiesPageProps<T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated> = {
     templates: T[];
@@ -64,7 +64,7 @@ const EntitiesPage = <T extends IMongoEntityTemplatePopulated | IMongoChildTempl
     const viewMode = urlSearchParams.get('viewMode');
     const isTableView = viewMode === 'templates-tables-view';
 
-    const entityChildTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const entityChildTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 
     useEffect(() => {
         if (Array.isArray(updatedEntities) && viewMode !== 'cards-view') {

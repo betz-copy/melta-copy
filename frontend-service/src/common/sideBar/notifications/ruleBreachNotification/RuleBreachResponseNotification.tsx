@@ -1,11 +1,11 @@
-import React from 'react';
 import { Box, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import RuleBreachInfo from '../../../ruleBreanchInfo/RuleBreachInfo';
-import { RuleBreachRequestStatus } from '../../../../interfaces/ruleBreaches/ruleBreachRequest';
-import { IRuleBreachResponseNotificationMetadataPopulated, NotificationType } from '../../../../interfaces/notifications';
+import React from 'react';
 import { environment } from '../../../../globals';
+import { IRuleBreachResponseNotificationMetadataPopulated, NotificationType } from '../../../../interfaces/notifications';
+import { RuleBreachRequestStatus } from '../../../../interfaces/ruleBreaches/ruleBreachRequest';
 import { NotificationColor } from '../../../notificationColor';
+import RuleBreachInfo from '../../../ruleBreanchInfo/RuleBreachInfo';
 
 export const RuleBreachResponseNotification: React.FC<{
     notificationMetadata: IRuleBreachResponseNotificationMetadataPopulated;

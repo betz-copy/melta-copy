@@ -28,16 +28,16 @@ class WorkspaceManager extends DefaultManagerProxy {
 
     static async getDir(path: IWorkspace['path'], userId: string) {
         const [workspace, workspaces, { permissions }] = await Promise.all([
-            this.getFile(path),
+            WorkspaceManager.getFile(path),
             WorkspaceService.getDir(path),
             UsersManager.getUserById(userId),
         ]);
 
-        const hierarchy = [...(await this.getWorkspaceHierarchyIds(workspace._id)), workspace._id];
+        const hierarchy = [...(await WorkspaceManager.getWorkspaceHierarchyIds(workspace._id)), workspace._id];
         if (hierarchy.some((id) => permissions[id])) return workspaces;
 
         const allPermissionsHierarchies = new Set(
-            (await Promise.all(Object.keys(permissions).map((id) => this.getWorkspaceHierarchyIds(id)))).flat(),
+            (await Promise.all(Object.keys(permissions).map((id) => WorkspaceManager.getWorkspaceHierarchyIds(id)))).flat(),
         );
 
         const allowedWorkspaces = workspaces.filter(({ _id }) => permissions[_id] || allPermissionsHierarchies.has(_id));

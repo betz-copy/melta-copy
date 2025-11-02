@@ -1,6 +1,6 @@
 import { Grid, MenuItem } from '@mui/material';
-import React from 'react';
 import i18next from 'i18next';
+import React from 'react';
 import { IGraphFilterBody } from '../../../interfaces/entities';
 import { IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
 import { StyledFilterInput } from './StyledFilterInput';

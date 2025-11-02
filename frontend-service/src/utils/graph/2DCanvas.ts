@@ -1,9 +1,9 @@
 /* eslint-disable no-param-reassign */
 import { ForceGraphMethods, LinkObject, NodeObject } from 'react-force-graph-2d';
-import { getLineAngle } from '../canvas';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { PartialRequired } from '../typeHelpers';
 import { environment } from '../../globals';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { getLineAngle } from '../canvas';
+import { PartialRequired } from '../typeHelpers';
 import { drawLabel, drawNodeIcon } from '.';
 
 const { graphSettings } = environment;

@@ -1,10 +1,10 @@
-import React from 'react';
-import { IoIosArrowDown } from 'react-icons/io';
 import { MenuItem } from '@mui/material';
 import i18next from 'i18next';
-import { StyledFilterInput } from './StyledFilterInput';
-import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
+import React from 'react';
+import { IoIosArrowDown } from 'react-icons/io';
 import { environment } from '../../../globals';
+import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
+import { StyledFilterInput } from './StyledFilterInput';
 
 const { filterOptions } = environment;
 

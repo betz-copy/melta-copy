@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import passport from 'passport';
-import AuthenticationController from './controller';
 import { wrapController } from '../../utils/express';
+import AuthenticationController from './controller';
 
 const authenticationRouter: Router = Router();
 

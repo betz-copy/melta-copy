@@ -1,10 +1,10 @@
-import React from 'react';
 import { FormHelperText, Grid } from '@mui/material';
 import i18next from 'i18next';
+import React from 'react';
 import * as Yup from 'yup';
-import { CategoryWizardValues } from './index';
-import { StepComponentProps } from '../index';
 import { ColorPicker } from '../../inputs/ColorPicker';
+import { StepComponentProps } from '../index';
+import { CategoryWizardValues } from './index';
 
 const chooseColorSchema = { color: Yup.string().required(i18next.t('validation.colorRequired')) };
 

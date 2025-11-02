@@ -7,8 +7,8 @@ import {
     IAgGridFilterModel,
     IAgGridSort,
     numberFilterOperationTypes,
-    textFilterOperationTypes,
     ServiceError,
+    textFilterOperationTypes,
 } from '@microservices/shared';
 
 const translateAgGridFilter = (

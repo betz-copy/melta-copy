@@ -1,6 +1,6 @@
-import { IUser } from '../users';
 import { IEntity } from '../entities';
 import { IRelationshipPopulated } from '../relationships';
+import { IUser } from '../users';
 import { IAction, IActionPopulated } from './actionMetadata';
 
 export interface ICauseInstance {

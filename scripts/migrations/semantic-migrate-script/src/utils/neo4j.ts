@@ -1,6 +1,6 @@
-import config from '../config';
-import Neo4j, { Node, QueryResult } from 'neo4j-driver';
 import { fromZonedTime } from 'date-fns-tz';
+import Neo4j, { Node, QueryResult } from 'neo4j-driver';
+import config from '../config';
 
 export interface IEntity {
     templateId: string;

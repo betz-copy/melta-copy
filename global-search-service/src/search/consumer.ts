@@ -1,9 +1,9 @@
-import { ConsumerMessage } from 'menashmq';
+import { basicValidateRequest, IndexingAction, IUpdateIndexRequest, logger, ServiceError } from '@microservices/shared';
 import { StatusCodes } from 'http-status-codes';
-import { basicValidateRequest, IndexingAction, logger, ServiceError, IUpdateIndexRequest } from '@microservices/shared';
+import { ConsumerMessage } from 'menashmq';
+import config from '../config';
 import Manager from './manager';
 import { requestSchema } from './validator.schema';
-import config from '../config';
 
 const {
     service: { workspaceIdHeaderName },

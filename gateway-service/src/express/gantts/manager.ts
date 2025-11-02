@@ -1,20 +1,20 @@
-import lodashIsEqual from 'lodash.isequal';
 import {
-    IMongoEntityTemplatePopulated,
-    IRelationshipTemplate,
+    BadRequestError,
     IGantt,
     IGanttItem,
+    IMongoEntityTemplatePopulated,
     IMongoGantt,
+    IRelationshipTemplate,
     ISearchGanttsBody,
-    BadRequestError,
 } from '@microservices/shared';
+import lodashIsEqual from 'lodash.isequal';
+import GanttsService from '../../externalServices/ganttsService';
 import InstancesService from '../../externalServices/instanceService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import RelationshipsTemplateService from '../../externalServices/templates/relationshipsTemplateService';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
 import InstancesValidator from '../instances/middlewares';
-import GanttsService from '../../externalServices/ganttsService';
 
 export class GanttManager extends DefaultManagerProxy<GanttsService> {
     private instancesService: InstancesService;

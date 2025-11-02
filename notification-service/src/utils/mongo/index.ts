@@ -1,4 +1,4 @@
-import { connection, ClientSession } from 'mongoose';
+import { ClientSession, connection } from 'mongoose';
 
 export const transaction = async <T, Func extends (session: ClientSession) => Promise<T>>(func: Func): Promise<T> => {
     let ret;

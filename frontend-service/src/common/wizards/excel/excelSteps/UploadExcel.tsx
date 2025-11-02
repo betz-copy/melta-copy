@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
+import { CircularProgress, Grid, Typography, useTheme } from '@mui/material';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
-import { CircularProgress, Grid, Typography, useTheme } from '@mui/material';
+import React, { useState } from 'react';
 import { v4 as uuid } from 'uuid';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import OpenPreview from '../../../FilePreview/OpenPreview';
 import { environment } from '../../../../globals';
-import EntitiesTableOfTemplate from '../../../EntitiesTableOfTemplate';
-import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
-import { useReadExcel } from '../../../../utils/hooks/useReadExcel';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { EntitiesWizardValues, ExcelStepStatus, IEditReadExcel, IExcelSteps } from '../../../../interfaces/excel';
 import { useWorkspaceStore } from '../../../../stores/workspace';
-import { EntitiesWizardValues, IEditReadExcel, IExcelSteps, ExcelStepStatus } from '../../../../interfaces/excel';
+import { useReadExcel } from '../../../../utils/hooks/useReadExcel';
+import EntitiesTableOfTemplate from '../../../EntitiesTableOfTemplate';
+import OpenPreview from '../../../FilePreview/OpenPreview';
+import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 
 const {
     loadExcel: { excelExtension, acceptedFilesTypes },

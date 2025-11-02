@@ -1,5 +1,5 @@
-import { Request, Response } from 'express';
 import { DefaultController, IMongoChart } from '@microservices/shared';
+import { Request, Response } from 'express';
 import ChartManager from './manager';
 
 class ChartController extends DefaultController<IMongoChart, ChartManager> {

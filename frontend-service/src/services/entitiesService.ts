@@ -28,6 +28,7 @@ import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
 import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
+import { combineFilters } from '../utils/filters';
 import { locationConverterToString } from '../utils/map/convert';
 import { isChildTemplate } from '../utils/templates';
 
@@ -157,16 +158,16 @@ export const getExpandedEntityByIdRequest = async (
         childTemplateId?: string;
     },
     filterRecord: IGraphFilterBodyBatch = {},
+    childTemplateFilters?: ISearchFilter,
 ) => {
     const filters = filterModelToFilterOfGraph(filterRecord);
-    const batch = (
-        await axios.post<IEntityExpanded>(`${entities}/expanded/${entityId}`, {
-            ...options,
-            expandedParams,
-            filters,
-        })
-    ).data;
-    return batch;
+
+    const { data } = await axios.post<IEntityExpanded>(`${entities}/expanded/${entityId}`, {
+        ...options,
+        expandedParams,
+        filters: combineFilters(filters['filter'],childTemplateFilters ),
+    });
+    return data;
 };
 
 export const getRelationshipInstancesCountByTemplateIdRequest = async (templateId: string) => {
@@ -190,9 +191,7 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
                     filesToUpload.push([`${key}`, file]);
                 }
             });
-        } else {
-            filesToUpload.push([`${key}`, value]);
-        }
+        } else filesToUpload.push([`${key}`, value]);
     });
 
     Object.entries(entity.properties).forEach(([key, value]: [string, any]) => {
@@ -242,13 +241,9 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
 
     formData.append('templateId', isChildTemplate(entity.template) ? entity.template.parentTemplate._id : entity.template._id);
 
-    if (isChildTemplate(entity.template)) {
-        formData.append('childTemplateId', entity.template._id);
-    }
+    if (isChildTemplate(entity.template)) formData.append('childTemplateId', entity.template._id);
 
-    if (ignoredRules) {
-        formData.append('ignoredRules', JSON.stringify(ignoredRules));
-    }
+    if (ignoredRules) formData.append('ignoredRules', JSON.stringify(ignoredRules));
 
     const { data } = await axios.post<IEntity>(entities, formData);
     return data;

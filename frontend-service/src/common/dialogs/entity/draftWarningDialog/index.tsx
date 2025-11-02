@@ -15,8 +15,8 @@ import {
 import i18next from 'i18next';
 import React from 'react';
 import { toast } from 'react-toastify';
-import { EntityWizardValues } from '..';
 import { DraftsState, useDraftIdStore, useDraftsStore } from '../../../../stores/drafts';
+import { EntityWizardValues } from '..';
 
 export type Draft = EntityWizardValues & { uniqueId: string; lastSavedAt: Date; entityId?: string };
 

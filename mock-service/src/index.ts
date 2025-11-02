@@ -1,32 +1,33 @@
 /* eslint-disable no-console */
+
+import { AxiosError } from 'axios';
 import { Chance } from 'chance';
 import { JSONSchemaFaker } from 'json-schema-faker';
-import { AxiosError } from 'axios';
 import config from './config';
 import { createGantts } from './gantts';
 import { createInstances, createRelationshipInstances, isInstanceServiceAlive, updateConstraintsOfTemplate } from './instances';
 import categories from './mocks/categories';
 import entityTemplates from './mocks/entityTemplates';
-import simbaCategories from './mocks/simba/categories';
-import { carEntityTemplate, driverEntityTemplate, crashEntityTemplate } from './mocks/simba/entityTemplates';
-import { driverChildTemplate, carChildTemplate, crashChildTemplate } from './mocks/simba/childTemplates';
 import getProcessTemplateToCreate from './mocks/processTemplates';
 import relationshipTemplates from './mocks/relationshipTemplates';
+import simbaCategories from './mocks/simba/categories';
+import { carChildTemplate, crashChildTemplate, driverChildTemplate } from './mocks/simba/childTemplates';
+import { carEntityTemplate, crashEntityTemplate, driverEntityTemplate } from './mocks/simba/entityTemplates';
 import getUsersToCreate from './mocks/users';
 import getWorkspacesToCreate from './mocks/workspaces';
 import { createProcessInstances } from './processInstances';
 import { createProcessTemplates, isProcessServiceAlive } from './processTemplate';
 import { isStorageServiceAlive, uploadFile } from './storageService';
+import { createCharts } from './templateCharts';
 import { isTemplateServiceAlive } from './templates';
 import { createCategories } from './templates/categories';
+import { createChildTemplate } from './templates/childTemplates';
+import { createCategoryOrder } from './templates/config';
 import { createEntityTemplates } from './templates/entityTemplates';
 import { createRelationshipTemplates, getRelationshipTemplateById } from './templates/relationshipTemplates';
 import { createRules } from './templates/rules';
 import { createUsers, isUserServiceAlive } from './users';
 import { createWorkspaces, getRootWorkspace, getWorkspaces, isWorkpacesServiceAlive, updateWorkspaceMetadata } from './workspaces';
-import { createCategoryOrder } from './templates/config';
-import { createCharts } from './templateCharts';
-import { createChildTemplate } from './templates/childTemplates';
 
 const main = async () => {
     console.log(`Mock started ${JSON.stringify(config, null, 4)}`);

@@ -1,11 +1,11 @@
 import {
+    IMongoProcessInstancePopulated,
+    IMongoProcessInstanceReviewerPopulated,
     IMongoStepInstance,
     IMongoStepInstancePopulated,
     IStepInstance,
-    UpdateStepReqBody,
-    IMongoProcessInstanceReviewerPopulated,
-    IMongoProcessInstancePopulated,
     logger,
+    UpdateStepReqBody,
     UploadedFile,
 } from '@microservices/shared';
 import ProcessService from '../../../externalServices/processService';

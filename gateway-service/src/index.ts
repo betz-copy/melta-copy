@@ -1,9 +1,9 @@
 import 'elastic-apm-node/start';
-import menash from 'menashmq';
-import axios from 'axios';
 import { logger } from '@microservices/shared';
-import Server from './express/server';
+import axios from 'axios';
+import menash from 'menashmq';
 import config from './config';
+import Server from './express/server';
 import { createRuleBreachAlertQueue, runRulesWithTodayFunc } from './express/templates/rules/runRulesWithTodayFuncConsumer';
 
 const { service, rabbit } = config;

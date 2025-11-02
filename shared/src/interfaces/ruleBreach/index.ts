@@ -79,6 +79,6 @@ export interface IEditReadExcel {
     entities: IEntityWithIgnoredRules[];
 }
 
+export * from './actionMetadata';
 export * from './agGrid';
 export * from './ruleBreach';
-export * from './actionMetadata';

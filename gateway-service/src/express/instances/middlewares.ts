@@ -72,12 +72,12 @@ class InstancesValidator extends DefaultController {
     async validateHasPermissionsToEntitiesInTemplates(user: Express.User, templateIds: string[]) {
         const permissions = await this.authorizer.getWorkspacePermissions(user.id);
 
-        const [allowedEntityTemplates, allowedChildEntityTemplates] = await Promise.all([
+        const [allowedEntityTemplates, allowedChildTemplates] = await Promise.all([
             this.getAllowedEntityTemplatesForInstances(permissions, user.id),
             this.getAllowedChildTemplatesForInstances(permissions),
         ]);
 
-        const allowedEntityTemplateIds = [...allowedEntityTemplates.map(({ _id }) => _id), ...allowedChildEntityTemplates.map(({ _id }) => _id)];
+        const allowedEntityTemplateIds = [...allowedEntityTemplates.map(({ _id }) => _id), ...allowedChildTemplates.map(({ _id }) => _id)];
 
         const unauthorizedTemplates = templateIds.filter((templateId) => !allowedEntityTemplateIds.includes(templateId));
         if (unauthorizedTemplates.length > 0) {
@@ -263,11 +263,15 @@ class InstancesValidator extends DefaultController {
 
     async validateUserCanCreateRelationshipInstance(req: Request) {
         const relatedTemplates = await this.getRelatedTemplatesFromRelationshipInstance(req.body.relationshipInstance);
+        const childTemplatesOfParents = await this.entityTemplateService.searchChildTemplates({
+            parentTemplatesIds: relatedTemplates.map(({ _id }) => _id),
+        });
 
         await Promise.all(
-            relatedTemplates.map((template) =>
-                this.validateUserPermissionForEntityInstance(req, template._id, PermissionScope.write, template.category._id),
-            ),
+            relatedTemplates.map(({ _id, category }) => {
+                const childTemplateId = childTemplatesOfParents.find(({ parentTemplate }) => parentTemplate._id === _id)?._id;
+                return this.validateUserPermissionForEntityInstance(req, _id, PermissionScope.write, category._id, childTemplateId);
+            }),
         );
     }
 
@@ -275,10 +279,15 @@ class InstancesValidator extends DefaultController {
         const relationshipInstance = await this.instancesService.getRelationshipInstanceById(req.params.id);
         const relatedTemplates = await this.getRelatedTemplatesFromRelationshipInstance(relationshipInstance);
 
+        const childTemplatesOfParents = await this.entityTemplateService.searchChildTemplates({
+            parentTemplatesIds: relatedTemplates.map(({ _id }) => _id),
+        });
+
         await Promise.all(
-            relatedTemplates.map((template) =>
-                this.validateUserPermissionForEntityInstance(req, template._id, PermissionScope.write, template.category._id),
-            ),
+            relatedTemplates.map(({ _id, category }) => {
+                const childTemplateId = childTemplatesOfParents.find(({ parentTemplate }) => parentTemplate._id === _id)?._id;
+                this.validateUserPermissionForEntityInstance(req, _id, PermissionScope.write, category._id, childTemplateId);
+            }),
         );
     }
 

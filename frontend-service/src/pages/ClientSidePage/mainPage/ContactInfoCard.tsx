@@ -1,8 +1,8 @@
-import React from 'react';
-import { Card, CardContent, Typography, Grid, Link, IconButton } from '@mui/material';
+import { Card, CardContent, Grid, IconButton, Link, Typography } from '@mui/material';
 import i18next from 'i18next';
-import hebrew from '../../../i18n/hebrew';
+import React from 'react';
 import { getPropertyColor } from '../../../common/EntityProperties';
+import hebrew from '../../../i18n/hebrew';
 import { useWorkspaceStore } from '../../../stores/workspace';
 
 const ContactInfoCard: React.FC = () => {

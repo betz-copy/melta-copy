@@ -1,12 +1,12 @@
+import {
+    IMongoEntityTemplateWithConstraintsPopulated,
+    IMongoRelationshipTemplate,
+    IRelationship,
+    IUniqueConstraintOfTemplate,
+} from '@microservices/shared';
+import axios from 'axios';
 import { JSONSchemaFaker } from 'json-schema-faker';
 import pLimit from 'p-limit';
-import axios from 'axios';
-import {
-    IRelationship,
-    IMongoRelationshipTemplate,
-    IUniqueConstraintOfTemplate,
-    IMongoEntityTemplateWithConstraintsPopulated,
-} from '@microservices/shared';
 import config from './config';
 import { trycatch } from './utils';
 import createAxiosInstance from './utils/axios';
@@ -72,43 +72,41 @@ export const createInstances = async (
         });
     }
 
-    const promises = entityTemplates
-        .map((entityTemplate) => {
-            return Array.from({ length: chance.integer({ min: minNumberOfEntities, max: maxEntitiesPerTemplate || maxNumberOfEntities }) }, () =>
-                limit(() => {
-                    let entityProperties = JSONSchemaFaker.generate(entityTemplate.properties);
+    const promises = entityTemplates.flatMap((entityTemplate) => {
+        return Array.from({ length: chance.integer({ min: minNumberOfEntities, max: maxEntitiesPerTemplate || maxNumberOfEntities }) }, () =>
+            limit(() => {
+                let entityProperties = JSONSchemaFaker.generate(entityTemplate.properties);
 
-                    if (entityTemplate.name === 'driver') {
-                        while (
-                            typeof entityProperties !== 'object' ||
-                            entityProperties === null ||
-                            Array.isArray(entityProperties) ||
-                            !('full_name' in entityProperties)
-                        ) {
-                            entityProperties = JSONSchemaFaker.generate(entityTemplate.properties);
-                        }
+                if (entityTemplate.name === 'driver') {
+                    while (
+                        typeof entityProperties !== 'object' ||
+                        entityProperties === null ||
+                        Array.isArray(entityProperties) ||
+                        !('full_name' in entityProperties)
+                    ) {
+                        entityProperties = JSONSchemaFaker.generate(entityTemplate.properties);
                     }
+                }
 
-                    if (entityTemplate.name === 'car') {
-                        while (
-                            typeof entityProperties !== 'object' ||
-                            entityProperties === null ||
-                            Array.isArray(entityProperties) ||
-                            !('ID' in entityProperties)
-                        ) {
-                            entityProperties = JSONSchemaFaker.generate(entityTemplate.properties);
-                        }
+                if (entityTemplate.name === 'car') {
+                    while (
+                        typeof entityProperties !== 'object' ||
+                        entityProperties === null ||
+                        Array.isArray(entityProperties) ||
+                        !('ID' in entityProperties)
+                    ) {
+                        entityProperties = JSONSchemaFaker.generate(entityTemplate.properties);
                     }
+                }
 
-                    return axiosInstance.post(url + createEntityRoute, {
-                        properties: entityProperties,
-                        templateId: entityTemplate._id,
-                        userId,
-                    });
-                }),
-            );
-        })
-        .flat();
+                return axiosInstance.post(url + createEntityRoute, {
+                    properties: entityProperties,
+                    templateId: entityTemplate._id,
+                    userId,
+                });
+            }),
+        );
+    });
 
     const results = await Promise.all(promises);
 
@@ -124,48 +122,46 @@ export const createRelationshipInstances = async (
 ) => {
     const axiosInstance = createAxiosInstance(workspaceId);
 
-    const promises = relationshipTemplates
-        .map((relationshipTemplate) => {
-            const relevantSourceEntities = entities.filter((entity) => entity.templateId === relationshipTemplate.sourceEntityId);
-            const relevantDestinationEntities = entities.filter((entity) => entity.templateId === relationshipTemplate.destinationEntityId);
+    const promises = relationshipTemplates.flatMap((relationshipTemplate) => {
+        const relevantSourceEntities = entities.filter((entity) => entity.templateId === relationshipTemplate.sourceEntityId);
+        const relevantDestinationEntities = entities.filter((entity) => entity.templateId === relationshipTemplate.destinationEntityId);
 
-            if (relevantSourceEntities.length === 0 || relevantDestinationEntities.length === 0) {
-                // eslint-disable-next-line no-console
-                console.warn('No relevant source or destination entities found for this template, skipping...');
-                return [];
-            }
+        if (relevantSourceEntities.length === 0 || relevantDestinationEntities.length === 0) {
+            // eslint-disable-next-line no-console
+            console.warn('No relevant source or destination entities found for this template, skipping...');
+            return [];
+        }
 
-            if (minNumberOfRelationships > maxNumberOfRelationships) {
-                throw new Error('Min cannot be greater than Max for relationships range.');
-            }
-            return Array.from({ length: chance.integer({ min: minNumberOfRelationships, max: maxNumberOfRelationships }) }, () => {
-                const sourceEntityId = relevantSourceEntities[chance.integer({ min: 0, max: relevantSourceEntities.length - 1 })].properties._id;
-                const destinationEntityId =
-                    relevantDestinationEntities[chance.integer({ min: 0, max: relevantDestinationEntities.length - 1 })].properties._id;
+        if (minNumberOfRelationships > maxNumberOfRelationships) {
+            throw new Error('Min cannot be greater than Max for relationships range.');
+        }
+        return Array.from({ length: chance.integer({ min: minNumberOfRelationships, max: maxNumberOfRelationships }) }, () => {
+            const sourceEntityId = relevantSourceEntities[chance.integer({ min: 0, max: relevantSourceEntities.length - 1 })].properties._id;
+            const destinationEntityId =
+                relevantDestinationEntities[chance.integer({ min: 0, max: relevantDestinationEntities.length - 1 })].properties._id;
 
-                return limit(async () => {
-                    try {
-                        const { data } = await axiosInstance.post<IRelationship>(url + createRelationshipRoute, {
-                            relationshipInstance: {
-                                sourceEntityId,
-                                destinationEntityId,
-                                templateId: relationshipTemplate._id,
-                            },
-                            userId,
-                        });
-                        return data;
-                    } catch (error) {
-                        if (axios.isAxiosError(error) && error.response?.data.metadata?.errorCode === 'RELATIONSHIP_ALREADY_EXISTS') {
-                            // eslint-disable-next-line no-console
-                            console.log('Relationship already exists, skipping...');
-                        }
-
-                        throw error;
+            return limit(async () => {
+                try {
+                    const { data } = await axiosInstance.post<IRelationship>(url + createRelationshipRoute, {
+                        relationshipInstance: {
+                            sourceEntityId,
+                            destinationEntityId,
+                            templateId: relationshipTemplate._id,
+                        },
+                        userId,
+                    });
+                    return data;
+                } catch (error) {
+                    if (axios.isAxiosError(error) && error.response?.data.metadata?.errorCode === 'RELATIONSHIP_ALREADY_EXISTS') {
+                        // eslint-disable-next-line no-console
+                        console.log('Relationship already exists, skipping...');
                     }
-                });
+
+                    throw error;
+                }
             });
-        })
-        .flat();
+        });
+    });
 
     const results = await Promise.all(promises);
 

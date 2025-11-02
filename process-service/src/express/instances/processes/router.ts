@@ -1,5 +1,6 @@
-import { Router } from 'express';
 import { createController, ValidateRequest } from '@microservices/shared';
+import { Router } from 'express';
+import { updateTemplateByIdRequestSchema } from '../../templates/processes/validator.schema';
 import ProcessInstance from './controller';
 import {
     archivedProcessRequestSchema,
@@ -10,7 +11,6 @@ import {
     updateInstanceByIdRequestSchema,
 } from './validator.schema';
 import ProcessInstanceValidator from './validator.template';
-import { updateTemplateByIdRequestSchema } from '../../templates/processes/validator.schema';
 
 const processInstanceRouter: Router = Router();
 

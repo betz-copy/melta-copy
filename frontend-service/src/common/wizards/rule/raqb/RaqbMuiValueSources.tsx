@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import IconButton from '@mui/material/IconButton';
+import { Check, ExpandMoreSharp } from '@mui/icons-material';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import { Check, ExpandMoreSharp } from '@mui/icons-material';
+import IconButton from '@mui/material/IconButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import { ValueSourcesProps } from '@react-awesome-query-builder/mui';
+import React, { useState } from 'react';
 
 // copied file from raqb library. github.com/ukrbublik/react-awesome-query-builder/blob/d17da0103e90c96d3aa081304129b2b355b89c9a/packages/mui/modules/widgets/core/MuiValueSources.jsx
 // added explicit "ltr". see below. in order to work in RTL mui enviorment, but speicifly keep the raqb in LTR

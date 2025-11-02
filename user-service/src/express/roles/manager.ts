@@ -1,24 +1,25 @@
 /* eslint-disable no-param-reassign */
-import { FilterQuery } from 'mongoose';
+
 import {
-    ISubCompactPermissions,
-    IRole,
-    IUserAgGridRequest,
     IBaseRole,
-    RelatedPermission,
+    IRole,
+    ISubCompactPermissions,
+    IUserAgGridRequest,
     NotFoundError,
+    RelatedPermission,
     ValidationError,
 } from '@microservices/shared';
-import RolesModel from './model';
-import PermissionsManager from '../permissions/manager';
+import { FilterQuery } from 'mongoose';
 import { typedObjectEntries } from '../../utils';
-import { RoleDoesNotExistError } from './errors';
 import { translateAgGridFilterModel, translateAgGridSortModel } from '../../utils/agGrid';
+import PermissionsManager from '../permissions/manager';
+import { RoleDoesNotExistError } from './errors';
+import RolesModel from './model';
 
 class RolesManager {
     static async getRoleById(id: string, workspaceIds?: string[]): Promise<IRole> {
         const baseRole = await RolesModel.findById(id).orFail(new RoleDoesNotExistError(id)).lean().exec();
-        return this.baseRoleToRole(baseRole, workspaceIds);
+        return RolesManager.baseRoleToRole(baseRole, workspaceIds);
     }
 
     static async getRolesByIds(ids: string[], workspaceIds?: string[]): Promise<IRole[]> {
@@ -32,7 +33,7 @@ class RolesManager {
             throw new RoleDoesNotExistError(`Missing roles with IDs: ${missingIds.join(', ')}`);
         }
 
-        return Promise.all(baseRoles.map((baseRole) => this.baseRoleToRole(baseRole, workspaceIds)));
+        return Promise.all(baseRoles.map((baseRole) => RolesManager.baseRoleToRole(baseRole, workspaceIds)));
     }
 
     static async searchBaseRoles(
@@ -82,7 +83,7 @@ class RolesManager {
         limit: number,
         step: number,
     ): Promise<string[]> {
-        const { roles } = await this.searchBaseRoles(search, permissions, workspaceIds, limit, step);
+        const { roles } = await RolesManager.searchBaseRoles(search, permissions, workspaceIds, limit, step);
         return roles.map(({ _id }) => _id);
     }
 
@@ -92,8 +93,8 @@ class RolesManager {
         const sort = sortModel ? translateAgGridSortModel(sortModel) : {};
         const query = filterModel ? translateAgGridFilterModel(filterModel) : {};
 
-        const { roles, count } = await this.searchBaseRoles(search, permissions, workspaceIds, limit, step, query, sort);
-        const permissionsToRoles = await this.appendPermissionsToRoles(roles);
+        const { roles, count } = await RolesManager.searchBaseRoles(search, permissions, workspaceIds, limit, step, query, sort);
+        const permissionsToRoles = await RolesManager.appendPermissionsToRoles(roles);
 
         return { roles: permissionsToRoles, count };
     }
@@ -103,31 +104,31 @@ class RolesManager {
         const roleIds = [...new Set(permissions.map(({ relatedId }) => relatedId))];
 
         const roles = await RolesModel.find({ _id: { $in: roleIds } }).lean();
-        const permissionsToRoles = await this.appendPermissionsToRoles(roles);
+        const permissionsToRoles = await RolesManager.appendPermissionsToRoles(roles);
 
         return permissionsToRoles;
     }
 
     static async getUserRolePerWorkspace(roleIds: string[], workspaceId: string) {
-        const workspaceRoles = await this.getAllWorkspaceRoles([workspaceId]);
+        const workspaceRoles = await RolesManager.getAllWorkspaceRoles([workspaceId]);
 
         return workspaceRoles.find((role) => roleIds.includes(role._id.toString()));
     }
 
     static async createRole({ permissions, ...roleData }: Omit<IRole, '_id'>): Promise<IRole> {
         const workspaceIds = Object.keys(permissions);
-        const workspaceRoles = await this.getAllWorkspaceRoles(workspaceIds);
+        const workspaceRoles = await RolesManager.getAllWorkspaceRoles(workspaceIds);
         if (workspaceRoles.find((workspaceRole) => workspaceRole.name === roleData.name)) throw new ValidationError('role name needs to be unique');
         const baseRole = (await RolesModel.create(roleData)).toObject();
 
         await PermissionsManager.syncCompactPermissions(baseRole._id, RelatedPermission.Role, permissions);
 
-        return this.baseRoleToRole(baseRole);
+        return RolesManager.baseRoleToRole(baseRole);
     }
 
     static async updateRole(id: string, updateData: Partial<IBaseRole>): Promise<IRole> {
         const baseRole = await RolesModel.findByIdAndUpdate(id, updateData, { new: true }).orFail(new RoleDoesNotExistError(id)).lean().exec();
-        return this.baseRoleToRole(baseRole);
+        return RolesManager.baseRoleToRole(baseRole);
     }
 
     static async updateRolesBulk(bulkUpdateData: Record<string, IBaseRole>): Promise<void> {
@@ -142,7 +143,7 @@ class RolesManager {
     }
 
     private static async appendPermissionsToRoles(roles: IBaseRole[]): Promise<IRole[]> {
-        return Promise.all(roles.map((role) => this.baseRoleToRole(role)));
+        return Promise.all(roles.map((role) => RolesManager.baseRoleToRole(role)));
     }
 
     static async searchRolesByPermissions(workspaceId: string, pagination?: { step: number; limit: number }): Promise<IRole[]> {
@@ -152,7 +153,7 @@ class RolesManager {
             .lean()
             .exec();
 
-        return this.appendPermissionsToRoles(roles);
+        return RolesManager.appendPermissionsToRoles(roles);
     }
 
     static async deleteRoleById(roleId: string) {
@@ -162,7 +163,7 @@ class RolesManager {
     static async searchRolesByPermWithCount(workspaceId: string, limit: number, step: number): Promise<{ roles: IRole[]; count: number }> {
         const { permissions, count } = await PermissionsManager.getPermissionsByWorkspaceIdWithCount(workspaceId, limit, step);
 
-        const roles = await Promise.all(permissions.map(({ relatedId }) => this.getRoleById(relatedId)));
+        const roles = await Promise.all(permissions.map(({ relatedId }) => RolesManager.getRoleById(relatedId)));
 
         return { roles, count };
     }

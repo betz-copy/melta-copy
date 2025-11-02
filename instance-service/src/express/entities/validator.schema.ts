@@ -1,7 +1,7 @@
 import { searchFilterSchema, variableNameValidation } from '@microservices/shared';
 import Joi from 'joi';
-import { brokenRuleSchema } from '../rules/ignoredRuleSchema';
 import config from '../../config';
+import { brokenRuleSchema } from '../rules/ignoredRuleSchema';
 
 const { searchEntitiesMaxLimit } = config;
 

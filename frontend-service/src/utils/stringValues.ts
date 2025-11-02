@@ -1,6 +1,6 @@
-import BigNumber from 'bignumber.js';
 import { Direction } from '@mui/material';
 import { RJSFSchema } from '@rjsf/utils';
+import BigNumber from 'bignumber.js';
 import { environment } from '../globals';
 
 const { numOfFixedDigits } = environment.entitiesProperties;

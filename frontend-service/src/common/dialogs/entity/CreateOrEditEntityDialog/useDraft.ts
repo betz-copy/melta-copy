@@ -1,12 +1,12 @@
 import { cloneDeep, debounce } from 'lodash';
 import { Dispatch, SetStateAction, useCallback, useMemo } from 'react';
 import { v4 as uuid } from 'uuid';
-import { EntityWizardValues } from '..';
 import { environment } from '../../../../globals';
 import { IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
 import { IEntity } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { useDraftIdStore, useDraftsStore } from '../../../../stores/drafts';
+import { EntityWizardValues } from '..';
 
 const useDraftEntityDialogHook = (
     entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,

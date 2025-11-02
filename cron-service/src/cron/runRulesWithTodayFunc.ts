@@ -1,8 +1,8 @@
-import schedule from 'node-schedule';
 import { logger, WorkspaceTypes } from '@microservices/shared';
+import schedule from 'node-schedule';
 import config from '../config';
-import WorkspaceManager from '../workspaces/manager';
 import RabbitManager from '../utils/rabbit/rabbit';
+import WorkspaceManager from '../workspaces/manager';
 
 const {
     rulesWithTodayFunc: { cronTime, runOnStart },

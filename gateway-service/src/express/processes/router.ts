@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import processesTemplatesRouter from './processTemplates/router';
 import processesInstancesRouter from './processInstances/router';
+import processesTemplatesRouter from './processTemplates/router';
 import stepsInstancesRouter from './stepInstances/router';
 
 const ProcessRouter = Router();

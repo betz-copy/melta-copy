@@ -1,6 +1,6 @@
 import React from 'react';
-import { StepComponentProps } from '../index';
 import { ImagePicker } from '../../inputs/ImagePicker';
+import { StepComponentProps } from '../index';
 import { EntityTemplateWizardValues } from '.';
 
 export const ChooseIcon: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ values, setFieldValue }) => (

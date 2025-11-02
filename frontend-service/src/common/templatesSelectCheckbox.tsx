@@ -1,10 +1,10 @@
 import i18next from 'i18next';
 import React, { Dispatch } from 'react';
-import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
-import { SelectCheckbox } from './SelectCheckBox';
-import { groupTemplatesByCategory } from '../utils/hooks/useTreeUtils';
 import { IMongoCategory } from '../interfaces/categories';
 import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
+import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { groupTemplatesByCategory } from '../utils/hooks/useTreeUtils';
+import { SelectCheckbox } from './SelectCheckBox';
 
 type TemplatesSelectCheckboxProps<T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated> = {
     title: string;

@@ -204,16 +204,12 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             entityIdsToInclude: Object.keys(entitiesWithFiles),
         });
 
-        if (body.sort?.length) {
-            return searchResult;
-        }
+        if (body.sort?.length) return searchResult;
 
         const texts = createTextsFromEntitiesWithFiles(searchResult, entitiesWithFiles, body.textSearch);
         const rerank = await this.semanticSearchSearch.rerank({ query: body.textSearch, texts: Object.keys(texts) });
 
-        if (!rerank?.length) {
-            return searchResult;
-        }
+        if (!rerank?.length) return searchResult;
 
         return { ...searchResult, entities: sortEntities(searchResult.entities, rerank, texts) };
     }
@@ -221,7 +217,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
     async getAllTemplateEntities(templateId: string, childTemplateId?: string) {
         const { searchEntitiesChunkSize } = config.service;
 
-        let filter;
+        let filter: ISearchFilter | undefined;
         if (childTemplateId) {
             const childTemplate = await this.entityTemplateService.getChildTemplateById(childTemplateId);
             filter = getFilterFromChildTemplate(childTemplate);
@@ -733,7 +729,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         if (emails) this.sendIndicatorRuleEmailForCreation(createdEntity, userId, emails);
 
-        return createdEntity;
+        return {...createdEntity, childTemplateId};
     }
 
     private async deleteUnusedFiles(currentEntity: IEntity, instanceData: IEntity, files: UploadedFile[]) {
@@ -802,7 +798,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const allResults = await this.service.searchEntitiesBatch({
             ...searchBody,
             templates: templatesWithoutChildId,
-            entityIdsToInclude: semanticSearchResult ? Object.values(semanticSearchResult).map(Object.keys).flat() : undefined,
+            entityIdsToInclude: semanticSearchResult ? Object.values(semanticSearchResult).flatMap(Object.keys) : undefined,
         });
 
         const { formattedEntities, textsForReranking } = formatEntitiesBulkSearch(allResults, searchBody.textSearch, semanticSearchResult);

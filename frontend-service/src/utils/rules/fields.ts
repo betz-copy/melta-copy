@@ -1,8 +1,11 @@
 import { Field, Fields, ImmutableTree } from '@react-awesome-query-builder/mui';
+import i18next from 'i18next';
 import lodashFindLast from 'lodash.findlast';
 import lodashIsEqual from 'lodash.isequal';
+import { environment } from '../../globals';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
+import { ActionOnFail } from '../../interfaces/rules';
 import { IVariable } from '../../interfaces/rules/formula/argument';
 import { ICurrentUser } from '../../interfaces/users';
 import { getAllAllowedEntities, getAllAllowedRelationships } from '../permissions/templatePermissions';
@@ -13,9 +16,6 @@ import {
     populateRelationshipTemplate,
 } from '../templates';
 import { getAggVariablesInTree } from './getAggVariablesInTree';
-import i18next from 'i18next';
-import { ActionOnFail } from '../../interfaces/rules';
-import { environment } from '../../globals';
 
 const { formulaGetTodayVarName } = environment;
 

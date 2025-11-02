@@ -3,7 +3,6 @@ import { Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { useMemo, useState } from 'react';
 import { UseMutateAsyncFunction, useQueryClient } from 'react-query';
-import { defaultEntityTemplatePopulated } from '.';
 import { ColoredEnumChip } from '../../../common/ColoredEnumChip';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { ActionMode, IMutationWithPayload } from '../../../common/dialogs/ChildTemplateDialog';
@@ -11,7 +10,14 @@ import { emptyEntityTemplate } from '../../../common/dialogs/entity';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { ICategoryMap } from '../../../interfaces/categories';
-import { EntityTemplateType, IChildTemplateMap, IChildTemplatePopulated, TemplateItem, ViewType } from '../../../interfaces/childTemplates';
+import {
+    EntityTemplateType,
+    IChildTemplateMap,
+    IChildTemplatePopulated,
+    IMongoChildTemplatePopulated,
+    TemplateItem,
+    ViewType,
+} from '../../../interfaces/childTemplates';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { getCountByTemplateIdsRequest } from '../../../services/entitiesService';
@@ -22,6 +28,7 @@ import { getFileName } from '../../../utils/getFileName';
 import { checkUserChildTemplatePermission } from '../../../utils/permissions/templatePermissions';
 import { ViewingCard } from '../components/Card';
 import { CardMenu } from '../components/CardMenu';
+import { defaultEntityTemplatePopulated } from '.';
 
 const getChildTemplateChips = (childTemplate: IChildTemplatePopulated) => {
     const chips: Array<{ color: string; label: string }> = [];
@@ -77,12 +84,17 @@ interface EntityTemplateCardProps {
             mutationProps?: IMutationWithPayload;
         }>
     >;
-    updateEntityTemplateStatusAsync: UseMutateAsyncFunction<
-        IMongoEntityTemplatePopulated,
+    updateTemplateStatusAsync: UseMutateAsyncFunction<
+        | IMongoChildTemplatePopulated
+        | {
+              entityTemplate: IMongoEntityTemplatePopulated;
+              childTemplates: IMongoChildTemplatePopulated[];
+          },
         unknown,
         {
             entityTemplateId: string;
             disabled: boolean;
+            isChild?: boolean;
         },
         unknown
     >;
@@ -91,6 +103,7 @@ interface EntityTemplateCardProps {
     isChildTemplate?: boolean;
     title?: string;
     categoryColor: string;
+    parentDisabled?: boolean;
 }
 
 const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
@@ -99,17 +112,18 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     setDeleteEntityTemplateDialogState,
     setAddActionsDialogState,
     setAddChildTemplateDialogState,
-    updateEntityTemplateStatusAsync,
+    updateTemplateStatusAsync,
     entityHasWritePermission,
     isDisabledView = false,
     isChildTemplate = false,
     title = entityTemplate.displayName,
     categoryColor,
+    parentDisabled = false,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const currentUser = useUserStore((state) => state.user);
     const queryClient = useQueryClient();
-    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates');
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates');
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
     const hasWritePermission = useMemo(() => {
@@ -209,9 +223,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                             <CardMenu
                                 onOptionsIconClose={() => setIsHoverOnCard(false)}
                                 onOptionsIconClick={async () => {
-                                    if (childTemplates?.get(entityTemplate._id)) {
-                                        return;
-                                    }
+                                    if (childTemplates?.get(entityTemplate._id)) return;
                                     await checkEntityTemplateHasEntities([entityTemplate]);
                                 }}
                                 onEditClick={() => {
@@ -279,17 +291,14 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                             : { type: EntityTemplateType.Parent, metaData: entityTemplate },
                                     });
                                 }}
-                                onDisableClick={
-                                    childTemplates?.get(entityTemplate._id)
-                                        ? undefined
-                                        : () => {
-                                              updateEntityTemplateStatusAsync({
-                                                  entityTemplateId: entityTemplate._id,
-                                                  disabled: !entityTemplate.disabled,
-                                              });
-                                              setIsHoverOnCard(false);
-                                          }
-                                }
+                                onDisableClick={() => {
+                                    updateTemplateStatusAsync({
+                                        entityTemplateId: entityTemplate._id,
+                                        disabled: !entityTemplate.disabled,
+                                        isChild: isChildTemplate,
+                                    });
+                                    setIsHoverOnCard(false);
+                                }}
                                 onAddChildTemplateClick={
                                     childTemplates?.get(entityTemplate._id)
                                         ? undefined
@@ -308,6 +317,8 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                     isDisabled: entityTemplate.disabled,
                                     isEditDisabled: entityTemplate.disabled || !hasWritePermission,
                                     tooltipTitle: entityTemplateCardTooltip(),
+                                    disabledErrorTooltip:
+                                        isChildTemplate && parentDisabled ? i18next.t('childTemplate.enableUnderDisabledParent') : undefined,
                                 }}
                             />
                         )}
@@ -421,7 +432,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                             textAlign: 'right',
                                         }}
                                     >
-                                        {key}
+                                        {value.title}
                                     </Typography>
                                 </MeltaTooltip>
                             </Grid>

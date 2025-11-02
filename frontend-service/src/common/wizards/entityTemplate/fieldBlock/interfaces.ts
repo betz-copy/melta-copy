@@ -1,12 +1,12 @@
-import React, { SetStateAction } from 'react';
 import { Accordion, styled } from '@mui/material';
 import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import _debounce from 'lodash.debounce';
-import { FieldEditCardProps } from '../FieldEditCard';
-import { StepComponentHelpers } from '../..';
+import React, { SetStateAction } from 'react';
 import { IUniqueConstraintOfTemplate } from '../../../../interfaces/entities';
-import { CommonFormInputProperties, GroupProperty, PropertyItem } from '../commonInterfaces';
+import { StepComponentHelpers } from '../..';
 import { PropertiesTypes } from '../AddFields';
+import { CommonFormInputProperties, GroupProperty, PropertyItem } from '../commonInterfaces';
+import { FieldEditCardProps } from '../FieldEditCard';
 
 export const ItemTypes = {
     FIELD: 'field',
@@ -102,7 +102,7 @@ export interface FieldBlockProps<PropertiesType extends string, Values extends R
     archive?: (index: number, groupIndex?: number) => void;
     remove?: (
         index: number,
-        isNewProperty: Boolean,
+        isNewProperty: boolean,
         propertiesType: PropertiesTypes,
         setShowAreUSureDialogForRemoveProperty: (v: boolean) => void,
         groupIndex?: number,

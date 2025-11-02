@@ -1,10 +1,10 @@
+import { SvgIconProps } from '@mui/material';
 import React from 'react';
 import { IconType } from 'react-icons/lib';
-import { SvgIconProps } from '@mui/material';
-import * as fa6Icons from './fa6Icons';
-import * as muiIcons from './materialUI';
-import * as faIcons from './fontAwesome';
 import * as biIcons from './boxIcons';
+import * as fa6Icons from './fa6Icons';
+import * as faIcons from './fontAwesome';
+import * as muiIcons from './materialUI';
 
 const profileAvatars = import.meta.glob('../../../public/icons/profileAvatar/*');
 

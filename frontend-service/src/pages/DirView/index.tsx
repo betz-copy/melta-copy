@@ -12,7 +12,7 @@ import ErrorPage from '../ErrorPage';
 import { PermissionsDialog } from './PermissionsDialog';
 import { Topbar } from './Topbar';
 import { Waves } from './Waves';
-import { workspaceObjectToWorkspaceForm, WorkspaceWizard } from './Wizard';
+import { WorkspaceWizard, workspaceObjectToWorkspaceForm } from './Wizard';
 import { Workspace } from './Workspace';
 
 const DirView: React.FC<{ params: { '*': string } }> = ({ params }) => {

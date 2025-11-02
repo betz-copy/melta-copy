@@ -1,7 +1,7 @@
+import { Box, Typography } from '@mui/material';
 import { WidgetProps } from '@rjsf/utils';
 import React from 'react';
 import UserAvatar from '../../UserAvatar';
-import { Box, Typography } from '@mui/material';
 
 const RjsfUserAvatarWidget = ({ options: { user }, label }: WidgetProps) => {
     return (

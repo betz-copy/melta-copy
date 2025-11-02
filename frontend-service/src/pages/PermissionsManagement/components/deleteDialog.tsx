@@ -4,9 +4,9 @@ import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
+import { IUserPopulated, PermissionData, RelatedPermission } from '../../../interfaces/users';
 import { syncPermissionsRequest, updateUserRoleIdsRequest } from '../../../services/userService';
 import { useWorkspaceStore } from '../../../stores/workspace';
-import { IUserPopulated, PermissionData, RelatedPermission } from '../../../interfaces/users';
 
 export const deletePermissions = { permissions: null, rules: null, instances: null, processes: null, templates: null };
 

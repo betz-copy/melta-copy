@@ -1,5 +1,6 @@
+import { ValidateRequest, wrapController } from '@microservices/shared';
 import { Router } from 'express';
-import { wrapController, ValidateRequest } from '@microservices/shared';
+import RolesController from './controller';
 import {
     createRoleRequestSchema,
     getAllWorkspaceRolesSchema,
@@ -10,7 +11,6 @@ import {
     updateRolesBulkRequestSchema,
     userRoleWorkspaceSchema,
 } from './validator.schema';
-import RolesController from './controller';
 
 const rolesRouter: Router = Router();
 

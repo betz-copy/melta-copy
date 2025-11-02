@@ -85,7 +85,7 @@ const CodeEditorDialog: React.FC<{
                     entityTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions }),
                 );
             else
-                queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', (childTemplateMap) =>
+                queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) =>
                     childTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions }),
                 );
 

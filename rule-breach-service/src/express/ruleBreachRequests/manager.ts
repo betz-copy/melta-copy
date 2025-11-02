@@ -1,12 +1,12 @@
 import {
-    IRuleBreachRequest,
-    RuleBreachRequestStatus,
     ActionTypes,
+    DefaultManagerMongo,
     IActionMetadata,
+    IAgGridRequest,
     IBrokenRule,
     IRuleBreach,
-    IAgGridRequest,
-    DefaultManagerMongo,
+    IRuleBreachRequest,
+    RuleBreachRequestStatus,
 } from '@microservices/shared';
 import config from '../../config';
 import { translateAgGridFilterModel, translateAgGridSortModel } from '../../utils/agGrid';
