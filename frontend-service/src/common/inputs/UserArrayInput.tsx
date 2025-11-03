@@ -1,8 +1,8 @@
 import { Box, Grid } from '@mui/material';
 import React from 'react';
+import { IUser } from '../../interfaces/users';
 import CreateUserCard from '../wizards/processTemplate/ApproverCard';
 import UserAutocomplete, { IUserAutocomplete } from './UserAutocomplete';
-import { IUser } from '../../interfaces/users';
 
 interface UserArrayInputProps extends IUserAutocomplete {
     currentUsers: string[] | IUser[];
@@ -24,6 +24,7 @@ const UserArrayInput: React.FC<UserArrayInputProps> = ({
     overrideSx,
     readOnly,
     helperText,
+    required,
 }) => {
     return (
         <Box>
@@ -43,6 +44,7 @@ const UserArrayInput: React.FC<UserArrayInputProps> = ({
                     onDisplayValueChange={onDisplayValueChange}
                     overrideSx={overrideSx}
                     readOnly={readOnly}
+                    required={required && !currentUsers?.length}
                 />
             </Grid>
             <Box

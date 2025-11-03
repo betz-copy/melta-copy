@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
+import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultController from '../../utils/express/controller';
 import DashboardManager from './manager';
-import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 
 class DashboardController extends DefaultController<DashboardManager> {
     constructor(workspaceId: string) {

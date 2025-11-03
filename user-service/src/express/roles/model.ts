@@ -1,5 +1,5 @@
-import { Schema, model } from 'mongoose';
 import { IRole } from '@microservices/shared';
+import { model, Schema } from 'mongoose';
 import config from '../../config';
 
 const { rolesCollectionName } = config.mongo;

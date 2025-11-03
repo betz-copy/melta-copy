@@ -1,11 +1,11 @@
+import { Box, Chip, ChipProps, Grid, TooltipProps, Typography } from '@mui/material';
 import React from 'react';
-import { ChipProps, TooltipProps, Chip, Grid, Box, Typography } from '@mui/material';
-import UserIcon, { UserIconProps } from './UserIcon';
-import { IUser } from '../../interfaces/users';
-import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
-import { useDarkModeStore } from '../../stores/darkMode';
-import { getKartoffelUserProfileRequest, getUserProfileRequest } from '../../services/userService';
 import { useQueries } from 'react-query';
+import { IUser } from '../../interfaces/users';
+import { getKartoffelUserProfileRequest, getUserProfileRequest } from '../../services/userService';
+import { useDarkModeStore } from '../../stores/darkMode';
+import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
+import UserIcon, { UserIconProps } from './UserIcon';
 
 export interface IUserAvatarProps {
     user: Partial<IUser>;
@@ -33,12 +33,14 @@ const UserAvatar: React.FC<IUserAvatarProps> = ({
             queryKey: ['userProfile', user._id, user?.preferences, userIcon],
             queryFn: () => getUserProfileRequest(user),
             enabled: !shouldGetKartoffelImage && !userIcon?.isDefaultProfile,
+            retry: 1,
         },
         {
             queryKey: ['kartoffelImage', user.kartoffelId, user._id],
             // KartoffelId will usually be undefined since the users saved in neo4j will have _id (which is their kartoffelId)
             queryFn: () => getKartoffelUserProfileRequest(user.kartoffelId ?? user._id!),
             enabled: shouldGetKartoffelImage && !userIcon?.isDefaultProfile,
+            retry: 1,
         },
     ]);
 

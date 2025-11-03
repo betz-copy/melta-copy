@@ -29,7 +29,7 @@ const TextArea = ({
     toPrint?: boolean;
     error?: boolean;
 }) => {
-    const [showLabel, setShowLabel] = useState<Boolean>(false);
+    const [showLabel, setShowLabel] = useState<boolean>(false);
 
     const handleChange = (_content: string, _delta: DeltaStatic, _source: EmitterSource, editor: ReactQuill.UnprivilegedEditor) => {
         const editorContentAsHtml = editor.getHTML();

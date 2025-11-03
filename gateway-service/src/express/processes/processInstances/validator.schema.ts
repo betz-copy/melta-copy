@@ -1,5 +1,5 @@
+import { fileSchema, MongoIdSchema, Status } from '@microservices/shared';
 import * as Joi from 'joi';
-import { Status, fileSchema, MongoIdSchema } from '@microservices/shared';
 import { ExtendedJoi } from '../../../utils/joi';
 
 const StatusValues = Object.values(Status);

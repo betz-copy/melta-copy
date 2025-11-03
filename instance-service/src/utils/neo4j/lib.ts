@@ -262,22 +262,16 @@ const doesPathContainDisabledNode = (path: (Node | Relationship)[], disabled: bo
 export const normalizeReturnedRelAndEntities =
     (disabled: boolean | null) =>
     (result: QueryResult): IEntityExpanded | null => {
-        if (!result.records.length) {
-            return null;
-        }
+        if (!result.records.length) return null;
 
         const entity = result.records[0].get(0)[0];
 
-        if (!entity) {
-            return null;
-        }
+        if (!entity) return null;
 
         const validConnections = result.records.slice(1).filter((record) => {
             const path = record.get(0) as (Node | Relationship)[];
 
-            if (typeof disabled === 'boolean') {
-                return !doesPathContainDisabledNode(path, disabled);
-            }
+            if (typeof disabled === 'boolean') return !doesPathContainDisabledNode(path, disabled);
 
             return true;
         });

@@ -6,20 +6,20 @@ import { InfoTypography } from '../../../../common/InfoTypography';
 import { FormikAutoComplete } from '../../../../common/inputs/FormikAutoComplete';
 import { ViewModeTextField } from '../../../../common/inputs/ViewModeTextField';
 import { StepComponentProps } from '../../../../common/wizards';
+import { IChildTemplateMap } from '../../../../interfaces/childTemplates';
 import { DashboardItemType, TableForm, ViewMode } from '../../../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { dashboardInitialValues, getTemplateProperties } from '../../../../utils/dashboard/formik';
 import { ChangeTemplate } from '../../Dialogs';
-import { IChildTemplateMap } from '../../../../interfaces/childTemplates';
 
 const SideBarDetails: React.FC<StepComponentProps<TableForm> & { viewMode: ViewMode }> = ({ viewMode, ...formikProps }) => {
     const { values, errors, touched, handleChange, setFieldValue, setValues } = formikProps;
 
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childEntityTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 
-    const entityTemplatesIds = [...entityTemplates.keys(), ...childEntityTemplates.keys()];
+    const entityTemplatesIds = [...entityTemplates.keys(), ...childTemplates.keys()];
 
     const [changeTemplateWarning, setChangeTemplateWarning] = useState<{ isOpen: boolean; newTemplate: string | string[] | null }>({
         isOpen: false,
@@ -27,13 +27,12 @@ const SideBarDetails: React.FC<StepComponentProps<TableForm> & { viewMode: ViewM
     });
 
     const handleChangeTemplate = (newValue: string[] | string | null) => {
-        const childTemplate = childEntityTemplates.get(newValue as string);
+        const childTemplate = childTemplates.get(newValue as string);
 
         setFieldValue('templateId', childTemplate?.parentTemplate._id || newValue || null);
         setFieldValue('childTemplateId', childTemplate?._id || null);
 
-        if (typeof newValue === 'string')
-            setFieldValue('columns', getTemplateProperties(childTemplate ? childEntityTemplates : entityTemplates, newValue));
+        if (typeof newValue === 'string') setFieldValue('columns', getTemplateProperties(childTemplate ? childTemplates : entityTemplates, newValue));
     };
 
     return (
@@ -48,7 +47,7 @@ const SideBarDetails: React.FC<StepComponentProps<TableForm> & { viewMode: ViewM
                         if (values.templateId) setChangeTemplateWarning({ isOpen: true, newTemplate: newValue });
                         else handleChangeTemplate(newValue);
                     }}
-                    getOptionLabel={(id) => childEntityTemplates.get(id)?.displayName || entityTemplates.get(id)?.displayName || id}
+                    getOptionLabel={(id) => childTemplates.get(id)?.displayName || entityTemplates.get(id)?.displayName || id}
                     multiple={false}
                     readonly={viewMode === ViewMode.ReadOnly}
                     style={{ width: '100%' }}

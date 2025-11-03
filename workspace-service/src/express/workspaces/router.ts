@@ -1,5 +1,5 @@
+import { ValidateRequest, wrapController } from '@microservices/shared';
 import { Router } from 'express';
-import { wrapController, ValidateRequest } from '@microservices/shared';
 import WorkspacesController from './controller';
 import {
     createOneSchema,

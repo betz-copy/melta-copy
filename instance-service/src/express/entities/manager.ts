@@ -47,6 +47,7 @@ import {
     ValidationError,
 } from '@microservices/shared';
 import { booleanPointInPolygon, featureCollection, intersect, point as turfPoint, polygon as turfPolygon } from '@turf/turf';
+import { startOfToday, startOfYesterday } from 'date-fns';
 import { flatten, unflatten } from 'flatley';
 import { StatusCodes } from 'http-status-codes';
 import differenceWith from 'lodash.differencewith';
@@ -57,16 +58,15 @@ import _partition from 'lodash.partition';
 import pickBy from 'lodash.pickby';
 import { Neo4jError, Transaction } from 'neo4j-driver';
 import pLimit from 'p-limit';
-import { startOfToday, startOfYesterday } from 'date-fns';
-import GatewayServiceProducer from '../../externalServices/gateway/producer';
-import filteredMap from '../../utils/filteredMap';
 import config from '../../config';
 import ActivityLogProducer from '../../externalServices/activityLog/producer';
+import GatewayServiceProducer from '../../externalServices/gateway/producer';
 import ChildTemplateManagerService from '../../externalServices/templates/childTemplateManager';
 import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import { executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/executeScript';
 import isBodyFunctionHasContent from '../../utils/actions/isBodyFunctionHasContent';
+import filteredMap from '../../utils/filteredMap';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
 import { expandEntityToNeoQuery, getExpandedFilteredGraphRecursively } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
 import {
@@ -91,14 +91,14 @@ import { escapeNeo4jQuerySpecialChars, searchWithRelationshipsToNeoQuery, templa
 import { buildChartAggregationQuery, handleChartPropertiesTemplate, manipulateReturnedChart } from '../../utils/templateCharts';
 import BulkActionManager from '../bulkActions/manager';
 import RelationshipManager from '../relationships/manager';
+import { getCausesOfRuleFailure } from '../rules/calcNewCausesOfRuleFailure';
 import { filterDependentRulesOnEntity, filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
 import { IRuleFailure } from '../rules/interfaces';
 import { runRuleOnEntitiesOfTemplate, runRulesOnEntity } from '../rules/runRulesOnEntity';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
 import { EntitiesIdsRulesReasonsMap, IEntityCrudAction, IExecutionOutput, IGetExpandedEntityBody, RunRuleReason } from './interface';
-import { addStringFieldsAndNormalizeSpecialStringValues } from './validator.template';
-import { getCausesOfRuleFailure } from '../rules/calcNewCausesOfRuleFailure';
 import { updateColorsForIndicatorRulesWithTodayFunc } from './updateColorsForBrokenRulesWithIndicator';
+import { addStringFieldsAndNormalizeSpecialStringValues } from './validator.template';
 
 const {
     brokenRulesFakeEntityIdPrefix,
@@ -214,9 +214,7 @@ class EntityManager extends DefaultManagerNeo4j {
     };
 
     throwServiceErrorIfFailedConstraintsValidation = (err: unknown): never => {
-        if (!(err instanceof Neo4jError) || err.code !== 'Neo.ClientError.Schema.ConstraintValidationFailed') {
-            throw err;
-        }
+        if (!(err instanceof Neo4jError) || err.code !== 'Neo.ClientError.Schema.ConstraintValidationFailed') throw err;
 
         const { message: neo4jMessage } = err;
 
@@ -231,6 +229,7 @@ class EntityManager extends DefaultManagerNeo4j {
                 templateId: label,
                 property: fixedProperty,
             };
+
             throw new ServiceError(badRequestStatus, `[NEO4J] instance is missing required property`, {
                 errorCode: config.errorCodes.failedConstraintsValidation,
                 constraint: requiredConstraint,
@@ -1080,7 +1079,7 @@ class EntityManager extends DefaultManagerNeo4j {
         Object.entries(acc).forEach(([key, value]) => {
             if (!value.properties) return;
             const { properties: props, coloredFields } = normalizeFields(flatten(value.properties, { safe: true }));
-            acc[key] = { ...value, properties: this.fixReturnedEntityReferencesFields(props), coloredFields };
+            acc[key] = { ...value, properties: EntityManager.fixReturnedEntityReferencesFields(props), coloredFields };
         });
 
         return acc;
@@ -1108,7 +1107,10 @@ class EntityManager extends DefaultManagerNeo4j {
         const { disabled, templateIds, expandedParams, filters } = reqBody;
         const fixSearchBody = filters ?? {};
 
-        const initialCypherQuery = await expandEntityToNeoQuery(fixSearchBody, id, templateIds, expandedParams, entityTemplatesMap, id);
+        const childTemplates = await this.childTemplateManagerService.searchChildTemplates();
+        const templateIdsWithChildren = Array.from(new Set([...templateIds, ...childTemplates.map(({ parentTemplate: { _id } }) => _id)]));
+
+        const initialCypherQuery = await expandEntityToNeoQuery(fixSearchBody, id, templateIdsWithChildren, expandedParams, entityTemplatesMap, id);
 
         const initialExpandedEntity = await this.neo4jClient.readTransaction(
             initialCypherQuery.cypherQuery,
@@ -1116,19 +1118,16 @@ class EntityManager extends DefaultManagerNeo4j {
             initialCypherQuery.parameters,
         );
 
-        if (!initialExpandedEntity) {
-            throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
-        }
-        if (JSON.stringify(expandedParams) === '{}') {
-            return initialExpandedEntity;
-        }
+        if (!initialExpandedEntity) throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
+
+        if (JSON.stringify(expandedParams) === '{}') return initialExpandedEntity;
 
         const filterRes = await getExpandedFilteredGraphRecursively(
             this.neo4jClient,
             disabled || null,
             initialExpandedEntity,
             fixSearchBody,
-            templateIds,
+            templateIdsWithChildren,
             expandedParams,
             entityTemplatesMap,
         );
@@ -1293,7 +1292,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
     handleDeleteErrors(allowedEntitiesToDelete: IEntity[], deleteAllRelationships?: boolean) {
         if (allowedEntitiesToDelete.length >= deleteEntitiesMaxLimit)
-            throw new BadRequestError(`cant delete more then ${deleteEntitiesMaxLimit} instances`);
+            throw new BadRequestError(`can't delete more then ${deleteEntitiesMaxLimit} instances`);
 
         if (!allowedEntitiesToDelete.length) {
             if (deleteAllRelationships)
@@ -1386,7 +1385,7 @@ class EntityManager extends DefaultManagerNeo4j {
                 { disabled },
             );
 
-            await this.updateRelationshipReference(updatedEntity, updatedProperties, transaction);
+            await this.updateRelationshipReference(updatedEntity, updatedProperties, transaction, entityTemplate);
 
             const ruleFailuresAfterAction = await this.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
 
@@ -1418,9 +1417,15 @@ class EntityManager extends DefaultManagerNeo4j {
         return runRulesOnEntity(transaction, entity.properties._id, relevantRulesOfEntity, entityTemplate);
     };
 
-    getNeighborsOfUpdatedEntityForRule = (transaction: Transaction, entityId: string) =>
+    getNeighborsOfUpdatedEntityForRuleInTransaction = (transaction: Transaction, entityId: string) =>
         runInTransactionAndNormalize(
             transaction,
+            `MATCH (e {_id: '${entityId}'})-[r]-(neighbor) RETURN type(r) as rTemplate, neighbor`,
+            normalizeNeighborsOfEntityForRule,
+        );
+
+    getNeighborsOfUpdatedEntityForRule = (entityId: string) =>
+        this.neo4jClient.readTransaction(
             `MATCH (e {_id: '${entityId}'})-[r]-(neighbor) RETURN type(r) as rTemplate, neighbor`,
             normalizeNeighborsOfEntityForRule,
         );
@@ -1430,7 +1435,7 @@ class EntityManager extends DefaultManagerNeo4j {
         updatedEntity: IEntity,
         updatedProperties: string[],
     ): Promise<IRuleFailure[]> => {
-        const neighborsOfUpdatedEntity = await this.getNeighborsOfUpdatedEntityForRule(transaction, updatedEntity.properties._id);
+        const neighborsOfUpdatedEntity = await this.getNeighborsOfUpdatedEntityForRuleInTransaction(transaction, updatedEntity.properties._id);
 
         const ruleFailuresForEachNeighborPromises = neighborsOfUpdatedEntity.map(async ({ relationshipTemplate, neighborOfEntity }) => {
             return this.runRulesOnEntityDependentViaAggregation(
@@ -1573,7 +1578,7 @@ class EntityManager extends DefaultManagerNeo4j {
         updatedEntity: IEntity,
         updatedProperties: string[],
         transaction: Transaction,
-        entityTemplate?: IEntityTemplate,
+        entityTemplate: IEntityTemplate,
     ) {
         const { templateId, properties: entityProperties } = updatedEntity;
         const entitiesNeedToUpdate = await this.getRelatedEntitiesOfEntity(templateId, [entityProperties._id], transaction);
@@ -1609,7 +1614,11 @@ class EntityManager extends DefaultManagerNeo4j {
                     {
                         updateParams: {
                             ids: entityIdsToUpdate,
-                            value: relatedEntitiesChangedValues,
+                            value: await addStringFieldsAndNormalizeSpecialStringValues(
+                                relatedEntitiesChangedValues,
+                                entityTemplate,
+                                this.entityTemplateManagerService,
+                            ),
                         },
                     },
                 );

@@ -1,5 +1,5 @@
-import React from 'react';
 import { Grid, Typography, useTheme } from '@mui/material';
+import React from 'react';
 import { ViewingCard } from './Card';
 import FieldButtons from './FieldButtons';
 

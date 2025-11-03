@@ -1,5 +1,5 @@
-import * as Joi from 'joi';
 import { MongoIdSchema } from '@microservices/shared';
+import * as Joi from 'joi';
 import { createProcessTemplateBody, updateProcessTemplateBody } from '../../../utils/joi';
 
 // GET /api/processes/templates/search-by-reviewer/:reviewerId

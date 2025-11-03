@@ -1,23 +1,23 @@
 {
-  "name": "migratedbvalues",
-  "version": "1.0.0",
-  "description": "",
-  "main": "trimValues.js",
-  "type": "module",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "dotenv": "^16.4.5",
-    "env-var": "^7.5.0",
-    "mongodb": "^6.10.0",
-    "mongoose": "^8.8.2",
-    "neo4j-driver": "^5.26.0"
-  },
-  "devDependencies": {
-    "@types/node": "^22.10.2"
-  }
+    "name": "migratedbvalues",
+    "version": "1.0.0",
+    "description": "",
+    "main": "trimValues.js",
+    "type": "module",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "dotenv": "^16.4.5",
+        "env-var": "^7.5.0",
+        "mongodb": "^6.10.0",
+        "mongoose": "^8.8.2",
+        "neo4j-driver": "^5.26.0"
+    },
+    "devDependencies": {
+        "@types/node": "^22.10.2"
+    }
 }

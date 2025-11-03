@@ -1,9 +1,9 @@
 import * as Cesium from 'cesium';
-import proj4 from 'proj4';
 import { Cartesian3 } from 'cesium';
-import { stringToCoordinates } from '.';
-import { environment } from '../../globals';
+import proj4 from 'proj4';
 import { CoordinateSystem } from '../../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
+import { environment } from '../../globals';
+import { stringToCoordinates } from '.';
 
 const {
     polygon: { polygonPrefix, polygonSuffix },
@@ -99,7 +99,7 @@ export const convertUTMToWGS84 = (utmLocation: UTM | UTM[]): Cartesian3 | Cartes
     const convertToWGS84 = (point: UTM) => proj4(utm(point.zone, point.hemi), wgs84, [point.east, point.north]);
     return !Array.isArray(utmLocation)
         ? ({ x: convertToWGS84(utmLocation)[0], y: convertToWGS84(utmLocation)[1] } as Cartesian3)
-        : utmLocation.map((point) => ({ x: convertToWGS84(point)[0], y: convertToWGS84(point)[1] } as Cartesian3));
+        : utmLocation.map((point) => ({ x: convertToWGS84(point)[0], y: convertToWGS84(point)[1] }) as Cartesian3);
 };
 
 const extractUtmPoint = (utmMatchRegex: RegExpMatchArray | null): UTM | undefined => {

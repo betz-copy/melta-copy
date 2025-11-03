@@ -23,7 +23,7 @@ const getRuleIcon = (rule: IMongoRule) => {
         case ActionOnFail.ENFORCEMENT:
             return <WarningRounded sx={{ color: '#DD3500' }} />;
         case ActionOnFail.INDICATOR: {
-            if (!!rule.fieldColor) return <Brush sx={{ color: '#166BD4' }} />;
+            if (rule.fieldColor) return <Brush sx={{ color: '#166BD4' }} />;
             return null;
         }
         default:

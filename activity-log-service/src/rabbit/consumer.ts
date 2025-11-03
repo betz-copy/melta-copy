@@ -1,9 +1,8 @@
+import { basicValidateRequest, IActivityLog, ServiceError } from '@microservices/shared';
 import { ConsumerMessage } from 'menashmq';
-
-import { ServiceError, IActivityLog, basicValidateRequest } from '@microservices/shared';
+import config from '../config';
 import ActivityLogManager from '../express/activityLog/manager';
 import activityLogSchema from '../utils/rabbit/joi.schema';
-import config from '../config';
 
 const {
     service: { workspaceIdHeaderName },

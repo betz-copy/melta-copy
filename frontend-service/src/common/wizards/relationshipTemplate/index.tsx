@@ -1,18 +1,18 @@
-import React from 'react';
-import { toast } from 'react-toastify';
-import i18next from 'i18next';
-import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
-import { StepType, Wizard, WizardBaseType } from '../index';
-import { CreateRelationshipTemplateName, createRelationshipTemplateNameSchema } from './CreateRelationshipTemplate';
-import {
-    createRelationshipTemplateRequest,
-    updateRelationshipTemplateRequest,
-    relationshipTemplateFormToRelationshipTemplateObject,
-} from '../../../services/templates/relationshipTemplatesService';
+import i18next from 'i18next';
+import React from 'react';
+import { useMutation, useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
+import {
+    createRelationshipTemplateRequest,
+    relationshipTemplateFormToRelationshipTemplateObject,
+    updateRelationshipTemplateRequest,
+} from '../../../services/templates/relationshipTemplatesService';
 import { ErrorToast } from '../../ErrorToast';
+import { StepType, Wizard, WizardBaseType } from '../index';
+import { CreateRelationshipTemplateName, createRelationshipTemplateNameSchema } from './CreateRelationshipTemplate';
 
 export interface RelationshipTemplateWizardValues {
     _id?: string;

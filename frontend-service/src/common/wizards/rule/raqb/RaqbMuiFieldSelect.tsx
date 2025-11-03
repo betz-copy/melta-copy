@@ -1,10 +1,10 @@
-import React, { useCallback, useState } from 'react';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import ListSubheader from '@mui/material/ListSubheader';
 import FormControl from '@mui/material/FormControl';
+import ListSubheader from '@mui/material/ListSubheader';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 import Tooltip from '@mui/material/Tooltip';
 import { FieldProps } from '@react-awesome-query-builder/mui';
+import React, { useCallback, useState } from 'react';
 
 // copied file from raqb library. was missing usage of customProps, so copied code and added myself
 // https://github.com/ukrbublik/react-awesome-query-builder/blob/6.4.2/packages/mui/modules/widgets/core/MuiFieldSelect.jsx

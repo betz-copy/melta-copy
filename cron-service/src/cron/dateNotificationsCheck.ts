@@ -1,21 +1,21 @@
 import {
     IDateAboutToExpireNotificationMetadata,
-    NotificationType,
-    WorkspaceTypes,
-    IFilterDatesRange,
     IEntityTemplatePopulated,
+    IFilterDatesRange,
+    InstancesSubclassesPermissions,
+    logger,
+    NotificationType,
     PermissionScope,
     PermissionType,
-    logger,
-    InstancesSubclassesPermissions,
+    WorkspaceTypes,
 } from '@microservices/shared';
 import schedule from 'node-schedule';
-import InstanceService from '../services/instance';
 import config from '../config';
-import UsersManager from '../users/manager';
 import EntityTemplateService from '../services/entityTemplate';
-import WorkspaceManager from '../workspaces/manager';
+import InstanceService from '../services/instance';
+import UsersManager from '../users/manager';
 import RabbitManager from '../utils/rabbit/rabbit';
+import WorkspaceManager from '../workspaces/manager';
 
 const { notifications } = config;
 

@@ -10,6 +10,7 @@ import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { IConstraint, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IErrorResponse } from '../../../interfaces/error';
 import fileDetails from '../../../interfaces/fileDetails';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { getAllChildTemplates } from '../../../services/templates/childTemplatesService';
@@ -24,10 +25,9 @@ import { StepType, Wizard, WizardBaseType } from '../index';
 import { AddFields, addFieldsSchema } from './AddFields';
 import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
 import { ChooseIcon } from './ChooseIcon';
-import { FieldGroupData, IFilterTemplate, PropertyItem } from './commonInterfaces';
 import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
+import { FieldGroupData, IFilterTemplate, PropertyItem } from './commonInterfaces';
 import { UploadExportFormats } from './UploadExportFormats';
-import { IErrorResponse } from '../../../interfaces/error';
 
 const { errorCodes } = environment;
 
@@ -137,7 +137,7 @@ const EntityTemplateWizard: React.FC<
         {
             onSuccess: async ({ template: data, childTemplates }) => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
-                queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', (childTemplateMap) => {
+                queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) => {
                     childTemplates.forEach((child) => childTemplateMap!.set(child._id, child));
                     return childTemplateMap!;
                 });
@@ -149,7 +149,7 @@ const EntityTemplateWizard: React.FC<
 
                     try {
                         const childTemplates: IMongoChildTemplatePopulated[] = await getAllChildTemplates();
-                        queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', mapTemplates(childTemplates, 'name'));
+                        queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', mapTemplates(childTemplates, 'name'));
                     } catch (error) {
                         toast.error(i18next.t('wizard.failedToUpdateSystemData'));
                     }

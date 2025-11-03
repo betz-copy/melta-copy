@@ -1,5 +1,5 @@
+import { DefaultController, fetchPropertyFromRequest, IMongoEntityTemplate } from '@microservices/shared';
 import { Request, Response } from 'express';
-import { fetchPropertyFromRequest, DefaultController, IMongoEntityTemplate } from '@microservices/shared';
 import { EntityTemplateManager } from './manager';
 
 class EntityTemplateController extends DefaultController<IMongoEntityTemplate, EntityTemplateManager> {
@@ -20,7 +20,7 @@ class EntityTemplateController extends DefaultController<IMongoEntityTemplate, E
         res.json(await this.manager.getTemplateById(id));
     }
 
-    async getTemplatesUsingRelationshipReferance(req: Request, res: Response) {
+    async getTemplatesUsingRelationshipReference(req: Request, res: Response) {
         res.json(await this.manager.getTemplatesUsingRelationshipReference(req.params.relatedTemplateId));
     }
 

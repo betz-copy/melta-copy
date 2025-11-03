@@ -1,7 +1,7 @@
+import { ServiceError } from '@microservices/shared';
 import * as archiver from 'archiver';
 import express from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { ServiceError } from '@microservices/shared';
 import DefaultController from '../../utils/express/controller';
 import { getFileName } from '../../utils/generatePath';
 import FilesManager from './manager';

@@ -1,36 +1,36 @@
-import isEqual from 'lodash.isequal';
-import groupBy from 'lodash.groupby';
 import {
-    IFormula,
-    IEquation,
-    isEquation,
     IAggregationGroup,
-    IGroup,
-    isAggregationGroup,
-    isGroup,
     IArgument,
+    ICausesOfInstance,
+    IEquation,
+    IFormula,
+    IGroup,
     IPropertyOfVariable,
-    isConstant,
-    isPropertyOfVariable,
     IRegularFunction,
+    isAggregationGroup,
+    isConstant,
     isCountAggFunction,
+    isEquation,
+    isGroup,
+    isPropertyOfVariable,
     isRegularFunction,
     isSumAggFunction,
-    ICausesOfInstance,
 } from '@microservices/shared';
+import groupBy from 'lodash.groupby';
+import isEqual from 'lodash.isequal';
+import filteredMap from '../../utils/filteredMap';
 import { IRuleFailure } from './interfaces';
 import { IFormulaCauses } from './interfaces/formulaWithCauses';
+import { IArgumentCauses, IPropertyOfVariableCauses } from './interfaces/formulaWithCauses/argument';
 import { ICause } from './interfaces/formulaWithCauses/cause';
 import { IEquationCauses } from './interfaces/formulaWithCauses/equation';
-import { IAggregationGroupCauses, IGroupCauses } from './interfaces/formulaWithCauses/group';
-import { IArgumentCauses, IPropertyOfVariableCauses } from './interfaces/formulaWithCauses/argument';
 import {
     ICountAggFunctionCauses,
     IGetTodayFunctionCause,
     IRegularFunctionCauses,
     ISumAggFunctionCauses,
 } from './interfaces/formulaWithCauses/function';
-import filteredMap from '../../utils/filteredMap';
+import { IAggregationGroupCauses, IGroupCauses } from './interfaces/formulaWithCauses/group';
 
 type NewAndOldCauses = { newCauses: (ICause | IGetTodayFunctionCause)[]; oldCauses: (ICause | IGetTodayFunctionCause)[] };
 

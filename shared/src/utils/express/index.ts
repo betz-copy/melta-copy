@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
-import { Request, Response, NextFunction } from 'express';
-import DefaultController from './controller';
+import { NextFunction, Request, Response } from 'express';
 import config from '../../config';
-import { BadRequestError } from './error';
 import { FunctionKey } from '../../types';
+import DefaultController from './controller';
+import { BadRequestError } from './error';
 
 export type MiddlewareFunction = (req: Request, res: Response, next?: NextFunction) => Promise<void>;
 

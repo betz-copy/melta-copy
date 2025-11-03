@@ -1,6 +1,6 @@
 import { FormikProps } from 'formik';
-import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
 import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, StepsObjectPopulated } from '../../../../interfaces/processes/processInstance';
+import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
 
 export interface ProcessDetailsValues {
     template: IMongoProcessTemplatePopulated | null;

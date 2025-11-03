@@ -20,7 +20,7 @@
 
 .loading-wave:before,
 .loading-wave:after {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 50%;

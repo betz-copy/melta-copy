@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import rolesRouter from './roles/router';
 import permissionsRouter from './permissions/router';
+import rolesRouter from './roles/router';
 import usersRouter from './users/router';
 
 const appRouter = Router();

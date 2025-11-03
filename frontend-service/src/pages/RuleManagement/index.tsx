@@ -9,10 +9,9 @@ import { BreachType } from '../../interfaces/ruleBreaches/ruleBreach';
 import { IRuleBreachAlertPopulated } from '../../interfaces/ruleBreaches/ruleBreachAlert';
 import { IRuleBreachRequestPopulated } from '../../interfaces/ruleBreaches/ruleBreachRequest';
 import { getBreachAlertById, getBreachRequestById } from '../../services/ruleBreachesService';
+import { useWorkspaceStore } from '../../stores/workspace';
 import RuleBreachDialog from './ruleBreachDialog';
 import { RuleBreachTable } from './table';
-
-import { useWorkspaceStore } from '../../stores/workspace';
 
 interface RuleBreachDialogContainerProps {
     breachType: string;
@@ -94,7 +93,7 @@ const RuleManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<s
 
     return (
         <Grid container className="pageMargin" spacing={3}>
-            <Grid size={{ xs: 12}}>
+            <Grid size={{ xs: 12 }}>
                 <BlueTitle title={i18next.t('ruleManagement.alerts')} component="h5" variant="h5" />
                 <RuleBreachTable
                     rowHeight={defaultRowHeight}
@@ -104,7 +103,7 @@ const RuleManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<s
                     onReviewBreachClick={onReviewBreachClick}
                 />
             </Grid>
-            <Grid size={{ xs: 12}}>
+            <Grid size={{ xs: 12 }}>
                 <BlueTitle title={i18next.t('ruleManagement.requests')} component="h5" variant="h5" />
                 <RuleBreachTable
                     ref={ruleBreachRequestsRef}

@@ -1,7 +1,8 @@
 /* eslint-disable react/no-unstable-nested-components */
-import React, { ReactNode } from 'react';
-import { TourProvider, StepType } from '@reactour/tour';
+
+import { StepType, TourProvider } from '@reactour/tour';
 import i18next from 'i18next';
+import React, { ReactNode } from 'react';
 import hebrew from './i18n/hebrew';
 
 const TourWrapper: React.FC<{ children?: ReactNode }> = ({ children }) => {

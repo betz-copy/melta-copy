@@ -1,4 +1,4 @@
-import { MongoIdSchema, searchFilterSchema, variableNameValidation, ViewType } from '@microservices/shared';
+import { MongoIdSchema, searchFilterSchema, ViewType, variableNameValidation } from '@microservices/shared';
 import Joi from 'joi';
 
 const childTemplatePropertySchema = Joi.object({
@@ -107,5 +107,27 @@ export const updateEntityTemplateActionSchema = Joi.object({
     query: {},
     params: {
         templateId: MongoIdSchema.required(),
+    },
+});
+
+// PUT /api/entities/child/:templateId/status
+export const updateChildTemplateStatusSchema = Joi.object({
+    body: {
+        disabled: Joi.boolean().required(),
+    },
+    query: {},
+    params: {
+        templateId: MongoIdSchema.required(),
+    },
+});
+
+// PUT /api/entities/child/:parentId/multiStatuses
+export const multiUpdateChildTemplateStatusByParentIdSchema = Joi.object({
+    body: {
+        disabled: Joi.boolean().required(),
+    },
+    query: {},
+    params: {
+        parentId: MongoIdSchema.required(),
     },
 });

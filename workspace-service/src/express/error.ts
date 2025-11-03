@@ -1,5 +1,5 @@
-import { StatusCodes } from 'http-status-codes';
 import { ServiceError } from '@microservices/shared';
+import { StatusCodes } from 'http-status-codes';
 
 export class DocumentNotFoundError extends ServiceError {
     constructor(id: string) {

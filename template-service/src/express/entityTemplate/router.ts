@@ -1,5 +1,5 @@
-import { Router } from 'express';
 import { createController, ValidateRequest } from '@microservices/shared';
+import { Router } from 'express';
 import EntityTemplateController from './controller';
 import {
     convertToRelationshipFieldRequestSchema,
@@ -7,7 +7,7 @@ import {
     deleteEntityTemplateSchema,
     getAllTemplatesSchema,
     getEntityTemplateByIdSchema,
-    getTemplatesUsingRelationshipReferanceSchema,
+    getTemplatesUsingRelationshipReferenceSchema,
     searchEntityTemplatesByFormatSchema,
     searchEntityTemplatesSchema,
     updateEntityTemplateActionSchema,
@@ -31,8 +31,8 @@ entityTemplateRouter.get('/', ValidateRequest(getAllTemplatesSchema), controller
 
 entityTemplateRouter.get(
     '/related/:relatedTemplateId',
-    ValidateRequest(getTemplatesUsingRelationshipReferanceSchema),
-    controller.getTemplatesUsingRelationshipReferance,
+    ValidateRequest(getTemplatesUsingRelationshipReferenceSchema),
+    controller.getTemplatesUsingRelationshipReference,
 );
 
 entityTemplateRouter.post(

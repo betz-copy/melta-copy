@@ -1,7 +1,8 @@
-import { Router } from 'express';
 import { ValidateRequest } from '@microservices/shared';
-import ChartController from './controller';
+import { Router } from 'express';
+import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 import { createWorkspacesController } from '../../utils/express';
+import ChartController from './controller';
 import ChartsValidator from './middlewares';
 import {
     createChartRequestSchema,
@@ -10,7 +11,6 @@ import {
     getChartByTemplateIdRequestSchema,
     updateChartRequestSchema,
 } from './validator.schema';
-import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 
 const ChartsRouter: Router = Router();
 

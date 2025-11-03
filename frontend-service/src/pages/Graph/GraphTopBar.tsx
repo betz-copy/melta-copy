@@ -1,15 +1,15 @@
+import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { RestartAltOutlined as ResetIcon } from '@mui/icons-material';
 import { Grid, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
-import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { CopyUrlButton } from '../../common/CopyUrlButton';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../stores/darkMode';
-import { IChildTemplateMap } from '../../interfaces/childTemplates';
 
 interface GraphTopBarProps {
     onReset: React.MouseEventHandler<HTMLButtonElement>;
@@ -30,9 +30,9 @@ const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView,
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childEntityTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 
-    const entityTemplate = childTemplateId ? childEntityTemplates.get(childTemplateId) : templateId ? entityTemplates.get(templateId) : undefined;
+    const entityTemplate = childTemplateId ? childTemplates.get(childTemplateId) : templateId ? entityTemplates.get(templateId) : undefined;
 
     return (
         <Grid

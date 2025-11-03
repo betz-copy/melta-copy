@@ -1,6 +1,7 @@
 import {
     Add,
     ControlPoint as AddIcon,
+    CompareArrows,
     Delete as DeleteIcon,
     DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
     DoNotDisturbOnOutlined as DoNotDisturbOnOutlinedIcon,
@@ -8,7 +9,6 @@ import {
     Edit as EditIcon,
     MoreVertOutlined as OptionsIcon,
 } from '@mui/icons-material';
-import { CompareArrows } from '@mui/icons-material';
 import { Grid, IconButton, Menu } from '@mui/material';
 import i18next from 'i18next';
 import React, { MouseEventHandler, useMemo, useState } from 'react';
@@ -28,6 +28,7 @@ export const CardMenu: React.FC<{
         tooltipTitle: string;
         editTooltipTitle?: string;
         disableForReadPermissions?: boolean;
+        disabledErrorTooltip?: string;
     };
     onDisableClick?: MouseEventHandler;
     onDuplicateClick?: MouseEventHandler;
@@ -191,7 +192,11 @@ export const CardMenu: React.FC<{
                 )}
 
                 {onDisableClick && (
-                    <MeltaTooltip placement="left" title={editTooltipTitle} disableHoverListener={!disabledProps?.disableForReadPermissions}>
+                    <MeltaTooltip
+                        placement="left"
+                        title={disabledProps?.disabledErrorTooltip}
+                        disableHoverListener={!disabledProps?.disabledErrorTooltip}
+                    >
                         <Grid>
                             <MenuButton
                                 onClick={(e) => {
@@ -206,7 +211,7 @@ export const CardMenu: React.FC<{
                                         <DoNotDisturbOnOutlinedIcon color="action" />
                                     )
                                 }
-                                disabled={disabledProps?.disableForReadPermissions}
+                                disabled={!!disabledProps?.disabledErrorTooltip || disabledProps?.disableForReadPermissions}
                             />
                         </Grid>
                     </MeltaTooltip>

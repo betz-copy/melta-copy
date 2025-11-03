@@ -1,5 +1,5 @@
-import { Request, Response } from 'express';
 import { DefaultController, IProcessTemplate } from '@microservices/shared';
+import { Request, Response } from 'express';
 import ProcessTemplateManager from './manager';
 
 export default class ProcessTemplateController extends DefaultController<IProcessTemplate, ProcessTemplateManager> {

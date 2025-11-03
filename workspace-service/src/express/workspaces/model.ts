@@ -1,5 +1,5 @@
-import mongoose from 'mongoose';
 import { BadRequestError, Colors, IMetadata, IWorkspace } from '@microservices/shared';
+import mongoose from 'mongoose';
 import config from '../../config';
 import { AllowedEmptyString } from '../../utils/mongoose';
 

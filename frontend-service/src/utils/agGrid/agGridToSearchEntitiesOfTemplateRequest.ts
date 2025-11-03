@@ -4,7 +4,15 @@ import { ICountSearchResult, IFilterOfField, IFilterOfTemplate, ISearchEntitiesO
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getDayEnd, getDayStart } from '../date';
 import { addDefaultFieldsToTemplate } from '../templates';
-import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridFilterModel, IAGGridRequest, IAGGridSort, IAGGridTextFilter } from './interfaces';
+import {
+    IAGGidNumberFilter,
+    IAGGridDateFilter,
+    IAGGridFilterModel,
+    IAGGridRequest,
+    IAGGridSort,
+    IAGGridTextFilter,
+    RelativeDateFilters,
+} from './interfaces';
 
 const { relativeDateFilters, fileIdLength } = environment;
 
@@ -94,11 +102,26 @@ export const numberFilterToFilterOfTemplate = (field: string, { type, filter, fi
 
 const timezoneOffset = new Date().getTimezoneOffset() * 60 * 1000;
 
+const getRelativeDateFilter = (field: string, type: IAGGridDateFilter['type']) => {
+    switch (type) {
+        case RelativeDateFilters.thisWeek:
+        case RelativeDateFilters.thisMonth:
+        case RelativeDateFilters.thisYear:
+            return { [field]: { $gte: type, $lte: type } };
+        case RelativeDateFilters.untilToday:
+            return { [field]: { $lte: type } };
+        case RelativeDateFilters.fromToday:
+            return { [field]: { $gte: type } };
+        default:
+            throw new Error('Invalid relative date filter');
+    }
+};
+
 export const dateFilterToFilterOfTemplate = (
     field: string,
     { type, dateFrom: dateFromString, dateTo: dateToString }: IAGGridDateFilter,
 ): IFilterOfTemplate => {
-    if (relativeDateFilters.includes(type)) return { [field]: { $gte: type, $lte: type } };
+    if (relativeDateFilters.includes(type)) return getRelativeDateFilter(field, type);
 
     if (!dateFromString) {
         switch (type) {
@@ -126,10 +149,11 @@ export const dateFilterToFilterOfTemplate = (
             return { [field]: { $gt: dateFrom } };
         case 'greaterThanOrEqual':
             return { [field]: { $gte: dateFrom } };
-        case 'inRange':
+        case 'inRange': {
             // eslint-disable-next-line no-case-declarations
             const dateTo = new Date(new Date(dateToString!).getTime() - timezoneOffset).toISOString().split('T')[0];
             return { [field]: { $gte: dateFrom, $lte: dateTo } };
+        }
         default:
             throw new Error('Invalid supported ag-grid filter type method');
     }
@@ -139,7 +163,7 @@ export const dateTimeFilterToFilterOfTemplate = (
     field: string,
     { type, dateFrom: dateFromString, dateTo: dateToString }: IAGGridDateFilter,
 ): IFilterOfTemplate => {
-    if (relativeDateFilters.includes(type)) return { [field]: { $gte: type, $lte: type } };
+    if (relativeDateFilters.includes(type)) return getRelativeDateFilter(field, type);
 
     if (!dateFromString) {
         switch (type) {
@@ -167,10 +191,11 @@ export const dateTimeFilterToFilterOfTemplate = (
             return { [field]: { $gt: getDayEnd(dateFrom).toISOString() } }; // dont include this day
         case 'greaterThanOrEqual':
             return { [field]: { $gte: getDayStart(dateFrom).toISOString() } }; // include this day
-        case 'inRange':
+        case 'inRange': {
             // eslint-disable-next-line no-case-declarations
             const dateTo = new Date(dateToString!);
             return { [field]: { $gte: getDayStart(dateFrom).toISOString(), $lte: getDayEnd(dateTo).toISOString() } };
+        }
         default:
             throw new Error('Invalid supported ag-grid filter type method');
     }
@@ -196,12 +221,13 @@ export const filterModelToFilterOfTemplatePerField = (
             } else {
                 return dateTimeFilterToFilterOfTemplate(field, fieldFilter);
             }
-        case 'set':
+        case 'set': {
             const filtersValues = Array.isArray(fieldFilter.values)
                 ? fieldFilter.values.map((item) => (typeof item === 'object' ? item?.fullName || null : item))
                 : fieldFilter.values;
 
             return setFilterToFilterOfTemplate(field, filtersValues);
+        }
         default:
             throw new Error('Invalid supported ag-grid filter type');
     }

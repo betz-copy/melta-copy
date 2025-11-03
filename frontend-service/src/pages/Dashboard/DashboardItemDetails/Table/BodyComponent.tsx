@@ -1,18 +1,18 @@
 import { Card, Grid, Typography, useTheme } from '@mui/material';
 import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';
+import { getDefaultFilterFromTemplate } from '../../../../common/EntitiesPage/TemplateTablesView';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../../../common/EntitiesTableOfTemplate';
 import { StepComponentProps } from '../../../../common/wizards';
 import { TableForm } from '../../../../interfaces/dashboard';
 import { IEntity } from '../../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
-import { useWorkspaceStore } from '../../../../stores/workspace';
-import { getDefaultFilterFromTemplate } from '../../../../common/EntitiesPage/TemplateTablesView';
-import { getRelevantEntityTemplate } from '../Chart/BodyComponent';
-import { useDebouncedFilter } from '../../../../utils/dashboard/useDebouncedFilter';
-import { getFilterModal } from '../../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
-import { isChildTemplate } from '../../../../utils/templates';
 import { useUserStore } from '../../../../stores/user';
+import { useWorkspaceStore } from '../../../../stores/workspace';
+import { getFilterModal } from '../../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
+import { useDebouncedFilter } from '../../../../utils/dashboard/useDebouncedFilter';
+import { isChildTemplate } from '../../../../utils/templates';
+import { getRelevantEntityTemplate } from '../Chart/BodyComponent';
 
 const BodyComponent: React.FC<StepComponentProps<TableForm>> = ({ values }) => {
     const theme = useTheme();

@@ -1,7 +1,7 @@
-import { Router } from 'express';
 import { createController, ValidateRequest } from '@microservices/shared';
+import { Router } from 'express';
 import IFrameController from './controller';
-import { deleteIFrameSchema, createIFrameSchema, updateIFrameSchema, getIFrameByIdSchema, searchIFramesSchema } from './validator.schema';
+import { createIFrameSchema, deleteIFrameSchema, getIFrameByIdSchema, searchIFramesSchema, updateIFrameSchema } from './validator.schema';
 
 const iFramesRouter: Router = Router();
 

@@ -310,7 +310,7 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
                             />
 
                             <MeltaTooltip
-                                title={i18next.t(`wizard.entityTemplate.${group.fields.length > 0 ? 'cantDeleteGroupWithFields' : 'deleteGroup'}`)}
+                                title={i18next.t(`wizard.entityTemplate.${group.fields.length ? 'cantDeleteGroupWithFields' : 'deleteGroup'}`)}
                             >
                                 <Grid>
                                     <IconButton
@@ -319,7 +319,7 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
                                             e.stopPropagation();
                                             remove(index);
                                         }}
-                                        disabled={group.fields.length > 0}
+                                        disabled={!!group.fields.length}
                                     >
                                         <DeleteIcon />
                                     </IconButton>

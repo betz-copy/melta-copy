@@ -1,16 +1,16 @@
-import http from 'http';
+import { errorMiddleware } from '@microservices/shared';
+import cookieParser from 'cookie-parser';
 import { once } from 'events';
 import express from 'express';
 import helmet from 'helmet';
-import passport from 'passport';
-import cookieParser from 'cookie-parser';
+import http from 'http';
 
 import { StatusCodes } from 'http-status-codes';
-import { errorMiddleware } from '@microservices/shared';
+import passport from 'passport';
+import config from '../config';
+import morganMiddleware from '../utils/express/morgan.middleware';
 import { initPassport } from '../utils/express/passport';
 import appRouter from './router';
-import morganMiddleware from '../utils/express/morgan.middleware';
-import config from '../config';
 
 class Server {
     private app: express.Application;

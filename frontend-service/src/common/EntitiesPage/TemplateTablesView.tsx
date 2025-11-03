@@ -34,13 +34,9 @@ export const getDefaultFilterFromTemplate = (
     const filterClauses: (IFilterOfTemplate | IFilterGroup)[] = [];
 
     for (const [key, prop] of Object.entries(template.properties.properties)) {
-        if (prop.isFilterByCurrentUser && currentUserKartoffelId) {
-            filterClauses.push({ [key]: { $eq: currentUserKartoffelId } });
-        }
+        if (prop.isFilterByCurrentUser && currentUserKartoffelId) filterClauses.push({ [key]: { $eq: currentUserKartoffelId } });
 
-        if (prop.isFilterByUserUnit && currentUserUnit && !isUserAdmin) {
-            filterClauses.push({ [key]: { $in: currentUserUnit } });
-        }
+        if (prop.isFilterByUserUnit && currentUserUnit && !isUserAdmin) filterClauses.push({ [key]: { $in: currentUserUnit } });
 
         if (prop.filters) {
             const parsed = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
@@ -48,7 +44,7 @@ export const getDefaultFilterFromTemplate = (
         }
     }
 
-    return filterClauses.length > 0 ? { $and: filterClauses } : undefined;
+    return filterClauses.length ? { $and: filterClauses } : undefined;
 };
 
 const TemplateTablesViewResults = forwardRef<

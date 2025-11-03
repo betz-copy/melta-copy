@@ -1,4 +1,3 @@
-import { FilterQuery } from 'mongoose';
 import {
     DefaultManagerMongo,
     IBasicNotificationQuery,
@@ -7,6 +6,7 @@ import {
     INotificationCountGroups,
     INotificationGroupCountDetails,
 } from '@microservices/shared';
+import { FilterQuery } from 'mongoose';
 import config from '../../config';
 import { transaction, UPDATE_CREATED_AT } from '../../utils/mongo';
 import { NotificationDoesNotExistError } from '../error';

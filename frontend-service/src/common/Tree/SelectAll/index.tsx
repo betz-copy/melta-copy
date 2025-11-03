@@ -1,6 +1,6 @@
-import React from 'react';
 import { MenuItem } from '@mui/material';
 import i18next from 'i18next';
+import React from 'react';
 import { MenuItemContent } from './MenuItemContent';
 
 export const SelectAll = ({
@@ -30,7 +30,7 @@ export const SelectAll = ({
         >
             <MenuItemContent
                 checked={selectedOptionIds.length === allOptionIds.length}
-                indeterminate={selectedOptionIds.length < allOptionIds.length && selectedOptionIds.length > 0}
+                indeterminate={selectedOptionIds.length < allOptionIds.length && !!selectedOptionIds.length}
                 label={i18next.t('selectChooseAll')}
                 order={0}
             />

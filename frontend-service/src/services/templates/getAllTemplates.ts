@@ -1,13 +1,13 @@
 import axios from '../../axios';
 import { environment } from '../../globals';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplates';
 import { IMongoCategory } from '../../interfaces/categories';
-import { IMongoRule } from '../../interfaces/rules';
-import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { IMongoCategoryOrderConfig } from '../../interfaces/config';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IMongoPrintingTemplate } from '../../interfaces/printingTemplates';
+import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
+import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplates';
+import { IMongoRule } from '../../interfaces/rules';
 
 const { getAllTemplates: getAllTemplatesRoute } = environment.api;
 

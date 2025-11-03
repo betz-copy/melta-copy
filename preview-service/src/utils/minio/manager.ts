@@ -1,5 +1,5 @@
-import MinIOClient from './minioClient';
 import config from '../../config';
+import MinIOClient from './minioClient';
 
 const { useDevBucket, devBucketPrefix } = config.minio;
 

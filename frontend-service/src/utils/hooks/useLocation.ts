@@ -1,19 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Cartesian3, Math as CesiumMath } from 'cesium';
 import * as Cesium from 'cesium';
+import { Cartesian3, Math as CesiumMath } from 'cesium';
+import { useEffect, useMemo } from 'react';
 import { useCesium } from 'resium';
-import { parsePolygon, stringToCoordinates } from '../map';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IEntity } from '../../interfaces/entities';
 import { environment } from '../../globals';
-import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { IEntity } from '../../interfaces/entities';
+import { parsePolygon, stringToCoordinates } from '../map';
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 
 const { squareLength } = environment.map;
-
-type entityWithLocationsProps = {
-    entityProperties?: IEntity['properties'];
-    entityTemplate?: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
-};
 
 export const createSquareAroundPoint = (center: Cartesian3, sideLength: number): Cartesian3[] => {
     const halfSide = sideLength / 2 / 111000;

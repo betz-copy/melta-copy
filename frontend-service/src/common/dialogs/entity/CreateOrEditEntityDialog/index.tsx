@@ -5,10 +5,9 @@ import { Form, Formik } from 'formik';
 import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import React, { useEffect, useMemo, useState } from 'react';
-import { EntityWizardValues } from '..';
 import { environment } from '../../../../globals';
-import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
 import { ICreateOrUpdateWithRuleBreachDialogState, IExternalErrors, IMutationProps } from '../../../../interfaces/CreateOrEditEntityDialog';
+import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
 import { IEntity } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { ActionTypes } from '../../../../interfaces/ruleBreaches/actionMetadata';
@@ -18,14 +17,13 @@ import { UserState, useUserStore } from '../../../../stores/user';
 import { useWorkspaceStore } from '../../../../stores/workspace';
 import { filterFieldsFromPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { ajvValidate } from '../../../inputs/JSONSchemaFormik';
+import { EntityWizardValues } from '..';
 import { IChooseTemplateMode } from '../ChooseTemplate';
 import { DraftWarningDialog } from '../draftWarningDialog';
 import { ExportFormats } from '../ExportFormats';
 import EditProps from './EditProps';
 import useDraftEntityDialogHook from './useDraft';
 import useMutationHandler from './useMutationHandler';
-
-const { signaturePrefix } = environment;
 
 export const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => {
     const templateFilesProperties = pickBy(
@@ -128,6 +126,7 @@ const CreateOrEditEntityDetails: React.FC<{
     const { payload, actionType } = mutationProps;
     const [isDraftDialogOpen, setIsDraftDialogOpen] = useState(false);
     const [wasDirty, setWasDirty] = useState(false);
+    const [isSubmitPressed, setIsSubmitPressed] = useState(false);
     const [initialValuePropsToFilter, setInitialValuePropsToFilter] = useState<Record<string, any>>({});
 
     const isEditMode = actionType === ActionTypes.UpdateEntity;
@@ -157,7 +156,7 @@ const CreateOrEditEntityDetails: React.FC<{
     const clientSideUserEntity: IEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
 
     const finalMutationProps = useMemo(() => {
-        if (Object.keys(clientSideUserEntity).length > 0) {
+        if (Object.keys(clientSideUserEntity).length) {
             return {
                 ...mutationProps,
                 actionType: ActionTypes.CreateClientSideEntity,
@@ -179,7 +178,6 @@ const CreateOrEditEntityDetails: React.FC<{
     const [deleteDraft, currentDraft, originalDrafts, createOrUpdateDraftDebounced, draftId] = useDraftEntityDialogHook(
         entityTemplate,
         setInitialValuePropsToFilter,
-        signaturePrefix,
         payload,
     );
 
@@ -227,7 +225,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                         <EditProps
                                             setFieldValue={setFieldValue}
                                             values={values}
-                                            errors={errors}
+                                            errors={isSubmitPressed ? errors : {}}
                                             touched={touched}
                                             setFieldTouched={setFieldTouched}
                                             initialValues={formInitialValues}
@@ -289,11 +287,12 @@ const CreateOrEditEntityDetails: React.FC<{
                                                     type="submit"
                                                     variant="contained"
                                                     startIcon={isLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />}
-                                                    onClick={() =>
-                                                        Object.keys(errors).length > 0
+                                                    onClick={() => {
+                                                        setIsSubmitPressed(true);
+                                                        Object.keys(errors).length
                                                             ? ''
-                                                            : setTimeout(() => (externalErrors ? undefined : handleClose()), 5000)
-                                                    }
+                                                            : setTimeout(() => (externalErrors ? undefined : handleClose()), 5000);
+                                                    }}
                                                     disabled={!dirty || isLoading}
                                                 >
                                                     {i18next.t('entityPage.save')}

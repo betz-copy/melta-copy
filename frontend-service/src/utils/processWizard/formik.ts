@@ -1,8 +1,8 @@
 import { get } from 'lodash';
 import pickBy from 'lodash.pickby';
-import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
-import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
 import { ProcessDetailsValues } from '../../common/wizards/processInstance/ProcessDetails';
+import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
+import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 
 export const getAllFieldsTouched = (values: ProcessDetailsValues) => {
     const touched = {};

@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { IEntityWithDirectRelationships, ISearchResult, ISemanticSearchResult, IRerankResult } from '@microservices/shared';
+import { IEntityWithDirectRelationships, IRerankResult, ISearchResult, ISemanticSearchResult } from '@microservices/shared';
 import excelConfig from './excel/excelConfig';
 
 const PROPS_TO_SKIP = ['_id', 'updatedAt', 'createdAt'];
@@ -118,16 +118,14 @@ export const sortEntities = (
     rerankByDocs: IRerankResult[],
     textsForReranking: Record<string, string[]>,
 ) =>
-    rerankByDocs
-        .map(({ text }) => {
-            const entityIds = textsForReranking[text];
+    rerankByDocs.flatMap(({ text }) => {
+        const entityIds = textsForReranking[text];
 
-            return formattedEntities.filter(
-                ({
-                    entity: {
-                        properties: { _id: entityId },
-                    },
-                }) => entityIds.includes(entityId),
-            );
-        })
-        .flat();
+        return formattedEntities.filter(
+            ({
+                entity: {
+                    properties: { _id: entityId },
+                },
+            }) => entityIds.includes(entityId),
+        );
+    });

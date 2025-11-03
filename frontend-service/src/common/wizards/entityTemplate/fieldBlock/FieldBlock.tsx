@@ -1,19 +1,19 @@
-import React, { SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
+import { DragHandle as DragHandleIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { AccordionDetails, AccordionSummary, Box, Button, Grid, Typography } from '@mui/material';
-import { v4 as uuid } from 'uuid';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
-import { DragHandle as DragHandleIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import _debounce from 'lodash.debounce';
+import React, { SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import { DndProvider, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { FieldEditCardProps } from '../FieldEditCard';
-import { AreYouSureDialog } from '../../../dialogs/AreYouSureDialog';
+import { v4 as uuid } from 'uuid';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { CommonFormInputProperties, FieldProperty, GroupProperty, PropertyItem } from '../commonInterfaces';
-import { Attachment, getFieldData, Field, Group } from './propertiesTypes';
-import { FieldBlockAccordion, FieldBlockProps, ItemTypes } from './interfaces';
+import { AreYouSureDialog } from '../../../dialogs/AreYouSureDialog';
 import { PropertiesTypes } from '../AddFields';
+import { CommonFormInputProperties, FieldProperty, GroupProperty, PropertyItem } from '../commonInterfaces';
+import { FieldEditCardProps } from '../FieldEditCard';
+import { FieldBlockAccordion, FieldBlockProps, ItemTypes } from './interfaces';
+import { Attachment, Field, Group, getFieldData } from './propertiesTypes';
 
 export const FieldBlockDND = <PropertiesType extends string, Values extends Record<PropertiesType, PropertyItem[]>>({
     propertiesType,
@@ -170,7 +170,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         updateFormik();
     };
 
-    const simpleRemove = (index: number, isNewProperty: Boolean, groupIndex?: number) => {
+    const simpleRemove = (index: number, isNewProperty: boolean, groupIndex?: number) => {
         const displayValuesCopy = [...orderedItemsRef.current] as Values[PropertiesType];
         const field = getFieldData(displayValuesCopy, index, groupIndex);
 
@@ -656,7 +656,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                 title={i18next.t('systemManagement.deleteField')}
                 body={`${i18next.t('systemManagement.warningOnDeleteField')}
                                 ${
-                                    selectedIndexesToRemove.length > 0 &&
+                                    !!selectedIndexesToRemove.length &&
                                     getFieldData(orderedItemsRef.current, selectedIndexesToRemove[0].index, selectedIndexesToRemove[0].groupIndex)
                                         ?.title
                                 }

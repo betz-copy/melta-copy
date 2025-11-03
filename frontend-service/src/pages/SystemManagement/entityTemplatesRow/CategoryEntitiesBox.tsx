@@ -4,10 +4,9 @@ import i18next from 'i18next';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Draggable, Droppable } from 'react-beautiful-dnd';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
-import { defaultEntityTemplatePopulated } from '.';
 import { IMutationWithPayload } from '../../../common/dialogs/ChildTemplateDialog';
 import { IMongoCategory } from '../../../interfaces/categories';
-import { IChildTemplateMap, TemplateItem } from '../../../interfaces/childTemplates';
+import { IChildTemplateMap, IMongoChildTemplatePopulated, TemplateItem } from '../../../interfaces/childTemplates';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { updateCategoryRequest } from '../../../services/templates/categoriesService';
@@ -16,6 +15,7 @@ import { useWorkspaceStore } from '../../../stores/workspace';
 import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
 import { Box } from '../components/Box';
 import { CreateButton } from '../components/CreateButton';
+import { defaultEntityTemplatePopulated } from '.';
 import EntityTemplateCard from './Card';
 
 interface CategoryEntitiesBoxProps {
@@ -48,12 +48,17 @@ interface CategoryEntitiesBoxProps {
             mutationProps?: IMutationWithPayload;
         }>
     >;
-    updateEntityTemplateStatusAsync: UseMutateAsyncFunction<
-        IMongoEntityTemplatePopulated,
+    updateTemplateStatusAsync: UseMutateAsyncFunction<
+        | IMongoChildTemplatePopulated
+        | {
+              entityTemplate: IMongoEntityTemplatePopulated;
+              childTemplates: IMongoChildTemplatePopulated[];
+          },
         unknown,
         {
             entityTemplateId: string;
             disabled: boolean;
+            isChild?: boolean;
         },
         unknown
     >;
@@ -67,14 +72,14 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
     setDeleteEntityTemplateDialogState,
     setAddActionsDialogState,
     setAddChildTemplateDialogState,
-    updateEntityTemplateStatusAsync,
+    updateTemplateStatusAsync,
     loadedEntityTemplateId,
     searchText,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const currentUser = useUserStore((state) => state.user);
     const queryClient = useQueryClient();
-    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates');
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates');
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
 
     const [isHoverOnBox, setIsHoverOnBox] = useState(false);
@@ -122,10 +127,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
 
     const categoryChildTemplatesFiltered = useMemo(() => {
         return categoryChildTemplates.filter((child) => {
-            if (child.parentTemplate?.category.toString() === entityTemplatesWithCategory.category._id) {
-                return true;
-            }
-
+            if (child.parentTemplate?.category.toString() === entityTemplatesWithCategory.category._id) return true;
             return child.category._id === entityTemplatesWithCategory.category._id;
         });
     }, [categoryChildTemplates, entityTemplates, entityTemplatesWithCategory]);
@@ -230,7 +232,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                             setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
                                                             setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
                                                             setAddActionsDialogState={setAddActionsDialogState}
-                                                            updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
+                                                            updateTemplateStatusAsync={updateTemplateStatusAsync}
                                                             setAddChildTemplateDialogState={setAddChildTemplateDialogState}
                                                             entityHasWritePermission={entityHasWritePermission}
                                                             isDisabledView={false}
@@ -267,11 +269,13 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                             ...entityTemplate,
                                                             category: childTemplate.category,
                                                             _id: childTemplate._id,
+                                                            disabled: childTemplates?.get(childTemplate._id)!.disabled!,
                                                         }}
+                                                        parentDisabled={entityTemplate.disabled}
                                                         setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
                                                         setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
                                                         setAddActionsDialogState={setAddActionsDialogState}
-                                                        updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
+                                                        updateTemplateStatusAsync={updateTemplateStatusAsync}
                                                         setAddChildTemplateDialogState={setAddChildTemplateDialogState}
                                                         entityHasWritePermission={entityHasWritePermission}
                                                         isDisabledView={isDisabled}
@@ -299,7 +303,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                             setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
                                             setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
                                             setAddActionsDialogState={setAddActionsDialogState}
-                                            updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
+                                            updateTemplateStatusAsync={updateTemplateStatusAsync}
                                             setAddChildTemplateDialogState={setAddChildTemplateDialogState}
                                             entityHasWritePermission={false}
                                             isDisabledView={true}
@@ -333,7 +337,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                 setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
                                                 setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
                                                 setAddActionsDialogState={setAddActionsDialogState}
-                                                updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
+                                                updateTemplateStatusAsync={updateTemplateStatusAsync}
                                                 setAddChildTemplateDialogState={setAddChildTemplateDialogState}
                                                 entityHasWritePermission={false}
                                                 isDisabledView={childTemplate.category._id !== entityTemplatesWithCategory.category._id}

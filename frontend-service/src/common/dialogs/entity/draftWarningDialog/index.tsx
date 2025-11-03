@@ -15,8 +15,8 @@ import {
 import i18next from 'i18next';
 import React from 'react';
 import { toast } from 'react-toastify';
-import { EntityWizardValues } from '..';
 import { DraftsState, useDraftIdStore, useDraftsStore } from '../../../../stores/drafts';
+import { EntityWizardValues } from '..';
 
 export type Draft = EntityWizardValues & { uniqueId: string; lastSavedAt: Date; entityId?: string };
 
@@ -75,11 +75,7 @@ export const DraftWarningDialog: React.FC<{
                                 sx={{ borderRadius: '8px' }}
                                 onClick={() => {
                                     const filterProperties = {
-                                        ...Object.fromEntries(
-                                            Object.entries(values.properties).filter(
-                                                ([_key, value]) => typeof value === 'string' && !value.startsWith('data:image/png;base64,'),
-                                            ),
-                                        ),
+                                        ...values.properties,
                                         disabled: values.properties.disabled ?? false,
                                     };
                                     const newValues = { ...values, properties: filterProperties };

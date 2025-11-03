@@ -1,7 +1,7 @@
-import React, { CSSProperties } from 'react';
 import { Grid, styled } from '@mui/material';
-import BlueTitle from './MeltaDesigns/BlueTitle';
+import React, { CSSProperties } from 'react';
 import { useWorkspaceStore } from '../stores/workspace';
+import BlueTitle from './MeltaDesigns/BlueTitle';
 
 export const TopBarGrid = styled(Grid)(({ theme }) => {
     const darkMode = theme.palette.mode === 'dark';

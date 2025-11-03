@@ -1,7 +1,7 @@
 import proj4 from 'proj4';
-import { BadRequestError } from './express/error';
 import config from '../config';
 import { SplitBy } from '../types';
+import { BadRequestError } from './express/error';
 
 const locationFormatError = 'location format not valid';
 

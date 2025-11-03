@@ -1,14 +1,14 @@
 import {
-    PermissionScope,
-    IMongoStepTemplate,
-    IMongoProcessTemplatePopulated,
-    IProcessTemplatePopulated,
-    ISearchProcessTemplatesBody,
-    IMongoStepInstance,
-    UpdateStepReqBody,
     IMongoProcessInstancePopulated,
+    IMongoProcessTemplatePopulated,
+    IMongoStepInstance,
+    IMongoStepTemplate,
     IProcessInstance,
     IProcessInstanceSearchProperties,
+    IProcessTemplatePopulated,
+    ISearchProcessTemplatesBody,
+    PermissionScope,
+    UpdateStepReqBody,
 } from '@microservices/shared';
 import config from '../../config';
 import { NotFoundError } from '../../express/processes/error';
@@ -98,7 +98,7 @@ class ProcessService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async archivedProcess(id: string, archived: Boolean) {
+    async archivedProcess(id: string, archived: boolean) {
         const { data } = await this.api.patch<IMongoProcessInstancePopulated>(`${instancesBaseRoute}/archive/${id}`, { archived });
 
         return data;

@@ -1,7 +1,7 @@
+import { logger } from '@microservices/shared';
 import * as http from 'http';
 import { BucketItem, Client, CopyConditions } from 'minio';
 import { Readable } from 'stream';
-import { logger } from '@microservices/shared';
 import config from '../../config';
 
 const { url: endPoint, port, accessKey, secretKey, useSSL, transportAgent } = config.minio;

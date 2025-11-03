@@ -1,14 +1,15 @@
 /* eslint-disable import/prefer-default-export */
-import * as joi from 'joi';
+
 import { ActionTypes, IAction } from '@microservices/shared';
+import * as joi from 'joi';
 import {
     createEntityMetadataSchema,
-    duplicateEntityMetadataSchema,
     createRelationshipMetadataSchema,
+    cronjobMetadataSchema as cronjobRunMetadataSchema,
     deleteRelationshipMetadataSchema,
+    duplicateEntityMetadataSchema,
     updateEntityMetadataSchema,
     updateEntityStatusMetadataSchema,
-    cronjobMetadataSchema as cronjobRunMetadataSchema,
 } from './schemas/actionMetadata';
 
 export const validateActionMetadata: joi.CustomValidator = (value, helpers) => {

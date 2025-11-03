@@ -1,10 +1,11 @@
-import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
-import { Router } from 'express';
 import { ValidateRequest } from '@microservices/shared';
+import { Router } from 'express';
+import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import config from '../../config';
+import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 import { createWorkspacesController } from '../../utils/express';
 import DashboardController from './controller';
-import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
+import DashboardValidator from './middlewares';
 import {
     createDashboardRequestSchema,
     deleteDashboardItemRequestSchema,
@@ -12,7 +13,6 @@ import {
     getDashboardItemByIdRequestSchema,
     searchDashboardItemsRequestSchema,
 } from './validator.schema';
-import DashboardValidator from './middlewares';
 
 const { url, baseRoute, requestTimeout, dashboard } = config.dashboardService;
 

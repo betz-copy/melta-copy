@@ -1,5 +1,5 @@
-import React from 'react';
 import { Grid, SvgIcon, useTheme } from '@mui/material';
+import React from 'react';
 
 const StrechableArrowRight: React.FC<{ height?: number }> = ({ height = 50 }) => {
     const theme = useTheme();

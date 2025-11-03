@@ -47,7 +47,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
     const queryClient = useQueryClient();
     const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig')!;
     const entityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getEntityTemplates'])!;
-    const childEntityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getChildEntityTemplates'])!;
+    const childEntityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getChildTemplates'])!;
 
     const theme = useTheme();
     const darkMode = useDarkModeStore((state) => state.darkMode);

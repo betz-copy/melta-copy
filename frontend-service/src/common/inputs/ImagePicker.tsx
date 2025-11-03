@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { Grid, ToggleButtonGroup, ToggleButton } from '@mui/material';
+import { Grid, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import i18next from 'i18next';
-import FileInput from './ImageFileInput';
-import IconPicker from './IconPicker';
+import React, { useState } from 'react';
 import fileDetails from '../../interfaces/fileDetails';
+import IconPicker from './IconPicker';
+import FileInput from './ImageFileInput';
 
 type InputSelectType = 'chooseFile' | 'chooseFromOptions';
 interface ImagePickerProps {
