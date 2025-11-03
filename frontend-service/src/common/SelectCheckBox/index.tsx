@@ -1,8 +1,8 @@
 import { ExpandMore, FilterList } from '@mui/icons-material';
 import { Box, FormControl, Grid, Select, Typography, useTheme } from '@mui/material';
 import { TreeViewBaseItem } from '@mui/x-tree-view-pro';
-import lodashUniqby from 'lodash.uniqby';
-import React, { Dispatch, Key, PropsWithChildren, SetStateAction, useCallback, useState } from 'react';
+import { uniqBy } from 'lodash';
+import { Dispatch, Key, PropsWithChildren, SetStateAction, useCallback, useState } from 'react';
 import { DropResult } from 'react-beautiful-dnd';
 import { useDarkModeStore } from '../../stores/darkMode';
 import Tree from '../Tree';
@@ -63,7 +63,7 @@ export const getOptionsAndGroupsMiniFiltered = <Option extends {}, Group = Optio
         return isGroupMatchedByLabel; // if group matched by label, show all of its option
     });
 
-    const optionsFiltered = lodashUniqby([...optionsFilteredByLabel, ...optionsFilteredByGroupLabel], getOptionId);
+    const optionsFiltered = uniqBy([...optionsFilteredByLabel, ...optionsFilteredByGroupLabel], getOptionId);
 
     const groupsFilteredBySomeOptionOfGroupLabel = groups.filter((group) => {
         const isSomeOptionOfGroupMatched = optionsFilteredByLabel.some(
@@ -71,7 +71,7 @@ export const getOptionsAndGroupsMiniFiltered = <Option extends {}, Group = Optio
         );
         return isSomeOptionOfGroupMatched; // if some option in group is shown, show it's group too
     });
-    const groupsFiltered = lodashUniqby([...groupsFilteredByLabel, ...groupsFilteredBySomeOptionOfGroupLabel], getGroupId);
+    const groupsFiltered = uniqBy([...groupsFilteredByLabel, ...groupsFilteredBySomeOptionOfGroupLabel], getGroupId);
 
     return { optionsFiltered, groupsFiltered };
 };

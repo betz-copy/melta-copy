@@ -1,10 +1,7 @@
 import { Box, Button, CircularProgress, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material';
 import { Form, Formik, FormikProps } from 'formik';
 import i18next from 'i18next';
-import _ from 'lodash';
-import _cloneDeep from 'lodash.clonedeep';
-import _debounce from 'lodash.debounce';
-import _isEqual from 'lodash.isequal';
+import _, { cloneDeep, debounce, isEqual } from 'lodash';
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -157,7 +154,7 @@ const MyPermissions: React.FC<{
 
                 onSuccess?.({ ...existingUser, permissions: newPermissions });
 
-                if (existingUser?._id === currentUser._id && !_isEqual(currentUser.currentWorkspacePermissions, newPermissions[workspace._id])) {
+                if (existingUser?._id === currentUser._id && !isEqual(currentUser.currentWorkspacePermissions, newPermissions[workspace._id])) {
                     setUser({
                         ...currentUser,
                         permissions: { ...currentUser.permissions, ...newPermissions },
@@ -183,13 +180,13 @@ const MyPermissions: React.FC<{
         retry: false,
     });
 
-    const searchRolesOptionsDebounced = _debounce(searchRolesOptions, 1000);
+    const searchRolesOptionsDebounced = debounce(searchRolesOptions, 1000);
 
     const prevRole = workspaceRoles?.find((role) => existingUser?.roleIds?.includes(role._id));
 
     return (
         <Formik
-            initialValues={existingUser ? _cloneDeep(existingUser) : (getDefaultEmptyUser(workspace._id) as IUser)}
+            initialValues={existingUser ? cloneDeep(existingUser) : (getDefaultEmptyUser(workspace._id) as IUser)}
             validationSchema={Yup.object({
                 fullName: Yup.string().nullable().required(i18next.t('validation.required')),
             }).unknown(true)}

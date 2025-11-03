@@ -16,7 +16,7 @@ import { ICreateRelationshipMetadataPopulated } from '../../../interfaces/ruleBr
 import { IBrokenRule, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { createRelationshipRequest } from '../../../services/relationshipsService';
 import { useDarkModeStore } from '../../../stores/darkMode';
-import { trycatch } from '../../../utils/trycatch';
+import { tryCatch } from '../../../utils/trycatch';
 import { ErrorToast } from '../../ErrorToast';
 import RelationshipTemplateAutocomplete from '../../inputs/RelationshipTemplateAutocomplete';
 import TemplateTableSelect from '../../inputs/TemplateTableSelect';
@@ -52,7 +52,7 @@ const validationSchema = Yup.object({
 });
 
 const validateForm = async (values: ICreateRelationshipValues): Promise<FormikErrors<ICreateRelationshipValues>> => {
-    const { err: validationSchemaErr } = await trycatch(() => validationSchema.validate(values, { abortEarly: false }));
+    const { err: validationSchemaErr } = await tryCatch(() => validationSchema.validate(values, { abortEarly: false }));
     const validationSchemaErrors = !validationSchemaErr ? {} : yupToFormErrors<ICreateRelationshipValues>(validationSchemaErr);
 
     const nonSchemaErrors: FormikErrors<ICreateRelationshipValues> = {};

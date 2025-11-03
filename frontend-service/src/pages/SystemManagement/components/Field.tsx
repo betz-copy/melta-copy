@@ -35,7 +35,7 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
     }, [value]);
 
     const isValidInput = (val: string | number | boolean | string[]) => {
-        return val !== unit && val !== null && !(typeof val === 'number' && isNaN(val));
+        return val !== unit && val !== null && !(typeof val === 'number' && Number.isNaN(val));
     };
     const isGatewayConfig = (path: string) => {
         return path === 'excel.entitiesFileLimit' || path === 'excel.filesLimit';
@@ -178,7 +178,7 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
                     slotProps={{ input: { disableUnderline: true } }}
                     onChange={(e) => {
                         const newValue = parseInt(e.target.value, 10);
-                        if (newValue > 0 || isNaN(newValue)) handleInputChange(newValue);
+                        if (newValue > 0 || Number.isNaN(newValue)) handleInputChange(newValue);
                     }}
                     onKeyDown={handleKeyDown}
                 />

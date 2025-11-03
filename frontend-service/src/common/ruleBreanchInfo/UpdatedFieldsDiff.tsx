@@ -1,6 +1,6 @@
 import { Typography } from '@mui/material';
 import i18next from 'i18next';
-import pickBy from 'lodash.pickby';
+import { pickBy } from 'lodash';
 import React from 'react';
 import ReactDiffViewer from 'react-diff-viewer';
 import { useQueryClient } from 'react-query';
@@ -17,16 +17,13 @@ const getEntityPropertyString = (
     oldValue: any,
     entityTemplates: IEntityTemplateMap,
     items?: any,
+    darkMode?: boolean,
 ) => {
     const { format } = propertyTemplate;
 
-    if (value === null || value === undefined) {
-        return '-';
-    }
+    if (value === null || value === undefined) return '-';
 
-    if (containsHTMLTags(value)) {
-        return new DOMParser().parseFromString(value, 'text/html').body.innerText;
-    }
+    if (containsHTMLTags(value)) return new DOMParser().parseFromString(value, 'text/html').body.innerText;
 
     if (format === 'relationshipReference') {
         const isRelatedEntityAllowed = entityTemplates.get(propertyTemplate.relationshipReference!.relatedTemplateId);
@@ -35,16 +32,13 @@ const getEntityPropertyString = (
         const displayValue = value.properties[propertyTemplate.relationshipReference!.relatedTemplateField];
         const oldDisplayValue = oldValue?.properties[propertyTemplate.relationshipReference!.relatedTemplateField];
 
-        if (isDiff && displayValue === oldDisplayValue) {
+        if (isDiff && displayValue === oldDisplayValue)
             return `${displayValue} (${i18next.t('ruleBreachInfo.updateEntityActionInfo.contentUpdated')})`;
-        }
 
         return displayValue;
     }
 
-    if (format !== 'fileId' && !items) {
-        return formatToString(value, propertyTemplate);
-    }
+    if (format !== 'fileId' && !items) return formatToString(value, propertyTemplate, darkMode);
 
     // single
     if (format === 'fileId') {
@@ -76,12 +70,13 @@ const getEntityPropertiesString = (
     entityProperties: Record<string, any>,
     entityTemplates: IEntityTemplateMap,
     entityTemplate: IMongoEntityTemplatePopulated,
+    darkMode?: boolean,
     oldEntityProperties?: Record<string, any>,
 ) => {
     const fieldPropertiesStrings = Object.entries(entityTemplate?.properties?.properties || []).map(([propertyKey, propertyTemplate]) => {
         const oldValue = oldEntityProperties?.[propertyKey];
         const value = entityProperties[propertyKey];
-        const valueFormatted = getEntityPropertyString(value, propertyTemplate, oldValue, entityTemplates, propertyTemplate.items);
+        const valueFormatted = getEntityPropertyString(value, propertyTemplate, oldValue, entityTemplates, propertyTemplate.items, darkMode);
         return `${propertyTemplate.title}: ${valueFormatted}`;
     });
     return fieldPropertiesStrings.join('\n');
@@ -106,12 +101,12 @@ export const UpdatedFieldsDiff: React.FC<{
         <ReactDiffViewer
             oldValue={
                 oldProperties
-                    ? getEntityPropertiesString(oldProperties, entityTemplates, entityTemplate!)
+                    ? getEntityPropertiesString(oldProperties, entityTemplates, entityTemplate!, darkMode)
                     : i18next.t('ruleBreachInfo.updateEntityActionInfo.entityBeforeUnknown')
             }
             newValue={
                 entityTemplate
-                    ? getEntityPropertiesString(newProperties, entityTemplates, entityTemplate, oldProperties)
+                    ? getEntityPropertiesString(newProperties, entityTemplates, entityTemplate, darkMode, oldProperties)
                     : i18next.t('ruleBreachInfo.updateEntityActionInfo.entityAfterUnknown')
             }
             hideLineNumbers

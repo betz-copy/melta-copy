@@ -18,7 +18,8 @@ export const VideoPreview: React.FC<IVideoPreview> = ({ data }) => {
                     overflow: 'hidden',
                 }}
             >
-                <source src={data} />
+                <source src={data} type="video/mp4" />
+                <track kind="captions" src="" label="English captions" srcLang="en" default />
             </video>
         </div>
     );

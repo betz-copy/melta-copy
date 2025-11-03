@@ -5,6 +5,7 @@ import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
 import { environment } from '../../../../globals';
 import { IEntity } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { useDarkModeStore } from '../../../../stores/darkMode';
 
 const { ganttSettings } = environment;
 
@@ -18,6 +19,8 @@ export interface IPureFieldsDisplayProps {
 }
 
 export const PureFieldsDisplay: React.FC<IPureFieldsDisplayProps> = ({ fields, entity, entityTemplate, textStyle, underlineColor, expanded }) => {
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
     return (
         <>
             {fields.map((field, index) => {
@@ -48,6 +51,7 @@ export const PureFieldsDisplay: React.FC<IPureFieldsDisplayProps> = ({ fields, e
                                     {`${expanded ? `${fieldName}:` : ''} ${formatToString(
                                         entity.properties[field],
                                         property,
+                                        darkMode,
                                         field,
                                         undefined,
                                         undefined,

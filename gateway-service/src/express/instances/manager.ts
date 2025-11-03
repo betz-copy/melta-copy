@@ -1,3 +1,4 @@
+import { promises as fsp } from 'node:fs';
 import {
     ActionTypes,
     BadRequestError,
@@ -40,7 +41,6 @@ import {
 } from '@microservices/shared';
 import axios from 'axios';
 import { stream } from 'exceljs';
-import { promises as fsp } from 'fs';
 import { mapValues, omit } from 'lodash';
 import { menash } from 'menashmq';
 import pMap from 'p-map';
@@ -51,7 +51,7 @@ import { PreviewService } from '../../externalServices/previewService';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import StorageService from '../../externalServices/storageService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
-import { trycatch } from '../../utils';
+import { tryCatch } from '../../utils';
 import { classifyEntityErrors, generateSerialNumbers, getAllEntitiesFromExcel, getSerialStarters } from '../../utils/excel';
 import { createWorkbook, createWorksheet, styleAWorksheet } from '../../utils/excel/createFunctions';
 import { convertIdOfBrokenRules, readExcelFile } from '../../utils/excel/getFunctions';
@@ -987,7 +987,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         const filesOfDeletedInstances = await this.service.deleteEntityInstances(deleteBody);
 
-        const { err: error } = await trycatch(() => this.deleteAllEntitiesFiles(filesOfDeletedInstances));
+        const { err: error } = await tryCatch(() => this.deleteAllEntitiesFiles(filesOfDeletedInstances));
 
         if (error) logger.error(`failed to delete files ${filesOfDeletedInstances}`, { error });
     }

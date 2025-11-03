@@ -52,10 +52,7 @@ import {
 } from '@microservices/shared';
 import { AxiosError, AxiosResponse } from 'axios';
 import { StatusCodes } from 'http-status-codes';
-import _, { groupBy } from 'lodash';
-import _omit from 'lodash/omit';
-import _isEqual from 'lodash.isequal';
-import lodashUniqby from 'lodash.uniqby';
+import _, { groupBy, isEqual, omit, uniqBy } from 'lodash';
 import config from '../../config';
 import DashboardItemService from '../../externalServices/dashboardService/dashboardItemService';
 import GanttsService from '../../externalServices/ganttsService';
@@ -67,7 +64,7 @@ import StorageService from '../../externalServices/storageService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import PrintingTemplateService from '../../externalServices/templates/printingTemplateService';
 import RelationshipsTemplateService from '../../externalServices/templates/relationshipsTemplateService';
-import { trycatch } from '../../utils';
+import { tryCatch } from '../../utils';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
 import {
@@ -143,7 +140,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             this.relationshipTemplateService.searchRelationshipTemplates({ destinationEntityIds: entityTemplateIds }),
         ]);
 
-        return lodashUniqby([...bySource, ...byDestination], '_id');
+        return uniqBy([...bySource, ...byDestination], '_id');
     }
 
     async getAllowedTemplatesAndRules(entityTemplateIds: string[], relationshipTemplates: IMongoRelationshipTemplate[], userId: string) {
@@ -217,7 +214,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             entityTemplateIds: allowedEntityTemplatesIdsByOneRelationship,
         });
 
-        const allowedRules: IRule[] = lodashUniqby([...rulesByAllowedEntityTemplates, ...rulesOfEntityTemplatesByOneRelationship], '_id');
+        const allowedRules: IRule[] = uniqBy([...rulesByAllowedEntityTemplates, ...rulesOfEntityTemplatesByOneRelationship], '_id');
 
         const parametersOfRulesOfEntityTemplatesByOneRelationship = rulesOfEntityTemplatesByOneRelationship.flatMap(({ formula }) =>
             getParametersOfFormula(formula),
@@ -399,7 +396,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         await this.entityTemplateService.deleteCategory(id);
 
         if (category.iconFileId !== null) {
-            await trycatch(() => this.storageService.deleteFile(category.iconFileId!));
+            await tryCatch(() => this.storageService.deleteFile(category.iconFileId!));
         }
 
         await UsersManager.deletePermissionsFromMetadata(
@@ -999,7 +996,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             await this.deletePropertyFromChartFilter(id, removedProperties);
             await this.deletePropertyFromTableDashboardFilter(id, removedProperties);
 
-            const { err } = await trycatch(() =>
+            const { err } = await tryCatch(() =>
                 this.instancesService.deletePropertiesOfTemplate(id, removedProperties, currentTemplate.properties.properties),
             );
 
@@ -1100,7 +1097,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
                 if (userId && userKey) {
                     const kartoffelUser = kartoffelUsersMapById[userId] ? kartoffelUsersMapById[userId][0] : undefined;
-                    if (kartoffelUser && kartoffelUser[expandedUserFieldValue.expandedUserField?.kartoffelField || '']) {
+                    if (kartoffelUser?.[expandedUserFieldValue.expandedUserField?.kartoffelField || '']) {
                         wasEntityChange = true;
                         entityToUpdate.properties[expandedUserFieldKey] =
                             kartoffelUser[expandedUserFieldValue.expandedUserField?.kartoffelField || ''].toString();
@@ -1195,7 +1192,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                     if (value.serialStarter !== newValue.serialStarter) throw new BadRequestError('can not change property serial starter');
                     if (
                         value.relationshipReference &&
-                        !_isEqual(_omit(value.relationshipReference, 'filters'), _omit(newValue.relationshipReference, 'filters'))
+                        !isEqual(omit(value.relationshipReference, 'filters'), omit(newValue.relationshipReference, 'filters'))
                     )
                         throw new BadRequestError('can not change relationship reference fields');
                     if (!value.archive && newValue.archive && !currTemplate.actions) archiveProperties.push(key);
@@ -1405,7 +1402,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         if (!templateWithoutProperties.properties.properties[values.name].items)
             templateWithoutProperties.properties.properties[values.name].enum = templateEnumFieldValues;
         const { items } = templateWithoutProperties.properties.properties[values.name];
-        if (items && items.enum) {
+        if (items?.enum) {
             items.enum = templateEnumFieldValues;
         }
         try {
@@ -1517,7 +1514,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     // relationship templates
     private async throwIfEntityTemplateDoesntExist(entityTemplateId: string, errorMessage: string) {
-        const { err: getEntityErr } = await trycatch(() => this.entityTemplateService.getEntityTemplateById(entityTemplateId));
+        const { err: getEntityErr } = await tryCatch(() => this.entityTemplateService.getEntityTemplateById(entityTemplateId));
         if (getEntityErr) {
             const { response } = getEntityErr as AxiosError;
 

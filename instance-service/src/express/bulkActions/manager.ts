@@ -18,9 +18,7 @@ import {
     IRuleMail,
     IUpdateEntityMetadata,
 } from '@microservices/shared';
-import groupBy from 'lodash.groupby';
-import _partition from 'lodash.partition';
-import pickBy from 'lodash.pickby';
+import { groupBy, partition, pickBy } from 'lodash';
 import { Transaction } from 'neo4j-driver';
 import config from '../../config';
 import ActivityLogProducer from '../../externalServices/activityLog/producer';
@@ -546,7 +544,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                         rulesByEntityTemplateIds,
                     );
 
-                    const [indicatorRules, rulesToThrowError]: [IRuleFailure[], IRuleFailure[]] = _partition(
+                    const [indicatorRules, rulesToThrowError]: [IRuleFailure[], IRuleFailure[]] = partition(
                         ruleFailuresAfterAll,
                         ({ rule: { actionOnFail } }) => actionOnFail === ActionOnFail.INDICATOR,
                     );

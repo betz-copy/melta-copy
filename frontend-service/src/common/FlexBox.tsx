@@ -1,5 +1,5 @@
 import { Stack, StackProps, useTheme } from '@mui/material';
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 
 export interface FlexBoxProps extends StackProps {
     direction?: 'row' | 'column';
@@ -14,7 +14,10 @@ const FlexBox = forwardRef<HTMLDivElement, FlexBoxProps>(({ gap, direction, sx, 
     const { gap: sxGap, ...sxRest } = sx && 'gap' in sx ? sx : { gap: undefined, ...sx };
     const flexGap = gap || sxGap;
     const spacing = typeof flexGap === 'number' ? theme.spacing(flexGap) : flexGap ? String(flexGap) : flexGap;
-    const gapStyles = { row: { marginInlineEnd: spacing }, column: { marginBottom: spacing } };
+    const gapStyles = {
+        row: { marginInlineEnd: spacing },
+        column: { marginBottom: spacing },
+    };
 
     const shrinkStyles = shrink ? { minWidth: 0, minHeight: 0 } : {};
 

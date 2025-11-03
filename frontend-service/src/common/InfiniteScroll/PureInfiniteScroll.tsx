@@ -1,5 +1,5 @@
 import { Grid } from '@mui/material';
-import React, { JSX, Key, useEffect, useRef } from 'react';
+import { JSX, Key, useEffect, useRef } from 'react';
 import { GetNextPageParamFunction, QueryFunction, QueryKey, useInfiniteQuery } from 'react-query';
 import { ShowMore } from './ShowMore';
 
@@ -8,7 +8,7 @@ export interface PureInfiniteScrollProps<T> {
     getItemId?: (item: T) => Key;
     queryKey: QueryKey;
     queryFunction: QueryFunction<T[]>;
-    onQueryError: (err: any) => void;
+    onQueryError: (err: unknown) => void;
     getNextPageParam?: GetNextPageParamFunction<T[]>;
     emptyText?: string;
     endText?: string;
@@ -35,7 +35,7 @@ export const PureInfiniteScroll = <T,>({
 
     useEffect(() => {
         const currentShowMoreRef = showMoreRef.current;
-        if (!currentShowMoreRef) return () => {};
+        if (!currentShowMoreRef) return;
 
         const observer = new IntersectionObserver(
             ([entry]) => {
@@ -51,7 +51,7 @@ export const PureInfiniteScroll = <T,>({
 
         observer.observe(currentShowMoreRef);
         return () => observer.unobserve(currentShowMoreRef);
-    }, [showMoreRef, isFetchingNextPage, hasNextPage]);
+    }, [isFetchingNextPage, hasNextPage, fetchNextPage]);
 
     return (
         <Grid direction="column" width="100%">
@@ -72,7 +72,7 @@ export const PureInfiniteScroll = <T,>({
             <ShowMore
                 ref={showMoreRef}
                 isLoading={isLoading || isFetchingNextPage || hasNextPage || isRefetching}
-                isEmpty={Boolean(data && data.pages.length && !data.pages[0].length)}
+                isEmpty={Boolean(data?.pages.length && !data.pages[0].length)}
                 emptyText={emptyText}
                 endText={endText}
             />

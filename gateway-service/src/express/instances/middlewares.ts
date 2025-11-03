@@ -12,7 +12,7 @@ import {
     ServiceError,
 } from '@microservices/shared';
 import { Request } from 'express';
-import lodashUniqby from 'lodash.uniqby';
+import { uniqBy } from 'lodash';
 import InstancesService from '../../externalServices/instanceService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import RelationshipsTemplateService from '../../externalServices/templates/relationshipsTemplateService';
@@ -243,7 +243,7 @@ class InstancesValidator extends DefaultController {
             this.entityTemplateService.getEntityTemplateById(destinationEntityId),
         ]);
 
-        return lodashUniqby([srcTemplate, dstTemplate], (template) => template._id);
+        return uniqBy([srcTemplate, dstTemplate], (template) => template._id);
     }
 
     async validateUserCanCreateRelationshipInstance(req: Request) {

@@ -8,7 +8,7 @@ import {
     ISearchBatchBody,
 } from '@microservices/shared';
 import { fromZonedTime } from 'date-fns-tz';
-import mapValues from 'lodash.mapvalues';
+import { mapValues } from 'lodash';
 import { Date as Neo4jDate, DateTime as Neo4jDateTime } from 'neo4j-driver';
 import config from '../../config';
 import addDefaultFieldsToTemplate from '../addDefaultsFieldsToEntityTemplate';

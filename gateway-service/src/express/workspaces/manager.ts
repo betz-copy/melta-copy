@@ -60,10 +60,11 @@ class WorkspaceManager extends DefaultManagerProxy {
 
         const fileIds = await this.storageService.uploadFiles(files);
 
-        return files.reduce(
-            (acc, { fieldname }, index) => ({ ...acc, [fieldname]: fileIds[index] }),
-            {} as Pick<IWorkspace, 'iconFileId' | 'logoFileId'>,
-        );
+        const result = {} as Pick<IWorkspace, 'iconFileId' | 'logoFileId'>;
+        files.forEach(({ fieldname }, index) => {
+            result[fieldname] = fileIds[index];
+        });
+        return result;
     }
 
     async createOne(workspace: Omit<IWorkspace, '_id'>, files: UploadedFile[]) {

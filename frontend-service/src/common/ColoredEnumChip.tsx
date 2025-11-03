@@ -9,7 +9,7 @@ interface ColoredEnumChipProps {
     style?: CSSProperties;
     icon?: React.ReactElement;
     searchValue?: string;
-    onDelete?: (event: any) => void;
+    onDelete?: React.EventHandler<any>;
     deleteIcon?: React.ReactElement;
     color?: string;
 }

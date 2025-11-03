@@ -68,10 +68,13 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
 
     const [inputValue, setInputValue] = useState('');
     const [searchResults, setSearchResults] = useState<IEntity[]>([]);
-    const [templatesObject, setTemplatesObject] = useState<Record<string, {}>>({});
+    const [templatesObject, setTemplatesObject] = useState<Record<string, object>>({});
 
     useEffect(() => {
-        const updatedTemplatesObject = selectedTemplates.map(({ _id }) => _id).reduce((acc, template) => ({ ...acc, [template]: {} }), {});
+        const updatedTemplatesObject: Record<string, any> = {};
+        for (const { _id } of selectedTemplates) {
+            updatedTemplatesObject[_id] = {};
+        }
         setTemplatesObject(updatedTemplatesObject);
     }, [selectedTemplates]);
 

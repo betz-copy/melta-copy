@@ -65,23 +65,21 @@ export const GlobalSearchBar: React.FC<{
     const urlSemanticSearch = urlSearchParams.get('semanticSearch');
     const boolUrl = convertToBool(urlSemanticSearch!);
 
-    const [debouncedSearchValue, setDebouncedSearchValue] = useState(inputValue ?? '');
+    const [debouncedSearchValue, setDebouncedSearchValue] = useState<string>(inputValue ?? '');
 
     const debouncedSearch = useCallback(
         debounce((value: string) => {
             if (value !== valueForSearchButtonRef.current) {
                 valueForSearchButtonRef.current = value;
                 onSearch(value);
-                if (gridApi) {
-                    gridApi.setGridOption('quickFilterText', value);
-                }
+                if (gridApi) gridApi.setGridOption('quickFilterText', value);
                 trackEvent({
                     category: 'search',
                     action: semanticSearch ? 'on' : 'off',
                 });
             }
         }, 300),
-        [onSearch, gridApi, valueForSearchButtonRef.current],
+        [],
     );
 
     useEffect(() => {
@@ -90,19 +88,15 @@ export const GlobalSearchBar: React.FC<{
 
         if (realValue !== semanticSearch) setSemanticSearch(realValue);
         if (realValue !== boolUrl) setUrlSearchParams({ ...Object.fromEntries(urlSearchParams.entries()), semanticSearch: realValue.toString() });
-    }, [boolUrl, semanticSearch, urlSemanticSearch, showAiButton, setSemanticSearch, setUrlSearchParams, urlSearchParams]);
+    }, [boolUrl, semanticSearch, urlSemanticSearch, setSemanticSearch, setUrlSearchParams, urlSearchParams]);
 
     useEffect(() => {
-        if (autoSearch) {
-            debouncedSearch(debouncedSearchValue);
+        if (!autoSearch) return;
 
-            return () => {
-                debouncedSearch.cancel();
-            };
-        }
+        debouncedSearch(debouncedSearchValue);
 
-        return undefined;
-    }, [debouncedSearchValue, gridApi, onSearch, autoSearch, debouncedSearch]);
+        return () => debouncedSearch.cancel();
+    }, [debouncedSearchValue, autoSearch, debouncedSearch]);
 
     const aiToolTip = useCallback(
         () => (

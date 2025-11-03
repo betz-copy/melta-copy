@@ -1,6 +1,6 @@
 import { Autocomplete, Chip, TextField } from '@mui/material';
 import { FormikProps, getIn } from 'formik';
-import React, { CSSProperties } from 'react';
+import { CSSProperties } from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
 
 interface IFormikAutoCompleteProps<T> {

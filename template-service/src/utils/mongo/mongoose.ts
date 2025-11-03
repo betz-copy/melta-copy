@@ -1,5 +1,5 @@
 import { logger } from '@microservices/shared';
-import _forEach from 'lodash.foreach';
+import { forEach } from 'lodash';
 import { ClientSession, startSession, Types } from 'mongoose';
 import { trycatch } from '..';
 
@@ -21,7 +21,7 @@ export const withTransaction = async <Func extends (session: ClientSession) => P
 };
 
 export const transformObjectIdKeysToString = (doc: any) => {
-    _forEach(doc, (val, key) => {
+    forEach(doc, (val, key) => {
         if (val instanceof Types.ObjectId) {
             doc[key] = val.toString();
         }

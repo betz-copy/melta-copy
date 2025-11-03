@@ -40,7 +40,7 @@ export const CustomImage: React.FC<CustomImageProps> = ({ imageUrl, width, heigh
               },
           };
 
-    return <img height={height} width={width} className={className} {...customProps} />;
+    return <img height={height} width={width} className={className} alt="" {...customProps} />;
 };
 
 interface CustomIconProps extends Omit<CustomImageProps, 'imageUrl'> {

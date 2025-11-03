@@ -30,7 +30,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 function formatDateToDDMMYYYY(dateString: string): string {
     if (!dateString) return '-';
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return '-';
+    if (Number.isNaN(date.getTime())) return '-';
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
@@ -70,6 +70,7 @@ const getUserAvatar = (
 export const formatToString = (
     value: any,
     property: IEntitySingleProperty,
+    darkMode?: boolean,
     key?: string,
     preview?: boolean,
     color?: string,
@@ -78,8 +79,6 @@ export const formatToString = (
     entityTemplate?: Template,
     properties?: IEntityPropertiesProps['properties'],
 ) => {
-    const darkMode = useDarkModeStore((state) => state.darkMode);
-
     const { format, type: valueType, title, expandedUserField } = property;
     const { keyEnumColors, isPrintingMode, pureString } = options;
 
@@ -94,13 +93,11 @@ export const formatToString = (
         expandedUserField?.kartoffelField &&
         ['birthDate', 'dischargeDay', 'enlistmentDay'].includes(expandedUserField.kartoffelField) &&
         value
-    ) {
+    )
         return formatDateToDDMMYYYY(value);
-    }
 
-    if (valueType === 'number') {
-        return value >= 0 ? value : `${(value * -1).toString()}-`;
-    }
+    if (valueType === 'number') return value >= 0 ? value : `${(value * -1).toString()}-`;
+
     if (valueType === 'boolean') return value ? i18next.t('booleanOptions.yes') : i18next.t('booleanOptions.no');
     if (valueType === 'string') {
         if (format === 'date') return new Date(value).toLocaleDateString('en-uk');
@@ -297,6 +294,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                 const stringFormatValue = formatToString(
                     propertyValue,
                     propertySchema,
+                    darkMode,
                     propertyKey,
                     preview,
                     coloredFields?.[propertyKey],
@@ -324,7 +322,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                 const propertyTitleColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#9398C2', {});
 
                 let innerContent: string | JSX.Element | undefined;
-                if (hideFieldsToDisplay.includes(propertyKey)) innerContent = <>••••••••</>;
+                if (hideFieldsToDisplay.includes(propertyKey)) innerContent = '••••••••';
                 else if (containsHtmlTags)
                     innerContent = viewFirstLineOfLongText
                         ? `${getFirstLine(stringFormatValue)}${getNumLines(stringFormatValue) > 1 ? '...' : ''}`

@@ -124,11 +124,11 @@ const PrintOptionsDialog: React.FC<{
     }, [getPropertiesFiles, getProcessStepsFiles, setFiles, setSelectedFiles]);
 
     useEffect(() => {
-        setFilesLoadingStatus(
-            selectedFiles.reduce((acc, file) => {
-                return { ...acc, [file.id]: true };
-            }, {}),
-        );
+        const status: Record<string, boolean> = {};
+        for (const file of selectedFiles) {
+            status[file.id] = true;
+        }
+        setFilesLoadingStatus(status);
     }, [selectedFiles]);
 
     useEffect(() => {

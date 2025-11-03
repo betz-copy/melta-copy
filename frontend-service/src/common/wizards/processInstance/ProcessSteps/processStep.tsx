@@ -3,8 +3,8 @@ import { Box, Button, CircularProgress, Grid, InputLabel, TextField, Typography 
 import { AxiosError } from 'axios';
 import { Field, Form, Formik } from 'formik';
 import i18next from 'i18next';
-import pickBy from 'lodash.pickby';
-import React, { FC, useState } from 'react';
+import { pickBy } from 'lodash';
+import React, { FC, JSX, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { PermissionScope } from '../../../../interfaces/permissions';
@@ -35,7 +35,7 @@ export const CommentsDetails: FC<{ values: ProcessStepValues | IMongoStepInstanc
     return (
         <Grid container style={{ textAlign: 'right' }} alignItems="center" flexDirection="row" flexWrap="nowrap" height="100%">
             <Grid>
-                <img src="/icons/comment-icon.svg" />
+                <img src="/icons/comment-icon.svg" alt="Comment" />
             </Grid>
             <Grid>
                 <Typography
@@ -58,7 +58,7 @@ export const CommentsDetails: FC<{ values: ProcessStepValues | IMongoStepInstanc
 
 export const TextAreaProperty: FC<{
     textArea: {
-        value?: any;
+        value?: JSX.Element | undefined;
         key: string;
         title: string;
     };

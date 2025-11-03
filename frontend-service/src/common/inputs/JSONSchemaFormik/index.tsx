@@ -6,7 +6,7 @@ import Ajv, { ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
 import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import i18next from 'i18next';
-import pickBy from 'lodash.pickby';
+import { pickBy } from 'lodash';
 import React, { memo, useEffect, useState } from 'react';
 import { environment } from '../../../globals';
 import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
@@ -78,7 +78,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     });
     ajv.addFormat('date-time', {
         type: 'string',
-        validate: (value: string) => value === ByCurrentDefaultValue.byCurrentDate || !isNaN(Date.parse(value)),
+        validate: (value: string) => value === ByCurrentDefaultValue.byCurrentDate || !Number.isNaN(Date.parse(value)),
     });
     ajv.addFormat('fileId', /.*/);
     ajv.addFormat('signature', /.*/);
@@ -184,23 +184,20 @@ const formikErrorsToRjsfExtraErrorsRec = (
 const formikErrorsToRjsfExtraErrors = (
     formikErrors: ErrorMessage<string> | string,
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
-): ErrorSchema<{}> => {
+): ErrorSchema<object> => {
     const nestedErrors = convertErrorsToNestedGroups(template, formikErrors);
     return formikErrorsToRjsfExtraErrorsRec(nestedErrors, template);
 };
 
 const mergeErrorSchemas = (
-    errors1: ErrorSchema<{}>,
-    errors2: ErrorSchema<{}>,
+    errors1: ErrorSchema<object>,
+    errors2: ErrorSchema<object>,
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
-): ErrorSchema<{}> => {
+): ErrorSchema<object> => {
     const merged = Object.entries(errors2).reduce(
         (acc, [key, value]) => {
-            if (!acc?.[key]?.__errors) {
-                acc[key] = { __errors: [value] };
-            } else {
-                acc[key].__errors = [...new Set([...acc[key]._errors, value])];
-            }
+            if (!acc?.[key]?.__errors) acc[key] = { __errors: [value] };
+            else acc[key].__errors = [...new Set([...acc[key]._errors, value])];
 
             return acc;
         },
@@ -320,24 +317,26 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     );
 
     const schemaWithGroups = values.template?.fieldGroups?.reduce((acc, { fields, displayName, name }) => {
-        const properties = fields.reduce((acc, field) => {
-            const propertyInSchema = schema.properties[field];
-            if (!propertyInSchema) return acc;
+        const properties = fields.reduce(
+            (propsAcc, field) => {
+                const propertyInSchema = schema.properties[field];
+                if (!propertyInSchema) return propsAcc;
 
-            propertyInSchema.default = values.properties[field] || propertyInSchema.defaultValue;
+                propertyInSchema.default = values.properties[field] || propertyInSchema.defaultValue;
+                delete schema.properties[field];
 
-            delete schema.properties[field];
-            return { ...acc, [field]: propertyInSchema };
-        }, {});
-
-        return {
-            ...acc,
-            [name]: {
-                type: 'object',
-                title: displayName,
-                properties,
+                propsAcc[field] = propertyInSchema;
+                return propsAcc;
             },
+            {} as Record<string, any>,
+        );
+
+        acc[name] = {
+            type: 'object',
+            title: displayName,
+            properties,
         };
+        return acc;
     }, {} as RJSFSchema);
 
     schema.properties = { ...schema.properties, ...(schemaWithGroups ?? {}) };

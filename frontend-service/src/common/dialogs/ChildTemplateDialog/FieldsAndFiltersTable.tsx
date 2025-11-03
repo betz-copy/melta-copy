@@ -64,7 +64,7 @@ const renderChips = (
 ): React.ReactNode[] => {
     if (isFilterByUser || isFilterByUserUnit) {
         return [
-            <Typography sx={{ fontSize: '14px', fontWeight: 400, color: '#BBBED8' }}>
+            <Typography sx={{ fontSize: '14px', fontWeight: 400, color: '#BBBED8' }} key={mode}>
                 {i18next.t(`childTemplate.${isFilterByUser ? 'byUser' : 'byUnit'}`)}
             </Typography>,
         ];

@@ -1,7 +1,7 @@
 {
-    "eslint.validate": ["javascript", "typescript"],
     "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": "explicit"
+        "source.organizeImports.biome": "explicit",
+        "source.fixAll.biome": "explicit"
     },
     "editor.formatOnSave": true,
     "[javascript]": {
@@ -33,7 +33,22 @@
         "statusBarItem.remoteBackground": "#007fff",
         "statusBarItem.remoteForeground": "#e7e7e7"
     },
-    "cSpell.words": ["ECEF", "epsg", "hemi", "Highchart", "Highcharts", "kartoffel", "matomo", "melta", "menash", "Rjsf", "Shraga", "wouter"],
+    "cSpell.words": [
+        "ECEF",
+        "epsg",
+        "Gantt",
+        "gantts",
+        "hemi",
+        "Highchart",
+        "Highcharts",
+        "kartoffel",
+        "matomo",
+        "melta",
+        "menash",
+        "Rjsf",
+        "Shraga",
+        "wouter"
+    ],
     "files.exclude": {
         "**/node_modules": true,
         "**/dist": true

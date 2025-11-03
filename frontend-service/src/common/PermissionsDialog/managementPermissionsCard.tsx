@@ -70,7 +70,7 @@ const ManagementPermissionsCard: React.FC<ManagementPermissionsCardProps> = ({ d
                             viewMode={viewMode}
                             isChecked={isChecked}
                             onChange={onChange}
-                            permissionsManagement={managementType == 'permissions'}
+                            permissionsManagement={managementType === 'permissions'}
                         />
                     ))}
                 </FormGroup>

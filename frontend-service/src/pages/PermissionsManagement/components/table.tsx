@@ -18,7 +18,7 @@ import { useDarkModeStore } from '../../../stores/darkMode';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { agGridLocaleText } from '../../../utils/agGrid/agGridLocaleText';
 import { translatedEnumColDef } from '../../../utils/agGrid/commonColDefs';
-import { trycatch } from '../../../utils/trycatch';
+import { tryCatch } from '../../../utils/trycatch';
 
 const { infiniteScrollPageCount } = environment.permission;
 
@@ -184,7 +184,7 @@ const getDatasource = <Data = PermissionData>(
             const { startRow, endRow, filterModel, sortModel } = request;
             let data: { dataArray?: IUser[] | IRole[]; count?: number }, error: unknown; //TODO: add types :)
             if (permissionType === RelatedPermission.User) {
-                const { result, err } = await trycatch(() =>
+                const { result, err } = await tryCatch(() =>
                     searchUsersRequest({
                         workspaceIds: [_id],
                         step: startRow! / infiniteScrollPageCount,
@@ -197,7 +197,7 @@ const getDatasource = <Data = PermissionData>(
                 data = { dataArray: result?.users, count: result?.count };
                 error = err;
             } else {
-                const { result, err } = await trycatch(() =>
+                const { result, err } = await tryCatch(() =>
                     searchRolesRequest({
                         workspaceIds: [_id],
                         step: startRow! / infiniteScrollPageCount,

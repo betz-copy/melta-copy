@@ -57,6 +57,7 @@ const UserIcon: React.FC<UserIconProps> = ({
             {(profileImage || !isDefaultProfile) && !isError ? (
                 <img
                     src={profileImage}
+                    alt="profile-img"
                     style={{
                         width: '100%',
                         height: '100%',

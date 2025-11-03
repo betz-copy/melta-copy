@@ -39,9 +39,11 @@ const createFileObject = (filesLimit: number, files?: File[]): Record<string, Fi
         toast.error(i18next.t('wizard.entity.loadEntities.limitNumberFiles') + filesLimit);
         return undefined;
     }
-    return validFiles.reduce<Record<string, File>>((acc, file) => {
-        return { ...acc, [file.name]: file };
-    }, {});
+    const filesMap: Record<string, File> = {};
+    for (const file of validFiles) {
+        filesMap[file.name] = file;
+    }
+    return filesMap;
 };
 
 export const useReadExcel = () => {

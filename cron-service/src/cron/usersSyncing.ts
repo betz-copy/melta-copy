@@ -113,8 +113,8 @@ export const updateKartoffelFields = async () => {
                             const entityTemplate = templatesMapById[entity.templateId];
                             // for each user field in each instance, check if the user from kartoffel is different in one of the fields of the user in the instance
                             // update the user fields if needed
-                            const updatedProperies = checkForEntityToUpdate(entity, entityTemplate, kartoffelUsersMapById);
-                            if (Object.keys(updatedProperies).length === 0) return;
+                            const updatedProperties = checkForEntityToUpdate(entity, entityTemplate, kartoffelUsersMapById);
+                            if (Object.keys(updatedProperties).length === 0) return;
 
                             const entityById = entitiesMapById[entity.properties._id];
 
@@ -122,7 +122,7 @@ export const updateKartoffelFields = async () => {
                                 entity.properties._id,
                                 {
                                     ...entityById,
-                                    properties: { ...entityById.properties, ...updatedProperies },
+                                    properties: { ...entityById.properties, ...updatedProperties },
                                 },
                                 [],
                             );

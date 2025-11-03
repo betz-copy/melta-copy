@@ -47,12 +47,7 @@ import { booleanPointInPolygon, featureCollection, intersect, point as turfPoint
 import { startOfToday, startOfYesterday } from 'date-fns';
 import { flatten, unflatten } from 'flatley';
 import { StatusCodes } from 'http-status-codes';
-import differenceWith from 'lodash.differencewith';
-import groupBy from 'lodash.groupby';
-import isEqual from 'lodash.isequal';
-import mapValues from 'lodash.mapvalues';
-import _partition from 'lodash.partition';
-import pickBy from 'lodash.pickby';
+import { differenceWith, groupBy, isEqual, mapValues, partition, pickBy } from 'lodash';
 import { Neo4jError, Transaction } from 'neo4j-driver';
 import pLimit from 'p-limit';
 import config from '../../config';
@@ -739,7 +734,7 @@ class EntityManager extends DefaultManagerNeo4j {
                 );
                 const ruleFailuresAfterAction = await this.runRulesOnEntity(transaction, createdEntity);
 
-                const [indicatorRules, rulesToThrowError]: [IRuleFailure[], IRuleFailure[]] = _partition(
+                const [indicatorRules, rulesToThrowError]: [IRuleFailure[], IRuleFailure[]] = partition(
                     ruleFailuresAfterAction,
                     (rule) => rule.rule.actionOnFail === ActionOnFail.INDICATOR,
                 );
@@ -1782,7 +1777,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
                 const ruleFailuresAfterAction = await this.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
 
-                const [indicatorRules, rulesToThrowError]: [IRuleFailure[], IRuleFailure[]] = _partition(
+                const [indicatorRules, rulesToThrowError]: [IRuleFailure[], IRuleFailure[]] = partition(
                     ruleFailuresAfterAction,
                     ({ rule: { actionOnFail } }) => actionOnFail === ActionOnFail.INDICATOR,
                 );
@@ -1973,21 +1968,22 @@ class EntityManager extends DefaultManagerNeo4j {
     }
 
     private buildConstraintsOfTemplate(templateId: string, constraints: IConstraint[]) {
-        return constraints.reduce<IConstraintsOfTemplate>(
-            (acc, curr) => ({
-                ...acc,
-                requiredConstraints: curr.type === 'REQUIRED' ? [...acc.requiredConstraints, curr.property] : acc.requiredConstraints,
-                uniqueConstraints:
-                    curr.type === 'UNIQUE'
-                        ? [...acc.uniqueConstraints, { groupName: curr.uniqueGroupName, properties: curr.properties }]
-                        : acc.uniqueConstraints,
-            }),
-            {
-                templateId,
-                requiredConstraints: [],
-                uniqueConstraints: [],
-            },
-        );
+        const result: IConstraintsOfTemplate = {
+            templateId,
+            requiredConstraints: [],
+            uniqueConstraints: [],
+        };
+
+        for (const curr of constraints) {
+            if (curr.type === 'REQUIRED') result.requiredConstraints.push(curr.property);
+            else if (curr.type === 'UNIQUE')
+                result.uniqueConstraints.push({
+                    groupName: curr.uniqueGroupName,
+                    properties: curr.properties,
+                });
+        }
+
+        return result;
     }
 
     async getConstraintsOfTemplate(templateId: string) {

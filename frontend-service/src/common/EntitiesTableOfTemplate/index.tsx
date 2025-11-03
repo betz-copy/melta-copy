@@ -22,9 +22,7 @@ import { AgGridReact } from '@ag-grid-community/react';
 import { Box, CircularProgress, debounce } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
-import { pickBy } from 'lodash';
-import isEqual from 'lodash.isequal';
-import sortBy from 'lodash.sortby';
+import { isEqual, pickBy, sortBy } from 'lodash';
 import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -59,7 +57,7 @@ import { IAGGridRequest } from '../../utils/agGrid/interfaces';
 import useDeepCompareMemo from '../../utils/hooks/useDeepCompareMemo';
 import { LocalStorage } from '../../utils/localStorage';
 import { isChildTemplate } from '../../utils/templates';
-import { trycatch } from '../../utils/trycatch';
+import { tryCatch } from '../../utils/trycatch';
 import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
 import { EntityWizardValues } from '../dialogs/entity';
 import { MultiSelectStatusBar } from '../EntitiesPage/MultiSelectStatusBar';
@@ -124,7 +122,7 @@ export const getDatasource = <Data = EntityData>(
 
             const agGridRequest = { ...params.request, filterModel: { ...params.request.filterModel } };
 
-            const { result: data, err } = await trycatch(() =>
+            const { result: data, err } = await tryCatch(() =>
                 pageType === 'client-side'
                     ? searchEntitiesOfTemplateClientSideRequest(
                           parentTemplateId,
@@ -273,7 +271,7 @@ export type EntitiesTableOfTemplateRef<Data> = {
 };
 
 const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, EntitiesTableOfTemplateProps<unknown>>(
-    <Data extends any>(
+    <Data,>(
         {
             template,
             onRowSelected,

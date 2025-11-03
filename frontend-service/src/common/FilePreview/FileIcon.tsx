@@ -17,7 +17,7 @@ const FileIcon: React.FC<FileIconProps> = ({ extension, style }) => {
         case 'jpeg':
         case 'png':
         case 'gif':
-            return <img src="/icons/files/image.svg" style={style} alt="Image Icon" />;
+            return <img src="/icons/files/image.svg" style={style} alt="graphic file" />;
         case 'mp4':
         case 'avi':
         case 'mov':

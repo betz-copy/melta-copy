@@ -2,7 +2,6 @@ import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { AccordionDetails, AccordionSummary, Grid, Typography } from '@mui/material';
 import { FormikErrors } from 'formik';
 import i18next from 'i18next';
-import _debounce from 'lodash.debounce';
 import React from 'react';
 import { FieldBlockAccordion } from '../entityTemplate/fieldBlock/interfaces';
 import { ProcessTemplateWizardValues } from '.';

@@ -99,7 +99,7 @@ const TemplateTablesViewResults = forwardRef<
     const currentUserKartoffelId = currentUser?.kartoffelId;
 
     const childTemplateDefaultFilters = useMemo(() => {
-        const filters: Record<string, any> = {};
+        const filters: Record<string, ISearchFilter | undefined> = {};
         templates.forEach((template) => {
             filters[template._id] = getDefaultFilterFromTemplate(
                 template,

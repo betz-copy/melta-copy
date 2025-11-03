@@ -1,5 +1,5 @@
 import i18next from 'i18next';
-import cloneDeep from 'lodash.clonedeep';
+import { cloneDeep } from 'lodash';
 import * as Yup from 'yup';
 import { environment } from '../globals';
 import { IEntityWithDirectConnections, IFilterOfTemplate, ISearchBatchBody } from '../interfaces/entities';

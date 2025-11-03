@@ -1,7 +1,7 @@
 import { ExpandMore, InfoOutlined } from '@mui/icons-material';
 import { Autocomplete, AutocompleteInputChangeReason, AutocompleteProps, TextField, Typography } from '@mui/material';
 import i18next from 'i18next';
-import _debounce from 'lodash.debounce';
+import { debounce } from 'lodash';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useInfiniteQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -156,8 +156,8 @@ const TemplateEntitiesAutocomplete: React.FC<{
     }, [data]);
 
     const debouncedSearch = useCallback(
-        _debounce((debounedValue: string) => {
-            setInputValue(debounedValue);
+        debounce((debouncedValue: string) => {
+            setInputValue(debouncedValue);
         }, 300),
         [],
     );

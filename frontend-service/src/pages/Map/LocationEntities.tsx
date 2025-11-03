@@ -1,6 +1,5 @@
 import * as Cesium from 'cesium';
 import { Cartesian3, Color } from 'cesium';
-import React from 'react';
 import { BillboardGraphics, Entity, PointGraphics, PolygonGraphics, PolylineGraphics } from 'resium';
 import { environment } from '../../globals';
 import { getColoredLocationIcon } from '../../utils/icons/coloredLocationIcon';

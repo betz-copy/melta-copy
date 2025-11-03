@@ -1,4 +1,4 @@
-import pickBy from 'lodash.pickby';
+import { pickBy } from 'lodash';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IProcessDetails } from '../interfaces/processes/processTemplate';
 

@@ -1,7 +1,6 @@
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
 import { Box, Dialog, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import React from 'react';
 import { useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
 import { CustomIcon } from '../../../common/CustomIcon';

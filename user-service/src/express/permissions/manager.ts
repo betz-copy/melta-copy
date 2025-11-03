@@ -11,7 +11,7 @@ import {
     RelatedPermission,
     ValidationError,
 } from '@microservices/shared';
-import mapValues from 'lodash.mapvalues';
+import { mapValues } from 'lodash';
 import { FilterQuery } from 'mongoose';
 import { flattenObject, typedObjectEntries } from '../../utils';
 import { transaction } from '../../utils/mongoose';

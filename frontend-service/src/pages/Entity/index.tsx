@@ -359,6 +359,7 @@ const Entity: React.FC = () => {
     const childTemplateId = searchParams.get('childTemplateId') ?? undefined;
 
     const currentUser = useUserStore((state) => state.user);
+    const workspace = useWorkspaceStore((state) => state.workspace);
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -374,7 +375,7 @@ const Entity: React.FC = () => {
             ? Object.fromEntries(
                   Object.entries(groupChildTemplate)
                       .map(([key, children]) => {
-                          const childFilter = getChildTemplatesFilter(children, true);
+                          const childFilter = getChildTemplatesFilter(children, workspace, true, currentUser);
                           if (!childFilter) return null;
                           return [key, { filter: childFilter }] as const;
                       })

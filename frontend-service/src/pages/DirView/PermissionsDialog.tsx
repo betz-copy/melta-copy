@@ -12,7 +12,7 @@ import {
     Typography,
 } from '@mui/material';
 import i18next from 'i18next';
-import _debounce from 'lodash.debounce';
+import { debounce } from 'lodash';
 import React, { useCallback, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -46,7 +46,7 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
     const usersQueryKey = ['usersByWorkspaceId', workspace._id, searchInput];
 
     const debouncedSetSearchInput = useCallback(
-        _debounce((value: string) => setSearchInput(value), 1000),
+        debounce((value: string) => setSearchInput(value), 1000),
         [setSearchInput],
     );
 
@@ -192,7 +192,7 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
                                                 gap: '10px',
                                             }}
                                         >
-                                            <img src="/icons/search-gray.svg" style={{ alignSelf: 'center', height: '18px' }} />
+                                            <img src="/icons/search-gray.svg" style={{ alignSelf: 'center', height: '18px' }} alt="Search" />
                                         </InputAdornment>
                                     ),
                                 },

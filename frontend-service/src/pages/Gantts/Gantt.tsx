@@ -17,7 +17,7 @@ import {
     Week,
 } from '@syncfusion/ej2-react-schedule';
 import i18next from 'i18next';
-import flatten from 'lodash.flatten';
+import { flatten } from 'lodash';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { useInfiniteQuery, useQuery, useQueryClient } from 'react-query';

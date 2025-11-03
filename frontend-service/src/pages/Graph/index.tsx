@@ -1,8 +1,7 @@
 import { Backdrop, Box, Button, CircularProgress } from '@mui/material';
 import { forceManyBody } from 'd3-force';
 import i18next from 'i18next';
-import uniqBy from 'lodash.uniqby';
-import uniqWith from 'lodash.uniqwith';
+import { uniqBy, uniqWith } from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
 import ForceGraph, { ForceGraphMethods, ForceGraphProps, GraphData, NodeObject } from 'react-force-graph-2d';

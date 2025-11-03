@@ -1,7 +1,7 @@
 import { Box, Button, ThemeProvider, Typography, useTheme } from '@mui/material';
 import { WidgetProps } from '@rjsf/utils';
 import i18next from 'i18next';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import SignatureCanvas from 'react-signature-canvas';
 import { environment } from '../../../globals';
 import { getFilePreviewRequest } from '../../../services/previewService';

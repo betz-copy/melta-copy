@@ -26,7 +26,7 @@ const AddEntityButton: React.FC<{
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
     chooseMode?: IChooseTemplateMode;
     parentId?: string;
-    getInitialProperties?: (newTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => Record<string, any>;
+    getInitialProperties?: (newTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => Record<string, object>;
     children?: ReactNode;
 }> = ({
     style,

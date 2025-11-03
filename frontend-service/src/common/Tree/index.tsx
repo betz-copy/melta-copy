@@ -14,7 +14,7 @@ interface TreeProps<T extends Record<string, any>> extends Omit<RichTreeViewProP
     getItemLabel: (item: T) => string;
     // Display a selectAll checkbox
     selectAll?: boolean;
-    onSelectItems?: (itemIds: string | string[]) => any;
+    onSelectItems?: (itemIds: string | string[]) => void;
     isDraggable?: boolean;
     allowMultiSelect?: boolean;
     allowDraggingBetweenParents?: boolean;
@@ -97,9 +97,7 @@ const Tree = <T extends Record<string, any>>({
     }, [preExpandedItemIds, setExpandedItemsIds]);
 
     useEffect(() => {
-        if (!_.isEqual(preSelectedItemsIds, selectedItemIds)) {
-            setSelectedItemIds(preSelectedItemsIds ?? []);
-        }
+        if (!_.isEqual(preSelectedItemsIds, selectedItemIds)) setSelectedItemIds(preSelectedItemsIds ?? []);
     }, [preSelectedItemsIds, setSelectedItemIds]);
 
     return (

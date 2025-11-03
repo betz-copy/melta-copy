@@ -1,7 +1,6 @@
 import { Field, Fields, ImmutableTree } from '@react-awesome-query-builder/mui';
 import i18next from 'i18next';
-import lodashFindLast from 'lodash.findlast';
-import lodashIsEqual from 'lodash.isequal';
+import { findLast, isEqual } from 'lodash';
 import { environment } from '../../globals';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
@@ -110,7 +109,7 @@ const getRelationshipFieldsConfigOfRule = (
 ) => {
     return Object.fromEntries(
         connectedTemplatesWithRelationship.map(({ relationshipTemplate, otherEntityTemplate }) => {
-            const lastAggregationOfTheSameRelationship = lodashFindLast(
+            const lastAggregationOfTheSameRelationship = findLast(
                 aggregationsContext.existingAggregationVariables,
                 ({ aggregatedRelationship }) => aggregatedRelationship.relationshipTemplateId === relationshipTemplate._id,
             );
@@ -134,7 +133,7 @@ const getRelationshipFieldsConfigOfRule = (
             );
 
             const isRelationshipFieldUsedInTree = existingAggregationVariablesInTree.some((variable) => {
-                return lodashIsEqual(variable, {
+                return isEqual(variable, {
                     entityTemplateId: entityTemplate._id,
                     aggregatedRelationship: {
                         relationshipTemplateId: relationshipTemplate._id,

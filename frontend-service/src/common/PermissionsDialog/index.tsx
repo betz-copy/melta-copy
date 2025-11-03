@@ -20,7 +20,7 @@ import RoleDialog from './RoleDialog';
 
 const PermissionsDialog: React.FC<{
     isOpen: boolean;
-    handleClose: () => any;
+    handleClose: () => void;
     mode: 'create' | 'edit' | 'view';
     roleOrUser?: PermissionData;
     onSuccess?: (roleOrUser?: PermissionData) => void;

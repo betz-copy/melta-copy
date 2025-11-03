@@ -1,6 +1,5 @@
 import { MenuItem } from '@mui/material';
 import i18next from 'i18next';
-import React from 'react';
 import { MenuItemContent } from './MenuItemContent';
 
 export const SelectAll = ({
@@ -20,11 +19,9 @@ export const SelectAll = ({
             onClick={() => {
                 const prevChecked = allOptionIds.length === selectedOptionIds.length;
 
-                if (prevChecked) {
-                    setSelectedOptionIds([]);
-                } else {
-                    setSelectedOptionIds(allOptionIds);
-                }
+                if (prevChecked) setSelectedOptionIds([]);
+                else setSelectedOptionIds(allOptionIds);
+
                 onClick?.();
             }}
         >

@@ -3,13 +3,14 @@ export const typedObjectEntries = <T extends Object>(obj: T): [keyof T, T[keyof 
 };
 
 export const flattenObject = (obj: Record<string, any>, path: string[] = []): Record<string, any> => {
-    return Object.entries(obj).reduce((acc, [key, value]) => {
+    const acc: Record<string, any> = {};
+    for (const [key, value] of Object.entries(obj)) {
         const newPath = [...path, key];
-
         if (typeof value === 'object' && value !== null) {
-            return { ...acc, ...flattenObject(value, newPath) };
+            Object.assign(acc, flattenObject(value, newPath));
+        } else {
+            acc[newPath.join('.')] = value;
         }
-
-        return { ...acc, [newPath.join('.')]: value };
-    }, {});
+    }
+    return acc;
 };

@@ -126,13 +126,12 @@ const InstancesPermissionsCard: React.FC<{
                     </Grid>
                     <Grid height="250px" width="100%" sx={{ overflowY: 'auto' }}>
                         {categoriesCheckboxProps.map(({ categoryId, categoryDisplayName, disabled, permissionType, entityTemplates }) => (
-                            <Grid gap={2}>
+                            <Grid gap={2} key={categoryId}>
                                 <CategoryCheckboxPermission
                                     categoryDisplayName={categoryDisplayName}
                                     viewMode={viewMode}
                                     disabled={disabled}
                                     permissionType={permissionType}
-                                    key={categoryId}
                                     formikProps={formikProps}
                                     entityTemplates={entityTemplates}
                                     permissionsPath={permissionsPath}

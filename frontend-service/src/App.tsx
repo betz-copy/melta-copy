@@ -118,7 +118,7 @@ const App: React.FC = () => {
         };
 
         initUser();
-    }, [setUser, navigate, workspaceStore]);
+    }, [setUser, setDarkMode, navigate, location.length, location.replace]);
 
     if (isClientSide) return <ClientSidePage />;
 
@@ -130,7 +130,11 @@ const App: React.FC = () => {
 
     if (isErrorBackendConfig) return <ErrorPage errorText={i18next.t('errorPage.systemUnavailable')} />;
 
-    return <MatomoWrapper matomoInstance={matomoInstance! as MatomoTracker} children={<Main />} />;
+    return (
+        <MatomoWrapper matomoInstance={matomoInstance! as MatomoTracker}>
+            <Main />
+        </MatomoWrapper>
+    );
 };
 
 export default App;

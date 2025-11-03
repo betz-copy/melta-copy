@@ -1,6 +1,6 @@
 import { AddCircle } from '@mui/icons-material';
 import { Grid, IconButton } from '@mui/material';
-import _debounce from 'lodash.debounce';
+import { debounce } from 'lodash';
 import React, { useCallback, useRef, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import SearchInput from '../../../common/inputs/SearchInput';
@@ -43,7 +43,7 @@ const ManagePermissionTab: React.FC<{ permissionType: RelatedPermission; searchP
     const permissionsTableRef = useRef<PermissionsTableRef<PermissionData>>(null);
 
     const debouncedSetQuickFilterText = useCallback(
-        _debounce((value: string) => setQuickFilterText(value), 1000),
+        debounce((value: string) => setQuickFilterText(value), 1000),
         [setQuickFilterText],
     );
 

@@ -16,8 +16,7 @@ import {
     isRegularFunction,
     isSumAggFunction,
 } from '@microservices/shared';
-import groupBy from 'lodash.groupby';
-import isEqual from 'lodash.isequal';
+import { groupBy, isEqual } from 'lodash';
 import filteredMap from '../../utils/filteredMap';
 import { IRuleFailure } from './interfaces';
 import { IFormulaCauses } from './interfaces/formulaWithCauses';

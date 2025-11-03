@@ -1,5 +1,5 @@
 import { Box, Grid } from '@mui/material';
-import _debounce from 'lodash.debounce';
+import { debounce } from 'lodash';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { IChildTemplateMap, IChildTemplatePopulated } from '../../../interfaces/childTemplates';
@@ -23,7 +23,7 @@ const EntitiesTableOfTemplateWithQuickFilter: React.FC<{
     const workspace = useWorkspaceStore((state) => state.workspace);
 
     const [quickFilterText, setQuickFilterText] = useState('');
-    const setQuickFilterTextDebounced = _debounce(setQuickFilterText, 1000);
+    const setQuickFilterTextDebounced = debounce(setQuickFilterText, 1000);
 
     const childTemplatesOfParent: IChildTemplatePopulated[] = Array.from(childTemplates.values()).filter(
         ({ parentTemplate: { _id } }) => _id === entityTemplate._id,

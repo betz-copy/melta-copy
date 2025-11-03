@@ -1,4 +1,4 @@
-import isEqualWith from 'lodash.isequalwith';
+import { isEqualWith } from 'lodash';
 import { IMongoCategory } from '../../interfaces/categories';
 import { IMongoChildTemplatePopulated, ViewType } from '../../interfaces/childTemplates';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';

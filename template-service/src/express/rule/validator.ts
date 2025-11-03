@@ -23,7 +23,7 @@ import { isValid as isValidDate, parse } from 'date-fns';
 import { Request } from 'express';
 import { flatten } from 'flat';
 import Joi from 'joi';
-import isEqual from 'lodash.isequal';
+import { isEqual } from 'lodash';
 import { joiValidate } from '../../utils/joi';
 import EntityTemplateManager from '../entityTemplate/manager';
 import { RelationshipTemplateManager } from '../relationshipTemplate/manager';

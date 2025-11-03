@@ -63,7 +63,11 @@ export interface IGetColumnDefsOptions<Data> {
     updateEntityStatus: UseMutateAsyncFunction<
         IEntity,
         AxiosError<any, any>,
-        { currEntity: IEntity; disabled: boolean; ignoredRules?: IRuleBreach['brokenRules'] },
+        {
+            currEntity: IEntity;
+            disabled: boolean;
+            ignoredRules?: IRuleBreach['brokenRules'];
+        },
         unknown
     >;
     searchValue?: string;
@@ -473,7 +477,7 @@ export const getColumnDefs = <Data = EntityData>({
                                         )}
                                         disabled={!hasPermissionToTemplate}
                                     >
-                                        <img src="/icons/read-more-icon.svg" />
+                                        <img src="/icons/read-more-icon.svg" alt="read-more" />
                                     </IconButtonWithPopover>
                                 </Link>
                             </Grid>
@@ -529,7 +533,7 @@ export const getColumnDefs = <Data = EntityData>({
                                             disabledEntity ? i18next.t('permissions.dontHavePermissionsToCategory') : i18next.t('actions.graph')
                                         }
                                     >
-                                        <img src="/icons/graph-icon.svg" />
+                                        <img src="/icons/graph-icon.svg" alt="graph" />
                                     </IconButtonWithPopover>
                                 </Link>
                             </Grid>

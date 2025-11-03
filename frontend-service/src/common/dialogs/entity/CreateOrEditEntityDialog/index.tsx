@@ -3,7 +3,7 @@ import { Button, Card, CardContent, CircularProgress, Divider, Grid } from '@mui
 import { format } from 'date-fns';
 import { Form, Formik } from 'formik';
 import i18next from 'i18next';
-import pickBy from 'lodash.pickby';
+import { pickBy } from 'lodash';
 import React, { useEffect, useMemo, useState } from 'react';
 import { environment } from '../../../../globals';
 import { ICreateOrUpdateWithRuleBreachDialogState, IExternalErrors, IMutationProps } from '../../../../interfaces/CreateOrEditEntityDialog';

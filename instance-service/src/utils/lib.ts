@@ -1,8 +1,5 @@
 import { Awaited } from '@microservices/shared';
-import isEqual from 'lodash.isequal';
-import isEqualWith from 'lodash.isequalwith';
-import isObject from 'lodash.isobject';
-import pickBy from 'lodash.pickby';
+import { isEqual, isEqualWith, isObject, pickBy } from 'lodash';
 import { pipeline } from 'stream';
 import { promisify } from 'util';
 

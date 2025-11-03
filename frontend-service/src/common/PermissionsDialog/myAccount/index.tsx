@@ -42,12 +42,20 @@ const MyAccount: React.FC<{
 
     useEffect(() => {
         const updatedNotificationsTypes = notificationsToShowCheckbox.map(({ type }) => type);
+
         const hasPreferencesChanged =
             profilePreference.icon ||
             !isEqual(profilePreference.profilePath, existingUser.preferences.profilePath) ||
             !isEqual(updatedNotificationsTypes, existingUser.preferences.mailsNotificationsTypes);
+
         setIsPreferencesUpdated(hasPreferencesChanged);
-    }, [profilePreference, notificationsToShowCheckbox]);
+    }, [
+        profilePreference,
+        notificationsToShowCheckbox,
+        existingUser.preferences.profilePath,
+        existingUser.preferences.mailsNotificationsTypes,
+        setIsPreferencesUpdated,
+    ]);
 
     const { mutateAsync } = useMutation(
         (id: string) =>
