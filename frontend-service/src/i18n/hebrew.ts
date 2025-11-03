@@ -655,7 +655,7 @@ export default {
             propertyPreview: 'תצוגה מצומצמת',
             addProperty: 'הוסף שדה',
             addAttachment: 'הוסף קובץ',
-            chooseCategroy: 'בחירת קטגוריה',
+            chooseCategory: 'בחירת קטגוריה',
             chooseEntityTemplateName: 'בחירת שם תבנית',
             chooseIcon: 'בחירת אייקון',
             properties: 'שדות',
