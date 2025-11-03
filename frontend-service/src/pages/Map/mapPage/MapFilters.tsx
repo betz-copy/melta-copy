@@ -52,14 +52,13 @@ const MapFilters = ({
     );
     const sourceListsFields = sourceTemplate
         ? Object.entries(sourceTemplate.properties.properties)
-              .filter(([_, prop]) => prop.enum || prop.items?.enum)
-              .map(([key, prop]) => ({
-                  name: key,
-                  ...prop,
-              }))
+            .filter(([_, prop]) => prop.enum || prop.items?.enum)
+            .map(([key, prop]) => ({
+                name: key,
+                ...prop,
+            }))
         : [];
 
-    console.log({ sourceListsFields });
 
     const templates = templatesWithLocationField
         .map(({ _id }) => _id)
@@ -68,12 +67,12 @@ const MapFilters = ({
                 acc[templateId] = {
                     ...(templateId === sourceTemplate?._id && Object.entries(filters.value.listFields).length
                         ? {
-                              filter: {
-                                  [FilterLogicalOperator.AND]: Object.entries(filters.value.listFields).map(([field, values]) => ({
-                                      [field]: { $in: values },
-                                  })),
-                              },
-                          }
+                            filter: {
+                                [FilterLogicalOperator.AND]: Object.entries(filters.value.listFields).map(([field, values]) => ({
+                                    [field]: { $in: values },
+                                })),
+                            },
+                        }
                         : {}),
                 };
                 return acc;
@@ -81,7 +80,7 @@ const MapFilters = ({
             {} as Record<string, any>,
         );
 
-    const { data, isLoading, error, refetch } = useQuery(
+    const { refetch } = useQuery(
         ['searchEntitiesOfTemplates', filters.value.autoSearch],
         async () => {
             if (Object.keys(templatesWithLocationField).length === 0) {
@@ -108,8 +107,6 @@ const MapFilters = ({
             },
         },
     );
-    console.log({ filtersVal: filters.value });
-    console.log({ data });
 
     return (
         <Grid zIndex={1000} top={10} container wrap="nowrap" gap="15px">
@@ -174,18 +171,11 @@ const MapFilters = ({
                         </Button>
                     </Grid>
                     <Divider />
-                    {/* 
-                    <SearchAutoComplete
-                        selectedTemplates={templatesWithLocationField}
-                        handleEntityClick={moveToEntityLocations}
-                        onClear={clearAutocompleteSearch}
-                        filters={filters}
-                    /> */}
 
                     <SearchInput
                         value={filters.value.autoSearch}
                         showBorder
-                        placeholder="חיפוש בעמוד"
+                        placeholder={i18next.t('globalSearch.searchInPage')}
                         onChange={(newSearchValue: string) => filters.set((prev) => ({ ...prev, autoSearch: newSearchValue }))}
                     />
 
