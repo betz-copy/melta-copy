@@ -14,7 +14,11 @@ type LayerProvider = {
     type: 'map' | 'text';
 };
 
-export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any>; config: BackendConfigState }> = ({ viewerRef, config }) => {
+export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any>; config: BackendConfigState; popupPosition?: 'right' | 'left' }> = ({
+    viewerRef,
+    config,
+    popupPosition = 'right',
+}) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const [isOpen, setIsOpen] = useState(false);
@@ -105,7 +109,6 @@ export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any>; conf
                     sx={{
                         position: 'absolute',
                         top: '100%',
-                        right: 0,
                         marginTop: 1,
                         minWidth: 250,
                         maxWidth: 300,
@@ -114,6 +117,7 @@ export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any>; conf
                         borderRadius: 1,
                         boxShadow: 2,
                         zIndex: 1000,
+                        ...(popupPosition === 'right' ? { right: 0 } : { left: 0 }),
                     }}
                 >
                     <Grid>

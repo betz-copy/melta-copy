@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { Close, DeleteTwoTone, PentagonTwoTone, PlaceTwoTone } from '@mui/icons-material';
 import { ToggleButton, ToggleButtonGroup, useTheme } from '@mui/material';
 import * as Cesium from 'cesium';
@@ -6,7 +5,7 @@ import { Cartesian3 } from 'cesium';
 import i18next from 'i18next';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { CesiumMovementEvent, Viewer } from 'resium';
+import { CesiumComponentRef, CesiumMovementEvent, Viewer } from 'resium';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
 import { BackendConfigState } from '../../services/backendConfigService';
@@ -35,7 +34,7 @@ const LocationField = ({ defaultLocation, field, updateValue, handleCloseDialog 
     const queryClient = useQueryClient();
     const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
 
-    const viewerRef = useRef<any>(null);
+    const viewerRef = useRef<CesiumComponentRef<Cesium.Viewer>>(null);
 
     const [drawingMode, setDrawingMode] = useState<'polygon' | 'coordinate' | null>(null);
     const [polygonPosition, setPolygonPosition] = useState<Cartesian3[]>([]);
@@ -58,7 +57,7 @@ const LocationField = ({ defaultLocation, field, updateValue, handleCloseDialog 
             );
             setPolygonPosition(positions);
         }
-    }, []);
+    }, [defaultLocation]);
 
     useEffect(() => {
         const animateCamera = () => {
@@ -107,7 +106,7 @@ const LocationField = ({ defaultLocation, field, updateValue, handleCloseDialog 
             if (!viewer) return;
 
             const { scene } = viewer;
-            const cartesian: Cartesian3 = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
+            const cartesian = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
 
             if (cartesian) {
                 if (drawingMode === 'polygon') {

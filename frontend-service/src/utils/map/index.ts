@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { Cartesian3 } from 'cesium';
 import { environment } from '../../globals';
 import { IEntity, SplitBy } from '../../interfaces/entities';
@@ -23,6 +22,32 @@ type CoordinatesResult = {
     type: MapItemType;
     value: Cartesian3 | Cartesian3[];
 };
+
+export enum ShapeType {
+    Circle = 'circle',
+    Polygon = 'polygon',
+    Line = 'line',
+}
+
+export enum CameraFocusType {
+    Circle = 'circle',
+    Polygon = 'polygon',
+    Search = 'search',
+}
+
+export interface ICoordinateSearchResult {
+    key: string;
+    name: string;
+    node: IEntity;
+    position: Cartesian3;
+}
+
+export interface IPolygonSearchResult {
+    key: string;
+    name: string;
+    node: IEntity;
+    position: Cartesian3[];
+}
 
 export const zoomNumber = 300000;
 

@@ -403,9 +403,10 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             };
         });
 
-        const searchResults: ISearchResult = relatedTemplatesWithIdentifier.length
-            ? await this.service.searchEntitiesBatch(searchBody)
-            : { count: 0, entities: [] };
+        const searchResults: ISearchResult =
+            relatedTemplatesWithIdentifier.length && Object.keys(searchBody.templates).length
+                ? await this.service.searchEntitiesBatch(searchBody)
+                : { count: 0, entities: [] };
 
         return { searchResults, relatedTemplatesWithIdentifier };
     }
@@ -729,7 +730,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         if (emails) this.sendIndicatorRuleEmailForCreation(createdEntity, userId, emails);
 
-        return {...createdEntity, childTemplateId};
+        return { ...createdEntity, childTemplateId };
     }
 
     private async deleteUnusedFiles(currentEntity: IEntity, instanceData: IEntity, files: UploadedFile[]) {

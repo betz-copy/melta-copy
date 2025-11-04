@@ -4,8 +4,8 @@ import { useEffect, useMemo } from 'react';
 import { useCesium } from 'resium';
 import { environment } from '../../globals';
 import { IEntity } from '../../interfaces/entities';
-import { parsePolygon, stringToCoordinates } from '../map';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
+import { ICoordinateSearchResult, IPolygonSearchResult, parsePolygon, stringToCoordinates } from '../map';
 
 const { squareLength } = environment.map;
 
@@ -24,11 +24,10 @@ export const createSquareAroundPoint = (center: Cartesian3, sideLength: number):
 
 export const useEntitiesWithLocationFields = ({ entities, entityTemplateMap }: { entities: IEntity[]; entityTemplateMap: IEntityTemplateMap }) => {
     const { viewer } = useCesium();
-    console.log({ entities, entityTemplateMap });
 
     const { markers, polygons, allCoordinates } = useMemo(() => {
-        const markerList: { key: string; name: string; node: IEntity; position: Cartesian3 }[] = [];
-        const polygonList: { key: string; name: string; node: IEntity; position: Cartesian3[] }[] = [];
+        const markerList: ICoordinateSearchResult[] = [];
+        const polygonList: IPolygonSearchResult[] = [];
         const coordinatesList: Cartesian3[] = [];
 
         const entitiesByTemplate = new Map<string, IEntity[]>();
@@ -39,20 +38,21 @@ export const useEntitiesWithLocationFields = ({ entities, entityTemplateMap }: {
         });
 
         entitiesByTemplate.forEach((templateEntities, templateId) => {
-            const template = entityTemplateMap.get(templateId);
+            const template = entityTemplateMap.get(templateId)!;
 
-            const locationProperties = Object.entries(template!.properties.properties).filter(([_, value]) => value.format === 'location');
+            const locationProperties = Object.entries(template.properties.properties).filter(([_, value]) => value.format === 'location');
 
             templateEntities.forEach((entity) => {
-                locationProperties.forEach(([key, { title }]) => {
-                    if (entity.properties[key]) {
-                        const parsedPolygon = parsePolygon(entity.properties[key].location);
+                locationProperties.forEach(([propertyName, { title }]) => {
+                    if (entity.properties[propertyName]) {
+                        const parsedPolygon = parsePolygon(entity.properties[propertyName].location);
+                        const key = `${propertyName}-${entity.properties._id}`;
 
                         if (parsedPolygon) {
                             polygonList.push({ key, name: title, node: entity, position: parsedPolygon });
                             coordinatesList.push(...parsedPolygon);
                         } else {
-                            const position = stringToCoordinates(entity.properties[key].location);
+                            const position = stringToCoordinates(entity.properties[propertyName].location);
                             const markerPosition = position.value as Cartesian3;
                             markerList.push({ key, name: title, node: entity, position: markerPosition });
                             coordinatesList.push(...createSquareAroundPoint(markerPosition, squareLength));

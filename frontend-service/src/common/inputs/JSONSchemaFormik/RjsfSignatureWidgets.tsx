@@ -1,6 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-// eslint-disable-next-line import/no-extraneous-dependencies
-
 import { Box, Button, ThemeProvider, Typography, useTheme } from '@mui/material';
 import { WidgetProps } from '@rjsf/utils';
 import i18next from 'i18next';

@@ -1,5 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
 import { Box, Divider } from '@mui/material';
 import { RichTreeViewPro, RichTreeViewProProps, TreeItemProps, TreeViewBaseItem, useTreeViewApiRef } from '@mui/x-tree-view-pro';

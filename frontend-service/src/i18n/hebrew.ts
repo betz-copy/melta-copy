@@ -1689,7 +1689,7 @@ export default {
             overlay: 'שכבות מיפוי',
         },
         coordinateSystem: 'קואורדינטות',
-        searchResults: 'תוצאות חיפוש מקטלוג',
+        searchResults: 'תוצאות חיפוש מ{{sourceTemplateName}}',
         newRequest: 'בקשה חדשה',
         showingEntitiesCount: 'מציג {{count}} ישויות',
         showingEntitiesOfTotal: 'מציג {{count}} ישויות מתוך {{total}}',

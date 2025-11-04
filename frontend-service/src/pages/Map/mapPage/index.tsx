@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { CircleTwoTone as CircleIcon, Close, StraightenTwoTone as DistanceIcon, PentagonTwoTone as PolygonIcon } from '@mui/icons-material';
 import { Grid, ToggleButton, ToggleButtonGroup, useTheme } from '@mui/material';
 import * as Cesium from 'cesium';
@@ -7,20 +6,29 @@ import i18next from 'i18next';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { CesiumMovementEvent, EllipseGraphics, Entity, PointGraphics, PolylineGraphics, Viewer } from 'resium';
+import { CesiumComponentRef, CesiumMovementEvent, EllipseGraphics, Entity, PointGraphics, PolylineGraphics, Viewer } from 'resium';
 import { TablePageType } from '../../../common/EntitiesTableOfTemplate';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { EntitiesTable } from '../../../common/wizards/excel/excelSteps/EntitiesTable';
 import { environment } from '../../../globals';
-import { FilterLogicalOperator, IEntity, IFilterOfField, ISearchEntitiesByLocationBody } from '../../../interfaces/entities';
+import { IEntity, IFilterOfField, ISearchEntitiesByLocationBody } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { BackendConfigState } from '../../../services/backendConfigService';
 import { getEntitiesByLocation } from '../../../services/entitiesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { useEntitiesWithLocationFields } from '../../../utils/hooks/useLocation';
-import { jerusalemCoordinates, LatLng, locationToWGS84String, stringToCoordinates } from '../../../utils/map';
+import {
+    CameraFocusType,
+    ICoordinateSearchResult,
+    IPolygonSearchResult,
+    jerusalemCoordinates,
+    LatLng,
+    locationToWGS84String,
+    ShapeType,
+    stringToCoordinates,
+} from '../../../utils/map';
 import { convertECEFToWGS84, convertWGS94ToECEF } from '../../../utils/map/convert';
 import { BaseLayers } from '../BaseLayers';
 import { MeltaCoordinate, MeltaPolygon } from '../LocationEntities';
@@ -29,30 +37,18 @@ import MapFilters from './MapFilters';
 
 const { maxRadius } = environment.map;
 
-enum ShapeType {
-    Circle = 'circle',
-    Polygon = 'polygon',
-    Line = 'line',
-}
-
-export enum CameraFocusType {
-    Circle = 'circle',
-    Polygon = 'polygon',
-    Search = 'search',
-}
-
 const emptyCircle = { center: null, radius: null, mouseRadius: null };
 
 const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
     const queryClient = useQueryClient();
-    const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig')!;
-    const entityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getEntityTemplates'])!;
-    const childEntityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getChildTemplates'])!;
+    const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
+    const entityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const childEntityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>('getChildTemplates');
 
     const theme = useTheme();
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
-    const viewerRef = useRef<any>(null);
+    const viewerRef = useRef<CesiumComponentRef<Cesium.Viewer>>(null);
 
     const [{ autoSearch, listFields }, setFilters] = useState<{ autoSearch: string; listFields: Record<string, IFilterOfField['$in']> }>({
         autoSearch: '',
@@ -77,13 +73,13 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
     const [selectedEntityDialog, setSelectedEntityDialog] = useState<{ matchingField: string; node: IEntity } | null>(null);
 
     const [{ polygons, coordinates }, setSearchResults] = useState<{
-        coordinates: { key: string; name: string; node: IEntity; position: Cartesian3 }[];
-        polygons: { key: string; name: string; node: IEntity; position: Cartesian3[] }[];
+        coordinates: ICoordinateSearchResult[];
+        polygons: IPolygonSearchResult[];
     }>({ coordinates: [], polygons: [] });
 
     const [{ coordinates: filteredCoordinates, polygons: filteredPolygons }, setFilteredResults] = useState<{
-        coordinates: { key: string; name: string; node: IEntity; position: Cartesian3 }[];
-        polygons: { key: string; name: string; node: IEntity; position: Cartesian3[] }[];
+        coordinates: ICoordinateSearchResult[];
+        polygons: IPolygonSearchResult[];
     }>({ coordinates, polygons });
 
     const [cameraFocus, setCameraFocus] = useState<CameraFocusType | null>(null);
@@ -96,39 +92,40 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
     const applyFilterWithShapeSearch = ({ autoSearch, listFields }: { autoSearch: string; listFields: Record<string, IFilterOfField['$in']> }) => {
         const allItems = [...polygons, ...coordinates];
 
-        const filtered = allItems.filter(
+        const hasSearch = autoSearch.trim() !== '';
+        const hasListFilters = Object.values(listFields).some((values) => values && values.length > 0);
+
+        const adjustToAutoSearch = (value: any, searchText: string): boolean => {
+            if (value == null) return false;
+
+            if (Array.isArray(value)) return value.some((item) => adjustToAutoSearch(item, searchText));
+
+            if (typeof value === 'object') return Object.values(value).some((v) => adjustToAutoSearch(v, searchText));
+
+            return String(value).includes(searchText);
+        };
+
+        const filteredItems = allItems.filter(
             ({ node }) =>
-                Object.values(node.properties).some((value) => value != null && String(value).includes(autoSearch)) &&
-                node.templateId === sourceTemplateId &&
-                Object.entries(listFields).every(
-                    ([field, allowedValues]) => !allowedValues || allowedValues.length === 0 || allowedValues.includes(node.properties[field] as any),
-                ),
+                (!hasSearch || Object.values(node.properties).some((value) => value != null && adjustToAutoSearch(value, autoSearch))) &&
+                (!hasListFilters ||
+                    (node.templateId === sourceTemplateId &&
+                        Object.entries(listFields).every(
+                            ([field, filteredValues]) =>
+                                !filteredValues?.length ||
+                                (Array.isArray(node.properties[field])
+                                    ? node.properties[field].some((option) => filteredValues.includes(option))
+                                    : filteredValues.includes(node.properties[field])),
+                        ))),
         );
 
         setFilteredResults({
-            polygons: filtered.filter(
-                (
-                    item,
-                ): item is {
-                    key: string;
-                    name: string;
-                    node: IEntity;
-                    position: Cartesian3[];
-                } => Array.isArray(item.position),
-            ),
-            coordinates: filtered.filter(
-                (
-                    item,
-                ): item is {
-                    key: string;
-                    name: string;
-                    node: IEntity;
-                    position: Cartesian3;
-                } => !Array.isArray(item.position),
-            ),
+            polygons: filteredItems.filter((item): item is IPolygonSearchResult => Array.isArray(item.position)),
+            coordinates: filteredItems.filter((item): item is ICoordinateSearchResult => !Array.isArray(item.position)),
         });
     };
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: explanation>
     useEffect(() => applyFilterWithShapeSearch({ autoSearch, listFields }), [polygons, coordinates]);
 
     const sourceTemplate = childEntityTemplateMap?.get(sourceTemplateId) ?? entityTemplateMap?.get(sourceTemplateId);
@@ -158,6 +155,9 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
 
     const totalCount = coordinates.length + polygons.length;
 
+    const searchedEntitiesBoundsCenter = searchedEntitiesBounds?.center;
+    const searchedEntitiesBoundsRadius = searchedEntitiesBounds?.radius;
+
     useEffect(() => {
         const animateCamera = () => {
             const viewer = viewerRef.current?.cesiumElement;
@@ -170,7 +170,6 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                 const offset = new Cesium.HeadingPitchRange(0, -Cesium.Math.toRadians(90), boundingSphere.radius * 5);
                 camera.flyToBoundingSphere(boundingSphere, { duration: 1.5, offset });
             };
-            console.log({ cameraFocus });
 
             switch (cameraFocus) {
                 case CameraFocusType.Circle: {
@@ -192,10 +191,10 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                 case CameraFocusType.Search: {
                     if (
                         (searchedEntitiesPolygons.length || searchedEntitiesMarkers.length) &&
-                        searchedEntitiesBounds?.center &&
-                        searchedEntitiesBounds?.radius
+                        searchedEntitiesBoundsCenter &&
+                        searchedEntitiesBoundsRadius
                     ) {
-                        const boundingSphere = new Cesium.BoundingSphere(searchedEntitiesBounds.center, searchedEntitiesBounds.radius);
+                        const boundingSphere = new Cesium.BoundingSphere(searchedEntitiesBoundsCenter, searchedEntitiesBoundsRadius);
                         flyToBoundingSphere(boundingSphere);
                     }
                     break;
@@ -209,7 +208,17 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
 
         const animationFrameId = requestAnimationFrame(animateCamera);
         return () => cancelAnimationFrame(animationFrameId);
-    }, [circle, polygon, line, drawingMode, searchedEntitiesPolygons, searchedEntitiesMarkers]);
+    }, [
+        cameraFocus,
+        circle,
+        polygon,
+        drawingMode,
+        searchedEntitiesPolygons,
+        searchedEntitiesMarkers,
+        searchedEntitiesBoundsCenter,
+        searchedEntitiesBoundsRadius,
+        shapeType,
+    ]);
 
     const handleViewerClick = useCallback(
         (clickEvent: CesiumMovementEvent) => {
@@ -219,7 +228,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
             if (!viewer) return;
 
             const { scene } = viewer;
-            const cartesian: Cartesian3 = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
+            const cartesian = scene.camera.pickEllipsoid(clickEvent.position!, scene.globe.ellipsoid);
 
             if (!cartesian) return;
 
@@ -235,7 +244,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                 } else setSearchShape((prev) => ({ ...prev, polygon: [...prev.polygon, cartesian], circle: emptyCircle }));
             }
         },
-        [shapeType, drawingMode, viewerRef, setSearchShape],
+        [shapeType, drawingMode],
     );
 
     const handleMouseDown = useCallback(
@@ -247,7 +256,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
             if (!viewer) return;
 
             const { scene } = viewer;
-            const cartesian: Cartesian3 = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
+            const cartesian = scene.camera.pickEllipsoid(clickEvent.position!, scene.globe.ellipsoid);
 
             if (!cartesian) return;
             setSearchShape((prev) => ({ ...prev, polygon: [], circle: { ...emptyCircle, center: cartesian } }));
@@ -256,7 +265,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
             scene.screenSpaceCameraController.enableRotate = false;
             setCameraFocus(CameraFocusType.Circle);
         },
-        [shapeType, viewerRef, setDrawingMode],
+        [shapeType],
     );
 
     const handleMouseMove = useCallback(
@@ -267,7 +276,9 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
             if (!viewer) return;
 
             const { scene } = viewer;
-            const cartesian = scene.camera.pickEllipsoid(moveEvent.endPosition, scene.globe.ellipsoid);
+
+            if (!moveEvent.endPosition) return;
+            const cartesian = scene.camera.pickEllipsoid(moveEvent.endPosition!, scene.globe.ellipsoid);
 
             if (!cartesian) return;
 
@@ -279,7 +290,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                 circle: { ...prev.circle, mouseRadius: radius },
             }));
         },
-        [shapeType, drawingMode, circle, viewerRef, setSearchShape],
+        [shapeType, drawingMode, circle],
     );
 
     const handleMouseUp = useCallback(
@@ -290,7 +301,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
             if (!viewer) return;
 
             const { scene } = viewer;
-            const cartesian = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
+            const cartesian = scene.camera.pickEllipsoid(clickEvent.position!, scene.globe.ellipsoid);
 
             if (!cartesian) return;
             const radius = Cartesian3.distance(circle.center, cartesian);
@@ -306,7 +317,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
             viewer.scene.screenSpaceCameraController.enableRotate = true;
             setShapeType(null);
         },
-        [shapeType, viewerRef, circle, setDrawingMode, setSearchShape],
+        [shapeType, circle],
     );
 
     const handleViewerDoubleClick = useCallback(() => {
@@ -330,7 +341,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                         [`${type}s`]: [
                             ...prev[`${type}s`],
                             {
-                                key: matchingField,
+                                key: `${matchingField}-${node.properties._id}`,
                                 name,
                                 node,
                                 position: value,
@@ -359,14 +370,6 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                     {} as Record<string, {}>,
                 );
 
-            templatesPayload[sourceTemplateId] = {
-                filter: {
-                    [FilterLogicalOperator.AND]: Object.entries(listFields).map(([field, values]) => ({
-                        [field]: { $in: values },
-                    })),
-                },
-            };
-
             const payload: ISearchEntitiesByLocationBody = { textSearch: '', templates: templatesPayload };
 
             if (polygon && !drawingMode && polygon.length)
@@ -384,7 +387,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
         };
 
         fetchData();
-    }, [circle, drawingMode, polygon]);
+    }, [circle, drawingMode, polygon, mutateAsync, entityTemplateMap]);
 
     const resetDrawing = () => {
         setSearchShape({ circle: emptyCircle, polygon: [], line: [] });
@@ -511,17 +514,14 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                                 filters={{ value: { autoSearch, listFields }, set: setFilters }}
                                 isSearchShape={isSearchShape}
                                 applyFilterWithShapeSearch={applyFilterWithShapeSearch}
-                                numOfViewedEntitiesText={i18next.t(
-                                    isSearchShape ? 'location.showingEntitiesOfTotal' : 'location.showingEntitiesCount',
-                                    {
-                                        count: viewedCount,
-                                        ...(isSearchShape && { total: totalCount }),
-                                    },
-                                )}
+                                numOfViewedEntitiesText={i18next.t(`location.showingEntities${isSearchShape ? 'OfTotal' : 'Count'}`, {
+                                    count: viewedCount,
+                                    ...(isSearchShape && { total: totalCount }),
+                                })}
                                 setCameraFocus={setCameraFocus}
                             />
 
-                            {config && <BaseLayers viewerRef={viewerRef} config={config} />}
+                            {config && <BaseLayers viewerRef={viewerRef} config={config} popupPosition="left" />}
                             <ToggleButtonGroup
                                 value={shapeType}
                                 exclusive
@@ -578,14 +578,14 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                     </Viewer>
                 </Grid>
 
-                {sourceSearchResults.length > 0 && (
+                {sourceSearchResults.length > 0 && sourceTemplate && (
                     <Grid width="98%">
                         <EntitiesTable
                             rowData={sourceSearchResults}
                             rowModelType="clientSide"
-                            template={sourceTemplate!}
+                            template={sourceTemplate}
                             defaultExpanded
-                            title={i18next.t('location.searchResults')}
+                            title={i18next.t('location.searchResults', { sourceTemplateName: sourceTemplate.displayName })}
                             infiniteModeWithoutExpand
                             relatedTemplateProperties={destTemplateId}
                             overrideSx={{ '&.MuiPaper-root': { borderRadius: '20px 20px 0 0' } }}

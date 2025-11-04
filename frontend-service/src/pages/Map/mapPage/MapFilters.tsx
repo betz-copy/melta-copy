@@ -1,19 +1,18 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { FilterList } from '@mui/icons-material';
 import { Autocomplete, Box, Button, Divider, Grid, TextField, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import { ColoredEnumChip } from '../../../common/ColoredEnumChip';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import SearchInput from '../../../common/inputs/SearchInput';
-import { FilterLogicalOperator, IEntity, IFilterOfField } from '../../../interfaces/entities';
+import { FilterLogicalOperator, IEntity, IFilterOfField, ISearchBatchBody } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { getEntitiesWithDirectConnections } from '../../../services/entitiesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
-import { CameraFocusType } from '.';
+import { CameraFocusType } from '../../../utils/map';
 
 type Props = {
     moveToEntityLocations: (entity: IEntity[]) => void;
@@ -50,51 +49,51 @@ const MapFilters = ({
     const templatesWithLocationField = Array.from(entityTemplateMap.values()).filter((key) =>
         Object.values(key.properties.properties).some((obj) => obj.format === 'location'),
     );
+
     const sourceListsFields = sourceTemplate
-        ? Object.entries(sourceTemplate.properties.properties)
-            .filter(([_, prop]) => prop.enum || prop.items?.enum)
-            .map(([key, prop]) => ({
-                name: key,
-                ...prop,
-            }))
+        ? Object.entries(sourceTemplate.properties.properties ?? {})
+              .filter(([_, prop]) => prop.enum || prop.items?.enum)
+              .map(([key, prop]) => ({
+                  name: key,
+                  ...prop,
+              }))
         : [];
 
+    const templates = templatesWithLocationField.reduce<ISearchBatchBody['templates']>((acc, { _id: templateId }) => {
+        const filter =
+            templateId === sourceTemplate?._id && Object.keys(filters.value.listFields).length
+                ? {
+                      [FilterLogicalOperator.AND]: Object.entries(filters.value.listFields).map(([field, values]) => ({
+                          [field]: { $in: values },
+                      })),
+                  }
+                : undefined;
 
-    const templates = templatesWithLocationField
-        .map(({ _id }) => _id)
-        .reduce(
-            (acc, templateId) => {
-                acc[templateId] = {
-                    ...(templateId === sourceTemplate?._id && Object.entries(filters.value.listFields).length
-                        ? {
-                            filter: {
-                                [FilterLogicalOperator.AND]: Object.entries(filters.value.listFields).map(([field, values]) => ({
-                                    [field]: { $in: values },
-                                })),
-                            },
-                        }
-                        : {}),
-                };
-                return acc;
-            },
-            {} as Record<string, any>,
-        );
+        acc[templateId] = filter ? { filter } : {};
+        return acc;
+    }, {});
+
+    // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+    useEffect(() => {
+        const noFilters = filters.value.autoSearch.length < 2 && !Object.keys(filters.value.listFields).length;
+
+        if (noFilters) {
+            if (isSearchShape) applyFilterWithShapeSearch({ autoSearch: '', listFields: {} });
+            else clearAutocompleteSearch();
+        }
+    }, [filters.value.autoSearch, filters.value.listFields]);
 
     const { refetch } = useQuery(
         ['searchEntitiesOfTemplates', filters.value.autoSearch],
         async () => {
-            if (Object.keys(templatesWithLocationField).length === 0) {
-                return { count: 0, entities: [] };
-            }
+            if (!Object.keys(templatesWithLocationField).length) return { count: 0, entities: [] };
 
-            const result = await getEntitiesWithDirectConnections({
+            return getEntitiesWithDirectConnections({
                 skip: 0,
                 limit: 1001,
                 textSearch: filters.value.autoSearch,
                 templates,
             });
-
-            return result;
         },
         {
             enabled: false,
@@ -176,7 +175,13 @@ const MapFilters = ({
                         value={filters.value.autoSearch}
                         showBorder
                         placeholder={i18next.t('globalSearch.searchInPage')}
-                        onChange={(newSearchValue: string) => filters.set((prev) => ({ ...prev, autoSearch: newSearchValue }))}
+                        onChange={(newSearchValue: string) =>
+                            filters.set((prev) => ({
+                                ...prev,
+                                autoSearch: newSearchValue,
+                                listFields: !newSearchValue.length ? {} : prev.listFields,
+                            }))
+                        }
                     />
 
                     <Divider />
@@ -201,8 +206,8 @@ const MapFilters = ({
                                             };
                                         });
                                     }}
-                                    value={filters.value.listFields[field.name] || []}
-                                    renderTags={(selected) =>
+                                    value={filters.value.listFields[field.name] ?? []}
+                                    renderValue={(selected) =>
                                         selected.map((option) => (
                                             <ColoredEnumChip
                                                 key={String(option)}
