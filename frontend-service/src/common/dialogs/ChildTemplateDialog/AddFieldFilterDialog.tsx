@@ -10,7 +10,7 @@ import { ChipType, IChildTemplateForm } from '../../../interfaces/childTemplates
 import { IGraphFilterBody } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IUser } from '../../../interfaces/users';
-import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter, IFilterDateType } from '../../../utils/agGrid/interfaces';
+import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridSetFilter, IAGGridTextFilter, IFilterDateType } from '../../../utils/agGrid/interfaces';
 import { initializedFilterField, isValidAGGridFilter } from '../../FilterComponent';
 import { DateFilterInput } from '../../inputs/FilterInputs/DateFilterInput';
 import { MultipleSelectFilterInput } from '../../inputs/FilterInputs/MultipleSelectFilterInput';
@@ -59,7 +59,7 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
         onClose();
     };
 
-    const handleFilterTypeChange = (newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type']) => {
+    const handleFilterTypeChange = (newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGridNumberFilter['type']) => {
         setCurrentFieldError(undefined);
         setLocalFilterField({ ...localFilterField, type: newTypeFilter } as any);
     };
@@ -125,7 +125,7 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
 
         const ajvErrors = ajvValidate(templateSchema, formData);
 
-        if (ajvErrors && ajvErrors[fieldName]) setCurrentFieldError(ajvErrors[fieldName] as string);
+        if (ajvErrors?.[fieldName]) setCurrentFieldError(ajvErrors[fieldName] as string);
         else onSubmit(defaultValue);
     };
 
@@ -148,6 +148,7 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
                 : {};
 
         const enumOptions = propEnum ?? items?.enum;
+        const singleEnumOptions = enumOptions?.map((option) => ({ option, label: option }));
 
         if (enumOptions) {
             const isDefault = dialogType === ChipType.Default;
@@ -156,7 +157,7 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
                 return (
                     <SelectFilterInput
                         filterField={localFilterField?.filterType === 'text' ? localFilterField : undefined}
-                        enumOptions={enumOptions}
+                        enumOptions={singleEnumOptions}
                         handleFilterFieldChange={(value) => value && handleFilterFieldChange(value)}
                         readOnly={readOnly}
                         error={isError}

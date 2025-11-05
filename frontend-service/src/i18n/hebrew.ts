@@ -660,7 +660,6 @@ export default {
             chooseIcon: 'בחירת אייקון',
             properties: 'שדות',
             exportDocuments: 'פורמטים לייצוא',
-            // eslint-disable-next-line quotes
             exportDocumentsInfo:
                 'העלאת פורמט קובץ מאפשרת יצירת מבנה קובץ בו התוכן יוחלף בהתאם לשדות היישות. הוספת {{  }} מסביב לשם השדה כפי שמופיע בהגדרות הישות: {{ שם השדה באנגלית }}  בקובץ ה-word יאפשר החלפת טקסט זה בערך המוזן ע"י המשתמש לאחר מילוי היישות.',
             parameters: 'פרמטרים',
@@ -732,6 +731,7 @@ export default {
                 hierarchy: 'היררכיה',
                 image: 'תמונה',
             },
+            relationshipRef: { filterType: 'סוג פלטור', filterTypes: { field: 'שדה מתבנית זו', value: 'ערך מוגדר' }, fieldLabel: 'שדה מתבנית זו' },
         },
         relationshipTemplate: {
             createTitle: 'יצירת תבנית קשר',
@@ -1727,6 +1727,7 @@ export default {
             greaterThanOrEqual: 'גדול או שווה ל',
             greaterThan: 'גדול מ',
         },
+        field: { equals: 'שווה', notEqual: 'לא שווה' },
     },
     DynamicsConfigs: {
         isDrawerOpen: 'תפריט צד פתוח',

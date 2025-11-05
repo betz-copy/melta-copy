@@ -299,6 +299,7 @@ export const environment = {
             'untilToday',
             'fromToday',
         ],
+        field: ['equals', 'notEqual'],
     },
     relativeDateFilters: ['thisWeek', 'thisMonth', 'thisYear', 'untilToday', 'fromToday'] as readonly string[],
     accessTokenName: 'rabaz-access-token',

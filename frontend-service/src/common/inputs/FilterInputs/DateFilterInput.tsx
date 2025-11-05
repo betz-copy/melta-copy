@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import { environment } from '../../../globals';
 import { ByCurrentDefaultValue } from '../../../interfaces/childTemplates';
 import { useDarkModeStore } from '../../../stores/darkMode';
-import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridTextFilter, IFilterDateType, RelativeDateFilters } from '../../../utils/agGrid/interfaces';
+import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridTextFilter, IFilterDateType, RelativeDateFilters } from '../../../utils/agGrid/interfaces';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import DatePickerWrapper from '../DatePickerWrapper';
 import DateRange from '../DateRange';
@@ -15,7 +15,7 @@ const { relativeDateFilters } = environment;
 interface DateFilterInputProps {
     filterField: IAGGridDateFilter | undefined;
     handleFilterTypeChange: (
-        newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type'],
+        newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGridNumberFilter['type'],
         condition?: boolean,
     ) => void;
     handleDateChange: (newValue: IFilterDateType, isStartDate: boolean) => void;

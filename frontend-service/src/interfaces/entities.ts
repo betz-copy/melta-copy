@@ -1,5 +1,5 @@
 import { Readable } from 'stream';
-import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../utils/agGrid/interfaces';
+import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridSetFilter, IAGGridTextFilter } from '../utils/agGrid/interfaces';
 import { IMongoEntityTemplatePopulated } from './entityTemplates';
 import { IFailedEntity } from './excel';
 import { IRelationship } from './relationships';
@@ -10,7 +10,7 @@ import { ISemanticSearchResult } from './semanticSearch';
 
 export interface IEntity {
     templateId: string;
-    childTemplateId?:string;
+    childTemplateId?: string;
     properties: {
         _id: string;
         createdAt: string;
@@ -215,7 +215,7 @@ export interface IExportEntitiesBody {
 export interface IGraphFilterBody {
     selectedTemplate: IMongoEntityTemplatePopulated;
     selectedProperty?: string;
-    filterField?: IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter;
+    filterField?: IAGGridTextFilter | IAGGridNumberFilter | IAGGridDateFilter | IAGGridSetFilter;
 }
 
 export interface IGraphFilterBodyBatch {

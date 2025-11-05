@@ -3,17 +3,16 @@ import i18next from 'i18next';
 import React from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
 import { environment } from '../../../globals';
-import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
+import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
 import { StyledFilterInput } from './StyledFilterInput';
 
 const { filterOptions } = environment;
 
+type IAGGridFilter = IAGGridNumberFilter | IAGGridDateFilter | IAGGridTextFilter;
+
 interface TypeSelectFilterProps {
-    filterField: IAGGidNumberFilter | IAGGridDateFilter | IAGGridTextFilter;
-    handleFilterTypeChange: (
-        newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type'],
-        condition?: boolean,
-    ) => void;
+    filterField: IAGGridFilter;
+    handleFilterTypeChange: (newTypeFilter: IAGGridFilter['filterType'], condition?: boolean) => void;
     readOnly?: boolean;
     type: string;
 }
@@ -25,21 +24,21 @@ const TypeSelectFilter: React.FC<TypeSelectFilterProps> = ({ filterField, handle
             select
             size="small"
             value={filterField?.type || ''}
-            inputProps={{
-                readOnly,
-                style: {
-                    textOverflow: 'ellipsis',
+            slotProps={{
+                htmlInput: {
+                    readOnly,
+                    style: {
+                        textOverflow: 'ellipsis',
+                    },
                 },
+                select: { IconComponent: IoIosArrowDown },
             }}
             onChange={(e) =>
                 handleFilterTypeChange(
-                    e.target.value as IAGGidNumberFilter['type'] | IAGGridTextFilter['type'],
+                    e.target.value as IAGGridNumberFilter['type'] | IAGGridTextFilter['type'],
                     Boolean(filterField.filterType === 'date' ? filterField?.dateFrom : filterField?.filter),
                 )
             }
-            SelectProps={{
-                IconComponent: IoIosArrowDown,
-            }}
             disabled={readOnly}
         >
             {filterOptions[type].map((option: string) => (
