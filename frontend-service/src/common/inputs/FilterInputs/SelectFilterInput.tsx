@@ -49,6 +49,7 @@ const SelectFilterInput: React.FC<SelectFilterInputProps> = ({
                         handleFilterTypeChange={filterType.handleFilterTypeChange}
                         readOnly={readOnly}
                         type={filterType.type ?? ''}
+                        filterType
                     />
                 </Grid>
             )}

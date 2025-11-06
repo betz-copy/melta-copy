@@ -1,10 +1,11 @@
+import { FilterType } from '../../common/wizards/entityTemplate/commonInterfaces';
 import { environment } from '../../globals';
 import { IFilterOfField, IFilterOfTemplate, IGraphFilterBody, IGraphFilterBodyBatch, ISearchFilter } from '../../interfaces/entities';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { filterModelToFilterOfTemplatePerField } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridSetFilter, IAGGridTextFilter, RelativeDateFilters } from '../../utils/agGrid/interfaces';
 
-const { relativeDateFilters } = environment;
+const { relativeDateFilters, fieldFilterPrefix } = environment;
 
 export interface IGraphFilterToBackendBody {
     [templateId: string]: { filter: ISearchFilter } | {};
@@ -107,59 +108,79 @@ export const handleDateFilter = (filterKeys: (keyof IFilterOfField)[], fieldFilt
 
 export const translateFieldFilter = (
     fieldFilter: IFilterOfField,
-    { type, format, enum: enumValues }: IEntitySingleProperty,
-): IGraphFilterBody['filterField'] => {
+    { type: propType, format, enum: enumValues }: IEntitySingleProperty,
+): { filterType: FilterType; filterField: IGraphFilterBody['filterField'] } => {
     const filterKeys = Object.keys(fieldFilter) as (keyof IFilterOfField)[];
     const [filterKey] = filterKeys;
-    const filterValue = fieldFilter[filterKey];
 
-    const filterType = filterFieldToValue[filterKey];
+    const rawValue = fieldFilter[filterKey];
+    const isFieldType = typeof rawValue === 'string' && rawValue.startsWith(fieldFilterPrefix);
+    const filterType = isFieldType ? FilterType.field : FilterType.value;
 
-    switch (type) {
+    const filterValue = isFieldType ? rawValue.slice(fieldFilterPrefix.length) : rawValue;
+
+    const type = filterFieldToValue[filterKey];
+
+    switch (propType) {
         case 'string':
         case 'boolean': {
-            if (format === 'date-time' || format === 'date') return handleDateFilter(filterKeys, fieldFilter, filterType);
+            if (format === 'date-time' || format === 'date') return { filterType, filterField: handleDateFilter(filterKeys, fieldFilter, type) };
 
             if (enumValues)
                 return {
-                    filterType: 'set',
-                    values: filterValue as (string | null)[],
-                } as IAGGridSetFilter;
+                    filterType,
+                    filterField: {
+                        filterType: 'set',
+                        values: filterValue as (string | null)[],
+                    } as IAGGridSetFilter,
+                };
 
             if (filterKey === '$rgx' && typeof filterValue === 'string') {
                 const regexFilter = handleRegexFilter(filterValue);
-                if (regexFilter) return regexFilter;
+                if (regexFilter) return { filterType, filterField: regexFilter };
             }
 
             if (filterKey === '$not' && typeof filterValue === 'object') {
                 const notFilter = filterValue as IFilterOfField;
                 if ('$rgx' in notFilter) {
                     return {
-                        filterType: 'text',
-                        type: 'notContains',
-                        filter: handleRegexFilter(notFilter.$rgx as string, true)!.filter,
-                    } as IAGGridTextFilter;
+                        filterType,
+                        filterField: {
+                            filterType: 'text',
+                            type: 'notContains',
+                            filter: handleRegexFilter(notFilter.$rgx as string, true)?.filter,
+                        } as IAGGridTextFilter,
+                    };
                 }
             }
 
             return {
-                filterType: 'text',
-                type: filterType,
-                filter: filterValue as string,
-            } as IAGGridTextFilter;
+                filterType,
+                filterField: {
+                    filterType: 'text',
+                    type: type,
+                    filter: filterValue as string,
+                } as IAGGridTextFilter,
+            };
         }
         case 'number':
             return {
-                filterType: 'number',
-                type: filterType,
-                filter: filterValue as number,
-            } as IAGGridNumberFilter;
+                filterType,
+                filterField: {
+                    filterType: 'number',
+                    type: type,
+                    filter: filterValue as number,
+                } as IAGGridNumberFilter,
+            };
 
         case 'array':
             return {
-                filterType: 'set',
-                values: filterValue as (string | null)[],
-            } as IAGGridSetFilter;
+                filterType,
+                filterField: {
+                    filterType: 'set',
+                    values: filterValue as (string | null)[],
+                } as IAGGridSetFilter,
+            };
 
         default:
             throw new Error(`Unsupported filter type or missing value for filter: ${JSON.stringify(fieldFilter)}`);
@@ -181,7 +202,7 @@ export const FilterOfGraphToFilterRecord = (
             parsedFilters[`${Date.now()}${index}`] = {
                 selectedTemplate: template,
                 selectedProperty: field,
-                filterField: translateFieldFilter(fieldFilter, template.properties.properties[field]),
+                filterField: translateFieldFilter(fieldFilter, template.properties.properties[field]).filterField,
             };
         });
     });

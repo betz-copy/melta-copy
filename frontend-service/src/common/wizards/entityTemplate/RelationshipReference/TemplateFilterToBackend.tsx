@@ -16,11 +16,11 @@ export const filterTemplateToSearchFilter = (
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const template = entityTemplates.get(templateId)!;
 
-    const filters = filterModel.map(({ filterProperty, filterField }) => {
+    const filters = filterModel.map(({ filterProperty, filterField, filterType }) => {
         if (!filterField) return {};
         const propertyTemplate = template.properties.properties[filterProperty];
 
-        return filterModelToFilterOfTemplatePerField(propertyTemplate, filterProperty, filterField);
+        return filterModelToFilterOfTemplatePerField(propertyTemplate, filterProperty, filterField, filterType);
     });
 
     if (andOr === FilterLogicalOperator.AND) return { [FilterLogicalOperator.AND]: filters };
@@ -42,15 +42,17 @@ export const FilterModelToFilterRecord = (
 
     return fieldFilters.reduce<IFilterTemplate[]>((acc, filter) => {
         Object.entries(filter).forEach(([field, fieldFilter]) => {
+
             if (!fieldFilter) return;
 
             const property = template.properties.properties[field];
-            const filterField = translateFieldFilter(fieldFilter, property);
+            const { filterType, filterField } = translateFieldFilter(fieldFilter, property);
 
             if (filterField) {
                 acc.push({
                     filterProperty: field,
                     filterField,
+                    filterType,
                 });
             }
         });
