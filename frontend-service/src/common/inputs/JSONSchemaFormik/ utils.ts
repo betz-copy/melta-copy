@@ -159,6 +159,7 @@ const getFieldUiSchema = (
     if (propertySchema.format === 'relationshipReference')
         return {
             'ui:widget': 'TemplateReferenceWidget',
+            'ui:options': { template: values.template },
         };
     if (propertySchema.format === 'location')
         return {

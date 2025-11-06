@@ -41,6 +41,8 @@ const TemplateEntitiesAutocomplete: React.FC<{
     relationFilters?: string;
     required?: boolean;
     isChildTemplate?: boolean;
+    sourceTransferKey?: string;
+    fieldName?: string;
 }> = ({
     template,
     showField,
@@ -59,6 +61,8 @@ const TemplateEntitiesAutocomplete: React.FC<{
     relationFilters,
     required,
     isChildTemplate,
+    sourceTransferKey,
+    fieldName,
 }) => {
     const clientSideUserEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
 
@@ -143,6 +147,8 @@ const TemplateEntitiesAutocomplete: React.FC<{
         },
     );
 
+    const accountBalanceKey = Object.keys(template.properties.properties).find((key) => template.properties.properties[key]?.accountBalance === true);
+
     useEffect(() => {
         if (data) {
             // eslint-disable-next-line @typescript-eslint/no-shadow
@@ -209,7 +215,6 @@ const TemplateEntitiesAutocomplete: React.FC<{
 
             if (Array.isArray(property)) {
                 try {
-                    // user array
                     const parsedArray = property.map((prop) => {
                         if (prop?.fullName) {
                             return prop.fullName;
@@ -228,7 +233,6 @@ const TemplateEntitiesAutocomplete: React.FC<{
             }
 
             if (property.fullName && property.mail && property.hierarchy && property.id && property.jobTitle) {
-                // user when editing entity
                 return property.fullName;
             }
 
@@ -236,7 +240,6 @@ const TemplateEntitiesAutocomplete: React.FC<{
         }
 
         try {
-            // user when creating entity from scratch
             const parsedUser = JSON.parse(property);
 
             return typeof parsedUser === 'object' ? parsedUser.fullName : parsedUser;
@@ -259,6 +262,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
             loadingText={i18next.t('templateEntitiesAutocomplete.loading')}
             noOptionsText={i18next.t('templateEntitiesAutocomplete.noOptions')}
             getOptionLabel={(option) => convertPropertyToString(option.properties[showField]) || option.properties._id.toString()}
+            getOptionDisabled={(option) => !!(accountBalanceKey && sourceTransferKey === fieldName && option.properties?.[accountBalanceKey] <= 0)}
             isOptionEqualToValue={(option, currValue) => option.properties._id === currValue.properties._id}
             filterOptions={(options) => options}
             popupIcon={<ExpandMore />}

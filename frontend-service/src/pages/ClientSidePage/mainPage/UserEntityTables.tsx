@@ -143,7 +143,6 @@ const UserEntityTables = forwardRef<UserEntityTablesRef, IUserEntityTablesProps>
                                             template={childTemplatePopulated}
                                             quickFilterText={''}
                                             page={TablePageType.clientSide}
-                                            setUpdatedEntities={() => {}}
                                             defaultFilter={defaultFilter}
                                         />
                                     </Grid>

@@ -223,7 +223,10 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                             cursor: !canWriteInstance || isEntityDisabled ? 'default' : 'pointer',
                                         }}
                                     >
-                                        <ImageWithDisable srcPath="/icons/edit-icon.svg" disabled={!canWriteInstance || isEntityDisabled} />
+                                        <ImageWithDisable
+                                            srcPath="/icons/edit-icon.svg"
+                                            disabled={!canWriteInstance || isEntityDisabled || !!currentEntityTemplate?.walletTransfer}
+                                        />
                                     </IconButtonWithPopover>
                                 </Grid>
                                 <Grid
@@ -260,7 +263,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                             setOpenDeleteDialog(true);
                                             handleClose();
                                         }}
-                                        disabled={!canWriteInstance || entityTemplate.disabled || entity.properties.disabled}
+                                        disabled={!canWriteInstance || entityTemplate.disabled || entity.properties.disabled || !!currentEntityTemplate?.walletTransfer}
                                         icon={DeleteIcon}
                                         text={i18next.t('actions.delete')}
                                     />

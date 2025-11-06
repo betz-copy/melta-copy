@@ -99,6 +99,9 @@ export interface EntityTemplateWizardValues
     enumPropertiesColors?: string[];
 }
 
+export const hasAccountBalanceField = (properties) =>
+    properties.some((property) => (property.type === 'field' ? !!property.data?.accountBalance : property.fields?.some((f) => !!f.accountBalance)));
+
 const EntityTemplateWizard: React.FC<
     WizardBaseType<EntityTemplateWizardValues> & { searchEntityTemplatesQueryKey: (string | IMongoCategory[])[] }
 > = ({
@@ -129,27 +132,16 @@ const EntityTemplateWizard: React.FC<
     const [exportFormats, setExportFormats] = useState(false);
     const [showAccountDisplay, setShowAccountDisplay] = useState<boolean>(false);
     const [isTransferTemplate, setIsTransferTemplate] = useState<boolean>(false);
-    const [walletTransfer, setWalletTransfer] = useState(false);
-    const [walletTransferSchema, setWalletTransferSchema] = useState<any>(undefined);
+    const [walletTransfer, setWalletTransfer] = useState(!!initialValues.walletTransfer || false);
 
     useEffect(() => {
-        setExportFormats(false);
+        const isWalletTemplate = hasAccountBalanceField(initialValues.properties);
 
-        const hasAccountBalanceKey = initialValues.properties.some((property) => {
-            if (property.type === 'field') {
-                return !!property.data.accountBalance;
-            } else {
-                return property.fields.some((f) => !!f.accountBalance);
-            }
-        });
-
-        setShowAccountDisplay(hasAccountBalanceKey ?? false);
+        setShowAccountDisplay(isWalletTemplate ?? false);
     }, [initialValues.properties, open]);
 
     useEffect(() => {
-        setWalletTransfer(!!initialValues.walletTransfer || false);
-        setWalletTransferSchema(walletTransfer ? walletTransferSettingsSchema() : undefined);
-
+        setExportFormats((initialValues.documentTemplatesIds?.length ?? 0) > 0);
         setIsTransferTemplate(!!initialValues.walletTransfer || false);
     }, [open]);
 
@@ -157,6 +149,8 @@ const EntityTemplateWizard: React.FC<
     const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates') || new Map();
 
     const createTemplateSettingsSchema = useCreateOrEditTemplateNameSchema(templates, currentTemplateId);
+    const walletTransferSchema = walletTransferSettingsSchema();
+
 
     const { isLoading, mutateAsync } = useMutation(
         async (entityTemplate: EntityTemplateWizardValues) => {

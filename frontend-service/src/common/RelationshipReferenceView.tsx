@@ -81,7 +81,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
                     }}
                     arrow
                     placement="top"
-                    title={<Typography color="primary">{i18next.t('templateEntitiesAutocomplete.noWritePermissions')}</Typography>}
+                    title={<Typography color="primary"> {i18next.t('templateEntitiesAutocomplete.noWritePermissions')}</Typography>}
                 >
                     <VisibilityOff sx={{ height, width, color: theme.palette.action.disabled }} />
                 </MeltaTooltip>

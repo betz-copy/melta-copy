@@ -175,8 +175,6 @@ export const EntityConnections: React.FC<EntityConnectionsProps> = ({
                                 </TabList>
                             </Box>
                             {categoriesWithConnectionsTemplates.map(({ category: { _id }, connectionsTemplates: connectionsTemplatesOfCategory }) => {
-                                const isAdmin = Boolean(currentUser.currentWorkspacePermissions?.admin) || false;
-
                                 return (
                                     <TabPanel key={_id} value={_id}>
                                         {connectionsTemplatesOfCategory.map((connectionTemplate, connectedRelationshipTemplateIndex) => {
@@ -198,7 +196,7 @@ export const EntityConnections: React.FC<EntityConnectionsProps> = ({
                                                     connectionTemplate={connectionTemplate}
                                                     isEditButtonsDisabled={isEditButtonsDisabled}
                                                     disabledButtonText={disabledButtonText}
-                                                    hasPermissionToTemplate={hasPermissionToRelatedTemplate || isAdmin}
+                                                    hasPermissionToTemplate={hasPermissionToRelatedTemplate}
                                                 />
                                             );
                                         })}

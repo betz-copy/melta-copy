@@ -465,16 +465,17 @@ const TemplateTable = forwardRef<
                                   payload: editDialog.entity!,
                               }
                             : { actionType: ActionTypes.CreateEntity, payload: undefined }),
-                        onError: (currEntityValues) => setEditDialog((prev) => ({ ...prev, isOpen: true, wizardValues: currEntityValues })),
+                        onError: (currEntityValues) => {
+                            setEditDialog((prev) => ({ ...prev, isOpen: true, wizardValues: currEntityValues }));
+                        },
                         onSuccess: (entity: IEntity) => {
-                            if (editDialog.isEditMode) {
-                                entitiesTableRef.current?.updateRowDataClientSide(entity);
-                                setUpdatedEntities?.(
-                                    Object.values(entity.properties).filter(
-                                        (property): property is IEntity => typeof property === 'object' && 'templateId' in property,
-                                    ),
-                                );
-                            }
+                            entitiesTableRef.current?.updateRowDataClientSide(entity);
+                            setUpdatedEntities?.(
+                                Object.values(entity.properties).filter(
+                                    (property): property is IEntity =>
+                                        typeof property === 'object' && 'templateId' in property && 'properties' in property,
+                                ),
+                            );
                             setUpdatedTemplateIds?.([entity.templateId]);
                             setEditDialog((prev) => ({ ...prev, isOpen: false }));
                             setExternalErrors(initializedExternalErrors);

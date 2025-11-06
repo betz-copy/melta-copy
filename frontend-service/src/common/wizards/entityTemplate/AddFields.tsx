@@ -19,7 +19,7 @@ import { CommonFormInputProperties, FieldProperty, GroupProperty, PropertyItem }
 import { FieldBlockDND } from './fieldBlock/FieldBlock';
 import { ItemTypes } from './fieldBlock/interfaces';
 import { getFieldData } from './fieldBlock/propertiesTypes';
-import { EntityTemplateWizardValues } from './index';
+import { EntityTemplateWizardValues, hasAccountBalanceField } from './index';
 
 const {
     relativeDateFilters,
@@ -283,15 +283,7 @@ export const FieldBlockWrapper = ({
         return false;
     });
 
-    const hasAccountBalanceField = (Object.values(values.properties) as PropertyItem[]).some((property) => {
-        if (property.type === 'field') {
-            return !!property.data.accountBalance;
-        }
-        if (property.type === 'group') {
-            return property.fields.some((field) => !!field.accountBalance);
-        }
-        return false;
-    });
+    const isWalletTemplate = hasAccountBalanceField(Object.values(values.properties) as PropertyItem[]);
 
     const countMapSearchProperties = Object.values(values.properties).flatMap((property: any) => {
         if (property.type === 'field' && property.data?.mapSearch) {
@@ -740,7 +732,7 @@ export const FieldBlockWrapper = ({
                     remove={remove}
                     onDeleteSure={onDeleteSure}
                     showAccountDisplay={showAccountDisplay}
-                    hasAccountBalanceField={hasAccountBalanceField}
+                    hasAccountBalanceField={isWalletTemplate}
                     isAlreadyWalletTemplate={isAlreadyWalletTemplate}
                     setIsTransferTemplate={setIsTransferTemplate}
                 />

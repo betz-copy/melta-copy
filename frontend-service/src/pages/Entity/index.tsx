@@ -1,6 +1,6 @@
 import { AddCircle, CloseFullscreenRounded, Expand, TableRowsOutlined, AccountBalanceWallet } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { Box, CircularProgress, Grid, Tab } from '@mui/material';
+import { Box, CircularProgress, Grid, Tab, useTheme } from '@mui/material';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -60,7 +60,7 @@ export const getButtonState = (
         disabledButtonText = i18next.t('ruleManagement.create-relationship');
     }
 
-    return { isEditButtonsDisabled, disabledButtonText, hasPermissionToRelatedTemplate: Boolean(permissionToRelatedTemplate) };
+    return { isEditButtonsDisabled, disabledButtonText, hasPermissionToRelatedTemplate: Boolean(permissions?.admin || permissionToRelatedTemplate) };
 };
 
 const ConnectionsTableTitle: React.FC<{
@@ -345,6 +345,7 @@ export interface INestedRelationshipTemplates {
 }
 
 const Entity: React.FC = () => {
+    const theme = useTheme();
     const { entityId } = useParams();
     const queryClient = useQueryClient();
     const { setDisabledActions, setCurrentStep } = useTour();
@@ -447,7 +448,7 @@ const Entity: React.FC = () => {
                                     }}
                                 >
                                     <Tab icon={<RelationshipIcon />} value="walletTransfers" />
-                                    <Tab icon={<AccountBalanceWallet />} value="connectionsByCategories" />
+                                    <Tab icon={<AccountBalanceWallet sx={{ color: theme.palette.primary.main }} />} value="connectionsByCategories" />
                                 </TabList>
                             </Box>
                             <TabPanel value="walletTransfers" sx={{ p: 0 }}>

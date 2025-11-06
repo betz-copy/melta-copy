@@ -15,6 +15,7 @@ import { searchEntitiesOfTemplateRequest } from '../../../services/entitiesServi
 import { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
 import { ErrorToast } from '../../ErrorToast';
+import { useDarkModeStore } from '../../../stores/darkMode';
 
 export const walletTransferSettingsSchema = () => {
     return Yup.object({
@@ -69,6 +70,8 @@ export const WalletTransferSettings: React.FC<
         walletTransfer: { value: boolean; set: (val: boolean) => void };
     }
 > = ({ values, errors, showAccountDisplay, touched, setFieldValue, walletTransfer, setFieldTouched, isEditMode }) => {
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
     const allFields = values.properties.flatMap((property) => {
         if (property.type === 'field') {
             return [property.data];
@@ -117,6 +120,12 @@ export const WalletTransferSettings: React.FC<
     );
     const areThereAnyInstances = isEditMode && areThereInstancesByTemplateIdResponse!.count > 0;
 
+    const source = values.walletTransfer?.from;
+    const destination = values.walletTransfer?.to;
+    const showSourceInfo = walletTransfer.value && allFields.some((f) => f.name === (source?.name || source) && f.type === 'relationshipReference');
+    const showDestInfo =
+        walletTransfer.value && allFields.some((f) => f.name === (destination?.name || destination) && f.type === 'relationshipReference');
+
     return (
         <Grid container direction="column">
             <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
@@ -151,8 +160,8 @@ export const WalletTransferSettings: React.FC<
                 </MeltaTooltip>
             </Box>
             <Grid paddingLeft={3}>
-                <Grid container direction="row" spacing={3} marginBottom={5}>
-                    <Grid container direction="row">
+                <Grid container direction="row" spacing={showSourceInfo ? 2.5 : 6} marginBottom={5}>
+                    <Grid container direction="row" spacing={1}>
                         <Autocomplete
                             options={incomingFields}
                             onChange={(_e, value) => setFieldValue('walletTransfer.from', value || '')}
@@ -161,12 +170,14 @@ export const WalletTransferSettings: React.FC<
                             onBlur={() => setFieldTouched('walletTransfer.from')}
                             sx={{
                                 width: 250,
-                                '& .MuiInputBase-root.Mui-disabled': {
-                                    backgroundColor: '#F3F5F9',
-                                },
-                                '& .MuiInputLabel-root.Mui-disabled': {
-                                    color: '#BBBED8',
-                                },
+                                ...(!darkMode && {
+                                    '& .MuiInputBase-root.Mui-disabled': {
+                                        backgroundColor: '#F3F5F9',
+                                    },
+                                    '& .MuiInputLabel-root.Mui-disabled': {
+                                        color: '#BBBED8',
+                                    },
+                                }),
                             }}
                             renderInput={(params) => (
                                 <TextField
@@ -179,19 +190,21 @@ export const WalletTransferSettings: React.FC<
                             )}
                             disabled={walletTransfer.value === false || areThereAnyInstances}
                         />
-                        {walletTransfer.value && values.walletTransfer?.from?.type === 'relationshipReference' && (
-                            <MeltaTooltip title={i18next.t('wizard.entityTemplate.walletTransfer.fromWallet')} variant="bubble">
-                                <InfoOutlined
-                                    sx={{
-                                        fontSize: 16,
-                                        opacity: 0.7,
-                                        ml: 1,
-                                    }}
-                                />
-                            </MeltaTooltip>
+                        {showSourceInfo && (
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                <MeltaTooltip title={i18next.t('wizard.entityTemplate.walletTransfer.fromWallet')} variant="bubble">
+                                    <InfoOutlined
+                                        sx={{
+                                            fontSize: 16,
+                                            opacity: 0.7,
+                                            ml: 1,
+                                        }}
+                                    />
+                                </MeltaTooltip>
+                            </Box>
                         )}
                     </Grid>
-                    <Grid container direction="row">
+                    <Grid container direction="row" spacing={1}>
                         <Autocomplete
                             options={outgoingFields}
                             onChange={(_e, value) => setFieldValue('walletTransfer.to', value || '')}
@@ -200,12 +213,14 @@ export const WalletTransferSettings: React.FC<
                             onBlur={() => setFieldTouched('walletTransfer.to')}
                             sx={{
                                 width: 250,
-                                '& .MuiInputBase-root.Mui-disabled': {
-                                    backgroundColor: '#F3F5F9',
-                                },
-                                '& .MuiInputLabel-root.Mui-disabled': {
-                                    color: '#BBBED8',
-                                },
+                                ...(!darkMode && {
+                                    '& .MuiInputBase-root.Mui-disabled': {
+                                        backgroundColor: '#F3F5F9',
+                                    },
+                                    '& .MuiInputLabel-root.Mui-disabled': {
+                                        color: '#BBBED8',
+                                    },
+                                }),
                             }}
                             renderInput={(params) => (
                                 <TextField
@@ -218,20 +233,22 @@ export const WalletTransferSettings: React.FC<
                             )}
                             disabled={!walletTransfer.value || areThereAnyInstances}
                         />
-                        {walletTransfer.value && values.walletTransfer?.to?.type === 'relationshipReference' && (
-                            <MeltaTooltip title={i18next.t('wizard.entityTemplate.walletTransfer.toWallet')} variant="bubble">
-                                <InfoOutlined
-                                    sx={{
-                                        fontSize: 16,
-                                        opacity: 0.7,
-                                        ml: 1,
-                                    }}
-                                />
-                            </MeltaTooltip>
+                        {showDestInfo && (
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                <MeltaTooltip title={i18next.t('wizard.entityTemplate.walletTransfer.toWallet')} variant="bubble">
+                                    <InfoOutlined
+                                        sx={{
+                                            fontSize: 16,
+                                            opacity: 0.7,
+                                            ml: 1,
+                                        }}
+                                    />
+                                </MeltaTooltip>
+                            </Box>
                         )}
                     </Grid>
                 </Grid>
-                <Grid container spacing={3} direction="row" marginBottom={3}>
+                <Grid container spacing={6} direction="row" marginBottom={3}>
                     <Grid>
                         <Autocomplete
                             options={allNumFields}
@@ -241,12 +258,14 @@ export const WalletTransferSettings: React.FC<
                             onBlur={() => setFieldTouched('walletTransfer.amount')}
                             sx={{
                                 width: 250,
-                                '& .MuiInputBase-root.Mui-disabled': {
-                                    backgroundColor: '#F3F5F9',
-                                },
-                                '& .MuiInputLabel-root.Mui-disabled': {
-                                    color: '#BBBED8',
-                                },
+                                ...(!darkMode && {
+                                    '& .MuiInputBase-root.Mui-disabled': {
+                                        backgroundColor: '#F3F5F9',
+                                    },
+                                    '& .MuiInputLabel-root.Mui-disabled': {
+                                        color: '#BBBED8',
+                                    },
+                                }),
                             }}
                             renderInput={(params) => (
                                 <TextField
@@ -269,12 +288,14 @@ export const WalletTransferSettings: React.FC<
                             onBlur={() => setFieldTouched('walletTransfer.description')}
                             sx={{
                                 width: 250,
-                                '& .MuiInputBase-root.Mui-disabled': {
-                                    backgroundColor: '#F3F5F9',
-                                },
-                                '& .MuiInputLabel-root.Mui-disabled': {
-                                    color: '#BBBED8',
-                                },
+                                ...(!darkMode && {
+                                    '& .MuiInputBase-root.Mui-disabled': {
+                                        backgroundColor: '#F3F5F9',
+                                    },
+                                    '& .MuiInputLabel-root.Mui-disabled': {
+                                        color: '#BBBED8',
+                                    },
+                                }),
                             }}
                             renderInput={(params) => (
                                 <TextField

@@ -555,6 +555,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         ignoredRules: IBrokenRule[],
         userId: string,
         childTemplateId?: string,
+        isSourceWallet = true,
     ) {
         if (walletProperty.format !== 'relationshipReference') return;
 
@@ -571,6 +572,10 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const { createdAt: _createdAt, updatedAt: _updatedAt, _id, disabled: _disabled, ...restWalletProperties } = walletProperties;
 
         const updatedAccountBalance = (walletProperties[accountBalancePropertyKey] || 0) + delta;
+
+        if (isSourceWallet && (walletProperties[accountBalancePropertyKey] <= 0 || walletProperties[accountBalancePropertyKey] + delta < 0)) {
+            throw new Error('Cannot transfer from a wallet with a negative balance');
+        }
 
         await this.updateEntityInstance(
             _id,
@@ -606,6 +611,34 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             await this.sendIndicatorRuleEmailForEntity(createdEntity, entityTemplate, userId, emails);
         } catch (error) {
             logger.error("Failed to send indicator rule's email for entity creation", { error });
+        }
+    }
+
+    async updateWalletsBalanceInTransfer(createdEntity: IEntity, ignoredRules: IBrokenRule[], userId: string, childTemplateId?: string) {
+        const entityTemplate = await this.entityTemplateService.getEntityTemplateById(createdEntity.templateId);
+        if (entityTemplate.walletTransfer) {
+            const { from, to, amount } = entityTemplate.walletTransfer;
+            const sourceProperty = entityTemplate.properties.properties[from];
+            const destinationProperty = entityTemplate.properties.properties[to];
+            const transferAmount = createdEntity.properties[amount];
+
+            if (
+                sourceProperty.format === 'relationshipReference' &&
+                destinationProperty.format === 'relationshipReference' &&
+                createdEntity.properties[from].properties._id === createdEntity.properties[to].properties._id
+            )
+                throw new Error('Source and destination wallets in the transfer are identical');
+
+            await this.updateWalletBalance(sourceProperty, createdEntity.properties[from], -transferAmount, ignoredRules, userId, childTemplateId);
+            await this.updateWalletBalance(
+                destinationProperty,
+                createdEntity.properties[to],
+                transferAmount,
+                ignoredRules,
+                userId,
+                childTemplateId,
+                false,
+            );
         }
     }
 
@@ -645,16 +678,8 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             await this.rabbitManager.indexFiles(createdEntity.templateId, createdEntity.properties._id, Object.values(upserstedFiles).flat());
         }
 
-        const entityTemplate = await this.entityTemplateService.getEntityTemplateById(templateId);
-        if (entityTemplate.walletTransfer) {
-            const { from, to, amount } = entityTemplate.walletTransfer;
-            const sourceProperty = entityTemplate.properties.properties[from];
-            const destinationProperty = entityTemplate.properties.properties[to];
-            const transferAmount = createdEntity.properties[amount];
+        await this.updateWalletsBalanceInTransfer(createdEntity, ignoredRules, userId, childTemplateId);
 
-            await this.updateWalletBalance(sourceProperty, createdEntity.properties[from], -transferAmount, ignoredRules, userId, childTemplateId);
-            await this.updateWalletBalance(destinationProperty, createdEntity.properties[to], transferAmount, ignoredRules, userId, childTemplateId);
-        }
         if (emails) this.sendIndicatorRuleEmailForCreation(createdEntity, userId, emails);
 
         return createdEntity;
@@ -895,6 +920,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             await this.rabbitManager.indexFiles(createdEntity.templateId, createdEntity.properties._id, fileIds);
         }
 
+        await this.updateWalletsBalanceInTransfer(createdEntity, ignoredRules, userId, childTemplateId);
         return createdEntity;
     }
 
@@ -938,6 +964,9 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const { props: uploadedFilesAndProperties, files: updatedFiles } = await this.uploadInstanceFiles(files, updatedInstanceData.properties);
         const currentEntity = await this.service.getEntityInstanceById(id);
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
+
+        if (entityTemplate.walletTransfer) throw new BadRequestError("can't update transfer entity template");
+
         if (!isEditExcel) {
             if (entityTemplate.disabled) throw new BadRequestError("can't update, entity template disabled");
             if (currentEntity.properties.disabled) throw new BadRequestError("can't update disabled entity");
@@ -1027,6 +1056,8 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const template = childTemplateId
             ? await this.entityTemplateService.getChildTemplateById(childTemplateId)
             : await this.entityTemplateService.getEntityTemplateById(templateId);
+
+        if (template.walletTransfer) throw new BadRequestError("can't delete transfer entity template");
 
         if (template.disabled) throw new BadRequestError('cannot delete entities with disabled template');
         if (!deleteBody.selectAll) {

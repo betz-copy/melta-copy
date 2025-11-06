@@ -22,9 +22,13 @@ const RjsfTemplateReferenceWidget = ({
     uiSchema,
     formContext,
     placeholder,
+    options,
     ...widgetProps
 }: WidgetProps) => {
+    const { template } = options;
+
     const [inputValue, setInputValue] = useState('');
+    const fieldName = Object.keys(template.properties.properties).find((key) => template.properties.properties[key].title === label);
 
     const handleEntityChange = (_event: React.SyntheticEvent, chosenEntity: IEntity | null) => {
         onChange(chosenEntity);
@@ -77,6 +81,8 @@ const RjsfTemplateReferenceWidget = ({
             relationFilters={filters}
             required={required}
             isChildTemplate={!relatedEntityTemplate}
+            sourceTransferKey={template.walletTransfer?.from}
+            fieldName={fieldName}
         />
     );
 };

@@ -14,6 +14,9 @@ import { isChildTemplate } from '../../utils/templates';
 import { useQueryClient } from 'react-query';
 import { useUserStore } from '../../stores/user';
 import { ArrowForward as ArrowForwardIcon, ArrowBack as ArrowBackIcon, AccountBalanceWalletOutlined } from '@mui/icons-material';
+import { ICellRendererParams } from '@ag-grid-community/core';
+import { Value } from '../../utils/agGrid/Value';
+import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 
 const { infiniteScrollPageCount } = environment.permission;
 
@@ -48,11 +51,6 @@ export const WalletTransfers: React.FC<any> = ({
 
     const walletTransferTableRef = useRef<WalletTransferTableRef<WalletTransferData>>(null);
 
-    // const datasourceOnFail = (error: unknown) => {
-    //     console.error('failed loading all users:', error);
-    //     toast.error(i18next.t('permissions.failedToLoadAllPermissions'));
-
-    // };
     const currentUser = useUserStore((state) => state.user);
     const isAdmin = Boolean(currentUser.currentWorkspacePermissions?.admin) || false;
 
@@ -188,32 +186,67 @@ export const WalletTransfers: React.FC<any> = ({
             field: 'transfer.entity',
             headerName: i18next.t('entityPage.walletTransfer.entity'),
             valueGetter: (params: any) => {
-                console.log({ params });
+                const { entity, template, direction } = params.data;
+                if (!template.walletTransfer) return '';
 
-                return params.data?.template.walletTransfer
-                    ? (params.data?.entity.properties[params.data?.template.walletTransfer[params.data?.direction]].properties.name ?? '')
-                    : '';
+                const directionKeyName = template.walletTransfer[direction];
+                const templateField = template.properties.properties[directionKeyName];
+                const fieldValue = entity.properties[directionKeyName];
+                const isEnumField = !!templateField.enum;
+
+                if (typeof fieldValue === 'string' && !isEnumField) {
+                    return fieldValue;
+                }
+
+                if (isEnumField) {
+                    return {
+                        value: fieldValue,
+                        isEnumField: true,
+                        direction,
+                        template,
+                    };
+                }
+
+                return params.data;
             },
-            // cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
-            //     const error = isPropertyInvalid(props, field, ignoreType);
-            //     if (error) return errorColDef(props, error, value);
-            //     return (
-            //         <Value
-            //             searchValue={searchValue}
-            //             hideValue={hideValue}
-            //             value={props.value ?? ''}
-            //             enumColor={(props.value && enumColorOptions?.[props.value]) ?? 'default'}
-            //             color={getColor(props, field)}
-            //         />
-            //     );
-            // },
+            cellRenderer: (props: any) => {
+                const value = props.value;
+
+                if (typeof value === 'string') {
+                    return <Value hideValue={false} value={value} />;
+                }
+
+                if (value?.isEnumField) {
+                    const { value: enumValue, template, direction } = value;
+                    const propertyKeyName = template.walletTransfer[direction];
+                    return (
+                        <Value
+                            hideValue={false}
+                            value={enumValue?.toString()}
+                            enumColor={template.enumPropertiesColors?.[propertyKeyName]?.[enumValue] ?? 'default'}
+                        />
+                    );
+                }
+
+                const { entity, template, direction } = value;
+                const relatedPropertyKey = template.walletTransfer[direction];
+                const relatedEntity = entity.properties[relatedPropertyKey];
+                const { relatedTemplateField, relatedTemplateId } = template.properties.properties[relatedPropertyKey].relationshipReference;
+
+                return (
+                    <RelationshipReferenceView
+                        entity={relatedEntity}
+                        relatedTemplateId={relatedTemplateId}
+                        relatedTemplateField={relatedTemplateField}
+                    />
+                );
+            },
             filter: 'agTextColumnFilter',
         },
         {
             field: 'transfer.description',
             headerName: i18next.t('entityPage.walletTransfer.description'),
             valueGetter: (params: any) => params.data?.entity?.properties[params.data?.template.walletTransfer?.description] ?? '',
-            filter: 'agTextColumnFilter',
         },
         {
             field: 'transfer.amount',

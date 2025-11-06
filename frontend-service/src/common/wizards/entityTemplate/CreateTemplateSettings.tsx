@@ -16,6 +16,7 @@ import { ChooseCategory } from './ChooseCategory';
 import { CreateTemplateName } from './CreateTemplateName';
 import { IWalletTransfer } from '../../../interfaces/entityTemplates';
 import { PropertyItem } from './commonInterfaces';
+import { hasAccountBalanceField } from '.';
 
 export const useCreateOrEditTemplateNameSchema = (templates: Map<any, any>, currentTemplateId?: string) => {
     const otherTemplates = Array.from(templates.values()).filter((template) => template._id !== currentTemplateId);
@@ -61,17 +62,9 @@ const CreateTemplateSettings = <Values extends { name: string; displayName: stri
         },
     );
 
-    const hasAccountBalanceField = (Object.values(props.values.properties) as PropertyItem[]).some((property) => {
-        if (property.type === 'field') {
-            return !!property.data.accountBalance;
-        }
-        if (property.type === 'group') {
-            return property.fields.some((field) => !!field.accountBalance);
-        }
-        return false;
-    });
+    const isWalletTemplate = hasAccountBalanceField(Object.values(props.values.properties) as PropertyItem[]);
 
-    const areThereAnyInstances = props.isEditMode && areThereInstancesByTemplateIdResponse!.count > 0 && hasAccountBalanceField;
+    const areThereAnyInstances = props.isEditMode && areThereInstancesByTemplateIdResponse!.count > 0 && isWalletTemplate;
 
     return (
         <Grid container direction="column" spacing={4}>

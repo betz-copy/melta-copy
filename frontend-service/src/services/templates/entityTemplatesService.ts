@@ -50,7 +50,6 @@ type AttachmentOrArchiveProperties = {
     data: EntityTemplateFormInputProperties;
 };
 
-// TODO: shirel - add to property the restMoney && the currentAccount t/f
 const entityTemplateObjectToEntityTemplateForm = (
     entityTemplate: IMongoEntityTemplatePopulated | null,
     queryClient: QueryClient,

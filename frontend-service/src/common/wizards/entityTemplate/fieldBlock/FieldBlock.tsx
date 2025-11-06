@@ -110,7 +110,6 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         orderedItemsRef.current = values[propertiesType];
     }, [values[propertiesType]]);
 
-    // shirel - dont run when edit template already as a relationship tpo wallet
     useEffect(() => {
         if (!orderedItems?.length || !templates?.size) return;
         const templateHasAccountBalance = (template: any) => {
