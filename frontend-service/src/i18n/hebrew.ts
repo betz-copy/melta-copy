@@ -414,6 +414,8 @@ export default {
         noPreviewFields: 'אין שדות לתצוגה מקדימה',
         noWritePermissions: 'אין הרשאות לתבנית בשדה הקשר',
         failedToSearchEntities: 'נכשל בחיפוש ישויות',
+        dependentFieldRequired: 'יש למלא את השדה התלוי "{{field}}" תחילה',
+        dependentFieldsRequired: 'יש למלא את השדות התלויים "{{field}}" תחילה',
     },
     userAutocomplete: {
         label: 'משתמש',

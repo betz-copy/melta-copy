@@ -352,22 +352,9 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             uiSchema={uiSchemaUtils(schema, values, setValues, isEditMode, toPrint, theme.palette.primary.main, workspaceStore.metadata.unitsArray)}
             onChange={({ formData }) => {
                 Object.entries(formData as Record<string, IEntitySingleProperty>).forEach(([key, value]) => {
-                    if (JSON.stringify(value) === JSON.stringify([undefined]) || JSON.stringify(value) === JSON.stringify([null])) {
+                    if (JSON.stringify(value) === JSON.stringify([undefined]) || JSON.stringify(value) === JSON.stringify([null]))
                         formData[key] = undefined;
-                    }
-                    // if the value is an object without properties, we assume it's a grouped field and flatten it
-                    // rjsf library does support grouped fields, but we do not save them as so in the db.
-                    if (value && typeof value === 'object' && !value.properties && schema.properties[key]?.format !== 'location') {
-                        for (const [groupedKey, groupedValue] of Object.entries(value)) {
-                            formData[groupedKey] = groupedValue;
-                        }
-                    }
-                });
 
-                Object.entries(formData as Record<string, IEntitySingleProperty>).forEach(([key, value]) => {
-                    if (JSON.stringify(value) === JSON.stringify([undefined]) || JSON.stringify(value) === JSON.stringify([null])) {
-                        formData[key] = undefined;
-                    }
                     // if the value is an object without properties, we assume it's a grouped field and flatten it
                     // rjsf library does support grouped fields, but we do not save them as so in the db.
                     if (
@@ -381,14 +368,9 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                             if (Array.isArray(groupedValue)) {
                                 const isPlaceHolderArray = groupedValue.length === 1 && (groupedValue[0] === undefined || groupedValue[0] === null);
 
-                                if (groupedValue.length === 0) {
-                                    formData[groupedKey] = [undefined];
-                                } else if (!isPlaceHolderArray) {
-                                    formData[groupedKey] = groupedValue;
-                                }
-                            } else {
-                                formData[groupedKey] = groupedValue;
-                            }
+                                if (!groupedValue.length) formData[groupedKey] = [undefined];
+                                else if (!isPlaceHolderArray) formData[groupedKey] = groupedValue;
+                            } else formData[groupedKey] = groupedValue;
                         }
                     }
                 });

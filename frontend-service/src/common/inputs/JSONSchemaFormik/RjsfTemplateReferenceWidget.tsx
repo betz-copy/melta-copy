@@ -1,11 +1,13 @@
 import { TextField } from '@mui/material';
 import { WidgetProps } from '@rjsf/utils';
+import { useFormikContext } from 'formik';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { IChildTemplateMap } from '../../../interfaces/childTemplates';
 import { IEntity } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { EntityWizardValues } from '../../dialogs/entity';
 import TemplateEntitiesAutocomplete from '../TemplateEntitiesAutocomplete';
 
 const RjsfTemplateReferenceWidget = ({
@@ -24,7 +26,9 @@ const RjsfTemplateReferenceWidget = ({
     placeholder,
     ...widgetProps
 }: WidgetProps) => {
-    const [inputValue, setInputValue] = useState('');
+    const [inputValue, setInputValue] = useState<string>('');
+
+    const { values } = useFormikContext();
 
     const handleEntityChange = (_event: React.SyntheticEvent, chosenEntity: IEntity | null) => {
         onChange(chosenEntity);
@@ -77,6 +81,7 @@ const RjsfTemplateReferenceWidget = ({
             relationFilters={filters}
             required={required}
             isChildTemplate={!relatedEntityTemplate}
+            currentEntity={values as EntityWizardValues}
         />
     );
 };
