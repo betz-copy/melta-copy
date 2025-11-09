@@ -81,7 +81,7 @@ const RjsfTemplateReferenceWidget = ({
             relationFilters={filters}
             required={required}
             isChildTemplate={!relatedEntityTemplate}
-            currentEntity={values as EntityWizardValues}
+            currentEntity={(values as EntityWizardValues).properties}
         />
     );
 };

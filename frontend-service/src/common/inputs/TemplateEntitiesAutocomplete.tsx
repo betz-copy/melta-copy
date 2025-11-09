@@ -53,7 +53,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
     template: IMongoEntityTemplatePopulated;
     showField: string;
     value: IEntity | null;
-    currentEntity: EntityWizardValues;
+    currentEntity: EntityWizardValues['properties'];
     displayValue?: string;
     onChange: AutocompleteProps<IEntity, undefined, undefined, undefined>['onChange'];
     onDisplayValueChange?: AutocompleteProps<IEntity, undefined, undefined, undefined>['onInputChange'];
@@ -101,19 +101,19 @@ const TemplateEntitiesAutocomplete: React.FC<{
     const queryClient = useQueryClient();
 
     const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
-    const childTemplatesOfRelatedTemplate = Array.from(childTemplates.values()).filter((child) => child.parentTemplate._id === template._id);
+    const childTemplatesOfRelatedTemplate = Array.from(childTemplates.values()).filter((child) => child.parentTemplate._id === template?._id);
 
     const { metadata } = useWorkspaceStore((state) => state.workspace);
 
     const getDependentFieldsValues = (
         filters?: string,
-        currentEntity?: EntityWizardValues,
+        currentEntity?: EntityWizardValues['properties'],
     ): { dependentFields: Record<string, any>; newFilters: ISearchFilter[] } => {
         const newFilters: ISearchFilter[] = [];
+        const dependentFields: Record<string, any> = {};
+
         const parsedFilters = JSON.parse(filters ?? '');
         const andFilters = Array.isArray(parsedFilters.$and) ? parsedFilters.$and : [parsedFilters];
-
-        const dependentFields: Record<string, any> = {};
 
         for (const filter of andFilters) {
             const newFilter: Record<string, any> = {};
@@ -126,8 +126,8 @@ const TemplateEntitiesAutocomplete: React.FC<{
 
                     if (typeof val === 'string' && val.startsWith(fieldFilterPrefix)) {
                         const fieldName = val.replace(fieldFilterPrefix, '');
-                        dependentFields[fieldName] = currentEntity?.properties[fieldName];
-                        newCondition[op] = currentEntity?.properties?.[fieldName];
+                        dependentFields[fieldName] = currentEntity?.[fieldName];
+                        newCondition[op] = currentEntity?.[fieldName];
                     } else newCondition[op] = val;
 
                     newFilter[key] = newCondition;
