@@ -8,10 +8,11 @@ import {
     IEntity,
     IFailedEntity,
     IMongoEntityTemplatePopulated,
+    INotFoundRelationshipRefError,
+    IUsersNotFoundError,
     IWorkspace,
     ServiceError,
     UploadedFile,
-    INotFoundRelationshipRefError,
 } from '@microservices/shared';
 import { AxiosError } from 'axios';
 import { StatusCodes } from 'http-status-codes';
@@ -59,11 +60,31 @@ export const classifyEntityErrors = (
         ...(originalEntity || {}),
     };
 
-    if (error instanceof ServiceError && error.code === StatusCodes.NOT_FOUND)
-        failedEntities.push({
-            properties,
-            errors: [{ type: ActionErrors.notFound, metadata: error.metadata as INotFoundRelationshipRefError }],
+    if (error instanceof ServiceError && error.code === StatusCodes.NOT_FOUND) {
+        if ('attemptedIds' in error.metadata) {
+            failedEntities.push({
+                properties,
+                errors: [{ type: ActionErrors.userNotFound, metadata: error.metadata as IUsersNotFoundError }],
+            });
+        } else {
+            failedEntities.push({
+                properties,
+                errors: [{ type: ActionErrors.relationshipRefNotFound, metadata: error.metadata as INotFoundRelationshipRefError }],
+            });
+        }
+    }
+
+    if (error instanceof AggregateError) {
+        error.errors.forEach((err) => {
+            if (err instanceof ServiceError) {
+                if ('attemptedIds' in err.metadata)
+                    failedEntities.push({
+                        properties,
+                        errors: [{ type: ActionErrors.userNotFound, metadata: err.metadata as IUsersNotFoundError }],
+                    });
+            }
         });
+    }
 
     if (error instanceof AxiosError) {
         if (!error.response) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'no error. response in axiosError', error);
@@ -89,7 +110,7 @@ export const classifyEntityErrors = (
                 });
             }
 
-        if (data.metadata && data.metadata.errorCode === errorCodes.failedConstraintsValidation) {
+        if (data.metadata && data.metadata?.errorCode === errorCodes.failedConstraintsValidation) {
             const { constraint } = data.metadata;
             switch (constraint.type) {
                 case ActionErrors.unique:
@@ -111,7 +132,7 @@ export const classifyEntityErrors = (
 
         if (data.type === errorCodes.templateValidationError || data.type === 'FilterValidationError')
             getValidationErrorEntities(error as AxiosError, failedEntities);
-    } else if ((error as IBrokenRulesError).metadata.errorCode === errorCodes.ruleBlock) {
+    } else if ((error as IBrokenRulesError).metadata?.errorCode === errorCodes.ruleBlock) {
         allBrokenRulesEntities.push({
             brokenRules: error.metadata.brokenRules,
             rawBrokenRules: error.metadata.rawBrokenRules,

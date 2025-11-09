@@ -1,7 +1,6 @@
-/* eslint-disable no-param-reassign */
-/* eslint-disable no-continue */
-/* eslint-disable no-plusplus */
-/* eslint-disable no-await-in-loop */
+/** biome-ignore-all lint/suspicious/noExplicitAny: properties need to be of type any */
+
+import { promises as fsp } from 'node:fs';
 import {
     ActionTypes,
     BadRequestError,
@@ -23,8 +22,10 @@ import {
     IEntityWithDirectRelationships,
     IEntityWithIgnoredRules,
     IExportEntitiesBody,
+    IExternalUser,
     IFailedEntity,
     IFullMongoEntityTemplate,
+    IKartoffelUser,
     IMongoChildTemplatePopulated,
     IMongoEntityTemplatePopulated,
     IMultipleSelect,
@@ -40,6 +41,7 @@ import {
     ISemanticSearchResult,
     ITemplateSearchBody,
     IUpdateEntityMetadata,
+    IUsersNotFoundError,
     logger,
     matchValueAgainstFilter,
     NotFoundError,
@@ -48,7 +50,6 @@ import {
 } from '@microservices/shared';
 import axios from 'axios';
 import { stream } from 'exceljs';
-import { promises as fsp } from 'fs';
 import { keyBy, mapValues, omit } from 'lodash';
 import { menash } from 'menashmq';
 import pMap from 'p-map';
@@ -62,13 +63,15 @@ import EntityTemplateService from '../../externalServices/templates/entityTempla
 import { trycatch } from '../../utils';
 import { classifyEntityErrors, generateSerialNumbers, getAllEntitiesFromExcel, getSerialStarters } from '../../utils/excel';
 import { createWorkbook, createWorksheet, styleAWorksheet } from '../../utils/excel/createFunctions';
-import { convertIdOfBrokenRules, readExcelFile } from '../../utils/excel/getFunctions';
+import { convertIdOfBrokenRules, isIncludedColumn, readExcelFile } from '../../utils/excel/getFunctions';
 import DefaultManagerProxy from '../../utils/express/manager';
 import { objectFilter } from '../../utils/object';
 import RabbitManager from '../../utils/rabbit';
 import { createTextsFromEntitiesWithFiles, formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
 import { getRelatedTemplateIds } from '../../utils/templates';
+import { UserNotFoundError } from '../error';
 import RuleBreachesManager from '../ruleBreaches/manager';
+import UsersManager from '../users/manager';
 import WorkspaceService from '../workspaces/service';
 import { patchDocumentAsStream } from './documentExport';
 
@@ -263,6 +266,28 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return { relatedTemplatesObject, relatedTemplatesMap };
     }
 
+    private fixInsertEntities(
+        template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+        insertEntities: Record<string, any>[],
+        displayColumns?: string[],
+    ) {
+        let newDisplayColumns = displayColumns;
+        const newEntities = insertEntities.map((entity) => {
+            Object.keys(entity).forEach((key) => {
+                if (!isIncludedColumn(template.properties.properties?.[key])) {
+                    if (displayColumns) {
+                        newDisplayColumns = displayColumns.filter((fieldName) => fieldName !== key);
+                    }
+                    delete entity[key];
+                }
+            });
+
+            return entity;
+        });
+
+        return { newDisplayColumns, newEntities };
+    }
+
     private async createWorksheet(
         workbook: stream.xlsx.WorkbookWriter,
         templateItem: TemplateItem,
@@ -294,7 +319,13 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         if (headersOnly) return;
 
         if (insertEntities) {
-            styleAWorksheet(worksheet, insertEntities, templateItem, workspace, displayColumns, undefined, !!insertEntities);
+            const { newEntities: entitiesToInsert, newDisplayColumns: columnDisplay } = this.fixInsertEntities(
+                template,
+                insertEntities,
+                displayColumns,
+            );
+
+            styleAWorksheet(worksheet, entitiesToInsert, templateItem, workspace, columnDisplay, undefined, !!entitiesToInsert);
             return;
         }
 
@@ -339,7 +370,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 acc[key] = { ...value, serialCurrent: serialStarters[key] + succeededIndex };
                 return acc;
             }, {});
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // biome-ignore lint/correctness/noUnusedVariables: replacing lint error
         const { category, _id, createdAt, updatedAt, disabled, ...restOfEntityTemplate } = template;
         await this.entityTemplateService.updateEntityTemplate(template._id, {
             ...restOfEntityTemplate,
@@ -403,11 +434,79 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             };
         });
 
-        const searchResults: ISearchResult = relatedTemplatesWithIdentifier.length
-            ? await this.service.searchEntitiesBatch(searchBody)
-            : { count: 0, entities: [] };
+        const searchResults: ISearchResult =
+            relatedTemplatesWithIdentifier.length && Object.keys(searchBody.templates).length
+                ? await this.service.searchEntitiesBatch(searchBody)
+                : { count: 0, entities: [] };
 
         return { searchResults, relatedTemplatesWithIdentifier };
+    }
+
+    async normalizeUserSearch(
+        identityCards: string | string[],
+        isUserArray: boolean,
+        key: string,
+        isKartoffelUser: boolean = false,
+    ): Promise<IExternalUser | IKartoffelUser | IExternalUser[] | IKartoffelUser[]> {
+        const normalizedIdentityCards: string = Array.isArray(identityCards) ? identityCards.join(',') : identityCards;
+        const normalized: IExternalUser[] | IKartoffelUser[] = await UsersManager.getExternalUsersByIdentityCard(
+            normalizedIdentityCards,
+            isKartoffelUser,
+        );
+
+        if (normalized.length === 0) {
+            throw new NotFoundError('Users not found', {
+                property: key,
+                attemptedIds: normalizedIdentityCards,
+                type: isUserArray ? 'usersNotFound' : 'userNotFound',
+            } as IUsersNotFoundError);
+        }
+
+        return isUserArray ? normalized : normalized[0];
+    }
+
+    async handleUserFields(
+        template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+        entityProperties: Record<string, any>,
+    ): Promise<void> {
+        const kartoffelFields: string[] = Object.entries(template.properties.properties).reduce<string[]>((acc, [key, value]) => {
+            if (value?.format === 'kartoffelUserField') acc.push(key);
+
+            return acc;
+        }, []);
+
+        const errors: UserNotFoundError[] = [];
+        for (const [key, value] of Object.entries(template.properties.properties)) {
+            const fieldValue = entityProperties[key];
+            if (!fieldValue) continue;
+
+            try {
+                if (value?.format === 'user') {
+                    const user: IKartoffelUser = (await this.normalizeUserSearch(fieldValue, false, key, true)) as IKartoffelUser;
+                    kartoffelFields.map((fieldKey) => {
+                        const field = template.properties.properties[fieldKey];
+                        if (field.expandedUserField?.relatedUserField === key) {
+                            const fieldVal = user?.[field.expandedUserField?.kartoffelField] ?? entityProperties[fieldKey];
+                            entityProperties[fieldKey] = fieldVal;
+                        }
+                    });
+
+                    entityProperties[key] = JSON.stringify(await UsersManager.kartoffelUserToUser(user));
+                }
+                if (value?.type === 'array' && value?.items?.format === 'user')
+                    entityProperties[key] = ((await this.normalizeUserSearch(fieldValue, true, key)) as IExternalUser[]).map((user) =>
+                        JSON.stringify(user),
+                    );
+            } catch (error) {
+                if (error instanceof NotFoundError) {
+                    errors.push(error);
+                } else {
+                    throw error;
+                }
+            }
+        }
+
+        if (errors.length > 0) throw new AggregateError(errors, 'some user fields were not found');
     }
 
     async loadEntities(
@@ -441,7 +540,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             try {
                 const serialNumbers = generateSerialNumbers(succeededEntities.length, serialStarters);
 
-                if (relatedTemplatesWithIdentifier.length > 0) {
+                if (relatedTemplatesWithIdentifier.length) {
                     Object.entries(entity.properties).forEach(([key, value]) => {
                         if (value === undefined || value === null) return;
 
@@ -464,6 +563,8 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                         entity.properties = { ...entity.properties, [key]: foundEntity ? foundEntity.entity.properties._id : undefined };
                     });
                 }
+
+                await this.handleUserFields(template, entity.properties);
 
                 const result = await this.createEntityInstance(entity, [], ignoredRules, userId, childTemplateId, serialNumbers);
 
@@ -729,7 +830,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         if (emails) this.sendIndicatorRuleEmailForCreation(createdEntity, userId, emails);
 
-        return {...createdEntity, childTemplateId};
+        return { ...createdEntity, childTemplateId };
     }
 
     private async deleteUnusedFiles(currentEntity: IEntity, instanceData: IEntity, files: UploadedFile[]) {

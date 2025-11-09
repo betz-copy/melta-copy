@@ -1,3 +1,5 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: properties... */
+/** biome-ignore-all lint/complexity/noUselessTypeConstraint: so the code looks normal after format */
 import {
     ColDef,
     ICellRendererParams,
@@ -15,7 +17,15 @@ import OpenPreview from '../../common/FilePreview/OpenPreview';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 import UserAvatar, { IUserAvatarProps } from '../../common/UserAvatar';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { EntityData, IEntity, INotFoundRelationshipRefError, IRequiredConstraint, ISearchFilter, IUniqueConstraint } from '../../interfaces/entities';
+import {
+    EntityData,
+    IEntity,
+    INotFoundRelationshipRefError,
+    IRequiredConstraint,
+    ISearchFilter,
+    IUniqueConstraint,
+    IUsersNotFoundError,
+} from '../../interfaces/entities';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IError, IFailedEntity, IValidationError } from '../../interfaces/excel';
 import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
@@ -25,6 +35,7 @@ import OpenMap from '../../pages/Map/OpenMap';
 import { getDateWithoutTime, getLongDate } from '../date';
 import { getFileName } from '../getFileName';
 import { convertToPlainText } from '../HtmlTagsStringValue';
+import { isStringifiedJSON } from '../stringValues';
 import { agGridLocaleText } from './agGridLocaleText';
 import DateTimeCellEditor from './DateTimeCellEditor';
 import OverflowWrapper from './OverflowWrapper';
@@ -52,7 +63,8 @@ const isPropertyInvalid = <Data = EntityData>(props: ICellRendererParams<Data, a
             }
             case ActionErrors.relationshipRefNotFound:
                 return (error.metadata as INotFoundRelationshipRefError).property === property;
-
+            case ActionErrors.userNotFound:
+                return (error.metadata as IUsersNotFoundError).property === property;
             default:
                 break;
         }
@@ -92,6 +104,11 @@ const errorColDef = <Data extends any = EntityData>(
                 templateName: entityTemplatesMap?.get(relatedTemplateId)?.displayName,
                 propertyName: relatedIdentifier,
             });
+            break;
+        }
+        case ActionErrors.userNotFound: {
+            const { attemptedIds, type } = error.metadata as IUsersNotFoundError;
+            message = i18next.t(`wizard.entity.loadEntities.${type}`, { attemptedIds });
             break;
         }
         default:
@@ -516,6 +533,7 @@ export const enumArrayColDef = <Data = EntityData>(
         },
     };
 };
+
 export const userColDef = <Data = IUser>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
@@ -526,6 +544,7 @@ export const userColDef = <Data = IUser>(
     darkMode: boolean,
     hideColumn = false,
     userAvatarProps?: Partial<Omit<IUserAvatarProps, 'user'>>,
+    ignoreType = false,
 ): ColDef => {
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
@@ -538,6 +557,12 @@ export const userColDef = <Data = IUser>(
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, any | undefined>) => {
             if (!props.value) return '';
+
+            const error = isPropertyInvalid(props, field, ignoreType);
+            if (error) return errorColDef(props, error, value);
+
+            if (ignoreType && !isStringifiedJSON(props.value))
+                return <Value hideValue={hideColumn} color={getColor(props, field)} value={props.value ?? ''} />;
 
             const user = JSON.parse(props.value);
             return (
@@ -575,6 +600,7 @@ export const userArrayColDef = <Data = IEntity>(
     isLastColumn: boolean,
     hideColumn = false,
     darkMode = false,
+    ignoreType = false,
 ): ColDef => {
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
@@ -587,6 +613,16 @@ export const userArrayColDef = <Data = IEntity>(
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, any[] | undefined>) => {
             if (!props.value) return '';
+
+            const error = isPropertyInvalid(props, field, ignoreType);
+            if (error) return errorColDef(props, error, value);
+
+            if (ignoreType) {
+                if (typeof props.value === 'string') return <Value hideValue={hideColumn} color={getColor(props, field)} value={props.value ?? ''} />;
+                if (Array.isArray(props.value) && props.value.some((item) => !isStringifiedJSON(item)))
+                    return <Value hideValue={hideColumn} color={getColor(props, field)} value={props.value.join(', ') ?? ''} />;
+            }
+
             return (
                 <OverflowWrapper
                     items={props.value.map((val) => {

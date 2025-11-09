@@ -10,7 +10,7 @@ import { ISemanticSearchResult } from './semanticSearch';
 
 export interface IEntity {
     templateId: string;
-    childTemplateId?:string;
+    childTemplateId?: string;
     properties: {
         _id: string;
         createdAt: string;
@@ -50,6 +50,12 @@ export interface INotFoundRelationshipRefError {
     relatedTemplateId: string;
     relatedIdentifier: string;
     property: string;
+}
+
+export interface IUsersNotFoundError {
+    attemptedIds: string;
+    property: string;
+    type: 'userNotFound' | 'usersNotFound';
 }
 
 export type IConstraint = IRequiredConstraint | IUniqueConstraint;

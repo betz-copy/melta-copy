@@ -101,12 +101,12 @@ const formatExcel = (
 };
 
 export const isIncludedColumn = (propertyTemplate: IEntitySingleProperty | (IEntitySingleProperty & IChildTemplateProperty)) => {
-    const forbiddenFormats = ['fileId', 'signature', 'user', 'comment', 'kartoffelUserField', 'unitField'];
-    const itemsFormats = ['fileId', 'user'];
+    const forbiddenFormats = ['fileId', 'signature', 'comment', 'kartoffelUserField', 'unitField'];
+    const forbiddenItemFormats = ['fileId'];
 
     const invalidFormats =
         forbiddenFormats.includes(propertyTemplate.format ?? '') ||
-        (propertyTemplate.type === 'array' && itemsFormats.includes(propertyTemplate.items?.format ?? ''));
+        (propertyTemplate.type === 'array' && forbiddenItemFormats.includes(propertyTemplate.items?.format ?? ''));
     const isSerialNumber = propertyTemplate.type === 'number' && !!propertyTemplate.serialCurrent;
     const isDisplay = 'display' in propertyTemplate ? !!propertyTemplate.display : true;
 
@@ -119,7 +119,9 @@ export const isIncludedEditColumn = (propertyTemplate: IEntitySingleProperty, en
     !entityDisabled &&
     !templateDisabled &&
     isIncludedColumn(propertyTemplate) &&
-    propertyTemplate.format !== 'relationshipReference';
+    propertyTemplate.format !== 'relationshipReference' &&
+    propertyTemplate.format !== 'user' &&
+    propertyTemplate?.items?.format !== 'user';
 
 type IFailedProperties = {
     key: string;

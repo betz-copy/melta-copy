@@ -69,6 +69,12 @@ export type INotFoundRelationshipRefError = {
     relatedIdentifier: string;
 };
 
+export type IUsersNotFoundError = {
+    property: string;
+    attemptedIds: string;
+    type: 'userNotFound' | 'usersNotFound';
+};
+
 export interface EntitiesWizardValues {
     files?: File[];
     template?: IMongoEntityTemplateWithConstraintsPopulated;
