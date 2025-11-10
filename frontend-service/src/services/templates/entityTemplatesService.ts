@@ -16,7 +16,6 @@ import {
     IEntityTemplateMap,
     IMongoEntityTemplatePopulated,
     ISearchEntityTemplateQuery,
-    IWalletTransferPopulated,
 } from '../../interfaces/entityTemplates';
 import { getFileName } from '../../utils/getFileName';
 

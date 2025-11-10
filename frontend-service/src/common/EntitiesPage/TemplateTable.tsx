@@ -296,7 +296,7 @@ const TemplateTable = forwardRef<
                             }}
                             icon={<SelectMultipleIcon fontSize="small" />}
                             text={i18next.t('entitiesTableOfTemplate.multipleSelect')}
-                            disableButton={!userHasWritePermissions}
+                            disableButton={!userHasWritePermissions || !!template.walletTransfer}
                         />
                         <TableButton
                             iconButtonWithPopoverProps={{

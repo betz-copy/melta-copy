@@ -680,9 +680,11 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         await this.updateWalletsBalanceInTransfer(createdEntity, ignoredRules, userId, childTemplateId);
 
-        if (emails) this.sendIndicatorRuleEmailForCreation(createdEntity, userId, emails);
+        const newEntity = await this.service.getEntityInstanceById(createdEntity.properties._id);
 
-        return createdEntity;
+        if (emails) this.sendIndicatorRuleEmailForCreation(newEntity, userId, emails);
+
+        return newEntity;
     }
 
     private async deleteUnusedFiles(currentEntity: IEntity, instanceData: IEntity, files: UploadedFile[]) {

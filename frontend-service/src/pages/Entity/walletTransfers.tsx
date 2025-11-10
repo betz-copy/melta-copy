@@ -264,7 +264,6 @@ export const WalletTransfers: React.FC<any> = ({
         {
             field: 'balanceAtThatTime',
             headerName: i18next.t('entityPage.walletTransfer.accountBalance'),
-
             valueFormatter: (p) => p.value?.toLocaleString(),
             filter: 'agTextColumnFilter',
         },

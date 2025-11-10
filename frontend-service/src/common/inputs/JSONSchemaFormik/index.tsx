@@ -11,7 +11,7 @@ import pickBy from 'lodash.pickby';
 import React, { memo, useEffect, useState } from 'react';
 import { environment } from '../../../globals';
 import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IWalletTransfer } from '../../../interfaces/entityTemplates';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { matchValueAgainstFilter } from '../../../utils/filters';
 import { uiSchemaUtils } from './ utils';
@@ -76,7 +76,11 @@ const convertErrorsToNestedGroups = <T extends ErrorMessage<string> | ErrorSchem
     return finalErrors;
 };
 
-export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'], data: Record<string, any>): FormikErrors<any> => {
+export const ajvValidate = (
+    schema: IMongoEntityTemplatePopulated['properties'],
+    data: Record<string, any>,
+    walletTransfer?: IWalletTransfer | null,
+): FormikErrors<any> => {
     const ajv = new Ajv({ allErrors: true });
     addFormats(ajv);
 
@@ -167,7 +171,18 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         }
     });
 
-    return { ...formikErrors, ...childTemplateFilterErrors };
+    const walletTemplateErrors: FormikErrors<any> = {};
+    if (walletTransfer) {
+        const sourceWalletEntityId = data[walletTransfer.from]?.properties?._id;
+        const destWalletEntityId = data[walletTransfer.to]?.properties?._id;
+
+        if (sourceWalletEntityId && destWalletEntityId && sourceWalletEntityId === destWalletEntityId) {
+            walletTemplateErrors[walletTransfer.from] = i18next.t('validation.sameSourceAndDestWallet');
+            walletTemplateErrors[walletTransfer.to] = i18next.t('validation.sameSourceAndDestWallet');
+        }
+    }
+
+    return { ...formikErrors, ...childTemplateFilterErrors, ...walletTemplateErrors };
 };
 
 const formikErrorsToRjsfExtraErrorsRec = (

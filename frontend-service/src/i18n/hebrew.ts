@@ -1091,6 +1091,7 @@ export default {
         differentDestinations: 'מקור ויעד לא יכולים להיות זהים',
         eitherFromOrToRelationshipReference: 'נדרש לבחור קשר לתבנית ארנק כמקור או כיעד (או בשניהם)',
         isProfileImage: 'תמונת פרופיל',
+        sameSourceAndDestWallet:'לא ניתן לבצע העברה באותו ארנק',
     },
     propertyTypes: {
         string: 'טקסט',

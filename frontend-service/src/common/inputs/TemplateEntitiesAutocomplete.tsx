@@ -262,7 +262,9 @@ const TemplateEntitiesAutocomplete: React.FC<{
             loadingText={i18next.t('templateEntitiesAutocomplete.loading')}
             noOptionsText={i18next.t('templateEntitiesAutocomplete.noOptions')}
             getOptionLabel={(option) => convertPropertyToString(option.properties[showField]) || option.properties._id.toString()}
-            getOptionDisabled={(option) => !!(accountBalanceKey && sourceTransferKey === fieldName && option.properties?.[accountBalanceKey] <= 0)}
+            getOptionDisabled={(option) =>
+                !!(accountBalanceKey && sourceTransferKey === fieldName && (option.properties?.[accountBalanceKey] || 0) <= 0)
+            }
             isOptionEqualToValue={(option, currValue) => option.properties._id === currValue.properties._id}
             filterOptions={(options) => options}
             popupIcon={<ExpandMore />}
