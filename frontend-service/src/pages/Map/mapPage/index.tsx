@@ -21,6 +21,7 @@ import { useWorkspaceStore } from '../../../stores/workspace';
 import { useEntitiesWithLocationFields } from '../../../utils/hooks/useLocation';
 import {
     CameraFocusType,
+    getFilteredItems,
     ICoordinateSearchResult,
     IPolygonSearchResult,
     jerusalemCoordinates,
@@ -33,6 +34,7 @@ import { convertECEFToWGS84, convertWGS94ToECEF } from '../../../utils/map/conve
 import { BaseLayers } from '../BaseLayers';
 import { MeltaCoordinate, MeltaPolygon } from '../LocationEntities';
 import MapPageEntityDialog from './EntityMapDialog';
+import { useCesiumTooltip } from './EntityTooltip';
 import MapFilters from './MapFilters';
 
 const { maxRadius } = environment.map;
@@ -47,6 +49,10 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
 
     const theme = useTheme();
     const darkMode = useDarkModeStore((state) => state.darkMode);
+
+    const { metadata } = useWorkspaceStore((state) => state.workspace);
+    const { sourceTemplateId, destTemplateId, sourceFieldForColor } = metadata.mapPage;
+    const sourceTemplate = childEntityTemplateMap?.get(sourceTemplateId) ?? entityTemplateMap?.get(sourceTemplateId);
 
     const viewerRef = useRef<CesiumComponentRef<Cesium.Viewer>>(null);
 
@@ -69,7 +75,6 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
     });
 
     const [filterResult, setFilterResult] = useState<IEntity[]>([]);
-
     const [selectedEntityDialog, setSelectedEntityDialog] = useState<{ matchingField: string; node: IEntity } | null>(null);
 
     const [{ polygons, coordinates }, setSearchResults] = useState<{
@@ -84,51 +89,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
 
     const [cameraFocus, setCameraFocus] = useState<CameraFocusType | null>(null);
 
-    const { metadata } = useWorkspaceStore((state) => state.workspace);
-    const { sourceTemplateId, destTemplateId, sourceFieldForColor } = metadata.mapPage;
-
     const isSearchShape = Boolean(circle.radius || polygon.length);
-
-    const applyFilterWithShapeSearch = ({ autoSearch, listFields }: { autoSearch: string; listFields: Record<string, IFilterOfField['$in']> }) => {
-        const allItems = [...polygons, ...coordinates];
-
-        const hasSearch = autoSearch.trim() !== '';
-        const hasListFilters = Object.values(listFields).some((values) => values && values.length > 0);
-
-        const adjustToAutoSearch = (value: any, searchText: string): boolean => {
-            if (value == null) return false;
-
-            if (Array.isArray(value)) return value.some((item) => adjustToAutoSearch(item, searchText));
-
-            if (typeof value === 'object') return Object.values(value).some((v) => adjustToAutoSearch(v, searchText));
-
-            return String(value).includes(searchText);
-        };
-
-        const filteredItems = allItems.filter(
-            ({ node }) =>
-                (!hasSearch || Object.values(node.properties).some((value) => value != null && adjustToAutoSearch(value, autoSearch))) &&
-                (!hasListFilters ||
-                    (node.templateId === sourceTemplateId &&
-                        Object.entries(listFields).every(
-                            ([field, filteredValues]) =>
-                                !filteredValues?.length ||
-                                (Array.isArray(node.properties[field])
-                                    ? node.properties[field].some((option) => filteredValues.includes(option))
-                                    : filteredValues.includes(node.properties[field])),
-                        ))),
-        );
-
-        setFilteredResults({
-            polygons: filteredItems.filter((item): item is IPolygonSearchResult => Array.isArray(item.position)),
-            coordinates: filteredItems.filter((item): item is ICoordinateSearchResult => !Array.isArray(item.position)),
-        });
-    };
-
-    // biome-ignore lint/correctness/useExhaustiveDependencies: explanation>
-    useEffect(() => applyFilterWithShapeSearch({ autoSearch, listFields }), [polygons, coordinates]);
-
-    const sourceTemplate = childEntityTemplateMap?.get(sourceTemplateId) ?? entityTemplateMap?.get(sourceTemplateId);
 
     const sourceTemplateColors = sourceTemplate?.enumPropertiesColors?.[sourceFieldForColor];
 
@@ -158,6 +119,19 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
     const searchedEntitiesBoundsCenter = searchedEntitiesBounds?.center;
     const searchedEntitiesBoundsRadius = searchedEntitiesBounds?.radius;
 
+    const applyFilterWithShapeSearch = ({ autoSearch, listFields }: { autoSearch: string; listFields: Record<string, IFilterOfField['$in']> }) => {
+        const filteredItems = getFilteredItems(sourceTemplateId, autoSearch, listFields, polygons, coordinates);
+
+        setFilteredResults({
+            polygons: filteredItems.filter((item): item is IPolygonSearchResult => Array.isArray(item.position)),
+            coordinates: filteredItems.filter((item): item is ICoordinateSearchResult => !Array.isArray(item.position)),
+        });
+    };
+
+    // biome-ignore lint/correctness/useExhaustiveDependencies: explanation>
+    useEffect(() => applyFilterWithShapeSearch({ autoSearch, listFields }), [polygons, coordinates]);
+
+    useCesiumTooltip({ viewerRef, darkMode, entityTemplateMap, searchedEntitiesPolygons, filteredPolygons });
     useEffect(() => {
         const animateCamera = () => {
             const viewer = viewerRef.current?.cesiumElement;
@@ -477,8 +451,9 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                                 key={key}
                                 name={name}
                                 polygon={polygon}
-                                onClick={() => setSelectedEntityDialog({ matchingField: `${key}-${node.properties._id}`, node })}
+                                onClick={() => setSelectedEntityDialog({ matchingField: key, node })}
                                 color={sourceTemplateColors?.[node.properties[sourceFieldForColor]]}
+                                node={node}
                             />
                         ))}
 
@@ -487,8 +462,9 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                                 key={key}
                                 name={name}
                                 position={convertWGS94ToECEF(position) as Cartesian3}
-                                onClick={() => setSelectedEntityDialog({ matchingField: `${key}-${node.properties._id}`, node })}
+                                onClick={() => setSelectedEntityDialog({ matchingField: key, node })}
                                 color={sourceTemplateColors?.[node.properties[sourceFieldForColor]]}
+                                node={node}
                             />
                         ))}
 

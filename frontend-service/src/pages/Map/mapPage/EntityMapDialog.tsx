@@ -31,6 +31,9 @@ const EntityMapDialog = ({ open, onClose, entityWithMatchingField }: props) => {
     const entityTemplateColor = getEntityTemplateColor(entityTemplate);
 
     const locationField = entityWithMatchingField.matchingField.slice(0, -37);
+
+    console.log({ locationField, matchingField: entityWithMatchingField.matchingField });
+
     const locationFieldTitle = entityTemplate.properties.properties[locationField].title;
 
     return (

@@ -188,8 +188,10 @@ export const getRowModelProps = <Data = EntityData>(
         return {
             rowModelType,
             rowData,
-            pagination: hasInstances ?? true,
-            paginationPageSize,
+            domLayout: 'normal',
+
+            // pagination: hasInstances ?? true,
+            // paginationPageSize,
         };
     }
 
@@ -454,7 +456,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const childTemplatesOfParentIds = childTemplatesOfParent?.map(({ _id }) => _id);
 
         const datasourceOnFail = (err: unknown) => {
-        toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
+            toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
             console.error('Failed to load data from datasource. Error:', err);
         };
 
@@ -784,7 +786,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         className={`ag-theme-material${darkMode ? '-dark' : ''}`}
                         containerStyle={{
                             width: '100%',
-                            height: rowModelType === 'infinite' ? `${gridHeight}px` : undefined,
+                            height: rowModelType === 'infinite' ? `${gridHeight}px` : `${gridHeight}px`,
                             fontFamily: 'Rubik',
                             fontSize,
                             fontWeight: 300,

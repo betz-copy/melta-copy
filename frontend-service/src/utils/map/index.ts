@@ -1,6 +1,6 @@
 import { Cartesian3 } from 'cesium';
 import { environment } from '../../globals';
-import { IEntity, SplitBy } from '../../interfaces/entities';
+import { IEntity, IFilterOfField, SplitBy } from '../../interfaces/entities';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { convertECEFToWGS84, convertWGS94ToECEF, isValidWGS84 } from './convert';
 
@@ -181,4 +181,53 @@ export const getLocationProperties = (entity: IEntity, selectedTemplates: IMongo
         );
 
     return { template, locationTemplateProperties, locationProperties };
+};
+
+export const valueAdjustToAutoSearch = (value: any, searchText: string): boolean => {
+    if (value == null) return false;
+
+    if (Array.isArray(value)) return value.some((item) => valueAdjustToAutoSearch(item, searchText));
+
+    if (typeof value === 'object') return Object.values(value).some((value) => valueAdjustToAutoSearch(value, searchText));
+
+    return String(value).includes(searchText);
+};
+
+const matchesAutoSearch = (item: IPolygonSearchResult | ICoordinateSearchResult, autoSearch: string): boolean => {
+    if (autoSearch.trim() === '') return true;
+
+    return Object.values(item.node.properties).some((value) => value != null && valueAdjustToAutoSearch(value, autoSearch));
+};
+
+const matchesListFilters = (
+    item: IPolygonSearchResult | ICoordinateSearchResult,
+    listFields: Record<string, IFilterOfField['$in']>,
+    sourceTemplateId: string,
+): boolean => {
+    const hasListFilters = Object.values(listFields).some((values) => values && values.length > 0);
+
+    if (!hasListFilters) return true;
+
+    if (item.node.templateId !== sourceTemplateId) return false;
+
+    return Object.entries(listFields).every(([field, filteredValues]) => {
+        if (!filteredValues?.length) return true;
+
+        const itemPropertyValue = item.node.properties[field];
+
+        if (Array.isArray(itemPropertyValue)) return itemPropertyValue.some((option) => filteredValues.includes(option));
+
+        return filteredValues.includes(itemPropertyValue);
+    });
+};
+
+export const getFilteredItems = (
+    sourceTemplateId: string,
+    autoSearch: string,
+    listFields: Record<string, IFilterOfField['$in']>,
+    polygons: IPolygonSearchResult[],
+    coordinates: ICoordinateSearchResult[],
+) => {
+    const allItems = [...polygons, ...coordinates];
+    return allItems.filter((item) => matchesAutoSearch(item, autoSearch) && matchesListFilters(item, listFields, sourceTemplateId));
 };
