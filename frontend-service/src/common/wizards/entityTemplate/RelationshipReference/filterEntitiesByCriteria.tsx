@@ -102,7 +102,15 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                         const filterTouched: FormikTouched<IFilterTemplate> = getIn(touched, `${fieldBase}`);
 
                         const fieldProperties = values.properties
-                            .filter(({ data: { type } }) => getPropertyType(type) === selectedProperty.type && !notIncludedFormats.includes(type))
+                            .filter(({ data: { type } }) => {
+                                const getFilterType = (type: string, format?: string) =>
+                                    ['date', 'date-time'].includes(format ?? '') ? 'date' : type;
+
+                                return (
+                                    getFilterType(getPropertyType(type), type) === getFilterType(selectedProperty.type, selectedProperty.format) &&
+                                    !notIncludedFormats.includes(type)
+                                );
+                            })
                             .map(({ data: { title, name } }) => ({ option: name, label: title }));
 
                         const getFilterType = (): IAGGridFilter['filterType'] => {
@@ -125,7 +133,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                                     options={selectedEntityTemplatePropOptions}
                                     onChange={(_e, selectedField) => {
                                         const selectedKey = selectedField?.key || '';
-                                        const selectedProp = selectedEntityTemplate?.properties.properties[selectedKey];
+                                        const selectedProp = selectedEntityTemplate.properties.properties[selectedKey];
                                         const { format, type, enum: enumValues } = selectedProp;
 
                                         const newFilterField =
@@ -153,6 +161,11 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                                     getOptionLabel={(option) => option.title || ''}
                                     fullWidth
                                     readOnly={!isNewProperty}
+                                    getOptionDisabled={(option) => {
+                                        const { format, items } = selectedEntityTemplate.properties.properties[option.key];
+                                        if (items) return ['fileId', 'user'].includes(items.format ?? '');
+                                        return ['fileId', 'location'].includes(format ?? '');
+                                    }}
                                     disabled={!isNewProperty}
                                     renderInput={(params) => (
                                         <TextField
@@ -172,7 +185,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                                     value={
                                         !filters[index].filterType
                                             ? filterTypes[0]
-                                            : filterTypes.find(({ value }) => value === filters[index].filterType)!
+                                            : filterTypes.find(({ value }) => value === filters[index].filterType)
                                     }
                                     onChange={(_, { value: newValue }) => {
                                         const newFiltersArray = [...filters];
