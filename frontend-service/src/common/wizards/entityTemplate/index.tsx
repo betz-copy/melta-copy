@@ -9,7 +9,7 @@ import { environment } from '../../../globals';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { IConstraint, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
-import { IEntityTemplateMap, IEntityTemplatePopulated, IWalletTransferPopulated } from '../../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IEntityTemplatePopulated, IWalletTransfer, IWalletTransferPopulated } from '../../../interfaces/entityTemplates';
 import { IErrorResponse } from '../../../interfaces/error';
 import fileDetails from '../../../interfaces/fileDetails';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
@@ -93,10 +93,11 @@ export interface EntityTemplateWizardValues
     attachmentProperties: EntityTemplatePropertyByType[];
     archiveProperties: EntityTemplatePropertyByType[];
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
-    icon?: fileDetails;
     documentTemplatesIds?: File[];
-    walletTransfer?: IWalletTransferPopulated;
     enumPropertiesColors?: string[];
+    icon?: fileDetails;
+    walletTransfer?: IWalletTransferPopulated | IWalletTransfer;
+    _id?: string;
 }
 
 export const hasAccountBalanceField = (properties) =>
@@ -136,7 +137,6 @@ const EntityTemplateWizard: React.FC<
 
     useEffect(() => {
         const isWalletTemplate = hasAccountBalanceField(initialValues.properties);
-
         setShowAccountDisplay(isWalletTemplate ?? false);
     }, [initialValues.properties, open]);
 
@@ -150,7 +150,6 @@ const EntityTemplateWizard: React.FC<
 
     const createTemplateSettingsSchema = useCreateOrEditTemplateNameSchema(templates, currentTemplateId);
     const walletTransferSchema = walletTransferSettingsSchema();
-
 
     const { isLoading, mutateAsync } = useMutation(
         async (entityTemplate: EntityTemplateWizardValues) => {

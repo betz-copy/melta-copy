@@ -14,7 +14,6 @@ import { isChildTemplate } from '../../utils/templates';
 import { useQueryClient } from 'react-query';
 import { useUserStore } from '../../stores/user';
 import { ArrowForward as ArrowForwardIcon, ArrowBack as ArrowBackIcon, AccountBalanceWalletOutlined } from '@mui/icons-material';
-import { ICellRendererParams } from '@ag-grid-community/core';
 import { Value } from '../../utils/agGrid/Value';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 
@@ -48,7 +47,6 @@ export const WalletTransfers: React.FC<any> = ({
 }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-
     const walletTransferTableRef = useRef<WalletTransferTableRef<WalletTransferData>>(null);
 
     const currentUser = useUserStore((state) => state.user);
@@ -57,8 +55,6 @@ export const WalletTransfers: React.FC<any> = ({
     const currentTemplate = entityTemplates.get(expandedEntity.entity.templateId)!;
     const amountPropertyKey = Object.entries(currentTemplate.properties.properties).find(([_key, property]) => !!property.accountBalance)?.[0];
     const currentEntityBalance = expandedEntity.entity.properties[amountPropertyKey!] || 0;
-
-    console.log({ currentEntityBalance });
 
     const allTransfersConnectionsTemplates = connectionsTemplates
         ?.filter(({ relationshipTemplate }) => {
@@ -108,7 +104,6 @@ export const WalletTransfers: React.FC<any> = ({
 
         const withBalances: WalletTransferData[] = transfers.map((t) => {
             const walletTransferAmountKey = t.template?.walletTransfer?.amount;
-
             const amount = Number(walletTransferAmountKey ? t.entity?.properties?.[walletTransferAmountKey] : 0);
 
             const rowWithBalance = {

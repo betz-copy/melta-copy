@@ -14,7 +14,7 @@ import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
 import { StepComponentProps } from '../index';
 import { ChooseCategory } from './ChooseCategory';
 import { CreateTemplateName } from './CreateTemplateName';
-import { IWalletTransfer } from '../../../interfaces/entityTemplates';
+import { IWalletTransfer, IWalletTransferPopulated } from '../../../interfaces/entityTemplates';
 import { PropertyItem } from './commonInterfaces';
 import { hasAccountBalanceField } from '.';
 
@@ -39,16 +39,20 @@ export const useCreateOrEditTemplateNameSchema = (templates: Map<any, any>, curr
     });
 };
 
-const CreateTemplateSettings = <Values extends { name: string; displayName: string; properties; _id: string; walletTransfer?: IWalletTransfer }>(
+const CreateTemplateSettings = <
+    Values extends { name: string; displayName: string; properties; _id?: string; walletTransfer?: IWalletTransfer | IWalletTransferPopulated },
+>(
     props: React.PropsWithChildren<StepComponentProps<Values, 'isEditMode'>> & {
         exportFormats: { value: boolean; set: (val: boolean) => void };
         showAccountDisplay: { value: boolean; set: (val: boolean) => void };
     },
 ) => {
+    console.log({ props });
+
     const { data: areThereInstancesByTemplateIdResponse } = useQuery(
         ['areThereInstancesByTemplateId', props.values._id],
         () =>
-            searchEntitiesOfTemplateRequest(props.values._id, {
+            searchEntitiesOfTemplateRequest(props.values._id ?? '', {
                 skip: 0,
                 limit: 1,
             }),
@@ -63,7 +67,6 @@ const CreateTemplateSettings = <Values extends { name: string; displayName: stri
     );
 
     const isWalletTemplate = hasAccountBalanceField(Object.values(props.values.properties) as PropertyItem[]);
-
     const areThereAnyInstances = props.isEditMode && areThereInstancesByTemplateIdResponse!.count > 0 && isWalletTemplate;
 
     return (

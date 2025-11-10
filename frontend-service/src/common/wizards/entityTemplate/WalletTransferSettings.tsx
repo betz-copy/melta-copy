@@ -27,7 +27,6 @@ export const walletTransferSettingsSchema = () => {
                     if (!fromValue || !to) return true;
                     return fromValue.name ? fromValue.name !== to.name : fromValue !== to;
                 }),
-
             to: Yup.mixed<CommonFormInputProperties>()
                 .required(i18next.t('validation.required'))
                 .test('different-from-and-to', i18next.t('validation.differentDestinations'), function (toValue: any) {
@@ -35,19 +34,15 @@ export const walletTransferSettingsSchema = () => {
                     if (!toValue || !from) return true;
                     return toValue.name ? toValue.name !== from.name : toValue !== from;
                 }),
-
             description: Yup.string().required(i18next.t('validation.required')),
-
             amount: Yup.string().required(i18next.t('validation.required')),
         }).test('at-least-one-relationshipReference', i18next.t('validation.eitherFromOrToRelationshipReference'), function (values) {
             if (!values) return true;
 
             const { from, to } = values as IWalletTransferPopulated;
-
             if (!from || !to || typeof from === 'string' || typeof to === 'string') return true;
 
             const isValid = from.type === 'relationshipReference' || to.type === 'relationshipReference';
-
             if (!isValid) {
                 const errorMessage = i18next.t('validation.eitherFromOrToRelationshipReference');
 
@@ -122,9 +117,11 @@ export const WalletTransferSettings: React.FC<
 
     const source = values.walletTransfer?.from;
     const destination = values.walletTransfer?.to;
-    const showSourceInfo = walletTransfer.value && allFields.some((f) => f.name === (source?.name || source) && f.type === 'relationshipReference');
-    const showDestInfo =
-        walletTransfer.value && allFields.some((f) => f.name === (destination?.name || destination) && f.type === 'relationshipReference');
+    const sourceKeyName = typeof source === 'string' ? source : (source?.name ?? '');
+    const destKeyName = typeof destination === 'string' ? destination : (destination?.name ?? '');
+
+    const showSourceInfo = walletTransfer.value && allFields.some((f) => f.name === sourceKeyName && f.type === 'relationshipReference');
+    const showDestInfo = walletTransfer.value && allFields.some((f) => f.name === destKeyName && f.type === 'relationshipReference');
 
     return (
         <Grid container direction="column">

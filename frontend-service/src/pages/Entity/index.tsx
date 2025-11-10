@@ -41,7 +41,6 @@ export const getButtonState = (
     let isEditButtonsDisabled = false;
     let disabledButtonText = '';
     const categoryPermission = permissions?.instances?.categories?.[relatedTemplate.category._id];
-
     const permissionToRelatedTemplate = categoryPermission?.entityTemplates?.[relatedTemplate._id] || categoryPermission;
 
     if (isEntityDisabled) {
