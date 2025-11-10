@@ -3,7 +3,7 @@ import { Autocomplete, Button, Grid, IconButton, TextField, Typography } from '@
 import { FormikErrors, FormikTouched, getIn } from 'formik';
 import i18next from 'i18next';
 import { isEqual } from 'lodash';
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { getPropertyType } from '../../../../services/templates/entityTemplatesService';
 import { handleRemoveFilter, initializedFilterField, renderFilterInput } from '../../../FilterComponent';
@@ -32,6 +32,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
 }) => {
     const filters: IFilterTemplate[] = useMemo(() => getIn(value, name) || [], [value, name]);
     const initialFilters = initialValue?.relationshipReference?.filters;
+    const [inputValue, setInputValue] = useState<string>('');
 
     const notIncludedFormats = ['signature', 'comment'];
 
@@ -236,7 +237,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                                         filterError?.filterField,
                                         !isNewProperty,
                                         undefined,
-                                        undefined,
+                                        { value: inputValue, set: setInputValue },
                                         { propType: getFilterType(), fieldProperties },
                                     )}
                                 </Grid>
