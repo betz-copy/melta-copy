@@ -201,7 +201,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                 <MultipleSelectFilterInput
                     filterField={filterField?.filterType === 'set' ? (filterField as IAGGridSetFilter) : undefined}
                     handleCheckboxChange={handleCheckboxChange}
-                    enumOptions={enumOptions}
+                    enumOptions={enumOptions.map((option) => ({ option, label: option }))}
                     readOnly={readOnly}
                 />
             );

@@ -19,6 +19,7 @@ import { FilterType, IAGGridFilter, IFilterTemplate } from './wizards/entityTemp
 const {
     relativeDateFilters,
     formats: { loggingDate, loggingDateTime },
+    fieldFilterPrefix,
 } = environment;
 
 export const initializedFilterField: Record<string, IAGGridFilter> = {
@@ -199,7 +200,9 @@ export const renderFilterInput = (
 ) => {
     const field = filter.filterField;
 
-    if (filter.filterType === FilterType.field && fieldFilter && field?.filterType !== 'set') {
+    const isFieldFilter = filter.filterType === FilterType.field;
+
+    if (isFieldFilter && fieldFilter && field?.filterType !== 'set') {
         return (
             <SelectFilterInput
                 enumOptions={fieldFilter.fieldProperties}
@@ -239,8 +242,8 @@ export const renderFilterInput = (
                     handleCheckboxChange(filters, options, checked, filter.filterField as IAGGridSetFilter, index, onChange)
                 }
                 enumOptions={
-                    filter.filterType === FilterType.field && fieldFilter
-                        ? fieldFilter.fieldProperties
+                    isFieldFilter && fieldFilter
+                        ? fieldFilter.fieldProperties.map(({ option, label }) => ({ option: `${fieldFilterPrefix}${option}`, label }))
                         : enumOptions!.map((option) => ({ option, label: option }))
                 }
                 readOnly={Boolean(readonly)}

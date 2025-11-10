@@ -12,7 +12,10 @@ type IAGGridFilter = IAGGridNumberFilter | IAGGridDateFilter | IAGGridTextFilter
 
 interface TypeSelectFilterProps {
     filterField: IAGGridFilter;
-    handleFilterTypeChange: (newTypeFilter: IAGGridFilter['filterType'], condition?: boolean) => void;
+    handleFilterTypeChange: (
+        newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGridNumberFilter['type'],
+        condition?: boolean,
+    ) => void;
     readOnly?: boolean;
     type: string;
     filterType?: boolean;

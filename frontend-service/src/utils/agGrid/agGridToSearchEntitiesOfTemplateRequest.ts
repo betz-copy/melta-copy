@@ -18,9 +18,9 @@ import {
 const { relativeDateFilters, fileIdLength, fieldFilterPrefix } = environment;
 
 export const setFilterToFilterOfTemplate = (field: string, values: (string | null)[], filterType?: FilterType): IFilterOfTemplate => {
-    const filterValue = filterType === FilterType.field ? `${fieldFilterPrefix}${values}` : values;
+    const filterValue = filterType === FilterType.field ? values.map((value) => `${fieldFilterPrefix}${value}`) : values;
 
-    return { [field]: { $in: filterValue } }; //TODO: fix set!
+    return { [field]: { $in: filterValue } };
 };
 
 export const textFilterToFilterOfTemplate = (field: string, { type, filter }: IAGGridTextFilter, filterType?: FilterType): IFilterOfTemplate => {

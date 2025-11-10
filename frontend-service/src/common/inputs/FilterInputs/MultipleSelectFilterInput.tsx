@@ -82,16 +82,7 @@ const MultipleSelectFilterInput: React.FC<MultipleSelectFilterInputProps> = ({
                 )}
 
                 {enumOptions?.map((option, index) => (
-                    <MenuItem
-                        key={`${option.option}-${index}`}
-                        value={option.option}
-                        sx={{
-                            backgroundColor: 'white',
-                            '&:hover': { backgroundColor: 'transparent' },
-                            '&.Mui-selected': { backgroundColor: 'white' },
-                            '&.Mui-selected:hover': { backgroundColor: '#f0f0f0' },
-                        }}
-                    >
+                    <MenuItem key={`${option.option}-${index}`} value={option.option}>
                         <MeltaCheckbox
                             checked={filterField?.values.includes(option.option)}
                             onChange={(e) => handleCheckboxChange([option.option], e.target.checked)}

@@ -2,13 +2,12 @@ import { Grid, MenuItem } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { IGraphFilterBody } from '../../../interfaces/entities';
-import { IAGGridNumberFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
-import { IAGGridFilter } from '../../wizards/entityTemplate/commonInterfaces';
+import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
 import { StyledFilterInput } from './StyledFilterInput';
 import { TypeSelectFilter } from './TypeSelectFilter';
 
 interface SelectFilterInputProps {
-    filterField: IAGGridFilter | undefined;
+    filterField?: IAGGridNumberFilter | IAGGridDateFilter | IAGGridTextFilter;
     handleFilterFieldChange: (value: IGraphFilterBody['filterField'], condition?: boolean) => void;
     readOnly?: boolean;
     isBooleanSelect?: boolean;
@@ -17,7 +16,10 @@ interface SelectFilterInputProps {
     helperText?: string;
     filterType?: {
         type: string;
-        handleFilterTypeChange: (newTypeFilter: IAGGridFilter['filterType'], condition?: boolean) => void;
+        handleFilterTypeChange: (
+            newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGridNumberFilter['type'],
+            condition?: boolean,
+        ) => void;
     };
     entityFilter?: boolean;
 }

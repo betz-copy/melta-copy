@@ -24,7 +24,7 @@ import { IAGGridFilter } from '../../wizards/entityTemplate/commonInterfaces';
 const { loggingDate, loggingDateTime } = environment.formats;
 
 interface IAddFilterFieldDialogProps {
-    addFilterField?: { dialogType: ChipType; fieldName: string };
+    addFilterField: { dialogType: ChipType; fieldName: string };
     formikProps: FormikProps<IChildTemplateForm>;
     entityTemplate: IMongoEntityTemplatePopulated;
     onClose: () => void;
@@ -38,7 +38,6 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
     onClose,
     onSubmit,
 }) => {
-    if (!addFilterField) return null;
     const { dialogType, fieldName } = addFilterField;
 
     const property = entityTemplate.properties.properties[fieldName];
