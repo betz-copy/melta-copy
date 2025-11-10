@@ -199,7 +199,7 @@ export const renderFilterInput = (
 ) => {
     const field = filter.filterField;
 
-    if (filter.filterType === FilterType.field && fieldFilter) {
+    if (filter.filterType === FilterType.field && fieldFilter && field?.filterType !== 'set') {
         return (
             <SelectFilterInput
                 enumOptions={fieldFilter.fieldProperties}
@@ -213,7 +213,7 @@ export const renderFilterInput = (
                 readOnly={Boolean(readonly)}
                 filterType={{
                     type: fieldFilter.propType,
-                    handleFilterTypeChange: (newType) => handleTypedFilterTypeChange(filters, fieldFilter.propType, index, newType, field, onChange),
+                    handleFilterTypeChange: (newType) => handleTypedFilterTypeChange(filters, fieldFilter.propType, index, newType, field!, onChange),
                 }}
                 entityFilter
             />
@@ -231,14 +231,18 @@ export const renderFilterInput = (
 
     const enumOptions = propEnum ?? items?.enum;
 
-    if (enumOptions)
+    if (enumOptions || fieldFilter?.propType === 'set')
         return (
             <MultipleSelectFilterInput
                 filterField={field.filterType === 'set' ? field : undefined}
                 handleCheckboxChange={(options: (string | null)[], checked: boolean) =>
                     handleCheckboxChange(filters, options, checked, filter.filterField as IAGGridSetFilter, index, onChange)
                 }
-                enumOptions={enumOptions}
+                enumOptions={
+                    filter.filterType === FilterType.field && fieldFilter
+                        ? fieldFilter.fieldProperties
+                        : enumOptions!.map((option) => ({ option, label: option }))
+                }
                 readOnly={Boolean(readonly)}
                 isError={Boolean(touched && (filterErrors as IAGGridSetFilter)?.values)}
                 helperText={

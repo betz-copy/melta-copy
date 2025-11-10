@@ -23,7 +23,7 @@ export const FieldBlockAccordion = styled(Accordion)({
 
 export interface FieldProps {
     field: CommonFormInputProperties;
-    values;
+    values: any;
     index: number;
     parentId: string | null;
     onDrop: (item: any, toIndex: number, toGroupId: string | null) => void;
@@ -37,7 +37,7 @@ export interface FieldProps {
 
 export interface GroupProps<PropertiesType extends string, Values extends Record<PropertiesType, PropertyItem[]>> {
     group: GroupProperty;
-    values;
+    values: Values;
     index: number;
     moveField: (item: CommonFormInputProperties, toIndex: number, toGroupId: string | null) => void;
     moveGroup?: (group: GroupProperty, toIndex: number, toGroupId?: string | null) => void;

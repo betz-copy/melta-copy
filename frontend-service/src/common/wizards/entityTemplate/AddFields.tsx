@@ -15,7 +15,7 @@ import { arrayTypes, basePropertyTypes, stringFormats } from '../../../services/
 import { entityTemplateUniqueProperties, regexSchema, variableNameValidation } from '../../../utils/validation';
 import { ErrorToast } from '../../ErrorToast';
 import { StepComponentHelpers, StepComponentProps } from '../index';
-import { CommonFormInputProperties, FieldProperty, GroupProperty, PropertyItem } from './commonInterfaces';
+import { CommonFormInputProperties, FieldProperty, FilterType, GroupProperty, PropertyItem } from './commonInterfaces';
 import { FieldBlockDND } from './fieldBlock/FieldBlock';
 import { ItemTypes } from './fieldBlock/interfaces';
 import { getFieldData } from './fieldBlock/propertiesTypes';
@@ -106,8 +106,10 @@ const agGridSetFilterSchema = Yup.object({
 
 // Dynamic filter field validation based on `filterType`
 export const filterFieldSchema = (isRequired: boolean = true) =>
-    Yup.lazy((value: any) => {
-        const makeOptional = (schema) => (isRequired ? schema : schema.notRequired().nullable());
+    Yup.lazy((value: any, { parent }) => {
+        const makeOptional = (schema: Yup.AnySchema) => (isRequired ? schema : schema.notRequired().nullable());
+
+        if (parent?.filterType === FilterType.field) return makeOptional(agGridTextFilterSchema);
 
         switch (value?.filterType) {
             case 'text':
@@ -126,6 +128,7 @@ export const filterFieldSchema = (isRequired: boolean = true) =>
 export const filtersSchema = Yup.array().of(
     Yup.object({
         filterProperty: Yup.string().required(i18next.t('validation.required')),
+        filterType: Yup.string().oneOf([FilterType.field, FilterType.value]),
         filterField: filterFieldSchema(),
     }),
 );
@@ -221,13 +224,10 @@ const propertiesSchema = Yup.array()
         let count = 0;
         for (const item of entries as PropertyItem[]) {
             if (item.type === 'field' && item.data?.mapSearch) count++;
-            if (item.type === 'group') {
-                count += item.fields?.filter((f) => f.mapSearch).length || 0;
-            }
+            if (item.type === 'group') count += item.fields?.filter((f) => f.mapSearch).length || 0;
         }
-        if (count > mapSearchPropertiesLimit) {
-            toast.error(i18next.t('validation.mapSearchPropertiesLimit', { limit: mapSearchPropertiesLimit }));
-        }
+        if (count > mapSearchPropertiesLimit) toast.error(i18next.t('validation.mapSearchPropertiesLimit', { limit: mapSearchPropertiesLimit }));
+
         return count <= mapSearchPropertiesLimit;
     });
 
@@ -271,11 +271,9 @@ export const FieldBlockWrapper = ({
 }) => {
     const hasActions = Boolean(initialValues?.actions);
     const countMapSearchProperties = Object.values(values.properties).flatMap((property: any) => {
-        if (property.type === 'field' && property.data?.mapSearch)
-            return [property];
+        if (property.type === 'field' && property.data?.mapSearch) return [property];
 
-        if (property.type === 'group' && Array.isArray(property.fields))
-            return property.fields.filter((field) => field.mapSearch);
+        if (property.type === 'group' && Array.isArray(property.fields)) return property.fields.filter((field) => field.mapSearch);
 
         return [];
     }).length;

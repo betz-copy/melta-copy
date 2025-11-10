@@ -1,14 +1,15 @@
-import { Checkbox, Chip, Grid, ListItemText, MenuItem } from '@mui/material';
+import { Chip, Grid, ListItemText, MenuItem } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { IAGGridSetFilter } from '../../../utils/agGrid/interfaces';
+import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import { StyledFilterInput } from './StyledFilterInput';
 
 interface MultipleSelectFilterInputProps {
     filterField: IAGGridSetFilter | undefined;
     readOnly: boolean;
     handleCheckboxChange: (option: (string | null)[], checked: boolean) => void;
-    enumOptions: string[];
+    enumOptions: { option: string; label: string }[];
     isError?: boolean;
     helperText?: string;
     allowEmpty?: boolean;
@@ -24,7 +25,7 @@ const MultipleSelectFilterInput: React.FC<MultipleSelectFilterInputProps> = ({
     allowEmpty = true,
 }) => {
     const expectedValues = [...enumOptions, ...(allowEmpty ? [null] : [])];
-    const allSelected = !!expectedValues.length && expectedValues.every((val) => filterField?.values?.includes(val));
+    const allSelected = !!expectedValues.length && expectedValues.every((val) => filterField?.values?.includes(val?.option ?? null));
     const someSelected = !!filterField?.values?.length && !allSelected;
 
     return (
@@ -34,7 +35,7 @@ const MultipleSelectFilterInput: React.FC<MultipleSelectFilterInputProps> = ({
                 rows={2}
                 size="small"
                 fullWidth
-                value={filterField?.values ? filterField.values : []}
+                value={filterField?.values ?? []}
                 error={isError}
                 helperText={helperText}
                 slotProps={{
@@ -57,25 +58,33 @@ const MultipleSelectFilterInput: React.FC<MultipleSelectFilterInputProps> = ({
                 }}
             >
                 <MenuItem>
-                    <Checkbox
+                    <MeltaCheckbox
                         checked={allSelected}
                         indeterminate={someSelected}
-                        onChange={(e) => handleCheckboxChange(expectedValues, e.target.checked)}
+                        onChange={(e) =>
+                            handleCheckboxChange(
+                                expectedValues.map((ev) => ev?.option ?? null),
+                                e.target.checked,
+                            )
+                        }
                     />
-                    <ListItemText primary="בחר הכל" />
+                    <ListItemText primary={i18next.t('selectChooseAll')} />
                 </MenuItem>
 
                 {allowEmpty && (
                     <MenuItem>
-                        <Checkbox checked={filterField?.values?.includes(null)} onChange={(e) => handleCheckboxChange([null], e.target.checked)} />
+                        <MeltaCheckbox
+                            checked={filterField?.values?.includes(null)}
+                            onChange={(e) => handleCheckboxChange([null], e.target.checked)}
+                        />
                         <ListItemText primary={i18next.t('filters.empty')} />
                     </MenuItem>
                 )}
 
                 {enumOptions?.map((option, index) => (
                     <MenuItem
-                        key={index}
-                        value={option}
+                        key={`${option.option}-${index}`}
+                        value={option.option}
                         sx={{
                             backgroundColor: 'white',
                             '&:hover': { backgroundColor: 'transparent' },
@@ -83,8 +92,11 @@ const MultipleSelectFilterInput: React.FC<MultipleSelectFilterInputProps> = ({
                             '&.Mui-selected:hover': { backgroundColor: '#f0f0f0' },
                         }}
                     >
-                        <Checkbox checked={filterField?.values.includes(option)} onChange={(e) => handleCheckboxChange([option], e.target.checked)} />
-                        <ListItemText primary={option} />
+                        <MeltaCheckbox
+                            checked={filterField?.values.includes(option.option)}
+                            onChange={(e) => handleCheckboxChange([option.option], e.target.checked)}
+                        />
+                        <ListItemText primary={option.label} />
                     </MenuItem>
                 ))}
             </StyledFilterInput>

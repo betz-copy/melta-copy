@@ -170,7 +170,7 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
                 <MultipleSelectFilterInput
                     filterField={localFilterField?.filterType === 'set' ? localFilterField : undefined}
                     handleCheckboxChange={handleCheckboxChange}
-                    enumOptions={enumOptions}
+                    enumOptions={enumOptions.map((option) => ({ option, label: option }))}
                     readOnly={readOnly}
                     isError={isError}
                     helperText={currentFieldError}

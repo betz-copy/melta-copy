@@ -32,7 +32,7 @@ const { mapSearchPropertiesLimit } = environment.map;
 export interface FieldEditCardProps {
     entity: string;
     value: CommonFormInputProperties;
-    values;
+    values: any;
     index: number;
     isEditMode?: boolean;
     initialValue: CommonFormInputProperties | undefined;

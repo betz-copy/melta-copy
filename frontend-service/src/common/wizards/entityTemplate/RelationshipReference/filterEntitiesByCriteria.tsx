@@ -12,7 +12,7 @@ import { CommonFormInputProperties, FilterType, IAGGridFilter, IFilterTemplate }
 interface FilterEntitiesByCriteriaProps {
     name: string; // e.g. "properties[0].relationshipReference.filters"
     value: CommonFormInputProperties;
-    values;
+    values: any;
     setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
     selectedEntityTemplate: IMongoEntityTemplatePopulated | undefined;
     initialValue: CommonFormInputProperties | undefined;
