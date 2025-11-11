@@ -41,6 +41,7 @@ const SelectFilterInput: React.FC<SelectFilterInputProps> = ({
               { option: false, label: i18next.t('booleanOptions.no') },
           ]
         : enumOptions;
+    const key = filterField?.filterType === 'date' ? 'dateFrom' : 'filter';
 
     return (
         <Grid container justifyContent="space-between">
@@ -61,8 +62,15 @@ const SelectFilterInput: React.FC<SelectFilterInputProps> = ({
                     select
                     size="small"
                     fullWidth
-                    value={filterField?.filter ?? ''}
-                    onChange={(e) => handleFilterFieldChange({ filterType: 'text', type: 'equals', filter: e.target.value } as IAGGridTextFilter)}
+                    value={filterField?.[key] ?? ''}
+                    onChange={(e) => {
+                        console.log({ val: e.target.value });
+
+                        return handleFilterFieldChange({ ...filterField, [key]: e.target.value } as
+                            | IAGGridNumberFilter
+                            | IAGGridDateFilter
+                            | IAGGridTextFilter);
+                    }}
                     disabled={readOnly}
                     error={error}
                     helperText={helperText}

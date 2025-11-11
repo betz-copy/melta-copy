@@ -19,7 +19,6 @@ import { FilterType, IAGGridFilter, IFilterTemplate } from './wizards/entityTemp
 const {
     relativeDateFilters,
     formats: { loggingDate, loggingDateTime },
-    fieldFilterPrefix,
 } = environment;
 
 export const initializedFilterField: Record<string, IAGGridFilter> = {

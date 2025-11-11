@@ -60,20 +60,30 @@ export const attachmentPropertiesBaseSchema = Yup.object({
 
 const agGridTextFilterSchema = Yup.object({
     filterType: Yup.string().oneOf(['text']).required(),
-    type: Yup.string().oneOf(['contains', 'notContains', 'equals', 'notEqual', 'startsWith', 'endsWith']).required(i18next.t('validation.required')),
+    type: Yup.string().oneOf(filterOptions.text).required(i18next.t('validation.required')),
     filter: Yup.mixed().required(i18next.t('validation.required')),
 });
 
 const agGridNumberFilterSchema = (parentFilterType?: FilterType) =>
     Yup.object({
-        filterType: Yup.string().oneOf(['number']).required(),
-        type: Yup.string()
-            .oneOf(['equals', 'notEqual', 'lessThan', 'lessThanOrEqual', 'greaterThan', 'greaterThanOrEqual', 'inRange'])
-            .required(i18next.t('validation.required')),
-        filter:
-            parentFilterType === FilterType.field
-                ? Yup.string().required(i18next.t('validation.required'))
-                : Yup.number().typeError(i18next.t('validation.invalidNumberField')).required(i18next.t('validation.required')),
+        filterType: Yup.string().oneOf(['number']).strict(true).required(),
+        type: Yup.string().oneOf(filterOptions.number).required(i18next.t('validation.required')),
+        filter: Yup.mixed()
+            .test('number-validation', i18next.t('validation.invalidNumberField'), (value) => {
+                console.log({ parentFilterType, value });
+                if (value === undefined || value === null) return false;
+
+                if (parentFilterType === FilterType.field) {
+                    if (typeof value !== 'string') return false;
+                    return value.trim() !== '';
+                }
+
+                const valueStr = String(value);
+                const numValue = parseFloat(valueStr);
+
+                return !Number.isNaN(numValue) && Number.isFinite(numValue);
+            })
+            .required(),
         filterTo: Yup.number()
             .typeError(i18next.t('validation.invalidNumberField'))
             .when('type', {
