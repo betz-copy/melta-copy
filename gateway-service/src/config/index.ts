@@ -81,7 +81,7 @@ const config = {
         cookieOptions: {
             httpOnly: env.get('COOKIE_HTTP_ONLY').default('false').asBool(),
             path: env.get('COOKIE_PATH').default('/').asString(),
-            domain: env.get('COOKIE_DOMAIN').asString(),
+            domain: env.get('COOKIE_DOMAIN').required().asString(),
         },
     },
     templateService: {
