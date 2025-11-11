@@ -64,40 +64,48 @@ const agGridTextFilterSchema = Yup.object({
     filter: Yup.mixed().required(i18next.t('validation.required')),
 });
 
-const agGridNumberFilterSchema = Yup.object({
-    filterType: Yup.string().oneOf(['number']).required(),
-    type: Yup.string()
-        .oneOf(['equals', 'notEqual', 'lessThan', 'lessThanOrEqual', 'greaterThan', 'greaterThanOrEqual', 'inRange'])
-        .required(i18next.t('validation.required')),
-    filter: Yup.number().typeError(i18next.t('validation.invalidNumberField')).required(i18next.t('validation.required')),
-    filterTo: Yup.number()
-        .typeError(i18next.t('validation.invalidNumberField'))
-        .when('type', {
+const agGridNumberFilterSchema = (parentFilterType?: FilterType) =>
+    Yup.object({
+        filterType: Yup.string().oneOf(['number']).required(),
+        type: Yup.string()
+            .oneOf(['equals', 'notEqual', 'lessThan', 'lessThanOrEqual', 'greaterThan', 'greaterThanOrEqual', 'inRange'])
+            .required(i18next.t('validation.required')),
+        filter:
+            parentFilterType === FilterType.field
+                ? Yup.string().required(i18next.t('validation.required'))
+                : Yup.number().typeError(i18next.t('validation.invalidNumberField')).required(i18next.t('validation.required')),
+        filterTo: Yup.number()
+            .typeError(i18next.t('validation.invalidNumberField'))
+            .when('type', {
+                is: 'inRange',
+                then: (schema) => schema.required(i18next.t('validation.required')),
+                otherwise: (schema) => schema.notRequired(),
+            }),
+    });
+
+const agGridDateFilterSchema = (parentFilterType?: FilterType) =>
+    Yup.object({
+        filterType: Yup.string().oneOf(['date']).required(),
+        type: Yup.string().oneOf(filterOptions.date).required(i18next.t('validation.required')),
+        dateFrom:
+            parentFilterType === FilterType.field
+                ? Yup.string().required(i18next.t('validation.required'))
+                : Yup.string()
+                      .when('type', {
+                          is: (type: string) => relativeDateFilters.includes(type),
+                          then: (schema) => schema.oneOf([...relativeDateFilters]),
+                          otherwise: (schema) =>
+                              schema.test('valid-date-format', 'must be YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss.sssZ', (value) => {
+                                  return dateRegex.test(value!) || dateTimeRegex.test(value!) || isValid(new Date(value!));
+                              }),
+                      })
+                      .required(i18next.t('validation.required')),
+        dateTo: Yup.string().when('type', {
             is: 'inRange',
             then: (schema) => schema.required(i18next.t('validation.required')),
-            otherwise: (schema) => schema.notRequired(),
+            otherwise: (schema) => schema.nullable().notRequired(),
         }),
-});
-
-const agGridDateFilterSchema = Yup.object({
-    filterType: Yup.string().oneOf(['date']).required(),
-    type: Yup.string().oneOf(filterOptions.date).required(i18next.t('validation.required')),
-    dateFrom: Yup.string()
-        .when('type', {
-            is: (type: string) => relativeDateFilters.includes(type),
-            then: (schema) => schema.oneOf([...relativeDateFilters]),
-            otherwise: (schema) =>
-                schema.test('valid-date-format', 'must be YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss.sssZ', (value) => {
-                    return dateRegex.test(value!) || dateTimeRegex.test(value!) || isValid(new Date(value!));
-                }),
-        })
-        .required(i18next.t('validation.required')),
-    dateTo: Yup.string().when('type', {
-        is: 'inRange',
-        then: (schema) => schema.required(i18next.t('validation.required')),
-        otherwise: (schema) => schema.nullable().notRequired(),
-    }),
-});
+    });
 
 const agGridSetFilterSchema = Yup.object({
     filterType: Yup.string().oneOf(['set']).required(),
@@ -109,15 +117,13 @@ export const filterFieldSchema = (isRequired: boolean = true) =>
     Yup.lazy((value: any, { parent }) => {
         const makeOptional = (schema: Yup.AnySchema) => (isRequired ? schema : schema.notRequired().nullable());
 
-        if (parent?.filterType === FilterType.field) return makeOptional(agGridTextFilterSchema);
-
         switch (value?.filterType) {
             case 'text':
                 return makeOptional(agGridTextFilterSchema);
             case 'number':
-                return makeOptional(agGridNumberFilterSchema);
+                return makeOptional(agGridNumberFilterSchema(parent.filterType));
             case 'date':
-                return makeOptional(agGridDateFilterSchema);
+                return makeOptional(agGridDateFilterSchema(parent.filterType));
             case 'set':
                 return makeOptional(agGridSetFilterSchema);
             default:

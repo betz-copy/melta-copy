@@ -114,10 +114,16 @@ export const translateFieldFilter = (
     const [filterKey] = filterKeys;
 
     const rawValue = fieldFilter[filterKey];
-    const isFieldType = typeof rawValue === 'string' && rawValue.startsWith(fieldFilterPrefix);
+    const isFieldType =
+        (typeof rawValue === 'string' && rawValue.startsWith(fieldFilterPrefix)) ||
+        (Array.isArray(rawValue) && rawValue.every((val) => typeof val === 'string' && val.startsWith(fieldFilterPrefix)));
     const filterType = isFieldType ? FilterType.field : FilterType.value;
 
-    const filterValue = isFieldType ? rawValue.slice(fieldFilterPrefix.length) : rawValue;
+    const filterValue = isFieldType
+        ? !Array.isArray(rawValue)
+            ? rawValue.slice(fieldFilterPrefix.length)
+            : rawValue.map((val) => (val as string).slice(fieldFilterPrefix.length))
+        : rawValue;
 
     const type = filterFieldToValue[filterKey];
 

@@ -42,7 +42,6 @@ export const FilterModelToFilterRecord = (
 
     return fieldFilters.reduce<IFilterTemplate[]>((acc, filter) => {
         Object.entries(filter).forEach(([field, fieldFilter]) => {
-
             if (!fieldFilter) return;
 
             const property = template.properties.properties[field];

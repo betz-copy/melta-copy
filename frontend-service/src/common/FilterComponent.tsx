@@ -243,7 +243,7 @@ export const renderFilterInput = (
                 }
                 enumOptions={
                     isFieldFilter && fieldFilter
-                        ? fieldFilter.fieldProperties.map(({ option, label }) => ({ option: `${fieldFilterPrefix}${option}`, label }))
+                        ? fieldFilter.fieldProperties.map(({ option, label }) => ({ option, label }))
                         : enumOptions!.map((option) => ({ option, label: option }))
                 }
                 readOnly={Boolean(readonly)}
