@@ -78,6 +78,11 @@ const config = {
             // for example: [{"userId": "5e5688324203fc40043591aa", "password": "noamisgod"}]
             users: env.get('BASIC_AUTHENTICATION_USERS').required().asJsonArray() as Array<{ userId: string; password: string }>,
         },
+        cookieOptions: {
+            httpOnly: env.get('COOKIE_HTTP_ONLY').default('false').asBool(),
+            path: env.get('COOKIE_PATH').default('/').asString(),
+            domain: env.get('COOKIE_DOMAIN').asString(),
+        },
     },
     templateService: {
         url: env.get('TEMPLATE_SERVICE_URL').required().asString(),

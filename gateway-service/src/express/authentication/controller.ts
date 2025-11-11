@@ -7,6 +7,9 @@ import WorkspaceService from '../workspaces/service';
 import { AuthenticationManager } from './manager';
 
 const { accessTokenName, clientSideURLPrefix, unauthorizedId } = config.authentication.shragaAuthentication;
+const { httpOnly, path, domain } = config.authentication.cookieOptions;
+
+const isDevelopment = process.env.NODE_ENV === 'development';
 
 class AuthenticationController {
     static async createClientSideToken(userId: string, workspaceId) {
@@ -49,7 +52,15 @@ class AuthenticationController {
             token = await AuthenticationController.createUserToken(id);
         }
 
-        res.cookie(accessTokenName, token);
+        const cookieOptions = {
+            httpOnly,
+            secure: !isDevelopment,
+            sameSite: (isDevelopment ? 'lax' : 'none') as 'lax' | 'none',
+            path,
+            domain,
+        };
+
+        res.cookie(accessTokenName, token, cookieOptions);
 
         return res.redirect(redirectUrl);
     }
