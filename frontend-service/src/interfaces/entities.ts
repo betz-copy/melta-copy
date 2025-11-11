@@ -102,7 +102,7 @@ export enum FilterLogicalOperator {
     OR = '$or',
 }
 
-type AndFilter = {
+export type AndFilter = {
     [FilterLogicalOperator.AND]: IFilterOfTemplate | IFilterGroup[];
     [FilterLogicalOperator.OR]?: never;
 };

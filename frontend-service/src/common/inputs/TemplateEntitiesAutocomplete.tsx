@@ -7,7 +7,7 @@ import { useInfiniteQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
 import { IChildTemplateMap, IChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { IEntity, ISearchEntitiesOfTemplateBody, ISearchFilter } from '../../interfaces/entities';
+import { AndFilter, IEntity, ISearchEntitiesOfTemplateBody, ISearchFilter } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IWorkspace } from '../../interfaces/workspaces';
 import { searchEntitiesOfTemplateClientSideRequest } from '../../services/clientSideService';
@@ -133,7 +133,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
                     newFilter[key] = newCondition;
                 }
             }
-            newFilters.push(newFilter);
+            newFilters.push(newFilter as AndFilter);
         }
         return { dependentFields, newFilters };
     };
