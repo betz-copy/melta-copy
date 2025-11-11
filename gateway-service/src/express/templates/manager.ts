@@ -356,15 +356,15 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const updatedPermissions = permissionsOfUserId.admin
             ? permissionsOfUserId
             : {
-                  ...permissionsOfUserId,
-                  instances: {
-                      ...permissionsOfUserId.instances,
-                      categories: {
-                          ...permissionsOfUserId.instances?.categories,
-                          [category._id]: { scope: PermissionScope.write, entityTemplates: {} },
-                      },
-                  },
-              };
+                ...permissionsOfUserId,
+                instances: {
+                    ...permissionsOfUserId.instances,
+                    categories: {
+                        ...permissionsOfUserId.instances?.categories,
+                        [category._id]: { scope: PermissionScope.write, entityTemplates: {} },
+                    },
+                },
+            };
 
         await UsersManager.syncUserPermissions(userId, RelatedPermission.User, {
             [this.workspaceId]: updatedPermissions,
@@ -407,7 +407,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         await UsersManager.deletePermissionsFromMetadata(
             { workspaceId: this.workspaceId, type: PermissionType.instances },
             { instances: { categories: { [id]: null } } },
-        ).catch(() => {});
+        ).catch(() => { });
     }
 
     async updateCategory(id: string, updatedData: Partial<ICategory> & { file?: string }, file?: UploadedFile) {
@@ -1242,9 +1242,9 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         await this.deletePropertyOfEntityTemplate(id, count, removedProperties, currTemplate);
 
-        if (newExpandedUserFields.length) {
+        if (newExpandedUserFields.length)
             await this.updateInstancesWithUserFields(id, newExpandedUserFields, updatedTemplateData);
-        }
+
 
         try {
             if (propertiesKeysToPluralize.length > 0) await this.instancesService.convertFieldsToPlural(id, propertiesKeysToPluralize);

@@ -271,12 +271,12 @@ export const FieldBlockWrapper = ({
 }) => {
     const hasActions = Boolean(initialValues?.actions);
     const countMapSearchProperties = Object.values(values.properties).flatMap((property: any) => {
-        if (property.type === 'field' && property.data?.mapSearch) {
+        if (property.type === 'field' && property.data?.mapSearch)
             return [property];
-        }
-        if (property.type === 'group' && Array.isArray(property.fields)) {
+
+        if (property.type === 'group' && Array.isArray(property.fields))
             return property.fields.filter((field) => field.mapSearch);
-        }
+
         return [];
     }).length;
 
@@ -297,7 +297,7 @@ export const FieldBlockWrapper = ({
             },
         },
     );
-    const areThereAnyInstances = isEditMode && !!areThereInstancesByTemplateIdResponse!.count;
+    const areThereAnyInstances = isEditMode && !!areThereInstancesByTemplateIdResponse?.count;
 
     const getNewValues = (
         indexesInTypes: { index: number; type: PropertiesTypes; groupIndex?: number }[],
@@ -661,7 +661,7 @@ export const FieldBlockWrapper = ({
                         setValues((prev) => ({
                             ...prev,
                             uniqueConstraints:
-                                typeof newUniqueConstraints === 'function' ? newUniqueConstraints(prev.uniqueConstraints!) : newUniqueConstraints,
+                                typeof newUniqueConstraints === 'function' ? newUniqueConstraints(prev.uniqueConstraints) : newUniqueConstraints,
                         }));
                     }}
                     initialValues={initialValues}
