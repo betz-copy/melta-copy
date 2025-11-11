@@ -58,9 +58,8 @@ const isPropertyInvalid = <Data = EntityData>(props: ICellRendererParams<Data, a
                 return (error.metadata as IRequiredConstraint).property === property;
             case ActionErrors.unique:
                 return (error.metadata as IUniqueConstraint).properties.some((errorProperty) => errorProperty === property);
-            case ActionErrors.validation: {
+            case ActionErrors.validation:
                 return (error.metadata as IValidationError).path.slice(1).includes(property);
-            }
             case ActionErrors.relationshipRefNotFound:
                 return (error.metadata as INotFoundRelationshipRefError).property === property;
             case ActionErrors.userNotFound:
@@ -108,7 +107,7 @@ const errorColDef = <Data extends any = EntityData>(
         }
         case ActionErrors.userNotFound: {
             const { attemptedIds, type } = error.metadata as IUsersNotFoundError;
-            message = i18next.t(`wizard.entity.loadEntities.${type}`, { attemptedIds });
+            if (type === 'userNotFound') message = i18next.t(`wizard.entity.loadEntities.${type}`, { attemptedIds: attemptedIds.join(',') });
             break;
         }
         default:
@@ -559,7 +558,7 @@ export const userColDef = <Data = IUser>(
             if (!props.value) return '';
 
             const error = isPropertyInvalid(props, field, ignoreType);
-            if (error) return errorColDef(props, error, value);
+            if (error) return errorColDef(props, error, { ...value, format: 'user' });
 
             if (ignoreType && !isStringifiedJSON(props.value))
                 return <Value hideValue={hideColumn} color={getColor(props, field)} value={props.value ?? ''} />;
@@ -613,12 +612,12 @@ export const userArrayColDef = <Data = IEntity>(
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, any[] | undefined>) => {
             if (!props.value) return '';
-
             const error = isPropertyInvalid(props, field, ignoreType);
-            if (error) return errorColDef(props, error, value);
+            if (error) return errorColDef({ ...props, value: props.value.join(',') }, error, { ...value, format: 'users' });
 
             if (ignoreType) {
-                if (typeof props.value === 'string') return <Value hideValue={hideColumn} color={getColor(props, field)} value={props.value ?? ''} />;
+                if (typeof props.value === 'string' || typeof props.value === 'number')
+                    return <Value hideValue={hideColumn} color={getColor(props, field)} value={(props.value as string) ?? ''} />;
                 if (Array.isArray(props.value) && props.value.some((item) => !isStringifiedJSON(item)))
                     return <Value hideValue={hideColumn} color={getColor(props, field)} value={props.value.join(', ') ?? ''} />;
             }

@@ -53,7 +53,7 @@ export interface INotFoundRelationshipRefError {
 }
 
 export interface IUsersNotFoundError {
-    attemptedIds: string;
+    attemptedIds: string[];
     property: string;
     type: 'userNotFound' | 'usersNotFound';
 }

@@ -71,7 +71,7 @@ export type INotFoundRelationshipRefError = {
 
 export type IUsersNotFoundError = {
     property: string;
-    attemptedIds: string;
+    attemptedIds: string[];
     type: 'userNotFound' | 'usersNotFound';
 };
 

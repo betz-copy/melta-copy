@@ -215,8 +215,8 @@ class UsersManager {
         return normalizedKartoffelUsers.flat().filter((normalizedKartoffelUser) => !normalizedKartoffelUser.permissions[workspaceId || '']);
     }
 
-    static async getExternalUsersByIdentityCard(
-        identityCards: string,
+    static async getUsersByIdentityCard(
+        identityCards: string[],
         isKartoffelUser: boolean = false,
         workspaceId?: string,
     ): Promise<IExternalUser[] | IKartoffelUser[]> {

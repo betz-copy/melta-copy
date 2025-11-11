@@ -86,11 +86,18 @@ const formatExcel = (
                 const formattedValue = formatExcel(value, relatedTemplate!.properties.properties[identifierField!], isEditMode, relatedTemplatesMap);
                 return formattedValue;
             }
+
             return value?.toString();
         case 'array':
             if (propertyTemplate.items && propertyTemplate.items.type === 'string' && typeof value === 'object' && 'richText' in value)
                 return value?.richText.map((item) => item.text).filter((text) => text !== ', ' && text !== ',');
             if (format === 'fileId') return (value as CellModel).text;
+            if (propertyTemplate.items && propertyTemplate.items?.format === 'user' && typeof value !== 'string' && value) {
+                return value
+                    .toString()
+                    .split(',')
+                    .map((val) => val.trim());
+            }
             return (value as string).split(',').map((val) => val.trim());
         case 'number':
             return Number.isNaN(parseFloat(value as string)) ? value : parseFloat(value as string);
@@ -257,12 +264,12 @@ const readExcelFile = async (
     return entities;
 };
 
-const getValidationErrorEntities = (error: AxiosError, failedEntities: IFailedEntity[]) => {
+const getValidationErrorEntities = (error: AxiosError, failedEntities: IFailedEntity[], originalProperties?: IEntity['properties']) => {
     const errorData = error.response?.data as IValidationErrorData;
     const { metadata } = errorData;
     const { properties, errors } = metadata;
 
-    failedEntities.push({ properties, errors });
+    failedEntities.push({ properties: originalProperties ?? properties, errors });
 };
 
 const updateRawBrokenRules = (rawBrokenRules: IBrokenRule[], entityId: string) => {

@@ -43,17 +43,17 @@ class Kartoffel {
     };
 
     // identityCards refer to tz, but the kartoffel field name is identityCard
-    static getUsersByIdentityCards = async (identityCards: string): Promise<IKartoffelUser[]> => {
+    static getUsersByIdentityCards = async (identityCards: string[]): Promise<IKartoffelUser[]> => {
         const { data } = await this.kartoffel.get<IKartoffelUser[]>(``, {
             params: {
                 identityCards: identityCards,
                 page: 1,
-                pageSize: maxPageSize
-            }
-        })
+                pageSize: maxPageSize,
+            },
+        });
 
         return data;
-    }
+    };
 }
 
 export default Kartoffel;

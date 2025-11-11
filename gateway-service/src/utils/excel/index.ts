@@ -63,12 +63,12 @@ export const classifyEntityErrors = (
     if (error instanceof ServiceError && error.code === StatusCodes.NOT_FOUND) {
         if ('attemptedIds' in error.metadata) {
             failedEntities.push({
-                properties,
+                properties: originalEntity ?? {},
                 errors: [{ type: ActionErrors.userNotFound, metadata: error.metadata as IUsersNotFoundError }],
             });
         } else {
             failedEntities.push({
-                properties,
+                properties: originalEntity ?? {},
                 errors: [{ type: ActionErrors.relationshipRefNotFound, metadata: error.metadata as INotFoundRelationshipRefError }],
             });
         }
@@ -79,7 +79,7 @@ export const classifyEntityErrors = (
             if (err instanceof ServiceError) {
                 if ('attemptedIds' in err.metadata)
                     failedEntities.push({
-                        properties,
+                        properties: originalEntity ?? {},
                         errors: [{ type: ActionErrors.userNotFound, metadata: err.metadata as IUsersNotFoundError }],
                     });
             }
@@ -131,7 +131,7 @@ export const classifyEntityErrors = (
         }
 
         if (data.type === errorCodes.templateValidationError || data.type === 'FilterValidationError')
-            getValidationErrorEntities(error as AxiosError, failedEntities);
+            getValidationErrorEntities(error as AxiosError, failedEntities, originalEntity);
     } else if ((error as IBrokenRulesError).metadata?.errorCode === errorCodes.ruleBlock) {
         allBrokenRulesEntities.push({
             brokenRules: error.metadata.brokenRules,

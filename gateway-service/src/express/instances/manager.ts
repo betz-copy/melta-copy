@@ -22,7 +22,6 @@ import {
     IEntityWithDirectRelationships,
     IEntityWithIgnoredRules,
     IExportEntitiesBody,
-    IExternalUser,
     IFailedEntity,
     IFullMongoEntityTemplate,
     IKartoffelUser,
@@ -273,10 +272,10 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
     ) {
         let newDisplayColumns = displayColumns;
         const newEntities = insertEntities.map((entity) => {
-            Object.keys(entity).forEach((key) => {
-                if (!isIncludedColumn(template.properties.properties?.[key])) {
+            Object.entries(template.properties.properties).forEach(([key, value]) => {
+                if (!isIncludedColumn(value)) {
                     if (displayColumns) {
-                        newDisplayColumns = displayColumns.filter((fieldName) => fieldName !== key);
+                        newDisplayColumns = newDisplayColumns!.filter((fieldName) => fieldName !== key);
                     }
                     delete entity[key];
                 }
@@ -442,32 +441,22 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return { searchResults, relatedTemplatesWithIdentifier };
     }
 
-    async normalizeUserSearch(
-        identityCards: string | string[],
-        isUserArray: boolean,
-        key: string,
-        isKartoffelUser: boolean = false,
-    ): Promise<IExternalUser | IKartoffelUser | IExternalUser[] | IKartoffelUser[]> {
-        const normalizedIdentityCards: string = Array.isArray(identityCards) ? identityCards.join(',') : identityCards;
-        const normalized: IExternalUser[] | IKartoffelUser[] = await UsersManager.getExternalUsersByIdentityCard(
-            normalizedIdentityCards,
-            isKartoffelUser,
-        );
-
-        if (normalized.length === 0) {
-            throw new NotFoundError('Users not found', {
+    private normalizeUser(identityCard: string, usersMap: Map<string, IKartoffelUser>, key: string, allAttemptedIds: string[]): IKartoffelUser {
+        const user: IKartoffelUser | undefined = usersMap.get(identityCard);
+        if (!user)
+            throw new NotFoundError('User not found', {
                 property: key,
-                attemptedIds: normalizedIdentityCards,
-                type: isUserArray ? 'usersNotFound' : 'userNotFound',
+                attemptedIds: allAttemptedIds,
+                type: 'userNotFound',
             } as IUsersNotFoundError);
-        }
 
-        return isUserArray ? normalized : normalized[0];
+        return user;
     }
 
     async handleUserFields(
         template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
         entityProperties: Record<string, any>,
+        usersMap: Map<string, IKartoffelUser>,
     ): Promise<void> {
         const kartoffelFields: string[] = Object.entries(template.properties.properties).reduce<string[]>((acc, [key, value]) => {
             if (value?.format === 'kartoffelUserField') acc.push(key);
@@ -482,7 +471,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
             try {
                 if (value?.format === 'user') {
-                    const user: IKartoffelUser = (await this.normalizeUserSearch(fieldValue, false, key, true)) as IKartoffelUser;
+                    const user: IKartoffelUser = this.normalizeUser(fieldValue, usersMap, key, [fieldValue]);
                     kartoffelFields.map((fieldKey) => {
                         const field = template.properties.properties[fieldKey];
                         if (field.expandedUserField?.relatedUserField === key) {
@@ -493,10 +482,15 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
                     entityProperties[key] = JSON.stringify(await UsersManager.kartoffelUserToUser(user));
                 }
-                if (value?.type === 'array' && value?.items?.format === 'user')
-                    entityProperties[key] = ((await this.normalizeUserSearch(fieldValue, true, key)) as IExternalUser[]).map((user) =>
-                        JSON.stringify(user),
-                    );
+                if (value?.type === 'array' && value?.items?.format === 'user') {
+                    const users: string[] = [];
+                    for (const identityCard of fieldValue) {
+                        const user: IKartoffelUser = this.normalizeUser(identityCard, usersMap, key, fieldValue);
+                        users.push(JSON.stringify(await UsersManager.kartoffelUserToUser(user)));
+                    }
+
+                    entityProperties[key] = users;
+                }
             } catch (error) {
                 if (error instanceof NotFoundError) {
                     errors.push(error);
@@ -507,6 +501,32 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         }
 
         if (errors.length > 0) throw new AggregateError(errors, 'some user fields were not found');
+    }
+
+    async getUserFields(
+        template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+        entities: IEntityWithIgnoredRules[] | undefined,
+    ): Promise<Map<string, IKartoffelUser>> {
+        if (!entities) return new Map<string, IKartoffelUser>();
+
+        const allIdentityCards: Set<string> = new Set<string>(
+            Object.entries(template.properties.properties).flatMap(([key, value]) =>
+                entities.flatMap((entity) => {
+                    const fieldValue = entity.properties[key];
+                    if (!fieldValue) return [];
+
+                    if (value?.format === 'user') return [fieldValue];
+                    if (value?.type === 'array' && value.items?.format === 'user') return Array.isArray(fieldValue) ? fieldValue : [fieldValue];
+
+                    return [];
+                }),
+            ),
+        );
+
+        if (allIdentityCards.size === 0) return new Map<string, IKartoffelUser>();
+        const users: IKartoffelUser[] = await UsersManager.getUsersByIdentityCard([...allIdentityCards], true);
+
+        return new Map<string, IKartoffelUser>(users.filter((user) => Boolean(user.identityCard)).map((user) => [user.identityCard!, user]));
     }
 
     async loadEntities(
@@ -530,6 +550,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const serialStarters = getSerialStarters(template);
         const succeededEntities: IEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
+        const usersFieldsMap: Map<string, IKartoffelUser> = await this.getUserFields(template, entities);
 
         const { searchResults, relatedTemplatesWithIdentifier } = await this.handleRelationshipRefLoadExcel(template, userId, entities);
 
@@ -564,7 +585,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                     });
                 }
 
-                await this.handleUserFields(template, entity.properties);
+                await this.handleUserFields(template, entity.properties, usersFieldsMap);
 
                 const result = await this.createEntityInstance(entity, [], ignoredRules, userId, childTemplateId, serialNumbers);
 
