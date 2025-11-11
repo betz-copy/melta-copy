@@ -63,14 +63,12 @@ const SelectFilterInput: React.FC<SelectFilterInputProps> = ({
                     size="small"
                     fullWidth
                     value={filterField?.[key] ?? ''}
-                    onChange={(e) => {
-                        console.log({ val: e.target.value });
-
-                        return handleFilterFieldChange({ ...filterField, [key]: e.target.value } as
+                    onChange={(e) =>
+                        handleFilterFieldChange({ ...filterField, [key]: e.target.value } as
                             | IAGGridNumberFilter
                             | IAGGridDateFilter
-                            | IAGGridTextFilter);
-                    }}
+                            | IAGGridTextFilter)
+                    }
                     disabled={readOnly}
                     error={error}
                     helperText={helperText}

@@ -70,7 +70,6 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
             ...value.relationshipReference,
             filters: newFiltersArray,
         };
-        console.log({ newValues });
 
         setFieldValue('relationshipReference', newValues);
     };

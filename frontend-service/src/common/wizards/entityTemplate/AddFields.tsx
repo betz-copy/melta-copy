@@ -70,7 +70,6 @@ const agGridNumberFilterSchema = (parentFilterType?: FilterType) =>
         type: Yup.string().oneOf(filterOptions.number).required(i18next.t('validation.required')),
         filter: Yup.mixed()
             .test('number-validation', i18next.t('validation.invalidNumberField'), (value) => {
-                console.log({ parentFilterType, value });
                 if (value === undefined || value === null) return false;
 
                 if (parentFilterType === FilterType.field) {

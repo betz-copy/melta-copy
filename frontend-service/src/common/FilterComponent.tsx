@@ -207,7 +207,7 @@ export const renderFilterInput = (
                 enumOptions={fieldFilter.fieldProperties}
                 filterField={field}
                 handleFilterFieldChange={(updatedField, condition) => {
-                    if (updatedField && (updatedField.filterType === 'text' || updatedField.filterType === 'number'))
+                    if (updatedField && ['text', 'number', 'date'].includes(updatedField.filterType))
                         handleFilterFieldChange(filters, index, updatedField, onChange, condition);
                 }}
                 error={Boolean(touched && (filterErrors as IAGGridTextFilter)?.filter)}

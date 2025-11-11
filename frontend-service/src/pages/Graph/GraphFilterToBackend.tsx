@@ -74,12 +74,18 @@ export const handleRegexFilter = (filterValue: string, not: boolean = false): IA
     return null;
 };
 
-export const handleDateFilter = (filterKeys: (keyof IFilterOfField)[], fieldFilter: IFilterOfField, filterType: string): IAGGridDateFilter => {
+export const handleDateFilter = (
+    filterKeys: (keyof IFilterOfField)[],
+    fieldFilter: IFilterOfField,
+    filterType: string,
+    isFieldType: boolean,
+): IAGGridDateFilter => {
     if (
         filterKeys.length === 2 ||
         Object.values(fieldFilter).some((value) => value === RelativeDateFilters.untilToday || value === RelativeDateFilters.fromToday)
     ) {
-        const [dateFrom, dateTo] = filterKeys;
+        const [dateFromVal, dateTo] = filterKeys;
+        const dateFrom = isFieldType ? dateFromVal.slice(fieldFilterPrefix.length) : dateFromVal;
 
         if (relativeDateFilters.includes(fieldFilter[dateFrom] as string)) {
             return {
@@ -98,10 +104,12 @@ export const handleDateFilter = (filterKeys: (keyof IFilterOfField)[], fieldFilt
         } as IAGGridDateFilter;
     }
 
+    const dateFromVal = fieldFilter[filterKeys[0]] as string;
+
     return {
         filterType: 'date',
         type: filterType,
-        dateFrom: fieldFilter[filterKeys[0]] as string,
+        dateFrom: isFieldType ? dateFromVal.slice(fieldFilterPrefix.length) : dateFromVal,
         dateTo: null,
     } as IAGGridDateFilter;
 };
@@ -130,7 +138,8 @@ export const translateFieldFilter = (
     switch (propType) {
         case 'string':
         case 'boolean': {
-            if (format === 'date-time' || format === 'date') return { filterType, filterField: handleDateFilter(filterKeys, fieldFilter, type) };
+            if (format === 'date-time' || format === 'date')
+                return { filterType, filterField: handleDateFilter(filterKeys, fieldFilter, type, isFieldType) };
 
             if (enumValues)
                 return {
