@@ -22,6 +22,7 @@ const MeltaTooltip: React.FC<CustomTooltipProps> = ({ children, variant = 'defau
         padding: '8px 12px',
         marginLeft: '0px',
         position: 'relative',
+        maxWidth: '450px',
     };
 
     return (

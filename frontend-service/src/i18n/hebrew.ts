@@ -4,7 +4,6 @@ import { WorkspaceTypes } from '../interfaces/workspaces';
 import { muiDatePickersLocaleText } from '../utils/datePickers';
 
 export default {
-    featuresList: ['ניהול משתמשים מתקדם', 'תמיכה במובייל', 'דוחות בזמן אמת'],
     myPermissions: 'ההרשאות שלי',
     personalDetails: 'פרטים אישיים',
     myAccount: 'החשבון שלי',
@@ -748,6 +747,12 @@ export default {
             wallet: {
                 walletDisplay: 'תצוגת ארנק',
                 transferCantBeWallet: 'לא ניתן להגדיר תבנית העברה כארנק',
+                asWallet: 'כאשר מסמנים אפשרות זו, הישות תוגדר כארנק',
+                walletInfo: [
+                    'ליישות תתווסף תצוגה ייעודית של העברות (הכנסות והוצאות)',
+                    'ניתן לבצע פעולות של הכנסה והוצאה משדה מספרי ייעודי בשם "ערך יתרה" (אשר יש לבחור בשלב "שדות")',
+                    'לאחר היצירה הראשונית של היישות, לא תתאפשר עריכת שדה היתרה, אלא ע"י ביצוע העברה באמצעות ישות קשר לתבנית הארנק ',
+                ],
             },
             walletTransfer: {
                 destination: 'יעד',
@@ -760,6 +765,10 @@ export default {
                 template: 'תבנית העברה ',
                 fromWallet: 'ערך ההעברה ירד מהיתרה של יישות הארנק המקושרת',
                 toWallet: 'ערך ההעברה יתווסף ליתרה של יישות הארנק המקושרת',
+                walletTransferInfo: [
+                    'בתבנית יישות זו קיים קשר לתבנית יישות ארנק',
+                    'אם מטרת תבנית זו הינה העברה אוטומטית מ- או ל- יתרת יישות ארנק אחד או יותר - יש לסמן את התיבה ולבחור את השדות המתאימים לביצוע ההעברה.',
+                ],
             },
             cannotEditWithInstances: 'לא ניתן לערוך תבנית בעלת יישיות',
         },
@@ -1091,7 +1100,7 @@ export default {
         differentDestinations: 'מקור ויעד לא יכולים להיות זהים',
         eitherFromOrToRelationshipReference: 'נדרש לבחור קשר לתבנית ארנק כמקור או כיעד (או בשניהם)',
         isProfileImage: 'תמונת פרופיל',
-        sameSourceAndDestWallet:'לא ניתן לבצע העברה באותו ארנק',
+        sameSourceAndDestWallet: 'לא ניתן לבצע העברה באותו ארנק',
     },
     propertyTypes: {
         string: 'טקסט',

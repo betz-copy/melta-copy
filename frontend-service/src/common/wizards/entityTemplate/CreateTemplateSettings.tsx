@@ -47,8 +47,6 @@ const CreateTemplateSettings = <
         showAccountDisplay: { value: boolean; set: (val: boolean) => void };
     },
 ) => {
-    console.log({ props });
-
     const { data: areThereInstancesByTemplateIdResponse } = useQuery(
         ['areThereInstancesByTemplateId', props.values._id],
         () =>
@@ -68,6 +66,7 @@ const CreateTemplateSettings = <
 
     const isWalletTemplate = hasAccountBalanceField(Object.values(props.values.properties) as PropertyItem[]);
     const areThereAnyInstances = props.isEditMode && areThereInstancesByTemplateIdResponse!.count > 0 && isWalletTemplate;
+    const walletInfo = i18next.t('wizard.entityTemplate.wallet.walletInfo', { returnObjects: true }) as string[];
 
     return (
         <Grid container direction="column" spacing={4}>
@@ -118,11 +117,20 @@ const CreateTemplateSettings = <
                     <Typography>{i18next.t('wizard.entityTemplate.wallet.walletDisplay')}</Typography>
                     <MeltaTooltip
                         title={
-                            props.values.walletTransfer
-                                ? i18next.t('wizard.entityTemplate.wallet.transferCantBeWallet')
-                                : areThereAnyInstances
-                                  ? i18next.t('wizard.entityTemplate.cannotEditWithInstances')
-                                  : 'תצוגת ארנק בלה בלה '
+                            props.values.walletTransfer ? (
+                                i18next.t('wizard.entityTemplate.wallet.transferCantBeWallet')
+                            ) : areThereAnyInstances ? (
+                                i18next.t('wizard.entityTemplate.cannotEditWithInstances')
+                            ) : (
+                                <>
+                                    <div>{i18next.t('wizard.entityTemplate.wallet.asWallet')}</div>
+                                    <ul>
+                                        {walletInfo.map((item, index) => (
+                                            <li key={index}>{item}</li>
+                                        ))}
+                                    </ul>
+                                </>
+                            )
                         }
                         variant="bubble"
                     >

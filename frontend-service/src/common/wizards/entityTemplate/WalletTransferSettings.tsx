@@ -122,12 +122,13 @@ export const WalletTransferSettings: React.FC<
 
     const showSourceInfo = walletTransfer.value && allFields.some((f) => f.name === sourceKeyName && f.type === 'relationshipReference');
     const showDestInfo = walletTransfer.value && allFields.some((f) => f.name === destKeyName && f.type === 'relationshipReference');
+    const walletTransferInfo = i18next.t('wizard.entityTemplate.walletTransfer.walletTransferInfo', { returnObjects: true }) as string[];
 
     return (
         <Grid container direction="column">
             <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
                 <MeltaCheckbox
-                    checked={walletTransfer.value}
+                    checked={!!values.walletTransfer || walletTransfer.value}
                     onChange={(e) => {
                         walletTransfer.set(e.target.checked);
                         if (!e.target.checked) {
@@ -139,11 +140,19 @@ export const WalletTransferSettings: React.FC<
                 <Typography>{i18next.t('wizard.entityTemplate.walletTransfer.transfer')}</Typography>
                 <MeltaTooltip
                     title={
-                        showAccountDisplay
-                            ? i18next.t('wizard.entityTemplate.walletTransfer.walletCantBeTransfer')
-                            : areThereAnyInstances
-                              ? i18next.t('wizard.entityTemplate.cannotEditWithInstances')
-                              : i18next.t('wizard.entityTemplate.walletTransfer.template')
+                        showAccountDisplay ? (
+                            i18next.t('wizard.entityTemplate.walletTransfer.walletCantBeTransfer')
+                        ) : areThereAnyInstances ? (
+                            i18next.t('wizard.entityTemplate.cannotEditWithInstances')
+                        ) : (
+                            <>
+                                {walletTransferInfo.map((item, index) => (
+                                    <div key={index} style={{ marginBottom: '8px' }}>
+                                        {item}
+                                    </div>
+                                ))}
+                            </>
+                        )
                     }
                     variant="bubble"
                 >

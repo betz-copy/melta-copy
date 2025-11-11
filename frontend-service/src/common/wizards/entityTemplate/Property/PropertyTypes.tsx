@@ -90,6 +90,7 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
     supportRelationshipReference,
     supportEditEnum,
 }) => {
+    const walletInfo = i18next.t('wizard.entityTemplate.wallet.walletInfo', { returnObjects: true }) as string[];
     const queryClient = useQueryClient();
 
     const isComment = value.type === 'comment';
@@ -610,7 +611,18 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
                                     </MeltaTooltip>
                                 </ToggleButton>
                                 <ToggleButton value={false}>
-                                    <MeltaTooltip title={TooltipTitleWithLinesSpace('wizard.entityTemplate.customAlert')}>
+                                    <MeltaTooltip
+                                        title={
+                                            <>
+                                                <div>{i18next.t('wizard.entityTemplate.wallet.walletInfo')}</div>
+                                                <ul>
+                                                    {walletInfo.map((item, index) => (
+                                                        <li key={index}>{item}</li>
+                                                    ))}
+                                                </ul>
+                                            </>
+                                        }
+                                    >
                                         <CustomAlertIcon />
                                     </MeltaTooltip>
                                 </ToggleButton>
