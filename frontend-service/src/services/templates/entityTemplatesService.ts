@@ -405,7 +405,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 isDatePastAlert: isDatePastAlert ?? (dateNotification !== undefined ? true : undefined),
                 serialStarter: type === 'serialNumber' ? serialStarter : undefined,
                 serialCurrent: type === 'serialNumber' ? serialStarter : undefined,
-                relationshipReference: relationshipReference
+                relationshipReference: relationshipReference && type === 'relationshipReference'
                     ? {
                         relationshipTemplateId: relationshipReference.relationshipTemplateId,
                         relationshipTemplateDirection: relationshipReference.relationshipTemplateDirection,
