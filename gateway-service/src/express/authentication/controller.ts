@@ -9,7 +9,7 @@ import { AuthenticationManager } from './manager';
 const { accessTokenName, clientSideURLPrefix, unauthorizedId } = config.authentication.shragaAuthentication;
 const { httpOnly, path, domain } = config.authentication.cookieOptions;
 
-const isDevelopment = process.env.NODE_ENV === 'development';
+const isDevelop = process.env.NODE_ENV === 'development';
 
 class AuthenticationController {
     static async createClientSideToken(userId: string, workspaceId) {
@@ -54,8 +54,8 @@ class AuthenticationController {
 
         const cookieOptions: CookieOptions = {
             httpOnly,
-            secure: !isDevelopment,
-            sameSite: isDevelopment ? 'lax' : 'none',
+            secure: !isDevelop,
+            sameSite: isDevelop ? 'lax' : 'none',
             path,
             domain,
         };
