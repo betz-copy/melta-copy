@@ -3,6 +3,7 @@ import i18next from 'i18next';
 import React from 'react';
 import { IGraphFilterBody } from '../../../interfaces/entities';
 import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
+import { FieldOption } from '../../wizards/entityTemplate/RelationshipReference/filterEntitiesByCriteria';
 import { StyledFilterInput } from './StyledFilterInput';
 import { TypeSelectFilter } from './TypeSelectFilter';
 
@@ -11,7 +12,7 @@ interface SelectFilterInputProps {
     handleFilterFieldChange: (value: IGraphFilterBody['filterField'], condition?: boolean) => void;
     readOnly?: boolean;
     isBooleanSelect?: boolean;
-    enumOptions?: { option: string; label: string }[];
+    enumOptions?: FieldOption[];
     error?: boolean;
     helperText?: string;
     filterType?: {

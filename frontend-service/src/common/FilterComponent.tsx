@@ -15,6 +15,7 @@ import { ReadOnlyFilterInput } from './inputs/FilterInputs/ReadonlyFilterInput';
 import { SelectFilterInput } from './inputs/FilterInputs/SelectFilterInput';
 import { TextFilterInput } from './inputs/FilterInputs/TextFilterInput';
 import { FilterType, IAGGridFilter, IFilterTemplate } from './wizards/entityTemplate/commonInterfaces';
+import { FieldOption } from './wizards/entityTemplate/RelationshipReference/filterEntitiesByCriteria';
 
 const {
     relativeDateFilters,
@@ -126,44 +127,16 @@ const handleTypedFilterTypeChange = (
     field: IAGGridFilter,
     onChange: (newFiltersArray: IFilterTemplate[]) => void,
 ) => {
-    switch (filterType) {
-        case 'text':
-            handleFilterFieldChange(
-                filters,
-                index,
-                {
-                    ...field,
-                    type: newType,
-                } as Partial<IAGGridTextFilter>,
-                onChange,
-            );
-            break;
-        case 'number':
-            handleFilterFieldChange(
-                filters,
-                index,
-                {
-                    ...field,
-                    type: newType,
-                } as Partial<IAGGridNumberFilter>,
-                onChange,
-            );
-            break;
-        case 'date':
-            handleFilterFieldChange(
-                filters,
-                index,
-                {
-                    ...field,
-                    type: newType,
-                    dateTo: newType === 'inRange' ? (field as IAGGridDateFilter).dateTo : null,
-                } as Partial<IAGGridDateFilter>,
-                onChange,
-            );
-            break;
-        default:
-            break;
-    }
+    handleFilterFieldChange(
+        filters,
+        index,
+        {
+            ...field,
+            type: newType,
+            ...(filterType === 'date' ? { dateTo: newType === 'inRange' ? (field as IAGGridDateFilter).dateTo : null } : {}),
+        } as Partial<IAGGridTextFilter | IAGGridNumberFilter | IAGGridDateFilter>,
+        onChange,
+    );
 };
 
 const handleCheckboxChange = (
@@ -195,7 +168,7 @@ export const renderFilterInput = (
     readonly?: boolean,
     viewMode?: ViewMode,
     userInput?: { value: string; set: React.Dispatch<React.SetStateAction<string>> },
-    fieldFilter?: { propType: IAGGridFilter['filterType']; fieldProperties: { option: string; label: string }[] },
+    fieldFilter?: { propType: IAGGridFilter['filterType']; fieldProperties: FieldOption[] },
 ) => {
     const field = filter.filterField;
 

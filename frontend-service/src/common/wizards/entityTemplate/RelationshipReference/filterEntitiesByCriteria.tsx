@@ -9,6 +9,11 @@ import { getPropertyType } from '../../../../services/templates/entityTemplatesS
 import { handleRemoveFilter, initializedFilterField, renderFilterInput } from '../../../FilterComponent';
 import { CommonFormInputProperties, FilterType, IAGGridFilter, IFilterTemplate } from '../commonInterfaces';
 
+export interface FieldOption {
+    option: string;
+    label: string;
+}
+
 interface FilterEntitiesByCriteriaProps {
     name: string; // e.g. "properties[0].relationshipReference.filters"
     value: CommonFormInputProperties;
@@ -102,23 +107,21 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                         const filterError: FormikErrors<IFilterTemplate> = getIn(errors, `${fieldBase}`);
                         const filterTouched: FormikTouched<IFilterTemplate> = getIn(touched, `${fieldBase}`);
 
-                        const fieldProperties = values.properties
-                            .filter(({ data: { type } }) => {
-                                const getFilterType = (type: string, format?: string) =>
-                                    ['date', 'date-time'].includes(format ?? '') ? 'date' : type;
+                        const getFilterDateType = (type: string, format?: string) => (['date', 'date-time'].includes(format ?? '') ? 'date' : type);
 
-                                return (
-                                    getFilterType(getPropertyType(type), type) === getFilterType(selectedProperty.type, selectedProperty.format) &&
-                                    !notIncludedFormats.includes(type)
-                                );
-                            })
+                        const fieldProperties: FieldOption[] = values.properties
+                            .filter(
+                                ({ data: { type } }) =>
+                                    getFilterDateType(getPropertyType(type), type) ===
+                                        getFilterDateType(selectedProperty.type, selectedProperty.format) && !notIncludedFormats.includes(type),
+                            )
                             .map(({ data: { title, name } }) => ({ option: name, label: title }));
 
                         const getFilterType = (): IAGGridFilter['filterType'] => {
                             switch (selectedProperty.type) {
                                 case 'string':
                                 case 'boolean':
-                                    if (selectedProperty.format === 'date-time' || selectedProperty.format === 'date') return 'date';
+                                    if (['date-time', 'date'].includes(selectedProperty.format ?? '')) return 'date';
                                     return 'text';
                                 case 'array':
                                     return 'set';

@@ -64,7 +64,7 @@ const agGridTextFilterSchema = Yup.object({
     filter: Yup.mixed().required(i18next.t('validation.required')),
 });
 
-const agGridNumberFilterSchema = (parentFilterType?: FilterType) =>
+const agGridNumberFilterSchema = (parentFilterType: FilterType = FilterType.value) =>
     Yup.object({
         filterType: Yup.string().oneOf(['number']).strict(true).required(),
         type: Yup.string().oneOf(filterOptions.number).required(i18next.t('validation.required')),
@@ -92,7 +92,17 @@ const agGridNumberFilterSchema = (parentFilterType?: FilterType) =>
             }),
     });
 
-const agGridDateFilterSchema = (parentFilterType?: FilterType) =>
+const validateRelativeDate = (value?: string) => {
+    if (!value) return false;
+    return relativeDateFilters.includes(value);
+};
+
+const validateExactDate = (value?: string) => {
+    if (!value) return false;
+    return dateRegex.test(value) || dateTimeRegex.test(value) || isValid(new Date(value));
+};
+
+const agGridDateFilterSchema = (parentFilterType: FilterType = FilterType.value) =>
     Yup.object({
         filterType: Yup.string().oneOf(['date']).required(),
         type: Yup.string().oneOf(filterOptions.date).required(i18next.t('validation.required')),
@@ -102,11 +112,9 @@ const agGridDateFilterSchema = (parentFilterType?: FilterType) =>
                 : Yup.string()
                       .when('type', {
                           is: (type: string) => relativeDateFilters.includes(type),
-                          then: (schema) => schema.oneOf([...relativeDateFilters]),
+                          then: (schema) => schema.test('valid-relative-date', i18next.t('validation.invalidRelativeDate'), validateRelativeDate),
                           otherwise: (schema) =>
-                              schema.test('valid-date-format', 'must be YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss.sssZ', (value) => {
-                                  return dateRegex.test(value!) || dateTimeRegex.test(value!) || isValid(new Date(value!));
-                              }),
+                              schema.test('valid-date-format', 'must be YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss.sssZ', validateExactDate),
                       })
                       .required(i18next.t('validation.required')),
         dateTo: Yup.string().when('type', {

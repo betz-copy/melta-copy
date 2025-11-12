@@ -112,7 +112,9 @@ const TemplateEntitiesAutocomplete: React.FC<{
         const newFilters: ISearchFilter[] = [];
         const dependentFields: Record<string, any> = {};
 
-        const parsedFilters = JSON.parse(filters ?? '');
+        if (!filters) return { dependentFields, newFilters };
+
+        const parsedFilters = JSON.parse(filters);
         const andFilters = Array.isArray(parsedFilters.$and) ? parsedFilters.$and : [parsedFilters];
 
         for (const filter of andFilters) {
