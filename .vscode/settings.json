@@ -6,18 +6,17 @@
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "biomejs.biome",
     "[typescript]": {
-        "editor.defaultFormatter": "vscode.typescript-language-features"
+        "editor.defaultFormatter": "biomejs.biome"
     },
     "[typescriptreact]": {
-        "editor.defaultFormatter": "vscode.typescript-language-features"
+        "editor.defaultFormatter": "biomejs.biome"
     },
     "[javascript]": {
-        "editor.defaultFormatter": "vscode.typescript-language-features"
+        "editor.defaultFormatter": "biomejs.biome"
     },
     "[javascriptreact]": {
-        "editor.defaultFormatter": "vscode.typescript-language-features"
+        "editor.defaultFormatter": "biomejs.biome"
     },
-    "biome.formatOnSave": true,
     "[yaml]": {
         "editor.defaultFormatter": "biomejs.biome",
         "editor.insertSpaces": true,
@@ -28,6 +27,7 @@
             "other": "on"
         }
     },
+    "biome.formatOnSave": true,
     "workbench.colorCustomizations": {
         "statusBar.background": "#007fff",
         "statusBar.foreground": "#e7e7e7",
@@ -59,16 +59,9 @@
         "**/node_modules": true,
         "**/dist": true
     },
-    // -- tsserver uses ≤1 GB heap
     "typescript.tsserver.maxTsServerMemory": 1024,
-
-    // merge syntax + semantic server ➜ ~30 % less RAM
     "typescript.tsserver.useSyntaxServer": "never",
-
-    // stop downloading @types for every JS file
     "typescript.disableAutomaticTypeAcquisition": true,
-
-    // don't index build artefacts
     "files.watcherExclude": {
         "**/dist/**": true,
         "**/coverage/**": true

@@ -7,6 +7,7 @@ import React, { forwardRef, memo, useImperativeHandle, useMemo, useRef } from 'r
 import { toast } from 'react-toastify';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import '../../css/table.css';
+import { PropertyFormat } from '../../interfaces/entityTemplates';
 import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
 import { BreachType, IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
 import { IRuleBreachAlertPopulated } from '../../interfaces/ruleBreaches/ruleBreachAlert';
@@ -109,7 +110,7 @@ const getColumnDefs = (
             ({ data }) => data?.createdAt,
             {
                 title: i18next.t('ruleManagement.createdAt'),
-                format: 'date-time',
+                format: PropertyFormat['date-time'],
             },
             true,
         ),

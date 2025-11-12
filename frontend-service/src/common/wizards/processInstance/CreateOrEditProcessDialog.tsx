@@ -24,7 +24,7 @@ interface ISimpleDialogProps {
     processInstance?: IMongoProcessInstancePopulated;
     viewMode?: boolean;
     isEditMode?: boolean;
-    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
+    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError<unknown, any>, ProcessDetailsValues, unknown>;
 }
 
 const steps = [

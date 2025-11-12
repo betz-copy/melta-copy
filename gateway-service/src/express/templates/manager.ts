@@ -50,7 +50,7 @@ import {
     UploadedFile,
     ValidationError,
 } from '@microservices/shared';
-import { AxiosError, AxiosResponse } from 'axios';
+import { AxiosError } from 'axios';
 import { StatusCodes } from 'http-status-codes';
 import _, { groupBy, isEqual, omit, uniqBy } from 'lodash';
 import config from '../../config';
@@ -129,7 +129,11 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         this.ganttService = new GanttsService(workspaceId);
     }
 
-    async getAllowedEntityTemplateIds(permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'], userId: string, searchBody?: any) {
+    async getAllowedEntityTemplateIds(
+        permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'],
+        userId: string,
+        searchBody?: ISearchRelationshipTemplatesBody,
+    ) {
         const allowedEntityTemplates = await this.getAllowedEntitiesTemplates(permissionsOfUserId, userId, searchBody);
         return allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
     }
@@ -351,15 +355,15 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const updatedPermissions = permissionsOfUserId.admin
             ? permissionsOfUserId
             : {
-                ...permissionsOfUserId,
-                instances: {
-                    ...permissionsOfUserId.instances,
-                    categories: {
-                        ...permissionsOfUserId.instances?.categories,
-                        [category._id]: { scope: PermissionScope.write, entityTemplates: {} },
-                    },
-                },
-            };
+                  ...permissionsOfUserId,
+                  instances: {
+                      ...permissionsOfUserId.instances,
+                      categories: {
+                          ...permissionsOfUserId.instances?.categories,
+                          [category._id]: { scope: PermissionScope.write, entityTemplates: {} },
+                      },
+                  },
+              };
 
         await UsersManager.syncUserPermissions(userId, RelatedPermission.User, {
             [this.workspaceId]: updatedPermissions,
@@ -402,7 +406,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         await UsersManager.deletePermissionsFromMetadata(
             { workspaceId: this.workspaceId, type: PermissionType.instances },
             { instances: { categories: { [id]: null } } },
-        ).catch(() => { });
+        ).catch(() => {});
     }
 
     async updateCategory(id: string, updatedData: Partial<ICategory> & { file?: string }, file?: UploadedFile) {
@@ -912,7 +916,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     }
 
     private async deleteFilesOfDeletedProperty(templateId: string, removedFilesProperties: Record<string, boolean>, numOfInstances: number) {
-        const promises: Promise<void | AxiosResponse>[] = [];
+        const promises: Promise<void>[] = [];
         const { searchEntitiesChunkSize } = config.service;
 
         for (let fileIndex = 0; numOfInstances - fileIndex > 0; fileIndex += searchEntitiesChunkSize) {
@@ -1237,9 +1241,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         await this.deletePropertyOfEntityTemplate(id, count, removedProperties, currTemplate);
 
-        if (newExpandedUserFields.length)
-            await this.updateInstancesWithUserFields(id, newExpandedUserFields, updatedTemplateData);
-
+        if (newExpandedUserFields.length) await this.updateInstancesWithUserFields(id, newExpandedUserFields, updatedTemplateData);
 
         try {
             if (propertiesKeysToPluralize.length > 0) await this.instancesService.convertFieldsToPlural(id, propertiesKeysToPluralize);
@@ -1484,9 +1486,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         try {
             await this.instancesService.updateEnumFieldOfEntity(id, field, fieldValue, { name: values.name, type: values.type });
         } catch (neoError: any) {
-            if (neoError.response?.status === notFoundStatus) {
-                throw new NotFoundError('Neo4j update failed: Node not found', { error: neoError });
-            }
+            if (neoError.response?.status === notFoundStatus) throw new NotFoundError('Neo4j update failed: Node not found', { error: neoError });
 
             logger.error('Neo4j update failed: starting roll-back', { error: neoError });
             await this.neoRollBack(id, values, index, templateWithoutProperties, fieldValue, template, field);
@@ -1499,7 +1499,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     }
 
     private async checkFieldValueUsage(id: string, fieldValue: string, fieldName: string, fieldType: string): Promise<void> {
-        const data = await this.instancesService.getIfValuefieldIsUsed(id, fieldValue, fieldName, fieldType);
+        const data = await this.instancesService.getIfValueFieldIsUsed(id, fieldValue, fieldName, fieldType);
         const cantDeleteFieldValue = Boolean(data);
         if (cantDeleteFieldValue) throw new BadRequestError('cant remove used values');
     }

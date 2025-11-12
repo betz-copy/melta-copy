@@ -7,7 +7,13 @@ import React, { CSSProperties, JSX, useState } from 'react';
 import { pdfjs } from 'react-pdf';
 import { environment } from '../globals';
 import { IEntity } from '../interfaces/entities';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import {
+    IEntitySingleProperty,
+    IEntityTemplateMap,
+    IMongoEntityTemplatePopulated,
+    PropertyFormat,
+    PropertyType,
+} from '../interfaces/entityTemplates';
 import { useDarkModeStore } from '../stores/darkMode';
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
 import OverflowWrapper from '../utils/agGrid/OverflowWrapper';
@@ -98,17 +104,17 @@ export const formatToString = (
 
     if (valueType === 'number') return value >= 0 ? value : `${(value * -1).toString()}-`;
 
-    if (valueType === 'boolean') return value ? i18next.t('booleanOptions.yes') : i18next.t('booleanOptions.no');
-    if (valueType === 'string') {
-        if (format === 'date') return new Date(value).toLocaleDateString('en-uk');
-        if (format === 'comment') return property.hideFromDetailsPage || (key && hideProps.includes(key)) ? undefined : property.comment;
-        if (format === 'date-time') return new Date(value).toLocaleString('en-uk');
-        if (format === 'fileId' || format === 'signature') {
+    if (valueType === PropertyType.boolean) return value ? i18next.t('booleanOptions.yes') : i18next.t('booleanOptions.no');
+    if (valueType === PropertyType.string) {
+        if (format === PropertyFormat.date) return new Date(value).toLocaleDateString('en-uk');
+        if (format === PropertyFormat.comment) return property.hideFromDetailsPage || (key && hideProps.includes(key)) ? undefined : property.comment;
+        if (format === PropertyFormat['date-time']) return new Date(value).toLocaleString('en-uk');
+        if (format === PropertyFormat.fileId || format === PropertyFormat.signature) {
             return (
                 <OpenPreview
                     fileId={value}
                     download={isPrintingMode}
-                    defaultFileName={format === 'signature' ? `${title}.${environment.fileExtensions.defaultImage}` : undefined}
+                    defaultFileName={format === PropertyFormat.signature ? `${title}.${environment.fileExtensions.defaultImage}` : undefined}
                     disabled={preview}
                     color={color}
                 />
@@ -138,14 +144,14 @@ export const formatToString = (
             );
         }
     }
-    if (format === 'location') {
+    if (format === PropertyFormat.location) {
         const convertLocation = (value: LocationData) =>
             value.coordinateSystem === CoordinateSystem.UTM && !extractUtmLocation(value.location)
                 ? locationConverterToString(value.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
                 : value.location;
 
-        if (typeof value === 'string') {
-            if (value.includes('location')) return convertLocation(JSON.parse(value));
+        if (typeof value === PropertyType.string) {
+            if (value.includes(PropertyFormat.location)) return convertLocation(JSON.parse(value));
             else return value;
         }
         return convertLocation(value);
@@ -329,7 +335,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                         : renderHTML(stringFormatValue);
                 else if (propertyValue && calculateTime)
                     innerContent = <CalculateDateDifference date={stringFormatValue} searchValue={searchedText} />;
-                else if (propertyValue && type === 'number') innerContent = getFixedNumber(propertyValue);
+                else if (propertyValue && type === 'number') innerContent = getFixedNumber(propertyValue as number);
                 else if (format === 'relationshipReference' && entityTemplates && !relatedEntityAllowed) innerContent = '-';
                 else innerContent = stringFormatValue;
 

@@ -4,18 +4,18 @@ import { FormikComputedProps, FormikHelpers, FormikState } from 'formik';
 import i18next from 'i18next';
 import { DebouncedFunc, isEqual } from 'lodash';
 import React, { Dispatch, SetStateAction, useEffect, useMemo } from 'react';
-import { IExternalErrors } from '../../../../interfaces/CreateOrEditEntityDialog';
+import { getEntityTemplateFilesFieldsInfo } from '.';
+import { EntityWizardValues } from '..';
 import { IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
+import { IExternalErrors } from '../../../../interfaces/CreateOrEditEntityDialog';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { filterFieldsFromPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 import { JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
 import BlueTitle from '../../../MeltaDesigns/BlueTitle';
-import { EntityWizardValues } from '..';
 import { ChooseTemplate, IChooseTemplateMode } from '../ChooseTemplate';
 import { Draft } from '../draftWarningDialog/index';
-import { getEntityTemplateFilesFieldsInfo } from '.';
 
 const EditProps: React.FC<{
     values: FormikState<EntityWizardValues>['values'];
@@ -24,8 +24,8 @@ const EditProps: React.FC<{
     errors: FormikState<EntityWizardValues>['errors'];
     touched: FormikState<EntityWizardValues>['touched'];
     setFieldTouched: FormikHelpers<EntityWizardValues>['setFieldTouched'];
-    setInitialValuePropsToFilter: Dispatch<SetStateAction<Record<string, any>>>;
     initialValuePropsToFilter: Record<string, any>;
+    setInitialValuePropsToFilter: Dispatch<SetStateAction<Record<string, any>>>;
     isMultipleSelection: boolean;
     entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
     wasDirty: boolean;
@@ -81,20 +81,22 @@ const EditProps: React.FC<{
 
     useEffect(() => {
         setInitialValuePropsToFilter({ ...initialValues.properties });
-    }, []);
+    }, [initialValues.properties, setInitialValuePropsToFilter]);
 
     useEffect(() => {
         schema.required.forEach((field) => {
             const fieldPropertiesEnum = schema.properties[field]?.enum;
             const itemFieldProperties = schema.properties[field]?.items?.enum;
 
-            if (fieldPropertiesEnum?.length === 1 && fieldPropertiesEnum[0] !== undefined)
+            if (fieldPropertiesEnum?.length === 1 && fieldPropertiesEnum[0] !== undefined) {
                 setFieldValue(`properties.${field}`, fieldPropertiesEnum[0]);
+            }
 
-            if (itemFieldProperties?.length === 1 && itemFieldProperties[0] !== undefined)
+            if (itemFieldProperties?.length === 1 && itemFieldProperties[0] !== undefined) {
                 setFieldValue(`properties.${field}`, [itemFieldProperties[0]]);
+            }
         });
-    }, [values.template]);
+    }, [schema, setFieldValue]);
 
     const absoluteDirty = useMemo(() => {
         // textarea/long-text causes the field to first be undefined, setting dirty to true,
@@ -111,20 +113,20 @@ const EditProps: React.FC<{
         );
 
         return !isEqual(valuePropsToFilter, initialValuePropsToFilter);
-    }, [initialValues, values]);
+    }, [values.properties, initialValuePropsToFilter, values.template]);
 
     useEffect(() => {
         if (!absoluteDirty || !draftId || !createOrUpdateDraftDebounced) return;
         createOrUpdateDraftDebounced(values, draftId);
-    }, [absoluteDirty, values, draftId]);
+    }, [absoluteDirty, values, draftId, createOrUpdateDraftDebounced]);
 
     useEffect(() => {
         setWasDirty(absoluteDirty);
-    }, [absoluteDirty]);
+    }, [absoluteDirty, setWasDirty]);
 
     useEffect(() => {
         if (multipleSelectionProps) setWasDirty(!!Object.keys(values.attachmentsProperties).length);
-    }, [values.attachmentsProperties]);
+    }, [values.attachmentsProperties, multipleSelectionProps, setWasDirty]);
 
     if (isMultipleSelection) {
         const uniqueFields: string[] = [];
@@ -182,7 +184,7 @@ const EditProps: React.FC<{
                 style={{ marginBottom: externalErrors.files ? '0px' : '12px', fontSize: '16px', fontWeight: '600' }}
             />
             {externalErrors.files && (
-                <p id="error" style={{ color: '#d32f2f', margin: 0, padding: 0, marginBottom: '12px' }}>
+                <p id="error" style={{ color: 'error', margin: 0, padding: 0, marginBottom: '12px' }}>
                     {i18next.t('errorCodes.FILES_TOO_BIG')}
                 </p>
             )}

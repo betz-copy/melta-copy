@@ -811,11 +811,11 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         const parentTemplateIds = childTemplateIds?.length
             ? await Promise.all(
-                childTemplateIds.map(async (templateId) => {
-                    const childTemplate = await this.entityTemplateService.getChildTemplateById(templateId);
-                    return childTemplate?.parentTemplate._id;
-                }),
-            )
+                  childTemplateIds.map(async (templateId) => {
+                      const childTemplate = await this.entityTemplateService.getChildTemplateById(templateId);
+                      return childTemplate?.parentTemplate._id;
+                  }),
+              )
             : [];
 
         const templateIds = [...parentTemplateIds, ...searchBody.templateIds];
@@ -826,9 +826,9 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             semanticSearchResult:
                 searchBody.textSearch && shouldSemanticSearch
                     ? await this.semanticSearchSearch.search({
-                        textSearch: searchBody.textSearch,
-                        templates: templateIds,
-                    })
+                          textSearch: searchBody.textSearch,
+                          templates: templateIds,
+                      })
                     : undefined,
         });
     }

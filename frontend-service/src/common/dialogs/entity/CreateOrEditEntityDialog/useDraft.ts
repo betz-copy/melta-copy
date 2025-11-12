@@ -10,7 +10,7 @@ import { EntityWizardValues } from '..';
 
 const useDraftEntityDialogHook = (
     entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
-    setInitialValuePropsToFilter: Dispatch<SetStateAction<object>>,
+    setInitialValuePropsToFilter: Dispatch<SetStateAction<Record<string, any>>>,
     entityToUpdate: IEntity | undefined,
 ) => {
     const drafts = useDraftsStore((state) => state.drafts);
@@ -20,7 +20,7 @@ const useDraftEntityDialogHook = (
     const draftId = useDraftIdStore((state) => state.draftId);
     const setDraftId = useDraftIdStore((state) => state.setDraftId);
 
-    const originalDrafts = useMemo(() => cloneDeep(drafts), []);
+    const originalDrafts = useMemo(() => cloneDeep(drafts), [drafts]);
 
     const currentDraft = useMemo(
         () => drafts[entityTemplate.category._id]?.[entityTemplate._id]?.find(({ uniqueId }) => uniqueId === draftId),

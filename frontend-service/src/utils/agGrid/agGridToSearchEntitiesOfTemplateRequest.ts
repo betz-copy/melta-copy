@@ -5,9 +5,9 @@ import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../inte
 import { getDayEnd, getDayStart } from '../date';
 import { addDefaultFieldsToTemplate } from '../templates';
 import {
-    IAGGidNumberFilter,
     IAGGridDateFilter,
     IAGGridFilterModel,
+    IAGGridNumberFilter,
     IAGGridRequest,
     IAGGridSort,
     IAGGridTextFilter,
@@ -74,7 +74,7 @@ export const textFilterOfFileToFilterTemplate = (field: string, { type, filter }
     }
 };
 
-export const numberFilterToFilterOfTemplate = (field: string, { type, filter, filterTo }: IAGGidNumberFilter): IFilterOfTemplate => {
+export const numberFilterToFilterOfTemplate = (field: string, { type, filter, filterTo }: IAGGridNumberFilter): IFilterOfTemplate => {
     switch (type) {
         case 'equals':
             return { [field]: { $eq: filter } };

@@ -7,7 +7,7 @@ import { ByCurrentDefaultValue } from '../interfaces/childTemplates';
 import { ViewMode } from '../interfaces/dashboard';
 import { IEntitySingleProperty } from '../interfaces/entityTemplates';
 import { IUser } from '../interfaces/users';
-import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../utils/agGrid/interfaces';
+import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridSetFilter, IAGGridTextFilter } from '../utils/agGrid/interfaces';
 import { DateFilterInput } from './inputs/FilterInputs/DateFilterInput';
 import { MultipleSelectFilterInput } from './inputs/FilterInputs/MultipleSelectFilterInput';
 import { MultipleUserFilterInput } from './inputs/FilterInputs/MultipleUserFilterInput';
@@ -81,8 +81,8 @@ const handleFilterFieldChange = (
 
         case 'number':
             newFilterField = {
-                ...(current as IAGGidNumberFilter),
-                ...(updatedFields as Partial<IAGGidNumberFilter>),
+                ...(current as IAGGridNumberFilter),
+                ...(updatedFields as Partial<IAGGridNumberFilter>),
                 filterType: 'number',
             };
             break;
@@ -143,7 +143,7 @@ const handleTypedFilterTypeChange = (
             {
                 ...field,
                 type: newType,
-            } as Partial<IAGGidNumberFilter>,
+            } as Partial<IAGGridNumberFilter>,
             onChange,
         );
     } else if (filterType === 'date') {
@@ -289,7 +289,7 @@ export const renderFilterInput = (
 
     return (
         <TextFilterInput
-            filterField={field as IAGGidNumberFilter | IAGGridTextFilter}
+            filterField={field as IAGGridNumberFilter | IAGGridTextFilter}
             handleFilterFieldChange={(updatedField, condition) => {
                 if (updatedField && (updatedField.filterType === 'text' || updatedField.filterType === 'number')) {
                     handleFilterFieldChange(filters, index, updatedField, onChange, condition);
@@ -299,7 +299,7 @@ export const renderFilterInput = (
             readOnly={Boolean(readonly)}
             entityFilter
             type={field.filterType}
-            error={Boolean(touched && (filterErrors as IAGGidNumberFilter | IAGGridTextFilter)?.filter)}
+            error={Boolean(touched && (filterErrors as IAGGridNumberFilter | IAGGridTextFilter)?.filter)}
             helperText={touched ? (filterErrors as IAGGridTextFilter)?.filter : ''}
         />
     );

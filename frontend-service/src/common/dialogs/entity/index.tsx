@@ -43,7 +43,6 @@ export const emptyChildTemplate: IMongoChildTemplatePopulated = {
         hide: [],
     },
 };
-
 export interface EntityWizardValues {
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
     properties: Record<string, any> & { disabled: boolean };

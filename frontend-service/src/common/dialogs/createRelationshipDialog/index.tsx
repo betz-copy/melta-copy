@@ -21,7 +21,7 @@ import { ErrorToast } from '../../ErrorToast';
 import RelationshipTemplateAutocomplete from '../../inputs/RelationshipTemplateAutocomplete';
 import TemplateTableSelect from '../../inputs/TemplateTableSelect';
 import CreateWithRuleBreachDialog from './CreateWithRuleBreachDialog';
-import StrechableArrowRight from './strechableArrowRight';
+import StretchableArrowRight from './strechableArrowRight';
 
 const { errorCodes } = environment;
 
@@ -254,7 +254,7 @@ const CreateRelationshipDialog: React.FC<{
                                         </Grid>
                                         <Grid container justifyContent="center">
                                             <Grid size={{ xs: 8 }}>
-                                                <StrechableArrowRight />
+                                                <StretchableArrowRight />
                                             </Grid>
                                         </Grid>
                                     </Grid>

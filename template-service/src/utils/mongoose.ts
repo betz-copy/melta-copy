@@ -1,24 +1,24 @@
-import { ServiceError } from '@microservices/shared';
 import { forEach } from 'lodash';
 import { ClientSession, startSession, Types } from 'mongoose';
-import { trycatch } from '.';
+import { tryCatch } from '.';
 
-export const withTransaction = async <Func extends (session: ClientSession) => Promise<any>>(func: Func): Promise<Awaited<ReturnType<Func>>> => {
+export const withTransaction = async <T>(func: (session: ClientSession) => Promise<T>): Promise<T> => {
     const session = await startSession();
+    let ret: T | undefined;
 
     try {
-        let ret: any;
         await session.withTransaction(async () => {
             ret = await func(session);
         });
+        if (ret === undefined) throw new Error('Transaction did not return a value');
         return ret;
     } finally {
-        const { err: endSessionErr } = await trycatch(() => session.endSession());
-        if (endSessionErr) throw new ServiceError(undefined, 'failed to end session. possible resource leak', { error: endSessionErr });
+        const { err: endSessionErr } = await tryCatch(() => session.endSession());
+        if (endSessionErr) console.error('Failed to end session. Possible resource leak', endSessionErr);
     }
 };
 
-export const transformObjectIdKeysToString = (doc: any) => {
+export const transformObjectIdKeysToString = (doc: Record<string, unknown>) => {
     forEach(doc, (val, key) => {
         if (val instanceof Types.ObjectId) {
             doc[key] = val.toString();
@@ -26,7 +26,7 @@ export const transformObjectIdKeysToString = (doc: any) => {
     });
 };
 
-export const transformResultDocsObjectIdKeysToString = (res: any | any[]) => {
+export const transformResultDocsObjectIdKeysToString = (res: Record<string, unknown> | Record<string, unknown>[]) => {
     if (Array.isArray(res)) {
         res.forEach((doc) => transformObjectIdKeysToString(doc));
         return;

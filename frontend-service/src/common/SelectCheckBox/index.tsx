@@ -150,7 +150,7 @@ const SelectCheckbox = <Option extends {}, Group = Option>({
 
     const treeItems = useCallback(
         () => (groupsProps.useGroups && treeFunc ? treeFunc(groupsProps.groups, options, getOptionId) : options),
-        [getOptionId, JSON.stringify(groupsProps), options, treeFunc],
+        [getOptionId, groupsProps, options, treeFunc],
     );
 
     const borderRadiusStyle = overrideSx ? (isOpen ? '12px 12px 12px 0' : '12px') : isOpen ? '7px 7px 0 0' : '7px';

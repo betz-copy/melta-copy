@@ -41,7 +41,7 @@ const convertIEntityToEntityWizardValues = (
     entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     initialTemplateFileKeys: string[],
 ): EntityWizardValues => {
-    const { _id, createdAt, updatedAt, disabled, ...entityToUpdateData } = entityToUpdate.properties;
+    const { _id, createdAt: _create, updatedAt: _update, disabled: _disabled, ...entityToUpdateData } = entityToUpdate.properties;
 
     const fieldProperties = pickBy(entityToUpdateData, (_value, key) => !initialTemplateFileKeys.includes(key));
     const fileIdsProperties = pickBy(entityToUpdateData, (_value, key) => initialTemplateFileKeys.includes(key));
@@ -151,7 +151,7 @@ const CreateOrEditEntityDetails: React.FC<{
             // TODO don't add currentUser default value to each form user field
             currentUser,
         );
-    }, [payload, entityTemplate, initialTemplateFileKeys, currentUser]);
+    }, [isEditMode, payload, entityTemplate, initialTemplateFileKeys, initialCurrValues, currentUser]);
 
     const clientSideUserEntity: IEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
 
@@ -214,7 +214,7 @@ const CreateOrEditEntityDetails: React.FC<{
             {({ setFieldValue, values, errors, touched, setFieldTouched, setValues, dirty, initialValues: formInitialValues }) => {
                 useEffect(() => {
                     if (initialCurrValues) setValues(getInitialValuesWithDefaults(initialCurrValues));
-                }, [initialCurrValues]);
+                }, [initialCurrValues, setValues]);
 
                 return (
                     <>

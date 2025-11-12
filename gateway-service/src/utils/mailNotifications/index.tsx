@@ -56,7 +56,7 @@ class MailManager {
 
     private async newProcessMail({ process }: INewProcessNotificationMetadataPopulated) {
         return (
-            <html>
+            <html lang="he">
                 <body dir="rtl">
                     <h3>{hebrew.newProcess.createNewProcess}</h3>
                     <p>
@@ -70,7 +70,7 @@ class MailManager {
 
     private deleteProcessMail({ processName }: IDeleteProcessNotificationMetadata) {
         return (
-            <html>
+            <html lang="he">
                 <body dir="rtl">
                     <h3>{hebrew.deleteProcess.deleteProcess}</h3>
                     <p>
@@ -85,7 +85,7 @@ class MailManager {
 
     private processStatusUpdateMail({ process, status: updateStatus, step }: IProcessStatusUpdateMailNotificationMetadataPopulated) {
         return (
-            <html>
+            <html lang="he">
                 <body dir="rtl">
                     <h3>
                         {hebrew.processStatusUpdate.updateStatus} {step ? hebrew.processStatusUpdate.step : hebrew.processStatusUpdate.process}
@@ -113,7 +113,7 @@ class MailManager {
 
     private archiveProcessMail({ process, isArchived }: IArchiveProcessNotificationMetadataPopulated) {
         return (
-            <html>
+            <html lang="he">
                 <body dir="rtl">
                     <h3> {isArchived ? hebrew.archiveProcess.sendToArchive : hebrew.archiveProcess.removeFromArchive}</h3>
                     <p>
@@ -135,11 +135,11 @@ class MailManager {
         const deletedStepsData = deletedSteps as IMongoStepTemplate[];
         if (!unchangedStepIds.length && !addedStepsData.length) {
             return (
-                <html>
+                <html lang="he">
                     <body dir="rtl">
-                        <h3>{hebrew.processReviwerUpdate.processReviwerUpdate}</h3>
+                        <h3>{hebrew.processReviewerUpdate.processReviewerUpdate}</h3>
                         <p>
-                            {hebrew.processReviwerUpdate.removeFromReviwersInProcess}
+                            {hebrew.processReviewerUpdate.removeFromReviewersInProcess}
                             <strong> {process!.name}</strong>
                         </p>
                     </body>
@@ -147,22 +147,22 @@ class MailManager {
             );
         }
         return (
-            <html>
+            <html lang="he">
                 <body dir="rtl">
-                    <h3>{hebrew.processReviwerUpdate.processReviwerUpdate}</h3>
+                    <h3>{hebrew.processReviewerUpdate.processReviewerUpdate}</h3>
                     <div>
                         <p>
-                            {hebrew.processReviwerUpdate.inProcess}
+                            {hebrew.processReviewerUpdate.inProcess}
                             <strong> {process!.name}</strong>
                         </p>
                     </div>
                     {addedStepsData.length > 0 && (
                         <div>
                             <p style={{ textDecoration: 'underline' }}>
-                                <u> {hebrew.processReviwerUpdate.addToReviwers}</u>
+                                <u> {hebrew.processReviewerUpdate.addToReviewers}</u>
                             </p>
-                            {addedStepsData.map((step, index) => (
-                                <p key={index}>
+                            {addedStepsData.map((step) => (
+                                <p key={step._id}>
                                     <strong>- {step.displayName}</strong>
                                 </p>
                             ))}
@@ -172,10 +172,10 @@ class MailManager {
                     {deletedStepsData.length > 0 && (
                         <div>
                             <p style={{ textDecoration: 'underline' }}>
-                                <u> {hebrew.processReviwerUpdate.removeFromReviwers}</u>
+                                <u> {hebrew.processReviewerUpdate.removeFromReviewers}</u>
                             </p>
                             {deletedStepsData.map((step) => (
-                                <p>
+                                <p key={step._id}>
                                     <strong>- {step.displayName}</strong>
                                 </p>
                             ))}
@@ -208,8 +208,8 @@ class MailManager {
     private BrokenRulesMassage({ ruleBrokenData }: { ruleBrokenData: IRule[] }) {
         return (
             <>
-                {ruleBrokenData.map((brokenRule) => (
-                    <p style={{ direction: 'rtl' }}>
+                {ruleBrokenData.map((brokenRule, index) => (
+                    <p key={brokenRule.name || index} style={{ direction: 'rtl' }}>
                         <strong>* {brokenRule.name}</strong> - {brokenRule.description}
                     </p>
                 ))}
@@ -350,7 +350,7 @@ class MailManager {
         );
 
         return (
-            <html>
+            <html lang="he">
                 <body dir="rtl">
                     <h3>{hebrew.ruleBreach.ruleBreachAlertTitle} </h3>
                     <p>{hebrew.ruleBreach.note}</p>
@@ -376,7 +376,7 @@ class MailManager {
         );
 
         return (
-            <html>
+            <html lang="he">
                 <body dir="rtl">
                     <h3>{hebrew.ruleBreach.ruleBreachRequestTitle} </h3>
                     <p>{hebrew.ruleBreach.RequestPendingApproval}</p>
@@ -404,7 +404,7 @@ class MailManager {
             }),
         );
         return (
-            <html>
+            <html lang="he">
                 <body dir="rtl">
                     <h3>{hebrew.ruleBreach.ruleBreachResponseTitle} </h3>
                     <p>{hebrew.ruleBreach.theRequestForAction}</p>
@@ -435,7 +435,7 @@ class MailManager {
         const baseUrl = await WorkspaceManager.getBaseUrl(this.workspaceId);
 
         return (
-            <html>
+            <html lang="he">
                 <body dir="rtl">
                     <p>{hebrew.dateAboutToExpireNotification.dateAboutToExpireHeadline}</p>
                     <p>
@@ -456,7 +456,7 @@ class MailManager {
         // we can "safely" inject the html because every user input goes through escaping
         // the template automatically by quill, and the entity values by the function that injects them
         return (
-            <html>
+            <html lang="he">
                 <body dir="rtl" dangerouslySetInnerHTML={{ __html: body }}></body>
             </html>
         );

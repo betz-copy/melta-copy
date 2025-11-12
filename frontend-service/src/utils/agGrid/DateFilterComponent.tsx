@@ -14,7 +14,7 @@ const DateFilterComponent: React.FC<{ date: Date; onDateChange: (newDate: Date |
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return (
-        <div onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
+        <div role="presentation" tabIndex={0} onMouseDown={handleStopPropagation} onClick={handleStopPropagation} onKeyDown={handleStopPropagation}>
             <LocalizationProvider
                 dateAdapter={AdapterDateFns}
                 adapterLocale={he}

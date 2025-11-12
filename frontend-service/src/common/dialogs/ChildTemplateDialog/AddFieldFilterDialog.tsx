@@ -10,7 +10,7 @@ import { ChipType, IChildTemplateForm } from '../../../interfaces/childTemplates
 import { IGraphFilterBody } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IUser } from '../../../interfaces/users';
-import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter, IFilterDateType } from '../../../utils/agGrid/interfaces';
+import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridSetFilter, IAGGridTextFilter, IFilterDateType } from '../../../utils/agGrid/interfaces';
 import { initializedFilterField, isValidAGGridFilter } from '../../FilterComponent';
 import { DateFilterInput } from '../../inputs/FilterInputs/DateFilterInput';
 import { MultipleSelectFilterInput } from '../../inputs/FilterInputs/MultipleSelectFilterInput';
@@ -59,7 +59,7 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
         onClose();
     };
 
-    const handleFilterTypeChange = (newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type']) => {
+    const handleFilterTypeChange = (newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGridNumberFilter['type']) => {
         setCurrentFieldError(undefined);
         setLocalFilterField({ ...localFilterField, type: newTypeFilter } as any);
     };

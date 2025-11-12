@@ -7,7 +7,7 @@ import { useSearchParams } from '../../utils/hooks/useSearchParams';
 
 const MeltaTabs: React.FC<{
     defaultTab: string;
-    tabsComponentsMapping: Record<string, React.ReactElement<any, any>>;
+    tabsComponentsMapping: Record<string, React.ReactElement>;
     tabsPermissionsMapping: Record<string, boolean>;
 }> = ({ defaultTab, tabsComponentsMapping, tabsPermissionsMapping }) => {
     const theme = useTheme();

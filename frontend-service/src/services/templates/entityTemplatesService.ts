@@ -15,26 +15,15 @@ import {
     IEntityTemplateMap,
     IMongoEntityTemplatePopulated,
     ISearchEntityTemplateQuery,
+    PropertyFormat,
+    PropertyType,
 } from '../../interfaces/entityTemplates';
 import { getFileName } from '../../utils/getFileName';
 
 const { entityTemplates } = environment.api;
 
-export const basePropertyTypes = ['string', 'number', 'boolean'];
-export const stringFormats = [
-    'date',
-    'date-time',
-    'email',
-    'fileId',
-    'text-area',
-    'relationshipReference',
-    'location',
-    'user',
-    'signature',
-    'comment',
-    'kartoffelUserField',
-    'unitField',
-];
+export const basePropertyTypes = [PropertyType.string, PropertyType.number, PropertyType.boolean];
+export const stringFormats = Object.values(PropertyFormat);
 export const arrayTypes = ['multipleFiles', 'enumArray', 'users'];
 
 export const parseFilters = (filters: any) => (typeof filters === 'string' ? JSON.parse(filters) : filters);
@@ -86,13 +75,12 @@ const entityTemplateObjectToEntityTemplateForm = (
         else if (value.format === 'unitField') type = 'unitField';
         else if (value.enum) type = 'enum';
         else if (value.pattern) type = 'pattern';
-        else if (value.format && value.format === 'text-area') type = 'text-area';
-        else if (value.format && value.format === 'location') type = 'location';
+        else if (value.format && value.format === PropertyFormat['text-area']) type = PropertyFormat['text-area'];
+        else if (value.format && value.format === PropertyFormat.location) type = PropertyFormat.location;
         else if (value.items?.enum) type = 'enumArray';
-        else if (value.items?.format === 'fileId') type = 'multipleFiles';
-        else if (value.items?.format === 'user') type = 'users';
-        else if (value.items?.format === 'text-area') type = 'text-area';
-        else if (value.format && value.format === 'comment') type = 'comment';
+        else if (value.items?.format === PropertyFormat.fileId) type = 'multipleFiles';
+        else if (value.items?.format === PropertyFormat.user) type = 'users';
+        else if (value.format && value.format === PropertyFormat.comment) type = PropertyFormat.comment;
 
         const property: EntityTemplateFormInputProperties = {
             id: uuid(),
@@ -117,18 +105,18 @@ const entityTemplateObjectToEntityTemplateForm = (
             serialStarter: value.serialStarter,
             relationshipReference: value.relationshipReference
                 ? {
-                    relationshipTemplateId: value.relationshipReference.relationshipTemplateId,
-                    relationshipTemplateDirection: value.relationshipReference.relationshipTemplateDirection,
-                    relatedTemplateId: value.relationshipReference.relatedTemplateId,
-                    relatedTemplateField: value.relationshipReference.relatedTemplateField,
-                    filters: value.relationshipReference.filters
-                        ? FilterModelToFilterRecord(
-                            parseFilters(value.relationshipReference.filters),
-                            value.relationshipReference.relatedTemplateId,
-                            queryClient,
-                        )
-                        : undefined,
-                }
+                      relationshipTemplateId: value.relationshipReference.relationshipTemplateId,
+                      relationshipTemplateDirection: value.relationshipReference.relationshipTemplateDirection,
+                      relatedTemplateId: value.relationshipReference.relatedTemplateId,
+                      relatedTemplateField: value.relationshipReference.relatedTemplateField,
+                      filters: value.relationshipReference.filters
+                          ? FilterModelToFilterRecord(
+                                parseFilters(value.relationshipReference.filters),
+                                value.relationshipReference.relatedTemplateId,
+                                queryClient,
+                            )
+                          : undefined,
+                  }
                 : undefined,
             archive: value.archive || undefined,
             identifier: value.identifier || undefined,
@@ -352,42 +340,33 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
 
             let propertyType: IEntitySingleProperty['type'];
             switch (type) {
-                case 'string':
-                case 'number':
-                case 'boolean':
+                case PropertyType.string:
+                case PropertyType.number:
+                case PropertyType.boolean:
                     propertyType = type;
                     break;
                 case 'serialNumber':
-                    propertyType = 'number';
+                    propertyType = PropertyType.number;
                     break;
                 case 'enumArray':
-                    propertyType = 'array';
-                    break;
                 case 'users':
-                    propertyType = 'array';
+                    propertyType = PropertyType.array;
                     break;
                 default:
-                    propertyType = 'string';
+                    propertyType = PropertyType.string;
             }
 
             schema.properties[name] = {
                 title,
                 type: propertyType,
-                format: (stringFormats.includes(type) ? type : undefined) as
-                    | 'date'
-                    | 'date-time'
-                    | 'email'
-                    | 'fileId'
-                    | 'signature'
-                    | 'text-area'
-                    | 'relationshipReference'
-                    | 'user'
-                    | 'comment'
-                    | 'kartoffelUserField'
-                    | 'unitField'
-                    | undefined,
+                format: (stringFormats.includes(type) ? type : undefined) as PropertyFormat | undefined,
                 enum: type === 'enum' ? options : undefined,
-                items: type === 'enumArray' ? { type: 'string', enum: options } : type === 'users' ? { type: 'string', format: 'user' } : undefined,
+                items:
+                    type === 'enumArray'
+                        ? { type: PropertyType.string, enum: options }
+                        : type === 'users'
+                          ? { type: PropertyType.string, format: PropertyFormat.user }
+                          : undefined,
                 minItems: type === 'enumArray' || type === 'users' ? 1 : undefined,
                 readOnly,
                 archive,
@@ -406,14 +385,14 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 serialCurrent: type === 'serialNumber' ? serialStarter : undefined,
                 relationshipReference: relationshipReference
                     ? {
-                        relationshipTemplateId: relationshipReference.relationshipTemplateId,
-                        relationshipTemplateDirection: relationshipReference.relationshipTemplateDirection,
-                        relatedTemplateId: relationshipReference.relatedTemplateId,
-                        relatedTemplateField: relationshipReference.relatedTemplateField,
-                        filters: relationshipReference.filters
-                            ? filterTemplateToSearchFilter(relationshipReference.filters, relationshipReference.relatedTemplateId, queryClient)
-                            : undefined,
-                    }
+                          relationshipTemplateId: relationshipReference.relationshipTemplateId,
+                          relationshipTemplateDirection: relationshipReference.relationshipTemplateDirection,
+                          relatedTemplateId: relationshipReference.relatedTemplateId,
+                          relatedTemplateField: relationshipReference.relatedTemplateField,
+                          filters: relationshipReference.filters
+                              ? filterTemplateToSearchFilter(relationshipReference.filters, relationshipReference.relatedTemplateId, queryClient)
+                              : undefined,
+                      }
                     : undefined,
                 comment,
                 expandedUserField,
@@ -477,19 +456,20 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
 
             let propertyType: IEntitySingleProperty['type'];
             switch (type) {
-                case 'string':
-                case 'number':
-                case 'boolean':
+                case PropertyType.string:
+                case PropertyType.number:
+                case PropertyType.boolean:
                     propertyType = type;
                     break;
                 case 'serialNumber':
-                    propertyType = 'number';
+                    propertyType = PropertyType.number;
                     break;
                 case 'enumArray':
-                    propertyType = 'array';
+                case 'users':
+                    propertyType = PropertyType.array;
                     break;
                 default:
-                    propertyType = 'string';
+                    propertyType = PropertyType.string;
             }
 
             schema.properties[name] = {
@@ -497,7 +477,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 type: propertyType,
                 format: stringFormats.includes(type) ? type : undefined,
                 enum: type === 'enum' ? options : undefined,
-                items: type === 'enumArray' ? { type: 'string', enum: options } : undefined,
+                items: type === 'enumArray' ? { type: PropertyType.string, enum: options } : undefined,
                 minItems: type === 'enumArray' ? 1 : undefined,
                 readOnly,
                 archive,
@@ -516,14 +496,14 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 serialCurrent: type === 'serialNumber' ? serialStarter : undefined,
                 relationshipReference: relationshipReference
                     ? {
-                        relationshipTemplateId: relationshipReference.relationshipTemplateId,
-                        relationshipTemplateDirection: relationshipReference.relationshipTemplateDirection,
-                        relatedTemplateId: relationshipReference.relatedTemplateId,
-                        relatedTemplateField: relationshipReference.relatedTemplateField,
-                        filters: relationshipReference.filters
-                            ? filterTemplateToSearchFilter(relationshipReference.filters, relationshipReference.relatedTemplateId, queryClient)
-                            : undefined,
-                    }
+                          relationshipTemplateId: relationshipReference.relationshipTemplateId,
+                          relationshipTemplateDirection: relationshipReference.relationshipTemplateDirection,
+                          relatedTemplateId: relationshipReference.relatedTemplateId,
+                          relatedTemplateField: relationshipReference.relatedTemplateField,
+                          filters: relationshipReference.filters
+                              ? filterTemplateToSearchFilter(relationshipReference.filters, relationshipReference.relatedTemplateId, queryClient)
+                              : undefined,
+                      }
                     : undefined,
                 comment,
                 expandedUserField,
@@ -560,18 +540,18 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         if (type === 'multipleFiles') {
             schema.properties[name] = {
                 title,
-                type: 'array',
+                type: PropertyType.array,
                 items: {
-                    type: 'string',
-                    format: 'fileId',
+                    type: PropertyType.string,
+                    format: PropertyFormat.fileId,
                 },
                 minItems: 1,
             };
         } else {
             schema.properties[name] = {
                 title,
-                type: 'string',
-                format: 'fileId',
+                type: PropertyType.string,
+                format: PropertyFormat.fileId,
             };
         }
 
@@ -586,7 +566,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         if (required) schema.required.push(name);
     });
 
-    const serialUniqueConstraints = serialsUniqueConstraints.map((serial) => ({ groupName: '', properties: [serial] }))
+    const serialUniqueConstraints = serialsUniqueConstraints.map((serial) => ({ groupName: '', properties: [serial] }));
 
     return {
         ...restOfProperties,
@@ -599,7 +579,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         propertiesTypeOrder,
         propertiesPreview,
         enumPropertiesColors,
-        uniqueConstraints: [...restOfProperties.uniqueConstraints ?? [], ...serialUniqueConstraints],
+        uniqueConstraints: [...(restOfProperties.uniqueConstraints ?? []), ...serialUniqueConstraints],
         mapSearchProperties,
         fieldGroups: updatedFieldsGroups,
     };
@@ -616,10 +596,8 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
     const entityTemplate = formToJSONSchema(newEntityTemplate, false, queryClient);
 
     if (newEntityTemplate.icon) {
-        if (newEntityTemplate.icon.file instanceof File)
-            formData.append('file', newEntityTemplate.icon.file);
-        else if (newEntityTemplate.icon.file?.name)
-            formData.append('iconFileId', newEntityTemplate.icon.file.name);
+        if (newEntityTemplate.icon.file instanceof File) formData.append('file', newEntityTemplate.icon.file);
+        else if (newEntityTemplate.icon.file?.name) formData.append('iconFileId', newEntityTemplate.icon.file.name);
     }
 
     newEntityTemplate.documentTemplatesIds?.filter((item): item is File => item instanceof File).forEach((file) => formData.append('files', file));
@@ -630,17 +608,14 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
         })
         .map((item) => (typeof item === 'string' ? item : item.name));
 
-    if (docTemplateIds?.length)
-        formData.append('documentTemplatesIds', JSON.stringify(docTemplateIds));
+    if (docTemplateIds?.length) formData.append('documentTemplatesIds', JSON.stringify(docTemplateIds));
 
-    if (entityTemplate.enumPropertiesColors)
-        formData.append('enumPropertiesColors', JSON.stringify(entityTemplate.enumPropertiesColors));
+    if (entityTemplate.enumPropertiesColors) formData.append('enumPropertiesColors', JSON.stringify(entityTemplate.enumPropertiesColors));
 
     if (entityTemplate.propertiesTypeOrder.includes('archiveProperties'))
         entityTemplate.propertiesTypeOrder = entityTemplate.propertiesTypeOrder.filter((str) => str !== 'archiveProperties');
 
-    if (entityTemplate.mapSearchProperties)
-        formData.append('mapSearchProperties', JSON.stringify(entityTemplate.mapSearchProperties));
+    if (entityTemplate.mapSearchProperties) formData.append('mapSearchProperties', JSON.stringify(entityTemplate.mapSearchProperties));
 
     formData.append('displayName', entityTemplate.displayName);
     formData.append('name', entityTemplate.name);

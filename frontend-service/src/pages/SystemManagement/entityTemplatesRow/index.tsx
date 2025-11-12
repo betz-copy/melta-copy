@@ -463,13 +463,15 @@ const EntityTemplatesRow: React.FC = () => {
                 onYes={handleDelete}
                 isLoading={deleteTemplateIsLoading}
             />
-            <CodeEditorDialog
-                open={addActionsToEntityTemplateDialogState.isWizardOpen}
-                handleClose={() => setAddActionsToEntityTemplateDialogState({ isWizardOpen: false, entityTemplate: null })}
-                templateItem={addActionsToEntityTemplateDialogState.entityTemplate}
-                searchText={searchText}
-                categoriesToShow={categoriesToShow}
-            />
+            {addActionsToEntityTemplateDialogState.entityTemplate && (
+                <CodeEditorDialog
+                    open={addActionsToEntityTemplateDialogState.isWizardOpen}
+                    handleClose={() => setAddActionsToEntityTemplateDialogState({ isWizardOpen: false, entityTemplate: null })}
+                    templateItem={addActionsToEntityTemplateDialogState.entityTemplate}
+                    searchText={searchText}
+                    categoriesToShow={categoriesToShow}
+                />
+            )}
             <ChildTemplateDialog
                 open={addChildTemplateDialogState.isWizardOpen}
                 handleClose={() => setAddChildTemplateDialogState({ isWizardOpen: false, entityTemplate: null })}

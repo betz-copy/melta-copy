@@ -208,9 +208,9 @@ const relationshipRefCell = (
     cell.value = insertEntities
         ? row[key]
         : {
-            text: row[key].properties[value.relationshipReference!.relatedTemplateField],
-            hyperlink: `${config.service.meltaBaseUrl}${workspacePath}/entity/${row[key].properties._id}`,
-        };
+              text: row[key].properties[value.relationshipReference!.relatedTemplateField],
+              hyperlink: `${config.service.meltaBaseUrl}${workspacePath}/entity/${row[key].properties._id}`,
+          };
 };
 
 const filesCell = (cell: Excel.Cell, isFileArray: boolean, rowIndex: number, value: string, workspaceId: string) => {

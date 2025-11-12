@@ -7,7 +7,7 @@ export interface IAGGridTextFilter {
     filter?: string;
 }
 
-export interface IAGGidNumberFilter {
+export interface IAGGridNumberFilter {
     filterType: 'number';
     type: 'equals' | 'notEqual' | 'lessThan' | 'lessThanOrEqual' | 'greaterThan' | 'greaterThanOrEqual' | 'inRange' | 'blank' | 'notBlank';
     filter?: number;
@@ -51,7 +51,7 @@ export interface IAGGridSetFilter {
 }
 
 export interface IAGGridFilterModel {
-    [key: string]: IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter;
+    [key: string]: IAGGridTextFilter | IAGGridNumberFilter | IAGGridDateFilter | IAGGridSetFilter;
 }
 
 export interface IAGGridSort {

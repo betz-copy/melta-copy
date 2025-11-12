@@ -5,7 +5,7 @@ import { Form, Formik, FormikProps } from 'formik';
 import i18next from 'i18next';
 import jsPDF from 'jspdf';
 import React, { useRef, useState } from 'react';
-import { Cropper } from 'react-cropper';
+import { Cropper, ReactCropperElement } from 'react-cropper';
 import { toast } from 'react-toastify';
 import { filterImageData } from '../../../utils/filterImageData';
 import urlToFile from '../../fileConversions';
@@ -36,7 +36,7 @@ const ImageView: React.FC<IImageView> = ({
     const [applyFilter, setApplyFilter] = useState(false);
     const [imgName, setImgName] = useState<string | null>(null);
 
-    const cropperRef = useRef<any>(null);
+    const cropperRef = useRef<ReactCropperElement>(null);
 
     const handleUploadPng = async () => {
         const file = await urlToFile(imgURL, imgName!);

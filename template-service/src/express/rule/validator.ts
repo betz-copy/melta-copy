@@ -18,6 +18,8 @@ import {
     ISumAggFunction,
     IVariable,
     isConstant,
+    PropertyFormat,
+    PropertyType,
 } from '@microservices/shared';
 import { isValid as isValidDate, parse } from 'date-fns';
 import { Request } from 'express';
@@ -153,10 +155,10 @@ class RuleValidator extends DefaultController<IMongoRelationshipTemplate, Relati
                 ...entityTemplate.properties,
                 properties: {
                     ...entityTemplate.properties.properties,
-                    _id: { title: '_id', type: 'string' },
-                    disabled: { title: 'disabled', type: 'boolean' },
-                    createdAt: { title: 'createdAt', type: 'string', format: 'date-time' },
-                    updatedAt: { title: 'updatedAt', type: 'string', format: 'date-time' },
+                    _id: { title: '_id', type: PropertyType.string },
+                    disabled: { title: 'disabled', type: PropertyType.string },
+                    createdAt: { title: 'createdAt', type: PropertyType.string, format: PropertyFormat['date-time'] },
+                    updatedAt: { title: 'updatedAt', type: PropertyType.string, format: PropertyFormat['date-time'] },
                 },
             },
         };

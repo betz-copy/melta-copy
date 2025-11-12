@@ -7,8 +7,10 @@ import config from '../../config';
 
 const busboyMiddleware = (req: Request, _res: Response, next: NextFunction): void => {
     if (!req.is('multipart/form-data')) {
-        return next();
+        next();
+        return;
     }
+
     try {
         const busboy = Busboy({ headers: req.headers, defCharset: 'utf8' });
         const fields: Record<string, unknown> = {};

@@ -2,7 +2,7 @@ import { environment } from '../../globals';
 import { IFilterOfField, IFilterOfTemplate, IGraphFilterBody, IGraphFilterBodyBatch, ISearchFilter } from '../../interfaces/entities';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { filterModelToFilterOfTemplatePerField } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
-import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter, RelativeDateFilters } from '../../utils/agGrid/interfaces';
+import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridSetFilter, IAGGridTextFilter, RelativeDateFilters } from '../../utils/agGrid/interfaces';
 
 const { relativeDateFilters } = environment;
 
@@ -152,7 +152,7 @@ export const translateFieldFilter = (
                 filterType: 'number',
                 type: filterType,
                 filter: filterValue as number,
-            } as IAGGidNumberFilter;
+            } as IAGGridNumberFilter;
 
         case 'array':
             return {

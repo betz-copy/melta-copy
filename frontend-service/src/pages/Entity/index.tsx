@@ -111,233 +111,233 @@ export const ConnectionsTable: React.FC<{
     hasPermissionToTemplate,
     groupChildTemplate,
 }) => {
-        const workspace = useWorkspaceStore((state) => state.workspace);
-        const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
 
-        const queryClient = useQueryClient();
+    const queryClient = useQueryClient();
 
-        const [isExpand, setIsExpand] = useState(false);
-        const [isFiltered, setIsFiltered] = useState(false);
+    const [isExpand, setIsExpand] = useState(false);
+    const [isFiltered, setIsFiltered] = useState(false);
 
-        type EntityRef = IEntity | { relationship: Pick<IRelationship, 'properties' | 'templateId'>; sourceEntity: IEntity; destinationEntity: IEntity };
+    type EntityRef = IEntity | { relationship: Pick<IRelationship, 'properties' | 'templateId'>; sourceEntity: IEntity; destinationEntity: IEntity };
 
-        const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<EntityRef>>(null);
+    const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<EntityRef>>(null);
 
-        const [createRelationshipDialogState, setCreateRelationshipDialogState] = useState<{
-            isOpen: boolean;
-            initialValues?: React.ComponentProps<typeof CreateRelationshipDialog>['initialValues'];
-        }>({ isOpen: false });
+    const [createRelationshipDialogState, setCreateRelationshipDialogState] = useState<{
+        isOpen: boolean;
+        initialValues?: React.ComponentProps<typeof CreateRelationshipDialog>['initialValues'];
+    }>({ isOpen: false });
 
-        const [deleteRelationshipDialogState, setDeleteRelationshipDialogState] = useState<{
-            open: boolean;
-            connectionToDelete?: IEntityExpanded['connections'][number];
-        }>({ open: false });
+    const [deleteRelationshipDialogState, setDeleteRelationshipDialogState] = useState<{
+        open: boolean;
+        connectionToDelete?: IEntityExpanded['connections'][number];
+    }>({ open: false });
 
-        const setQueryDataKey = [
-            'getExpandedEntity',
-            expandedEntity.entity.properties._id,
-            { [expandedEntity.entity.properties._id]: { maxLevel: 1 } },
-            { templateIds },
-        ];
+    const setQueryDataKey = [
+        'getExpandedEntity',
+        expandedEntity.entity.properties._id,
+        { [expandedEntity.entity.properties._id]: { maxLevel: 1 } },
+        { templateIds },
+    ];
 
-        const template = isExpandedEntityRelationshipSource ? relationshipTemplate.destinationEntity : relationshipTemplate.sourceEntity;
+    const template = isExpandedEntityRelationshipSource ? relationshipTemplate.destinationEntity : relationshipTemplate.sourceEntity;
 
-        const onCreateRelationship = (createdRelationship: IRelationship, sourceEntity: IEntity, destinationEntity: IEntity) => {
-            const doesCreatedRelationshipWithCurrEntity = [createdRelationship.sourceEntityId, createdRelationship.destinationEntityId].includes(
-                expandedEntity.entity.properties._id!,
+    const onCreateRelationship = (createdRelationship: IRelationship, sourceEntity: IEntity, destinationEntity: IEntity) => {
+        const doesCreatedRelationshipWithCurrEntity = [createdRelationship.sourceEntityId, createdRelationship.destinationEntityId].includes(
+            expandedEntity.entity.properties._id!,
+        );
+
+        if (!doesCreatedRelationshipWithCurrEntity) {
+            return;
+        }
+        queryClient.setQueryData<IEntityExpanded>(setQueryDataKey, (prevEntityExpanded) => {
+            return {
+                ...prevEntityExpanded!,
+                connections: [
+                    ...prevEntityExpanded!.connections,
+                    {
+                        sourceEntity,
+                        destinationEntity,
+                        relationship: {
+                            templateId: createdRelationship.templateId,
+                            properties: createdRelationship.properties,
+                        },
+                    },
+                ],
+            };
+        });
+    };
+
+    const onDeleteRelationship = (deletedRelationshipId: string) => {
+        queryClient.setQueryData<IEntityExpanded>(setQueryDataKey, (prevEntityExpanded) => {
+            if (!prevEntityExpanded) {
+                return {
+                    entity: expandedEntity.entity,
+                    connections: [],
+                };
+            }
+
+            const updatedEntityExpanded = { ...prevEntityExpanded };
+            updatedEntityExpanded.connections = updatedEntityExpanded.connections.filter(
+                ({ relationship }) => relationship.properties._id !== deletedRelationshipId,
             );
 
-            if (!doesCreatedRelationshipWithCurrEntity) {
-                return;
-            }
-            queryClient.setQueryData<IEntityExpanded>(setQueryDataKey, (prevEntityExpanded) => {
-                return {
-                    ...prevEntityExpanded!,
-                    connections: [
-                        ...prevEntityExpanded!.connections,
-                        {
-                            sourceEntity,
-                            destinationEntity,
-                            relationship: {
-                                templateId: createdRelationship.templateId,
-                                properties: createdRelationship.properties,
-                            },
-                        },
-                    ],
-                };
-            });
-        };
+            return updatedEntityExpanded;
+        });
+    };
 
-        const onDeleteRelationship = (deletedRelationshipId: string) => {
-            queryClient.setQueryData<IEntityExpanded>(setQueryDataKey, (prevEntityExpanded) => {
-                if (!prevEntityExpanded) {
-                    return {
-                        entity: expandedEntity.entity,
-                        connections: [],
-                    };
-                }
+    return (
+        <Grid>
+            <Grid direction="column" justifyContent="space-between" marginBottom="10px">
+                <Grid container marginTop="10px" width="fit-content">
+                    <ConnectionsTableTitle
+                        expandedEntity={expandedEntity}
+                        connectionTemplate={{ relationshipTemplate, isExpandedEntityRelationshipSource }}
+                    />
+                </Grid>
 
-                const updatedEntityExpanded = { ...prevEntityExpanded };
-                updatedEntityExpanded.connections = updatedEntityExpanded.connections.filter(
-                    ({ relationship }) => relationship.properties._id !== deletedRelationshipId,
-                );
-
-                return updatedEntityExpanded;
-            });
-        };
-
-        return (
-            <Grid>
-                <Grid direction="column" justifyContent="space-between" marginBottom="10px">
-                    <Grid container marginTop="10px" width="fit-content">
-                        <ConnectionsTableTitle
-                            expandedEntity={expandedEntity}
-                            connectionTemplate={{ relationshipTemplate, isExpandedEntityRelationshipSource }}
-                        />
-                    </Grid>
-
-                    <Grid container justifyContent="space-between" alignItems="center">
-                        <Grid container flexGrow={1} width={0} justifyContent="flex-start" alignItems="center">
-                            <TableButton
-                                iconButtonWithPopoverProps={{
-                                    popoverText: i18next.t('entitiesTableOfTemplate.columns'),
-                                    iconButtonProps: { onClick: () => entitiesTableRef.current?.showSideBar() },
-                                }}
-                                disableButton={!hasInstances}
-                                icon={<TableRowsOutlined fontSize="small" />}
-                                text={i18next.t('entitiesTableOfTemplate.columns')}
-                            />
-
-                            <TableButton
-                                iconButtonWithPopoverProps={{
-                                    popoverText: i18next.t(`entitiesTableOfTemplate.expand${isExpand ? 'Less' : 'More'}`),
-                                    iconButtonProps: {
-                                        onClick: () => setIsExpand(!isExpand),
-                                    },
-                                }}
-                                icon={isExpand ? <CloseFullscreenRounded fontSize="small" /> : <Expand fontSize="small" />}
-                                text={i18next.t(`entitiesTableOfTemplate.expand${isExpand ? 'Less' : 'More'}Title`)}
-                                disableButton={!hasInstances}
-                            />
-
-                            <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={!isFiltered} />
-                        </Grid>
+                <Grid container justifyContent="space-between" alignItems="center">
+                    <Grid container flexGrow={1} width={0} justifyContent="flex-start" alignItems="center">
                         <TableButton
                             iconButtonWithPopoverProps={{
-                                popoverText: isEditButtonsDisabled
-                                    ? disabledButtonText
-                                    : i18next.t(`ruleManagement.${relationshipTemplate.isProperty ? 'cant-' : ''}create-relationship`),
+                                popoverText: i18next.t('entitiesTableOfTemplate.columns'),
+                                iconButtonProps: { onClick: () => entitiesTableRef.current?.showSideBar() },
+                            }}
+                            disableButton={!hasInstances}
+                            icon={<TableRowsOutlined fontSize="small" />}
+                            text={i18next.t('entitiesTableOfTemplate.columns')}
+                        />
+
+                        <TableButton
+                            iconButtonWithPopoverProps={{
+                                popoverText: i18next.t(`entitiesTableOfTemplate.expand${isExpand ? 'Less' : 'More'}`),
                                 iconButtonProps: {
-                                    onClick: () => {
-                                        const [defaultSourceEntity, defaultDestinationEntity] = isExpandedEntityRelationshipSource
-                                            ? [expandedEntity.entity, null]
-                                            : [null, expandedEntity.entity]; // if source and dest are the same template, then put currentEntity in source
-                                        setCreateRelationshipDialogState({
-                                            isOpen: true,
-                                            initialValues: {
-                                                relationshipTemplate,
-                                                sourceEntity: defaultSourceEntity,
-                                                destinationEntity: defaultDestinationEntity,
-                                            },
-                                        });
-                                    },
+                                    onClick: () => setIsExpand(!isExpand),
                                 },
                             }}
-                            icon={<AddCircle fontSize="small" sx={{ opacity: isEditButtonsDisabled ? 0.3 : 1 }} />}
-                            text={i18next.t('entitiesTableOfTemplate.addRelationshipTitle')}
-                            disableButton={
-                                isEditButtonsDisabled ||
-                                relationshipTemplate.isProperty ||
-                                relationshipTemplate.destinationEntity.disabled ||
-                                relationshipTemplate.sourceEntity.disabled
-                            }
+                            icon={isExpand ? <CloseFullscreenRounded fontSize="small" /> : <Expand fontSize="small" />}
+                            text={i18next.t(`entitiesTableOfTemplate.expand${isExpand ? 'Less' : 'More'}Title`)}
+                            disableButton={!hasInstances}
                         />
+
+                        <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={!isFiltered} />
                     </Grid>
-                </Grid>
-                <Box
-                    sx={{
-                        marginBottom: '30px',
-                        width: '100%',
-                    }}
-                >
-                    <EntitiesTableOfTemplate
-                        hasInstances={hasInstances}
-                        ref={entitiesTableRef}
-                        template={template}
-                        showNavigateToRowButton
-                        deleteRowButtonProps={{
+                    <TableButton
+                        iconButtonWithPopoverProps={{
                             popoverText: isEditButtonsDisabled
                                 ? disabledButtonText
-                                : i18next.t(`entityPage.deleteRelationshipPopoverText${relationshipTemplate.isProperty ? '-cant' : ''}`),
-                            onClick: (connectionToDelete: any) => {
-                                setDeleteRelationshipDialogState({ open: true, connectionToDelete });
+                                : i18next.t(`ruleManagement.${relationshipTemplate.isProperty ? 'cant-' : ''}create-relationship`),
+                            iconButtonProps: {
+                                onClick: () => {
+                                    const [defaultSourceEntity, defaultDestinationEntity] = isExpandedEntityRelationshipSource
+                                        ? [expandedEntity.entity, null]
+                                        : [null, expandedEntity.entity]; // if source and dest are the same template, then put currentEntity in source
+                                    setCreateRelationshipDialogState({
+                                        isOpen: true,
+                                        initialValues: {
+                                            relationshipTemplate,
+                                            sourceEntity: defaultSourceEntity,
+                                            destinationEntity: defaultDestinationEntity,
+                                        },
+                                    });
+                                },
                             },
-                            disabledButton: isEditButtonsDisabled || relationshipTemplate.isProperty || false,
                         }}
-                        getRowId={(connection: IEntity | IConnection) => {
-                            if ('relationship' in connection) return connection.relationship.properties._id;
-
-                            const foundConnection = expandedEntity.connections.find(
-                                (conn) =>
-                                    conn.destinationEntity?.properties?._id === (connection as IEntity).properties?._id ||
-                                    conn.sourceEntity?.properties?._id === (connection as IEntity).properties?._id,
-                            );
-                            return foundConnection ? foundConnection.relationship.properties._id : (connection as IEntity).properties._id;
-                        }}
-                        getEntityPropertiesData={(connection: IEntity | IConnection) => {
-                            if ('relationship' in connection) {
-                                if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id)
-                                    return connection.sourceEntity.properties;
-                                return connection.destinationEntity.properties;
-                            }
-                            return connection.properties;
-                        }}
-                        rowModelType={isExpand ? 'infinite' : 'clientSide'}
-                        rowData={expandedEntity.connections.filter(({ relationship, sourceEntity, destinationEntity }) => {
-                            if (relationship.templateId !== relationshipTemplate._id) return false;
-
-                            if (isExpandedEntityRelationshipSource && expandedEntity.entity.properties._id === sourceEntity.properties._id) return true;
-                            if (!isExpandedEntityRelationshipSource && expandedEntity.entity.properties._id === destinationEntity.properties._id)
-                                return true;
-
-                            return false;
-                        })}
-                        rowHeight={defaultRowHeight}
-                        fontSize={`${defaultFontSize}px`}
-                        saveStorageProps={{
-                            shouldSaveFilter: false,
-                            shouldSaveWidth: false,
-                            shouldSaveVisibleColumns: false,
-                            shouldSaveSorting: false,
-                            shouldSaveColumnOrder: true,
-                            shouldSavePagination: false,
-                            shouldSaveScrollPosition: false,
-                            pageType: `entity-${expandedEntity.entity.properties._id}`,
-                        }}
-                        onFilter={() => setIsFiltered(entitiesTableRef.current?.isFiltered() ?? false)}
-                        hasPermissionToTemplate={hasPermissionToTemplate}
-                        mainEntity={expandedEntity}
-                        childTemplatesOfParent={groupChildTemplate?.[template._id]}
+                        icon={<AddCircle fontSize="small" sx={{ opacity: isEditButtonsDisabled ? 0.3 : 1 }} />}
+                        text={i18next.t('entitiesTableOfTemplate.addRelationshipTitle')}
+                        disableButton={
+                            isEditButtonsDisabled ||
+                            relationshipTemplate.isProperty ||
+                            relationshipTemplate.destinationEntity.disabled ||
+                            relationshipTemplate.sourceEntity.disabled
+                        }
                     />
-                </Box>
-                <CreateRelationshipDialog
-                    isOpen={createRelationshipDialogState.isOpen}
-                    handleClose={() => setCreateRelationshipDialogState({ isOpen: false })}
-                    onSubmitSuccess={onCreateRelationship}
-                    initialValues={createRelationshipDialogState.initialValues}
-                />
-                <DeleteRelationshipDialog
-                    isOpen={deleteRelationshipDialogState.open}
-                    connectionToDelete={deleteRelationshipDialogState.connectionToDelete}
-                    handleClose={() => setDeleteRelationshipDialogState({ open: false })}
-                    onSubmitSuccess={() => {
-                        onDeleteRelationship(deleteRelationshipDialogState.connectionToDelete!.relationship.properties._id);
-                        setDeleteRelationshipDialogState({ open: false });
-                    }}
-                />
+                </Grid>
             </Grid>
-        );
-    };
+            <Box
+                sx={{
+                    marginBottom: '30px',
+                    width: '100%',
+                }}
+            >
+                <EntitiesTableOfTemplate
+                    hasInstances={hasInstances}
+                    ref={entitiesTableRef}
+                    template={template}
+                    showNavigateToRowButton
+                    deleteRowButtonProps={{
+                        popoverText: isEditButtonsDisabled
+                            ? disabledButtonText
+                            : i18next.t(`entityPage.deleteRelationshipPopoverText${relationshipTemplate.isProperty ? '-cant' : ''}`),
+                        onClick: (connectionToDelete: any) => {
+                            setDeleteRelationshipDialogState({ open: true, connectionToDelete });
+                        },
+                        disabledButton: isEditButtonsDisabled || relationshipTemplate.isProperty || false,
+                    }}
+                    getRowId={(connection: IEntity | IConnection) => {
+                        if ('relationship' in connection) return connection.relationship.properties._id;
+
+                        const foundConnection = expandedEntity.connections.find(
+                            (conn) =>
+                                conn.destinationEntity?.properties?._id === (connection as IEntity).properties?._id ||
+                                conn.sourceEntity?.properties?._id === (connection as IEntity).properties?._id,
+                        );
+                        return foundConnection ? foundConnection.relationship.properties._id : (connection as IEntity).properties._id;
+                    }}
+                    getEntityPropertiesData={(connection: IEntity | IConnection) => {
+                        if ('relationship' in connection) {
+                            if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id)
+                                return connection.sourceEntity.properties;
+                            return connection.destinationEntity.properties;
+                        }
+                        return connection.properties;
+                    }}
+                    rowModelType={isExpand ? 'infinite' : 'clientSide'}
+                    rowData={expandedEntity.connections.filter(({ relationship, sourceEntity, destinationEntity }) => {
+                        if (relationship.templateId !== relationshipTemplate._id) return false;
+
+                        if (isExpandedEntityRelationshipSource && expandedEntity.entity.properties._id === sourceEntity.properties._id) return true;
+                        if (!isExpandedEntityRelationshipSource && expandedEntity.entity.properties._id === destinationEntity.properties._id)
+                            return true;
+
+                        return false;
+                    })}
+                    rowHeight={defaultRowHeight}
+                    fontSize={`${defaultFontSize}px`}
+                    saveStorageProps={{
+                        shouldSaveFilter: false,
+                        shouldSaveWidth: false,
+                        shouldSaveVisibleColumns: false,
+                        shouldSaveSorting: false,
+                        shouldSaveColumnOrder: true,
+                        shouldSavePagination: false,
+                        shouldSaveScrollPosition: false,
+                        pageType: `entity-${expandedEntity.entity.properties._id}`,
+                    }}
+                    onFilter={() => setIsFiltered(entitiesTableRef.current?.isFiltered() ?? false)}
+                    hasPermissionToTemplate={hasPermissionToTemplate}
+                    mainEntity={expandedEntity}
+                    childTemplatesOfParent={groupChildTemplate?.[template._id]}
+                />
+            </Box>
+            <CreateRelationshipDialog
+                isOpen={createRelationshipDialogState.isOpen}
+                handleClose={() => setCreateRelationshipDialogState({ isOpen: false })}
+                onSubmitSuccess={onCreateRelationship}
+                initialValues={createRelationshipDialogState.initialValues}
+            />
+            <DeleteRelationshipDialog
+                isOpen={deleteRelationshipDialogState.open}
+                connectionToDelete={deleteRelationshipDialogState.connectionToDelete}
+                handleClose={() => setDeleteRelationshipDialogState({ open: false })}
+                onSubmitSuccess={() => {
+                    onDeleteRelationship(deleteRelationshipDialogState.connectionToDelete!.relationship.properties._id);
+                    setDeleteRelationshipDialogState({ open: false });
+                }}
+            />
+        </Grid>
+    );
+};
 
 export interface INestedRelationshipTemplates {
     relationshipTemplate: IMongoRelationshipTemplatePopulated;
@@ -373,14 +373,14 @@ const Entity: React.FC = () => {
     const filters: any =
         Object.entries(groupChildTemplate).length > 0
             ? Object.fromEntries(
-                Object.entries(groupChildTemplate)
-                    .map(([key, children]) => {
-                        const childFilter = getChildTemplatesFilter(children, workspace, true, currentUser);
-                        if (!childFilter) return null;
-                        return [key, { filter: childFilter }] as const;
-                    })
-                    .filter((f): f is readonly [string, { filter: ISearchFilter }] => f !== null),
-            )
+                  Object.entries(groupChildTemplate)
+                      .map(([key, children]) => {
+                          const childFilter = getChildTemplatesFilter(children, workspace, true, currentUser);
+                          if (!childFilter) return null;
+                          return [key, { filter: childFilter }] as const;
+                      })
+                      .filter((f): f is readonly [string, { filter: ISearchFilter }] => f !== null),
+              )
             : undefined;
 
     const expanded = entityId ? { [entityId]: { maxLevel: 1 } } : {};

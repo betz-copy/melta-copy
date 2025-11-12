@@ -1,3 +1,4 @@
+import { PropertyFormat, PropertyType } from 'shared/dist';
 import { IEntityTemplateMock } from '../templates/entityTemplates';
 
 // TODO: create entityTemplates with backend service in order to add required+unique constraints
@@ -12,37 +13,37 @@ const entityTemplates: IEntityTemplateMock[] = [
             type: 'object',
             properties: {
                 name: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'שם',
                 },
                 destination: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'יעד',
                 },
                 startDate: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'תאריך התחלה',
-                    format: 'date',
+                    format: PropertyFormat.date,
                 },
                 endDate: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'תאריך סיום',
-                    format: 'date',
+                    format: PropertyFormat.date,
                 },
                 firstFile: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'קובץ ראשון',
-                    format: 'fileId',
+                    format: PropertyFormat.fileId,
                 },
                 location: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'מיקום',
-                    format: 'location',
+                    format: PropertyFormat.location,
                 },
             },
             hide: [],
         },
-        propertiesOrder: ['name', 'destination', 'startDate', 'endDate', 'firstFile', 'location'],
+        propertiesOrder: ['name', 'destination', 'startDate', 'endDate', 'firstFile', PropertyFormat.location],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: ['name', 'destination', 'startDate', 'endDate'],
         disabled: false,
@@ -57,19 +58,19 @@ const entityTemplates: IEntityTemplateMock[] = [
             type: 'object',
             properties: {
                 firstName: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'שם פרטי',
                 },
                 lastName: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'שם משפחה',
                 },
                 age: {
-                    type: 'number',
+                    type: PropertyType.number,
                     title: 'גיל',
                 },
                 gender: {
-                    type: 'boolean',
+                    type: PropertyType.boolean,
                     title: 'זכר',
                 },
             },
@@ -90,34 +91,34 @@ const entityTemplates: IEntityTemplateMock[] = [
             type: 'object',
             properties: {
                 firstName: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'שם פרטי',
                 },
                 lastName: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'שם משפחה',
                 },
                 age: {
-                    type: 'number',
+                    type: PropertyType.number,
                     title: 'גיל',
                 },
                 gender: {
-                    type: 'boolean',
+                    type: PropertyType.boolean,
                     title: 'זכר',
                 },
                 agentId: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'מזהה סוכן',
                 },
                 location: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'מקום מגורים',
-                    format: 'location',
+                    format: PropertyFormat.location,
                 },
             },
             hide: ['lastName'],
         },
-        propertiesOrder: ['firstName', 'lastName', 'age', 'gender', 'agentId', 'location'],
+        propertiesOrder: ['firstName', 'lastName', 'age', 'gender', 'agentId', PropertyFormat.location],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: ['firstName', 'age'],
         disabled: false,
@@ -132,45 +133,45 @@ const entityTemplates: IEntityTemplateMock[] = [
             type: 'object',
             properties: {
                 flightNumber: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'מספר טיסה',
                 },
                 departureDate: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'תאריך המראה',
-                    format: 'date-time',
+                    format: PropertyFormat['date-time'],
                 },
                 landingDate: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'תאריך נחיתה',
-                    format: 'date-time',
+                    format: PropertyFormat['date-time'],
                 },
                 from: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'מקום המראה',
                 },
                 to: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'מקום הנחיתה',
                 },
                 planeType: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'סוג המטוס',
                 },
                 seatType: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'סוג מושב',
                     enum: ['ביזנס', 'עסקים', 'תיירים פלוס', 'תיירים'],
                 },
                 location: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'יעד',
-                    format: 'location',
+                    format: PropertyFormat.location,
                 },
             },
             hide: ['departureDate'],
         },
-        propertiesOrder: ['flightNumber', 'departureDate', 'landingDate', 'from', 'to', 'planeType', 'seatType', 'location'],
+        propertiesOrder: ['flightNumber', 'departureDate', 'landingDate', 'from', 'to', 'planeType', 'seatType', PropertyFormat.location],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: ['flightNumber', 'from', 'to'],
         disabled: false,
@@ -185,38 +186,38 @@ const entityTemplates: IEntityTemplateMock[] = [
             type: 'object',
             properties: {
                 FlightNum: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'מספר טיסה',
                 },
                 Flighttype: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'סוג טיסה',
                     enum: ['ביזנס', 'עסקים', 'תיירים'],
                 },
                 FlightPlatform: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'פלטפורמת טיסה',
                     enum: ['פלטפורמה א', 'פלטפורמה ב'],
                 },
                 FlightDepart: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'מוצא',
                     enum: ['וינה', 'אתונה', 'תל אביב', 'רומא'],
                 },
                 FlightDest: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'יעד',
                     enum: ['וינה', 'אתונה', 'תל אביב', 'רומא'],
                 },
                 FlightDepTime: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'תאריך המראה',
-                    format: 'date-time',
+                    format: PropertyFormat['date-time'],
                 },
                 FlightArrTime: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'תאריך נחיתה',
-                    format: 'date-time',
+                    format: PropertyFormat['date-time'],
                 },
             },
             hide: ['FlightPlatform'],
@@ -236,15 +237,15 @@ const entityTemplates: IEntityTemplateMock[] = [
             type: 'object',
             properties: {
                 airportName: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'שם',
                 },
                 airportId: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'מזהה',
                 },
                 country: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'מדינה',
                 },
             },
@@ -265,25 +266,25 @@ const entityTemplates: IEntityTemplateMock[] = [
             type: 'object',
             properties: {
                 hotelName: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'שם',
                 },
                 hotelChain: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'שם רשת',
                 },
                 checkInDate: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'תאריך הגעה',
-                    format: 'date-time',
+                    format: PropertyFormat['date-time'],
                 },
                 checkOutDate: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'תאריך עזיבה',
-                    format: 'date-time',
+                    format: PropertyFormat['date-time'],
                 },
                 country: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'מדינה',
                 },
             },
@@ -304,21 +305,21 @@ const entityTemplates: IEntityTemplateMock[] = [
             type: 'object',
             properties: {
                 name: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'שם',
                 },
                 checkInDate: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'תאריך הגעה',
-                    format: 'date-time',
+                    format: PropertyFormat['date-time'],
                 },
                 checkOutDate: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'תאריך עזיבה',
-                    format: 'date-time',
+                    format: PropertyFormat['date-time'],
                 },
                 country: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'מדינה',
                 },
             },
@@ -339,20 +340,20 @@ const entityTemplates: IEntityTemplateMock[] = [
             type: 'object',
             properties: {
                 name: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'שם',
                 },
                 company: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'חברה',
                 },
                 expirtaionDate: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'תאריך פג תוקף',
-                    format: 'date',
+                    format: PropertyFormat.date,
                 },
                 monthlyAmount: {
-                    type: 'number',
+                    type: PropertyType.number,
                     title: 'תקרה',
                 },
             },
@@ -373,11 +374,11 @@ const entityTemplates: IEntityTemplateMock[] = [
             type: 'object',
             properties: {
                 name: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'שם',
                 },
                 amount: {
-                    type: 'number',
+                    type: PropertyType.number,
                     title: 'סכום',
                 },
             },
@@ -398,15 +399,15 @@ const entityTemplates: IEntityTemplateMock[] = [
             type: 'object',
             properties: {
                 model: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'דגם',
                 },
                 color: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'צבע',
                 },
                 serialNumber: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'מספר סריאלי',
                 },
             },
@@ -427,19 +428,19 @@ const entityTemplates: IEntityTemplateMock[] = [
             type: 'object',
             properties: {
                 company: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'חברה',
                 },
                 number: {
-                    type: 'number',
+                    type: PropertyType.number,
                     title: 'מספר',
                 },
             },
             hide: [],
         },
-        propertiesOrder: ['company', 'number'],
+        propertiesOrder: ['company', PropertyType.number],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
-        propertiesPreview: ['company', 'number'],
+        propertiesPreview: ['company', PropertyType.number],
         disabled: false,
     },
     {
@@ -452,15 +453,15 @@ const entityTemplates: IEntityTemplateMock[] = [
             type: 'object',
             properties: {
                 company: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'חברה',
                 },
                 color: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'צבע',
                 },
                 weight: {
-                    type: 'number',
+                    type: PropertyType.number,
                     title: 'משקל',
                 },
             },
@@ -482,36 +483,36 @@ const entityTemplates: IEntityTemplateMock[] = [
             properties: {
                 text: {
                     title: 'טקסט',
-                    type: 'string',
+                    type: PropertyType.string,
                 },
                 number: {
                     title: 'מספר',
-                    type: 'number',
+                    type: PropertyType.number,
                 },
                 boolean: {
                     title: 'בוליאני',
-                    type: 'boolean',
+                    type: PropertyType.boolean,
                 },
                 date: {
                     title: 'תאריך',
-                    type: 'string',
-                    format: 'date',
+                    type: PropertyType.string,
+                    format: PropertyFormat.date,
                 },
                 dateTime: {
                     title: 'תאריך ושעה',
-                    type: 'string',
-                    format: 'date-time',
+                    type: PropertyType.string,
+                    format: PropertyFormat['date-time'],
                 },
                 mail: {
                     title: 'כתובת מייל',
-                    type: 'string',
-                    format: 'email',
+                    type: PropertyType.string,
+                    format: PropertyFormat.email,
                 },
                 multiEnum: {
                     title: 'רשימה מרובה',
-                    type: 'array',
+                    type: PropertyType.array,
                     items: {
-                        type: 'string',
+                        type: PropertyType.string,
                         enum: ['א', 'ב', 'ג', 'ד', 'ה', 'ו'],
                     },
                     minItems: 1,
@@ -519,51 +520,51 @@ const entityTemplates: IEntityTemplateMock[] = [
                 },
                 enum: {
                     title: 'רשימה',
-                    type: 'string',
+                    type: PropertyType.string,
                     enum: ['אא', 'בב', 'גג', 'דד'],
                 },
                 location: {
                     title: 'מיקום',
-                    type: 'string',
-                    format: 'location',
+                    type: PropertyType.string,
+                    format: PropertyFormat.location,
                 },
                 regex: {
                     title: 'תבנית',
-                    type: 'string',
+                    type: PropertyType.string,
                     pattern: '^0[2-9]\\d-\\d{4}-\\d{3}$',
                     patternCustomErrorMessage: 'יש להזין בפורמט מס טלפון בלבד (050-1234-123)',
                 },
                 signature: {
                     title: 'חתימה',
-                    type: 'string',
-                    format: 'signature',
+                    type: PropertyType.string,
+                    format: PropertyFormat.signature,
                     archive: false,
                 },
                 comment: {
                     title: 'הערה-comment',
-                    type: 'string',
-                    format: 'comment',
+                    type: PropertyType.string,
+                    format: PropertyFormat.comment,
                     archive: false,
                     color: '#4752B6',
                     comment: '<p>שלומות!!!</p>',
                 },
                 textArea: {
                     title: 'טקסט ארוך',
-                    type: 'string',
-                    format: 'text-area',
+                    type: PropertyType.string,
+                    format: PropertyFormat['text-area'],
                 },
                 user: {
                     title: 'משתמש',
-                    type: 'string',
-                    format: 'user',
+                    type: PropertyType.string,
+                    format: PropertyFormat.user,
                     archive: false,
                 },
                 users: {
                     title: 'משתמשים',
-                    type: 'array',
+                    type: PropertyType.array,
                     items: {
-                        type: 'string',
-                        format: 'user',
+                        type: PropertyType.string,
+                        format: PropertyFormat.user,
                     },
                     minItems: 1,
                     archive: false,
@@ -571,15 +572,15 @@ const entityTemplates: IEntityTemplateMock[] = [
                 },
                 file: {
                     title: 'קובץ יחיד',
-                    type: 'string',
-                    format: 'fileId',
+                    type: PropertyType.string,
+                    format: PropertyFormat.fileId,
                 },
                 files: {
                     title: 'קבצים מרובים',
-                    type: 'array',
+                    type: PropertyType.array,
                     items: {
-                        type: 'string',
-                        format: 'fileId',
+                        type: PropertyType.string,
+                        format: PropertyFormat.fileId,
                     },
                     minItems: 1,
                 },
@@ -621,38 +622,38 @@ const entityTemplates: IEntityTemplateMock[] = [
             type: 'object',
             properties: {
                 makat: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'מקט',
                 },
                 zira: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'זירה',
                 },
                 pageName: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'שם גיליון',
                 },
                 helpCategory: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'קטגורית עזר',
                 },
                 famaly: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'משפחה',
                     enum: ['קו אפור', 'קו אדום', 'קו סגול'],
                 },
                 scale: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'סקלה',
                     enum: ['1:20,000', '1:10,000', '1:5,000', '1:50,000'],
                 },
                 polygon: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'פוליגון',
-                    format: 'location',
+                    format: PropertyFormat.location,
                 },
                 availableCount: {
-                    type: 'number',
+                    type: PropertyType.number,
                     title: 'מספר זמין',
                 },
             },
@@ -673,37 +674,37 @@ const entityTemplates: IEntityTemplateMock[] = [
             type: 'object',
             properties: {
                 orderNumber: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'מספר הזמנה',
                 },
                 forUnit: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'ליחידה',
                 },
                 orderedBy: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'הוזמן על ידי',
                 },
                 family: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'משפחה',
                     enum: ['קו אפור', 'קו אדום', 'קו סגול'],
                 },
                 scale: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'סקלה',
                     enum: ['1:20,000', '1:10,000', '1:5,000', '1:50,000'],
                 },
                 pageName: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'שם גיליון',
                 },
                 amount: {
-                    type: 'number',
+                    type: PropertyType.number,
                     title: 'כמות',
                 },
                 orderStatus: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'סטטוס בקשה',
                     enum: ['הועבר לטיפול', 'חדש', 'מוכן למסירה', 'לוקט', 'נמסר - טופל'],
                 },

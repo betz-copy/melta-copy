@@ -7,7 +7,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { SelectAll } from './SelectAll';
 import TreeItem from './TreeItem';
 
-interface TreeProps<T extends Record<string, any>> extends Omit<RichTreeViewProProps<T, true>, 'onDragEnd' | 'items'> {
+interface TreeProps<T extends {}> extends Omit<RichTreeViewProProps<T, true>, 'onDragEnd' | 'items'> {
     // All of the treeItems that the tree has.
     treeItems: TreeViewBaseItem<T>[];
     getItemId: (item: T) => string;
@@ -32,26 +32,22 @@ interface TreeProps<T extends Record<string, any>> extends Omit<RichTreeViewProP
 
 export const flattenTree = <T extends {}>(
     treeItems: TreeViewBaseItem<T>[],
-    getItemId: (item: T) => string,
+    getItemId: (item: TreeViewBaseItem<T>) => string,
     shouldCountParents: boolean,
-    revertedTemplates: any[] = [],
-): any[] => {
+    revertedTemplates: TreeViewBaseItem<T>[] = [],
+): TreeViewBaseItem<T>[] => {
     treeItems.forEach((treeItem) => {
-        const { children, ...rest } = treeItem;
+        if (treeItem.children?.length) {
+            flattenTree(treeItem.children, getItemId, shouldCountParents, revertedTemplates);
 
-        if (children) {
-            flattenTree(children, getItemId, shouldCountParents, revertedTemplates);
-
-            if (shouldCountParents) revertedTemplates.push(rest);
-        } else {
-            revertedTemplates.push(rest);
-        }
+            if (shouldCountParents) revertedTemplates.push(treeItem);
+        } else revertedTemplates.push(treeItem);
     });
 
     return revertedTemplates;
 };
 
-const Tree = <T extends Record<string, any>>({
+const Tree = <T extends {}>({
     treeItems,
     onSelectItems,
     getItemId,
@@ -80,25 +76,25 @@ const Tree = <T extends Record<string, any>>({
 
     const memoizedTreeItem = useCallback(
         (props: TreeItemProps) => <TreeItem {...props} removeDivider={removeDivider} showIcon={showIcon} />,
-        [showIcon],
+        [showIcon, removeDivider],
     );
 
     const flattenTreeIds = useMemo(
         () => flattenTree(treeItems, getItemId, !selectionPropagation.parents).map(getItemId),
-        [getItemId, treeItems, selectionPropagation, flattenTree],
+        [getItemId, treeItems, selectionPropagation],
     );
 
     useEffect(() => {
         onSelectItems?.(selectedItemIds);
-    }, [selectedItemIds]);
+    }, [selectedItemIds, onSelectItems]);
 
     useEffect(() => {
         setExpandedItemsIds(preExpandedItemIds ?? []);
-    }, [preExpandedItemIds, setExpandedItemsIds]);
+    }, [preExpandedItemIds]);
 
     useEffect(() => {
         if (!_.isEqual(preSelectedItemsIds, selectedItemIds)) setSelectedItemIds(preSelectedItemsIds ?? []);
-    }, [preSelectedItemsIds, setSelectedItemIds]);
+    }, [preSelectedItemsIds, selectedItemIds]);
 
     return (
         <>

@@ -19,6 +19,10 @@ import { createDialogCategories, isPermissionsEquals, userHasNoPermissions } fro
 import BlueTitle from '../MeltaDesigns/BlueTitle';
 import ManagePermissions from './managePermissions';
 
+export interface ErrorResponseData {
+    metadata?: { message?: string };
+}
+
 const RoleDialog: React.FC<{
     handleClose: () => void;
     mode: 'create' | 'edit' | 'view';
@@ -53,9 +57,9 @@ const RoleDialog: React.FC<{
     );
 
     const { mutate: createRole } = useMutation((formRole: IRole) => createRoleRequest(formRole.name, formRole.permissions), {
-        onError: (error: AxiosError) => {
+        onError: (error: AxiosError<ErrorResponseData>) => {
             console.error('failed to upsert permission. error:', error);
-            const uniqueRoleNameError = (error.response?.data as any).metadata.message === 'role name needs to be unique';
+            const uniqueRoleNameError = error.response?.data.metadata?.message === 'role name needs to be unique';
             toast.error(
                 i18next.t(
                     `permissions.permissionsOfRoleDialog.${

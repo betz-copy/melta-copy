@@ -1,8 +1,8 @@
 import { logger } from '@microservices/shared';
 import 'elastic-apm-node/start';
+import * as http from 'node:http';
 import menash from 'menashmq';
 import { Client } from 'minio';
-import * as http from 'node:http';
 import config from './config';
 import Server from './express/server';
 import { declareTopology } from './utils/rabbit';
