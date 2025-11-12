@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { CookieOptions, Request, Response } from 'express';
 import config from '../../config';
 import UserService from '../../externalServices/userService';
 import { ShragaUser } from '../../utils/express/passport';
@@ -52,10 +52,10 @@ class AuthenticationController {
             token = await AuthenticationController.createUserToken(id);
         }
 
-        const cookieOptions = {
+        const cookieOptions: CookieOptions = {
             httpOnly,
             secure: !isDevelopment,
-            sameSite: (isDevelopment ? 'lax' : 'none') as 'lax' | 'none',
+            sameSite: isDevelopment ? 'lax' : 'none',
             path,
             domain,
         };
