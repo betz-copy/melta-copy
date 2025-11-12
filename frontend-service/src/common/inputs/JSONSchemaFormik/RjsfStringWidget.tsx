@@ -87,14 +87,14 @@ const RjsfTextWidget = ({
             variant={variant}
             fullWidth
             id={id}
-            placeholder={placeholder && placeholder?.length > 0 ? placeholder : String(defaultValue ?? '')}
+            placeholder={placeholder && !!placeholder?.length ? placeholder : String(defaultValue ?? '')}
             label={!hideLabel && (displayLabel ? label || schema.title : false)}
             autoFocus={autofocus}
             required={required}
             disabled={disabled}
             type={(options.inputType ?? inputType) as string}
             value={finalValue}
-            error={!hideError && rawErrors.length > 0}
+            error={!hideError && !!rawErrors.length}
             onChange={_onChange}
             onBlur={_onBlur}
             onFocus={_onFocus}

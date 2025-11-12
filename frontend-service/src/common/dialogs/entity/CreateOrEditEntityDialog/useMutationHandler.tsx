@@ -6,18 +6,18 @@ import React, { Dispatch, SetStateAction } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
-import { EntityWizardValues } from '..';
 import { environment } from '../../../../globals';
-import { IChildTemplateMapPopulated, IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
 import { ICreateOrUpdateWithRuleBreachDialogState, IExternalErrors, IMutationProps } from '../../../../interfaces/CreateOrEditEntityDialog';
+import { IChildTemplateMapPopulated, IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
 import { IEntity, IUniqueConstraint } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { IErrorResponse } from '../../../../interfaces/error';
 import { ActionTypes } from '../../../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreach } from '../../../../interfaces/ruleBreaches/ruleBreach';
 import { createEntityClientSideRequest } from '../../../../services/clientSideService';
 import { createEntityRequest, updateEntityRequestForMultiple } from '../../../../services/entitiesService';
 import { isChildTemplate } from '../../../../utils/templates';
-import { IErrorResponse } from '../../../../interfaces/error';
+import { EntityWizardValues } from '..';
 
 const { errorCodes } = environment;
 
@@ -35,7 +35,7 @@ const useMutationHandler = (
     const [_, navigate] = useLocation();
     let isLoading = false;
     let mutateAsync: MutateAsyncFn | undefined;
-    let childTemplate: IMongoChildTemplatePopulated | undefined = undefined;
+    let childTemplate: IMongoChildTemplatePopulated | undefined;
 
     const handleMutationError = (
         err: AxiosError,
@@ -130,10 +130,10 @@ const useMutationHandler = (
         },
     );
 
-    if (Object.keys(clientSideUserEntity || {}).length > 0) {
+    if (Object.keys(clientSideUserEntity || {}).length) {
         const queryClient = useQueryClient();
 
-        const childTemplates = queryClient.getQueryData<IChildTemplateMapPopulated>('getClientSideChildEntityTemplates')!;
+        const childTemplates = queryClient.getQueryData<IChildTemplateMapPopulated>('getClientSideChildTemplates')!;
         childTemplate = Array.from(childTemplates.values()).find((childTemplate) => childTemplate.parentTemplate._id === entityTemplate._id);
     }
     const { isLoading: isClientSideCreateLoading, mutateAsync: clientSideCreateMutation } = useMutation(
@@ -184,7 +184,7 @@ const useMutationHandler = (
                 mutationPromise,
                 {
                     pending: `${i18next.t(`actions.${isUpdate ? 'update' : 'create'}`)} ${
-                        entityTemplate.displayName.length > 0 ? entityTemplate.displayName : i18next.t('entity')
+                        entityTemplate.displayName.length ? entityTemplate.displayName : i18next.t('entity')
                     }`,
                     success: {
                         render({ data }: { data?: IEntity }) {
@@ -217,7 +217,7 @@ const useMutationHandler = (
                                     <Button
                                         variant="text"
                                         onClick={() => {
-                                            if (data) onError?.({ ...values, properties: { ...data?.properties } });
+                                            if (data) onError?.(values);
                                         }}
                                         sx={{ marginRight: '5px' }}
                                     >

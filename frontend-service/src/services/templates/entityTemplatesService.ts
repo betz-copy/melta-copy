@@ -3,11 +3,11 @@ import { QueryClient } from 'react-query';
 import { v4 as uuid } from 'uuid';
 import axios from '../../axios';
 import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from '../../common/wizards/entityTemplate';
+import { CommonFormInputProperties, FieldGroupData, GroupProperty, PropertyItem } from '../../common/wizards/entityTemplate/commonInterfaces';
 import {
     FilterModelToFilterRecord,
     filterTemplateToSearchFilter,
 } from '../../common/wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
-import { CommonFormInputProperties, FieldGroupData, GroupProperty, PropertyItem } from '../../common/wizards/entityTemplate/commonInterfaces';
 import { environment } from '../../globals';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import {
@@ -118,18 +118,18 @@ const entityTemplateObjectToEntityTemplateForm = (
             serialStarter: value.serialStarter,
             relationshipReference: value.relationshipReference
                 ? {
-                      relationshipTemplateId: value.relationshipReference.relationshipTemplateId,
-                      relationshipTemplateDirection: value.relationshipReference.relationshipTemplateDirection,
-                      relatedTemplateId: value.relationshipReference.relatedTemplateId,
-                      relatedTemplateField: value.relationshipReference.relatedTemplateField,
-                      filters: value.relationshipReference.filters
-                          ? FilterModelToFilterRecord(
-                                parseFilters(value.relationshipReference.filters),
-                                value.relationshipReference.relatedTemplateId,
-                                queryClient,
-                            )
-                          : undefined,
-                  }
+                    relationshipTemplateId: value.relationshipReference.relationshipTemplateId,
+                    relationshipTemplateDirection: value.relationshipReference.relationshipTemplateDirection,
+                    relatedTemplateId: value.relationshipReference.relatedTemplateId,
+                    relatedTemplateField: value.relationshipReference.relatedTemplateField,
+                    filters: value.relationshipReference.filters
+                        ? FilterModelToFilterRecord(
+                            parseFilters(value.relationshipReference.filters),
+                            value.relationshipReference.relatedTemplateId,
+                            queryClient,
+                        )
+                        : undefined,
+                }
                 : undefined,
             archive: value.archive || undefined,
             identifier: value.identifier || undefined,
@@ -417,14 +417,14 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 serialCurrent: type === 'serialNumber' ? serialStarter : undefined,
                 relationshipReference: relationshipReference
                     ? {
-                          relationshipTemplateId: relationshipReference!.relationshipTemplateId,
-                          relationshipTemplateDirection: relationshipReference!.relationshipTemplateDirection,
-                          relatedTemplateId: relationshipReference!.relatedTemplateId,
-                          relatedTemplateField: relationshipReference!.relatedTemplateField,
-                          filters: relationshipReference.filters
-                              ? filterTemplateToSearchFilter(relationshipReference.filters, relationshipReference.relatedTemplateId, queryClient)
-                              : undefined,
-                      }
+                        relationshipTemplateId: relationshipReference.relationshipTemplateId,
+                        relationshipTemplateDirection: relationshipReference.relationshipTemplateDirection,
+                        relatedTemplateId: relationshipReference.relatedTemplateId,
+                        relatedTemplateField: relationshipReference.relatedTemplateField,
+                        filters: relationshipReference.filters
+                            ? filterTemplateToSearchFilter(relationshipReference.filters, relationshipReference.relatedTemplateId, queryClient)
+                            : undefined,
+                    }
                     : undefined,
                 comment,
                 expandedUserField,
@@ -442,7 +442,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             if (hide) schema.hide.push(name);
             if (preview) propertiesPreview.push(name);
             if (mapSearch) mapSearchProperties.push(name);
-            if (type === 'serialNumber') serialsUniqueConstraints.push([name]);
+            if (type === 'serialNumber') serialsUniqueConstraints.push(name);
             if (type === 'enum' || type === 'enumArray') {
                 Object.entries(optionColors).forEach(([option, enumColor]) => {
                     if (!enumColor) return;
@@ -528,14 +528,14 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 serialCurrent: type === 'serialNumber' ? serialStarter : undefined,
                 relationshipReference: relationshipReference
                     ? {
-                          relationshipTemplateId: relationshipReference!.relationshipTemplateId,
-                          relationshipTemplateDirection: relationshipReference!.relationshipTemplateDirection,
-                          relatedTemplateId: relationshipReference!.relatedTemplateId,
-                          relatedTemplateField: relationshipReference!.relatedTemplateField,
-                          filters: relationshipReference.filters
-                              ? filterTemplateToSearchFilter(relationshipReference.filters, relationshipReference.relatedTemplateId, queryClient)
-                              : undefined,
-                      }
+                        relationshipTemplateId: relationshipReference.relationshipTemplateId,
+                        relationshipTemplateDirection: relationshipReference.relationshipTemplateDirection,
+                        relatedTemplateId: relationshipReference.relatedTemplateId,
+                        relatedTemplateField: relationshipReference.relatedTemplateField,
+                        filters: relationshipReference.filters
+                            ? filterTemplateToSearchFilter(relationshipReference.filters, relationshipReference.relatedTemplateId, queryClient)
+                            : undefined,
+                    }
                     : undefined,
                 comment,
                 expandedUserField,
@@ -554,7 +554,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             if (hide) schema.hide.push(name);
             if (preview) propertiesPreview.push(name);
             if (mapSearch) mapSearchProperties.push(name);
-            if (type === 'serialNumber') serialsUniqueConstraints.push([name]);
+            if (type === 'serialNumber') serialsUniqueConstraints.push(name);
             if (type === 'enum' || type === 'enumArray') {
                 Object.entries(optionColors).forEach(([option, enumColor]) => {
                     if (!enumColor) return;
@@ -598,6 +598,8 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         if (required) schema.required.push(name);
     });
 
+    const serialUniqueConstraints = serialsUniqueConstraints.map((serial) => ({ groupName: '', properties: [serial] }))
+
     return {
         ...restOfProperties,
         properties: schema,
@@ -609,7 +611,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         propertiesTypeOrder,
         propertiesPreview,
         enumPropertiesColors,
-        uniqueConstraints: restOfProperties.uniqueConstraints || [],
+        uniqueConstraints: [...restOfProperties.uniqueConstraints ?? [], ...serialUniqueConstraints],
         mapSearchProperties,
         fieldGroups: updatedFieldsGroups,
         walletTransfer: walletTransfer
@@ -636,11 +638,10 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
     const entityTemplate = formToJSONSchema(newEntityTemplate, false, queryClient);
 
     if (newEntityTemplate.icon) {
-        if (newEntityTemplate.icon.file instanceof File) {
+        if (newEntityTemplate.icon.file instanceof File)
             formData.append('file', newEntityTemplate.icon.file);
-        } else if (newEntityTemplate.icon.file?.name) {
+        else if (newEntityTemplate.icon.file?.name)
             formData.append('iconFileId', newEntityTemplate.icon.file.name);
-        }
     }
 
     newEntityTemplate.documentTemplatesIds?.filter((item): item is File => item instanceof File).forEach((file) => formData.append('files', file));
@@ -651,21 +652,17 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
         })
         .map((item) => (typeof item === 'string' ? item : item.name));
 
-    if (docTemplateIds?.length) {
+    if (docTemplateIds?.length)
         formData.append('documentTemplatesIds', JSON.stringify(docTemplateIds));
-    }
 
-    if (entityTemplate.enumPropertiesColors) {
+    if (entityTemplate.enumPropertiesColors)
         formData.append('enumPropertiesColors', JSON.stringify(entityTemplate.enumPropertiesColors));
-    }
 
-    if (entityTemplate.propertiesTypeOrder.includes('archiveProperties')) {
+    if (entityTemplate.propertiesTypeOrder.includes('archiveProperties'))
         entityTemplate.propertiesTypeOrder = entityTemplate.propertiesTypeOrder.filter((str) => str !== 'archiveProperties');
-    }
 
-    if (entityTemplate.mapSearchProperties) {
+    if (entityTemplate.mapSearchProperties)
         formData.append('mapSearchProperties', JSON.stringify(entityTemplate.mapSearchProperties));
-    }
 
     formData.append('displayName', entityTemplate.displayName);
     formData.append('name', entityTemplate.name);
@@ -685,9 +682,12 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
 };
 
 const updateEntityTemplateStatusRequest = async (entityTemplateId: string, disabledStatus: boolean) => {
-    const { data } = await axios.patch<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}/status`, {
-        disabled: disabledStatus,
-    });
+    const { data } = await axios.patch<{ entityTemplate: IMongoEntityTemplatePopulated; childTemplates: IMongoChildTemplatePopulated[] }>(
+        `${entityTemplates}/${entityTemplateId}/status`,
+        {
+            disabled: disabledStatus,
+        },
+    );
     return data;
 };
 

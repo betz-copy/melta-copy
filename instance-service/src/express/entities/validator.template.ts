@@ -5,6 +5,7 @@ import {
     FilterLogicalOperator,
     getFilterFromChildTemplate,
     IEntitySingleProperty,
+    IEntityTemplate,
     IFilterGroup,
     IFilterOfField,
     IMongoEntityTemplate,
@@ -330,7 +331,7 @@ export class EntityValidator extends DefaultController {
     private validateSortOfSearchBatch(searchBody: ISearchBatchBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>) {
         const templateIds = Object.keys(searchBody.templates);
 
-        searchBody.sort.forEach(({ field }, sortIndex) => {
+        searchBody.sort?.forEach(({ field }, sortIndex) => {
             templateIds.forEach((templateId, templateIndex) => {
                 const fieldTemplate = entityTemplatesMap.get(templateId)!.properties.properties[field];
                 if (!fieldTemplate) {
@@ -479,9 +480,9 @@ export class EntityValidator extends DefaultController {
         const searchBody: IGetExpandedEntityBody['filters'] = req.body.filters;
         const templateIds = Object.keys(searchBody);
         const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({ ids: templateIds });
-        if (entityTemplates.length < templateIds.length) {
+        if (entityTemplates.length < templateIds.length)
             throw new ValidationError(`some of the templates in search doesn't exist. found only [${entityTemplates.map(({ _id }) => _id)}]`);
-        }
+
         const entityTemplatesMap = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
 
         const entityTemplatesForValidationMap: Map<string, IMongoEntityTemplate> = new Map(
@@ -524,7 +525,7 @@ export const getFilesName = (files: string[]): string => {
  */
 export const addStringFieldsAndNormalizeSpecialStringValues = async (
     entityProperties: Record<string, any>,
-    entityTemplate: IMongoEntityTemplate,
+    entityTemplate: IMongoEntityTemplate | IEntityTemplate,
     entityTemplateService: EntityTemplateManagerService,
     coloredFields?: Record<string, string>,
     recursiveRelationshipReference = false,
@@ -625,6 +626,7 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
 
             if (type === 'string' && format === 'location') {
                 const location = typeof propertyValue === 'string' ? JSON.parse(propertyValue) : propertyValue;
+
                 normalizedEntity[key] = getNeo4jLocation(location.location, entityProperties, key);
                 normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = location.location;
                 normalizedEntity[`${key}${neo4j.locationCoordinateSystemSuffix}`] = location.coordinateSystem;

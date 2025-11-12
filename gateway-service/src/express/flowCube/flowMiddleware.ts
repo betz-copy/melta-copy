@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
 import { BadRequestError, ForbiddenError } from '@microservices/shared';
+import { NextFunction, Request, Response } from 'express';
 import config from '../../config';
 import UserService from '../../externalServices/userService';
 

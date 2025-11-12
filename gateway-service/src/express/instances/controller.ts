@@ -1,9 +1,9 @@
+import { IDeleteEntityBody, ISearchEntitiesByLocationBody } from '@microservices/shared';
+import { Request, Response } from 'express';
 import { promises as fsp } from 'fs';
 import { promisify } from 'util';
-import { Request, Response } from 'express';
-import { IDeleteEntityBody, ISearchEntitiesByLocationBody } from '@microservices/shared';
-import InstancesManager from './manager';
 import DefaultController from '../../utils/express/controller';
+import InstancesManager from './manager';
 
 class InstancesController extends DefaultController<InstancesManager> {
     constructor(workspaceId: string) {
@@ -24,7 +24,7 @@ class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async exportEntities(req: Request, res: Response) {
-        const filePath = await this.manager.exportEntities(req.body);
+        const filePath = await this.manager.exportEntities(req.body, req.user!.id);
         try {
             await promisify(res.sendFile.bind(res))(filePath);
         } finally {
@@ -34,6 +34,7 @@ class InstancesController extends DefaultController<InstancesManager> {
 
     async loadEntities(req: Request, res: Response) {
         const { templateId, insertBrokenEntities, childTemplateId } = req.body;
+
         res.json(
             await this.manager.loadEntities(
                 templateId,
@@ -48,7 +49,7 @@ class InstancesController extends DefaultController<InstancesManager> {
     async getChangedEntitiesFromExcel(req: Request, res: Response) {
         const { templateId, childTemplateId } = req.body;
 
-        res.json(await this.manager.getChangedEntitiesFromExcel(templateId, req.files?.[0] || req.file!, childTemplateId));
+        res.json(await this.manager.getChangedEntitiesFromExcel(templateId, req.files?.[0] || req.file!, req.user!.id, childTemplateId));
     }
 
     async editManyEntitiesByExcel(req: Request, res: Response) {

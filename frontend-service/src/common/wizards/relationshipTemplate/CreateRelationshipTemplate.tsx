@@ -1,15 +1,15 @@
-import React from 'react';
-import { TextField, Autocomplete, Grid } from '@mui/material';
-import * as Yup from 'yup';
+import { Autocomplete, Grid, TextField } from '@mui/material';
 import i18next from 'i18next';
+import React from 'react';
 import { useQuery, useQueryClient } from 'react-query';
-import { RelationshipTemplateWizardValues } from './index';
-import { StepComponentProps } from '../index';
+import * as Yup from 'yup';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { variableNameValidation } from '../../../utils/validation';
 import { getRelationshipInstancesCountByTemplateIdRequest } from '../../../services/entitiesService';
 import { useUserStore } from '../../../stores/user';
 import { getAllWritePermissionEntityTemplates } from '../../../utils/permissions/templatePermissions';
+import { variableNameValidation } from '../../../utils/validation';
+import { StepComponentProps } from '../index';
+import { RelationshipTemplateWizardValues } from './index';
 
 const createRelationshipTemplateNameSchema = {
     name: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),

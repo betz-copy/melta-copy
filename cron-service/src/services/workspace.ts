@@ -1,5 +1,5 @@
-import axios from 'axios';
 import { IWorkspace } from '@microservices/shared';
+import axios from 'axios';
 import config from '../config';
 
 const {
@@ -13,12 +13,12 @@ class WorkspaceService {
     });
 
     static async getWorkspaceIds(type: IWorkspace['type']) {
-        const { data } = await this.api.post<string[]>(`/ids`, { type });
+        const { data } = await WorkspaceService.api.post<string[]>(`/ids`, { type });
         return data;
     }
 
     static async getWorkspaceHierarchyIds(id: string) {
-        const { data } = await this.api.get<string[]>(`/${id}/ids/hierarchy`);
+        const { data } = await WorkspaceService.api.get<string[]>(`/${id}/ids/hierarchy`);
         return data;
     }
 }

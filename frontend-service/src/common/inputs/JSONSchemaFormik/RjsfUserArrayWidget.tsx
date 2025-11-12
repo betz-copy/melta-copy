@@ -2,7 +2,7 @@ import { WidgetProps } from '@rjsf/utils';
 import React, { useState } from 'react';
 import { UserArrayInput } from '../UserArrayInput';
 
-const RjsfUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, onFocus, options }: WidgetProps) => {
+const RjsfUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, onFocus, options, required }: WidgetProps) => {
     const [inputValue, setInputValue] = useState('');
     const { defaultValue } = options;
 
@@ -22,6 +22,7 @@ const RjsfUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, o
 
     return (
         <UserArrayInput
+            required={required}
             mode="internal"
             value={null}
             label={label}
@@ -34,7 +35,7 @@ const RjsfUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, o
             }}
             onBlur={onBlur}
             onFocus={onFocus}
-            isError={rawErrors.length > 0}
+            isError={!!rawErrors.length}
             displayValue={inputValue}
             onDisplayValueChange={(_, newDisplayValue) => setInputValue(newDisplayValue)}
             currentUsers={currentUsers}

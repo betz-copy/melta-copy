@@ -1,8 +1,8 @@
 import { Checkbox, Chip, Grid, ListItemText, MenuItem } from '@mui/material';
+import i18next from 'i18next';
 import React from 'react';
 import { IAGGridSetFilter } from '../../../utils/agGrid/interfaces';
 import { StyledFilterInput } from './StyledFilterInput';
-import i18next from 'i18next';
 
 interface MultipleSelectFilterInputProps {
     filterField: IAGGridSetFilter | undefined;
@@ -24,8 +24,8 @@ const MultipleSelectFilterInput: React.FC<MultipleSelectFilterInputProps> = ({
     allowEmpty = true,
 }) => {
     const expectedValues = [...enumOptions, ...(allowEmpty ? [null] : [])];
-    const allSelected = expectedValues.length > 0 && expectedValues.every((val) => filterField?.values?.includes(val));
-    const someSelected = (filterField?.values?.length ?? 0) > 0 && !allSelected;
+    const allSelected = !!expectedValues.length && expectedValues.every((val) => filterField?.values?.includes(val));
+    const someSelected = !!filterField?.values?.length && !allSelected;
 
     return (
         <Grid container justifyContent="center">
@@ -37,21 +37,23 @@ const MultipleSelectFilterInput: React.FC<MultipleSelectFilterInputProps> = ({
                 value={filterField?.values ? filterField.values : []}
                 error={isError}
                 helperText={helperText}
-                inputProps={{
-                    readOnly,
-                    style: {
-                        textOverflow: 'ellipsis',
+                slotProps={{
+                    htmlInput: {
+                        readOnly,
+                        style: {
+                            textOverflow: 'ellipsis',
+                        },
                     },
-                }}
-                SelectProps={{
-                    multiple: true,
-                    renderValue: (selected: any) => (
-                        <div>
-                            {selected.map((value: string) => (
-                                <Chip key={value} label={value === null ? i18next.t('filters.empty') : value} style={{ marginRight: 5 }} />
-                            ))}
-                        </div>
-                    ),
+                    select: {
+                        multiple: true,
+                        renderValue: (selected: any) => (
+                            <div>
+                                {selected.map((value: string) => (
+                                    <Chip key={value} label={value === null ? i18next.t('filters.empty') : value} style={{ marginRight: 5 }} />
+                                ))}
+                            </div>
+                        ),
+                    },
                 }}
             >
                 <MenuItem>

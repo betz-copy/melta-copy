@@ -1,5 +1,5 @@
-import { Stream } from 'stream';
 import { chunk } from 'llm-chunk';
+import { Stream } from 'stream';
 import config from '../config';
 import { IElasticDoc } from '../express/semantics/interface';
 import ModelEmbeddingApiService from '../externalServices/model/embedding';

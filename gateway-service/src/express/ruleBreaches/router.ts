@@ -1,6 +1,7 @@
-import { Router } from 'express';
 import { createController, ValidateRequest } from '@microservices/shared';
+import { Router } from 'express';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
+import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 import RuleBreachesController from './controller';
 import {
     approveRuleBreachRequestRequestSchema,
@@ -13,7 +14,6 @@ import {
     searchRuleBreachAlertsRequestSchema,
     searchRuleBreachRequestsRequestSchema,
 } from './validator.schema';
-import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 
 const RulesBreachesRouter: Router = Router();
 

@@ -1,9 +1,9 @@
 /* eslint-disable no-console */
 import { Request } from 'express';
-import DefaultController from '../../utils/express/controller';
+import config from '../../config';
 import InstancesService from '../../externalServices/instanceService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
-import config from '../../config';
+import DefaultController from '../../utils/express/controller';
 
 class ClientSideValidator extends DefaultController {
     private workspaceId: string;

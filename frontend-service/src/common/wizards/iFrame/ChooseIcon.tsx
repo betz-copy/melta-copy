@@ -1,6 +1,6 @@
 import React from 'react';
-import { StepComponentProps } from '../index';
 import { ImagePicker } from '../../inputs/ImagePicker';
+import { StepComponentProps } from '../index';
 import { IFrameWizardValues } from '.';
 
 const ChooseIFrameIcon: React.FC<StepComponentProps<IFrameWizardValues>> = ({ values, setFieldValue }) => (

@@ -1,5 +1,5 @@
+import { FilePathSchema, iconFileSchema, MongoIdSchema, WorkspaceNameSchema, WorkspaceTypes } from '@microservices/shared';
 import Joi from 'joi';
-import { WorkspaceTypes, FilePathSchema, iconFileSchema, MongoIdSchema, WorkspaceNameSchema } from '@microservices/shared';
 import { ExtendedJoi } from '../../utils/joi';
 
 const metadataSchema = Joi.object({

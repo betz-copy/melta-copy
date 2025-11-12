@@ -5,7 +5,7 @@ import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
-import { HTML5Backend, getEmptyImage } from 'react-dnd-html5-backend';
+import { getEmptyImage, HTML5Backend } from 'react-dnd-html5-backend';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
@@ -286,12 +286,12 @@ export const FieldBlockWrapper = ({
     const isWalletTemplate = hasAccountBalanceField(Object.values(values.properties) as PropertyItem[]);
 
     const countMapSearchProperties = Object.values(values.properties).flatMap((property: any) => {
-        if (property.type === 'field' && property.data?.mapSearch) {
+        if (property.type === 'field' && property.data?.mapSearch)
             return [property];
-        }
-        if (property.type === 'group' && Array.isArray(property.fields)) {
+
+        if (property.type === 'group' && Array.isArray(property.fields))
             return property.fields.filter((field) => field.mapSearch);
-        }
+
         return [];
     }).length;
 
@@ -312,7 +312,7 @@ export const FieldBlockWrapper = ({
             },
         },
     );
-    const areThereAnyInstances = isEditMode && areThereInstancesByTemplateIdResponse!.count > 0;
+    const areThereAnyInstances = isEditMode && !!areThereInstancesByTemplateIdResponse?.count;
 
     const getNewValues = (
         indexesInTypes: { index: number; type: PropertiesTypes; groupIndex?: number }[],
@@ -489,7 +489,7 @@ export const FieldBlockWrapper = ({
 
     const remove = (
         index: number,
-        isNewProperty: Boolean,
+        isNewProperty: boolean,
         propertyType: PropertiesTypes,
         setShowAreUSureDialogForRemoveProperty: (v: boolean) => void,
         groupIndex?: number,
@@ -676,7 +676,7 @@ export const FieldBlockWrapper = ({
                         setValues((prev) => ({
                             ...prev,
                             uniqueConstraints:
-                                typeof newUniqueConstraints === 'function' ? newUniqueConstraints(prev.uniqueConstraints!) : newUniqueConstraints,
+                                typeof newUniqueConstraints === 'function' ? newUniqueConstraints(prev.uniqueConstraints) : newUniqueConstraints,
                         }));
                     }}
                     initialValues={initialValues}

@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import ActivityLogController from './controller';
 import { createWorkspacesController } from '../../utils/express';
+import ActivityLogController from './controller';
 
 const ActivityLogRouter: Router = Router();
 

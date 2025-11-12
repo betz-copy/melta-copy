@@ -1,5 +1,5 @@
-import { jwtDecode } from 'jwt-decode';
 import cookies from 'js-cookie';
+import { jwtDecode } from 'jwt-decode';
 import { environment } from '../globals';
 import { UserState } from '../stores/user';
 

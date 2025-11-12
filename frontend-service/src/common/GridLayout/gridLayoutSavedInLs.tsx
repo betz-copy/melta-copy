@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { GridLayout } from '.';
 import { environment } from '../../globals';
 import { generateLayoutDetails, generateNewItemSizes } from '../../utils/charts/defaultChartSizes';
 import { LocalStorage } from '../../utils/localStorage';
+import { GridLayout } from '.';
 import { LayoutItem } from './interface';
 
 const { defaultColumnSizes } = environment.charts;
@@ -38,7 +38,7 @@ const LocalStorageGridLayout = <T extends { _id: string }>({
     useEffect(() => {
         const savedLayout = getSavedLayout();
 
-        if (!savedLayout && items.length > 0) layout.set(generateLayoutDetails(items).lg);
+        if (!savedLayout && !!items.length) layout.set(generateLayoutDetails(items).lg);
 
         if (savedLayout && items.length > savedLayout.length) {
             const updatedLayout = [...savedLayout];
@@ -81,7 +81,7 @@ const LocalStorageGridLayout = <T extends { _id: string }>({
 
     return (
         <div>
-            {layout.value.length > 0 && (
+            {!!layout.value.length && (
                 <GridLayout
                     style={{ direction: 'ltr' }}
                     rowHeight={30}

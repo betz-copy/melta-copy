@@ -1,4 +1,4 @@
-import { Logger, format } from 'winston';
+import { format, Logger } from 'winston';
 import config from '../../config';
 import initializeLogger, { IExtra } from './loggerFactory';
 

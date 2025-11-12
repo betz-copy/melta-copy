@@ -1,13 +1,13 @@
-import { ClientSession, connection, FilterQuery, Model, PipelineStage, Types } from 'mongoose';
 import {
     IMongoProcessTemplate,
     IMongoProcessTemplatePopulated,
+    IProcessInstance,
     IProcessTemplate,
     IStepInstance,
-    IProcessInstance,
     ProcessInstanceDocument,
     Status,
 } from '@microservices/shared';
+import { ClientSession, connection, FilterQuery, Model, PipelineStage, Types } from 'mongoose';
 import config from '../../config';
 
 export const transaction = async <T, Func extends (session: ClientSession) => Promise<T>>(func: Func): Promise<T> => {

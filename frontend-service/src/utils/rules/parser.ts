@@ -1,11 +1,11 @@
-import { JsonGroup, RuleProperties, JsonItem, JsonRuleGroupExt, JsonRule } from '@react-awesome-query-builder/mui';
+import { JsonGroup, JsonItem, JsonRule, JsonRuleGroupExt, RuleProperties } from '@react-awesome-query-builder/mui';
+import { environment } from '../../globals';
 import { IFormula } from '../../interfaces/rules/formula';
-import { FunctionObject, ValueType } from './interfaces';
-import { IRegularFunction } from '../../interfaces/rules/formula/function';
 import { IArgument, IConstant, IPropertyOfVariable, IVariable } from '../../interfaces/rules/formula/argument';
 import { IEquation, IOperatorBool } from '../../interfaces/rules/formula/equation';
+import { IRegularFunction } from '../../interfaces/rules/formula/function';
 import { IAggregationGroup, IGroup } from '../../interfaces/rules/formula/group';
-import { environment } from '../../globals';
+import { FunctionObject, ValueType } from './interfaces';
 
 const { formulaGetTodayVarName } = environment;
 

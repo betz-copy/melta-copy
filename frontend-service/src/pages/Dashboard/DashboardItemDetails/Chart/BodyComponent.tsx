@@ -2,16 +2,16 @@ import { Grid } from '@mui/material';
 import i18next from 'i18next';
 import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';
+import { getDefaultFilterFromTemplate } from '../../../../common/EntitiesPage/TemplateTablesView';
 import { StepComponentProps } from '../../../../common/wizards';
 import { EntitiesTable } from '../../../../common/wizards/excel/excelSteps/EntitiesTable';
+import { IChildTemplateMap, IChildTemplatePopulated } from '../../../../interfaces/childTemplates';
 import { ChartForm } from '../../../../interfaces/dashboard';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { useUserStore } from '../../../../stores/user';
+import { getFilterModal } from '../../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { useDebouncedFilter } from '../../../../utils/dashboard/useDebouncedFilter';
 import { ChartGenerator } from '../../../Charts/chartGenerator.tsx';
-import { IChildTemplateMap, IChildTemplatePopulated } from '../../../../interfaces/childTemplates';
-import { getFilterModal } from '../../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
-import { getDefaultFilterFromTemplate } from '../../../../common/EntitiesPage/TemplateTablesView';
-import { useUserStore } from '../../../../stores/user';
 
 export const getRelevantEntityTemplate = (
     entityTemplates: IEntityTemplateMap,
@@ -19,9 +19,9 @@ export const getRelevantEntityTemplate = (
     childTemplateId?: string,
 ): IChildTemplatePopulated | IMongoEntityTemplatePopulated => {
     const queryClient = useQueryClient();
-    const childEntityTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 
-    const childEntityTemplate = childTemplateId ? childEntityTemplates.get(childTemplateId) : undefined;
+    const childEntityTemplate = childTemplateId ? childTemplates.get(childTemplateId) : undefined;
     const fatherEntityTemplate = entityTemplates.get(templateId)!;
     return childEntityTemplate || fatherEntityTemplate;
 };

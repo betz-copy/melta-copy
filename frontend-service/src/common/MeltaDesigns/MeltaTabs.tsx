@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
-import { Grid, Box, Tab, useTheme } from '@mui/material';
-import { TabContext, TabList, TabPanel } from '@mui/lab';
-import i18next from 'i18next';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
+import { Box, Grid, Tab, useTheme } from '@mui/material';
+import i18next from 'i18next';
+import React, { useEffect } from 'react';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 
 const MeltaTabs: React.FC<{

@@ -9,17 +9,12 @@
         "test": "jest --coverage",
         "build": "tsc",
         "build:watch": "tsc --watch",
-        "lint": "eslint . --ext .ts",
-        "lint:fix": "eslint . --ext .ts --fix",
-        "prettier": "prettier --config .prettierrc.js 'src/**/*.ts' --check",
-        "prettier:fix": "prettier --config .prettierrc.js 'src/**/*.ts' --write",
         "clean": "rimraf dist"
     },
     "author": "Alexander Gurevich",
     "license": "ISC",
     "dependencies": {
         "@microservices/shared": "^1.0.0",
-        "ioredis": "^5.4.1",
         "menashmq": "^0.1.6",
         "neo4j-driver": "^5.23.0",
         "ts-retry-promise": "^0.8.1"

@@ -31,7 +31,7 @@ const getFilterOperator = (filterField: IFieldChip['filterField']) => {
 
             return operatorMap[filterField.type];
         case 'set':
-            return filterField.values && filterField.values.length > 0 ? '$in' : null;
+            return filterField.values && !!filterField.values.length ? '$in' : null;
         default:
             console.warn('Unsupported filter type:', filterField);
             return null;
@@ -78,7 +78,7 @@ const childTemplatePropertySchema = (propKey: string, fieldName: string) =>
         display: Yup.boolean().optional(),
     })
         .optional()
-        .test('filter-default-match', i18next.t('validation.matchFilter', { fieldName }), function (value) {
+        .test('filter-default-match', i18next.t('validation.matchFilter', { fieldName }), (value) => {
             if (!value) return true;
 
             const { defaultValue, filters } = value;

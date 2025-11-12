@@ -1,16 +1,17 @@
 /* eslint-disable no-underscore-dangle */
-import mongoose from 'mongoose';
-import * as request from 'supertest';
+
 import { Express } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import Server from '../src/express/server';
+import mongoose from 'mongoose';
+import * as request from 'supertest';
+import { ICategory } from '../src/express/category/interface';
 
 import CategoryManager from '../src/express/category/manager';
-import EntityTemplateManager from '../src/express/entityTemplate/manager';
 import categoryModel from '../src/express/category/model';
-import EntityTemplateModel from '../src/express/entityTemplate/model';
 import { IEntityTemplate } from '../src/express/entityTemplate/interface';
-import { ICategory } from '../src/express/category/interface';
+import EntityTemplateManager from '../src/express/entityTemplate/manager';
+import EntityTemplateModel from '../src/express/entityTemplate/model';
+import Server from '../src/express/server';
 import * as relationshipTemplateManager from '../src/relationshipTemplateManager';
 
 jest.mock('../src/relationshipTemplateManager');

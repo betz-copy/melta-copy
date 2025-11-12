@@ -1,8 +1,8 @@
+import { Add as AddIcon } from '@mui/icons-material';
+import { Typography, useTheme } from '@mui/material';
+import i18next from 'i18next';
 import React from 'react';
 import { useLocation } from 'wouter';
-import i18next from 'i18next';
-import { Typography, useTheme } from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 
 const AddNewChartButton: React.FC = () => {

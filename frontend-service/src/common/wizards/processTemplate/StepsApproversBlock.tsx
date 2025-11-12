@@ -4,11 +4,11 @@ import { AccordionDetails, AccordionSummary, Box, FormControlLabel, Grid, Typogr
 import { FieldArray, FormikErrors } from 'formik';
 import i18next from 'i18next';
 import React, { useState } from 'react';
-import { ProcessTemplateWizardValues } from '.';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import UserAutocomplete from '../../inputs/UserAutocomplete';
 import MeltaSwitch from '../../MeltaDesigns/MeltaSwitch';
 import { FieldBlockAccordion } from '../entityTemplate/fieldBlock/interfaces';
+import { ProcessTemplateWizardValues } from '.';
 import CreateUserCard from './ApproverCard';
 import { StepsGenericBlockProps } from './StepsBlocksInterface';
 

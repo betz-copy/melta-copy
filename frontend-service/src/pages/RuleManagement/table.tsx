@@ -13,11 +13,11 @@ import { IRuleBreachAlertPopulated } from '../../interfaces/ruleBreaches/ruleBre
 import { IRuleBreachRequestPopulated, RuleBreachRequestStatus } from '../../interfaces/ruleBreaches/ruleBreachRequest';
 import { getRuleBreachAlertsRequest, getRuleBreachRequestsRequest } from '../../services/ruleBreachesService';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { agGridLocaleText } from '../../utils/agGrid/agGridLocaleText';
 import { dateColDef, enumArrayColDef, translatedEnumColDef } from '../../utils/agGrid/commonColDefs';
 import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
 import { trycatch } from '../../utils/trycatch';
-import { useWorkspaceStore } from '../../stores/workspace';
 
 const getDatasource = (breachType: BreachType, onFail: ((err: unknown) => void) | undefined): IServerSideDatasource => {
     return {

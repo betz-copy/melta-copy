@@ -1,7 +1,7 @@
+import { addPropertyToRequest, ValidationError } from '@microservices/shared';
 import axios from 'axios';
 import { Request } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { addPropertyToRequest, ValidationError } from '@microservices/shared';
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import DefaultController from '../../utils/express/controller';
 import { trycatch } from '../../utils/lib';

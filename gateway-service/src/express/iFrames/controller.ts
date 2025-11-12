@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { IFrameManager } from './manager';
-import DefaultController from '../../utils/express/controller';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
+import DefaultController from '../../utils/express/controller';
+import { IFrameManager } from './manager';
 
 export class IFrameController extends DefaultController<IFrameManager> {
     constructor(workspaceId: string) {

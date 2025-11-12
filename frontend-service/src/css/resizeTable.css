@@ -9,7 +9,7 @@
     background-repeat: no-repeat;
     background-origin: content-box;
     box-sizing: border-box;
-    background-image: url('/icons/expand_more.svg');
+    background-image: url("/icons/expand_more.svg");
     background-position: bottom right;
 }
 

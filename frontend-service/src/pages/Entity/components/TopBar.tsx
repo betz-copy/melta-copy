@@ -2,13 +2,13 @@ import { AppRegistration } from '@mui/icons-material';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import React from 'react';
 import { Link } from 'wouter';
-import { INestedRelationshipTemplates } from '..';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
 import { IEntityExpanded } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { getEntityTemplateColor } from '../../../utils/colors';
+import { INestedRelationshipTemplates } from '..';
 import { ActivityLog } from './activityLog';
 import { Print } from './print';
 

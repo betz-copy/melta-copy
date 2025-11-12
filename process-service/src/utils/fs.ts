@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
-import * as fs from 'fs';
+
 import { once } from 'events';
+import * as fs from 'fs';
 
 interface CreateReadStreamOptions {
     flags?: string;

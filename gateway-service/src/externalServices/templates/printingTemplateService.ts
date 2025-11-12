@@ -1,7 +1,7 @@
 import { IMongoPrintingTemplate, ISearchEntityTemplatesBody } from '@microservices/shared';
 import config from '../../config';
-import TemplatesManagerService from '.';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
+import TemplatesManagerService from '.';
 
 const {
     templateService: {

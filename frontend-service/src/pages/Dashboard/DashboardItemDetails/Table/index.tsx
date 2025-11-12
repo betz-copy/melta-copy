@@ -6,7 +6,6 @@ import React, { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation, useParams } from 'wouter';
-import DashboardItemDetails from '..';
 import { ErrorToast } from '../../../../common/ErrorToast';
 import { FilterModelToFilterRecord } from '../../../../common/wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
 import { environment } from '../../../../globals';
@@ -16,6 +15,7 @@ import { createDashboardItem, deleteDashboardItem, editDashboardItem, getDashboa
 import { parseFilters } from '../../../../services/templates/entityTemplatesService';
 import { dashboardInitialValues, tableDetailsSchema, tableFilterDetailsSchema, tableMetaDataToBackend } from '../../../../utils/dashboard/formik';
 import FilterSideBar from '../../../Charts/ChartPage/filterSideBar';
+import DashboardItemDetails from '..';
 import BodyComponent from './BodyComponent';
 import SideBarDetails from './sideBarDetails';
 

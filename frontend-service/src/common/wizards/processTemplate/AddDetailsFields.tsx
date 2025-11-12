@@ -1,17 +1,17 @@
-import React from 'react';
 import { Grid } from '@mui/material';
-import * as Yup from 'yup';
-import i18next from 'i18next';
-import { useQuery } from 'react-query';
 import { AxiosError } from 'axios';
+import i18next from 'i18next';
+import React from 'react';
+import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
-import { ProcessTemplateWizardValues } from './index';
+import * as Yup from 'yup';
 import { searchProcessesRequest } from '../../../services/processesService';
+import { processTemplateUniquePropertiesDetails } from '../../../utils/validation';
+import { ErrorToast } from '../../ErrorToast';
+import { StepComponentProps } from '..';
 import { attachmentPropertiesBaseSchema, propertiesBaseSchema } from '../entityTemplate/AddFields';
 import { FieldBlock } from '../entityTemplate/fieldBlock/FieldBlock';
-import { ErrorToast } from '../../ErrorToast';
-import { processTemplateUniquePropertiesDetails } from '../../../utils/validation';
-import { StepComponentProps } from '..';
+import { ProcessTemplateWizardValues } from './index';
 
 export const fieldDetailsSchema = Yup.object({
     type: Yup.string().oneOf(['field']).required(),

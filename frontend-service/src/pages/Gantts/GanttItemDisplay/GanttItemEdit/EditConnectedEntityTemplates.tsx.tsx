@@ -1,17 +1,17 @@
-import React from 'react';
 import { Button, Grid } from '@mui/material';
 import { FieldArray, FormikProps } from 'formik';
-import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { pickBy } from 'lodash';
-import { IBasicGantt, IGanttItem } from '../../../../interfaces/gantts';
-import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import React from 'react';
+import { useQueryClient } from 'react-query';
 import { FormikAutoComplete } from '../../../../common/inputs/FormikAutoComplete';
+import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import { IBasicGantt, IGanttItem } from '../../../../interfaces/gantts';
 import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
+import { useDarkModeStore } from '../../../../stores/darkMode';
+import { getRelationshipString } from '../../../../utils/gantts';
 import { ConnectionIcon } from '../ConnectionIcon.styled';
 import { RemoveFromArrayButton } from './RemoveFromArrayButton';
-import { getRelationshipString } from '../../../../utils/gantts';
-import { useDarkModeStore } from '../../../../stores/darkMode';
 
 interface IEditConnectedEntityTemplatesProps {
     formik: FormikProps<IBasicGantt>;

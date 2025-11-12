@@ -1,8 +1,8 @@
 /* eslint-disable import/prefer-default-export */
 import * as joi from 'joi';
-import { ruleBreachSchema } from '../../utils/joi/schemas/ruleBreach';
-import { agGridRequestSchema } from '../../utils/joi/schemas/agGrid';
 import { mongoIdSchema } from '../../utils/joi/schemas';
+import { agGridRequestSchema } from '../../utils/joi/schemas/agGrid';
+import { ruleBreachSchema } from '../../utils/joi/schemas/ruleBreach';
 
 // POST /api/rule-breaches/search
 export const searchRuleBreachAlertsRequestSchema = joi.object({

@@ -1,5 +1,5 @@
 import axios from '../../axios';
-import { RelationshipTemplateWizardValues, defaultInitialValues } from '../../common/wizards/relationshipTemplate';
+import { defaultInitialValues, RelationshipTemplateWizardValues } from '../../common/wizards/relationshipTemplate';
 import { environment } from '../../globals';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import {

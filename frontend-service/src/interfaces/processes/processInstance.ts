@@ -1,6 +1,6 @@
-import { IUser } from '../users';
 import { IEntity } from '../entities';
 import { IMongoEntityTemplatePopulated } from '../entityTemplates';
+import { IUser } from '../users';
 import { IBaseSearchProperties } from './processTemplate';
 import { IMongoStepInstance, IMongoStepInstancePopulated } from './stepInstance';
 

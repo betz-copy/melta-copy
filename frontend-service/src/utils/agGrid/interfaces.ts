@@ -26,6 +26,8 @@ export interface IAGGridDateFilter {
         | 'thisWeek'
         | 'thisMonth'
         | 'thisYear'
+        | 'untilToday'
+        | 'fromToday'
         | 'inRange'
         | 'blank'
         | 'notBlank';
@@ -37,15 +39,11 @@ export enum RelativeDateFilters {
     thisWeek = 'thisWeek',
     thisMonth = 'thisMonth',
     thisYear = 'thisYear',
+    untilToday = 'untilToday',
+    fromToday = 'fromToday',
 }
 
-export type IFilterDateType =
-    | Date
-    | ByCurrentDefaultValue.byCurrentDate
-    | RelativeDateFilters.thisWeek
-    | RelativeDateFilters.thisMonth
-    | RelativeDateFilters.thisYear
-    | null;
+export type IFilterDateType = Date | ByCurrentDefaultValue.byCurrentDate | RelativeDateFilters | null;
 
 export interface IAGGridSetFilter {
     filterType: 'set';

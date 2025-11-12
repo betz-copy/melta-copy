@@ -1,12 +1,12 @@
-import React from 'react';
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
+import React from 'react';
 import { useQueryClient } from 'react-query';
-import { IDateAboutToExpireMetadataPopulated, NotificationType } from '../../../../interfaces/notifications';
+import { environment } from '../../../../globals';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import { IDateAboutToExpireMetadataPopulated, NotificationType } from '../../../../interfaces/notifications';
 import { EntityLink } from '../../../EntityLink';
 import { NotificationColor } from '../../../notificationColor';
-import { environment } from '../../../../globals';
 
 export const DateAboutToExpireNotification: React.FC<{ notificationMetadata: IDateAboutToExpireMetadataPopulated }> = ({
     notificationMetadata: { entity, propertyName, datePropertyValue },

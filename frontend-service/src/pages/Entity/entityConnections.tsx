@@ -1,6 +1,5 @@
 import { Box, Grid, Tab, Typography, useTheme } from '@mui/material';
 import { RelationshipIcon } from './RelationshipIcon';
-import BlueTitle from '../../common/MeltaDesigns/BlueTitle';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import React, { useEffect, useMemo, useState } from 'react';
 import i18next from 'i18next';
@@ -12,7 +11,7 @@ import { useQueryClient } from 'react-query';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { IEntityExpanded } from '../../interfaces/entities';
-import { useUserStore } from '../../stores/user';
+import { IChildTemplatePopulated } from '../../interfaces/childTemplates';
 interface EntityConnectionsProps {
     currentEntityTemplate: IMongoEntityTemplatePopulated;
     templateIds: string[];
@@ -23,6 +22,8 @@ interface EntityConnectionsProps {
         hasPermissionToRelatedTemplate: boolean;
     };
     connectionsTemplates?: INestedRelationshipTemplates[];
+    groupChildTemplate: Record<string, IChildTemplatePopulated[]>;
+
 }
 
 export const EntityConnections: React.FC<EntityConnectionsProps> = ({
@@ -31,11 +32,11 @@ export const EntityConnections: React.FC<EntityConnectionsProps> = ({
     expandedEntity,
     connectionsTemplates,
     getButtonStateByRelatedTemplate,
+    groupChildTemplate,
 }) => {
     const theme = useTheme();
     const queryClient = useQueryClient();
 
-    const currentUser = useUserStore((state) => state.user);
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -50,16 +51,14 @@ export const EntityConnections: React.FC<EntityConnectionsProps> = ({
             return {
                 category,
                 connectionsTemplates: connectionsTemplates
-                    .filter(({ relationshipTemplate, isExpandedEntityRelationshipSource }) => {
-                        const otherEntityTemplate = isExpandedEntityRelationshipSource
-                            ? relationshipTemplate.destinationEntity
-                            : relationshipTemplate.sourceEntity;
+                    .filter(({ relationshipTemplate: { destinationEntity, sourceEntity }, isExpandedEntityRelationshipSource }) => {
+                        const otherEntityTemplate = isExpandedEntityRelationshipSource ? destinationEntity : sourceEntity;
                         return otherEntityTemplate?.category._id === category._id;
                     })
                     .sort((a, b) => Number(b.hasInstances) - Number(a.hasInstances)),
                 // calculate the amount of the related connections of each entity
-                relationshipCount: expandedEntity?.connections.filter((connection) => {
-                    const connectionRelationshipTemplate = relationshipTemplates.get(connection.relationship.templateId)!;
+                relationshipCount: expandedEntity?.connections.filter(({ relationship, sourceEntity, destinationEntity }) => {
+                    const connectionRelationshipTemplate = relationshipTemplates.get(relationship.templateId)!;
 
                     if (
                         connectionRelationshipTemplate?.isProperty &&
@@ -68,10 +67,16 @@ export const EntityConnections: React.FC<EntityConnectionsProps> = ({
                     )
                         return false;
 
-                    if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id)
-                        return entityTemplates.get(connection.sourceEntity.templateId)!.category._id === category._id;
+                    if (expandedEntity.entity.properties._id === destinationEntity.properties._id)
+                        return (
+                            (entityTemplates.get(sourceEntity.templateId) ?? groupChildTemplate[sourceEntity.templateId][0])!.category._id ===
+                            category._id
+                        );
 
-                    return entityTemplates.get(connection.destinationEntity.templateId)?.category._id === category._id;
+                    return (
+                        (entityTemplates.get(destinationEntity.templateId) ?? groupChildTemplate[destinationEntity.templateId][0])?.category._id ===
+                        category._id
+                    );
                 }).length,
             };
         })
@@ -197,6 +202,7 @@ export const EntityConnections: React.FC<EntityConnectionsProps> = ({
                                                     isEditButtonsDisabled={isEditButtonsDisabled}
                                                     disabledButtonText={disabledButtonText}
                                                     hasPermissionToTemplate={hasPermissionToRelatedTemplate}
+                                                    groupChildTemplate={groupChildTemplate}
                                                 />
                                             );
                                         })}

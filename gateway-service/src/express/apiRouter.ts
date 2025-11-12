@@ -1,21 +1,21 @@
 import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
-import iFramesRouter from './iFrames/router';
 import config from '../config';
 import { AuthorizerControllerMiddleware } from '../utils/authorizer';
 import ActivityLogRouter from './activityLog/router';
+import ClientSideRouter from './clientSide/router';
+import dashboardItemsRouter from './dashboardItems/router';
 import flowCubeRouter from './flowCube/router';
 import GanttsRouter from './gantts/router';
+import iFramesRouter from './iFrames/router';
 import instancesRouter from './instances/router';
 import notificationsRouter from './notifications/router';
 import processesRouter from './processes/router';
 import RulesBreachesRouter from './ruleBreaches/router';
+import ChartsRouter from './templateCharts/router';
 import templatesRouter from './templates/router';
 import usersRouter from './users/router';
 import workspaceRouter from './workspaces/router';
-import ChartsRouter from './templateCharts/router';
-import ClientSideRouter from './clientSide/router';
-import dashboardItemsRouter from './dashboardItems/router';
 
 const apiRouter = Router();
 

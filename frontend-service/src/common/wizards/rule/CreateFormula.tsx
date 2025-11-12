@@ -1,36 +1,36 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { useQueryClient } from 'react-query';
+import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
+import { Grid, ThemeProvider } from '@mui/material';
 import {
-    Query,
     Builder,
-    Config,
-    ImmutableTree,
     BuilderProps,
-    MuiConfig,
-    Utils,
-    JsonItem,
-    MuiWidgets,
+    Config,
     Func,
+    ImmutableTree,
+    JsonItem,
+    MuiConfig,
+    MuiWidgets,
+    Query,
     TextWidgetProps,
+    Utils,
 } from '@react-awesome-query-builder/mui';
 import i18next from 'i18next';
-import { Grid, ThemeProvider } from '@mui/material';
-import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
-import { StepComponentProps, StepType } from '../index';
-import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
+import React, { useCallback, useMemo, useState } from 'react';
+import { useQueryClient } from 'react-query';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { getFieldsConfigOfRule } from '../../../utils/rules/fields';
+import { StepComponentProps, StepType } from '../index';
 import { RuleWizardValues } from '.';
 import '@react-awesome-query-builder/mui/css/styles.css';
-import { RuleParser } from '../../../utils/rules/parser';
+import { environment } from '../../../globals';
 import { LTRProvider } from '../../../LTRProvider';
+import { useUserStore } from '../../../stores/user';
+import { lightTheme } from '../../../theme';
+import { jsonTreeHasTodayVar } from '../../../utils/rules/parseDoesHaveTodayVariable';
+import { RuleParser } from '../../../utils/rules/parser';
+import { RaqbMuiAutocompeleteAutoWidth } from './raqb/RaqbAutocompleteAutoWidth';
 import RaqbMuiFieldSelect from './raqb/RaqbMuiFieldSelect';
 import RaqbMuiValueSources from './raqb/RaqbMuiValueSources';
-import { RaqbMuiAutocompeleteAutoWidth } from './raqb/RaqbAutocompleteAutoWidth';
-import { lightTheme } from '../../../theme';
-import { useUserStore } from '../../../stores/user';
-import { jsonTreeHasTodayVar } from '../../../utils/rules/parseDoesHaveTodayVariable';
-import { environment } from '../../../globals';
 
 const { formulaGetTodayVarName } = environment;
 

@@ -1,30 +1,30 @@
 import {
-    IEquation,
-    IOperatorBool,
-    isEquation,
-    IMongoRule,
     IAggregationGroup,
-    IGroup,
-    isAggregationGroup,
-    isGroup,
     IArgument,
     IConstant,
-    IPropertyOfVariable,
-    IVariable,
-    isConstant,
-    isPropertyOfVariable,
-    IFormula,
     ICountAggFunction,
+    IEquation,
+    IFormula,
+    IGroup,
+    IMongoEntityTemplate,
+    IMongoRule,
+    IOperatorBool,
+    IPropertyOfVariable,
     IRegularFunction,
     ISumAggFunction,
+    IVariable,
+    isAggregationGroup,
+    isConstant,
     isCountAggFunction,
+    isEquation,
+    isGroup,
+    isPropertyOfVariable,
     isRegularFunction,
     isSumAggFunction,
-    IMongoEntityTemplate,
 } from '@microservices/shared';
+import config from '../../config';
 import { getNeo4jDate } from '../../utils/neo4j/lib';
 import { CypherQuery } from './interfaces';
-import config from '../../config';
 
 const {
     cypherRulesResultValueVariableNameSuffix: resultValueVariableNameSuffix,

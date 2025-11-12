@@ -154,6 +154,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                                         },
                                     },
                                 }),
+                                required,
                             },
                         }}
                         sx={{

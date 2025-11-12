@@ -1,12 +1,12 @@
-import Joi from 'joi';
 import { MongoIdSchema, variableNameValidation } from '@microservices/shared';
+import Joi from 'joi';
 import {
     enumPropertiesColorsSchema,
+    innerFieldGroupsSchema,
     innerPropertiesSchema,
     orderPropertiesSchema,
-    previewPropertiesSchema,
     orderPropertiesTypeSchema,
-    innerFieldGroupsSchema,
+    previewPropertiesSchema,
     stringFormats,
     innerWalletTransferSchema,
 } from './joi.helper';
@@ -59,7 +59,7 @@ export const getEntityTemplateByIdSchema = Joi.object({
 });
 
 // GET /api/entities/templates/related/:relatedTemplateId
-export const getTemplatesUsingRelationshipReferanceSchema = Joi.object({
+export const getTemplatesUsingRelationshipReferenceSchema = Joi.object({
     query: {},
     body: {},
     params: { relatedTemplateId: MongoIdSchema.required() },

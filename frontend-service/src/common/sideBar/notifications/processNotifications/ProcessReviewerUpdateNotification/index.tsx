@@ -1,10 +1,10 @@
-import React from 'react';
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { IProcessReviewerUpdateNotificationMetadataPopulated, NotificationType } from '../../../../../interfaces/notifications';
-import { Description } from './Description';
+import React from 'react';
 import { environment } from '../../../../../globals';
+import { IProcessReviewerUpdateNotificationMetadataPopulated, NotificationType } from '../../../../../interfaces/notifications';
 import { NotificationColor } from '../../../../notificationColor';
+import { Description } from './Description';
 
 export const ProcessReviewerUpdateNotification: React.FC<{
     notificationMetadata: IProcessReviewerUpdateNotificationMetadataPopulated;

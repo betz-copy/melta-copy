@@ -26,6 +26,7 @@ export const sortTemplatesChildrenToParents = (
             depth,
             parent.relationshipTemplate,
             data,
+            {},
             true,
         );
 
@@ -48,8 +49,8 @@ export const updateChildrenToParent = (depth: number, parents: INestedRelationsh
         const updatedChildren = isMatchingParent
             ? updatedParent.children
             : depth < maxPrintLevel && parent.children?.length
-            ? updateChildrenToParent(depth + 1, parent.children, updatedParent)
-            : parent.children;
+              ? updateChildrenToParent(depth + 1, parent.children, updatedParent)
+              : parent.children;
 
         return {
             ...parent,

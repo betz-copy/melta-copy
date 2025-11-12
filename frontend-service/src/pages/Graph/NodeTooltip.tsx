@@ -1,12 +1,12 @@
-import React from 'react';
-import i18next from 'i18next';
 import { Divider, Grid } from '@mui/material';
+import i18next from 'i18next';
+import React from 'react';
 import { NodeObject } from 'react-force-graph-2d';
+import { EntityPropertiesInternal } from '../../common/EntityProperties';
+import { environment } from '../../globals';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { LocalStorage } from '../../utils/localStorage';
-import { EntityPropertiesInternal } from '../../common/EntityProperties';
 import { NodeLabelIconsDescription } from './NodeLabelIconsDescription';
-import { environment } from '../../globals';
 
 const { graphSettings } = environment;
 

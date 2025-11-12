@@ -158,7 +158,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                     }));
                     updatedConstraints.push(newGroup);
 
-                    const updatedConstraintsWithoutEmptyGroups = updatedConstraints.filter((group) => group.properties.length > 0);
+                    const updatedConstraintsWithoutEmptyGroups = updatedConstraints.filter((group) => group.properties.length);
                     return updatedConstraintsWithoutEmptyGroups;
                 }
                 return prev;

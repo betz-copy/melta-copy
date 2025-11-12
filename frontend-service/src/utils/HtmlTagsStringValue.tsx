@@ -1,5 +1,5 @@
-import React from 'react';
 import linkifyHtml from 'linkify-html';
+import React from 'react';
 
 const splitValueToLines = (value: string) => {
     const tempDiv = document.createElement('div');

@@ -1,15 +1,14 @@
 import { Express } from 'express';
-import request from 'supertest';
-
 import { StatusCodes } from 'http-status-codes';
-import Neo4jClient from '../../../utils/neo4j';
-import Server from '../../server';
+import request from 'supertest';
 import config from '../../../config';
-import { IRelationship } from '../interfaces';
-import { mockEntityTemplatesRoutes, mockRelationshipTemplatesRoutes, mockRulesRoutes } from '../../../externalServices/tests/externalServices.mock';
 import { IMongoEntityTemplate } from '../../../externalServices/templates/interfaces/entityTemplates';
 import { IMongoRelationshipTemplate } from '../../../externalServices/templates/interfaces/relationshipTemplates';
 import { getMockAdapterTemplateManager } from '../../../externalServices/tests/axios.mock';
+import { mockEntityTemplatesRoutes, mockRelationshipTemplatesRoutes, mockRulesRoutes } from '../../../externalServices/tests/externalServices.mock';
+import Neo4jClient from '../../../utils/neo4j';
+import Server from '../../server';
+import { IRelationship } from '../interfaces';
 
 const { BAD_REQUEST: badRequestStatus, OK: okStatus, NOT_FOUND: notFoundStatus } = StatusCodes;
 

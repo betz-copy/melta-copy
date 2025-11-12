@@ -1,5 +1,5 @@
-import mongoose from 'mongoose';
 import { ViewType } from '@microservices/shared';
+import mongoose from 'mongoose';
 import config from '../../config';
 import { transformResultDocsObjectIdKeysToString } from '../../utils/mongoose';
 

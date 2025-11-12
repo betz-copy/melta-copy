@@ -16,14 +16,14 @@ import { Box, CircularProgress, Dialog, Grid, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { useMutation } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import { environment } from '../../globals';
-import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../interfaces/CreateOrEditEntityDialog';
+import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { IEntity } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { PermissionScope } from '../../interfaces/permissions';
 import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
 import { IKartoffelUser } from '../../interfaces/users';
@@ -60,7 +60,7 @@ export const isUserHasWritePermissions = (
     currentUser: UserState['user'],
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
 ) =>
-    Object.keys(currentClientSideUser).length > 0 ||
+    !!Object.keys(currentClientSideUser).length ||
     checkUserTemplatePermission(currentUser.currentWorkspacePermissions, template.category._id, template._id, PermissionScope.write);
 
 const TemplateTable = forwardRef<
@@ -76,6 +76,10 @@ const TemplateTable = forwardRef<
 >(({ template, quickFilterText, page, setUpdatedEntities, defaultFilter, setUpdatedTemplateIds }, ref) => {
     const [_, navigate] = useLocation();
     const workspace = useWorkspaceStore((state) => state.workspace);
+
+    const queryClient = useQueryClient();
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
     const { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight } = workspace.metadata.agGrid;
     const { height, width } = workspace.metadata.iconSize;
 
@@ -177,11 +181,22 @@ const TemplateTable = forwardRef<
         const requiredProperties = new Set(template.properties.required);
 
         return Object.entries(properties).some(([key, property]) => {
-            return property.format && ['fileId', 'relationshipReference'].includes(property.format) && requiredProperties.has(key);
+            if (property.format === 'fileId' && requiredProperties.has(key)) return true;
+
+            if (property.format === 'relationshipReference') {
+                const relatedTemplateId = property.relationshipReference?.relatedTemplateId;
+                const relatedTemplate = entityTemplates.get(relatedTemplateId!);
+
+                const hasIdentifier = Object.values(relatedTemplate?.properties?.properties ?? {}).some((prop) => !!prop.identifier);
+
+                return !hasIdentifier;
+            }
+
+            return false;
         });
     };
 
-    const isLoadExcelDisabled = !userHasWritePermissions || checkIfLoadExcelIsDisabled();
+    const isLoadExcelDisabled = !userHasWritePermissions || checkIfLoadExcelIsDisabled() || template.disabled;
     const loadExcelTooltip = isLoadExcelDisabled
         ? i18next.t(!userHasWritePermissions ? 'permissions.dontHaveWritePermissionsToTemplate' : 'wizard.entity.loadEntities.tableCantLoadEntities')
         : undefined;
@@ -191,7 +206,7 @@ const TemplateTable = forwardRef<
         return Object.values(properties).some((property) => property.identifier);
     };
 
-    const isEditExcelDisabled = !userHasWritePermissions || !checkIfEditExcelIsDisabled();
+    const isEditExcelDisabled = !userHasWritePermissions || !checkIfEditExcelIsDisabled() || template.disabled;
     const editExcelTooltip = isEditExcelDisabled
         ? i18next.t(!userHasWritePermissions ? 'permissions.dontHaveWritePermissionsToTemplate' : 'wizard.entity.loadEntities.tableCantEditExcel')
         : undefined;
@@ -456,7 +471,18 @@ const TemplateTable = forwardRef<
                     setUpdatedTemplateIds={setUpdatedTemplateIds}
                 />
             </Box>
-            <Dialog open={editDialog.isOpen} maxWidth={Object.keys(template.properties.properties).length === 1 ? 'sm' : 'md'} fullWidth>
+            <Dialog
+                open={editDialog.isOpen}
+                maxWidth={Object.keys(template.properties.properties).length === 1 ? 'sm' : 'md'}
+                fullWidth
+                slotProps={{
+                    paper: {
+                        sx: {
+                            overflow: 'hidden',
+                        },
+                    },
+                }}
+            >
                 <CreateOrEditEntityDetails
                     mutationProps={{
                         ...(editDialog.isEditMode

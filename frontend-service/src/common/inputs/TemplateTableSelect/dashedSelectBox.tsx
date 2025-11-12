@@ -2,13 +2,16 @@ import { Grid } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { IEntity } from '../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
 import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
 import { AddIconWithText } from '../../AddIconWithText';
 import { AddEntityButton } from '../../EntitiesPage/Buttons/AddEntity';
 import IconButtonWithPopover from '../../IconButtonWithPopover';
+import { useQueryClient } from 'react-query';
+import { IChildTemplateMap } from '../../../interfaces/childTemplates';
+import { IChooseTemplateMode } from '../../dialogs/entity/ChooseTemplate';
 
 const DashedSelectBox: React.FC<{
     text: string;
@@ -23,27 +26,38 @@ const DashedSelectBox: React.FC<{
     const disabledReasonAnchorRef = React.useRef<HTMLParagraphElement>(null);
     const borderColorTheme = error ? 'error' : 'primary';
 
+    const queryClient = useQueryClient();
+
     const currentUser = useUserStore((state) => state.user);
+
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
+
+    const isChildTemplate = entityTemplate ? !entityTemplates.get(entityTemplate._id) : false;
+    const childTemplatesOfParent = childTemplates.values().filter(({ parentTemplate: { _id } }) => entityTemplate?._id === _id);
 
     const userHasPermissions = !entityTemplate
         ? undefined
-        : checkUserTemplatePermission(
-              currentUser.currentWorkspacePermissions,
-              entityTemplate.category._id,
-              entityTemplate._id,
-              checkUsersPermissions,
-          );
+        : isChildTemplate
+          ? childTemplatesOfParent.some(({ _id }) =>
+                checkUserTemplatePermission(currentUser.currentWorkspacePermissions, entityTemplate.category._id, _id, checkUsersPermissions),
+            )
+          : checkUserTemplatePermission(
+                currentUser.currentWorkspacePermissions,
+                entityTemplate.category._id,
+                entityTemplate._id,
+                checkUsersPermissions,
+            );
 
     const disabled = !entityTemplate || userHasPermissions === false;
 
-    let popoverText: string;
-    if (!entityTemplate) {
-        popoverText = i18next.t('templateTableSelect.disabledReasonMustChooseTemplate');
-    } else if (!userHasPermissions) {
-        popoverText = i18next.t('permissions.dontHaveWritePermissions');
-    } else {
-        popoverText = i18next.t('entitiesTableOfTemplate.selectEntity');
-    }
+    const popoverText = i18next.t(
+        !entityTemplate
+            ? 'templateTableSelect.disabledReasonMustChooseTemplate'
+            : !userHasPermissions
+              ? 'permissions.dontHaveWritePermissions'
+              : 'entitiesTableOfTemplate.selectEntity',
+    );
 
     return (
         <div>
@@ -79,12 +93,14 @@ const DashedSelectBox: React.FC<{
                                 disabled={disabled}
                                 popoverText={popoverText}
                                 initialValues={
-                                    entityTemplate
+                                    !isChildTemplate && entityTemplate
                                         ? { template: entityTemplate, properties: { disabled: false }, attachmentsProperties: {} }
                                         : undefined
                                 }
                                 style={{ borderRadius: '5px' }}
                                 onSuccessCreate={onSuccessCreate}
+                                parentId={isChildTemplate ? entityTemplate?._id : undefined}
+                                chooseMode={isChildTemplate ? IChooseTemplateMode.OnlyChildren : undefined}
                             >
                                 <AddIconWithText
                                     textStyle={{ display: 'flex', alignItems: 'center', fontSize: '19px', fontVariant: 'h4' }}

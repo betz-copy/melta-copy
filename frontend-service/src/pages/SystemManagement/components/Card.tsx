@@ -34,21 +34,14 @@ export const ViewingCard: React.FC<{
                 <CardContent
                     style={{ padding: '10px' }}
                     onClick={() => {
-                        if (!isDisabled && expendedCard) {
-                            setOpen(true);
-                        }
+                        if (!isDisabled && expendedCard) setOpen(true);
                     }}
                 >
                     {!open && title}
                 </CardContent>
 
                 <Collapse in={open} style={{ transformOrigin: '0 0 0' }} {...{ timeout: 500 }} mountOnEnter unmountOnExit>
-                    <CardContent
-                        style={{ padding: '10px' }}
-                        onClick={() => {
-                            setOpen(false);
-                        }}
-                    >
+                    <CardContent style={{ padding: '10px' }} onClick={() => setOpen(false)}>
                         {open && (
                             <Grid container direction="column">
                                 <Grid>{title}</Grid>

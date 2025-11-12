@@ -1,12 +1,12 @@
-import React, { useCallback, useState, CSSProperties } from 'react';
-import { Box, Grid, IconButton, Pagination, TextField } from '@mui/material';
 import { CloseOutlined as DeleteIcon } from '@mui/icons-material';
+import { Box, Grid, IconButton, Pagination, TextField } from '@mui/material';
 import i18next from 'i18next';
 import _debounce from 'lodash.debounce';
+import React, { CSSProperties, useCallback, useState } from 'react';
 
 import '../../css/index.css';
-import { allIcons } from '../../utils/icons';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { allIcons } from '../../utils/icons';
 
 interface IconPickerProps {
     width: CSSProperties['width'];

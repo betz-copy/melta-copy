@@ -28,7 +28,6 @@
     padding-top: 0px !important;
 }
 
-
 #json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root {
     display: flex;
     flex-direction: row;
@@ -46,7 +45,7 @@
     right: 265px !important;
 }
 
-.rjsf-text-input-override input[type='number'] {
+.rjsf-text-input-override input[type="number"] {
     direction: ltr !important;
     text-align: right;
 }

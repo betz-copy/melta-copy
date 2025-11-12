@@ -1,14 +1,14 @@
+import { ImportExport as RelatedIcon } from '@mui/icons-material';
+import { Grid, Typography } from '@mui/material';
 import React, { CSSProperties, Fragment, useMemo } from 'react';
 import { useQueryClient } from 'react-query';
-import { Grid, Typography } from '@mui/material';
-import { ImportExport as RelatedIcon } from '@mui/icons-material';
-import { IScheduleComponentData } from '../../../interfaces/syncfusion';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { getConnectedEntityTemplatesDetails } from '../../../utils/gantts';
-import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
-import { FieldsDisplay } from './FieldsDisplay';
 import { environment } from '../../../globals';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
+import { IScheduleComponentData } from '../../../interfaces/syncfusion';
 import { filteredMap } from '../../../utils/filteredMap';
+import { getConnectedEntityTemplatesDetails } from '../../../utils/gantts';
+import { FieldsDisplay } from './FieldsDisplay';
 
 const { ganttSettings } = environment;
 
