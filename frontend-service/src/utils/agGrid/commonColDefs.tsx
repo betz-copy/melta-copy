@@ -59,7 +59,7 @@ const isPropertyInvalid = <Data = EntityData>(props: ICellRendererParams<Data, a
             case ActionErrors.unique:
                 return (error.metadata as IUniqueConstraint).properties.some((errorProperty) => errorProperty === property);
             case ActionErrors.validation:
-                return (error.metadata as IValidationError).path.slice(1).includes(property);
+                return (error.metadata as IValidationError).path.split('/').filter(Boolean)[0] === property;
             case ActionErrors.relationshipRefNotFound:
                 return (error.metadata as INotFoundRelationshipRefError).property === property;
             case ActionErrors.userNotFound:

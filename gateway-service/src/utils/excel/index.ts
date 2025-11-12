@@ -60,6 +60,9 @@ export const classifyEntityErrors = (
         ...(originalEntity || {}),
     };
 
+    if (error instanceof AggregateError)
+        error.errors.forEach((err) => classifyEntityErrors(err, failedEntities, entity, allBrokenRulesEntities, originalEntity));
+
     if (error instanceof ServiceError && error.code === StatusCodes.NOT_FOUND) {
         if ('attemptedIds' in error.metadata) {
             failedEntities.push({
@@ -72,18 +75,6 @@ export const classifyEntityErrors = (
                 errors: [{ type: ActionErrors.relationshipRefNotFound, metadata: error.metadata as INotFoundRelationshipRefError }],
             });
         }
-    }
-
-    if (error instanceof AggregateError) {
-        error.errors.forEach((err) => {
-            if (err instanceof ServiceError) {
-                if ('attemptedIds' in err.metadata)
-                    failedEntities.push({
-                        properties: originalEntity ?? {},
-                        errors: [{ type: ActionErrors.userNotFound, metadata: err.metadata as IUsersNotFoundError }],
-                    });
-            }
-        });
     }
 
     if (error instanceof AxiosError) {
