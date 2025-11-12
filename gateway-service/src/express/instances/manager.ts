@@ -4,6 +4,7 @@ import {
     BadRequestError,
     combineFilters,
     EntityTemplateType,
+    FilterLogicalOperator,
     getFilterFromChildTemplate,
     IAction,
     IBrokenRule,
@@ -24,24 +25,27 @@ import {
     IMongoChildTemplatePopulated,
     IMongoEntityTemplatePopulated,
     IMultipleSelect,
+    INotFoundRelationshipRefError,
     IRelationship,
     IRuleMail,
     ISearchBatchBody,
     ISearchEntitiesByLocationBody,
     ISearchEntitiesOfTemplateBody,
     ISearchFilter,
+    ISearchResult,
     ISearchSort,
     ISemanticSearchResult,
     ITemplateSearchBody,
     IUpdateEntityMetadata,
     logger,
     matchValueAgainstFilter,
+    NotFoundError,
     TemplateItem,
     UploadedFile,
 } from '@microservices/shared';
 import axios from 'axios';
 import { stream } from 'exceljs';
-import { mapValues, omit } from 'lodash';
+import { keyBy, mapValues, omit } from 'lodash';
 import { menash } from 'menashmq';
 import pMap from 'p-map';
 import config from '../../config';
@@ -134,7 +138,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return { props, files: filesToUpload };
     }
 
-    async exportEntities(exportEntitiesBody: IExportEntitiesBody) {
+    async exportEntities(exportEntitiesBody: IExportEntitiesBody, userId: string) {
         const { workbook, filePath } = await createWorkbook(exportEntitiesBody.fileName);
 
         const workspace = await WorkspaceService.getById(this.workspaceId);
@@ -142,7 +146,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const workspacePath = `${path}/${name}${type}`;
 
         try {
-            await this.addWorksheetsToWB(exportEntitiesBody, workbook, { path: workspacePath, id: this.workspaceId });
+            await this.addWorksheetsToWB(exportEntitiesBody, workbook, { path: workspacePath, id: this.workspaceId }, userId);
             await workbook.commit();
         } catch (err) {
             await fsp.unlink(filePath);
@@ -155,6 +159,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         { templates, textSearch }: IExportEntitiesBody,
         workbook: stream.xlsx.WorkbookWriter,
         workspace: { path: string; id: string },
+        userId: string,
     ): Promise<void> {
         const tasks = Object.entries(templates).map(
             async ([templateId, { filter, sort, displayColumns, headersOnly, insertEntities, isChildTemplate }]) => {
@@ -162,7 +167,18 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                     ? { type: EntityTemplateType.Child, metaData: await this.entityTemplateService.getChildTemplateById(templateId) }
                     : { type: EntityTemplateType.Parent, metaData: await this.entityTemplateService.getEntityTemplateById(templateId) };
 
-                await this.createWorksheet(workbook, template, filter, sort, textSearch, workspace, displayColumns, headersOnly, insertEntities);
+                await this.createWorksheet(
+                    workbook,
+                    template,
+                    filter,
+                    sort,
+                    textSearch,
+                    workspace,
+                    userId,
+                    displayColumns,
+                    headersOnly,
+                    insertEntities,
+                );
             },
         );
 
@@ -226,6 +242,23 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return entities;
     }
 
+    private async getRelatedTemplates(template: IMongoChildTemplatePopulated | IMongoEntityTemplatePopulated, userId: string) {
+        const relatedTemplatesObject = Object.entries(template.properties.properties)
+            .filter(([, property]) => property.format === 'relationshipReference' && property.relationshipReference?.relatedTemplateId)
+            .map(([fieldName, property]) => ({
+                fieldName,
+                relatedTemplateId: property.relationshipReference!.relatedTemplateId,
+            }));
+
+        const relatedTemplates = await this.entityTemplateService.searchEntityTemplates(userId, {
+            ids: relatedTemplatesObject.map((relatedTemplate) => relatedTemplate.relatedTemplateId),
+        });
+
+        const relatedTemplatesMap = keyBy(relatedTemplates, '_id');
+
+        return { relatedTemplatesObject, relatedTemplatesMap };
+    }
+
     private async createWorksheet(
         workbook: stream.xlsx.WorkbookWriter,
         templateItem: TemplateItem,
@@ -233,20 +266,31 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         sort: ISearchSort | undefined,
         textSearch: string | undefined,
         workspace: { path: string; id: string },
+        userId: string,
         displayColumns?: string[],
         headersOnly?: boolean,
         insertEntities?: Record<string, any>[],
     ) {
         const { type, metaData: template } = templateItem;
         const parentTemplate = type === EntityTemplateType.Child ? template.parentTemplate : template;
+        const { requiredConstraints } = await this.service.getConstraintsOfTemplate(parentTemplate._id);
 
-        const worksheet = await createWorksheet(workbook, templateItem, displayColumns, headersOnly || !!insertEntities);
+        const { relatedTemplatesMap } = await this.getRelatedTemplates(template, userId);
+
+        const worksheet = await createWorksheet(
+            workbook,
+            templateItem,
+            relatedTemplatesMap,
+            requiredConstraints,
+            displayColumns,
+            headersOnly || !!insertEntities,
+        );
         const { searchEntitiesChunkSize } = config.service;
 
         if (headersOnly) return;
 
         if (insertEntities) {
-            styleAWorksheet(worksheet, insertEntities, templateItem, workspace, displayColumns);
+            styleAWorksheet(worksheet, insertEntities, templateItem, workspace, displayColumns, undefined, !!insertEntities);
             return;
         }
 
@@ -278,6 +322,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 workspace,
                 displayColumns,
                 headersOnly,
+                undefined,
                 skip,
             );
         }
@@ -309,6 +354,57 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return templateItem;
     }
 
+    async handleRelationshipRefLoadExcel(
+        template: IMongoChildTemplatePopulated | IMongoEntityTemplatePopulated,
+        userId: string,
+        entities: IEntityWithIgnoredRules[] | undefined,
+    ) {
+        const { relatedTemplatesMap, relatedTemplatesObject } = await this.getRelatedTemplates(template, userId);
+
+        const searchBody: ISearchBatchBody = { skip: 0, limit: entities!.length * relatedTemplatesObject.length, templates: {} };
+        const relatedTemplatesWithIdentifier: { fieldName: string; relatedTemplateId: string; identifierField: string }[] = [];
+        const orFiltersByTemplate: Record<string, ISearchFilter> = {};
+
+        relatedTemplatesObject.forEach(({ fieldName, relatedTemplateId }) => {
+            const relatedTemplate: IMongoEntityTemplatePopulated = relatedTemplatesMap[relatedTemplateId!]!;
+            const identifierField = Object.entries(relatedTemplate!.properties.properties).find(([_key, value]) => value.identifier)?.[0];
+            if (!identifierField) return;
+
+            relatedTemplatesWithIdentifier.push({ fieldName, relatedTemplateId, identifierField });
+
+            const entitiesValues = entities?.map((entity) => entity.properties[fieldName]).filter((value) => value !== undefined && value !== null);
+            if (!entitiesValues?.length) return;
+
+            const newOrFilters = {
+                $or: entitiesValues.map((value) => ({
+                    [identifierField]: { $eq: value },
+                })),
+            };
+
+            const existingOr = orFiltersByTemplate[relatedTemplateId]?.[FilterLogicalOperator.OR] ?? [];
+            orFiltersByTemplate[relatedTemplateId] = {
+                [FilterLogicalOperator.OR]: [...existingOr, ...newOrFilters.$or],
+            };
+
+            const templateFilter: ISearchFilter = {
+                $and: [{ disabled: { $eq: false } }, orFiltersByTemplate[relatedTemplateId]],
+            };
+            searchBody.templates = {
+                ...searchBody.templates,
+                [relatedTemplateId]: {
+                    filter: templateFilter,
+                    showRelationships: false,
+                },
+            };
+        });
+
+        const searchResults: ISearchResult = relatedTemplatesWithIdentifier.length
+            ? await this.service.searchEntitiesBatch(searchBody)
+            : { count: 0, entities: [] };
+
+        return { searchResults, relatedTemplatesWithIdentifier };
+    }
+
     async loadEntities(
         templateId: string,
         userId: string,
@@ -318,30 +414,59 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
     ) {
         let entities = insertBrokenEntities;
         const { metaData: template, type } = await this.handleTemplate(templateId, childTemplateId);
+        const { relatedTemplatesMap } = await this.getRelatedTemplates(template, userId);
 
         const failedEntities: IFailedEntity[] = [];
 
         if (files && !entities) {
             const workspace = await WorkspaceService.getById(this.workspaceId);
-            entities = await getAllEntitiesFromExcel(files, template, failedEntities, workspace);
+            entities = await getAllEntitiesFromExcel(files, template, failedEntities, workspace, relatedTemplatesMap);
         }
 
         const serialStarters = getSerialStarters(template);
         const succeededEntities: IEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
 
+        const { searchResults, relatedTemplatesWithIdentifier } = await this.handleRelationshipRefLoadExcel(template, userId, entities);
+
         const handleCreateEntity = async (entityWithIgnoredRules: IEntityWithIgnoredRules) => {
             const { ignoredRules, ...entity } = entityWithIgnoredRules;
+            const originalProperties = { ...entity.properties };
+
             try {
                 const serialNumbers = generateSerialNumbers(succeededEntities.length, serialStarters);
+
+                if (relatedTemplatesWithIdentifier.length > 0) {
+                    Object.entries(entity.properties).forEach(([key, value]) => {
+                        if (value === undefined || value === null) return;
+
+                        const relatedTemplate = relatedTemplatesWithIdentifier.find((rel) => rel.fieldName === key && rel.identifierField);
+                        if (!relatedTemplate) return;
+
+                        const { identifierField, relatedTemplateId } = relatedTemplate;
+
+                        const foundEntity = searchResults.entities.find(
+                            ({ entity: result }) => result.templateId === relatedTemplateId && result.properties[identifierField] === value,
+                        );
+
+                        if (!foundEntity)
+                            throw new NotFoundError(`Related entity not found for ${key} with value ${value}`, {
+                                property: key,
+                                relatedTemplateId,
+                                relatedIdentifier: identifierField,
+                            } as INotFoundRelationshipRefError);
+
+                        entity.properties = { ...entity.properties, [key]: foundEntity ? foundEntity.entity.properties._id : undefined };
+                    });
+                }
+
                 const result = await this.createEntityInstance(entity, [], ignoredRules, userId, childTemplateId, serialNumbers);
 
                 succeededEntities.push(result);
             } catch (error) {
-                classifyEntityErrors(error, failedEntities, entity, allBrokenRulesEntities);
+                classifyEntityErrors(error, failedEntities, entity, allBrokenRulesEntities, originalProperties);
             }
         };
-
         if (Object.keys(serialStarters).length > 0) for (const entity of entities!) await handleCreateEntity(entity);
         else await Promise.all(entities!.map(async (entity) => handleCreateEntity(entity)));
 
@@ -356,8 +481,9 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return { succeededEntities, failedEntities, brokenRulesEntities };
     }
 
-    async getChangedEntitiesFromExcel(templateId: string, file: UploadedFile, childTemplateId?: string) {
+    async getChangedEntitiesFromExcel(templateId: string, file: UploadedFile, userId: string, childTemplateId?: string) {
         const { metaData: template, type } = await this.handleTemplate(templateId, childTemplateId);
+        const { relatedTemplatesMap } = await this.getRelatedTemplates(template, userId);
 
         const failedEntities: IFailedEntity[] = [];
         const workspace = await WorkspaceService.getById(this.workspaceId);
@@ -368,6 +494,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             [file],
             template,
             failedEntities,
+            relatedTemplatesMap,
             workspace.metadata?.excel?.entitiesFileLimit,
             oldEntities,
         );
@@ -684,11 +811,11 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         const parentTemplateIds = childTemplateIds?.length
             ? await Promise.all(
-                  childTemplateIds.map(async (templateId) => {
-                      const childTemplate = await this.entityTemplateService.getChildTemplateById(templateId);
-                      return childTemplate?.parentTemplate._id;
-                  }),
-              )
+                childTemplateIds.map(async (templateId) => {
+                    const childTemplate = await this.entityTemplateService.getChildTemplateById(templateId);
+                    return childTemplate?.parentTemplate._id;
+                }),
+            )
             : [];
 
         const templateIds = [...parentTemplateIds, ...searchBody.templateIds];
@@ -699,9 +826,9 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             semanticSearchResult:
                 searchBody.textSearch && shouldSemanticSearch
                     ? await this.semanticSearchSearch.search({
-                          textSearch: searchBody.textSearch,
-                          templates: templateIds,
-                      })
+                        textSearch: searchBody.textSearch,
+                        templates: templateIds,
+                    })
                     : undefined,
         });
     }

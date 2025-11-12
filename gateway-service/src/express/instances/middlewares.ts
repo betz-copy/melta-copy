@@ -118,6 +118,21 @@ class InstancesValidator extends DefaultController {
         await this.validateHasPermissionsToEntitiesInTemplates(req.user!, Object.keys(templates));
     }
 
+    async validateUserCanLoadExcel(req: Request) {
+        const { templateId, childTemplateId } = req.body;
+        const template = childTemplateId
+            ? await this.entityTemplateService.getChildTemplateById(childTemplateId)
+            : await this.entityTemplateService.getEntityTemplateById(templateId);
+
+        const relatedTemplateIds = Object.values(template.properties.properties).flatMap((value) =>
+            value.format === 'relationshipReference' && value.relationshipReference?.relatedTemplateId
+                ? [value.relationshipReference.relatedTemplateId]
+                : [],
+        );
+
+        if (relatedTemplateIds.length) await this.validateHasPermissionsToEntitiesInTemplates(req.user!, relatedTemplateIds);
+    }
+
     private async validateUserPermissionForEntityInstance(
         req: Request,
         templateId: string,

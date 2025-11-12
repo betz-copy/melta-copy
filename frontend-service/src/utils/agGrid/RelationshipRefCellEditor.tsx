@@ -36,7 +36,7 @@ const RelationshipRefCellEditor: React.FC<RelationshipRefCellEditorProps> = ({ v
     return (
         <FormControl style={{ width: '100%', height: '100%' }}>
             <TemplateEntitiesAutocomplete
-                template={childTemplatesOfRelatedTemplate ? childTemplatesOfRelatedTemplate[0].parentTemplate : relatedTemplate!}
+                template={childTemplatesOfRelatedTemplate ? childTemplatesOfRelatedTemplate[0]?.parentTemplate : relatedTemplate!}
                 showField={template.relationshipReference!.relatedTemplateField}
                 value={value || null}
                 onChange={handleEntityChange}

@@ -63,6 +63,12 @@ export type IValidationError = {
     params: Partial<IEntitySingleProperty> & { allowedValues?: string[] };
 };
 
+export type INotFoundRelationshipRefError = {
+    property: string;
+    relatedTemplateId: string;
+    relatedIdentifier: string;
+};
+
 export interface EntitiesWizardValues {
     files?: File[];
     template?: IMongoEntityTemplateWithConstraintsPopulated;
@@ -159,7 +165,7 @@ export interface ISearchEntitiesOfTemplateBody {
     textSearch?: string;
     filter?: ISearchFilter;
     showRelationships: boolean | Array<IMongoRelationshipTemplate['_id']>;
-    sort: ISearchSort;
+    sort?: ISearchSort;
     entitiesWithFiles?: ICountSearchResult['entitiesWithFiles'];
     entityIdsToInclude?: string[];
     entityIdsToExclude?: string[];
@@ -185,7 +191,7 @@ export interface ISearchBatchBody {
             childTemplateId?: string;
         };
     };
-    sort: ISearchSort;
+    sort?: ISearchSort;
     shouldSemanticSearch?: boolean;
     userEntityId?: string;
 }

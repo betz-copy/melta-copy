@@ -29,7 +29,7 @@ export interface FieldProps {
     setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
     setValues: (value: SetStateAction<CommonFormInputProperties>) => void;
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
-    setUniqueConstraints: ((uniqueConstraints: SetStateAction<IUniqueConstraintOfTemplate[]>) => void) | undefined;
+    setUniqueConstraints?: ((uniqueConstraints: SetStateAction<IUniqueConstraintOfTemplate[]>) => void);
     moveGroup?: (group: GroupProperty, toIndex: number, toGroupId?: string | null) => void;
 }
 

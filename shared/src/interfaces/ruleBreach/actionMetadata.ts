@@ -108,4 +108,5 @@ export enum ActionErrors {
     unique = 'UNIQUE',
     required = 'REQUIRED',
     filterValidation = 'FILTER_VALIDATION',
+    notFound = 'NOT_FOUND',
 }

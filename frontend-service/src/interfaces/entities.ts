@@ -46,6 +46,12 @@ export interface IRequiredConstraint {
     property: string;
 }
 
+export interface INotFoundRelationshipRefError {
+    relatedTemplateId: string;
+    relatedIdentifier: string;
+    property: string;
+}
+
 export type IConstraint = IRequiredConstraint | IUniqueConstraint;
 
 export interface IFieldsGroup {

@@ -59,8 +59,6 @@ export const loadEntitiesRequest = async (
             templateId: entity.templateId,
             properties: mapValues(entity.properties, (property, key) => {
                 switch (template.properties.properties[key]?.format) {
-                    case 'relationshipReference':
-                        return property?.properties._id;
                     case 'location': {
                         if (!property) return undefined;
                         const location = JSON.parse(property);

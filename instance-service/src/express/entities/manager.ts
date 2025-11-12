@@ -572,17 +572,17 @@ class EntityManager extends DefaultManagerNeo4j {
             case IEntityCrudAction.onCreateEntity:
                 return duplicatedFromId
                     ? {
-                          actionType: ActionTypes.DuplicateEntity,
-                          actionMetadata: {
-                              templateId: entityTemplate._id,
-                              properties,
-                              entityIdToDuplicate: duplicatedFromId,
-                          } as IDuplicateEntityMetadata,
-                      }
+                        actionType: ActionTypes.DuplicateEntity,
+                        actionMetadata: {
+                            templateId: entityTemplate._id,
+                            properties,
+                            entityIdToDuplicate: duplicatedFromId,
+                        } as IDuplicateEntityMetadata,
+                    }
                     : {
-                          actionType: ActionTypes.CreateEntity,
-                          actionMetadata: { templateId: entityTemplate._id, properties } as ICreateEntityMetadata,
-                      };
+                        actionType: ActionTypes.CreateEntity,
+                        actionMetadata: { templateId: entityTemplate._id, properties } as ICreateEntityMetadata,
+                    };
 
             default:
                 throw new ValidationError('Invalid crudAction');
@@ -1408,9 +1408,15 @@ class EntityManager extends DefaultManagerNeo4j {
         return runRulesOnEntity(transaction, entity.properties._id, relevantRulesOfEntity, entityTemplate);
     };
 
-    getNeighborsOfUpdatedEntityForRule = (transaction: Transaction, entityId: string) =>
+    getNeighborsOfUpdatedEntityForRuleInTransaction = (transaction: Transaction, entityId: string) =>
         runInTransactionAndNormalize(
             transaction,
+            `MATCH (e {_id: '${entityId}'})-[r]-(neighbor) RETURN type(r) as rTemplate, neighbor`,
+            normalizeNeighborsOfEntityForRule,
+        );
+
+    getNeighborsOfUpdatedEntityForRule = (entityId: string) =>
+        this.neo4jClient.readTransaction(
             `MATCH (e {_id: '${entityId}'})-[r]-(neighbor) RETURN type(r) as rTemplate, neighbor`,
             normalizeNeighborsOfEntityForRule,
         );
@@ -1420,7 +1426,7 @@ class EntityManager extends DefaultManagerNeo4j {
         updatedEntity: IEntity,
         updatedProperties: string[],
     ): Promise<IRuleFailure[]> => {
-        const neighborsOfUpdatedEntity = await this.getNeighborsOfUpdatedEntityForRule(transaction, updatedEntity.properties._id);
+        const neighborsOfUpdatedEntity = await this.getNeighborsOfUpdatedEntityForRuleInTransaction(transaction, updatedEntity.properties._id);
 
         const ruleFailuresForEachNeighborPromises = neighborsOfUpdatedEntity.map(async ({ relationshipTemplate, neighborOfEntity }) => {
             return this.runRulesOnEntityDependentViaAggregation(
@@ -2187,8 +2193,8 @@ class EntityManager extends DefaultManagerNeo4j {
             UNWIND range(0, size(entities)-1) AS index
             WITH entities[index] AS currentEntity,  index AS currentIndex
             SET ${Object.entries(newSerialNumberFields)
-                .map(([key, value]) => `\`currentEntity\`.${key} = toFloat(currentIndex + ${value})`)
-                .join(', ')}
+                    .map(([key, value]) => `\`currentEntity\`.${key} = toFloat(currentIndex + ${value})`)
+                    .join(', ')}
             RETURN count(currentEntity) AS numEntitiesUpdated`;
             return runInTransactionAndNormalize(transaction, numOfEntitiesUpdated, normalizeResponseCount);
         });

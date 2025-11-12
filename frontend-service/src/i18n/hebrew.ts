@@ -655,7 +655,7 @@ export default {
             propertyPreview: 'תצוגה מצומצמת',
             addProperty: 'הוסף שדה',
             addAttachment: 'הוסף קובץ',
-            chooseCategroy: 'בחירת קטגוריה',
+            chooseCategory: 'בחירת קטגוריה',
             chooseEntityTemplateName: 'בחירת שם תבנית',
             chooseIcon: 'בחירת אייקון',
             properties: 'שדות',
@@ -860,6 +860,7 @@ export default {
                 filesWrongTemplate: 'חלק מקבצים אלו לא מתאימים לתבנית',
                 wrongFileType: 'חלק מקבצים אלו לא קבצי אקסל',
                 notValid: 'שדה חייב להיות מסוג',
+                relatedEntityNotFound: 'לא נמצאה ישות בתבנית "{{templateName}}" עם ערך זה בשדה "{{propertyName}}" - שדה מזהה ייחודי',
             },
             multipleUpdate: {
                 title: 'עריכת ישויות',

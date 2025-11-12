@@ -87,7 +87,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
     // therefore using a reference for them to always use the current orderedItems.
     const [orderedItems, setOrderedItems] = useState(values[propertiesType]);
 
-    const [showAreUSureDialogForRemoveProperty, setShowAreUSureDialogForRemoveProperty] = useState(false);
+    const [showAreUSureDialogForRemoveProperty, setShowAreUSureDialogForRemoveProperty] = useState<boolean>(false);
     const [selectedIndexesToRemove, setSelectedIndexesForRemove] = useState<{ index: number; groupIndex?: number }[]>([]);
 
     const orderedItemsRef = useRef(orderedItems);
@@ -367,8 +367,8 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         const findInitialValue = ():
             | FieldProperty
             | {
-                  data: CommonFormInputProperties | undefined;
-              }
+                data: CommonFormInputProperties | undefined;
+            }
             | undefined => {
             error = getTouchedOrError(errors);
             touch = getTouchedOrError(touched);
@@ -646,14 +646,12 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                 handleClose={() => setShowAreUSureDialogForRemoveProperty(false)}
                 title={i18next.t('systemManagement.deleteField')}
                 body={`${i18next.t('systemManagement.warningOnDeleteField')}
-                                ${
-                                    !!selectedIndexesToRemove.length &&
-                                    getFieldData(orderedItemsRef.current, selectedIndexesToRemove[0].index, selectedIndexesToRemove[0].groupIndex)
-                                        ?.title
-                                }
-                                ${i18next.t('systemManagement.continueWarningOnDeleteField')} ${
-                                    (initialValues as unknown as IMongoEntityTemplatePopulated)?.displayName
-                                }`}
+                                ${!!selectedIndexesToRemove.length &&
+                    getFieldData(orderedItemsRef.current, selectedIndexesToRemove[0].index, selectedIndexesToRemove[0].groupIndex)
+                        ?.title
+                    }
+                                ${i18next.t('systemManagement.continueWarningOnDeleteField')} ${(initialValues as unknown as IMongoEntityTemplatePopulated)?.displayName
+                    }`}
                 onYes={() => (onDeleteSure ? onDeleteSure(setShowAreUSureDialogForRemoveProperty) : onSimpleDeleteSure())}
             />
         </FieldBlockAccordion>

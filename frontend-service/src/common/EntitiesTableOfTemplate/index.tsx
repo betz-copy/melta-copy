@@ -450,7 +450,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const childTemplatesOfParentIds = childTemplatesOfParent?.map(({ _id }) => _id);
 
         const datasourceOnFail = (err: unknown) => {
-            toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
+        toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
             console.error('Failed to load data from datasource. Error:', err);
         };
 
