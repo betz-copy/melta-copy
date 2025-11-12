@@ -1,17 +1,17 @@
 import { Grid } from '@mui/material';
 import React, { useEffect } from 'react';
 import { IGraphFilterBody } from '../../../interfaces/entities';
-import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
+import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
 import { StyledFilterInput } from './StyledFilterInput';
 import { TypeSelectFilter } from './TypeSelectFilter';
 
 interface TextFilterProps {
     entityFilter: boolean;
     readOnly: boolean;
-    filterField: IAGGidNumberFilter | IAGGridTextFilter | undefined;
+    filterField: IAGGridNumberFilter | IAGGridTextFilter | undefined;
     type: string;
     handleFilterTypeChange: (
-        newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type'],
+        newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGridNumberFilter['type'],
         condition?: boolean,
     ) => void;
     handleFilterFieldChange: (value: IGraphFilterBody['filterField'], condition?: boolean) => void;
@@ -50,7 +50,7 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
             {!hideFilterType && (
                 <Grid size={{ xs: entityFilter ? 5 : 12 }}>
                     <TypeSelectFilter
-                        filterField={filterField as IAGGidNumberFilter | IAGGridTextFilter}
+                        filterField={filterField as IAGGridNumberFilter | IAGGridTextFilter}
                         handleFilterTypeChange={handleFilterTypeChange}
                         readOnly={readOnly || forceEqualsType}
                         type={type}
@@ -75,7 +75,7 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
                                       ...filterField,
                                       filter: value ? Number(value) : undefined,
                                       type: forceEqualsType ? 'equals' : filterField?.type,
-                                  } as IAGGidNumberFilter)
+                                  } as IAGGridNumberFilter)
                                 : ({
                                       ...filterField,
                                       filter: value || undefined,
