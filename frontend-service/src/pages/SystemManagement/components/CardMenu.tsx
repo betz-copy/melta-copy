@@ -1,6 +1,6 @@
 import {
     Add,
-    ControlPoint as AddIcon,
+    Code,
     CompareArrows,
     Delete as DeleteIcon,
     DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
@@ -131,7 +131,7 @@ export const CardMenu: React.FC<{
                                 }}
                                 text={i18next.t('actions.addActions')}
                                 disabled={disabledProps?.isDisabled}
-                                icon={<AddIcon color="action" />}
+                                icon={<Code color="action" />}
                             />
                         </Grid>
                     </MeltaTooltip>
