@@ -299,6 +299,7 @@ export const environment = {
             'untilToday',
             'fromToday',
         ],
+        field: ['equals', 'notEqual'],
     },
     relativeDateFilters: ['thisWeek', 'thisMonth', 'thisYear', 'untilToday', 'fromToday'] as readonly string[],
     accessTokenName: 'rabaz-access-token',
@@ -353,6 +354,7 @@ export const environment = {
         loggingDate: 'yyyy-MM-dd',
         loggingDateTime: 'yyyy-MM-dd HH:mm:ss',
     },
+    fieldFilterPrefix: '$$current.properties.',
     fileExtensions: {
         defaultImage: 'png',
         image: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'ico', 'psd', 'raw', 'heif', 'indd', 'ai', 'eps'],

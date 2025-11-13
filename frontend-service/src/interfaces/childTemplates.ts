@@ -1,12 +1,12 @@
 import { IAGGridFilter } from '../common/wizards/entityTemplate/commonInterfaces';
-import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../utils/agGrid/interfaces';
+import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridSetFilter, IAGGridTextFilter } from '../utils/agGrid/interfaces';
 import { IMongoCategory } from './categories';
 import { IEntitySingleProperty, IMongoEntityTemplate, IMongoEntityTemplatePopulated } from './entityTemplates';
 
 export interface IFieldFilter {
     fieldValue: IEntitySingleProperty;
     selected: boolean;
-    filterField?: IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter;
+    filterField?: IAGGridTextFilter | IAGGridNumberFilter | IAGGridDateFilter | IAGGridSetFilter;
     defaultValue?: string | number | boolean | Date | string[];
     isEditableByUser?: boolean;
 }
@@ -22,7 +22,7 @@ export type AllowedChipType = Exclude<ChipType, ChipType.EditByUser>;
 export interface IFieldChip {
     fieldName: string;
     chipType: AllowedChipType;
-    filterField?: IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter;
+    filterField?: IAGGridTextFilter | IAGGridNumberFilter | IAGGridDateFilter | IAGGridSetFilter;
     defaultValue?: string | number | boolean | Date | string[];
 }
 

@@ -637,7 +637,7 @@ const entityTemplates: IEntityTemplateMock[] = [
                     type: 'string',
                     title: 'קטגורית עזר',
                 },
-                famaly: {
+                family: {
                     type: 'string',
                     title: 'משפחה',
                     enum: ['קו אפור', 'קו אדום', 'קו סגול'],
@@ -659,9 +659,9 @@ const entityTemplates: IEntityTemplateMock[] = [
             },
             hide: [],
         },
-        propertiesOrder: ['makat', 'zira', 'pageName', 'helpCategory', 'famaly', 'scale', 'polygon', 'availableCount'],
+        propertiesOrder: ['makat', 'zira', 'pageName', 'helpCategory', 'family', 'scale', 'polygon', 'availableCount'],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
-        propertiesPreview: ['makat', 'zira', 'pageName', 'helpCategory', 'famaly', 'scale', 'polygon', 'availableCount'],
+        propertiesPreview: ['makat', 'zira', 'pageName', 'helpCategory', 'family', 'scale', 'polygon', 'availableCount'],
         disabled: false,
     },
     {

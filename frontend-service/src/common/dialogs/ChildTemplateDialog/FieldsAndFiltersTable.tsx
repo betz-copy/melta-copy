@@ -114,7 +114,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
                     };
 
                     const onDeleteFilterChip = (chip: IChip, mode: ChipType) => {
-                        if (isRequired && mode == ChipType.Default) onCheckboxChange(true);
+                        if (isRequired && mode === ChipType.Default) onCheckboxChange(true);
 
                         setFieldTouched(`properties.properties.${fieldName}`, true);
                         const prev = values.properties.properties[fieldName];
@@ -254,7 +254,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
                         setFieldValue(`properties.properties.${addFilterField.fieldName}`, {
                             ...value,
                             [addFilterField.dialogType]:
-                                addFilterField.dialogType === ChipType.Default ? fieldValue : [...((value && value.filters) ?? []), fieldValue],
+                                addFilterField.dialogType === ChipType.Default ? fieldValue : [...(value?.filters ?? []), fieldValue],
                         });
                         setAddFilterField(undefined);
                     }}
