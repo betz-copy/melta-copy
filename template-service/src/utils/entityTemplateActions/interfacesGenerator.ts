@@ -6,7 +6,7 @@ const generateFromString = (
 ) => {
     if (typeEnum) return typeEnum?.map((option) => `\`${option}\``).join(' | ');
 
-    if (format === 'date' || format === 'date-time') return 'Date';
+    if (['date', 'date-time'].includes(format ?? '')) return 'Date';
 
     if (format === 'relationshipReference') return entitiesTemplatesByIds.get(relationshipReference!.relatedTemplateId)!.metaData.name;
 
@@ -19,7 +19,7 @@ const generateFromString = (
 };
 
 const generateFromArray = ({ items }: IEntitySingleProperty) => {
-    if (items?.format === 'fileId' || items?.format === 'user') return 'string[]';
+    if (['fileId', 'user'].includes(items?.format ?? '')) return 'string[]';
 
     const arrayOptions = items?.enum?.map((option) => `\`${option}\``).join(' | ');
 
