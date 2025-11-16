@@ -43,7 +43,7 @@ export interface IUpdateEntityMetadata {
     updatedFields: Record<string, any>;
 }
 
-export interface IUpdateMultipleEntitiesMetadata extends Array<IUpdateEntityMetadata> { }
+export interface IUpdateMultipleEntitiesMetadata extends Array<IUpdateEntityMetadata> {}
 
 export interface IUpdateEntityStatusMetadata {
     entityId: string;
@@ -54,7 +54,7 @@ export interface ICronjobRunMetadata {
     entityId: string; // on whom cronjob run was initiated
 }
 
-export interface ICreateEntityMetadataPopulated extends ICreateEntityMetadata { }
+export interface ICreateEntityMetadataPopulated extends ICreateEntityMetadata {}
 
 export interface IDuplicateEntityMetadataPopulated extends ICreateEntityMetadata {
     entityToDuplicate: IEntity | null;
@@ -70,7 +70,7 @@ export interface IUpdateEntityMetadataPopulated {
     updatedFields: Record<string, any>;
 }
 
-export interface IUpdateMultipleEntitiesMetadataPopulated extends Array<IUpdateEntityMetadataPopulated> { }
+export interface IUpdateMultipleEntitiesMetadataPopulated extends Array<IUpdateEntityMetadataPopulated> {}
 
 export interface ICronjobRunMetadataPopulated {
     entity: IEntity | null;
@@ -123,6 +123,5 @@ export enum ActionErrors {
     unique = 'UNIQUE',
     required = 'REQUIRED',
     filterValidation = 'FILTER_VALIDATION',
-    relationshipRefNotFound = 'REL_NOT_FOUND',
-    userNotFound = 'USER_NOT_FOUND'
+    notFound = 'NOT_FOUND',
 }

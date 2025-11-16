@@ -46,7 +46,13 @@ export interface IRequiredConstraint {
     property: string;
 }
 
-export interface INotFoundRelationshipRefError {
+export enum NotFoundErrorTypes {
+    userNotFound = 'USER_NOT_FOUND',
+    relNotFound = 'REL_NOT_FOUND',
+}
+
+export interface IRelNotFoundError {
+    type: NotFoundErrorTypes.relNotFound;
     relatedTemplateId: string;
     relatedIdentifier: string;
     property: string;
@@ -55,8 +61,10 @@ export interface INotFoundRelationshipRefError {
 export interface IUsersNotFoundError {
     attemptedIds: string[];
     property: string;
-    type: 'userNotFound' | 'usersNotFound';
+    type: NotFoundErrorTypes.userNotFound;
 }
+
+export type INotFoundError = IUsersNotFoundError | IRelNotFoundError;
 
 export type IConstraint = IRequiredConstraint | IUniqueConstraint;
 

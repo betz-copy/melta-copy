@@ -6,10 +6,9 @@ import {
     IBrokenRulesError,
     IChildTemplatePopulated,
     IEntity,
+    IExcelNotFoundError,
     IFailedEntity,
     IMongoEntityTemplatePopulated,
-    INotFoundRelationshipRefError,
-    IUsersNotFoundError,
     IWorkspace,
     ServiceError,
     UploadedFile,
@@ -63,19 +62,11 @@ export const classifyEntityErrors = (
     if (error instanceof AggregateError)
         error.errors.forEach((err) => classifyEntityErrors(err, failedEntities, entity, allBrokenRulesEntities, originalEntity));
 
-    if (error instanceof ServiceError && error.code === StatusCodes.NOT_FOUND) {
-        if ('attemptedIds' in error.metadata) {
-            failedEntities.push({
-                properties: originalEntity ?? {},
-                errors: [{ type: ActionErrors.userNotFound, metadata: error.metadata as IUsersNotFoundError }],
-            });
-        } else {
-            failedEntities.push({
-                properties: originalEntity ?? {},
-                errors: [{ type: ActionErrors.relationshipRefNotFound, metadata: error.metadata as INotFoundRelationshipRefError }],
-            });
-        }
-    }
+    if (error instanceof ServiceError && error.code === StatusCodes.NOT_FOUND)
+        failedEntities.push({
+            properties: originalEntity ?? {},
+            errors: [{ type: ActionErrors.notFound, metadata: error.metadata as IExcelNotFoundError }],
+        });
 
     if (error instanceof AxiosError) {
         if (!error.response) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'no error. response in axiosError', error);

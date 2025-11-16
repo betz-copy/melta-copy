@@ -1,5 +1,4 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: properties... */
-/** biome-ignore-all lint/complexity/noUselessTypeConstraint: so the code looks normal after format */
 import {
     ColDef,
     ICellRendererParams,
@@ -20,11 +19,13 @@ import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import {
     EntityData,
     IEntity,
-    INotFoundRelationshipRefError,
+    INotFoundError,
+    IRelNotFoundError,
     IRequiredConstraint,
     ISearchFilter,
     IUniqueConstraint,
     IUsersNotFoundError,
+    NotFoundErrorTypes,
 } from '../../interfaces/entities';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IError, IFailedEntity, IValidationError } from '../../interfaces/excel';
@@ -60,10 +61,9 @@ const isPropertyInvalid = <Data = EntityData>(props: ICellRendererParams<Data, a
                 return (error.metadata as IUniqueConstraint).properties.some((errorProperty) => errorProperty === property);
             case ActionErrors.validation:
                 return (error.metadata as IValidationError).path.split('/').filter(Boolean)[0] === property;
-            case ActionErrors.relationshipRefNotFound:
-                return (error.metadata as INotFoundRelationshipRefError).property === property;
-            case ActionErrors.userNotFound:
-                return (error.metadata as IUsersNotFoundError).property === property;
+            case ActionErrors.notFound: {
+                return (error.metadata as INotFoundError).property === property;
+            }
             default:
                 break;
         }
@@ -71,7 +71,7 @@ const isPropertyInvalid = <Data = EntityData>(props: ICellRendererParams<Data, a
     });
 };
 
-const errorColDef = <Data extends any = EntityData>(
+const errorColDef = <Data = EntityData>(
     props: ICellRendererParams<Data, any | undefined>,
     error: IError,
     value: Partial<IEntitySingleProperty>,
@@ -97,17 +97,21 @@ const errorColDef = <Data extends any = EntityData>(
             } else message = metadata.message;
             break;
         }
-        case ActionErrors.relationshipRefNotFound: {
-            const { relatedTemplateId, relatedIdentifier } = error.metadata as INotFoundRelationshipRefError;
-            message = i18next.t('wizard.entity.loadEntities.relatedEntityNotFound', {
-                templateName: entityTemplatesMap?.get(relatedTemplateId)?.displayName,
-                propertyName: relatedIdentifier,
-            });
-            break;
-        }
-        case ActionErrors.userNotFound: {
-            const { attemptedIds, type } = error.metadata as IUsersNotFoundError;
-            if (type === 'userNotFound') message = i18next.t(`wizard.entity.loadEntities.${type}`, { attemptedIds: attemptedIds.join(',') });
+        case ActionErrors.notFound: {
+            const errorMetadata: INotFoundError = error.metadata as INotFoundError;
+            if (errorMetadata.type === NotFoundErrorTypes.relNotFound) {
+                const { relatedTemplateId, relatedIdentifier } = errorMetadata as IRelNotFoundError;
+                message = i18next.t('wizard.entity.loadEntities.relatedEntityNotFound', {
+                    templateName: entityTemplatesMap?.get(relatedTemplateId)?.displayName,
+                    propertyName: relatedIdentifier,
+                });
+            } else if (errorMetadata.type === NotFoundErrorTypes.userNotFound) {
+                const { attemptedIds, type } = error.metadata as IUsersNotFoundError;
+                if (type === NotFoundErrorTypes.userNotFound)
+                    message = i18next.t(`wizard.entity.loadEntities.${attemptedIds.length > 1 ? 'usersNotFound' : 'userNotFound'}`, {
+                        attemptedIds: attemptedIds.join(','),
+                    });
+            }
             break;
         }
         default:

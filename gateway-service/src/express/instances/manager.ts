@@ -21,6 +21,7 @@ import {
     IEntityTemplatePopulated,
     IEntityWithDirectRelationships,
     IEntityWithIgnoredRules,
+    IExcelNotFoundError,
     IExportEntitiesBody,
     IFailedEntity,
     IFullMongoEntityTemplate,
@@ -28,7 +29,6 @@ import {
     IMongoChildTemplatePopulated,
     IMongoEntityTemplatePopulated,
     IMultipleSelect,
-    INotFoundRelationshipRefError,
     IRelationship,
     IRuleMail,
     ISearchBatchBody,
@@ -40,10 +40,10 @@ import {
     ISemanticSearchResult,
     ITemplateSearchBody,
     IUpdateEntityMetadata,
-    IUsersNotFoundError,
     logger,
     matchValueAgainstFilter,
     NotFoundError,
+    NotFoundErrorTypes,
     TemplateItem,
     UploadedFile,
 } from '@microservices/shared';
@@ -447,8 +447,8 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             throw new NotFoundError('User not found', {
                 property: key,
                 attemptedIds: allAttemptedIds,
-                type: 'userNotFound',
-            } as IUsersNotFoundError);
+                type: NotFoundErrorTypes.userNotFound,
+            } as IExcelNotFoundError);
 
         return user;
     }
@@ -576,10 +576,11 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
                         if (!foundEntity)
                             throw new NotFoundError(`Related entity not found for ${key} with value ${value}`, {
+                                type: NotFoundErrorTypes.relNotFound,
                                 property: key,
                                 relatedTemplateId,
                                 relatedIdentifier: identifierField,
-                            } as INotFoundRelationshipRefError);
+                            } as IExcelNotFoundError);
 
                         entity.properties = { ...entity.properties, [key]: foundEntity ? foundEntity.entity.properties._id : undefined };
                     });

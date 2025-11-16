@@ -63,17 +63,25 @@ export type IValidationError = {
     params: Partial<IEntitySingleProperty> & { allowedValues?: string[] };
 };
 
-export type INotFoundRelationshipRefError = {
+export enum NotFoundErrorTypes {
+    userNotFound = 'USER_NOT_FOUND',
+    relNotFound = 'REL_NOT_FOUND',
+}
+
+export type IRelNotFoundError = {
+    type: NotFoundErrorTypes.relNotFound;
     property: string;
     relatedTemplateId: string;
     relatedIdentifier: string;
 };
 
 export type IUsersNotFoundError = {
+    type: NotFoundErrorTypes.userNotFound;
     property: string;
     attemptedIds: string[];
-    type: 'userNotFound' | 'usersNotFound';
 };
+
+export type IExcelNotFoundError = IUsersNotFoundError | IRelNotFoundError;
 
 export interface EntitiesWizardValues {
     files?: File[];

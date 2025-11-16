@@ -109,6 +109,5 @@ export enum ActionErrors {
     unique = 'UNIQUE',
     required = 'REQUIRED',
     filterValidation = 'FILTER_VALIDATION',
-    relationshipRefNotFound = 'REL_NOT_FOUND',
-    userNotFound = 'USER_NOT_FOUND',
+    notFound = 'NOT_FOUND',
 }
