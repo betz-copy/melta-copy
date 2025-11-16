@@ -142,11 +142,11 @@ const EditProps: React.FC<{
         if (!checked) {
             setFieldTouched(`properties.${field}`, false);
             setFieldValue(`properties.${field}`, undefined);
-        } else if (schema.properties[field].defaultValue) setFieldValue(`properties.${field}`, schema.properties[field].defaultValue);
+        } else if (schema.properties[field]?.defaultValue) setFieldValue(`properties.${field}`, schema.properties[field].defaultValue);
 
         const relatedUserFields = {};
 
-        if (schema.properties[field].format === 'user') {
+        if (schema.properties[field]?.format === 'user') {
             Object.entries(schema.properties).forEach(([key, value]) => {
                 if (value.format === 'kartoffelUserField' && value.expandedUserField?.relatedUserField === field) {
                     relatedUserFields[key] = checked;
