@@ -220,14 +220,15 @@ class UsersManager {
         isKartoffelUser: boolean = false,
         workspaceId?: string,
     ): Promise<IExternalUser[] | IKartoffelUser[]> {
-        const kartoffelUsers: IKartoffelUser[] = await Kartoffel.getUsersByIdentityCards(identityCards);
+        const kartoffelUsers = await Kartoffel.getUsersByIdentityCards(identityCards);
 
         if (isKartoffelUser) return kartoffelUsers;
 
         const normalizedKartoffelUsers = await Promise.all(
             kartoffelUsers.flatMap((kartoffelUser) => UsersManager.kartoffelUserToUser(kartoffelUser)),
         );
-        return normalizedKartoffelUsers.flat().filter((normalizedKartoffelUser) => !normalizedKartoffelUser.permissions[workspaceId || '']);
+
+        return normalizedKartoffelUsers.flat().filter(({ permissions }) => !permissions[workspaceId || '']);
     }
 
     static async kartoffelUserToUser(kartoffelUser: IKartoffelUser): Promise<IExternalUser | never[]> {

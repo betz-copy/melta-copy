@@ -220,7 +220,7 @@ const userArrayCell = (cell: Excel.Cell, row: Record<string, any>, key: string, 
         ? Array.isArray(currentValue)
             ? currentValue.join(', ')
             : currentValue
-        : (currentValue as any).map((stringUser) => JSON.parse(stringUser).fullName).join(', ');
+        : currentValue.map((stringUser) => JSON.parse(stringUser).fullName).join(', ');
 };
 
 const filesCell = (cell: Excel.Cell, isFileArray: boolean, rowIndex: number, value: string, workspaceId: string) => {
@@ -241,20 +241,22 @@ const fixComplexProperties = (
     const isFileArray = value.type === 'array' && value.items?.format === 'fileId';
     const isSingleFile = value.format === 'fileId';
     const isSignature = value.format === 'signature';
-    const isUserArray = value.type === 'array' && value.items?.format === 'user';
 
     if (value.format === 'relationshipReference') {
         relationshipRefCell(cell, [key, value], row, workspace.path, insertEntities);
         return true;
     }
+
     if (isSingleFile || isFileArray || isSignature) {
         filesCell(cell, isFileArray, rowIndex, row[key], workspace.id);
         return true;
     }
-    if (isUserArray) {
+
+    if (value.type === 'array' && value.items?.format === 'user') {
         userArrayCell(cell, row, key, insertEntities);
         return true;
     }
+
     return false;
 };
 

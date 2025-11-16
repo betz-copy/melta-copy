@@ -8,6 +8,7 @@ import {
     IEntity,
     IExcelNotFoundError,
     IFailedEntity,
+    IFailedEntityError,
     IMongoEntityTemplatePopulated,
     IWorkspace,
     ServiceError,
@@ -59,8 +60,16 @@ export const classifyEntityErrors = (
         ...(originalEntity || {}),
     };
 
-    if (error instanceof AggregateError)
-        error.errors.forEach((err) => classifyEntityErrors(err, failedEntities, entity, allBrokenRulesEntities, originalEntity));
+    if (error instanceof AggregateError) {
+        const fixedErrors: IFailedEntityError[] = error.errors.map((err) => {
+            return { type: ActionErrors.notFound, metadata: err.metadata as IExcelNotFoundError };
+        });
+
+        failedEntities.push({
+            properties: originalEntity ?? {},
+            errors: fixedErrors,
+        });
+    }
 
     if (error instanceof ServiceError && error.code === StatusCodes.NOT_FOUND)
         failedEntities.push({
@@ -92,7 +101,7 @@ export const classifyEntityErrors = (
                 });
             }
 
-        if (data.metadata && data.metadata?.errorCode === errorCodes.failedConstraintsValidation) {
+        if (data.metadata && data.metadata.errorCode === errorCodes.failedConstraintsValidation) {
             const { constraint } = data.metadata;
             switch (constraint.type) {
                 case ActionErrors.unique:
@@ -114,7 +123,7 @@ export const classifyEntityErrors = (
 
         if (data.type === errorCodes.templateValidationError || data.type === 'FilterValidationError')
             getValidationErrorEntities(error as AxiosError, failedEntities, originalEntity);
-    } else if ((error as IBrokenRulesError).metadata?.errorCode === errorCodes.ruleBlock) {
+    } else if ((error as IBrokenRulesError).metadata.errorCode === errorCodes.ruleBlock) {
         allBrokenRulesEntities.push({
             brokenRules: error.metadata.brokenRules,
             rawBrokenRules: error.metadata.rawBrokenRules,

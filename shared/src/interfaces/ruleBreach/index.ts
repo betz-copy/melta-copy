@@ -38,12 +38,14 @@ export interface IError {
     metadata: IValidationError | IUniqueConstraint | IRequiredConstraint;
 }
 
+export type IFailedEntityError = {
+    type: ActionErrors;
+    metadata: IValidationError | IUniqueConstraint | IRequiredConstraint | IExcelNotFoundError;
+};
+
 export type IFailedEntity = {
     properties: Record<string, any>;
-    errors: {
-        type: ActionErrors;
-        metadata: IValidationError | IUniqueConstraint | IRequiredConstraint | IExcelNotFoundError;
-    }[];
+    errors: IFailedEntityError[];
 };
 
 export type IActionPopulated = {

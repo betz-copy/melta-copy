@@ -36,7 +36,7 @@ import OpenMap from '../../pages/Map/OpenMap';
 import { getDateWithoutTime, getLongDate } from '../date';
 import { getFileName } from '../getFileName';
 import { convertToPlainText } from '../HtmlTagsStringValue';
-import { isStringifiedJSON } from '../stringValues';
+import { isStringifiedJSONObj } from '../stringValues';
 import { agGridLocaleText } from './agGridLocaleText';
 import DateTimeCellEditor from './DateTimeCellEditor';
 import OverflowWrapper from './OverflowWrapper';
@@ -44,13 +44,17 @@ import RelationshipRefCellEditor from './RelationshipRefCellEditor';
 import SelectCellEditor from './SelectCellEditor';
 import { Value } from './Value';
 
-const getColor = <Data = EntityData>(props: ICellRendererParams<Data, any | undefined>, field: string) =>
+const getColor = <Data extends EntityData | IUser>(props: ICellRendererParams<Data, any | undefined>, field: string) =>
     (props.data as { coloredFields: IEntity['coloredFields'] })?.coloredFields?.[field];
 
 const hasErrors = (data: any): data is IFailedEntity =>
     data && Array.isArray(data.errors) && data.errors.every((error) => 'type' in error && 'metadata' in error);
 
-const isPropertyInvalid = <Data = EntityData>(props: ICellRendererParams<Data, any | undefined>, property: string, ignoreType = false) => {
+const isPropertyInvalid = <Data extends EntityData | IUser>(
+    props: ICellRendererParams<Data, any | undefined>,
+    property: string,
+    ignoreType = false,
+) => {
     if (!ignoreType || !hasErrors(props.data)) return undefined;
 
     return props.data.errors.find((error) => {
@@ -71,7 +75,7 @@ const isPropertyInvalid = <Data = EntityData>(props: ICellRendererParams<Data, a
     });
 };
 
-const errorColDef = <Data = EntityData>(
+const errorColDef = <Data extends EntityData | IUser>(
     props: ICellRendererParams<Data, any | undefined>,
     error: IError,
     value: Partial<IEntitySingleProperty>,
@@ -150,7 +154,7 @@ const errorColDef = <Data = EntityData>(
     );
 };
 
-export const numberColDef = <Data = EntityData>(
+export const numberColDef = <Data extends EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
@@ -194,7 +198,7 @@ export const numberColDef = <Data = EntityData>(
     };
 };
 
-export const regexColDef = <Data = EntityData>(
+export const regexColDef = <Data extends EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
@@ -224,7 +228,7 @@ export const regexColDef = <Data = EntityData>(
     };
 };
 
-export const stringColDef = <Data = EntityData>(
+export const stringColDef = <Data extends EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
@@ -259,7 +263,7 @@ export const stringColDef = <Data = EntityData>(
     };
 };
 
-export const fileColDef = <Data = EntityData>(
+export const fileColDef = <Data extends EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
@@ -289,7 +293,7 @@ export const fileColDef = <Data = EntityData>(
     };
 };
 
-export const locationColDef = <Data = EntityData>(
+export const locationColDef = <Data extends EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     entityGetter: ValueGetterFunc<any, any>,
@@ -327,7 +331,7 @@ export const locationColDef = <Data = EntityData>(
     };
 };
 
-export const relatedTemplateColDef = <Data = EntityData>(
+export const relatedTemplateColDef = <Data extends EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
@@ -378,7 +382,7 @@ export const relatedTemplateColDef = <Data = EntityData>(
     };
 };
 
-export const booleanColDef = <Data = EntityData>(
+export const booleanColDef = <Data extends EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
@@ -423,7 +427,7 @@ export const booleanColDef = <Data = EntityData>(
     };
 };
 
-export const enumColDef = <Data = EntityData>(
+export const enumColDef = <Data extends EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
@@ -474,7 +478,7 @@ export const enumColDef = <Data = EntityData>(
     };
 };
 
-export const enumArrayColDef = <Data = EntityData>(
+export const enumArrayColDef = <Data extends EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
@@ -537,7 +541,7 @@ export const enumArrayColDef = <Data = EntityData>(
     };
 };
 
-export const userColDef = <Data = IUser>(
+export const userColDef = <Data extends IUser>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
@@ -564,7 +568,7 @@ export const userColDef = <Data = IUser>(
             const error = isPropertyInvalid(props, field, ignoreType);
             if (error) return errorColDef(props, error, { ...value, format: 'user' });
 
-            if (ignoreType && !isStringifiedJSON(props.value))
+            if (ignoreType && !isStringifiedJSONObj(props.value))
                 return <Value hideValue={hideColumn} color={getColor(props, field)} value={props.value ?? ''} />;
 
             const user = JSON.parse(props.value);
@@ -593,7 +597,7 @@ export const userColDef = <Data = IUser>(
     };
 };
 
-export const userArrayColDef = <Data = IEntity>(
+export const userArrayColDef = <Data extends IEntity>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
@@ -622,19 +626,13 @@ export const userArrayColDef = <Data = IEntity>(
             if (ignoreType) {
                 if (typeof props.value === 'string' || typeof props.value === 'number')
                     return <Value hideValue={hideColumn} color={getColor(props, field)} value={(props.value as string) ?? ''} />;
-                if (Array.isArray(props.value) && props.value.some((item) => !isStringifiedJSON(item)))
+                if (Array.isArray(props.value) && props.value.some((item) => !isStringifiedJSONObj(item)))
                     return <Value hideValue={hideColumn} color={getColor(props, field)} value={props.value.join(', ') ?? ''} />;
             }
 
             return (
                 <OverflowWrapper
-                    items={props.value.map((val) => {
-                        try {
-                            return JSON.parse(val);
-                        } catch {
-                            return JSON.parse(JSON.stringify(val));
-                        }
-                    })}
+                    items={props.value.map((val) => isStringifiedJSONObj(val) ?? JSON.parse(JSON.stringify(val)))}
                     getItemKey={(item) => item._id}
                     renderItem={(item) => (
                         <UserAvatar
@@ -662,7 +660,7 @@ export const userArrayColDef = <Data = IEntity>(
     };
 };
 
-export const enumFilesColDef = <Data = EntityData>(
+export const enumFilesColDef = <Data extends EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
@@ -714,7 +712,7 @@ export const enumFilesColDef = <Data = EntityData>(
     };
 };
 
-export const dateColDef = <Data = EntityData>(
+export const dateColDef = <Data extends EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
@@ -795,7 +793,7 @@ interface TranslatedEnumColDefOptions<Data> {
     isLastColumn?: boolean;
 }
 
-export const translatedEnumColDef = <Data = EntityData>({
+export const translatedEnumColDef = <Data extends EntityData>({
     field,
     valueGetter,
     title,

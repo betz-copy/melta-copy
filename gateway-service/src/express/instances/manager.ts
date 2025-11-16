@@ -1,5 +1,4 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: properties need to be of type any */
-
 import { promises as fsp } from 'node:fs';
 import {
     ActionTypes,
@@ -23,6 +22,7 @@ import {
     IEntityWithIgnoredRules,
     IExcelNotFoundError,
     IExportEntitiesBody,
+    IExternalUser,
     IFailedEntity,
     IFullMongoEntityTemplate,
     IKartoffelUser,
@@ -60,6 +60,7 @@ import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import StorageService from '../../externalServices/storageService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import { trycatch } from '../../utils';
+import { getUserFields } from '../../utils/entities';
 import { classifyEntityErrors, generateSerialNumbers, getAllEntitiesFromExcel, getSerialStarters } from '../../utils/excel';
 import { createWorkbook, createWorksheet, styleAWorksheet } from '../../utils/excel/createFunctions';
 import { convertIdOfBrokenRules, isIncludedColumn, readExcelFile } from '../../utils/excel/getFunctions';
@@ -274,9 +275,8 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const newEntities = insertEntities.map((entity) => {
             Object.entries(template.properties.properties).forEach(([key, value]) => {
                 if (!isIncludedColumn(value)) {
-                    if (displayColumns) {
-                        newDisplayColumns = newDisplayColumns!.filter((fieldName) => fieldName !== key);
-                    }
+                    if (displayColumns) newDisplayColumns = newDisplayColumns?.filter((fieldName) => fieldName !== key);
+
                     delete entity[key];
                 }
             });
@@ -369,8 +369,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 acc[key] = { ...value, serialCurrent: serialStarters[key] + succeededIndex };
                 return acc;
             }, {});
-        // biome-ignore lint/correctness/noUnusedVariables: replacing lint error
-        const { category, _id, createdAt, updatedAt, disabled, ...restOfEntityTemplate } = template;
+        const { category, _id, createdAt: _createdAt, updatedAt: _updatedAt, disabled: _disabled, ...restOfEntityTemplate } = template;
         await this.entityTemplateService.updateEntityTemplate(template._id, {
             ...restOfEntityTemplate,
             category,
@@ -402,7 +401,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         relatedTemplatesObject.forEach(({ fieldName, relatedTemplateId }) => {
             const relatedTemplate: IMongoEntityTemplatePopulated = relatedTemplatesMap[relatedTemplateId!]!;
-            const identifierField = Object.entries(relatedTemplate!.properties.properties).find(([_key, value]) => value.identifier)?.[0];
+            const identifierField = Object.entries(relatedTemplate?.properties.properties).find(([_key, value]) => value.identifier)?.[0];
             if (!identifierField) return;
 
             relatedTemplatesWithIdentifier.push({ fieldName, relatedTemplateId, identifierField });
@@ -445,9 +444,9 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const user: IKartoffelUser | undefined = usersMap.get(identityCard);
         if (!user)
             throw new NotFoundError('User not found', {
-                property: key,
-                attemptedIds: allAttemptedIds,
                 type: NotFoundErrorTypes.userNotFound,
+                property: key,
+                attemptedIds: allAttemptedIds.filter((id) => !usersMap.get(id)),
             } as IExcelNotFoundError);
 
         return user;
@@ -458,75 +457,53 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         entityProperties: Record<string, any>,
         usersMap: Map<string, IKartoffelUser>,
     ): Promise<void> {
-        const kartoffelFields: string[] = Object.entries(template.properties.properties).reduce<string[]>((acc, [key, value]) => {
-            if (value?.format === 'kartoffelUserField') acc.push(key);
-
-            return acc;
-        }, []);
+        const templateProperties = template.properties.properties;
+        const kartoffelFields: string[] = Object.entries(templateProperties)
+            .filter(([_key, value]) => value?.format === 'kartoffelUserField')
+            .map(([key]) => key);
 
         const errors: UserNotFoundError[] = [];
-        for (const [key, value] of Object.entries(template.properties.properties)) {
+
+        const updateKartoffelFields = (user: IKartoffelUser, relatedFieldKey: string): void => {
+            for (const fieldKey of kartoffelFields) {
+                const templateField = templateProperties[fieldKey];
+                const relatedUserField: string | undefined = templateField.expandedUserField?.relatedUserField;
+                const relatedKartoffelField: string | undefined = templateField.expandedUserField?.kartoffelField;
+
+                if (relatedUserField === relatedFieldKey && relatedKartoffelField)
+                    entityProperties[fieldKey] = user[relatedKartoffelField as keyof IKartoffelUser] ?? entityProperties[fieldKey];
+            }
+        };
+
+        for (const [key, field] of Object.entries(templateProperties)) {
             const fieldValue = entityProperties[key];
             if (!fieldValue) continue;
 
             try {
-                if (value?.format === 'user') {
+                if (field?.format === 'user') {
                     const user: IKartoffelUser = this.normalizeUser(fieldValue, usersMap, key, [fieldValue]);
-                    kartoffelFields.map((fieldKey) => {
-                        const field = template.properties.properties[fieldKey];
-                        if (field.expandedUserField?.relatedUserField === key) {
-                            const fieldVal = user?.[field.expandedUserField?.kartoffelField] ?? entityProperties[fieldKey];
-                            entityProperties[fieldKey] = fieldVal;
-                        }
-                    });
+                    updateKartoffelFields(user, key);
 
                     entityProperties[key] = JSON.stringify(await UsersManager.kartoffelUserToUser(user));
+                    continue;
                 }
-                if (value?.type === 'array' && value?.items?.format === 'user') {
+                if (field?.type === 'array' && field?.items?.format === 'user') {
                     const users: string[] = [];
-                    for (const identityCard of fieldValue) {
-                        const user: IKartoffelUser = this.normalizeUser(identityCard, usersMap, key, fieldValue);
-                        users.push(JSON.stringify(await UsersManager.kartoffelUserToUser(user)));
+                    for (const identityCard of fieldValue as string[]) {
+                        const kartoffelUser: IKartoffelUser = this.normalizeUser(identityCard, usersMap, key, fieldValue);
+                        const user: IExternalUser | never[] = await UsersManager.kartoffelUserToUser(kartoffelUser);
+                        users.push(JSON.stringify(user));
                     }
 
                     entityProperties[key] = users;
                 }
             } catch (error) {
-                if (error instanceof NotFoundError) {
-                    errors.push(error);
-                } else {
-                    throw error;
-                }
+                if (error instanceof NotFoundError) errors.push(error);
+                else throw error;
             }
         }
 
-        if (errors.length > 0) throw new AggregateError(errors, 'some user fields were not found');
-    }
-
-    async getUserFields(
-        template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
-        entities: IEntityWithIgnoredRules[] | undefined,
-    ): Promise<Map<string, IKartoffelUser>> {
-        if (!entities) return new Map<string, IKartoffelUser>();
-
-        const allIdentityCards: Set<string> = new Set<string>(
-            Object.entries(template.properties.properties).flatMap(([key, value]) =>
-                entities.flatMap((entity) => {
-                    const fieldValue = entity.properties[key];
-                    if (!fieldValue) return [];
-
-                    if (value?.format === 'user') return [fieldValue];
-                    if (value?.type === 'array' && value.items?.format === 'user') return Array.isArray(fieldValue) ? fieldValue : [fieldValue];
-
-                    return [];
-                }),
-            ),
-        );
-
-        if (allIdentityCards.size === 0) return new Map<string, IKartoffelUser>();
-        const users: IKartoffelUser[] = await UsersManager.getUsersByIdentityCard([...allIdentityCards], true);
-
-        return new Map<string, IKartoffelUser>(users.filter((user) => Boolean(user.identityCard)).map((user) => [user.identityCard!, user]));
+        if (errors.length) throw new AggregateError(errors, 'some user fields were not found');
     }
 
     async loadEntities(
@@ -550,7 +527,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const serialStarters = getSerialStarters(template);
         const succeededEntities: IEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
-        const usersFieldsMap: Map<string, IKartoffelUser> = await this.getUserFields(template, entities);
+        const usersFieldsMap: Map<string, IKartoffelUser> = await getUserFields(template, entities);
 
         const { searchResults, relatedTemplatesWithIdentifier } = await this.handleRelationshipRefLoadExcel(template, userId, entities);
 

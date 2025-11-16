@@ -120,15 +120,23 @@ export const isIncludedColumn = (propertyTemplate: IEntitySingleProperty | (IEnt
     return !invalidFormats && !isSerialNumber && isDisplay;
 };
 
-export const isIncludedEditColumn = (propertyTemplate: IEntitySingleProperty, entityDisabled: boolean, templateDisabled: boolean) =>
-    !propertyTemplate.readOnly &&
-    !propertyTemplate.identifier &&
-    !entityDisabled &&
-    !templateDisabled &&
-    isIncludedColumn(propertyTemplate) &&
-    propertyTemplate.format !== 'relationshipReference' &&
-    propertyTemplate.format !== 'user' &&
-    propertyTemplate?.items?.format !== 'user';
+export const isIncludedEditColumn = (propertyTemplate: IEntitySingleProperty, entityDisabled: boolean, templateDisabled: boolean) => {
+    const forbiddenFormats = ['relationshipReference', 'user'];
+    const forbiddenItemFormats = ['user'];
+
+    const invalidFormats =
+        forbiddenFormats.includes(propertyTemplate.format ?? '') ||
+        (propertyTemplate.type === 'array' && forbiddenItemFormats.includes(propertyTemplate.items?.format ?? ''));
+
+    return (
+        !invalidFormats &&
+        isIncludedColumn(propertyTemplate) &&
+        !propertyTemplate.readOnly &&
+        !propertyTemplate.identifier &&
+        !entityDisabled &&
+        !templateDisabled
+    );
+};
 
 type IFailedProperties = {
     key: string;
