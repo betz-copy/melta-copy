@@ -122,7 +122,7 @@ const FieldBlockStepWarper = ({
 
     useEffect(() => {
         preview(getEmptyImage(), { captureDraggingState: true });
-    }, []);
+    }, [preview]);
 
     drag(drop(ref));
 

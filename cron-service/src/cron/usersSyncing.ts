@@ -1,4 +1,4 @@
-import { IEntity, IMongoEntityTemplatePopulated, logger, WorkspaceTypes } from '@microservices/shared';
+import { IEntity, IEntitySingleProperty, IMongoEntityTemplatePopulated, logger, WorkspaceTypes } from '@microservices/shared';
 import { keyBy } from 'lodash';
 import schedule from 'node-schedule';
 import config from '../config';
@@ -97,9 +97,10 @@ export const updateKartoffelFields = async () => {
                         entitiesIds.push(properties._id);
 
                         Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
+                            const field = value as IEntitySingleProperty;
                             const fieldValue = properties[key];
 
-                            if (value.format === 'user' && fieldValue) usersIds.add(JSON.parse(fieldValue)._id);
+                            if (field.format === 'user' && fieldValue) usersIds.add(JSON.parse(fieldValue)._id);
                         });
                     });
 
