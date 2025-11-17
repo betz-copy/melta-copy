@@ -361,15 +361,14 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         let error: FieldEditCardProps['errors'];
         let touch: FieldEditCardProps['touched'];
 
-        const getTouchedOrError = (obj?: FormikTouched<Values> | FormikErrors<Values>) => {
-            return isGroup ? obj?.[propertiesType]?.[groupIndex]?.fields?.[index] : obj?.[propertiesType]?.[index]?.data;
-        };
+        const getTouchedOrError = (obj?: FormikTouched<Values> | FormikErrors<Values>) =>
+            isGroup ? obj?.[propertiesType]?.[groupIndex]?.fields?.[index] : obj?.[propertiesType]?.[index]?.data;
 
         const findInitialValue = ():
             | FieldProperty
             | {
-                data: CommonFormInputProperties | undefined;
-            }
+                  data: CommonFormInputProperties | undefined;
+              }
             | undefined => {
             error = getTouchedOrError(errors);
             touch = getTouchedOrError(touched);
@@ -380,11 +379,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
             const group = currentTypeValues?.find(
                 (item) => item.type === 'group' && item.fields?.some((f) => f.id === propertyProp.id),
             ) as GroupProperty;
-            if (group) {
-                return {
-                    data: group.fields?.find((f) => f.id === propertyProp.id),
-                };
-            }
+            if (group) return { data: group.fields?.find((f) => f.id === propertyProp.id) };
 
             return undefined;
         };
@@ -425,6 +420,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
             userPropertiesInTemplate,
             onDuplicateKartoffelField,
             propertiesType,
+            values,
         };
     };
 
@@ -567,6 +563,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                                             <Group
                                                 group={item}
                                                 index={index}
+                                                values={values}
                                                 moveField={moveField}
                                                 moveGroup={moveGroup}
                                                 touched={touched}
@@ -600,19 +597,14 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                                                 uniqueConstraints={uniqueConstraints}
                                                 setUniqueConstraints={setUniqueConstraints}
                                                 moveGroup={moveGroup}
+                                                values={values}
                                             />
                                         )}
                                     </Box>
                                 );
                             const { data } = item as FieldProperty;
                             return (
-                                <Attachment
-                                    key={data.id}
-                                    field={data}
-                                    index={index}
-                                    buildProps={{ ...buildProps(data, index) }}
-                                    onDrop={moveField}
-                                />
+                                <Attachment key={data.id} field={data} index={index} buildProps={{ ...buildProps(data, index) }} onDrop={moveField} />
                             );
                         })}
                     </Grid>
@@ -653,12 +645,14 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                 handleClose={() => setShowAreUSureDialogForRemoveProperty(false)}
                 title={i18next.t('systemManagement.deleteField')}
                 body={`${i18next.t('systemManagement.warningOnDeleteField')}
-                                ${!!selectedIndexesToRemove.length &&
-                    getFieldData(orderedItemsRef.current, selectedIndexesToRemove[0].index, selectedIndexesToRemove[0].groupIndex)
-                        ?.title
-                    }
-                                ${i18next.t('systemManagement.continueWarningOnDeleteField')} ${(initialValues as unknown as IMongoEntityTemplatePopulated)?.displayName
-                    }`}
+                                ${
+                                    !!selectedIndexesToRemove.length &&
+                                    getFieldData(orderedItemsRef.current, selectedIndexesToRemove[0].index, selectedIndexesToRemove[0].groupIndex)
+                                        ?.title
+                                }
+                                ${i18next.t('systemManagement.continueWarningOnDeleteField')} ${
+                                    (initialValues as unknown as IMongoEntityTemplatePopulated)?.displayName
+                                }`}
                 onYes={() => (onDeleteSure ? onDeleteSure(setShowAreUSureDialogForRemoveProperty) : onSimpleDeleteSure())}
             />
         </FieldBlockAccordion>

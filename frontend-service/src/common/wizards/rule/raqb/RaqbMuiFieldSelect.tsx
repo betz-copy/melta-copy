@@ -24,7 +24,7 @@ export default ({
     selectedFullLabel,
     customProps, // meltaTeam - added this, didnt exist in original file!
 }: FieldProps) => {
-    const [open, setOpen] = useState(false);
+    const [open, setOpen] = useState<boolean>(false);
 
     const onOpen = useCallback(() => {
         setOpen(true);
@@ -70,6 +70,7 @@ export default ({
             //     </MenuItem>
             // );
             // return res;
+
             return (
                 <MenuItem disabled={disabled} key={path} value={path}>
                     {finalLabel}
@@ -110,7 +111,7 @@ export default ({
     const hasValue = selectedKey != null;
     let tooltipText = selectedAltLabel || selectedFullLabel;
     // eslint-disable-next-line eqeqeq
-    if (tooltipText == selectedLabel) tooltipText = null;
+    if (tooltipText === selectedLabel) tooltipText = null;
     let res = (
         <Select
             error={!!errorText}
@@ -130,9 +131,8 @@ export default ({
             {renderOptions(items)}
         </Select>
     );
-    if (tooltipText) {
-        res = <Tooltip title={!open ? tooltipText : null}>{res}</Tooltip>;
-    }
+    if (tooltipText) res = <Tooltip title={!open ? tooltipText : null}>{res}</Tooltip>;
+
     res = <FormControl>{res}</FormControl>;
     return res;
 };

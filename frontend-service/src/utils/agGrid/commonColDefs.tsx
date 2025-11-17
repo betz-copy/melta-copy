@@ -1,6 +1,7 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: properties... */
 import {
     ColDef,
+    ICellEditorParams,
     ICellRendererParams,
     IDateFilterParams,
     ISetFilterParams,
@@ -12,6 +13,7 @@ import { PriorityHigh } from '@mui/icons-material';
 import { Box, Grid, Tooltip, tooltipClasses } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
+import { EntityWizardValues } from '../../common/dialogs/entity';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 import UserAvatar, { IUserAvatarProps } from '../../common/UserAvatar';
@@ -378,11 +380,12 @@ export const relatedTemplateColDef = <Data extends EntityData>(
         hide: hideColumn,
         editable: (params) => !!(relatedEntityTemplate && editable(params.data)),
         cellEditor: RelationshipRefCellEditor,
-        cellEditorParams: {
+        cellEditorParams: (params: ICellEditorParams<Data>) => ({
             relatedTemplateId,
             template: value,
             filters,
-        },
+            currentEntity: (params.data as EntityWizardValues).properties,
+        }),
     };
 };
 

@@ -14,13 +14,9 @@ import React, { useState } from 'react';
 export default ({ valueSources, valueSrc, title, setValueSrc }: ValueSourcesProps) => {
     const [anchorEl, setAnchorEl] = useState(null);
 
-    const handleOpen = (event) => {
-        setAnchorEl(event.currentTarget);
-    };
+    const handleOpen = (event) => setAnchorEl(event.currentTarget);
 
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
+    const handleClose = () => setAnchorEl(null);
 
     const toggleOpenClose = (event) => {
         // eslint-disable-next-line no-unused-expressions

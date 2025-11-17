@@ -3,17 +3,16 @@ import React, { useEffect, useRef, useState } from 'react';
 
 const { MuiFieldAutocomplete } = MuiWidgets;
 
-export const RaqbMuiAutocompeleteAutoWidth: React.FC<FieldProps> = (fieldProps) => {
+export const RaqbMuiAutocompleteAutoWidth: React.FC<FieldProps> = (fieldProps) => {
     const [inputWidth, setInputWidth] = useState<number>(170);
     const { setField, selectedLabel } = fieldProps;
     const autocompleteRef = useRef<HTMLDivElement | undefined>(undefined);
 
     useEffect(() => {
-        const inputElement = autocompleteRef.current!.firstChild!.firstChild!.firstChild as HTMLInputElement;
+        const inputElement = autocompleteRef.current?.firstChild?.firstChild?.firstChild as HTMLInputElement;
 
-        if (inputWidth < inputElement.scrollWidth) {
-            setInputWidth(inputElement.scrollWidth);
-        }
+        if (inputWidth < inputElement.scrollWidth) setInputWidth(inputElement.scrollWidth);
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedLabel]);
 
