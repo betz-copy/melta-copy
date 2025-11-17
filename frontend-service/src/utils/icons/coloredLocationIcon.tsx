@@ -1,9 +1,9 @@
 const COORDINATE_DEFAULT_COLOR = '#FF006B';
 
-export const getColoredLocationIcon = (color: string = COORDINATE_DEFAULT_COLOR) => {
+export const getColoredLocationIcon = (color: string = COORDINATE_DEFAULT_COLOR, borderColor?: string) => {
     const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"
-         viewBox="-12.8 -12.8 89.60 89.60" fill="${color}" stroke="${color}">
+         viewBox="-12.8 -12.8 89.60 89.60" fill="${color}" stroke="${borderColor}" stroke-width="5">
       <path d="M32,0C18.746,0,8,10.746,8,24c0,5.219,1.711,10.008,4.555,13.93
                l16,24C29.414,63.332,30.664,64,32,64s2.586-0.668,3.328-1.781l16-24
                C54.289,34.008,56,29.219,56,24C56,10.746,45.254,0,32,0z

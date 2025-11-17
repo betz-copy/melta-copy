@@ -16,6 +16,7 @@ export const MeltaPolygon = ({
     fill = true,
     showCenteredPoint = true,
     node,
+    selected,
 }: {
     name: string;
     polygon: Cartesian3[];
@@ -25,13 +26,14 @@ export const MeltaPolygon = ({
     outlineColor?: Cesium.Color;
     showCenteredPoint?: boolean;
     node?: IEntity;
+    selected?: boolean;
 }) => {
     const centroid = calculateCenterOfPolygon(polygon);
 
     return (
         <>
             <Entity name={name}>
-                <PolylineGraphics positions={[...polygon, polygon[0]]} material={outlineColor} width={2} />
+                <PolylineGraphics positions={[...polygon, polygon[0]]} material={outlineColor} width={selected ? 5 : 2} />
                 <PolygonGraphics
                     hierarchy={polygon}
                     fill={fill}
@@ -59,14 +61,16 @@ export const MeltaCoordinate = ({
     onClick,
     color,
     node,
+    selected,
 }: {
     name: string;
     position: Cartesian3;
     onClick?: () => void;
     color?: string;
     node?: IEntity;
+    selected?: boolean;
 }) => (
     <Entity properties={{ _node: node }} name={name} description={locationToWGS84String(position)} position={position} onClick={onClick}>
-        <BillboardGraphics image={getColoredLocationIcon(color)} scale={1} verticalOrigin={Cesium.VerticalOrigin.BOTTOM} />
+        <BillboardGraphics image={getColoredLocationIcon(color, selected ? '#fff' : color)} scale={1} verticalOrigin={Cesium.VerticalOrigin.BOTTOM} />
     </Entity>
 );

@@ -107,6 +107,11 @@ const MapFilters = ({
         },
     );
 
+    const handleSearch = () => {
+        setCameraFocus(CameraFocusType.Search);
+        isSearchShape ? applyFilterWithShapeSearch(filters.value) : refetch();
+    };
+
     return (
         <Grid zIndex={1000} top={10} container wrap="nowrap" gap="15px">
             <Grid>
@@ -175,6 +180,14 @@ const MapFilters = ({
                         value={filters.value.autoSearch}
                         showBorder
                         placeholder={i18next.t('globalSearch.searchInPage')}
+                        // onKeyDown={(e) => {
+                        //     console.log({ key: e.key });
+
+                        //     if (e.key === 'Enter') {
+                        //         console.log('enter');
+                        //         handleSearch();
+                        //     }
+                        // }}
                         onChange={(newSearchValue: string) =>
                             filters.set((prev) => ({
                                 ...prev,
@@ -226,10 +239,7 @@ const MapFilters = ({
                         disabled={!Object.entries(filters.value.listFields).length && filters.value.autoSearch.length < 2}
                         variant="contained"
                         sx={{ width: 'auto', alignSelf: 'end', borderRadius: '7px' }}
-                        onClick={() => {
-                            setCameraFocus(CameraFocusType.Search);
-                            isSearchShape ? applyFilterWithShapeSearch(filters.value) : refetch();
-                        }}
+                        onClick={handleSearch}
                     >
                         {i18next.t('location.search')}
                     </Button>

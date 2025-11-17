@@ -65,9 +65,7 @@ export const useEntitiesWithLocationFields = ({ entities, entityTemplateMap }: {
         return { markers: markerList, polygons: polygonList, allCoordinates: coordinatesList };
     }, [entities, entityTemplateMap]);
 
-    const bounds = useMemo(() => {
-        return allCoordinates.length > 0 ? Cesium.BoundingSphere.fromPoints(allCoordinates) : null;
-    }, [allCoordinates]);
+    const bounds = useMemo(() => (allCoordinates.length > 0 ? Cesium.BoundingSphere.fromPoints(allCoordinates) : null), [allCoordinates]);
 
     useEffect(() => {
         if (viewer && bounds) viewer.camera.viewBoundingSphere(bounds, new Cesium.HeadingPitchRange(0, -CesiumMath.PI_OVER_TWO, 0));

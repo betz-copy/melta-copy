@@ -74,7 +74,6 @@ export function useCesiumTooltip({ viewerRef, darkMode, entityTemplateMap, searc
     useEffect(() => {
         const viewer = viewerRef.current?.cesiumElement;
         if (!viewer) return;
-        console.log('hii');
 
         const tooltip = document.createElement('div');
         tooltip.style.cssText = `

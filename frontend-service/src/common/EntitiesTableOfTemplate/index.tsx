@@ -27,7 +27,7 @@ import i18next from 'i18next';
 import { pickBy } from 'lodash';
 import isEqual from 'lodash.isequal';
 import sortBy from 'lodash.sortby';
-import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import React, { ForwardedRef, forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
@@ -183,17 +183,16 @@ export const getRowModelProps = <Data = EntityData>(
     pageType?: string,
     clientSideUserEntityId?: string,
     childTemplatesOfParentIds?: string[],
+    usePagination?: boolean,
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
-    if (rowModelType === 'clientSide') {
+    if (rowModelType === 'clientSide')
         return {
-            rowModelType,
+            rowModelType: 'clientSide',
             rowData,
-            domLayout: 'normal',
-
-            // pagination: hasInstances ?? true,
-            // paginationPageSize,
+            pagination: hasInstances ?? Boolean(usePagination),
+            paginationPageSize,
+            ...(!usePagination && { domLayout: 'normal' }),
         };
-    }
 
     return {
         rowModelType: 'serverSide',
@@ -260,6 +259,8 @@ export type EntitiesTableOfTemplateProps<Data> = {
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
     actionsColumnWidth?: number;
     childTemplatesOfParent?: IChildTemplatePopulated[];
+    scrollToId?: string;
+    usePagination?: boolean;
 };
 
 export type EntitiesTableOfTemplateRef<Data> = {
@@ -310,6 +311,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             setUpdatedTemplateIds,
             actionsColumnWidth,
             childTemplatesOfParent,
+            scrollToId,
+            usePagination = true,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
@@ -362,6 +365,22 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const [defaultColumnWidths, setDefaultColumnWidths] = useState<Record<string, number>>(
             savedColumnWidths ? JSON.parse(savedColumnWidths) : {},
         );
+
+        useEffect(() => {
+            if (!scrollToId || !gridRef.current) return;
+
+            const api = gridRef.current.api;
+            const rowNode = api?.getRowNode(scrollToId);
+
+            if (rowNode) {
+                const index = rowNode.rowIndex;
+
+                if (index === null) return;
+
+                api.ensureIndexVisible(index, 'middle');
+                rowNode.setSelected(true);
+            }
+        }, [scrollToId]);
 
         const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(
             (id: string) =>
@@ -730,8 +749,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     saveStorageProps.pageType,
                     clientSideUserEntity?.properties?._id,
                     childTemplatesOfParentIds,
+                    usePagination,
                 ),
-            [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances, defaultFilter, childTemplatesOfParentIds],
+            [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances, defaultFilter, childTemplatesOfParentIds, usePagination],
         );
 
         const statusPanels = useMemo(() => {
@@ -777,16 +797,21 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     <AgGridReact<Data>
                         ref={gridRef}
                         suppressDragLeaveHidesColumns={ignoreType}
-                        getRowStyle={(params): RowStyle | undefined => {
-                            if (params.data && getEntityPropertiesData(params.data).disabled) {
-                                return { background: darkMode ? '' : '#FAFAFA', color: darkMode ? '#7f7f7f' : 'rgb(159 147 147 / 40%)' };
-                            }
+                        getRowStyle={({ data }): RowStyle | undefined => {
+                            if (!data) return undefined;
+
+                            if (getEntityPropertiesData(data).disabled)
+                                return {
+                                    background: darkMode ? '' : '#FAFAFA',
+                                    color: darkMode ? '#7f7f7f' : 'rgb(159 147 147 / 40%)',
+                                };
+
                             return undefined;
                         }}
                         className={`ag-theme-material${darkMode ? '-dark' : ''}`}
                         containerStyle={{
                             width: '100%',
-                            height: rowModelType === 'infinite' ? `${gridHeight}px` : `${gridHeight}px`,
+                            height: rowModelType === 'infinite' || !usePagination ? `${gridHeight}px` : undefined,
                             fontFamily: 'Rubik',
                             fontSize,
                             fontWeight: 300,
@@ -809,18 +834,22 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         maintainColumnOrder
                         rowSelection={rowSelection}
                         suppressAggFuncInHeader
-                        onRowSelected={onRowSelected ? ({ data }) => data && onRowSelected(data) : undefined}
+                        onRowSelected={
+                            onRowSelected
+                                ? ({ data, node }) => {
+                                      if (node.isSelected() && data) onRowSelected(data);
+                                  }
+                                : undefined
+                        }
                         rowStyle={onRowSelected ? { cursor: 'pointer' } : undefined}
                         suppressCellFocus
                         onFilterChanged={(params) => {
                             onFilter?.();
                             if (saveStorageProps.shouldSaveFilter) {
                                 const filterModel = params.api.getFilterModel();
-                                if (isEqual(filterModel, defaultFilterModel)) {
+                                if (isEqual(filterModel, defaultFilterModel))
                                     LocalStorage.remove(`tableFilter-${saveStorageProps.pageType}-${template._id}`);
-                                } else {
-                                    LocalStorage.set(`tableFilter-${saveStorageProps.pageType}-${template._id}`, filterModel);
-                                }
+                                else LocalStorage.set(`tableFilter-${saveStorageProps.pageType}-${template._id}`, filterModel);
                             }
                         }}
                         animateRows

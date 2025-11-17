@@ -33,7 +33,6 @@ import {
 import { convertECEFToWGS84, convertWGS94ToECEF } from '../../../utils/map/convert';
 import { BaseLayers } from '../BaseLayers';
 import { MeltaCoordinate, MeltaPolygon } from '../LocationEntities';
-import MapPageEntityDialog from './EntityMapDialog';
 import { useCesiumTooltip } from './EntityTooltip';
 import MapFilters from './MapFilters';
 
@@ -76,6 +75,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
 
     const [filterResult, setFilterResult] = useState<IEntity[]>([]);
     const [selectedEntityDialog, setSelectedEntityDialog] = useState<{ matchingField: string; node: IEntity } | null>(null);
+    const [scrollId, setScrollId] = useState<string | undefined>(undefined);
 
     const [{ polygons, coordinates }, setSearchResults] = useState<{
         coordinates: ICoordinateSearchResult[];
@@ -104,6 +104,15 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                 Object.values(value.properties.properties).some((obj) => obj.format === 'location'),
             ),
         ),
+    });
+
+    const {
+        bounds: selectedEntityBounds,
+        markers: selectedEntityMarkers,
+        polygons: selectedEntityPolygons,
+    } = useEntitiesWithLocationFields({
+        entities: selectedEntityDialog ? [selectedEntityDialog.node] : [],
+        entityTemplateMap: entityTemplateMap,
     });
 
     const sourceSearchResults = [...filteredCoordinates, ...searchedEntitiesMarkers, ...filteredPolygons, ...searchedEntitiesPolygons]
@@ -171,6 +180,11 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                         const boundingSphere = new Cesium.BoundingSphere(searchedEntitiesBoundsCenter, searchedEntitiesBoundsRadius);
                         flyToBoundingSphere(boundingSphere);
                     }
+
+                    if ((selectedEntityPolygons.length || selectedEntityMarkers.length) && selectedEntityBounds && selectedEntityDialog) {
+                        const boundingSphere = new Cesium.BoundingSphere(selectedEntityBounds.center, selectedEntityBounds.radius);
+                        flyToBoundingSphere(boundingSphere);
+                    }
                     break;
                 }
 
@@ -183,15 +197,19 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
         const animationFrameId = requestAnimationFrame(animateCamera);
         return () => cancelAnimationFrame(animationFrameId);
     }, [
-        cameraFocus,
         circle,
         polygon,
+        line,
         drawingMode,
         searchedEntitiesPolygons,
         searchedEntitiesMarkers,
-        searchedEntitiesBoundsCenter,
-        searchedEntitiesBoundsRadius,
-        shapeType,
+        selectedEntityPolygons,
+        selectedEntityMarkers,
+        // searchedEntitiesPolygons,
+        // searchedEntitiesMarkers,
+        // searchedEntitiesBoundsCenter,
+        // searchedEntitiesBoundsRadius,
+        // shapeType,
     ]);
 
     const handleViewerClick = useCallback(
@@ -451,9 +469,13 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                                 key={key}
                                 name={name}
                                 polygon={polygon}
-                                onClick={() => setSelectedEntityDialog({ matchingField: key, node })}
+                                onClick={() => {
+                                    setSelectedEntityDialog(null);
+                                    setScrollId(node.properties._id);
+                                }}
                                 color={sourceTemplateColors?.[node.properties[sourceFieldForColor]]}
                                 node={node}
+                                selected={selectedEntityDialog?.node.properties._id === node.properties._id}
                             />
                         ))}
 
@@ -462,9 +484,13 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                                 key={key}
                                 name={name}
                                 position={convertWGS94ToECEF(position) as Cartesian3}
-                                onClick={() => setSelectedEntityDialog({ matchingField: key, node })}
+                                onClick={() => {
+                                    setSelectedEntityDialog(null);
+                                    setScrollId(node.properties._id);
+                                }}
                                 color={sourceTemplateColors?.[node.properties[sourceFieldForColor]]}
                                 node={node}
+                                selected={selectedEntityDialog?.node.properties._id === node.properties._id}
                             />
                         ))}
 
@@ -543,14 +569,6 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                                 <Close htmlColor={theme.palette.primary.main} />
                             </IconButtonWithPopover>
                         </div>
-                        {selectedEntityDialog && (
-                            <MapPageEntityDialog
-                                open={!!selectedEntityDialog}
-                                entityWithMatchingField={selectedEntityDialog}
-                                onClose={() => setSelectedEntityDialog(null)}
-                                key={selectedEntityDialog.matchingField}
-                            />
-                        )}
                     </Viewer>
                 </Grid>
 
@@ -566,6 +584,12 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                             relatedTemplateProperties={destTemplateId}
                             overrideSx={{ '&.MuiPaper-root': { borderRadius: '20px 20px 0 0' } }}
                             pageType={TablePageType.map}
+                            onRowSelected={(entity) => {
+                                setScrollId(undefined);
+                                setSelectedEntityDialog({ node: entity as IEntity, matchingField: '' });
+                            }}
+                            usePagination={false}
+                            scrollId={scrollId}
                         />
                     </Grid>
                 )}
