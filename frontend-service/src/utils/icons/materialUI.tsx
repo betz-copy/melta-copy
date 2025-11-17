@@ -1,4 +1,5 @@
 // Icons 1
+/** biome-ignore-all lint/suspicious/noShadowRestrictedNames: <explanation> */
 import {
     Abc,
     AccessAlarm,

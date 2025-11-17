@@ -29,7 +29,7 @@ export const escapeNeo4jQuerySpecialChars = (quickFilter: string) => {
     return quickFilter.replace(new RegExp(escapeNeo4jQueryRegexStr, 'g'), '\\$&');
 };
 
-export type CypherQueryWithParameters = { cypherQuery: string; parameters: Record<string, any> };
+export type CypherQueryWithParameters = { cypherQuery: string; parameters: object };
 
 const convertRhsToRelativeDate = (operator: string, rhs: boolean | string | number | null, isDateTime: boolean = false): Date => {
     // fromZonedTime is used because for all non-relative date filters are in UTC, but new Date() is in Israel time
@@ -358,11 +358,10 @@ const filterOfTemplateToNeoQuery = (
                 parameters: { [filterKey]: filterOfFieldQuery.parameters },
             };
         });
+
     return {
         cypherQuery: fieldsNeoQueries.map((fieldNeoQuery) => `(${fieldNeoQuery.cypherQuery})`).join(' AND '),
-        parameters: fieldsNeoQueries
-            .map(({ parameters }) => parameters)
-            .reduce((prevParameters, currParameters) => ({ ...prevParameters, ...currParameters }), {}),
+        parameters: Object.assign({}, ...fieldsNeoQueries.map(({ parameters }) => parameters)),
     };
 };
 
@@ -427,9 +426,7 @@ export const templatesFilterToNeoQuery = (
     return {
         cypherQuery: templatesFiltersQueries.map(({ cypherQuery }) => `(${cypherQuery})`).join(' OR '),
         parameters: {
-            [filterParamsVariableName]: templatesFiltersQueries
-                .map(({ parameters }) => parameters)
-                .reduce((prevParameters, currParameters) => ({ ...prevParameters, ...currParameters }), {}),
+            [filterParamsVariableName]: Object.assign({}, ...templatesFiltersQueries.map(({ parameters }) => parameters)),
         },
     };
 };
@@ -440,9 +437,9 @@ export const sortToNeo4JSort = (sortModel: ISearchBatchBody['sort']) => {
 
 const buildFullTextSearchQuery = (
     searchBody: ISearchBatchBody,
-    filterQuery: { cypherQuery: string; parameters: any },
+    filterQuery: { cypherQuery: string; parameters: object },
     indexHandling: string,
-    parameters: any,
+    parameters: object,
     calculateOverallCount: boolean,
     entityIdsToInclude?: string[],
     entityIdsToExclude?: string[],

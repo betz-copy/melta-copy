@@ -66,7 +66,7 @@ const OverflowWrapper = <T,>({
         }
 
         return () => {};
-    }, [items, containerRef]);
+    }, [items]);
 
     let overflowItems = items.length > visibleItems.length ? items.slice(visibleItems.length) : [];
     if (files && files.length > 0) {

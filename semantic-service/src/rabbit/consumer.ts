@@ -22,7 +22,7 @@ class SemanticConsumer {
             await manager.indexFiles(value);
 
             msg.ack();
-        } catch (err: any) {
+        } catch (err: unknown) {
             logger.error('Rabbit consumer error: ', { error: err });
             msg.nack(false);
         }
@@ -40,7 +40,7 @@ class SemanticConsumer {
             await manager.deleteFiles(value.minioFileIds);
 
             msg.ack();
-        } catch (err: any) {
+        } catch (err: unknown) {
             logger.error('Rabbit consumer error: ', { error: err });
             msg.nack(false);
         }

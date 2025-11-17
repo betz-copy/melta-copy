@@ -20,7 +20,7 @@ export interface RelsObject {
     Relationships?: RelationshipsObject;
 }
 export interface XMLObject {
-    [key: string]: any;
+    [key: string]: string;
 }
 
 /**

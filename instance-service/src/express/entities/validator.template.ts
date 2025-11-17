@@ -32,7 +32,7 @@ import EntityTemplateManagerService from '../../externalServices/templates/entit
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import addDefaultFieldsToTemplate from '../../utils/addDefaultsFieldsToEntityTemplate';
 import DefaultController from '../../utils/express/controller';
-import { trycatch } from '../../utils/lib';
+import { tryCatch } from '../../utils/lib';
 import { getNeo4jDate, getNeo4jDateTime, getNeo4jLocation } from '../../utils/neo4j/lib';
 import { IGetExpandedEntityBody } from './interface';
 
@@ -113,7 +113,7 @@ export class EntityValidator extends DefaultController {
     }
 
     private async getEntityTemplateByIdOrThrowValidationError(templateId: string) {
-        const { result: entityTemplate, err: getEntityTemplateByIdErr } = await trycatch(() =>
+        const { result: entityTemplate, err: getEntityTemplateByIdErr } = await tryCatch(() =>
             this.entityTemplateManagerService.getEntityTemplateById(templateId),
         );
         if (getEntityTemplateByIdErr || !entityTemplate) {

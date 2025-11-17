@@ -28,7 +28,7 @@ const CalculateDateDifference: React.FC<{ date: string; searchValue?: string }> 
         }, secondsUntilSecondOfDate * 1000);
 
         return () => clearTimeout(initialTimeoutId);
-    }, []);
+    }, [parsedDate.getSeconds, currentDateTime.getSeconds]);
 
     useEffect(() => {
         if (startMinuteTimer) {

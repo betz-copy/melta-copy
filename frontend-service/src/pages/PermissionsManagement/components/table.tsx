@@ -285,7 +285,7 @@ const PermissionsTable = forwardRef<PermissionsTableRef<PermissionData>, Permiss
 
         const rowModelProps = useMemo(
             () => getRowModelProps(workspace, infiniteScrollPageCount, quickFilterText, datasourceOnFail, permissionType),
-            [quickFilterText, workspace],
+            [quickFilterText, workspace,],
         );
 
         return (

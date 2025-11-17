@@ -1,4 +1,4 @@
-import _forEach from 'lodash.foreach';
+import { forEach } from 'lodash';
 import mongoose, { Types } from 'mongoose';
 import config from '../config';
 
@@ -13,7 +13,7 @@ export const initializeMongo = async () => {
 };
 
 export const transformObjectIdKeysToString = (doc: any) => {
-    _forEach(doc, (val, key) => {
+    forEach(doc, (val, key) => {
         if (val instanceof Types.ObjectId) {
             doc[key] = val.toString();
         }

@@ -457,6 +457,7 @@ class MailManager {
         // the template automatically by quill, and the entity values by the function that injects them
         return (
             <html lang="he">
+                {/** biome-ignore lint/security/noDangerouslySetInnerHtml: blame Uri*/}
                 <body dir="rtl" dangerouslySetInnerHTML={{ __html: body }}></body>
             </html>
         );

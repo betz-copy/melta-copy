@@ -19,6 +19,7 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
+import { json } from 'stream/consumers';
 import { ActionInfo } from '../../common/ruleBreanchInfo/ActionInfo';
 import { BrokenRulesInfo } from '../../common/ruleBreanchInfo/BrokenRulesInfo';
 import { environment } from '../../globals';
@@ -156,7 +157,7 @@ const RuleBreachDialog: React.FC<{
                                 <Grid container paddingRight="15px">
                                     {ruleBreach.actions.map((action, index) => {
                                         return (
-                                            <Grid container key={index} spacing={2}>
+                                            <Grid container key={JSON.stringify(action.actionMetadata)} spacing={2}>
                                                 <Grid>
                                                     <Typography>{index + 1}.</Typography>
                                                 </Grid>

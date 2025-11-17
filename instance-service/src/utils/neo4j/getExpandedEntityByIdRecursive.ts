@@ -14,7 +14,7 @@ export const expandEntityToNeoQuery = async (
 ) => {
     const templateIdsWithFilter = Object.keys(filters);
     const emptyFilters = templateIds?.filter((templateId) => !templateIdsWithFilter.includes(templateId));
-    const mappedRecords: IGetExpandedEntityBody['filters'] = emptyFilters?.reduce((acc: any, currentId) => {
+    const mappedRecords: IGetExpandedEntityBody['filters'] = emptyFilters?.reduce((acc, currentId) => {
         acc[currentId] = {};
         return acc;
     }, {});

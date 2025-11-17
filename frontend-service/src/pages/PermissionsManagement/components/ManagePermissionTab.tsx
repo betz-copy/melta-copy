@@ -44,7 +44,7 @@ const ManagePermissionTab: React.FC<{ permissionType: RelatedPermission; searchP
 
     const debouncedSetQuickFilterText = useCallback(
         debounce((value: string) => setQuickFilterText(value), 1000),
-        [setQuickFilterText],
+        [],
     );
 
     return (

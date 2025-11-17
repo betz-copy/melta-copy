@@ -26,6 +26,7 @@ export const convertToPlainText = (html: string) => {
 export const renderHTML = (value: string) => {
     const linkifiedHtml = linkifyHtml(value, { target: '_blank' });
     const styledHtml = linkifiedHtml.replace(/<a /g, '<a style="color: #166BD4;" ');
+    // biome-ignore lint/security/noDangerouslySetInnerHtml: blame Efrat
     return <div dangerouslySetInnerHTML={{ __html: styledHtml }} />;
 };
 

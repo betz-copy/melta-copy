@@ -1,7 +1,7 @@
 import { IMetadata, IWorkspace } from '@microservices/shared';
 import axios from 'axios';
 import config from './config';
-import { trycatch } from './utils';
+import { tryCatch } from './utils';
 
 const { url, baseRoute, isAliveRoute } = config.workspacesService;
 
@@ -32,7 +32,7 @@ export const getWorkspaces = async () => {
 };
 
 export const isWorkpacesServiceAlive = async () => {
-    const { result, err } = await trycatch(() => axios.get(url + isAliveRoute));
+    const { result, err } = await tryCatch(() => axios.get(url + isAliveRoute));
 
     return { result, err };
 };

@@ -6,7 +6,7 @@ import { IKartoffelUser } from '../interfaces/users';
 import { UserState } from '../stores/user';
 import { matchValueAgainstFilter } from './filters';
 
-const parseFilterObject = (filters: any): any | null => {
+const parseFilterObject = (filters: (string & Record<string, unknown>) | undefined): (string & Record<string, unknown>) | undefined | null => {
     if (typeof filters === 'string') {
         try {
             return JSON.parse(filters);
@@ -72,7 +72,7 @@ export const isEntityFitsToChildTemplate = (
         if (prop.isFilterByUserUnit && currentUserUnit && !isUserAdmin && !currentUserUnit.includes(value)) return false;
 
         if (prop.filters) {
-            const parsed = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;            
+            const parsed = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
 
             if (parsed && !matchValueAgainstFilter({ [key]: value }, parsed)) return false;
         }

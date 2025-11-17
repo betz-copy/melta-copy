@@ -32,7 +32,7 @@ const ProcessInstancesPage: React.FC = () => {
         debounce((newSearchInput: string) => {
             setSearchInput(newSearchInput);
         }, 150),
-        [searchInput],
+        [],
     );
     const onSetStartDate = (newStartDateInput: Date | null) => {
         setStartDateInput(newStartDateInput);

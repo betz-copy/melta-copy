@@ -55,7 +55,7 @@ const ConfigurationManagement: React.FC = () => {
 
     const filteredFields = useMemo(() => {
         return collectFilteredFields(configs);
-    }, [configs, updatedConfigs, searchText]);
+    }, [configs, ]);
 
     return (
         <Grid container spacing={3}>

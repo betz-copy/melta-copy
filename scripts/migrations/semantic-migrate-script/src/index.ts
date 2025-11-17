@@ -44,7 +44,7 @@ const waitXSeconds = async () => {
 
 const sendFilesToRabbit = async (driver: Driver, workspaceId: string, templateId: string, fileProperties: string[]) => {
     const filesInDb = await listFilesInDB(driver, workspaceId, templateId, fileProperties);
-    let promises: Promise<any>[] = [];
+    let promises: Promise<void>[] = [];
 
     for (const { _id, files } of filesInDb) {
         const minioFileIds = files.flat().filter((file) => !!file && supportedFileExtensions.includes(path.extname(file)));

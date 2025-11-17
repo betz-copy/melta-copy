@@ -5,7 +5,7 @@ import FormData = require('form-data'); // TODO: yona - Check if could replace w
 
 import axios from 'axios';
 import config from './config';
-import { trycatch } from './utils';
+import { tryCatch } from './utils';
 import createAxiosInstance from './utils/axios';
 
 const { url, uploadFileRoute, fileData, fileName, isAliveRoute } = config.storageService;
@@ -33,7 +33,7 @@ export const uploadFile = async (workspaceId: string) => {
 };
 
 export const isStorageServiceAlive = async () => {
-    const { result, err } = await trycatch(() => axios.get(url + isAliveRoute));
+    const { result, err } = await tryCatch(() => axios.get(url + isAliveRoute));
 
     return { result, err };
 };

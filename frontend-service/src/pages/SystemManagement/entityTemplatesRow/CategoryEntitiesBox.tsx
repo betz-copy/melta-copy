@@ -90,7 +90,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
 
     useEffect(() => {
         containerWrapperRef.current?.focus();
-    }, [isEditableCategory]);
+    }, []);
 
     const { mutateAsync } = useMutation(
         (categoryName: string) =>
@@ -109,7 +109,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
             const matchesSearch = searchText === '' || (child.displayName ?? '').toLowerCase().includes(searchText.toLowerCase());
             return matchesCategory && matchesSearch;
         });
-    }, [childTemplates, entityTemplatesWithCategory.category._id, searchText]);
+    }, [childTemplates, entityTemplatesWithCategory.category._id, searchText, entityTemplates]);
 
     const disabledParentTemplates = useMemo(() => {
         if (!childTemplates || !entityTemplates) return new Map();
@@ -130,7 +130,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
             if (child.parentTemplate?.category.toString() === entityTemplatesWithCategory.category._id) return true;
             return child.category._id === entityTemplatesWithCategory.category._id;
         });
-    }, [categoryChildTemplates, entityTemplates, entityTemplatesWithCategory]);
+    }, [categoryChildTemplates, entityTemplatesWithCategory]);
 
     return (
         <Droppable

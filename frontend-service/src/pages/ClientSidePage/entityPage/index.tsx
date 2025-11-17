@@ -186,7 +186,7 @@ const ClientSideEntityPage: React.FC = () => {
                                         {connectionsTemplatesOfCategory.map((connectionTemplate, connectedRelationshipTemplateIndex) => {
                                             return (
                                                 <ConnectionsTable
-                                                    key={connectedRelationshipTemplateIndex}
+                                                    key={String(connectedRelationshipTemplateIndex)}
                                                     expandedEntity={expandedEntity}
                                                     templateIds={Array.from(entityTemplates.keys())}
                                                     connectionTemplate={connectionTemplate}

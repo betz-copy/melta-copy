@@ -361,7 +361,7 @@ const EntityTemplatesRow: React.FC = () => {
 
     useEffect(() => {
         setCategoriesToShow(categoriesToShow.map((category) => categories.get(category._id)!));
-    }, [categories]);
+    }, [categories, categoriesToShow]);
 
     return (
         <Grid container direction="column">

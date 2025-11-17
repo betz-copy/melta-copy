@@ -77,13 +77,9 @@ const errPropertiesType = (instanceProperties: Record<string, any>): Record<stri
     return Object.entries(instanceProperties).reduce((acc, [key, value]) => {
         let newValue: any;
 
-        if (typeof value === 'number') {
-            newValue = String(value);
-        } else if (typeof value === 'string') {
-            newValue = Boolean(value);
-        } else if (typeof value === 'boolean') {
-            newValue = value ? 1 : 0;
-        }
+        if (typeof value === 'number') newValue = String(value);
+        else if (typeof value === 'string') newValue = Boolean(value);
+        else if (typeof value === 'boolean') newValue = value ? 1 : 0;
 
         // Add the changed values directly to the accumulator object
         acc[key] = newValue;

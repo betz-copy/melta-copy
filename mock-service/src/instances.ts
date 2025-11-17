@@ -8,7 +8,7 @@ import axios from 'axios';
 import { JSONSchemaFaker } from 'json-schema-faker';
 import pLimit from 'p-limit';
 import config from './config';
-import { trycatch } from './utils';
+import { tryCatch } from './utils';
 import createAxiosInstance from './utils/axios';
 import { generateRandomLocation, generateRandomPolygon } from './utils/map';
 
@@ -167,7 +167,7 @@ export const createRelationshipInstances = async (
 };
 
 export const isInstanceServiceAlive = async () => {
-    const { result, err } = await trycatch(() => axios.get(url + isAliveRoute));
+    const { result, err } = await tryCatch(() => axios.get(url + isAliveRoute));
 
     return { result, err };
 };
