@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/correctness/useExhaustiveDependencies: <explanation> */
+/** biome-ignore-all lint/correctness/useExhaustiveDependencies: useEffects dependencies */
 import { CircleTwoTone as CircleIcon, Close, StraightenTwoTone as DistanceIcon, PentagonTwoTone as PolygonIcon } from '@mui/icons-material';
 import { Grid, ToggleButton, ToggleButtonGroup, useTheme } from '@mui/material';
 import * as Cesium from 'cesium';
@@ -56,9 +56,14 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
 
     const viewerRef = useRef<CesiumComponentRef<Cesium.Viewer>>(null);
 
-    const [{ autoSearch, listFields }, setFilters] = useState<{ autoSearch: string; listFields: Record<string, IFilterOfField['$in']> }>({
+    const [{ autoSearch, listFields, dirty }, setFilters] = useState<{
+        autoSearch: string;
+        listFields: Record<string, IFilterOfField['$in']>;
+        dirty: boolean;
+    }>({
         autoSearch: '',
         listFields: {},
+        dirty: false,
     });
 
     const [shapeType, setShapeType] = useState<ShapeType | null>(null);
@@ -380,7 +385,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
         setShapeType(null);
         setCameraFocus(null);
         setSearchShape({ circle: emptyCircle, polygon: [], line: [] });
-        setFilters({ autoSearch: '', listFields: {} });
+        setFilters({ autoSearch: '', listFields: {}, dirty: false });
         setSelectedEntity(null);
     };
 
@@ -494,7 +499,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                                     setCameraFocus(null);
                                 }}
                                 sourceTemplate={sourceTemplate}
-                                filters={{ value: { autoSearch, listFields }, set: setFilters }}
+                                filters={{ value: { autoSearch, listFields, dirty }, set: setFilters }}
                                 isSearchShape={isSearchShape}
                                 applyFilterWithShapeSearch={applyFilterWithShapeSearch}
                                 numOfViewedEntitiesText={i18next.t(`location.showingEntities${isSearchShape ? 'OfTotal' : 'Count'}`, {
@@ -504,7 +509,6 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                                 setCameraFocus={setCameraFocus}
                             />
 
-                            {config && <BaseLayers viewerRef={viewerRef} config={config} popupPosition="left" />}
                             <ToggleButtonGroup
                                 value={shapeType}
                                 exclusive
@@ -549,6 +553,19 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                             >
                                 <Close htmlColor={theme.palette.primary.main} />
                             </IconButtonWithPopover>
+                        </div>
+
+                        <div
+                            style={{
+                                position: 'absolute',
+                                top: '10px',
+                                left: '1%',
+                                display: 'flex',
+                                gap: '15px',
+                                transition: 'right 0.3s ease-in-out',
+                            }}
+                        >
+                            {config && <BaseLayers viewerRef={viewerRef} config={config} popupPosition="right" />}
                         </div>
                     </Viewer>
                 </Grid>

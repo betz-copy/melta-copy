@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/correctness/useExhaustiveDependencies: <explanation> */
+/** biome-ignore-all lint/correctness/useExhaustiveDependencies: useEffect dependencies */
 import { FilterList } from '@mui/icons-material';
 import { Autocomplete, Box, Button, Divider, Grid, TextField, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
@@ -21,8 +21,8 @@ type Props = {
     darkMode: boolean;
     clearAutocompleteSearch: () => void;
     filters: {
-        value: { autoSearch: string; listFields: Record<string, IFilterOfField['$in']> };
-        set: React.Dispatch<React.SetStateAction<{ autoSearch: string; listFields: Record<string, IFilterOfField['$in']> }>>;
+        value: { autoSearch: string; listFields: Record<string, IFilterOfField['$in']>; dirty: boolean };
+        set: React.Dispatch<React.SetStateAction<{ autoSearch: string; listFields: Record<string, IFilterOfField['$in']>; dirty: boolean }>>;
     };
     sourceTemplate?: IMongoEntityTemplatePopulated;
     isSearchShape?: boolean;
@@ -98,6 +98,7 @@ const MapFilters = ({
         {
             enabled: false,
             onSuccess: (data) => {
+                if (!data.count) toast.warn(i18next.t('noSearchResults'));
                 if (data.count > 1000) toast.warn(i18next.t('location.tooManyResults'));
                 else moveToEntityLocations(data.entities.map((entity) => entity.entity));
             },
@@ -110,6 +111,8 @@ const MapFilters = ({
     const canSearch = () => filters.value.autoSearch.length >= 2 || Object.entries(filters.value.listFields).length > 0;
 
     const handleSearch = () => {
+        filters.set((prev) => ({ ...prev, dirty: false })); // <--- CLEAN
+
         setCameraFocus(CameraFocusType.Search);
         isSearchShape ? applyFilterWithShapeSearch(filters.value) : refetch();
     };
@@ -167,7 +170,7 @@ const MapFilters = ({
                             disabled={!Object.entries(filters.value.listFields).length && !filters.value.autoSearch.length}
                             onClick={() => {
                                 clearAutocompleteSearch();
-                                const clearedFilters = { autoSearch: '', listFields: {} };
+                                const clearedFilters = { autoSearch: '', listFields: {}, dirty: false };
 
                                 filters.set(clearedFilters);
                                 if (isSearchShape) applyFilterWithShapeSearch(clearedFilters);
@@ -193,6 +196,7 @@ const MapFilters = ({
                                 ...prev,
                                 autoSearch: newSearchValue,
                                 listFields: !newSearchValue.length ? {} : prev.listFields,
+                                dirty: true,
                             }))
                         }
                     />
@@ -216,6 +220,7 @@ const MapFilters = ({
                                             return {
                                                 ...prev,
                                                 listFields: newListFields,
+                                                dirty: true,
                                             };
                                         });
                                     }}
@@ -236,7 +241,7 @@ const MapFilters = ({
                     </Box>
 
                     <Button
-                        disabled={!canSearch()}
+                        disabled={!canSearch() || !filters.value.dirty}
                         variant="contained"
                         sx={{ width: 'auto', alignSelf: 'end', borderRadius: '7px' }}
                         onClick={handleSearch}
