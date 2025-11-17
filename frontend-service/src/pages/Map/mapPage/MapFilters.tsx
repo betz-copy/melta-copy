@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/correctness/useExhaustiveDependencies: <explanation> */
 import { FilterList } from '@mui/icons-material';
 import { Autocomplete, Box, Button, Divider, Grid, TextField, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
@@ -73,7 +74,6 @@ const MapFilters = ({
         return acc;
     }, {});
 
-    // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
     useEffect(() => {
         const noFilters = filters.value.autoSearch.length < 2 && !Object.keys(filters.value.listFields).length;
 
@@ -98,7 +98,7 @@ const MapFilters = ({
         {
             enabled: false,
             onSuccess: (data) => {
-                if (data.count > 1000) toast.warn(i18next.t('templateEntitiesAutocomplete.tooManyResults', { count: data.count }));
+                if (data.count > 1000) toast.warn(i18next.t('location.tooManyResults'));
                 else moveToEntityLocations(data.entities.map((entity) => entity.entity));
             },
             onError: () => {
@@ -106,6 +106,8 @@ const MapFilters = ({
             },
         },
     );
+
+    const canSearch = () => filters.value.autoSearch.length >= 2 || Object.entries(filters.value.listFields).length > 0;
 
     const handleSearch = () => {
         setCameraFocus(CameraFocusType.Search);
@@ -180,14 +182,12 @@ const MapFilters = ({
                         value={filters.value.autoSearch}
                         showBorder
                         placeholder={i18next.t('globalSearch.searchInPage')}
-                        // onKeyDown={(e) => {
-                        //     console.log({ key: e.key });
-
-                        //     if (e.key === 'Enter') {
-                        //         console.log('enter');
-                        //         handleSearch();
-                        //     }
-                        // }}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                if (canSearch()) handleSearch();
+                                e.preventDefault();
+                            }
+                        }}
                         onChange={(newSearchValue: string) =>
                             filters.set((prev) => ({
                                 ...prev,
@@ -236,7 +236,7 @@ const MapFilters = ({
                     </Box>
 
                     <Button
-                        disabled={!Object.entries(filters.value.listFields).length && filters.value.autoSearch.length < 2}
+                        disabled={!canSearch()}
                         variant="contained"
                         sx={{ width: 'auto', alignSelf: 'end', borderRadius: '7px' }}
                         onClick={handleSearch}

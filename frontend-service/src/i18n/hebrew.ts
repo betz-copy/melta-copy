@@ -1695,6 +1695,7 @@ export default {
         showingEntitiesOfTotal: 'מציג {{count}} ישויות מתוך {{total}}',
         clearFilter: 'נקה סינון',
         search: 'חיפוש',
+        tooManyResults: 'יש כמות גדולה של ישויות להצגה במפה, יש לצמצם את תוצאות החיפוש ע״י סינון נוסף',
     },
     filters: {
         contains: 'מכיל',

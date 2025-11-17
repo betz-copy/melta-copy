@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/correctness/useExhaustiveDependencies: <explanation> */
 import { CircleTwoTone as CircleIcon, Close, StraightenTwoTone as DistanceIcon, PentagonTwoTone as PolygonIcon } from '@mui/icons-material';
 import { Grid, ToggleButton, ToggleButtonGroup, useTheme } from '@mui/material';
 import * as Cesium from 'cesium';
@@ -74,8 +75,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
     });
 
     const [filterResult, setFilterResult] = useState<IEntity[]>([]);
-    const [selectedEntityDialog, setSelectedEntityDialog] = useState<{ matchingField: string; node: IEntity } | null>(null);
-    const [scrollId, setScrollId] = useState<string | undefined>(undefined);
+    const [selectedEntity, setSelectedEntity] = useState<IEntity | null>(null);
 
     const [{ polygons, coordinates }, setSearchResults] = useState<{
         coordinates: ICoordinateSearchResult[];
@@ -111,7 +111,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
         markers: selectedEntityMarkers,
         polygons: selectedEntityPolygons,
     } = useEntitiesWithLocationFields({
-        entities: selectedEntityDialog ? [selectedEntityDialog.node] : [],
+        entities: selectedEntity ? [selectedEntity] : [],
         entityTemplateMap: entityTemplateMap,
     });
 
@@ -137,10 +137,10 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
         });
     };
 
-    // biome-ignore lint/correctness/useExhaustiveDependencies: explanation>
     useEffect(() => applyFilterWithShapeSearch({ autoSearch, listFields }), [polygons, coordinates]);
 
     useCesiumTooltip({ viewerRef, darkMode, entityTemplateMap, searchedEntitiesPolygons, filteredPolygons });
+
     useEffect(() => {
         const animateCamera = () => {
             const viewer = viewerRef.current?.cesiumElement;
@@ -181,7 +181,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                         flyToBoundingSphere(boundingSphere);
                     }
 
-                    if ((selectedEntityPolygons.length || selectedEntityMarkers.length) && selectedEntityBounds && selectedEntityDialog) {
+                    if ((selectedEntityPolygons.length || selectedEntityMarkers.length) && selectedEntityBounds && selectedEntity) {
                         const boundingSphere = new Cesium.BoundingSphere(selectedEntityBounds.center, selectedEntityBounds.radius);
                         flyToBoundingSphere(boundingSphere);
                     }
@@ -189,28 +189,14 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                 }
 
                 default:
-                    if (!circle.center && !circle.radius && !polygon.length && !shapeType)
+                    if (!circle.center && !circle.radius && !polygon.length && !shapeType && !autoSearch && Object.keys(listFields).length === 0)
                         camera.flyTo({ destination: jerusalemCoordinates, duration: 1.5 });
             }
         };
 
         const animationFrameId = requestAnimationFrame(animateCamera);
         return () => cancelAnimationFrame(animationFrameId);
-    }, [
-        circle,
-        polygon,
-        line,
-        drawingMode,
-        searchedEntitiesPolygons,
-        searchedEntitiesMarkers,
-        selectedEntityPolygons,
-        selectedEntityMarkers,
-        // searchedEntitiesPolygons,
-        // searchedEntitiesMarkers,
-        // searchedEntitiesBoundsCenter,
-        // searchedEntitiesBoundsRadius,
-        // shapeType,
-    ]);
+    }, [circle, polygon, line, drawingMode, searchedEntitiesPolygons, searchedEntitiesMarkers, selectedEntityPolygons, selectedEntityMarkers]);
 
     const handleViewerClick = useCallback(
         (clickEvent: CesiumMovementEvent) => {
@@ -395,6 +381,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
         setCameraFocus(null);
         setSearchShape({ circle: emptyCircle, polygon: [], line: [] });
         setFilters({ autoSearch: '', listFields: {} });
+        setSelectedEntity(null);
     };
 
     const isDrawingShape = (shape: ShapeType | null) => shape === ShapeType.Circle || shape === ShapeType.Polygon;
@@ -469,13 +456,10 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                                 key={key}
                                 name={name}
                                 polygon={polygon}
-                                onClick={() => {
-                                    setSelectedEntityDialog(null);
-                                    setScrollId(node.properties._id);
-                                }}
+                                onClick={() => setSelectedEntity(node)}
                                 color={sourceTemplateColors?.[node.properties[sourceFieldForColor]]}
                                 node={node}
-                                selected={selectedEntityDialog?.node.properties._id === node.properties._id}
+                                selected={selectedEntity?.properties._id === node.properties._id}
                             />
                         ))}
 
@@ -484,13 +468,10 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                                 key={key}
                                 name={name}
                                 position={convertWGS94ToECEF(position) as Cartesian3}
-                                onClick={() => {
-                                    setSelectedEntityDialog(null);
-                                    setScrollId(node.properties._id);
-                                }}
+                                onClick={() => setSelectedEntity(node)}
                                 color={sourceTemplateColors?.[node.properties[sourceFieldForColor]]}
                                 node={node}
-                                selected={selectedEntityDialog?.node.properties._id === node.properties._id}
+                                selected={selectedEntity?.properties._id === node.properties._id}
                             />
                         ))}
 
@@ -584,12 +565,9 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                             relatedTemplateProperties={destTemplateId}
                             overrideSx={{ '&.MuiPaper-root': { borderRadius: '20px 20px 0 0' } }}
                             pageType={TablePageType.map}
-                            onRowSelected={(entity) => {
-                                setScrollId(undefined);
-                                setSelectedEntityDialog({ node: entity as IEntity, matchingField: '' });
-                            }}
+                            onRowSelected={(entity) => setSelectedEntity(entity as IEntity)}
                             usePagination={false}
-                            scrollId={scrollId}
+                            scrollId={selectedEntity?.properties._id}
                         />
                     </Grid>
                 )}
