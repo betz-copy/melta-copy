@@ -66,14 +66,14 @@ export const classifyEntityErrors = (
         });
 
         failedEntities.push({
-            properties: originalEntity ?? {},
+            properties,
             errors: fixedErrors,
         });
     }
 
     if (error instanceof ServiceError && error.code === StatusCodes.NOT_FOUND)
         failedEntities.push({
-            properties: originalEntity ?? {},
+            properties,
             errors: [{ type: ActionErrors.notFound, metadata: error.metadata as IExcelNotFoundError }],
         });
 
@@ -101,7 +101,7 @@ export const classifyEntityErrors = (
                 });
             }
 
-        if (data.metadata && data.metadata.errorCode === errorCodes.failedConstraintsValidation) {
+        if (data.metadata && data.metadata?.errorCode === errorCodes.failedConstraintsValidation) {
             const { constraint } = data.metadata;
             switch (constraint.type) {
                 case ActionErrors.unique:
@@ -123,7 +123,7 @@ export const classifyEntityErrors = (
 
         if (data.type === errorCodes.templateValidationError || data.type === 'FilterValidationError')
             getValidationErrorEntities(error as AxiosError, failedEntities, originalEntity);
-    } else if ((error as IBrokenRulesError).metadata.errorCode === errorCodes.ruleBlock) {
+    } else if ((error as IBrokenRulesError).metadata?.errorCode === errorCodes.ruleBlock) {
         allBrokenRulesEntities.push({
             brokenRules: error.metadata.brokenRules,
             rawBrokenRules: error.metadata.rawBrokenRules,

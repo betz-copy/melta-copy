@@ -60,9 +60,11 @@ const isPropertyInvalid = <Data extends EntityData | IUser>(
     return props.data.errors.find((error) => {
         switch (error.type) {
             case ActionErrors.required:
-                return (error.metadata as IRequiredConstraint).property === property;
+                return (error.metadata as IRequiredConstraint).property.split('.').filter(Boolean)[0] === property;
             case ActionErrors.unique:
-                return (error.metadata as IUniqueConstraint).properties.some((errorProperty) => errorProperty === property);
+                return (error.metadata as IUniqueConstraint).properties.some(
+                    (errorProperty) => errorProperty.split('.').filter(Boolean)[0] === property,
+                );
             case ActionErrors.validation:
                 return (error.metadata as IValidationError).path.split('/').filter(Boolean)[0] === property;
             case ActionErrors.notFound: {
@@ -310,9 +312,11 @@ export const locationColDef = <Data extends EntityData>(
         headerName: value.title,
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
-            if (!props.value) return null;
             const error = isPropertyInvalid(props, field, ignoreType);
             if (error) return errorColDef(props, error, value);
+
+            if (!props.value) return null;
+
             return (
                 <OpenMap
                     field={value.title!}
@@ -563,10 +567,9 @@ export const userColDef = <Data extends IUser>(
         headerName: value.title,
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, any | undefined>) => {
-            if (!props.value) return '';
-
             const error = isPropertyInvalid(props, field, ignoreType);
             if (error) return errorColDef(props, error, { ...value, format: 'user' });
+            if (!props.value) return '';
 
             if (ignoreType && !isStringifiedJSONObj(props.value))
                 return <Value hideValue={hideColumn} color={getColor(props, field)} value={props.value ?? ''} />;
@@ -619,9 +622,13 @@ export const userArrayColDef = <Data extends IEntity>(
         headerName: value.title,
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, any[] | undefined>) => {
-            if (!props.value) return '';
             const error = isPropertyInvalid(props, field, ignoreType);
-            if (error) return errorColDef({ ...props, value: props.value.join(',') }, error, { ...value, format: 'users' });
+            if (error)
+                return errorColDef({ ...props, value: Array.isArray(props.value) ? props.value.join(', ') : props.value }, error, {
+                    ...value,
+                    format: 'users',
+                });
+            if (!props.value) return '';
 
             if (ignoreType) {
                 if (typeof props.value === 'string' || typeof props.value === 'number')
