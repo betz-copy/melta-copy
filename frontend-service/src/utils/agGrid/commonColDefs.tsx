@@ -13,7 +13,6 @@ import { PriorityHigh } from '@mui/icons-material';
 import { Box, Grid, Tooltip, tooltipClasses } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import { EntityWizardValues } from '../../common/dialogs/entity';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 import UserAvatar, { IUserAvatarProps } from '../../common/UserAvatar';
@@ -33,9 +32,11 @@ import {
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IError, IFailedEntity, IValidationError } from '../../interfaces/excel';
 import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
+import { IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
+import { IRuleBreachRequestPopulated } from '../../interfaces/ruleBreaches/ruleBreachRequest';
 import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import { IGetUnits, IMongoUnit } from '../../interfaces/units';
-import { IUser } from '../../interfaces/users';
+import { IUser, PermissionData } from '../../interfaces/users';
 import OpenMap from '../../pages/Map/OpenMap';
 import { getDateWithoutTime, getLongDate } from '../date';
 import { getFileName } from '../getFileName';
@@ -48,17 +49,15 @@ import RelationshipRefCellEditor from './RelationshipRefCellEditor';
 import SelectCellEditor from './SelectCellEditor';
 import { Value } from './Value';
 
-const getColor = <Data extends EntityData | IUser>(props: ICellRendererParams<Data, any | undefined>, field: string) =>
+type IColDefData = EntityData | IRuleBreachPopulated | PermissionData | IRuleBreachRequestPopulated | undefined;
+
+const getColor = <Data extends IUser | IEntity | IColDefData>(props: ICellRendererParams<Data, any | undefined>, field: string) =>
     (props.data as { coloredFields: IEntity['coloredFields'] })?.coloredFields?.[field];
 
 const hasErrors = (data: any): data is IFailedEntity =>
     data && Array.isArray(data.errors) && data.errors.every((error) => 'type' in error && 'metadata' in error);
 
-const isPropertyInvalid = <Data extends EntityData | IUser>(
-    props: ICellRendererParams<Data, any | undefined>,
-    property: string,
-    ignoreType = false,
-) => {
+const isPropertyInvalid = <Data extends IColDefData>(props: ICellRendererParams<Data, any | undefined>, property: string, ignoreType = false) => {
     if (!ignoreType || !hasErrors(props.data)) return undefined;
 
     return props.data.errors.find((error) => {
@@ -81,7 +80,7 @@ const isPropertyInvalid = <Data extends EntityData | IUser>(
     });
 };
 
-const errorColDef = <Data extends EntityData | IUser>(
+const errorColDef = <Data extends IColDefData>(
     props: ICellRendererParams<Data, any | undefined>,
     error: IError,
     value: Partial<IEntitySingleProperty>,
@@ -386,7 +385,7 @@ export const relatedTemplateColDef = <Data extends EntityData>(
             relatedTemplateId,
             template: value,
             filters,
-            currentEntity: (params.data as EntityWizardValues).properties,
+            currentEntity: params.data.properties,
         }),
     };
 };
@@ -487,7 +486,7 @@ export const enumColDef = <Data extends EntityData>(
     };
 };
 
-export const enumArrayColDef = <Data extends EntityData>(
+export const enumArrayColDef = <Data extends EntityData | IRuleBreachPopulated>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
@@ -724,7 +723,7 @@ export const enumFilesColDef = <Data extends EntityData>(
     };
 };
 
-export const dateColDef = <Data extends EntityData>(
+export const dateColDef = <Data extends EntityData | IRuleBreachPopulated>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
@@ -805,7 +804,7 @@ interface TranslatedEnumColDefOptions<Data> {
     isLastColumn?: boolean;
 }
 
-export const translatedEnumColDef = <Data extends EntityData>({
+export const translatedEnumColDef = <Data extends EntityData | PermissionData | IRuleBreachRequestPopulated>({
     field,
     valueGetter,
     title,
@@ -846,7 +845,7 @@ export const translatedEnumColDef = <Data extends EntityData>({
 const getUnitField = (units: IGetUnits, unitId: string, property: keyof IGetUnits[number]) =>
     (units.find(({ _id }) => _id === unitId)?.[property] as string) ?? '';
 
-export const unitColDef = <Data = EntityData>(
+export const unitColDef = <Data extends IColDefData>(
     field: string,
     value: Partial<IEntitySingleProperty>,
     units: IGetUnits,
