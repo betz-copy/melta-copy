@@ -44,7 +44,7 @@ const { graphSettings } = environment;
 const { BatchSize, limit3DConnections } = graphSettings;
 
 const Graph: React.FC = () => {
-    const ref = useRef<any>(null);
+    const ref = useRef<React.Ref<unknown>>(null);
     const forceRef = useRef<ForceGraphMethods | ForceGraphMethods3D | undefined>(undefined);
 
     const [graphData, setGraphData] = useState<GraphData>({ nodes: [], links: [] });
@@ -98,6 +98,7 @@ const Graph: React.FC = () => {
     };
 
     window.addEventListener('resize', updateGraphSize);
+    // biome-ignore lint/correctness/useExhaustiveDependencies: dependencies
     useEffect(() => {
         return updateGraphSize();
     }, []);
@@ -230,6 +231,7 @@ const Graph: React.FC = () => {
         }
     };
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: dependencies
     useEffect(() => {
         loadNextBatch();
     }, [currentBatchIndex, initialExpandedEntity, is3DGraph, entityId, filteredEntityTemplates, load, filterRecord]);

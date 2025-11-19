@@ -162,6 +162,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
 
     const isFile = (value: IEntitySingleProperty) => value.format === 'fileId' || value.items?.format === 'fileId';
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: isFile will infinite re-render
     const filesProps = useMemo(
         () =>
             Object.entries(
@@ -169,7 +170,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                     ? childTemplates.get(entityTemplate._id)?.properties.properties || {}
                     : entityTemplate.properties?.properties || {},
             ).filter(([, value]) => isFile(value) && value.display !== false),
-        [childTemplates, entityTemplate._id],
+        [childTemplates, entityTemplate._id, entityTemplate.properties?.properties],
     );
 
     return (

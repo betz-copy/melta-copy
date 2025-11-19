@@ -126,6 +126,7 @@ export const MeltaRoutesInner: React.FC = () => {
         };
     }, [location]);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
     useEffect(() => {
         const didTour = LocalStorage.get<boolean>('didTour');
 
@@ -155,7 +156,7 @@ export const MeltaRoutesInner: React.FC = () => {
         const meltaUpdatesShown = LocalStorage.get<string>(environment.meltaUpdatesShown);
 
         if (config?.meltaUpdates && meltaUpdatesShown !== JSON.stringify(config.meltaUpdates)) setOpenMeltaUpdates(true);
-    }, []);
+    }, [config?.meltaUpdates]);
 
     const handleClose = () => {
         setOpenMeltaUpdates(false);

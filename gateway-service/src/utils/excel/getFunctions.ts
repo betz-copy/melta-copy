@@ -32,7 +32,7 @@ import {
     UploadedFile,
 } from '@microservices/shared';
 import { AxiosError } from 'axios';
-import Excel, { CellModel } from 'exceljs';
+import Excel, { Cell, CellModel } from 'exceljs';
 import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
 import excelConfig from './excelConfig';
@@ -56,7 +56,7 @@ const formatExcel = (
             if (value === excelConfig.FALSE_TO_HEBREW) return false;
             break;
         case 'string':
-            if (format === 'email' && typeof value === 'object') return (value as any).text;
+            if (format === 'email' && typeof value === 'object') return (value as Cell).text;
             if (format === 'date') return new Date(value as string).toLocaleDateString('en-CA');
             if (format === 'date-time') return new Date(value as string).toISOString();
             if (format === 'fileId') return (value as CellModel).text;

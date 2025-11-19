@@ -191,6 +191,7 @@ const RuleBreachTable = forwardRef<
         },
     }));
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: datasourceOnFail changes on every re-render and should not be used as a hook dependency
     const rowDataSource = useMemo(() => getDatasource(breachType, datasourceOnFail), [breachType]);
 
     return (

@@ -36,7 +36,7 @@ const IFramesPageHeadline: React.FC<{
 
     useEffect(() => {
         setAllIFramesAllowed(queryClient.getQueryData('allIFrames')!);
-    }, [iFramesOrder]);
+    }, [queryClient.getQueryData]);
 
     const resetIFramesDimensions = () => {
         iFramesOrder?.forEach((iFrameId: string) => {

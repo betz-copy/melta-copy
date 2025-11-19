@@ -53,9 +53,10 @@ const ConfigurationManagement: React.FC = () => {
         return fields;
     };
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: make it re-render
     const filteredFields = useMemo(() => {
         return collectFilteredFields(configs);
-    }, [configs, ]);
+    }, [configs]);
 
     return (
         <Grid container spacing={3}>

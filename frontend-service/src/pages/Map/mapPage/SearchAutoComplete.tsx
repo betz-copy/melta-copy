@@ -145,7 +145,7 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
                         Object.values(getLocationProperties(entity, selectedTemplates).locationProperties || {}).some((value) => value !== undefined),
                     ),
             );
-    }, [data]);
+    }, [data, selectedTemplates]);
 
     return (
         <Autocomplete
@@ -222,16 +222,16 @@ const SearchAutoComplete = ({ selectedTemplates, handleEntityClick, onClear }: p
                                 </Grid>
                                 <Grid container direction="column" spacing={1}>
                                     {template.mapSearchProperties
-                                        ? template.mapSearchProperties.map((key, index) => (
+                                        ? template.mapSearchProperties.map((key) => (
                                               <LocationAutoCompleteOption
-                                                  key={`${key}-${index}`}
+                                                  key={`${key}`}
                                                   title={template.properties.properties[key].title}
                                                   value={option.properties[key]}
                                               />
                                           ))
-                                        : Object.entries(locationProperties).map(([key, value], index) => (
+                                        : Object.entries(locationProperties).map(([key, value]) => (
                                               <LocationAutoCompleteOption
-                                                  key={`${key}-${index}`}
+                                                  key={`${key}`}
                                                   title={locationTemplateProperties[key].title}
                                                   value={value}
                                               />

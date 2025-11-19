@@ -151,7 +151,7 @@ const CreateOrEditEntityDetails: React.FC<{
             // TODO don't add currentUser default value to each form user field
             currentUser,
         );
-    }, [payload, entityTemplate, initialTemplateFileKeys, currentUser]);
+    }, [payload, entityTemplate, initialTemplateFileKeys, currentUser, initialCurrValues, isEditMode]);
 
     const clientSideUserEntity: IEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
 

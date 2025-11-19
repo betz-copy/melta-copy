@@ -2,7 +2,7 @@ import * as Cesium from 'cesium';
 import { Cartesian3 } from 'cesium';
 import { useEffect, useRef } from 'react';
 import { useQueryClient } from 'react-query';
-import { Viewer } from 'resium';
+import { CesiumComponentRef, Viewer } from 'resium';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -22,7 +22,7 @@ const LocationPreview = ({ entityProperties, entityTemplate }: Props) => {
     const queryClient = useQueryClient();
     const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
 
-    const viewerRef = useRef<any>(null);
+    const viewerRef = useRef<CesiumComponentRef<Cesium.Viewer>>(null);
 
     const { bounds, polygons, propertyDefinitions, markers } = useEntityWithLocationFields({
         entityTemplate,

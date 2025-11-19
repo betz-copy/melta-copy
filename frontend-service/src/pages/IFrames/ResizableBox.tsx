@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/correctness/useExhaustiveDependencies: dependencies*/
 import { Grid } from '@mui/material';
 import React, { ReactNode, useEffect, useState } from 'react';
 import { ResizableBox } from 'react-resizable';

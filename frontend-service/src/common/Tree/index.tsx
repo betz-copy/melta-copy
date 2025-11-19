@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/correctness/useExhaustiveDependencies: useEffect dependencies */
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
 import { Box, Divider } from '@mui/material';
 import { RichTreeViewPro, RichTreeViewProProps, TreeItemProps, TreeViewBaseItem, useTreeViewApiRef } from '@mui/x-tree-view-pro';
@@ -76,25 +77,25 @@ const Tree = <T extends {}>({
 
     const memoizedTreeItem = useCallback(
         (props: TreeItemProps) => <TreeItem {...props} removeDivider={removeDivider} showIcon={showIcon} />,
-        [showIcon, removeDivider],
+        [showIcon],
     );
 
     const flattenTreeIds = useMemo(
         () => flattenTree(treeItems, getItemId, !selectionPropagation.parents).map(getItemId),
-        [getItemId, treeItems, selectionPropagation],
+        [getItemId, treeItems, selectionPropagation, flattenTree],
     );
 
     useEffect(() => {
         onSelectItems?.(selectedItemIds);
-    }, [selectedItemIds, onSelectItems]);
+    }, [selectedItemIds]);
 
     useEffect(() => {
         setExpandedItemsIds(preExpandedItemIds ?? []);
-    }, [preExpandedItemIds]);
+    }, [preExpandedItemIds, setExpandedItemsIds]);
 
     useEffect(() => {
         if (!_.isEqual(preSelectedItemsIds, selectedItemIds)) setSelectedItemIds(preSelectedItemsIds ?? []);
-    }, [preSelectedItemsIds, selectedItemIds]);
+    }, [preSelectedItemsIds, setSelectedItemIds]);
 
     return (
         <>

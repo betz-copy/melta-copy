@@ -84,7 +84,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
             setFilterRecord(newValue, filterKey);
             onFilter?.();
         }, 500),
-        [filterKey],
+        [],
     );
 
     const handleSelectTemplate = (newValue: IMongoEntityTemplatePopulated | null) => {

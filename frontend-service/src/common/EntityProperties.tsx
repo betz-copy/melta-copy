@@ -33,7 +33,7 @@ const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
-function formatDateToDDMMYYYY(dateString: string): string {
+const formatDateToDDMMYYYY = (dateString: string): string => {
     if (!dateString) return '-';
     const date = new Date(dateString);
     if (Number.isNaN(date.getTime())) return '-';
@@ -41,7 +41,7 @@ function formatDateToDDMMYYYY(dateString: string): string {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
-}
+};
 
 interface FormatOptions {
     keyEnumColors?: Record<string, string>;

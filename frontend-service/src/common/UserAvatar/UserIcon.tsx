@@ -55,9 +55,9 @@ const UserIcon: React.FC<UserIconProps> = ({
             }}
         >
             {(profileImage || !isDefaultProfile) && !isError ? (
+                // biome-ignore lint/a11y/useAltText: image should be empty
                 <img
                     src={profileImage}
-                    alt="profile-img"
                     style={{
                         width: '100%',
                         height: '100%',

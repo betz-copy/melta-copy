@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/correctness/useExhaustiveDependencies: useEffects dependencies */
 import { CircleTwoTone as CircleIcon, Close, StraightenTwoTone as DistanceIcon, PentagonTwoTone as PolygonIcon } from '@mui/icons-material';
 import { Grid, ToggleButton, ToggleButtonGroup, useTheme } from '@mui/material';
 import * as Cesium from 'cesium';
@@ -6,7 +7,7 @@ import i18next from 'i18next';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { CesiumMovementEvent, EllipseGraphics, Entity, PointGraphics, PolylineGraphics, Viewer } from 'resium';
+import { CesiumComponentRef, CesiumMovementEvent, EllipseGraphics, Entity, PointGraphics, PolylineGraphics, Viewer } from 'resium';
 import { TablePageType } from '../../../common/EntitiesTableOfTemplate';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
@@ -51,7 +52,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
     const theme = useTheme();
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
-    const viewerRef = useRef<any>(null);
+    const viewerRef = useRef<CesiumComponentRef<Cesium.Viewer>>(null);
 
     const [shapeType, setShapeType] = useState<ShapeType | null>(null);
     const [drawingMode, setDrawingMode] = useState<ShapeType.Circle | ShapeType.Polygon | null>(null);
@@ -154,7 +155,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
             if (!viewer) return;
 
             const { scene } = viewer;
-            const cartesian: Cartesian3 = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
+            const cartesian = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
 
             if (!cartesian) return;
 
@@ -182,7 +183,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
             if (!viewer) return;
 
             const { scene } = viewer;
-            const cartesian: Cartesian3 = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
+            const cartesian = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
 
             if (!cartesian) return;
             setSearchShape((prev) => ({ ...prev, polygon: [], circle: { ...emptyCircle, center: cartesian } }));
@@ -202,7 +203,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
             if (!viewer) return;
 
             const { scene } = viewer;
-            const cartesian = scene.camera.pickEllipsoid(moveEvent.endPosition, scene.globe.ellipsoid);
+            const cartesian = scene.camera.pickEllipsoid(moveEvent.endPosition!, scene.globe.ellipsoid);
 
             if (!cartesian) return;
 
@@ -225,7 +226,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
             if (!viewer) return;
 
             const { scene } = viewer;
-            const cartesian = scene.camera.pickEllipsoid(clickEvent.position, scene.globe.ellipsoid);
+            const cartesian = scene.camera.pickEllipsoid(clickEvent.position!, scene.globe.ellipsoid);
 
             if (!cartesian) return;
             const radius = Cartesian3.distance(circle.center, cartesian);
@@ -289,7 +290,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                         acc[key] = {};
                         return acc;
                     },
-                    {} as Record<string, {}>,
+                    {} as Record<string, object>,
                 );
 
             const payload: ISearchEntitiesByLocationBody = { textSearch: '', templates: templatesPayload };

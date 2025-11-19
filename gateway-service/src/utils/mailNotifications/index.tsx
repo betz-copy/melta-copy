@@ -22,7 +22,6 @@ import {
     NotificationType,
     RuleBreachRequestStatus,
 } from '@microservices/shared';
-import React from 'react';
 import { renderToString } from 'react-dom/server';
 import config from '../../config';
 import WorkspaceManager from '../../express/workspaces/manager';

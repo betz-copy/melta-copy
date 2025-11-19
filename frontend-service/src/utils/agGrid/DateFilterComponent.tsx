@@ -10,11 +10,20 @@ import { useDarkModeStore } from '../../stores/darkMode';
 
 const { date: dateFormat } = environment.formats;
 
-const DateFilterComponent: React.FC<{ date: Date; onDateChange: (newDate: Date | null) => void }> = ({ date, onDateChange }) => {
+const DateFilterComponent: React.FC<{
+    date: Date;
+    onDateChange: (newDate: Date | null) => void;
+}> = ({ date, onDateChange }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return (
-        <div role="presentation" tabIndex={0} onMouseDown={handleStopPropagation} onClick={handleStopPropagation} onKeyDown={handleStopPropagation}>
+        <button
+            type="button"
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+            style={{ all: 'unset', display: 'block' }}
+        >
             <LocalizationProvider
                 dateAdapter={AdapterDateFns}
                 adapterLocale={he}
@@ -43,7 +52,7 @@ const DateFilterComponent: React.FC<{ date: Date; onDateChange: (newDate: Date |
                     }}
                 />
             </LocalizationProvider>
-        </div>
+        </button>
     );
 };
 

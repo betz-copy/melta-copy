@@ -50,7 +50,7 @@ const EntityMapDialog = ({ open, onClose, entityWithMatchingField }: props) => {
                 </Box>
                 <IconButtonWithPopover popoverText={i18next.t('entitiesTableOfTemplate.navigateToEntityPage')}>
                     <FlexBox onClick={() => navigate(`/entity/${entityWithMatchingField.node.properties._id}`)}>
-                        <img src="/icons/read-more-icon.svg" />
+                        <img src="/icons/read-more-icon.svg" alt="readMore" />
                     </FlexBox>
                 </IconButtonWithPopover>
             </Box>
