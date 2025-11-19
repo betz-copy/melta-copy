@@ -214,6 +214,15 @@ const relationshipRefCell = (
           };
 };
 
+const userArrayCell = (cell: Excel.Cell, row: Record<string, any>, key: string, insertEntities?: boolean) => {
+    const currentValue = row[key];
+    cell.value = insertEntities
+        ? Array.isArray(currentValue)
+            ? currentValue.join(', ')
+            : currentValue
+        : currentValue.map((stringUser) => JSON.parse(stringUser).fullName).join(', ');
+};
+
 const filesCell = (cell: Excel.Cell, isFileArray: boolean, rowIndex: number, value: string, workspaceId: string) => {
     cell.value = {
         text: isFileArray ? `${config.excel.multipleFilesName}${rowIndex}` : getFileName(value),
@@ -232,15 +241,23 @@ const fixComplexProperties = (
     const isFileArray = value.type === 'array' && value.items?.format === 'fileId';
     const isSingleFile = value.format === 'fileId';
     const isSignature = value.format === 'signature';
+    const isUserArray = value.type === 'array' && value.items?.format === 'user';
 
     if (value.format === 'relationshipReference') {
         relationshipRefCell(cell, [key, value], row, workspace.path, insertEntities);
         return true;
     }
+
     if (isSingleFile || isFileArray || isSignature) {
         filesCell(cell, isFileArray, rowIndex, row[key], workspace.id);
         return true;
     }
+
+    if (isUserArray) {
+        userArrayCell(cell, row, key, insertEntities);
+        return true;
+    }
+
     return false;
 };
 
@@ -296,9 +313,7 @@ const styleAWorksheet = (
                     cell.value = row[key];
 
                     if (typeof cell.value === 'boolean') cell.value = cell.value ? excelConfig.TRUE_TO_HEBREW : excelConfig.FALSE_TO_HEBREW;
-                    if (value.format === 'user') cell.value = JSON.parse(cell.value as string).fullName;
-                    if (value.items?.format === 'user')
-                        cell.value = (cell.value as any).map((stringUser) => JSON.parse(stringUser).fullName).join(', ');
+                    if (value.format === 'user') cell.value = insertEntities ? cell.value : JSON.parse(cell.value as string).fullName;
                     if (value.format === 'location') {
                         if (typeof cell.value === 'string' && !cell.value.includes('{')) return;
                         const location: { location: string; coordinateSystem: CoordinateSystem.UTM | CoordinateSystem.WGS84 } =

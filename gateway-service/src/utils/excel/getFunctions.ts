@@ -102,11 +102,18 @@ const formatExcel = (
                 );
                 return formattedValue;
             }
+
             return value?.toString();
         case 'array':
             if (propertyTemplate.items && propertyTemplate.items.type === 'string' && typeof value === 'object' && 'richText' in value)
                 return value?.richText.map((item) => item.text).filter((text) => text !== ', ' && text !== ',');
             if (format === 'fileId') return (value as CellModel).text;
+            if (propertyTemplate.items && propertyTemplate.items?.format === 'user' && typeof value !== 'string' && value) {
+                return value
+                    .toString()
+                    .split(',')
+                    .map((val) => val.trim());
+            }
             return (value as string).split(',').map((val) => val.trim());
         case 'number':
             return Number.isNaN(parseFloat(value as string)) ? value : parseFloat(value as string);
@@ -117,25 +124,35 @@ const formatExcel = (
 };
 
 export const isIncludedColumn = (propertyTemplate: IEntitySingleProperty | (IEntitySingleProperty & IChildTemplateProperty)) => {
-    const forbiddenFormats = ['fileId', 'signature', 'user', 'comment', 'kartoffelUserField'];
-    const itemsFormats = ['fileId', 'user'];
+    const forbiddenFormats = ['fileId', 'signature', 'comment', 'kartoffelUserField'];
+    const forbiddenItemFormats = ['fileId'];
 
     const invalidFormats =
         forbiddenFormats.includes(propertyTemplate.format ?? '') ||
-        (propertyTemplate.type === 'array' && itemsFormats.includes(propertyTemplate.items?.format ?? ''));
+        (propertyTemplate.type === 'array' && forbiddenItemFormats.includes(propertyTemplate.items?.format ?? ''));
     const isSerialNumber = propertyTemplate.type === 'number' && !!propertyTemplate.serialCurrent;
     const isDisplay = 'display' in propertyTemplate ? !!propertyTemplate.display : true;
 
     return !invalidFormats && !isSerialNumber && isDisplay;
 };
 
-export const isIncludedEditColumn = (propertyTemplate: IEntitySingleProperty, entityDisabled: boolean, templateDisabled: boolean) =>
-    !propertyTemplate.readOnly &&
-    !propertyTemplate.identifier &&
-    !entityDisabled &&
-    !templateDisabled &&
-    isIncludedColumn(propertyTemplate) &&
-    propertyTemplate.format !== 'relationshipReference';
+export const isIncludedEditColumn = (propertyTemplate: IEntitySingleProperty, entityDisabled: boolean, templateDisabled: boolean) => {
+    const forbiddenFormats = ['relationshipReference', 'user'];
+    const forbiddenItemFormats = ['user'];
+
+    const invalidFormats =
+        forbiddenFormats.includes(propertyTemplate.format ?? '') ||
+        (propertyTemplate.type === 'array' && forbiddenItemFormats.includes(propertyTemplate.items?.format ?? ''));
+
+    return (
+        !invalidFormats &&
+        isIncludedColumn(propertyTemplate) &&
+        !propertyTemplate.readOnly &&
+        !propertyTemplate.identifier &&
+        !entityDisabled &&
+        !templateDisabled
+    );
+};
 
 type IFailedProperties = {
     key: string;
@@ -279,12 +296,12 @@ export const readExcelFile = async (
     return entities;
 };
 
-export const getValidationErrorEntities = (error: AxiosError, failedEntities: IFailedEntity[]) => {
+export const getValidationErrorEntities = (error: AxiosError, failedEntities: IFailedEntity[], originalProperties?: IEntity['properties']) => {
     const errorData = error.response?.data as IValidationErrorData;
     const { metadata } = errorData;
     const { properties, errors } = metadata;
 
-    failedEntities.push({ properties, errors });
+    failedEntities.push({ properties: originalProperties ?? properties, errors });
 };
 
 const updateRawBrokenRules = (rawBrokenRules: IBrokenRule[], entityId: string) => {

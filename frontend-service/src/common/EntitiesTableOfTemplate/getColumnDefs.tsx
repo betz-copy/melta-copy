@@ -162,8 +162,8 @@ export const getColumnDefs = <Data = EntityData>({
         const hideColumn = hideNonPreview
             ? isPreviewEmpty && hideNonPreview && !isFirstTwoProperties
             : archive ||
-              (isDefaultVisibilityColumn ? !defaultVisibleColumns[property] : hideNonPreview && !isPropertyInPreview) ||
-              !isColumnInDisplayList;
+            (isDefaultVisibilityColumn ? !defaultVisibleColumns[property] : hideNonPreview && !isPropertyInPreview) ||
+            !isColumnInDisplayList;
 
         if (propertyTemplate.archive) propertyTemplate.title = `${propertyTemplate.title} ${i18next.t('entitiesTableOfTemplate.archiveTitle')}`;
 
@@ -312,10 +312,10 @@ export const getColumnDefs = <Data = EntityData>({
                 property,
                 isKartoffelImageRef
                     ? (prop) => {
-                          // TODO: use this method to get the properties of all related field?
-                          const userField = propertyTemplate.expandedUserField?.relatedUserField;
-                          return valueGetter(prop, userField);
-                      }
+                        // TODO: use this method to get the properties of all related field?
+                        const userField = propertyTemplate.expandedUserField?.relatedUserField;
+                        return valueGetter(prop, userField);
+                    }
                     : valueGetter,
                 { title: propertyTemplate.title },
                 [],
@@ -327,6 +327,7 @@ export const getColumnDefs = <Data = EntityData>({
                     shouldRenderChip: !isKartoffelImageRef,
                     ...(isKartoffelImageRef && { userIcon: { size: 34, overrideSx: { marginTop: '0.5rem' } } }),
                 },
+                ignoreType
             );
         }
 
@@ -341,6 +342,7 @@ export const getColumnDefs = <Data = EntityData>({
                 isLastColumn,
                 hideColumn,
                 darkMode,
+                ignoreType
             );
         }
 
@@ -452,7 +454,7 @@ export const getColumnDefs = <Data = EntityData>({
 
                 const destTemplate = addRelationshipReferenceButtonProps
                     ? (childEntityTemplateMap?.get(addRelationshipReferenceButtonProps) ??
-                      entityTemplateMap?.get(addRelationshipReferenceButtonProps))
+                        entityTemplateMap?.get(addRelationshipReferenceButtonProps))
                     : undefined;
 
                 const getInitialProperties = (relatedTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated): Record<string, any> => {
@@ -477,9 +479,8 @@ export const getColumnDefs = <Data = EntityData>({
                         {onNavigateToRow && (
                             <Grid>
                                 <Link
-                                    href={`/${pageType === environment.clientSideId ? `${environment.clientSideId}/entity` : 'entity'}/${
-                                        getEntityPropertiesData(data)._id
-                                    }${pageType === environment.clientSideId ? '' : childTemplateURLQuery}`}
+                                    href={`/${pageType === environment.clientSideId ? `${environment.clientSideId}/entity` : 'entity'}/${getEntityPropertiesData(data)._id
+                                        }${pageType === environment.clientSideId ? '' : childTemplateURLQuery}`}
                                     onClick={(e) => {
                                         if (!hasPermissionToTemplate) e.preventDefault();
                                     }}
@@ -586,13 +587,13 @@ export const getColumnDefs = <Data = EntityData>({
                                         destTemplate
                                             ? !isUserHasWritePermissions(currentClientSideUser, currentUser, destTemplate) || destTemplate?.disabled
                                             : childEntityTemplateMap
-                                              ? !getChildrenWithWritePermission(
+                                                ? !getChildrenWithWritePermission(
                                                     childEntityTemplateMap,
                                                     addRelationshipReferenceButtonProps,
                                                     currentUser,
                                                     currentClientSideUser,
                                                 ).length
-                                              : true
+                                                : true
                                     }
                                     initialValues={{
                                         template: destTemplate || emptyEntityTemplate,
