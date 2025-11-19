@@ -51,6 +51,7 @@ const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
             label={label}
             value={!value ? null : typeof value === 'string' ? new Date(value) : value}
             onChange={onChange}
+            views={['year', 'month', 'day']}
             slots={{ textField: (params) => <TextField {...params} size="small" fullWidth /> }}
             slotProps={{
                 textField: {
