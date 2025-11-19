@@ -25,7 +25,6 @@ import {
     IExportEntitiesBody,
     IFailedEntity,
     IFullMongoEntityTemplate,
-    IKartoffelUser,
     IMongoChildTemplatePopulated,
     IMongoEntityTemplatePopulated,
     IMultipleSelect,

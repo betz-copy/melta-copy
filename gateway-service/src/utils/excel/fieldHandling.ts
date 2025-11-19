@@ -1,13 +1,12 @@
-import { UserNotFoundError } from 'gateway-service/src/express/error';
-import UsersManager from 'gateway-service/src/express/users/manager';
 import {
-    IExternalUser,
     IKartoffelUser,
     IMongoChildTemplatePopulated,
     IMongoEntityTemplatePopulated,
     NotFoundError,
     NotFoundErrorTypes,
-} from 'shared/dist';
+} from '@microservices/shared';
+import { UserNotFoundError } from '../../express/error';
+import UsersManager from '../../express/users/manager';
 
 function normalizeUser(identityCard: string, usersMap: Map<string, IKartoffelUser>, key: string, allAttemptedIds: string[]): IKartoffelUser {
     const user: IKartoffelUser | undefined = usersMap.get(identityCard);

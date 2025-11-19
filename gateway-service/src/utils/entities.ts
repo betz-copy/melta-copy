@@ -7,22 +7,24 @@ export const getUserFields = async (
 ): Promise<Map<string, IKartoffelUser>> => {
     if (!entities) return new Map<string, IKartoffelUser>();
 
-    const allIdentityCards: Set<string> = new Set<string>(
-        Object.entries(template.properties.properties).flatMap(([key, value]) =>
-            entities.flatMap((entity) => {
-                const fieldValue = entity.properties[key];
-                if (!fieldValue) return [];
+    const allIdCards: string[] = Object.entries(template.properties.properties).flatMap(([key, value]) =>
+        entities.flatMap((entity) => {
+            const fieldValue = entity.properties[key];
+            if (!fieldValue) return [];
 
-                if (value?.format === 'user') return [fieldValue];
-                if (value?.type === 'array' && value.items?.format === 'user') return Array.isArray(fieldValue) ? fieldValue : [fieldValue];
+            if (value?.format === 'user') return [fieldValue];
+            if (value?.type === 'array' && value.items?.format === 'user') return Array.isArray(fieldValue) ? fieldValue : [fieldValue];
 
-                return [];
-            }),
-        ),
+            return [];
+        }),
     );
 
-    if (!allIdentityCards.size) return new Map<string, IKartoffelUser>();
-    const users: IKartoffelUser[] = await UsersManager.getUsersByIdentityCard([...allIdentityCards], true);
+    const allUniqueIdCards: string[] = Array.from(new Set<string>(allIdCards));
 
-    return new Map<string, IKartoffelUser>(users.filter((user) => Boolean(user.identityCard)).map((user) => [user.identityCard!, user]));
+    if (!allUniqueIdCards.length) return new Map<string, IKartoffelUser>();
+    const users: IKartoffelUser[] = await UsersManager.getUsersByIdentityCard(allUniqueIdCards, true);
+
+    return new Map<string, IKartoffelUser>(
+        users.filter((user): user is typeof user & { identityCard: string } => Boolean(user.identityCard)).map((user) => [user.identityCard, user]),
+    );
 };
