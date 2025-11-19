@@ -25,9 +25,9 @@ export type TemplateTablesViewResultsRef = {
 export const getDefaultFilterFromTemplate = (
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     isChildTemplate: boolean,
-    currentUserKartoffelId?: string,
-    units?: string[],
-    isUserAdmin?: boolean,
+    currentUserKartoffelId: string,
+    units: string[],
+    isUserAdmin: boolean,
 ): ISearchFilter | undefined => {
     if (!isChildTemplate) return undefined;
 

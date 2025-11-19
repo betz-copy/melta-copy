@@ -11,8 +11,10 @@ import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import EntityCard from '../../pages/GlobalSearch/components/entityCard';
 import { getEntitiesWithDirectConnections } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { convertToBool } from '../../utils/convertStringToBool';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
+import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
 import { isChildTemplate } from '../../utils/templates';
 import { InfiniteScroll } from '../InfiniteScroll';
 import { getDefaultFilterFromTemplate } from './TemplateTablesView';
@@ -40,6 +42,8 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
     useImperativeHandle(ref, () => ({ refetch }));
 
     const currentUser = useUserStore((state) => state.user);
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const currentUserKartoffelId = currentUser?.kartoffelId;
 
     return (
@@ -81,7 +85,13 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                             }
 
                             for (const template of childTemplates) {
-                                const filter = getDefaultFilterFromTemplate(template, true, currentUserKartoffelId, currentUser.units);
+                                const filter = getDefaultFilterFromTemplate(
+                                    template,
+                                    true,
+                                    currentUserKartoffelId,
+                                    currentUser.units,
+                                    isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
+                                );
 
                                 const result = await getEntitiesWithDirectConnections({
                                     skip: startRow,
