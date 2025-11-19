@@ -11,6 +11,7 @@ import PrintingTemplatesRow from './components/PrintingTemplatesRow';
 import ProcessTemplatesRow from './components/ProcessTemplates/ProcessTemplatesRow';
 import RelationshipTemplatesRow from './components/RelationshipTemplatesRow';
 import RulesRow from './components/RulesRow';
+import UnitsRow from './components/UnitsRow';
 import EntityTemplatesRow from './entityTemplatesRow';
 
 const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
@@ -24,6 +25,7 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
         relationshipTemplates: <RelationshipTemplatesRow />,
         rules: <RulesRow />,
         processTemplates: <ProcessTemplatesRow />,
+        units: <UnitsRow />,
         printingTemplates: <PrintingTemplatesRow />,
         configurationManagement: <ConfigurationManagement />,
     };
@@ -43,6 +45,9 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
             currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write,
         processTemplates:
             currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write ||
+            currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write,
+        units:
+            currentUser.currentWorkspacePermissions.units?.scope === PermissionScope.write ||
             currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write,
         printingTemplates:
             currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write ||

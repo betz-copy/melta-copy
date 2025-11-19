@@ -71,7 +71,8 @@ class PermissionsManager {
                         permission.rules === null &&
                         permission.instances === null &&
                         permission.processes === null &&
-                        permission.templates === null),
+                        permission.templates === null &&
+                        permission.units === null),
             ) && !dontDeleteUser;
 
         if (permissionType === RelatedPermission.User)

@@ -20,6 +20,7 @@ import InstancesService from '../../externalServices/instanceService';
 import DefaultManagerProxy from '../../utils/express/manager';
 import { getMetaDataAxes } from '../../utils/templateCharts/getMetaDataAxes';
 import TemplatesManager from '../templates/manager';
+import UserService from '../../externalServices/userService';
 
 class ChartManager extends DefaultManagerProxy<ChartService> {
     private instanceService: InstancesService;
@@ -28,7 +29,7 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
 
     private DashboardItemService: DashboardItemService;
 
-    constructor(workspaceId: string) {
+    constructor(private workspaceId: string) {
         super(new ChartService(workspaceId));
         this.instanceService = new InstancesService(workspaceId);
         this.templateManager = new TemplatesManager(workspaceId);
@@ -131,7 +132,9 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
             ...getMetaDataAxes(type, metaData, filter),
         }));
 
-        const generatedCharts = await this.instanceService.getChartsOfTemplate(templateId, chartsData, childTemplateId);
+        const units = await UserService.getUnits({ workspaceId: this.workspaceId });
+
+        const generatedCharts = await this.instanceService.getChartsOfTemplate(templateId, { chartsData, childTemplateId }, units) as { _id: string; chart: { x: any; y: number }[] }[];
 
         const generatedChartsMap = new Map(generatedCharts.map(({ _id, chart }) => [_id, chart]));
 

@@ -102,10 +102,6 @@ class UsersManager {
         return UserService.updateUser(userId, { roleIds: updatedRoleIds });
     }
 
-    static async updateUserUnits(userId: string, units: IUser['units']): Promise<IUser> {
-        return UserService.updateUser(userId, { units } as Partial<IBaseUser>);
-    }
-
     private static validateDigitalIdentity(
         kartoffelId: string,
         digitalIdentity: Pick<IExternalUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'>,
@@ -118,13 +114,7 @@ class UsersManager {
         }
     }
 
-    static async createUser(
-        kartoffelId: string,
-        permissions: ICompactPermissions,
-        workspaceId: string,
-        roleIds?: string[],
-        units?: IUser['units'],
-    ): Promise<IUser> {
+    static async createUser(kartoffelId: string, permissions: ICompactPermissions, workspaceId: string, roleIds?: string[]): Promise<IUser> {
         const existingUser = await UserService.getUserByExternalId(kartoffelId).catch(() => {});
 
         if (existingUser) return UsersManager.updateUserRoleIds(existingUser._id, workspaceId, permissions, roleIds);
@@ -139,7 +129,6 @@ class UsersManager {
             kartoffelId,
             preferences,
             roleIds,
-            units,
         });
     }
 

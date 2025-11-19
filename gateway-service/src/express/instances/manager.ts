@@ -13,6 +13,7 @@ import {
     IBrokenRuleEntity,
     IBulkOfActions,
     IBulkRuleMail,
+    IChartBody,
     ICountSearchResult,
     ICreateEntityMetadata,
     ICreateRelationshipMetadata,
@@ -58,6 +59,7 @@ import { PreviewService } from '../../externalServices/previewService';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import StorageService from '../../externalServices/storageService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
+import UserService from '../../externalServices/userService';
 import { trycatch } from '../../utils';
 import { getUserFields } from '../../utils/entities';
 import { classifyEntityErrors, generateSerialNumbers, getAllEntitiesFromExcel, getSerialStarters } from '../../utils/excel';
@@ -315,6 +317,9 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         if (headersOnly) return;
 
+        const units = await UserService.getUnits({ workspaceId: this.workspaceId });
+        const unitsMap = new Map(units.map((unit) => [unit._id, unit.name]));
+
         if (insertEntities) {
             const { newEntities: entitiesToInsert, newDisplayColumns: columnDisplay } = this.fixInsertEntities(
                 template,
@@ -322,7 +327,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 displayColumns,
             );
 
-            styleAWorksheet(worksheet, entitiesToInsert, templateItem, workspace, columnDisplay, undefined, !!entitiesToInsert);
+            styleAWorksheet(worksheet, entitiesToInsert, templateItem, workspace, unitsMap, columnDisplay, undefined, !!entitiesToInsert);
             return;
         }
 
@@ -352,6 +357,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 chunk.map((row) => row.entity.properties),
                 templateItem,
                 workspace,
+                unitsMap,
                 displayColumns,
                 headersOnly,
                 undefined,
@@ -532,6 +538,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             template,
             failedEntities,
             relatedTemplatesMap,
+            this.workspaceId,
             workspace.metadata?.excel?.entitiesFileLimit,
             oldEntities,
         );
@@ -1403,6 +1410,12 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         }, {});
 
         return this.service.searchEntitiesByLocationRequest({ ...reqBody, templates: locationFieldsMap } as ISearchEntitiesByLocationBody);
+    }
+
+    async getChartOfTemplate(templateId: string, body: { chartsData: IChartBody[]; childTemplateId?: string }) {
+        const units = await UserService.getUnits({ workspaceId: this.workspaceId });
+
+        return this.service.getChartsOfTemplate(templateId, body, units);
     }
 }
 

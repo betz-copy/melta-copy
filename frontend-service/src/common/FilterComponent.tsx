@@ -1,11 +1,15 @@
+import { Autocomplete, TextField } from '@mui/material';
 import { formatDate, isValid as isValidDate, parse } from 'date-fns';
 import { FormikErrors } from 'formik';
+import i18next from 'i18next';
 import { isEqual } from 'lodash';
 import React from 'react';
+import { useQueryClient } from 'react-query';
 import { environment } from '../globals';
 import { ByCurrentDefaultValue } from '../interfaces/childTemplates';
 import { ViewMode } from '../interfaces/dashboard';
 import { IEntitySingleProperty } from '../interfaces/entityTemplates';
+import { IGetUnits } from '../interfaces/units';
 import { IUser } from '../interfaces/users';
 import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridSetFilter, IAGGridTextFilter } from '../utils/agGrid/interfaces';
 import { DateFilterInput } from './inputs/FilterInputs/DateFilterInput';
@@ -172,6 +176,8 @@ export const renderFilterInput = (
 ) => {
     const field = filter.filterField;
 
+    const queryClient = useQueryClient();
+    const units = queryClient.getQueryData<IGetUnits>('getUnits')!;
     const isFieldFilter = filter.filterType === FilterType.field;
 
     if (isFieldFilter && fieldFilter && field?.filterType !== 'set') {
@@ -199,7 +205,14 @@ export const renderFilterInput = (
 
     const { format, enum: propEnum, type, items, title } = property;
 
-    if (viewMode === ViewMode.ReadOnly) return <ReadOnlyFilterInput filterField={field} selectedProperty={{ title, type }} />;
+    let readonlyField = field;
+
+    if (format === 'unitField') {
+        const unit = units.find(({ _id }) => _id === (field as IAGGridTextFilter).filter);
+        if (unit) readonlyField = { ...field, filter: unit.name } as IAGGridTextFilter;
+    }
+
+    if (viewMode === ViewMode.ReadOnly) return <ReadOnlyFilterInput filterField={readonlyField} selectedProperty={{ title, type }} />;
 
     const notIncludedFormats = ['fileId', 'signature', 'comment', ...(!userInput ? ['user'] : [])];
     if (items?.format === 'fileId' || (!userInput && items?.format === 'user') || notIncludedFormats.includes(format ?? '')) return null;
@@ -294,6 +307,21 @@ export const renderFilterInput = (
                 }
             />
         );
+
+    if (format === 'unitField') {
+        const { filter } = (field ?? {}) as IAGGridTextFilter;
+
+        return (
+            <Autocomplete
+                options={units.filter((unit) => unit._id !== filter)}
+                onChange={(_e, value) => handleFilterFieldChange(filters, index, { ...field, filter: value?._id } as IAGGridTextFilter, onChange)}
+                value={units.find((unit) => unit._id === filter)}
+                getOptionLabel={(option) => option.name}
+                renderInput={(params) => <TextField {...params} variant="outlined" label={i18next.t('childTemplate.selectUnitDialog.label')} />}
+                disabled={readonly}
+            />
+        );
+    }
 
     return (
         <TextFilterInput

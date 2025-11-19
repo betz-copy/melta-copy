@@ -1,4 +1,4 @@
-import { fileSchema, MongoIdSchema } from '@microservices/shared';
+import { fileSchema, MongoIdSchema, searchFilterSchema } from '@microservices/shared';
 import Joi from 'joi';
 import config from '../../config';
 import { ExtendedJoi, excelTemplateSchema } from '../../utils/joi';
@@ -296,4 +296,25 @@ export const editManyEntitiesByExcelSchema = Joi.object({
     },
     query: {},
     params: {},
+});
+
+// POST /api/instances/entities/charts/:templateId
+export const chartSchema = Joi.object({
+    body: Joi.object({
+        childTemplateId: Joi.string(),
+        chartsData: Joi.array()
+            .items(
+                Joi.object({
+                    _id: Joi.string(),
+                    xAxis: Joi.any(),
+                    yAxis: Joi.any(),
+                    filter: searchFilterSchema,
+                }),
+            )
+            .required(),
+    }),
+    query: {},
+    params: {
+        templateId: Joi.string().required(),
+    },
 });

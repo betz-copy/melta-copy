@@ -10,6 +10,7 @@ import {
     IFailedEntity,
     IFailedEntityError,
     IMongoEntityTemplatePopulated,
+    INotFoundRelationshipRefError,
     IWorkspace,
     ServiceError,
     UploadedFile,
@@ -33,7 +34,7 @@ export const getAllEntitiesFromExcel = async (
     const effectiveFilesLimit = workspaceFilesLimit ?? loadExcel.filesLimit;
     if (files.length > effectiveFilesLimit) throw new BadRequestError(`files limit: more than ${effectiveFilesLimit} files`, {});
 
-    return readExcelFile(files, template, failedEntities, relatedTemplatesMap, workspace.metadata?.excel?.entitiesFileLimit);
+    return readExcelFile(files, template, failedEntities, relatedTemplatesMap, workspace._id, workspace.metadata?.excel?.entitiesFileLimit);
 };
 
 export const generateSerialNumbers = (index: number, serialStarters: Record<string, number>) =>
