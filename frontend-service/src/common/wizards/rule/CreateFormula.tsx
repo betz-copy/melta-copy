@@ -28,7 +28,7 @@ import { useUserStore } from '../../../stores/user';
 import { lightTheme } from '../../../theme';
 import { jsonTreeHasTodayVar } from '../../../utils/rules/parseDoesHaveTodayVariable';
 import { RuleParser } from '../../../utils/rules/parser';
-import { RaqbMuiAutocompeleteAutoWidth } from './raqb/RaqbAutocompleteAutoWidth';
+import { RaqbMuiAutocompleteAutoWidth } from './raqb/RaqbAutocompleteAutoWidth';
 import RaqbMuiFieldSelect from './raqb/RaqbMuiFieldSelect';
 import RaqbMuiValueSources from './raqb/RaqbMuiValueSources';
 
@@ -133,14 +133,14 @@ const CreateFormula: React.FC<StepComponentProps<RuleWizardValues>> = ({ values,
             settings: {
                 ...MuiConfig.settings,
                 showNot: false,
-                removeIncompleteRulesOnLoad: false, // dont remove empty groups on config reload
-                removeEmptyGroupsOnLoad: false, // dont remove empty groups on config reload
-                removeEmptyRulesOnLoad: false, // dont remove empty rules on config reload
+                removeIncompleteRulesOnLoad: false, // don't remove empty groups on config reload
+                removeEmptyGroupsOnLoad: false, // don't remove empty groups on config reload
+                removeEmptyRulesOnLoad: false, // don't remove empty rules on config reload
                 fieldSources: ['field'], // todo: lib supports lhs functions!, need to use it too
-                renderField: (fieldProps) => <RaqbMuiAutocompeleteAutoWidth {...fieldProps} />,
-                renderOperator: (operatorProps) => {
-                    return <RaqbMuiFieldSelect {...operatorProps} customProps={{ MenuProps: { PaperProps: { dir: 'ltr' } } }} />;
-                },
+                renderField: (fieldProps) => <RaqbMuiAutocompleteAutoWidth {...fieldProps} />,
+                renderOperator: (operatorProps) => (
+                    <RaqbMuiFieldSelect {...operatorProps} customProps={{ MenuProps: { PaperProps: { dir: 'ltr' } } }} />
+                ),
                 renderValueSources: (valueSourcesProps) => <RaqbMuiValueSources {...valueSourcesProps} />,
                 theme: { mui: lightTheme },
             },

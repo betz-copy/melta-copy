@@ -10,7 +10,7 @@ export interface IAGGridTextFilter {
 export interface IAGGridNumberFilter {
     filterType: 'number';
     type: 'equals' | 'notEqual' | 'lessThan' | 'lessThanOrEqual' | 'greaterThan' | 'greaterThanOrEqual' | 'inRange' | 'blank' | 'notBlank';
-    filter?: number;
+    filter?: number | string;
     filterTo?: number; // only inRange type
 }
 

@@ -1,5 +1,6 @@
 import {
     ColDef,
+    ICellEditorParams,
     ICellRendererParams,
     IDateFilterParams,
     ISetFilterParams,
@@ -10,6 +11,7 @@ import {
 import { PriorityHigh } from '@mui/icons-material';
 import { Box, Grid, Tooltip, tooltipClasses } from '@mui/material';
 import i18next from 'i18next';
+import { EntityWizardValues } from '../../common/dialogs/entity';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 import UserAvatar, { IUserAvatarProps } from '../../common/UserAvatar';
@@ -59,7 +61,7 @@ const isPropertyInvalid = <Data = EntityData>(props: ICellRendererParams<Data, a
     });
 };
 
-const errorColDef = <Data extends any = EntityData>(
+const errorColDef = <Data = EntityData>(
     props: ICellRendererParams<Data, any | undefined>,
     error: IError,
     value: Partial<IEntitySingleProperty>,
@@ -349,11 +351,12 @@ export const relatedTemplateColDef = <Data = EntityData>(
         hide: hideColumn,
         editable: (params) => !!(relatedEntityTemplate && editable(params.data)),
         cellEditor: RelationshipRefCellEditor,
-        cellEditorParams: {
+        cellEditorParams: (params: ICellEditorParams<Data>) => ({
             relatedTemplateId,
             template: value,
             filters,
-        },
+            currentEntity: (params.data as EntityWizardValues).properties,
+        }),
     };
 };
 

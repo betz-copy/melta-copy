@@ -1,3 +1,4 @@
+import { FilterType } from '../../common/wizards/entityTemplate/commonInterfaces';
 import { environment } from '../../globals';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { ICountSearchResult, IFilterOfField, IFilterOfTemplate, ISearchEntitiesOfTemplateBody, ISearchFilter } from '../../interfaces/entities';
@@ -14,57 +15,33 @@ import {
     RelativeDateFilters,
 } from './interfaces';
 
-const { relativeDateFilters, fileIdLength } = environment;
+const { relativeDateFilters, fileIdLength, fieldFilterPrefix } = environment;
 
-export const setFilterToFilterOfTemplate = (field: string, values: (string | null)[]): IFilterOfTemplate => {
-    return { [field]: { $in: values } };
+export const setFilterToFilterOfTemplate = (field: string, values: (string | null)[], filterType?: FilterType): IFilterOfTemplate => {
+    const filterValue = filterType === FilterType.field ? values.map((value) => `${fieldFilterPrefix}${value}`) : values;
+
+    return { [field]: { $in: filterValue } };
 };
 
-export const textFilterToFilterOfTemplate = (field: string, { type, filter }: IAGGridTextFilter): IFilterOfTemplate => {
-    const escapeRegExp = (string: string) => {
-        return string.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
-    };
-    switch (type) {
-        case 'equals':
-            return { [field]: { $eq: filter } };
-        case 'notEqual':
-            return { [field]: { $ne: filter } };
-        case 'contains':
-            return { [field]: { $rgx: `.*${escapeRegExp(filter!)}.*` } };
-        case 'notContains':
-            return { [field]: { $not: { $rgx: `.*${escapeRegExp(filter!)}.*` } } };
-        case 'startsWith':
-            return { [field]: { $rgx: `${escapeRegExp(filter!)}.*` } };
-        case 'endsWith':
-            return { [field]: { $rgx: `.*${escapeRegExp(filter!)}` } };
-        case 'blank': {
-            return { [field]: { $eq: null } };
-        }
-        case 'notBlank':
-            return { [field]: { $ne: null } };
-        default:
-            throw new Error('Invalid supported ag-grid filter type method');
-    }
-};
+export const textFilterToFilterOfTemplate = (field: string, { type, filter }: IAGGridTextFilter, filterType?: FilterType): IFilterOfTemplate => {
+    const escapeRegExp = (string: string) => string.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 
-export const textFilterOfFileToFilterTemplate = (field: string, { type, filter }: IAGGridTextFilter): IFilterOfTemplate => {
-    const escapeRegExp = (string: string) => {
-        return string.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
-    };
+    const filterValue = filterType === FilterType.field ? `${fieldFilterPrefix}${filter}` : filter;
+    const escapedValue = filterType === FilterType.field ? filterValue : escapeRegExp(filterValue!);
 
     switch (type) {
         case 'equals':
-            return { [field]: { $rgx: `.{${fileIdLength}}${escapeRegExp(filter!)}` } };
+            return { [field]: { $eq: filterValue } };
         case 'notEqual':
-            return { [field]: { $not: { $rgx: `.{${fileIdLength}}${escapeRegExp(filter!)}` } } };
+            return { [field]: { $ne: filterValue } };
         case 'contains':
-            return { [field]: { $rgx: `.{${fileIdLength}}.*${escapeRegExp(filter!)}.*` } };
+            return { [field]: { $rgx: `.*${escapedValue}.*` } };
         case 'notContains':
-            return { [field]: { $not: { $rgx: `.{${fileIdLength}}.*${escapeRegExp(filter!)}.*` } } };
+            return { [field]: { $not: { $rgx: `.*${escapedValue}.*` } } };
         case 'startsWith':
-            return { [field]: { $rgx: `^.{${fileIdLength}}${escapeRegExp(filter!)}.*` } };
+            return { [field]: { $rgx: `${escapedValue}.*` } };
         case 'endsWith':
-            return { [field]: { $rgx: `.{${fileIdLength}}.*${escapeRegExp(filter!)}` } };
+            return { [field]: { $rgx: `.*${escapedValue}` } };
         case 'blank':
             return { [field]: { $eq: null } };
         case 'notBlank':
@@ -74,23 +51,56 @@ export const textFilterOfFileToFilterTemplate = (field: string, { type, filter }
     }
 };
 
-export const numberFilterToFilterOfTemplate = (field: string, { type, filter, filterTo }: IAGGridNumberFilter): IFilterOfTemplate => {
+export const textFilterOfFileToFilterTemplate = (field: string, { type, filter }: IAGGridTextFilter, filterType?: FilterType): IFilterOfTemplate => {
+    const escapeRegExp = (string: string) => string.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+
+    const filterValue = filterType === FilterType.field ? `${fieldFilterPrefix}${filter}` : escapeRegExp(filter!);
+
     switch (type) {
         case 'equals':
-            return { [field]: { $eq: filter } };
+            return { [field]: { $rgx: `.{${fileIdLength}}${filterValue}` } };
         case 'notEqual':
-            return { [field]: { $ne: filter } };
+            return { [field]: { $not: { $rgx: `.{${fileIdLength}}${filterValue}` } } };
+        case 'contains':
+            return { [field]: { $rgx: `.{${fileIdLength}}.*${filterValue}.*` } };
+        case 'notContains':
+            return { [field]: { $not: { $rgx: `.{${fileIdLength}}.*${filterValue}.*` } } };
+        case 'startsWith':
+            return { [field]: { $rgx: `^.{${fileIdLength}}${filterValue}.*` } };
+        case 'endsWith':
+            return { [field]: { $rgx: `.{${fileIdLength}}.*${filterValue}` } };
+        case 'blank':
+            return { [field]: { $eq: null } };
+        case 'notBlank':
+            return { [field]: { $ne: null } };
+        default:
+            throw new Error('Invalid supported ag-grid filter type method');
+    }
+};
+
+export const numberFilterToFilterOfTemplate = (
+    field: string,
+    { type, filter, filterTo }: IAGGridNumberFilter,
+    filterType?: FilterType,
+): IFilterOfTemplate => {
+    const filterValue = filterType === FilterType.field ? `${fieldFilterPrefix}${filter}` : filter;
+    const filterToValue = filterType === FilterType.field ? `${fieldFilterPrefix}${filterTo}` : filterTo;
+
+    switch (type) {
+        case 'equals':
+            return { [field]: { $eq: filterValue } };
+        case 'notEqual':
+            return { [field]: { $ne: filterValue } };
         case 'lessThan':
-            return { [field]: { $lt: filter } };
+            return { [field]: { $lt: filterValue } };
         case 'lessThanOrEqual':
-            return { [field]: { $lte: filter } };
+            return { [field]: { $lte: filterValue } };
         case 'greaterThan':
-            return { [field]: { $gt: filter } };
+            return { [field]: { $gt: filterValue } };
         case 'greaterThanOrEqual':
-            return { [field]: { $gte: filter } };
-        case 'inRange': {
-            return { [field]: { $gte: filter, $lte: filterTo } };
-        }
+            return { [field]: { $gte: filterValue } };
+        case 'inRange':
+            return { [field]: { $gte: filterValue, $lte: filterToValue } };
         case 'blank':
             return { [field]: { $eq: null } };
         case 'notBlank':
@@ -120,6 +130,7 @@ const getRelativeDateFilter = (field: string, type: IAGGridDateFilter['type']) =
 export const dateFilterToFilterOfTemplate = (
     field: string,
     { type, dateFrom: dateFromString, dateTo: dateToString }: IAGGridDateFilter,
+    filterType?: FilterType,
 ): IFilterOfTemplate => {
     if (relativeDateFilters.includes(type)) return getRelativeDateFilter(field, type);
 
@@ -134,7 +145,10 @@ export const dateFilterToFilterOfTemplate = (
         }
     }
 
-    const dateFrom = new Date(new Date(dateFromString).getTime() - timezoneOffset).toISOString().split('T')[0];
+    const dateFrom =
+        filterType === FilterType.field
+            ? `${fieldFilterPrefix}${dateFromString}`
+            : new Date(new Date(dateFromString).getTime() - timezoneOffset).toISOString().split('T')[0];
 
     switch (type) {
         case 'equals':
@@ -150,7 +164,10 @@ export const dateFilterToFilterOfTemplate = (
         case 'greaterThanOrEqual':
             return { [field]: { $gte: dateFrom } };
         case 'inRange': {
-            const dateTo = new Date(new Date(dateToString!).getTime() - timezoneOffset).toISOString().split('T')[0];
+            const dateTo =
+                filterType === FilterType.field
+                    ? `${fieldFilterPrefix}${dateToString}`
+                    : new Date(new Date(dateToString!).getTime() - timezoneOffset).toISOString().split('T')[0];
             return { [field]: { $gte: dateFrom, $lte: dateTo } };
         }
         default:
@@ -161,6 +178,7 @@ export const dateFilterToFilterOfTemplate = (
 export const dateTimeFilterToFilterOfTemplate = (
     field: string,
     { type, dateFrom: dateFromString, dateTo: dateToString }: IAGGridDateFilter,
+    filterType?: FilterType,
 ): IFilterOfTemplate => {
     if (relativeDateFilters.includes(type)) return getRelativeDateFilter(field, type);
 
@@ -175,24 +193,24 @@ export const dateTimeFilterToFilterOfTemplate = (
         }
     }
 
-    const dateFrom = new Date(dateFromString);
+    const dateFrom = filterType === FilterType.field ? `${fieldFilterPrefix}${dateFromString}` : getDayStart(new Date(dateFromString)).toISOString();
 
     switch (type) {
         case 'equals':
-            return { [field]: { $gte: getDayStart(dateFrom).toISOString(), $lte: getDayEnd(dateFrom).toISOString() } };
+            return { [field]: { $gte: dateFrom, $lte: dateFrom } };
         case 'notEqual':
-            return { [field]: { $not: { $gte: getDayStart(dateFrom).toISOString(), $lte: getDayEnd(dateFrom).toISOString() } } };
+            return { [field]: { $not: { $gte: dateFrom, $lte: dateFrom } } };
         case 'lessThan':
-            return { [field]: { $lt: getDayStart(dateFrom).toISOString() } }; // dont include this day
+            return { [field]: { $lt: dateFrom } }; // dont include this day
         case 'lessThanOrEqual':
-            return { [field]: { $lte: getDayEnd(dateFrom).toISOString() } }; // include this day
+            return { [field]: { $lte: dateFrom } }; // include this day
         case 'greaterThan':
-            return { [field]: { $gt: getDayEnd(dateFrom).toISOString() } }; // dont include this day
+            return { [field]: { $gt: dateFrom } }; // dont include this day
         case 'greaterThanOrEqual':
-            return { [field]: { $gte: getDayStart(dateFrom).toISOString() } }; // include this day
+            return { [field]: { $gte: dateFrom } }; // include this day
         case 'inRange': {
-            const dateTo = new Date(dateToString!);
-            return { [field]: { $gte: getDayStart(dateFrom).toISOString(), $lte: getDayEnd(dateTo).toISOString() } };
+            const dateTo = FilterType.field ? `${fieldFilterPrefix}${dateToString}` : getDayEnd(new Date(dateToString!)).toISOString();
+            return { [field]: { $gte: dateFrom, $lte: dateTo } };
         }
         default:
             throw new Error('Invalid supported ag-grid filter type method');
@@ -203,28 +221,24 @@ export const filterModelToFilterOfTemplatePerField = (
     fieldTemplate: IEntitySingleProperty,
     field: string,
     fieldFilter: IAGGridFilterModel[keyof IAGGridFilterModel],
+    filterType?: FilterType,
 ) => {
     switch (fieldFilter.filterType) {
         case 'text':
-            if (fieldTemplate.format === 'fileId') {
-                return textFilterOfFileToFilterTemplate(field, fieldFilter);
-            } else {
-                return textFilterToFilterOfTemplate(field, fieldFilter);
-            }
+            if (fieldTemplate.format === 'fileId') return textFilterOfFileToFilterTemplate(field, fieldFilter, filterType);
+            else return textFilterToFilterOfTemplate(field, fieldFilter, filterType);
         case 'number':
-            return numberFilterToFilterOfTemplate(field, fieldFilter);
+            return numberFilterToFilterOfTemplate(field, fieldFilter, filterType);
         case 'date':
-            if (fieldTemplate.format === 'date') {
-                return dateFilterToFilterOfTemplate(field, fieldFilter);
-            } else {
-                return dateTimeFilterToFilterOfTemplate(field, fieldFilter);
-            }
+            if (fieldTemplate.format === 'date') return dateFilterToFilterOfTemplate(field, fieldFilter, filterType);
+            else return dateTimeFilterToFilterOfTemplate(field, fieldFilter, filterType);
+
         case 'set': {
             const filtersValues = Array.isArray(fieldFilter.values)
                 ? fieldFilter.values.map((item) => (typeof item === 'object' ? item?.fullName || null : item))
                 : fieldFilter.values;
 
-            return setFilterToFilterOfTemplate(field, filtersValues);
+            return setFilterToFilterOfTemplate(field, filtersValues, filterType);
         }
         default:
             throw new Error('Invalid supported ag-grid filter type');

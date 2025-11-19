@@ -72,8 +72,14 @@ export interface ConvertToRelationshipFieldFormInputProperties {
     };
 }
 
+export enum FilterType {
+    field = 'field',
+    value = 'value',
+}
+
 export interface IFilterTemplate {
     filterProperty: string;
+    filterType?: FilterType;
     filterField?: IAGGridFilter;
 }
 

@@ -14,7 +14,8 @@ import { MultipleUserFilterInput } from './inputs/FilterInputs/MultipleUserFilte
 import { ReadOnlyFilterInput } from './inputs/FilterInputs/ReadonlyFilterInput';
 import { SelectFilterInput } from './inputs/FilterInputs/SelectFilterInput';
 import { TextFilterInput } from './inputs/FilterInputs/TextFilterInput';
-import { IAGGridFilter, IFilterTemplate } from './wizards/entityTemplate/commonInterfaces';
+import { FilterType, IAGGridFilter, IFilterTemplate } from './wizards/entityTemplate/commonInterfaces';
+import { FieldOption } from './wizards/entityTemplate/RelationshipReference/filterEntitiesByCriteria';
 
 const {
     relativeDateFilters,
@@ -126,38 +127,16 @@ const handleTypedFilterTypeChange = (
     field: IAGGridFilter,
     onChange: (newFiltersArray: IFilterTemplate[]) => void,
 ) => {
-    if (filterType === 'text') {
-        handleFilterFieldChange(
-            filters,
-            index,
-            {
-                ...field,
-                type: newType,
-            } as Partial<IAGGridTextFilter>,
-            onChange,
-        );
-    } else if (filterType === 'number') {
-        handleFilterFieldChange(
-            filters,
-            index,
-            {
-                ...field,
-                type: newType,
-            } as Partial<IAGGridNumberFilter>,
-            onChange,
-        );
-    } else if (filterType === 'date') {
-        handleFilterFieldChange(
-            filters,
-            index,
-            {
-                ...field,
-                type: newType,
-                dateTo: newType === 'inRange' ? (field as IAGGridDateFilter).dateTo : null,
-            } as Partial<IAGGridDateFilter>,
-            onChange,
-        );
-    }
+    handleFilterFieldChange(
+        filters,
+        index,
+        {
+            ...field,
+            type: newType,
+            ...(filterType === 'date' ? { dateTo: newType === 'inRange' ? (field as IAGGridDateFilter).dateTo : null } : {}),
+        } as Partial<IAGGridTextFilter | IAGGridNumberFilter | IAGGridDateFilter>,
+        onChange,
+    );
 };
 
 const handleCheckboxChange = (
@@ -189,8 +168,33 @@ export const renderFilterInput = (
     readonly?: boolean,
     viewMode?: ViewMode,
     userInput?: { value: string; set: React.Dispatch<React.SetStateAction<string>> },
+    fieldFilter?: { propType: IAGGridFilter['filterType']; fieldProperties: FieldOption[] },
 ) => {
     const field = filter.filterField;
+
+    const isFieldFilter = filter.filterType === FilterType.field;
+
+    if (isFieldFilter && fieldFilter && field?.filterType !== 'set') {
+        return (
+            <SelectFilterInput
+                enumOptions={fieldFilter.fieldProperties}
+                filterField={field}
+                handleFilterFieldChange={(updatedField, condition) => {
+                    if (updatedField && ['text', 'number', 'date'].includes(updatedField.filterType))
+                        handleFilterFieldChange(filters, index, updatedField, onChange, condition);
+                }}
+                error={Boolean(touched && (filterErrors as IAGGridTextFilter)?.filter)}
+                helperText={(filterErrors as IAGGridTextFilter)?.filter}
+                readOnly={Boolean(readonly)}
+                filterType={{
+                    type: fieldFilter.propType,
+                    handleFilterTypeChange: (newType) => handleTypedFilterTypeChange(filters, fieldFilter.propType, index, newType, field!, onChange),
+                }}
+                entityFilter
+            />
+        );
+    }
+
     if (!field?.filterType) return null;
 
     const { format, enum: propEnum, type, items, title } = property;
@@ -202,14 +206,18 @@ export const renderFilterInput = (
 
     const enumOptions = propEnum ?? items?.enum;
 
-    if (enumOptions)
+    if (enumOptions || fieldFilter?.propType === 'set')
         return (
             <MultipleSelectFilterInput
                 filterField={field.filterType === 'set' ? field : undefined}
                 handleCheckboxChange={(options: (string | null)[], checked: boolean) =>
                     handleCheckboxChange(filters, options, checked, filter.filterField as IAGGridSetFilter, index, onChange)
                 }
-                enumOptions={enumOptions}
+                enumOptions={
+                    isFieldFilter && fieldFilter
+                        ? fieldFilter.fieldProperties.map(({ option, label }) => ({ option, label }))
+                        : enumOptions!.map((option) => ({ option, label: option }))
+                }
                 readOnly={Boolean(readonly)}
                 isError={Boolean(touched && (filterErrors as IAGGridSetFilter)?.values)}
                 helperText={

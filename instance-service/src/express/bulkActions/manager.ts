@@ -570,7 +570,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
 
                     const emails: IRuleMail[] = this.createEmailsForBulk(results, indicatorRules);
 
-                    const entitiesWithUpdatedColors = await this.runUpdateColoredFieldsBulkInTransaction(
+                    const instances = await this.runUpdateColoredFieldsBulkInTransaction(
                         transaction,
                         results,
                         entitiesTemplatesByIds,
@@ -598,7 +598,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                         await Promise.all(activityLogsPromises);
                     }
 
-                    return { entitiesWithUpdatedColors, emails };
+                    return { instances, emails };
                 },
                 dryRun,
             );

@@ -414,6 +414,8 @@ export default {
         noPreviewFields: 'אין שדות לתצוגה מקדימה',
         noWritePermissions: 'אין הרשאות לתבנית בשדה הקשר',
         failedToSearchEntities: 'נכשל בחיפוש ישויות',
+        dependentFieldRequired: 'יש למלא את השדה התלוי "{{field}}" תחילה',
+        dependentFieldsRequired: 'יש למלא את השדות התלויים "{{field}}" תחילה',
     },
     userAutocomplete: {
         label: 'משתמש',
@@ -731,6 +733,7 @@ export default {
                 hierarchy: 'היררכיה',
                 image: 'תמונה',
             },
+            relationshipRef: { filterType: 'סוג פלטור', filterTypes: { field: 'שדה מתבנית זו', value: 'ערך מוגדר' }, fieldLabel: 'שדה מתבנית זו' },
         },
         relationshipTemplate: {
             createTitle: 'יצירת תבנית קשר',
@@ -1726,6 +1729,7 @@ export default {
             greaterThanOrEqual: 'גדול או שווה ל',
             greaterThan: 'גדול מ',
         },
+        field: { equals: 'שווה', notEqual: 'לא שווה' },
     },
     DynamicsConfigs: {
         isDrawerOpen: 'תפריט צד פתוח',

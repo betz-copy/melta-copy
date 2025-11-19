@@ -8,28 +8,40 @@ import { StyledFilterInput } from './StyledFilterInput';
 
 const { filterOptions } = environment;
 
+type IAGGridFilter = IAGGridNumberFilter | IAGGridDateFilter | IAGGridTextFilter;
+
 interface TypeSelectFilterProps {
-    filterField: IAGGridNumberFilter | IAGGridDateFilter | IAGGridTextFilter;
+    filterField: IAGGridFilter;
     handleFilterTypeChange: (
         newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGridNumberFilter['type'],
         condition?: boolean,
     ) => void;
     readOnly?: boolean;
     type: string;
+    filterType?: boolean;
 }
 
-const TypeSelectFilter: React.FC<TypeSelectFilterProps> = ({ filterField, handleFilterTypeChange, readOnly, type }) => {
+const TypeSelectFilter: React.FC<TypeSelectFilterProps> = ({ filterField, handleFilterTypeChange, readOnly, type, filterType }) => {
+    const options = !filterType
+        ? filterOptions[type]
+        : filterOptions[type].filter(
+              (option: string) => !['inRange', 'thisWeek', 'thisMonth', 'thisYear', 'untilToday', 'fromToday'].includes(option),
+          );
+
     return (
         <StyledFilterInput
             fullWidth
             select
             size="small"
             value={filterField?.type || ''}
-            inputProps={{
-                readOnly,
-                style: {
-                    textOverflow: 'ellipsis',
+            slotProps={{
+                htmlInput: {
+                    readOnly,
+                    style: {
+                        textOverflow: 'ellipsis',
+                    },
                 },
+                select: { IconComponent: IoIosArrowDown },
             }}
             onChange={(e) =>
                 handleFilterTypeChange(
@@ -37,12 +49,9 @@ const TypeSelectFilter: React.FC<TypeSelectFilterProps> = ({ filterField, handle
                     Boolean(filterField.filterType === 'date' ? filterField?.dateFrom : filterField?.filter),
                 )
             }
-            SelectProps={{
-                IconComponent: IoIosArrowDown,
-            }}
             disabled={readOnly}
         >
-            {filterOptions[type].map((option: string) => (
+            {options.map((option: string) => (
                 <MenuItem key={option} value={option}>
                     {i18next.t(`filters.${type === 'string' ? 'text' : type}.${option}`)}
                 </MenuItem>

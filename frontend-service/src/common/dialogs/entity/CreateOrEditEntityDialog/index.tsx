@@ -151,7 +151,7 @@ const CreateOrEditEntityDetails: React.FC<{
             // TODO don't add currentUser default value to each form user field
             currentUser,
         );
-    }, [isEditMode, payload, entityTemplate, initialTemplateFileKeys, initialCurrValues, currentUser]);
+    }, [payload, entityTemplate, initialTemplateFileKeys, currentUser]);
 
     const clientSideUserEntity: IEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
 
@@ -204,9 +204,7 @@ const CreateOrEditEntityDetails: React.FC<{
                 const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(values.template?.properties);
                 const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties);
 
-                if (Object.keys(propertiesErrors).length === 0) {
-                    return {};
-                }
+                if (!Object.keys(propertiesErrors).length) return {};
 
                 return { properties: propertiesErrors };
             }}
@@ -219,9 +217,16 @@ const CreateOrEditEntityDetails: React.FC<{
                 return (
                     <>
                         <Form>
-                            <Card>
-                                <CardContent>
-                                    <Grid justifyContent="center">
+                            <Card sx={{ display: 'flex', flexDirection: 'column', maxHeight: '90vh' }}>
+                                <CardContent
+                                    sx={{
+                                        flex: 1,
+                                        overflowY: 'auto',
+                                        position: 'relative',
+                                        paddingTop: 0,
+                                    }}
+                                >
+                                    <Grid container justifyContent="center">
                                         <EditProps
                                             setFieldValue={setFieldValue}
                                             values={values}
@@ -248,59 +253,60 @@ const CreateOrEditEntityDetails: React.FC<{
                                             parentId={parentId}
                                             getInitialProperties={getInitialProperties}
                                         />
-
-                                        <Divider orientation="horizontal" style={{ alignSelf: 'stretch', width: '100%' }} />
-                                        <Grid
-                                            container
-                                            flexDirection="row"
-                                            flexWrap="nowrap"
-                                            justifyContent="space-between"
-                                            alignItems="center"
-                                            paddingTop="25px"
-                                            width="100%"
-                                        >
-                                            {(entityTemplate.documentTemplatesIds || values.template?.documentTemplatesIds)?.length && isEditMode ? (
-                                                <ExportFormats
-                                                    properties={{
-                                                        createdAt: payload?.properties.createdAt || new Date(),
-                                                        updatedAt: payload?.properties.updatedAt || new Date(),
-                                                        ...values.properties,
-                                                    }}
-                                                    documentTemplateIds={entityTemplate.documentTemplatesIds || values.template?.documentTemplatesIds}
-                                                    templateId={values.template._id}
-                                                />
-                                            ) : (
-                                                <Grid size={{ xs: 6 }}>
-                                                    <Button
-                                                        style={{ borderRadius: '7px' }}
-                                                        variant="outlined"
-                                                        startIcon={<ClearIcon />}
-                                                        onClick={() => (wasDirty ? setIsDraftDialogOpen(true) : handleClose())}
-                                                    >
-                                                        {i18next.t('entityPage.cancel')}
-                                                    </Button>
-                                                </Grid>
-                                            )}
-                                            <Grid size={{ xs: 6 }} container justifyContent="end">
-                                                <Button
-                                                    style={{ borderRadius: '7px' }}
-                                                    type="submit"
-                                                    variant="contained"
-                                                    startIcon={isLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />}
-                                                    onClick={() => {
-                                                        setIsSubmitPressed(true);
-                                                        Object.keys(errors).length
-                                                            ? ''
-                                                            : setTimeout(() => (externalErrors ? undefined : handleClose()), 5000);
-                                                    }}
-                                                    disabled={!dirty || isLoading}
-                                                >
-                                                    {i18next.t('entityPage.save')}
-                                                </Button>
-                                            </Grid>
-                                        </Grid>
                                     </Grid>
                                 </CardContent>
+                                <Divider />
+                                <div style={{ position: 'sticky', bottom: 0, zIndex: 2 }}>
+                                    <Grid
+                                        container
+                                        flexDirection="row"
+                                        flexWrap="nowrap"
+                                        justifyContent="space-between"
+                                        alignItems="center"
+                                        padding="0.8rem"
+                                        width="100%"
+                                    >
+                                        {(entityTemplate.documentTemplatesIds || values.template?.documentTemplatesIds)?.length && isEditMode ? (
+                                            <ExportFormats
+                                                properties={{
+                                                    createdAt: payload?.properties.createdAt || new Date(),
+                                                    updatedAt: payload?.properties.updatedAt || new Date(),
+                                                    ...values.properties,
+                                                }}
+                                                documentTemplateIds={entityTemplate.documentTemplatesIds || values.template?.documentTemplatesIds}
+                                                templateId={values.template._id}
+                                            />
+                                        ) : (
+                                            <Grid size={{ xs: 6 }}>
+                                                <Button
+                                                    style={{ borderRadius: '7px' }}
+                                                    variant="outlined"
+                                                    startIcon={<ClearIcon />}
+                                                    onClick={() => (wasDirty ? setIsDraftDialogOpen(true) : handleClose())}
+                                                >
+                                                    {i18next.t('entityPage.cancel')}
+                                                </Button>
+                                            </Grid>
+                                        )}
+                                        <Grid size={{ xs: 6 }} container justifyContent="end">
+                                            <Button
+                                                style={{ borderRadius: '7px' }}
+                                                type="submit"
+                                                variant="contained"
+                                                startIcon={isLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />}
+                                                onClick={() => {
+                                                    setIsSubmitPressed(true);
+                                                    Object.keys(errors).length
+                                                        ? ''
+                                                        : setTimeout(() => (externalErrors ? undefined : handleClose()), 5000);
+                                                }}
+                                                disabled={!dirty || isLoading}
+                                            >
+                                                {i18next.t('entityPage.save')}
+                                            </Button>
+                                        </Grid>
+                                    </Grid>
+                                </div>
                             </Card>
                         </Form>
                         {createOrUpdateWithRuleBreachDialogState.isOpen && (
