@@ -14,6 +14,7 @@ import {
     IBrokenRuleEntity,
     IBulkOfActions,
     IBulkRuleMail,
+    IChartBody,
     ICountSearchResult,
     ICreateEntityMetadata,
     ICreateRelationshipMetadata,
@@ -59,6 +60,7 @@ import { PreviewService } from '../../externalServices/previewService';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import StorageService from '../../externalServices/storageService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
+import UserService from '../../externalServices/userService';
 import { trycatch } from '../../utils';
 import { classifyEntityErrors, generateSerialNumbers, getAllEntitiesFromExcel, getSerialStarters } from '../../utils/excel';
 import { createWorkbook, createWorksheet, styleAWorksheet } from '../../utils/excel/createFunctions';
@@ -293,8 +295,11 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         if (headersOnly) return;
 
+        const units = await UserService.getUnits({ workspaceId: this.workspaceId });
+        const unitsMap = new Map(units.map((unit) => [unit._id, unit.name]));
+
         if (insertEntities) {
-            styleAWorksheet(worksheet, insertEntities, templateItem, workspace, displayColumns, undefined, !!insertEntities);
+            styleAWorksheet(worksheet, insertEntities, templateItem, workspace, unitsMap, displayColumns, undefined, !!insertEntities);
             return;
         }
 
@@ -324,6 +329,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 chunk.map((row) => row.entity.properties),
                 templateItem,
                 workspace,
+                unitsMap,
                 displayColumns,
                 headersOnly,
                 undefined,
@@ -500,6 +506,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             template,
             failedEntities,
             relatedTemplatesMap,
+            this.workspaceId,
             workspace.metadata?.excel?.entitiesFileLimit,
             oldEntities,
         );
@@ -729,7 +736,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         if (emails) this.sendIndicatorRuleEmailForCreation(createdEntity, userId, emails);
 
-        return {...createdEntity, childTemplateId};
+        return { ...createdEntity, childTemplateId };
     }
 
     private async deleteUnusedFiles(currentEntity: IEntity, instanceData: IEntity, files: UploadedFile[]) {
@@ -816,11 +823,11 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         const parentTemplateIds = childTemplateIds?.length
             ? await Promise.all(
-                  childTemplateIds.map(async (templateId) => {
-                      const childTemplate = await this.entityTemplateService.getChildTemplateById(templateId);
-                      return childTemplate?.parentTemplate._id;
-                  }),
-              )
+                childTemplateIds.map(async (templateId) => {
+                    const childTemplate = await this.entityTemplateService.getChildTemplateById(templateId);
+                    return childTemplate?.parentTemplate._id;
+                }),
+            )
             : [];
 
         const templateIds = [...parentTemplateIds, ...searchBody.templateIds];
@@ -831,9 +838,9 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             semanticSearchResult:
                 searchBody.textSearch && shouldSemanticSearch
                     ? await this.semanticSearchSearch.search({
-                          textSearch: searchBody.textSearch,
-                          templates: templateIds,
-                      })
+                        textSearch: searchBody.textSearch,
+                        templates: templateIds,
+                    })
                     : undefined,
         });
     }
@@ -1371,6 +1378,12 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         }, {});
 
         return this.service.searchEntitiesByLocationRequest({ ...reqBody, templates: locationFieldsMap } as ISearchEntitiesByLocationBody);
+    }
+
+    async getChartOfTemplate(templateId: string, body: { chartsData: IChartBody[]; childTemplateId?: string }) {
+        const units = await UserService.getUnits({ workspaceId: this.workspaceId });
+
+        return this.service.getChartsOfTemplate(templateId, body, units);
     }
 }
 

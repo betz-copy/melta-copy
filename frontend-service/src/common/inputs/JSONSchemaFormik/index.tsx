@@ -9,13 +9,14 @@ import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import React, { memo, useEffect, useState } from 'react';
+import { useQueryClient } from 'react-query';
 import { environment } from '../../../globals';
 import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { useWorkspaceStore } from '../../../stores/workspace';
 import { matchValueAgainstFilter } from '../../../utils/filters';
 import { uiSchemaUtils } from './ utils';
 import './form.css';
+import { IGetUnits } from '../../../interfaces/units';
 import InputAccordion from './InputAccordion';
 import RjsfCheckboxWidget from './RjsfCheckboxWidget';
 import RjsfCommentWidget from './RjsfCommentWidget';
@@ -343,13 +344,14 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
 
     schema.properties = { ...schema.properties, ...(schemaWithGroups ?? {}) };
 
-    const workspaceStore = useWorkspaceStore((state) => state.workspace);
+    const queryClient = useQueryClient();
+    const units = queryClient.getQueryData<IGetUnits>('getUnits');
 
     return (
         <JSONSchemaForm
             id="json-schema"
             schema={schema}
-            uiSchema={uiSchemaUtils(schema, values, setValues, isEditMode, toPrint, theme.palette.primary.main, workspaceStore.metadata.unitsArray)}
+            uiSchema={uiSchemaUtils(schema, values, setValues, isEditMode, toPrint, theme.palette.primary.main, units)}
             onChange={({ formData }) => {
                 Object.entries(formData as Record<string, IEntitySingleProperty>).forEach(([key, value]) => {
                     if (JSON.stringify(value) === JSON.stringify([undefined]) || JSON.stringify(value) === JSON.stringify([null]))

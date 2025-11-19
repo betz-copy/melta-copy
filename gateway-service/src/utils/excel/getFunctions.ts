@@ -35,17 +35,17 @@ import { AxiosError } from 'axios';
 import Excel, { CellModel } from 'exceljs';
 import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
+import UserService from '../../externalServices/userService';
 import excelConfig from './excelConfig';
 
-const { invalidDate, invalidTime } = config.loadExcel;
-
-export const locationFormatError = 'location format not valid';
+const { invalidDate, invalidTime, invalidLocation, invalidUnit } = config.loadExcel;
 
 const formatExcel = (
     value: Excel.CellValue | string,
     propertyTemplate: IEntitySingleProperty,
     isEditMode: boolean,
     relatedTemplatesMap: Record<string, IMongoEntityTemplatePopulated>,
+    unitsMap: Map<string, string>,
 ) => {
     const { type, format } = propertyTemplate;
     if (value === null) return undefined;
@@ -66,24 +66,40 @@ const formatExcel = (
 
                 if (coordinateSystem === CoordinateSystem.WGS84) {
                     const wgs84Location = stringToCoordinates(locationString).value;
-                    if (!isValidWGS84(wgs84Location)) throw new BadRequestError(locationFormatError);
+                    if (!isValidWGS84(wgs84Location)) throw new BadRequestError(invalidLocation);
                     const location = { location: locationString, coordinateSystem };
                     return isEditMode ? location : JSON.stringify(location);
                 }
                 const utmLocation = extractUtmLocation(locationString);
 
-                if (!isValidUTM(utmLocation)) throw new BadRequestError(locationFormatError);
+                if (!isValidUTM(utmLocation)) throw new BadRequestError(invalidLocation);
                 const location = { location: locationConverterToString(locationString), coordinateSystem };
                 return isEditMode ? location : JSON.stringify(location);
             }
+            if (format === 'unitField') {
+                let normalizedValue = value;
 
+                if (typeof value === 'object' && 'richText' in value) {
+                    normalizedValue = value.richText.map((text) => text.text).join('');
+                }
+
+                const unitId = unitsMap.get(normalizedValue as string);
+                if (!unitId) throw new BadRequestError(invalidUnit, { name: value });
+                return unitId;
+            }
             if (format === 'relationshipReference') {
                 const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId;
                 if (!relatedTemplateId) return value;
                 const relatedTemplate = relatedTemplatesMap[relatedTemplateId];
                 const identifierField = Object.entries(relatedTemplate!.properties.properties).find(([_key, val]) => val.identifier)?.[0];
 
-                const formattedValue = formatExcel(value, relatedTemplate!.properties.properties[identifierField!], isEditMode, relatedTemplatesMap);
+                const formattedValue = formatExcel(
+                    value,
+                    relatedTemplate!.properties.properties[identifierField!],
+                    isEditMode,
+                    relatedTemplatesMap,
+                    unitsMap,
+                );
                 return formattedValue;
             }
             return value?.toString();
@@ -101,7 +117,7 @@ const formatExcel = (
 };
 
 export const isIncludedColumn = (propertyTemplate: IEntitySingleProperty | (IEntitySingleProperty & IChildTemplateProperty)) => {
-    const forbiddenFormats = ['fileId', 'signature', 'user', 'comment', 'kartoffelUserField', 'unitField'];
+    const forbiddenFormats = ['fileId', 'signature', 'user', 'comment', 'kartoffelUserField'];
     const itemsFormats = ['fileId', 'user'];
 
     const invalidFormats =
@@ -125,7 +141,7 @@ type IFailedProperties = {
     key: string;
     value: IEntitySingleProperty;
     cellValue: Excel.CellValue;
-    format: 'date' | 'date-time' | 'location';
+    format: Exclude<IEntitySingleProperty['format'], undefined>;
 }[];
 
 const handleFailedEntities = (rowData: Record<string, any>, failedProperties: IFailedProperties, failedEntities: IFailedEntity[]) => {
@@ -176,11 +192,12 @@ const getUpdatedEntity = (
     return undefined;
 };
 
-const readExcelFile = async (
+export const readExcelFile = async (
     files: UploadedFile[],
     template: IMongoEntityTemplatePopulated | IChildTemplatePopulated,
     failedEntities: IFailedEntity[],
     relatedTemplatesMap: Record<string, IMongoEntityTemplatePopulated>,
+    workspaceId: string,
     entitiesFileLimit = config.loadExcel.entitiesFileLimit,
     oldEntities: IEntityWithDirectRelationships[] = [],
 ) => {
@@ -194,6 +211,9 @@ const readExcelFile = async (
     const identifier = Object.entries(template.properties.properties).find(([_key, value]) => value.identifier === true)?.[0];
     if (!identifier && isEditMode) throw new BadRequestError('there is no identifier in template', { template });
     let isFailed = false;
+
+    const units = await UserService.getUnits({ workspaceId, disabled: false });
+    const unitsMap = new Map(units.map((unit) => [unit.name, unit._id]));
 
     await Promise.all(
         files.map(async (file) => {
@@ -216,7 +236,7 @@ const readExcelFile = async (
                 Object.entries(columns).forEach(([key, value], columnIndex) => {
                     const cellValue = row.getCell(columnIndex + 1).value;
                     try {
-                        const formatCellValue = formatExcel(cellValue, value, isEditMode, relatedTemplatesMap);
+                        const formatCellValue = formatExcel(cellValue, value, isEditMode, relatedTemplatesMap, unitsMap);
                         if (formatCellValue === invalidDate) {
                             failedProperties.push({ key, value, cellValue, format: 'date' });
                             isFailed = true;
@@ -227,8 +247,12 @@ const readExcelFile = async (
                             failedProperties.push({ key, value, cellValue, format: 'date-time' });
                             isFailed = true;
                         }
-                        if (error.message.includes(locationFormatError)) {
+                        if (error.message.includes(invalidLocation)) {
                             failedProperties.push({ key, value, cellValue, format: 'location' });
+                            isFailed = true;
+                        }
+                        if (error.message.includes(invalidUnit)) {
+                            failedProperties.push({ key, value, cellValue, format: 'unitField' });
                             isFailed = true;
                         }
                     }
@@ -255,7 +279,7 @@ const readExcelFile = async (
     return entities;
 };
 
-const getValidationErrorEntities = (error: AxiosError, failedEntities: IFailedEntity[]) => {
+export const getValidationErrorEntities = (error: AxiosError, failedEntities: IFailedEntity[]) => {
     const errorData = error.response?.data as IValidationErrorData;
     const { metadata } = errorData;
     const { properties, errors } = metadata;
@@ -350,7 +374,7 @@ const updateAction = (actions: IActionPopulated[], _id: string) => {
     });
 };
 
-const convertIdOfBrokenRules = async (allBrokenRulesEntities: IBrokenRuleEntity[]) => {
+export const convertIdOfBrokenRules = async (allBrokenRulesEntities: IBrokenRuleEntity[]) => {
     return allBrokenRulesEntities.reduce<IBrokenRuleEntity>(
         (accumulator, current, index) => {
             const entityId = `$${index}._id`;
@@ -374,5 +398,3 @@ const convertIdOfBrokenRules = async (allBrokenRulesEntities: IBrokenRuleEntity[
         { rawBrokenRules: [], brokenRules: [], actions: [], rawActions: [], entities: [] },
     );
 };
-
-export { convertIdOfBrokenRules, getValidationErrorEntities, readExcelFile };

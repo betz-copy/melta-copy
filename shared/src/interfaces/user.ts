@@ -16,7 +16,6 @@ export interface IBaseUser {
     };
     kartoffelId: string;
     roleIds?: string[];
-    units?: Record<string, string[]>;
 }
 
 export interface IUser extends IBaseUser {

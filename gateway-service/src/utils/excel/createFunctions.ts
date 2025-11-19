@@ -257,6 +257,7 @@ const styleAWorksheet = (
     rows: IEntity['properties'][],
     templateItem: TemplateItem,
     workspace: { path: string; id: string },
+    unitsMap: Map<string, string>,
     displayColumns?: string[],
     headersOnly?: boolean,
     insertEntities?: boolean,
@@ -306,6 +307,9 @@ const styleAWorksheet = (
                             location.coordinateSystem === CoordinateSystem.UTM
                                 ? locationConverterToString(location.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
                                 : location.location;
+                    }
+                    if (value.format === 'unitField') {
+                        cell.value = unitsMap.get(cell.value as string);
                     }
 
                     // Check if value is date

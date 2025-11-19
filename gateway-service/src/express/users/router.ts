@@ -25,7 +25,6 @@ import {
     updateRoleRequestSchema,
     updateUserPreferencesMetadataRequestSchema,
     updateUserRoleIdsRequestSchema,
-    updateUserUnitsRequestSchema,
     userRoleWorkspaceRequestSchema,
 } from './validator.schema';
 
@@ -65,8 +64,6 @@ usersRouter.patch(
     ValidateRequest(updateUserRoleIdsRequestSchema),
     wrapController(UsersController.updateUserRoleIds),
 );
-
-usersRouter.patch('/:userId/units', ValidateRequest(updateUserUnitsRequestSchema), wrapController(UsersController.updateUserUnits));
 
 usersRouter.post(
     '/',

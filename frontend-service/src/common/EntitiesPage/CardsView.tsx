@@ -11,7 +11,6 @@ import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import EntityCard from '../../pages/GlobalSearch/components/entityCard';
 import { getEntitiesWithDirectConnections } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
-import { useWorkspaceStore } from '../../stores/workspace';
 import { convertToBool } from '../../utils/convertStringToBool';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { isChildTemplate } from '../../utils/templates';
@@ -41,9 +40,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
     useImperativeHandle(ref, () => ({ refetch }));
 
     const currentUser = useUserStore((state) => state.user);
-    const currentWorkspace = useWorkspaceStore((state) => state.workspace);
     const currentUserKartoffelId = currentUser?.kartoffelId;
-    const currentUserUnit = currentUser?.units?.[currentWorkspace._id] ?? [];
 
     return (
         <Grid container direction="column" spacing={4}>
@@ -84,7 +81,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                             }
 
                             for (const template of childTemplates) {
-                                const filter = getDefaultFilterFromTemplate(template, true, currentUserKartoffelId, currentUserUnit);
+                                const filter = getDefaultFilterFromTemplate(template, true, currentUserKartoffelId, currentUser.units);
 
                                 const result = await getEntitiesWithDirectConnections({
                                     skip: startRow,

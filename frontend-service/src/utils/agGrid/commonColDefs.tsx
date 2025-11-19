@@ -16,12 +16,14 @@ import { EntityWizardValues } from '../../common/dialogs/entity';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 import UserAvatar, { IUserAvatarProps } from '../../common/UserAvatar';
+import { environment } from '../../globals';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { EntityData, IEntity, INotFoundRelationshipRefError, IRequiredConstraint, ISearchFilter, IUniqueConstraint } from '../../interfaces/entities';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IError, IFailedEntity, IValidationError } from '../../interfaces/excel';
 import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
 import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
+import { IGetUnits, IMongoUnit } from '../../interfaces/units';
 import { IUser } from '../../interfaces/users';
 import OpenMap from '../../pages/Map/OpenMap';
 import { getDateWithoutTime, getLongDate } from '../date';
@@ -794,5 +796,56 @@ export const translatedEnumColDef = <Data = EntityData>({
         width: hardcodedWidth,
         flex: isLastColumn ? 1 : 0,
         hide: hideColumn,
+    };
+};
+
+const getUnitField = (units: IGetUnits, unitId: string, property: keyof IGetUnits[number]) =>
+    (units.find(({ _id }) => _id === unitId)?.[property] as string) ?? '';
+
+export const unitColDef = <Data = EntityData>(
+    field: string,
+    value: Partial<IEntitySingleProperty>,
+    units: IGetUnits,
+    hardcodedWidth: number | undefined,
+    isLastColumn: boolean,
+    hideColumn = false,
+    hideValue = false,
+    ignoreType = false,
+    searchValue: string | undefined = undefined,
+    _editable: (data: any) => boolean = () => false,
+): ColDef => {
+    const filterParams: ISetFilterParams<Data, string | undefined> = {
+        suppressMiniFilter: true,
+        valueFormatter: (params: ValueFormatterParams<IMongoUnit, string | undefined>) => {
+            if (params.value === null) return agGridLocaleText.blanks;
+
+            return params.value ? getUnitField(units, params.value, 'name') : '';
+        },
+        values: [...units.map((unit) => unit._id), undefined],
+    };
+
+    return {
+        field,
+        valueGetter: ({ data }) => {
+            const value = data.properties[field];
+            return environment.objectIdRegex.test(value) ? getUnitField(units, value, 'name') : value;
+        },
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
+            const error = isPropertyInvalid(props, field, ignoreType);
+            if (error) return errorColDef(props, error, value);
+
+            return <Value hideValue={hideValue} color={getColor(props, field)} value={props.value?.toString() ?? ''} searchValue={searchValue} />;
+        },
+        headerName: value.title,
+        filter: 'agSetColumnFilter',
+        filterParams,
+        width: hardcodedWidth,
+        flex: isLastColumn ? 1 : 0,
+        hide: hideColumn,
+        tooltipValueGetter: (params) => {
+            const path = getUnitField(units, params.data.properties[field], 'path');
+            return path ? `${path}/` : '';
+        },
+        editable: false,
     };
 };
