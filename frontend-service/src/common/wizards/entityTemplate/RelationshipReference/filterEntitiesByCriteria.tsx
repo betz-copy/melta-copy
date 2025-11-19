@@ -7,7 +7,7 @@ import React, { useMemo, useState } from 'react';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { getPropertyType } from '../../../../services/templates/entityTemplatesService';
 import { handleRemoveFilter, initializedFilterField, renderFilterInput } from '../../../FilterComponent';
-import { CommonFormInputProperties, FilterType, IAGGridFilter, IFilterTemplate } from '../commonInterfaces';
+import { CommonFormInputProperties, FilterType, IAGGridFilter, IFilterTemplate, PropertyItem } from '../commonInterfaces';
 
 export interface FieldOption {
     option: string;
@@ -17,7 +17,7 @@ export interface FieldOption {
 interface FilterEntitiesByCriteriaProps {
     name: string; // e.g. "properties[0].relationshipReference.filters"
     value: CommonFormInputProperties;
-    values: any;
+    values: Record<string, PropertyItem[]>;
     setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
     selectedEntityTemplate: IMongoEntityTemplatePopulated | undefined;
     initialValue: CommonFormInputProperties | undefined;
@@ -110,12 +110,22 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                         const getFilterDateType = (type: string, format?: string) => (['date', 'date-time'].includes(format ?? '') ? 'date' : type);
 
                         const fieldProperties: FieldOption[] = values.properties
-                            .filter(
-                                ({ data: { type } }) =>
+                            .filter((item) => {
+                                const type = item.type === 'field' ? item.data.type : item.type;
+                                return (
                                     getFilterDateType(getPropertyType(type), type) ===
-                                        getFilterDateType(selectedProperty.type, selectedProperty.format) && !notIncludedFormats.includes(type),
-                            )
-                            .map(({ data: { title, name } }) => ({ option: name, label: title }));
+                                        getFilterDateType(selectedProperty.type, selectedProperty.format) && !notIncludedFormats.includes(type)
+                                );
+                            })
+                            .map((item) => {
+                                if (item.type === 'field') {
+                                    const { name, title } = item.data;
+                                    return { option: name, label: title };
+                                } else {
+                                    const { name, displayName: title } = item;
+                                    return { option: name, label: title };
+                                }
+                            });
 
                         const getFilterType = (): IAGGridFilter['filterType'] => {
                             switch (selectedProperty.type) {
