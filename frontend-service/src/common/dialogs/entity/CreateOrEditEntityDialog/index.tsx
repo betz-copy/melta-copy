@@ -123,140 +123,147 @@ const CreateOrEditEntityDetails: React.FC<{
     parentId,
     getInitialProperties,
 }) => {
-    const { payload, actionType } = mutationProps;
-    const [isDraftDialogOpen, setIsDraftDialogOpen] = useState(false);
-    const [wasDirty, setWasDirty] = useState(false);
-    const [isSubmitPressed, setIsSubmitPressed] = useState(false);
-    const [initialValuePropsToFilter, setInitialValuePropsToFilter] = useState<Record<string, any>>({});
+        const { payload, actionType } = mutationProps;
+        const [isDraftDialogOpen, setIsDraftDialogOpen] = useState(false);
+        const [wasDirty, setWasDirty] = useState(false);
+        const [isSubmitPressed, setIsSubmitPressed] = useState(false);
+        const [initialValuePropsToFilter, setInitialValuePropsToFilter] = useState<Record<string, any>>({});
 
-    const isEditMode = actionType === ActionTypes.UpdateEntity;
+        const isEditMode = actionType === ActionTypes.UpdateEntity;
 
-    const workspace = useWorkspaceStore((state) => state.workspace);
-    const currentUser = useUserStore((state) => state.user);
-    const { shouldNavigateToEntityPage } = workspace.metadata;
+        const workspace = useWorkspaceStore((state) => state.workspace);
+        const currentUser = useUserStore((state) => state.user);
+        const { shouldNavigateToEntityPage } = workspace.metadata;
 
-    const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
+        const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
 
-    const initialValues = useMemo(() => {
-        if (isEditMode) return getInitialValuesWithDefaults(convertIEntityToEntityWizardValues(payload!, entityTemplate, initialTemplateFileKeys));
+        const initialValues = useMemo(() => {
+            if (isEditMode) return getInitialValuesWithDefaults(convertIEntityToEntityWizardValues(payload!, entityTemplate, initialTemplateFileKeys));
 
-        return getInitialValuesWithDefaults(
-            initialCurrValues ?? {
-                properties: {
-                    disabled: false,
+            return getInitialValuesWithDefaults(
+                initialCurrValues ?? {
+                    properties: {
+                        disabled: false,
+                    },
+                    attachmentsProperties: {},
+                    template: entityTemplate,
                 },
-                attachmentsProperties: {},
-                template: entityTemplate,
-            },
-            // TODO don't add currentUser default value to each form user field
-            currentUser,
+                // TODO don't add currentUser default value to each form user field
+                currentUser,
+            );
+        }, [payload, entityTemplate, initialTemplateFileKeys, currentUser]);
+
+        const clientSideUserEntity: IEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
+
+        const finalMutationProps = useMemo(() => {
+            if (Object.keys(clientSideUserEntity).length) {
+                return {
+                    ...mutationProps,
+                    actionType: ActionTypes.CreateClientSideEntity,
+                };
+            }
+            return mutationProps;
+        }, [mutationProps, clientSideUserEntity]) as IMutationProps;
+
+        const [isLoading, mutationPromiseToastify] = useMutationHandler(
+            externalErrors,
+            shouldNavigateToEntityPage,
+            entityTemplate,
+            finalMutationProps,
+            setExternalErrors,
+            setCreateOrUpdateWithRuleBreachDialogState,
+            clientSideUserEntity,
         );
-    }, [payload, entityTemplate, initialTemplateFileKeys, currentUser]);
 
-    const clientSideUserEntity: IEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
+        const [deleteDraft, currentDraft, originalDrafts, createOrUpdateDraftDebounced, draftId] = useDraftEntityDialogHook(
+            entityTemplate,
+            setInitialValuePropsToFilter,
+            payload,
+        );
 
-    const finalMutationProps = useMemo(() => {
-        if (Object.keys(clientSideUserEntity).length) {
-            return {
-                ...mutationProps,
-                actionType: ActionTypes.CreateClientSideEntity,
-            };
-        }
-        return mutationProps;
-    }, [mutationProps, clientSideUserEntity]) as IMutationProps;
+        return (
+            <Formik<EntityWizardValues>
+                initialValues={initialValues}
+                onSubmit={async (values, formikHelpers) => {
+                    formikHelpers.setTouched({});
+                    await mutationPromiseToastify(values);
+                    if (!draftId) return;
 
-    const [isLoading, mutationPromiseToastify] = useMutationHandler(
-        externalErrors,
-        shouldNavigateToEntityPage,
-        entityTemplate,
-        finalMutationProps,
-        setExternalErrors,
-        setCreateOrUpdateWithRuleBreachDialogState,
-        clientSideUserEntity,
-    );
+                    // delete the draft after the debounce
+                    setTimeout(
+                        () =>
+                            deleteDraft(
+                                entityTemplate.category._id ? entityTemplate.category._id : values.template.category._id,
+                                entityTemplate._id ? entityTemplate._id : values.template._id,
+                                draftId,
+                            ),
+                        environment.draftAutoSaveDebounce,
+                    );
+                }}
+                validate={(values) => {
+                    const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(values.template?.properties);
+                    const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties);
 
-    const [deleteDraft, currentDraft, originalDrafts, createOrUpdateDraftDebounced, draftId] = useDraftEntityDialogHook(
-        entityTemplate,
-        setInitialValuePropsToFilter,
-        payload,
-    );
+                    if (Object.keys(propertiesErrors).length === 0) {
+                        return {};
+                    }
 
-    return (
-        <Formik<EntityWizardValues>
-            initialValues={initialValues}
-            onSubmit={async (values, formikHelpers) => {
-                formikHelpers.setTouched({});
-                await mutationPromiseToastify(values);
-                if (!draftId) return;
+                    return { properties: propertiesErrors };
+                }}
+            >
+                {({ setFieldValue, values, errors, touched, setFieldTouched, setValues, dirty, initialValues: formInitialValues }) => {
+                    useEffect(() => {
+                        if (initialCurrValues) setValues(getInitialValuesWithDefaults(initialCurrValues));
+                    }, [initialCurrValues]);
 
-                // delete the draft after the debounce
-                setTimeout(
-                    () =>
-                        deleteDraft(
-                            entityTemplate.category._id ? entityTemplate.category._id : values.template.category._id,
-                            entityTemplate._id ? entityTemplate._id : values.template._id,
-                            draftId,
-                        ),
-                    environment.draftAutoSaveDebounce,
-                );
-            }}
-            validate={(values) => {
-                const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(values.template?.properties);
-                const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties);
-
-                if (Object.keys(propertiesErrors).length === 0) {
-                    return {};
-                }
-
-                return { properties: propertiesErrors };
-            }}
-        >
-            {({ setFieldValue, values, errors, touched, setFieldTouched, setValues, dirty, initialValues: formInitialValues }) => {
-                useEffect(() => {
-                    if (initialCurrValues) setValues(getInitialValuesWithDefaults(initialCurrValues));
-                }, [initialCurrValues]);
-
-                return (
-                    <>
-                        <Form>
-                            <Card>
-                                <CardContent>
-                                    <Grid justifyContent="center">
-                                        <EditProps
-                                            setFieldValue={setFieldValue}
-                                            values={values}
-                                            errors={isSubmitPressed ? errors : {}}
-                                            touched={touched}
-                                            setFieldTouched={setFieldTouched}
-                                            initialValues={formInitialValues}
-                                            setInitialValuePropsToFilter={setInitialValuePropsToFilter}
-                                            initialValuePropsToFilter={initialValuePropsToFilter}
-                                            createOrUpdateDraftDebounced={createOrUpdateDraftDebounced}
-                                            isMultipleSelection={false}
-                                            entityTemplate={entityTemplate}
-                                            draftId={draftId}
-                                            wasDirty={wasDirty}
-                                            setWasDirty={setWasDirty}
-                                            externalErrors={externalErrors}
-                                            setExternalErrors={setExternalErrors}
-                                            isEditMode={isEditMode}
-                                            currentDraft={currentDraft}
-                                            showCloseButton={showActionButtons}
-                                            setIsDraftDialogOpen={setIsDraftDialogOpen}
-                                            handleClose={handleClose}
-                                            chooseMode={chooseMode}
-                                            parentId={parentId}
-                                            getInitialProperties={getInitialProperties}
-                                        />
-
-                                        <Divider orientation="horizontal" style={{ alignSelf: 'stretch', width: '100%' }} />
+                    return (
+                        <>
+                            <Form>
+                                <Card sx={{ display: 'flex', flexDirection: 'column', maxHeight: '90vh' }}>
+                                    <CardContent sx={{
+                                        flex: 1,
+                                        overflowY: 'auto',
+                                        position: 'relative',
+                                        paddingTop: 0,
+                                    }}>
+                                        <Grid container justifyContent="center">
+                                            <EditProps
+                                                setFieldValue={setFieldValue}
+                                                values={values}
+                                                errors={isSubmitPressed ? errors : {}}
+                                                touched={touched}
+                                                setFieldTouched={setFieldTouched}
+                                                initialValues={formInitialValues}
+                                                setInitialValuePropsToFilter={setInitialValuePropsToFilter}
+                                                initialValuePropsToFilter={initialValuePropsToFilter}
+                                                createOrUpdateDraftDebounced={createOrUpdateDraftDebounced}
+                                                isMultipleSelection={false}
+                                                entityTemplate={entityTemplate}
+                                                draftId={draftId}
+                                                wasDirty={wasDirty}
+                                                setWasDirty={setWasDirty}
+                                                externalErrors={externalErrors}
+                                                setExternalErrors={setExternalErrors}
+                                                isEditMode={isEditMode}
+                                                currentDraft={currentDraft}
+                                                showCloseButton={showActionButtons}
+                                                setIsDraftDialogOpen={setIsDraftDialogOpen}
+                                                handleClose={handleClose}
+                                                chooseMode={chooseMode}
+                                                parentId={parentId}
+                                                getInitialProperties={getInitialProperties}
+                                            />
+                                        </Grid>
+                                    </CardContent>
+                                    <Divider />
+                                    <div style={{ position: 'sticky', bottom: 0, zIndex: 2 }}>
                                         <Grid
                                             container
                                             flexDirection="row"
                                             flexWrap="nowrap"
                                             justifyContent="space-between"
                                             alignItems="center"
-                                            paddingTop="25px"
+                                            padding="0.8rem"
                                             width="100%"
                                         >
                                             {(entityTemplate.documentTemplatesIds || values.template?.documentTemplatesIds)?.length && isEditMode ? (
@@ -299,50 +306,51 @@ const CreateOrEditEntityDetails: React.FC<{
                                                 </Button>
                                             </Grid>
                                         </Grid>
-                                    </Grid>
-                                </CardContent>
-                            </Card>
-                        </Form>
-                        {createOrUpdateWithRuleBreachDialogState.isOpen && (
-                            <ActionOnEntityWithRuleBreachDialog
-                                isLoadingActionOnEntity={isLoading}
-                                handleClose={() => setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false })}
-                                doActionEntity={() => {
-                                    return mutationPromiseToastify(
-                                        createOrUpdateWithRuleBreachDialogState.newEntityData!,
-                                        createOrUpdateWithRuleBreachDialogState.rawBrokenRules!,
-                                    );
-                                }}
-                                actionType={actionType}
-                                brokenRules={createOrUpdateWithRuleBreachDialogState.brokenRules!}
-                                rawBrokenRules={createOrUpdateWithRuleBreachDialogState.rawBrokenRules!}
-                                currEntity={payload}
-                                entityFormData={createOrUpdateWithRuleBreachDialogState.newEntityData!}
-                                onUpdatedRuleBlock={(brokenRules) =>
-                                    setCreateOrUpdateWithRuleBreachDialogState((prevState) => ({
-                                        ...prevState,
-                                        brokenRules,
-                                    }))
-                                }
-                                onCreateRuleBreachRequest={() => handleClose()}
-                                actions={createOrUpdateWithRuleBreachDialogState.actions}
-                                rawActions={createOrUpdateWithRuleBreachDialogState.rawActions}
-                            />
-                        )}
+                                    </div>
+                                </Card>
+                            </Form >
+                            {
+                                createOrUpdateWithRuleBreachDialogState.isOpen && (
+                                    <ActionOnEntityWithRuleBreachDialog
+                                        isLoadingActionOnEntity={isLoading}
+                                        handleClose={() => setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false })}
+                                        doActionEntity={() => {
+                                            return mutationPromiseToastify(
+                                                createOrUpdateWithRuleBreachDialogState.newEntityData!,
+                                                createOrUpdateWithRuleBreachDialogState.rawBrokenRules!,
+                                            );
+                                        }}
+                                        actionType={actionType}
+                                        brokenRules={createOrUpdateWithRuleBreachDialogState.brokenRules!}
+                                        rawBrokenRules={createOrUpdateWithRuleBreachDialogState.rawBrokenRules!}
+                                        currEntity={payload}
+                                        entityFormData={createOrUpdateWithRuleBreachDialogState.newEntityData!}
+                                        onUpdatedRuleBlock={(brokenRules) =>
+                                            setCreateOrUpdateWithRuleBreachDialogState((prevState) => ({
+                                                ...prevState,
+                                                brokenRules,
+                                            }))
+                                        }
+                                        onCreateRuleBreachRequest={() => handleClose()}
+                                        actions={createOrUpdateWithRuleBreachDialogState.actions}
+                                        rawActions={createOrUpdateWithRuleBreachDialogState.rawActions}
+                                    />
+                                )
+                            }
 
-                        <DraftWarningDialog
-                            isOpen={isDraftDialogOpen}
-                            handleClose={() => setIsDraftDialogOpen(false)}
-                            closeCreateOrEditDialog={handleClose}
-                            values={{ ...values, entityId: payload?.properties?._id }}
-                            isEditMode={isEditMode}
-                            originalDrafts={originalDrafts}
-                        />
-                    </>
-                );
-            }}
-        </Formik>
-    );
-};
+                            < DraftWarningDialog
+                                isOpen={isDraftDialogOpen}
+                                handleClose={() => setIsDraftDialogOpen(false)}
+                                closeCreateOrEditDialog={handleClose}
+                                values={{ ...values, entityId: payload?.properties?._id }}
+                                isEditMode={isEditMode}
+                                originalDrafts={originalDrafts}
+                            />
+                        </>
+                    );
+                }}
+            </Formik >
+        );
+    };
 
 export { CreateOrEditEntityDetails };

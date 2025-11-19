@@ -36,7 +36,7 @@ class ChildTemplateValidator extends DefaultController<IMongoChildTemplate, Chil
             [templateId, { type: EntityTemplateType.Child, metaData: baseChildTemplate }],
         ]);
 
-        while (entityPropertiesQueue.length > 0) {
+        while (entityPropertiesQueue.length) {
             const currentEntityProperties = entityPropertiesQueue.shift()!;
 
             Object.values(currentEntityProperties).forEach((propertyValues) => {
