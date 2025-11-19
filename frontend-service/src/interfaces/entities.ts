@@ -41,30 +41,30 @@ export interface IUniqueConstraint {
 
 export interface IRequiredConstraint {
     type: 'REQUIRED';
+    property: string;
     constraintName: string;
     templateId: string;
-    property: string;
 }
 
 export enum NotFoundErrorTypes {
+    relationshipRefNotFound = 'RELATIONSHIP_REF_NOT_FOUND',
     userNotFound = 'USER_NOT_FOUND',
-    relNotFound = 'REL_NOT_FOUND',
 }
 
-export interface IRelNotFoundError {
-    type: NotFoundErrorTypes.relNotFound;
-    relatedTemplateId: string;
-    relatedIdentifier: string;
+export interface IRelationshipRefNotFoundError {
+    type: NotFoundErrorTypes.relationshipRefNotFound;
     property: string;
+    relatedIdentifier: string;
+    relatedTemplateId: string;
 }
 
 export interface IUsersNotFoundError {
-    attemptedIds: string[];
-    property: string;
     type: NotFoundErrorTypes.userNotFound;
+    property: string;
+    attemptedIds: string[];
 }
 
-export type INotFoundError = IUsersNotFoundError | IRelNotFoundError;
+export type INotFoundError = IRelationshipRefNotFoundError | IUsersNotFoundError;
 
 export type IConstraint = IRequiredConstraint | IUniqueConstraint;
 

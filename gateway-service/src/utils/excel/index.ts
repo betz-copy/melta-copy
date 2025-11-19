@@ -61,9 +61,7 @@ export const classifyEntityErrors = (
     };
 
     if (error instanceof AggregateError) {
-        const fixedErrors: IFailedEntityError[] = error.errors.map((err) => {
-            return { type: ActionErrors.notFound, metadata: err.metadata as IExcelNotFoundError };
-        });
+        const fixedErrors: IFailedEntityError[] = error.errors.map((err) => ({ type: ActionErrors.notFound, metadata: err.metadata }));
 
         failedEntities.push({
             properties,

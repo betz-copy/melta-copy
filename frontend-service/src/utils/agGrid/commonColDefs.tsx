@@ -22,7 +22,7 @@ import {
     EntityData,
     IEntity,
     INotFoundError,
-    IRelNotFoundError,
+    IRelationshipRefNotFoundError,
     IRequiredConstraint,
     ISearchFilter,
     IUniqueConstraint,
@@ -38,7 +38,7 @@ import OpenMap from '../../pages/Map/OpenMap';
 import { getDateWithoutTime, getLongDate } from '../date';
 import { getFileName } from '../getFileName';
 import { convertToPlainText } from '../HtmlTagsStringValue';
-import { isStringifiedJSONObj } from '../stringValues';
+import { stringifiedJSONtoObj } from '../stringValues';
 import { agGridLocaleText } from './agGridLocaleText';
 import DateTimeCellEditor from './DateTimeCellEditor';
 import OverflowWrapper from './OverflowWrapper';
@@ -107,8 +107,8 @@ const errorColDef = <Data extends EntityData | IUser>(
         }
         case ActionErrors.notFound: {
             const errorMetadata: INotFoundError = error.metadata as INotFoundError;
-            if (errorMetadata.type === NotFoundErrorTypes.relNotFound) {
-                const { relatedTemplateId, relatedIdentifier } = errorMetadata as IRelNotFoundError;
+            if (errorMetadata.type === NotFoundErrorTypes.relationshipRefNotFound) {
+                const { relatedTemplateId, relatedIdentifier } = errorMetadata as IRelationshipRefNotFoundError;
                 message = i18next.t('wizard.entity.loadEntities.relatedEntityNotFound', {
                     templateName: entityTemplatesMap?.get(relatedTemplateId)?.displayName,
                     propertyName: relatedIdentifier,
@@ -574,7 +574,7 @@ export const userColDef = <Data extends IUser>(
             if (error) return errorColDef(props, error, { ...value, format: 'user' });
             if (!props.value) return '';
 
-            if (ignoreType && !isStringifiedJSONObj(props.value))
+            if (ignoreType && !stringifiedJSONtoObj(props.value))
                 return <Value hideValue={hideColumn} color={getColor(props, field)} value={props.value ?? ''} />;
 
             const user = JSON.parse(props.value);
@@ -626,23 +626,23 @@ export const userArrayColDef = <Data extends IEntity>(
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, any[] | undefined>) => {
             const error = isPropertyInvalid(props, field, ignoreType);
-            if (error)
-                return errorColDef({ ...props, value: Array.isArray(props.value) ? props.value.join(', ') : props.value }, error, {
-                    ...value,
-                    format: 'users',
-                });
-            if (!props.value) return '';
+            if (error) {
+                const errorValue = Array.isArray(props.value) ? props.value.join(', ') : props.value;
 
+                return errorColDef({ ...props, value: errorValue }, error, { ...value, format: 'users' });
+            }
+
+            if (!props.value) return '';
             if (ignoreType) {
                 if (typeof props.value === 'string' || typeof props.value === 'number')
                     return <Value hideValue={hideColumn} color={getColor(props, field)} value={(props.value as string) ?? ''} />;
-                if (Array.isArray(props.value) && props.value.some((item) => !isStringifiedJSONObj(item)))
+                if (Array.isArray(props.value) && props.value.some((item) => !stringifiedJSONtoObj(item)))
                     return <Value hideValue={hideColumn} color={getColor(props, field)} value={props.value.join(', ') ?? ''} />;
             }
 
             return (
                 <OverflowWrapper
-                    items={props.value.map((val) => isStringifiedJSONObj(val) ?? JSON.parse(JSON.stringify(val)))}
+                    items={props.value.map((val) => stringifiedJSONtoObj(val) ?? JSON.parse(JSON.stringify(val)))}
                     getItemKey={(item) => item._id}
                     renderItem={(item) => (
                         <UserAvatar

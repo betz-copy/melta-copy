@@ -1,4 +1,5 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: properties need to be of type any */
+
 import { promises as fsp } from 'node:fs';
 import {
     ActionTypes,
@@ -20,9 +21,7 @@ import {
     IEntityTemplatePopulated,
     IEntityWithDirectRelationships,
     IEntityWithIgnoredRules,
-    IExcelNotFoundError,
     IExportEntitiesBody,
-    IExternalUser,
     IFailedEntity,
     IFullMongoEntityTemplate,
     IKartoffelUser,
@@ -63,15 +62,14 @@ import { trycatch } from '../../utils';
 import { getUserFields } from '../../utils/entities';
 import { classifyEntityErrors, generateSerialNumbers, getAllEntitiesFromExcel, getSerialStarters } from '../../utils/excel';
 import { createWorkbook, createWorksheet, styleAWorksheet } from '../../utils/excel/createFunctions';
+import { handleUserFields } from '../../utils/excel/fieldHandling';
 import { convertIdOfBrokenRules, isIncludedColumn, readExcelFile } from '../../utils/excel/getFunctions';
 import DefaultManagerProxy from '../../utils/express/manager';
 import { objectFilter } from '../../utils/object';
 import RabbitManager from '../../utils/rabbit';
 import { createTextsFromEntitiesWithFiles, formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
 import { getRelatedTemplateIds } from '../../utils/templates';
-import { UserNotFoundError } from '../error';
 import RuleBreachesManager from '../ruleBreaches/manager';
-import UsersManager from '../users/manager';
 import WorkspaceService from '../workspaces/service';
 import { patchDocumentAsStream } from './documentExport';
 
@@ -440,72 +438,6 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return { searchResults, relatedTemplatesWithIdentifier };
     }
 
-    private normalizeUser(identityCard: string, usersMap: Map<string, IKartoffelUser>, key: string, allAttemptedIds: string[]): IKartoffelUser {
-        const user: IKartoffelUser | undefined = usersMap.get(identityCard);
-        if (!user)
-            throw new NotFoundError('User not found', {
-                type: NotFoundErrorTypes.userNotFound,
-                property: key,
-                attemptedIds: allAttemptedIds.filter((id) => !usersMap.get(id)),
-            } as IExcelNotFoundError);
-
-        return user;
-    }
-
-    async handleUserFields(
-        template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
-        entityProperties: Record<string, any>,
-        usersMap: Map<string, IKartoffelUser>,
-    ): Promise<void> {
-        const templateProperties = template.properties.properties;
-        const kartoffelFields: string[] = Object.entries(templateProperties)
-            .filter(([_key, value]) => value?.format === 'kartoffelUserField')
-            .map(([key]) => key);
-
-        const errors: UserNotFoundError[] = [];
-
-        const updateKartoffelFields = (user: IKartoffelUser, relatedFieldKey: string): void => {
-            for (const fieldKey of kartoffelFields) {
-                const templateField = templateProperties[fieldKey];
-                const relatedUserField: string | undefined = templateField.expandedUserField?.relatedUserField;
-                const relatedKartoffelField: string | undefined = templateField.expandedUserField?.kartoffelField;
-
-                if (relatedUserField === relatedFieldKey && relatedKartoffelField)
-                    entityProperties[fieldKey] = user[relatedKartoffelField as keyof IKartoffelUser] ?? entityProperties[fieldKey];
-            }
-        };
-
-        for (const [key, field] of Object.entries(templateProperties)) {
-            const fieldValue = entityProperties[key];
-            if (!fieldValue) continue;
-
-            try {
-                if (field?.format === 'user') {
-                    const user: IKartoffelUser = this.normalizeUser(fieldValue, usersMap, key, [fieldValue]);
-                    updateKartoffelFields(user, key);
-
-                    entityProperties[key] = JSON.stringify(await UsersManager.kartoffelUserToUser(user));
-                    continue;
-                }
-                if (field?.type === 'array' && field?.items?.format === 'user') {
-                    const users: string[] = [];
-                    for (const identityCard of fieldValue as string[]) {
-                        const kartoffelUser: IKartoffelUser = this.normalizeUser(identityCard, usersMap, key, fieldValue);
-                        const user: IExternalUser | never[] = await UsersManager.kartoffelUserToUser(kartoffelUser);
-                        users.push(JSON.stringify(user));
-                    }
-
-                    entityProperties[key] = users;
-                }
-            } catch (error) {
-                if (error instanceof NotFoundError) errors.push(error);
-                else throw error;
-            }
-        }
-
-        if (errors.length) throw new AggregateError(errors, 'some user fields were not found');
-    }
-
     async loadEntities(
         templateId: string,
         userId: string,
@@ -527,7 +459,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const serialStarters = getSerialStarters(template);
         const succeededEntities: IEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
-        const usersFieldsMap: Map<string, IKartoffelUser> = await getUserFields(template, entities);
+        const usersFieldsMap = await getUserFields(template, entities);
 
         const { searchResults, relatedTemplatesWithIdentifier } = await this.handleRelationshipRefLoadExcel(template, userId, entities);
 
@@ -553,17 +485,17 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
                         if (!foundEntity)
                             throw new NotFoundError(`Related entity not found for ${key} with value ${value}`, {
-                                type: NotFoundErrorTypes.relNotFound,
+                                type: NotFoundErrorTypes.relationshipRefNotFound,
                                 property: key,
                                 relatedTemplateId,
                                 relatedIdentifier: identifierField,
-                            } as IExcelNotFoundError);
+                            });
 
                         entity.properties = { ...entity.properties, [key]: foundEntity ? foundEntity.entity.properties._id : undefined };
                     });
                 }
 
-                await this.handleUserFields(template, entity.properties, usersFieldsMap);
+                await handleUserFields(template, entity.properties, usersFieldsMap);
 
                 const result = await this.createEntityInstance(entity, [], ignoredRules, userId, childTemplateId, serialNumbers);
 

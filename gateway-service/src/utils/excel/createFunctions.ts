@@ -241,6 +241,7 @@ const fixComplexProperties = (
     const isFileArray = value.type === 'array' && value.items?.format === 'fileId';
     const isSingleFile = value.format === 'fileId';
     const isSignature = value.format === 'signature';
+    const isUserArray = value.type === 'array' && value.items?.format === 'user';
 
     if (value.format === 'relationshipReference') {
         relationshipRefCell(cell, [key, value], row, workspace.path, insertEntities);
@@ -252,7 +253,7 @@ const fixComplexProperties = (
         return true;
     }
 
-    if (value.type === 'array' && value.items?.format === 'user') {
+    if (isUserArray) {
         userArrayCell(cell, row, key, insertEntities);
         return true;
     }
