@@ -12,6 +12,7 @@ import {
 import { PriorityHigh } from '@mui/icons-material';
 import { Box, Grid, Tooltip, tooltipClasses } from '@mui/material';
 import i18next from 'i18next';
+import { EntityWizardValues } from '../../common/dialogs/entity';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 import UserAvatar, { IUserAvatarProps } from '../../common/UserAvatar';
@@ -384,7 +385,7 @@ export const relatedTemplateColDef = <Data extends EntityData>(
             relatedTemplateId,
             template: value,
             filters,
-            currentEntity: params.data.properties,
+            currentEntity: (params.data as unknown as EntityWizardValues).properties,
         }),
     };
 };
