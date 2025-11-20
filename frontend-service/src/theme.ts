@@ -55,7 +55,7 @@ const basicTheme: ThemeOptions = {
 
 export const sideBarTransition = 'all 0.3s linear';
 
-const colors = {
+export const colors = {
     main: {
         light: '#1E2775',
         dark: '#9398c2',

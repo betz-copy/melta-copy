@@ -224,63 +224,63 @@ const EditProps: React.FC<{
 
     return (
         <Box display="flex" flexDirection="column" height="100%" width="100%">
-            <Box
-                sx={{
-                    flexShrink: 0,
-                    position: 'sticky',
-                    top: 0,
-                    zIndex: 10,
-                    backgroundColor: darkMode ? '#1e1e1e' : 'white',
-                    padding: '16px 24px',
-                    borderBottom: '1px solid',
-                    borderColor: theme.palette.divider,
-                }}
-            >
-                <Grid container alignItems="center" justifyContent="space-between">
-                    {showTitle && (
-                        <BlueTitle
-                            title={`${i18next.t(`actions.${isEditMode ? 'edit' : 'create'}ment`)} ${
-                                values.template?.displayName || i18next.t('wizard.entity.createNewEntity')
-                            }`}
-                            component="h6"
-                            variant="h6"
-                        />
+            {(showTitle || currentDraft || showCloseButton) && (
+                <Box
+                    sx={{
+                        flexShrink: 0,
+                        position: 'sticky',
+                        top: 0,
+                        zIndex: 10,
+                        backgroundColor: darkMode ? '#1e1e1e' : 'white',
+                        padding: '16px 24px',
+                    }}
+                >
+                    <Grid container alignItems="center" justifyContent="space-between">
+                        {showTitle && (
+                            <BlueTitle
+                                title={`${i18next.t(`actions.${isEditMode ? 'edit' : 'create'}ment`)} ${
+                                    values.template?.displayName || i18next.t('wizard.entity.createNewEntity')
+                                }`}
+                                component="h6"
+                                variant="h6"
+                            />
+                        )}
+
+                        <Box display="flex" alignItems="center" gap={2}>
+                            {currentDraft && (
+                                <Typography color="#53566E" fontWeight={100}>
+                                    {i18next.t('draftSaveDialog.lastSavedAt', {
+                                        date: new Date(currentDraft.lastSavedAt).toLocaleString('he'),
+                                    })}
+                                </Typography>
+                            )}
+
+                            {showCloseButton && (
+                                <IconButton
+                                    onClick={() => (wasDirty ? setIsDraftDialogOpen?.(true) : handleClose?.())}
+                                    sx={{ color: theme.palette.primary.main }}
+                                >
+                                    <CloseIcon />
+                                </IconButton>
+                            )}
+                        </Box>
+                    </Grid>
+
+                    {!values.template?._id && (
+                        <Box mt={2}>
+                            <ChooseTemplate
+                                setFieldValue={setFieldValue}
+                                values={values}
+                                errors={errors}
+                                touched={touched}
+                                chooseMode={chooseMode || IChooseTemplateMode.TemplatesAndChildren}
+                                parentId={parentId}
+                                getInitialProperties={getInitialProperties}
+                            />
+                        </Box>
                     )}
-
-                    <Box display="flex" alignItems="center" gap={2}>
-                        {currentDraft && (
-                            <Typography color="#53566E" fontWeight={100}>
-                                {i18next.t('draftSaveDialog.lastSavedAt', {
-                                    date: new Date(currentDraft.lastSavedAt).toLocaleString('he'),
-                                })}
-                            </Typography>
-                        )}
-
-                        {showCloseButton && (
-                            <IconButton
-                                onClick={() => (wasDirty ? setIsDraftDialogOpen?.(true) : handleClose?.())}
-                                sx={{ color: theme.palette.primary.main }}
-                            >
-                                <CloseIcon />
-                            </IconButton>
-                        )}
-                    </Box>
-                </Grid>
-
-                {!values.template?._id && (
-                    <Box mt={2}>
-                        <ChooseTemplate
-                            setFieldValue={setFieldValue}
-                            values={values}
-                            errors={errors}
-                            touched={touched}
-                            chooseMode={chooseMode || IChooseTemplateMode.TemplatesAndChildren}
-                            parentId={parentId}
-                            getInitialProperties={getInitialProperties}
-                        />
-                    </Box>
-                )}
-            </Box>
+                </Box>
+            )}
 
             <Box
                 sx={{

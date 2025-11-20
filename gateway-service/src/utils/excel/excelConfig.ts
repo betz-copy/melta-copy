@@ -32,7 +32,7 @@ const excelConfig = {
         fileId: 'קובץ',
         signature: 'חתימה',
         kartoffelUserField: 'שדה משתמש קרטופלי',
-        unit: 'שדה יחידה',
+        unitField: 'שדה יחידה',
     },
     formulae: {
         errorTitle: 'אופציה לא תקינה',

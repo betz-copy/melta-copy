@@ -13,7 +13,6 @@ export interface UserState {
         };
         displayName: string;
         unit: string;
-        units?: Record<string, string[]>;
         rank: string;
         exp: number;
         iat: number;
@@ -21,6 +20,7 @@ export interface UserState {
         currentWorkspacePermissions: ISubCompactPermissions;
         kartoffelId?: string;
         clientSideWorkspaceId?: string;
+        units: string[];
     } & IUser;
     setUser: (user: UserState['user']) => void;
 }
@@ -50,6 +50,7 @@ export const useUserStore = create<UserState>((set) => ({
         kartoffelId: '',
         permissions: {},
         currentWorkspacePermissions: {},
+        units: [],
     },
     setUser: (user) => set({ user }),
 }));

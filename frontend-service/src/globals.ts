@@ -26,6 +26,7 @@ export const environment = {
         storage: '/files',
         preview: '/preview',
         permissions: '/permissions',
+        units: '/units',
         users: '/users',
         roles: '/users/roles',
         activityLog: '/activity-log',
@@ -348,6 +349,7 @@ export const environment = {
     uuidFormat: /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{8}/,
     dateRegex: /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/,
     dateTimeRegex: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
+    objectIdRegex: /^[0-9a-fA-F]{24}$/,
     maxPrintLevel: 5,
     formats: {
         date: 'dd/MM/yyyy',

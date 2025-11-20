@@ -115,6 +115,7 @@ const config = {
         textAreaFieldRegex: env.get('TEXT_AREA_FIELD_REGEX').default('.*').asRegExp(),
         relationshipReferenceFieldRegex: env.get('RELATIONSHIP_REFERENCE_FIELD_REGEX').default('.*').asRegExp(),
         commentFieldRegex: env.get('COMMENT_FIELD_REGEX').default('.*').asRegExp(),
+        unitFieldRegex: env.get('UNIT_FIELD_REGEX').default('^[0-9a-fA-F]{24}$').asRegExp(),
     },
     brokenRulesFakeEntityIdPrefix: env.get('BROKEN_RULES_FAKE_ENTITY_ID_PREFIX').default('$').asString(),
     createdEntityIdInBrokenRules: env.get('CREATED_ENTITY_ID_IN_BROKEN_RULES').default('created-entity-id').asString(),

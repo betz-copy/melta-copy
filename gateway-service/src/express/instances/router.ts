@@ -7,6 +7,7 @@ import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 import InstancesController from './controller';
 import InstancesValidator from './middlewares';
 import {
+    chartSchema,
     createEntityInstanceSchema,
     createRelationshipSchema,
     deleteEntityInstancesSchema,
@@ -63,7 +64,11 @@ InstancesRouter.post(
     InstancesControllerMiddleware.searchEntitiesOfTemplate,
 );
 
-InstancesRouter.post('/entities/chart/:templateId', InstancesValidatorMiddleware.validateUserCanGetChart, InstanceManagerProxy);
+InstancesRouter.post('/entities/chart/:templateId',
+    ValidateRequest(chartSchema),
+    InstancesValidatorMiddleware.validateUserCanGetChart,
+    InstancesControllerMiddleware.getChartOfTemplate,
+);
 
 InstancesRouter.post(
     '/entities/count',

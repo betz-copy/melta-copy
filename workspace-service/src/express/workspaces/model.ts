@@ -45,7 +45,6 @@ const MetadataSchema = new mongoose.Schema<IMetadata>(
             destTemplateId: { type: String },
             sourceFieldForColor: { type: String },
         },
-        unitsArray: { type: [String] },
         numOfRelationshipFieldsToShow: { type: Number },
     },
     { _id: false },
