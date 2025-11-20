@@ -4,7 +4,7 @@ import { ExpandMore, FilterList } from '@mui/icons-material';
 import { Box, FormControl, Grid, Select, Typography, useTheme } from '@mui/material';
 import { TreeViewBaseItem } from '@mui/x-tree-view-pro';
 import lodashUniqby from 'lodash.uniqby';
-import React, { Dispatch, Key, PropsWithChildren, SetStateAction, useCallback, useState } from 'react';
+import { Dispatch, Key, PropsWithChildren, SetStateAction, useCallback, useState } from 'react';
 import { DropResult } from 'react-beautiful-dnd';
 import { useDarkModeStore } from '../../stores/darkMode';
 import Tree from '../Tree';

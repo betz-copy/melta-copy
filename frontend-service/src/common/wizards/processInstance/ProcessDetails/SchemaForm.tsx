@@ -1,6 +1,5 @@
 import { Box } from '@mui/material';
 import i18next from 'i18next';
-import React from 'react';
 import { renderHTML } from '../../../../utils/HtmlTagsStringValue';
 import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';

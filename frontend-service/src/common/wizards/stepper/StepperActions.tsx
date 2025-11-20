@@ -3,7 +3,7 @@ import { Button, CircularProgress, Grid } from '@mui/material';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
-import React, { JSX } from 'react';
+import { JSX } from 'react';
 import { StepType } from '..';
 
 const StepperActions = <T extends object>({
