@@ -69,6 +69,7 @@ import { ResizeBox } from '../EntitiesPage/ResizeBox';
 import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
 import { ErrorToast } from '../ErrorToast';
 import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
+import { IGetUnits } from '../../interfaces/units';
 
 const { errorCodes } = environment;
 const { cacheBlockSize, maxConcurrentDatasourceRequests, actionPrefix, actionsWidth, rowCountInfiniteModeWithoutExpand } = environment.agGrid;
@@ -314,6 +315,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const queryClient = useQueryClient();
         const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
         const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates');
+        const units = queryClient.getQueryData<IGetUnits>('getUnits')!;
 
         const [_, navigate] = useLocation();
         const darkMode = useDarkModeStore((state) => state.darkMode);
@@ -449,6 +451,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             darkMode,
             workspace,
             childTemplatesOfParent,
+            units,
         };
         const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
         const childTemplatesOfParentIds = childTemplatesOfParent?.map(({ _id }) => _id);

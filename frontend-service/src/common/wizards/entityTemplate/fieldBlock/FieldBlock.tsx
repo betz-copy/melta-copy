@@ -399,9 +399,8 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         let error: FieldEditCardProps['errors'];
         let touch: FieldEditCardProps['touched'];
 
-        const getTouchedOrError = (obj?: FormikTouched<Values> | FormikErrors<Values>) => {
-            return isGroup ? obj?.[propertiesType]?.[groupIndex]?.fields?.[index] : obj?.[propertiesType]?.[index]?.data;
-        };
+        const getTouchedOrError = (obj?: FormikTouched<Values> | FormikErrors<Values>) =>
+            isGroup ? obj?.[propertiesType]?.[groupIndex]?.fields?.[index] : obj?.[propertiesType]?.[index]?.data;
 
         const findInitialValue = ():
             | FieldProperty
@@ -418,11 +417,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
             const group = currentTypeValues?.find(
                 (item) => item.type === 'group' && item.fields?.some((f) => f.id === propertyProp.id),
             ) as GroupProperty;
-            if (group) {
-                return {
-                    data: group.fields?.find((f) => f.id === propertyProp.id),
-                };
-            }
+            if (group) return { data: group.fields?.find((f) => f.id === propertyProp.id) };
 
             return undefined;
         };
@@ -465,6 +460,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
             propertiesType,
             hasAccountBalanceField,
             isAlreadyWalletTemplate,
+            values,
         };
     };
 
@@ -607,6 +603,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                                             <Group
                                                 group={item}
                                                 index={index}
+                                                values={values}
                                                 moveField={moveField}
                                                 moveGroup={moveGroup}
                                                 touched={touched}
@@ -642,6 +639,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                                                 setUniqueConstraints={setUniqueConstraints}
                                                 moveGroup={moveGroup}
                                                 showAccountDisplay={showAccountDisplay}
+                                                values={values}
                                             />
                                         )}
                                     </Box>

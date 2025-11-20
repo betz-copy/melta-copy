@@ -1,4 +1,4 @@
-import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
+import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
 
 export interface IRelationshipReference {
     relationshipTemplateId?: string;
@@ -73,9 +73,15 @@ export interface ConvertToRelationshipFieldFormInputProperties {
     };
 }
 
+export enum FilterType {
+    field = 'field',
+    value = 'value',
+}
+
 export interface IFilterTemplate {
     filterProperty: string;
+    filterType?: FilterType;
     filterField?: IAGGridFilter;
 }
 
-export type IAGGridFilter = IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter;
+export type IAGGridFilter = IAGGridTextFilter | IAGGridNumberFilter | IAGGridDateFilter | IAGGridSetFilter;

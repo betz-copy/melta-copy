@@ -84,7 +84,7 @@ const entityTemplateToFieldsConfig = (
     const fieldEntries: [string, Field][] = [];
     Object.entries(addDefaultFieldsToTemplate(entityTemplate).properties.properties).forEach(([key, value]) => {
         if (value.format === 'relationshipReference' && value.relationshipReference) {
-            const relTemplateId = value.relationshipReference!.relatedTemplateId;
+            const relTemplateId = value.relationshipReference?.relatedTemplateId;
             const relTemplateKey = value.relationshipReference?.relatedTemplateField;
             const refTemplate = entityTemplates.get(relTemplateId)!;
             const relProperty = refTemplate?.properties.properties[relTemplateKey];
@@ -211,7 +211,7 @@ export const getFieldsConfigOfRule = (
 ): Fields => {
     const allowedEntityTemplates = getAllAllowedEntities(Array.from(entityTemplates.values()), currentUser);
     const entityTemplate = allowedEntityTemplates.find((entity) => entity._id === entityTemplateId);
-    if (!entityTemplate) throw new Error('entity template doesnt exist');
+    if (!entityTemplate) throw new Error(`entity template doesn't exist`);
 
     const allowedEntityTemplatesIds: string[] = allowedEntityTemplates.map((entity) => entity._id);
     const allowedRelationships = getAllAllowedRelationships(Array.from(relationshipTemplates.values()), allowedEntityTemplatesIds);

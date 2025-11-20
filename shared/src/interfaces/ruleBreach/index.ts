@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
-import { IEntityWithIgnoredRules, INotFoundRelationshipRefError, IRequiredConstraint, IUniqueConstraint, IValidationError } from '../entity';
+import { IEntityWithIgnoredRules, IExcelNotFoundError, IRequiredConstraint, IUniqueConstraint, IValidationError } from '../entity';
 import { IUser } from '../user';
 import { ActionErrors, ActionTypes, IActionMetadataPopulated, ICreateEntityMetadata } from './actionMetadata';
 import { IAction, IBrokenRule, IBrokenRulePopulated, IRuleBreach, IRuleBreachPopulated } from './ruleBreach';
@@ -38,9 +38,14 @@ export interface IError {
     metadata: IValidationError | IUniqueConstraint | IRequiredConstraint;
 }
 
+export type IFailedEntityError = {
+    type: ActionErrors;
+    metadata: IValidationError | IUniqueConstraint | IRequiredConstraint | IExcelNotFoundError;
+};
+
 export type IFailedEntity = {
     properties: Record<string, any>;
-    errors: { type: ActionErrors; metadata: IValidationError | IUniqueConstraint | IRequiredConstraint | INotFoundRelationshipRefError }[];
+    errors: IFailedEntityError[];
 };
 
 export type IActionPopulated = {

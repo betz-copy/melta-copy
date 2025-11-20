@@ -162,6 +162,10 @@ class InstancesController extends DefaultController<InstancesManager> {
 
         res.json(await this.manager.runBulkOfActions(actionsGroups, req.query.dryRun as unknown as boolean, req.user!.id, ignoredRules));
     }
+
+    async getChartOfTemplate(req: Request, res: Response) {
+        res.json(await this.manager.getChartOfTemplate(req.params.templateId, req.body));
+    }
 }
 
 export default InstancesController;

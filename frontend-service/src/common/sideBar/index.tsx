@@ -477,6 +477,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
                     {(currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write ||
                         currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write ||
+                        currentUser.currentWorkspacePermissions.units?.scope === PermissionScope.write ||
                         currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write) && (
                         <NavButton
                             to="/system-management"

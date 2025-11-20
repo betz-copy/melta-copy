@@ -113,7 +113,8 @@ export const SystemManagementProtectedRoute: React.FC<{ permissions: ISubCompact
         children,
         permissions.admin?.scope === PermissionScope.write ||
             permissions.templates?.scope === PermissionScope.write ||
-            permissions.processes?.scope === PermissionScope.write,
+            permissions.processes?.scope === PermissionScope.write ||
+            permissions.units?.scope === PermissionScope.write,
     );
 };
 

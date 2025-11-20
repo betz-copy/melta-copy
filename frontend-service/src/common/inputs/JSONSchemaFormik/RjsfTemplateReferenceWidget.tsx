@@ -1,11 +1,13 @@
 import { TextField } from '@mui/material';
 import { WidgetProps } from '@rjsf/utils';
+import { useFormikContext } from 'formik';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { IChildTemplateMap } from '../../../interfaces/childTemplates';
 import { IEntity } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { EntityWizardValues } from '../../dialogs/entity';
 import TemplateEntitiesAutocomplete from '../TemplateEntitiesAutocomplete';
 
 const RjsfTemplateReferenceWidget = ({
@@ -27,8 +29,10 @@ const RjsfTemplateReferenceWidget = ({
 }: WidgetProps) => {
     const { template } = options;
 
-    const [inputValue, setInputValue] = useState('');
+    const [inputValue, setInputValue] = useState<string>('');
     const fieldName = Object.keys(template.properties.properties).find((key) => template.properties.properties[key].title === label);
+
+    const { values } = useFormikContext();
 
     const handleEntityChange = (_event: React.SyntheticEvent, chosenEntity: IEntity | null) => {
         onChange(chosenEntity);
@@ -83,6 +87,7 @@ const RjsfTemplateReferenceWidget = ({
             isChildTemplate={!relatedEntityTemplate}
             sourceTransferKey={template.walletTransfer?.from}
             fieldName={fieldName}
+            currentEntity={(values as EntityWizardValues).properties}
         />
     );
 };

@@ -78,6 +78,7 @@ export const Field = ({
     setUniqueConstraints,
     moveGroup,
     showAccountDisplay,
+    values,
 }: FieldProps) => {
     const ref = React.useRef(null);
 
@@ -134,6 +135,7 @@ export const Field = ({
                     uniqueConstraints={uniqueConstraints}
                     setUniqueConstraints={setUniqueConstraints}
                     showAccountDisplay={showAccountDisplay}
+                    values={values}
                 />
             </Grid>
         </Grid>
@@ -143,6 +145,7 @@ export const Field = ({
 export const Group = <PropertiesType extends string, Values extends Record<PropertiesType, PropertyItem[]>>({
     group,
     index,
+    values,
     moveField,
     moveGroup,
     touched,
@@ -353,6 +356,7 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
                                 uniqueConstraints={uniqueConstraints}
                                 setUniqueConstraints={setUniqueConstraints}
                                 showAccountDisplay={showAccountDisplay}
+                                values={values}
                             />
                         ))}
 

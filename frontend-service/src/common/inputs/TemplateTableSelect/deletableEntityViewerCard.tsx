@@ -33,7 +33,7 @@ const DeletableEntityViewerCard: React.FC<{ entity: IEntity; onDelete: () => voi
                   !entityTemplates.get(entity.templateId),
                   entity.properties._id,
                   currentUserKartoffelId,
-                  currentUser?.units?.[workspace._id] ?? [],
+                  currentUser?.units,
                   isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
               ),
           );

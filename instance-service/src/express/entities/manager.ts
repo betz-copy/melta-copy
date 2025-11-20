@@ -24,6 +24,7 @@ import {
     IEntitySingleProperty,
     IEntityTemplate,
     IEntityWithDirectRelationships,
+    IGetUnits,
     IMongoEntityTemplate,
     IMongoRule,
     IMultipleSelect,
@@ -726,8 +727,8 @@ class EntityManager extends DefaultManagerNeo4j {
             const bulkManager = new BulkActionManager(this.workspaceId);
 
             const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
-            const createdEntity = await this.getEntityById(results.entitiesWithUpdatedColors[0].properties._id);
-            const fixedActions = this.fixActions(actions, results.entitiesWithUpdatedColors);
+            const createdEntity = await this.getEntityById(results.instances[0].properties._id);
+            const fixedActions = this.fixActions(actions, results.instances);
             return { createdEntity, actions: fixedActions, emails: results.emails };
         }
 
@@ -1769,8 +1770,8 @@ class EntityManager extends DefaultManagerNeo4j {
 
             const bulkManager = new BulkActionManager(this.workspaceId);
             const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
-            const updatedEntity = await this.getEntityById(results.entitiesWithUpdatedColors[0].properties._id);
-            const fixedActions = this.fixActions(actions, results.entitiesWithUpdatedColors);
+            const updatedEntity = await this.getEntityById(results.instances[0].properties._id);
+            const fixedActions = this.fixActions(actions, results.instances);
 
             return { updatedEntity, actions: fixedActions, emails: results.emails };
         }
@@ -2313,7 +2314,7 @@ class EntityManager extends DefaultManagerNeo4j {
         return filterDependentRulesViaAggregation(rules, relationshipTemplateId);
     }
 
-    async getChartByTemplate(templateId: string, { chartsData, childTemplateId }: { chartsData: IChartBody[]; childTemplateId?: string }) {
+    async getChartByTemplate(templateId: string, { chartsData, childTemplateId, units }: { chartsData: IChartBody[]; childTemplateId?: string; units: IGetUnits }) {
         const childTemplate = childTemplateId ? await this.childTemplateManagerService.getChildTemplateById(childTemplateId) : undefined;
 
         const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
@@ -2330,7 +2331,7 @@ class EntityManager extends DefaultManagerNeo4j {
             const query = buildChartAggregationQuery(xAxis, yAxis, specialProperties, entityTemplate, filterQuery);
 
             const chart = await this.neo4jClient.readTransaction(query, normalizeChartResponse, parameters);
-            const manipulatedChart = await manipulateReturnedChart(xAxis, chart, entityTemplate, this.workspaceId);
+            const manipulatedChart = await manipulateReturnedChart(xAxis, chart, entityTemplate, this.workspaceId, units);
 
             return _id ? { _id, chart: manipulatedChart } : manipulatedChart;
         });
