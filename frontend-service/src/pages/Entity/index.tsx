@@ -375,7 +375,7 @@ const Entity: React.FC = () => {
             ? Object.fromEntries(
                   Object.entries(groupChildTemplate)
                       .map(([key, children]) => {
-                          const childFilter = getChildTemplatesFilter(children, workspace, true, currentUser);
+                          const childFilter = getChildTemplatesFilter(children, workspace, currentUser, true);
                           if (!childFilter) return null;
                           return [key, { filter: childFilter }] as const;
                       })

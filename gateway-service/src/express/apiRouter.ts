@@ -62,6 +62,19 @@ apiRouter.use(
 
 apiRouter.use('/processes', processesRouter);
 
+apiRouter.use(
+    '/units',
+    createProxyMiddleware({
+        target: `${config.userService.url}${config.userService.unitsRoute}`,
+        changeOrigin: true,
+        on: {
+            proxyReq: fixRequestBody,
+        },
+        proxyTimeout: config.previewService.requestTimeout,
+    }),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+);
+
 apiRouter.use('/users', usersRouter);
 
 apiRouter.use('/activity-log', ActivityLogRouter);

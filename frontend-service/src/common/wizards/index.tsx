@@ -82,7 +82,7 @@ const Wizard = <T extends object>({
             open={open}
             maxWidth="lg"
             fullWidth
-            slotProps={{ paper: { sx: { bgcolor: darkMode ? '#060606' : 'white' } } }}
+            slotProps={{ paper: { sx: { bgcolor: darkMode ? '#060606' : 'white', overflowY: 'hidden' } } }}
             style={{ height: '100%', margin: 'auto' }}
             disableEnforceFocus
         >

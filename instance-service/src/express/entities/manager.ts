@@ -24,6 +24,7 @@ import {
     IEntitySingleProperty,
     IEntityTemplate,
     IEntityWithDirectRelationships,
+    IGetUnits,
     IMongoEntityTemplate,
     IMongoRule,
     IMultipleSelect,
@@ -2313,7 +2314,7 @@ class EntityManager extends DefaultManagerNeo4j {
         return filterDependentRulesViaAggregation(rules, relationshipTemplateId);
     }
 
-    async getChartByTemplate(templateId: string, { chartsData, childTemplateId }: { chartsData: IChartBody[]; childTemplateId?: string }) {
+    async getChartByTemplate(templateId: string, { chartsData, childTemplateId, units }: { chartsData: IChartBody[]; childTemplateId?: string; units: IGetUnits }) {
         const childTemplate = childTemplateId ? await this.childTemplateManagerService.getChildTemplateById(childTemplateId) : undefined;
 
         const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
@@ -2330,7 +2331,7 @@ class EntityManager extends DefaultManagerNeo4j {
             const query = buildChartAggregationQuery(xAxis, yAxis, specialProperties, entityTemplate, filterQuery);
 
             const chart = await this.neo4jClient.readTransaction(query, normalizeChartResponse, parameters);
-            const manipulatedChart = await manipulateReturnedChart(xAxis, chart, entityTemplate, this.workspaceId);
+            const manipulatedChart = await manipulateReturnedChart(xAxis, chart, entityTemplate, this.workspaceId, units);
 
             return _id ? { _id, chart: manipulatedChart } : manipulatedChart;
         });

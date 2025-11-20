@@ -5,9 +5,11 @@ import i18next from 'i18next';
 import _ from 'lodash';
 import React, { CSSProperties, JSX, useState } from 'react';
 import { pdfjs } from 'react-pdf';
+import { useQueryClient } from 'react-query';
 import { environment } from '../globals';
 import { IEntity } from '../interfaces/entities';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { IGetUnits } from '../interfaces/units';
 import { useDarkModeStore } from '../stores/darkMode';
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
 import OverflowWrapper from '../utils/agGrid/OverflowWrapper';
@@ -70,6 +72,7 @@ const getUserAvatar = (
 export const formatToString = (
     value: any,
     property: IEntitySingleProperty,
+    units: IGetUnits,
     key?: string,
     preview?: boolean,
     color?: string,
@@ -139,6 +142,9 @@ export const formatToString = (
                     />
                 </Grid>
             );
+        }
+        if (format === 'unitField') {
+            return units.find(({ _id }) => _id === value)?.name;
         }
     }
     if (format === 'location') {
@@ -278,6 +284,9 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
     textWrap,
     preview,
 }) => {
+    const queryClient = useQueryClient();
+    const units = queryClient.getQueryData<IGetUnits>('getUnits')!;
+
     const [hideFieldsToDisplay, setHideFieldsToDisplay] = useState(entityTemplate.properties.hide);
 
     return (
@@ -297,6 +306,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                 const stringFormatValue = formatToString(
                     propertyValue,
                     propertySchema,
+                    units,
                     propertyKey,
                     preview,
                     coloredFields?.[propertyKey],

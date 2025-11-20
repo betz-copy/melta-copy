@@ -22,7 +22,6 @@ export interface IUser extends IBaseUser {
     permissions: ICompactPermissions;
     roleIds?: string[];
     displayName: string; // custom displayName, not of kartoffel: `${fullName} - ${hierarchy}/${jobTitle}`
-    units?: Record<string, string[]>;
     isRoot?: boolean;
 }
 
@@ -71,6 +70,7 @@ export interface ICurrentUser extends IUser {
     exp: number;
     iat: number;
     currentWorkspacePermissions: ISubCompactPermissions;
+    units: string[];
 }
 
 export type IExternalUser = Omit<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail' | 'entityType'> &

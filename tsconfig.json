@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "target": "ES2019",
+        "target": "esnext",
         "module": "commonjs",
         "allowJs": false,
         "sourceMap": true,
@@ -22,7 +22,7 @@
         "isolatedModules": true,
         "moduleResolution": "node",
         "baseUrl": ".",
-        "lib": ["ES2020.Promise"]
+        "lib": ["ESNext"]
     },
     "exclude": ["node_modules", "dist", ".eslintrc.js"]
 }

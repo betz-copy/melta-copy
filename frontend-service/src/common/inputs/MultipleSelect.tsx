@@ -3,6 +3,7 @@ import { Autocomplete, Grid, MenuItem, TextField, TextFieldProps } from '@mui/ma
 import { RJSFSchema } from '@rjsf/utils';
 import React from 'react';
 import { IUser } from '../../interfaces/users';
+import { useUnitStore } from '../../stores/unit';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 import OverflowWrapper from '../../utils/agGrid/OverflowWrapper';
@@ -59,10 +60,12 @@ const MultipleSelect: React.FC<{
     const workspace = useWorkspaceStore((state) => state.workspace);
     const currentUser = useUserStore<IUser>((state) => state.user);
 
-    if (schema?.format === 'unitField') {
-        items = workspace.metadata.unitsArray.map((unit) => ({ label: unit, value: unit }));
+    const filteredUnits = useUnitStore((state) => state.filteredUnits);
 
-        if (!currentUser.isRoot) items = items.filter((unit) => currentUser.units?.[workspace._id]?.includes(unit.label));
+    if (schema?.format === 'unitField') {
+        items = filteredUnits.map((unit) => ({ label: unit.name, value: unit._id }));
+
+        if (!currentUser.isRoot) items = items.filter((unit) => currentUser.permissions[workspace._id].units?.ids[unit.value]?.scope);
     }
 
     return (

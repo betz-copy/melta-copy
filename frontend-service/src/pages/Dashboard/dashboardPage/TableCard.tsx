@@ -18,6 +18,7 @@ import { exportEntitiesRequest } from '../../../services/entitiesService';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { filterModelToFilterOfTemplate, getFilterModal } from '../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
+import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
 import { isChildTemplate } from '../../../utils/templates';
 import { getRelevantEntityTemplate } from '../DashboardItemDetails/Chart/BodyComponent';
 
@@ -57,16 +58,19 @@ const TableCard: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const template = getRelevantEntityTemplate(entityTemplates, metaData.templateId, metaData.childTemplateId);
 
-    const { metadata: agGridMetaData } = useWorkspaceStore((state) => state.workspace);
-    const { defaultRowHeight, defaultFontSize } = agGridMetaData.agGrid;
-
     const { kartoffelId } = useUserStore((state) => state.user);
 
     const [isFiltered, setIsFiltered] = useState(false);
     const memorizedFilter = useMemo(() => (metaData.filter ? JSON.parse(metaData.filter) : undefined), [metaData.filter]);
+
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const currentUser = useUserStore((state) => state.user);
+    const isAdmin = isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]);
+    const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
+
     const childTemplateFilter = useMemo(
-        () => getDefaultFilterFromTemplate(template, !!metaData.childTemplateId, kartoffelId),
-        [metaData.templateId, metaData.childTemplateId, kartoffelId],
+        () => getDefaultFilterFromTemplate(template, !!metaData.childTemplateId, kartoffelId, currentUser.units, isAdmin),
+        [metaData.templateId, metaData.childTemplateId, kartoffelId, currentUser.units, isAdmin, template],
     );
     const allFilters = useMemo(() => getFilterModal(memorizedFilter, childTemplateFilter), [memorizedFilter, childTemplateFilter]);
 
