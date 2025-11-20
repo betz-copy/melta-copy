@@ -682,7 +682,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
     ) {
         if (walletProperty.format !== 'relationshipReference') return;
 
-        const walletTemplateId = walletProperty.relationshipReference?.relatedTemplateId ?? "";
+        const walletTemplateId = walletProperty.relationshipReference?.relatedTemplateId ?? '';
         const walletTemplate = await this.entityTemplateService.getEntityTemplateById(walletTemplateId);
 
         const accountBalancePropertyKey = Object.entries(walletTemplate.properties.properties).find(([_key, prop]) => prop.accountBalance)?.[0];
@@ -737,7 +737,13 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         }
     }
 
-    async updateWalletsBalanceInTransfer(createdEntity: IEntity, ignoredRules: IBrokenRule[], userId: string, entityTemplate: IMongoEntityTemplatePopulated, childTemplateId?: string) {
+    async updateWalletsBalanceInTransfer(
+        createdEntity: IEntity,
+        ignoredRules: IBrokenRule[],
+        userId: string,
+        entityTemplate: IMongoEntityTemplatePopulated,
+        childTemplateId?: string,
+    ) {
         const { from, to, amount } = entityTemplate.walletTransfer!;
         const sourceProperty = entityTemplate.properties.properties[from];
         const destinationProperty = entityTemplate.properties.properties[to];
@@ -750,7 +756,16 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         )
             throw new Error('Source and destination wallets in the transfer are identical');
 
-        const source = await this.updateWalletBalance(sourceProperty, createdEntity.properties[from], -transferAmount, ignoredRules, userId, childTemplateId);
+        console.log({ hello: createdEntity.properties[to] });
+
+        const source = await this.updateWalletBalance(
+            sourceProperty,
+            createdEntity.properties[from],
+            -transferAmount,
+            ignoredRules,
+            userId,
+            childTemplateId,
+        );
         const destination = await this.updateWalletBalance(
             destinationProperty,
             createdEntity.properties[to],
@@ -760,8 +775,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             childTemplateId,
             false,
         );
-        return { ...createdEntity, ...(source ? { [from]: source } : {}), ...(destination ? { [to]: destination } : {}), }
-
+        return { ...createdEntity, ...(source ? { [from]: source } : {}), ...(destination ? { [to]: destination } : {}) };
     }
 
     async createEntityInstance(
@@ -776,6 +790,30 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const { templateId, properties, files: upserstedFiles } = await this.handlePreparationsBeforeCreateEntity(instanceData, files, serialNumbers);
 
         logger.info('createEntityInstance', { instanceData, files, ignoredRules, userId, serialNumbers, createAlert });
+
+        // const template = await this.entityTemplateService.getEntityTemplateById(instanceData.templateId);
+        // let destinationWalletId: string = '';
+
+        // shirel
+        // if (template.walletTransfer) {
+        //     const isDestinationWallet = template.properties.properties[template.walletTransfer.to].format === 'relationshipReference';
+
+        //     if (isDestinationWallet && instanceData.properties[template.walletTransfer.to] === '$twin') {
+        //         const sourceWallet = await this.service.getEntityInstanceById(instanceData.properties[template.walletTransfer.from]);
+        //         console.log({ sourceWallet }, { x: template.properties.properties[template.walletTransfer.to] });
+
+        //         const newDestWalletData: IEntity = {
+        //             ...sourceWallet,
+        //             templateId: template.properties.properties[template.walletTransfer.to].relationshipReference?.relatedTemplateId ?? '',
+        //             properties: { ...omit(sourceWallet.properties, ['_id', 'createdAt', 'updatedAt']) },
+        //         };
+
+        //         const newDestWallet = await this.createEntityInstance(newDestWalletData, [], ignoredRules, userId);
+        //         console.log({ newDestWalletData, newDestWallet });
+        //         destinationWalletId = newDestWallet.properties._id;
+        //     }
+        // }
+
         const { createdEntity, actions, emails } = await this.service
             .createEntityInstance({ properties, templateId }, ignoredRules, userId, undefined, childTemplateId)
             .catch((err) => this.handleBrokenRulesError(err));
@@ -796,9 +834,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 },
                 userId,
             );
-        } else {
-            await this.rabbitManager.indexFiles(createdEntity.templateId, createdEntity.properties._id, Object.values(upserstedFiles).flat());
-        }
+        } else await this.rabbitManager.indexFiles(createdEntity.templateId, createdEntity.properties._id, Object.values(upserstedFiles).flat());
 
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(createdEntity.templateId);
 
@@ -807,7 +843,6 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             : createdEntity;
 
         if (emails?.length) this.sendIndicatorRuleEmailForCreation(newEntity, userId, emails);
-
 
         return { ...newEntity, childTemplateId };
     }
@@ -896,11 +931,11 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         const parentTemplateIds = childTemplateIds?.length
             ? await Promise.all(
-                childTemplateIds.map(async (templateId) => {
-                    const childTemplate = await this.entityTemplateService.getChildTemplateById(templateId);
-                    return childTemplate?.parentTemplate._id;
-                }),
-            )
+                  childTemplateIds.map(async (templateId) => {
+                      const childTemplate = await this.entityTemplateService.getChildTemplateById(templateId);
+                      return childTemplate?.parentTemplate._id;
+                  }),
+              )
             : [];
 
         const templateIds = [...parentTemplateIds, ...searchBody.templateIds];
@@ -911,9 +946,9 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             semanticSearchResult:
                 searchBody.textSearch && shouldSemanticSearch
                     ? await this.semanticSearchSearch.search({
-                        textSearch: searchBody.textSearch,
-                        templates: templateIds,
-                    })
+                          textSearch: searchBody.textSearch,
+                          templates: templateIds,
+                      })
                     : undefined,
         });
     }
@@ -1004,17 +1039,25 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         const fileProperties = this.getEntityFileProperties(instanceData.properties, currentEntityTemplate);
 
+        console.dir({ fileProperties }, { depth: null });
+
         let duplicatedFileProperties: Record<string, string | string[]> = {};
         if (duplicateFileProperties) {
             duplicatedFileProperties = await this.duplicateFileProperties(fileProperties, currentEntity);
         }
+
+        console.dir({ duplicatedFileProperties }, { depth: null });
 
         const { props: propertiesWithFiles } = await this.uploadInstanceFiles(files, {
             ...instanceData.properties,
             ...duplicatedFileProperties,
         });
 
+        console.dir({ propertiesWithFiles }, { depth: null });
+
         const newInstanceProperties = await this.setSerialPropertiesAndUpdateTemplate(propertiesWithFiles, currentEntityTemplate);
+
+        console.dir({ newInstanceProperties }, { depth: null });
 
         const newInstanceData: IEntity = {
             templateId: instanceData.templateId,

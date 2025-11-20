@@ -65,8 +65,8 @@ const TemplateEntitiesAutocomplete: React.FC<{
     relationFilters?: string;
     required?: boolean;
     isChildTemplate?: boolean;
-    sourceTransferKey?: string;
-    fieldName?: string;
+    isSourceTransferKey?: boolean;
+    isTwinTransfer?: boolean;
 }> = ({
     template,
     showField,
@@ -85,8 +85,8 @@ const TemplateEntitiesAutocomplete: React.FC<{
     relationFilters,
     required,
     isChildTemplate,
-    sourceTransferKey,
-    fieldName,
+    isSourceTransferKey,
+    isTwinTransfer,
 }) => {
     const currentUser = useUserStore((state) => state.user);
     const workspace = useWorkspaceStore((state) => state.workspace);
@@ -254,6 +254,10 @@ const TemplateEntitiesAutocomplete: React.FC<{
         }
     };
 
+    const twinEntity: IEntity = {
+        templateId: template._id,
+        properties: { _id: '$twin', createdAt: new Date().toString(), updatedAt: new Date().toString(), disabled: false },
+    };
     return (
         <Autocomplete
             value={value}
@@ -263,14 +267,12 @@ const TemplateEntitiesAutocomplete: React.FC<{
             disabled={disabled}
             onBlur={onBlur}
             style={style}
-            options={allEntities}
+            options={isTwinTransfer ? [twinEntity, ...allEntities] : allEntities}
             loading={isLoading || isFetchingNextPage}
             loadingText={i18next.t('templateEntitiesAutocomplete.loading')}
             noOptionsText={i18next.t('templateEntitiesAutocomplete.noOptions')}
             getOptionLabel={(option) => convertPropertyToString(option.properties[showField]) || option.properties._id.toString()}
-            getOptionDisabled={(option) =>
-                !!(accountBalanceKey && sourceTransferKey === fieldName && (option.properties?.[accountBalanceKey] || 0) <= 0)
-            }
+            getOptionDisabled={(option) => !!(accountBalanceKey && isSourceTransferKey && (option.properties?.[accountBalanceKey] || 0) <= 0)}
             isOptionEqualToValue={(option, currValue) => option.properties._id === currValue.properties._id}
             filterOptions={(options) => options}
             popupIcon={<ExpandMore />}
@@ -292,6 +294,8 @@ const TemplateEntitiesAutocomplete: React.FC<{
                                 endAdornment: readOnly ? undefined : params.InputProps.endAdornment,
                                 startAdornment: relProperty ? (
                                     <RelationshipReferenceView entity={value} relatedTemplateId={value.templateId} relatedTemplateField={showField} />
+                                ) : value?.properties._id === '$twin' ? (
+                                    <Typography>יצירת חדש - שכפול מהמקור</Typography>
                                 ) : undefined,
                                 inputProps: {
                                     ...params.inputProps,
@@ -308,50 +312,67 @@ const TemplateEntitiesAutocomplete: React.FC<{
                     return convertPropertyToString(property);
                 });
 
+                console.log({ displayOptionValues, displayKeys, props });
+
                 return (
                     <li
                         {...props}
                         ref={props['data-option-index'] === allEntities.length - 1 ? lastElementRef : null}
                         style={{ display: 'flex', alignItems: 'center', gap: '8px', whiteSpace: 'nowrap' }}
                     >
-                        {displayOptionValues.map((displayOptionValue, index) => (
-                            <MeltaTooltip
-                                key={`${displayOptionValue}${index}`}
-                                placement="top"
-                                title={template.properties.properties[displayKeys[index]].title}
+                        {option.properties['_id'] === '$twin' ? (
+                            <Typography
+                                color="#53566E"
+                                fontSize="14px"
+                                style={{
+                                    textOverflow: 'ellipsis',
+                                    overflow: 'hidden',
+                                    maxWidth: 100,
+                                }}
                             >
-                                <Typography
-                                    color="#53566E"
-                                    fontSize="14px"
-                                    style={{
-                                        textOverflow: 'ellipsis',
-                                        overflow: 'hidden',
-                                        maxWidth: 100,
-                                    }}
+                                ישות משכופלת
+                            </Typography>
+                        ) : (
+                            <>
+                                {displayOptionValues.map((displayOptionValue, index) => (
+                                    <MeltaTooltip
+                                        key={`${displayOptionValue}${index}`}
+                                        placement="top"
+                                        title={template.properties.properties[displayKeys[index]].title}
+                                    >
+                                        <Typography
+                                            color="#53566E"
+                                            fontSize="14px"
+                                            style={{
+                                                textOverflow: 'ellipsis',
+                                                overflow: 'hidden',
+                                                maxWidth: 100,
+                                            }}
+                                        >
+                                            {displayOptionValue}
+                                        </Typography>
+                                    </MeltaTooltip>
+                                ))}
+                                <MeltaTooltip
+                                    title={
+                                        template.propertiesPreview.length === 0 ? (
+                                            i18next.t('templateEntitiesAutocomplete.noPreviewFields')
+                                        ) : (
+                                            <EntityPropertiesInternal
+                                                properties={option.properties}
+                                                entityTemplate={template}
+                                                coloredFields={option.coloredFields}
+                                                showPreviewPropertiesOnly
+                                                mode="white"
+                                                textWrap
+                                            />
+                                        )
+                                    }
                                 >
-                                    {displayOptionValue}
-                                </Typography>
-                            </MeltaTooltip>
-                        ))}
-
-                        <MeltaTooltip
-                            title={
-                                template.propertiesPreview.length === 0 ? (
-                                    i18next.t('templateEntitiesAutocomplete.noPreviewFields')
-                                ) : (
-                                    <EntityPropertiesInternal
-                                        properties={option.properties}
-                                        entityTemplate={template}
-                                        coloredFields={option.coloredFields}
-                                        showPreviewPropertiesOnly
-                                        mode="white"
-                                        textWrap
-                                    />
-                                )
-                            }
-                        >
-                            <InfoOutlined sx={{ color: '#9398C2', marginLeft: 'auto' }} />
-                        </MeltaTooltip>
+                                    <InfoOutlined sx={{ color: '#9398C2', marginLeft: 'auto' }} />
+                                </MeltaTooltip>
+                            </>
+                        )}
                     </li>
                 );
             }}

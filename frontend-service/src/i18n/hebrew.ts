@@ -1815,6 +1815,7 @@ export default {
         },
         unitsArray: 'רשימת יחידות',
         numOfRelationshipFieldsToShow: 'מספר שדות לתצוגת שדה שיוך ליישות',
+        twinTemplates: 'תבניות זהות',
     },
     childTemplate: {
         createTitle: 'יצירת תבנית בן',

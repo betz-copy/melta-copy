@@ -315,6 +315,8 @@ class EntityManager extends DefaultManagerNeo4j {
             }),
         );
 
+        console.log({ fixedProperties });
+
         const createdEntity = await runInTransactionAndNormalize(
             transaction,
             `CREATE (e: \`${entityTemplate._id}\` $properties) RETURN e`,
@@ -326,6 +328,8 @@ class EntityManager extends DefaultManagerNeo4j {
                 },
             },
         );
+
+        console.log({ createdEntity });
 
         await Promise.all(
             Object.entries(entityTemplate.properties.properties).map(async ([name, property]) => {
@@ -342,6 +346,8 @@ class EntityManager extends DefaultManagerNeo4j {
                 }
             }),
         );
+
+        console.log('2');
 
         const allActivityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
 
@@ -580,17 +586,17 @@ class EntityManager extends DefaultManagerNeo4j {
             case IEntityCrudAction.onCreateEntity:
                 return duplicatedFromId
                     ? {
-                        actionType: ActionTypes.DuplicateEntity,
-                        actionMetadata: {
-                            templateId: entityTemplate._id,
-                            properties,
-                            entityIdToDuplicate: duplicatedFromId,
-                        } as IDuplicateEntityMetadata,
-                    }
+                          actionType: ActionTypes.DuplicateEntity,
+                          actionMetadata: {
+                              templateId: entityTemplate._id,
+                              properties,
+                              entityIdToDuplicate: duplicatedFromId,
+                          } as IDuplicateEntityMetadata,
+                      }
                     : {
-                        actionType: ActionTypes.CreateEntity,
-                        actionMetadata: { templateId: entityTemplate._id, properties } as ICreateEntityMetadata,
-                    };
+                          actionType: ActionTypes.CreateEntity,
+                          actionMetadata: { templateId: entityTemplate._id, properties } as ICreateEntityMetadata,
+                      };
 
             default:
                 throw new ValidationError('Invalid crudAction');
@@ -733,6 +739,42 @@ class EntityManager extends DefaultManagerNeo4j {
 
         return this.neo4jClient
             .performComplexTransaction('writeTransaction', async (transaction) => {
+                const allActivityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
+
+                if (template.walletTransfer) {
+                    const isDestinationWallet = template.properties.properties[template.walletTransfer.to].format === 'relationshipReference';
+
+                    if (isDestinationWallet && properties[template.walletTransfer.to] === '$twin') {
+                        const sourceWallet = await this.getEntityByIdInTransaction(properties[template.walletTransfer.from], transaction);
+                        console.log({ sourceWallet, x: template.properties.properties[template.walletTransfer.to] });
+
+                        for (const property of ['_id', 'createdAt', 'updatedAt'] as const) {
+                            delete sourceWallet.properties[property];
+                        }
+
+                        const newDestWalletData: IEntity = {
+                            ...sourceWallet,
+                            templateId: template.properties.properties[template.walletTransfer.to].relationshipReference?.relatedTemplateId ?? '',
+                        };
+
+                        console.log({ newDestWalletData });
+
+                        console.log('template', await this.entityTemplateManagerService.getEntityTemplateById(newDestWalletData.templateId));
+
+                        const { createdEntity: newDestWallet, activityLogsToCreate } = await this.createEntityInTransaction(
+                            transaction,
+                            newDestWalletData,
+                            await this.entityTemplateManagerService.getEntityTemplateById(newDestWalletData.templateId),
+                            userId,
+                        );
+                        console.log({ newDestWallet });
+
+                        properties[template.walletTransfer.to] = newDestWallet.properties._id;
+
+                        allActivityLogsToCreate.push(...activityLogsToCreate);
+                    }
+                }
+
                 const { createdEntity, activityLogsToCreate } = await this.createEntityInTransaction(
                     transaction,
                     properties,
@@ -770,11 +812,11 @@ class EntityManager extends DefaultManagerNeo4j {
                     [{ actionType: ActionTypes.CreateEntity, actionMetadata: { templateId: entityTemplate._id, properties } }],
                 );
 
-                const activityLogsPromises = activityLogsToCreate.map((activityLogToCreate) =>
-                    this.activityLogProducer.createActivityLog(activityLogToCreate),
-                );
+                allActivityLogsToCreate.push(...activityLogsToCreate);
 
-                await Promise.all(activityLogsPromises);
+                await Promise.all(
+                    allActivityLogsToCreate.map((activityLogToCreate) => this.activityLogProducer.createActivityLog(activityLogToCreate)),
+                );
 
                 return { createdEntity: entityWithUpdatedColors, emails };
             })
@@ -2201,8 +2243,8 @@ class EntityManager extends DefaultManagerNeo4j {
             UNWIND range(0, size(entities)-1) AS index
             WITH entities[index] AS currentEntity,  index AS currentIndex
             SET ${Object.entries(newSerialNumberFields)
-                    .map(([key, value]) => `\`currentEntity\`.${key} = toFloat(currentIndex + ${value})`)
-                    .join(', ')}
+                .map(([key, value]) => `\`currentEntity\`.${key} = toFloat(currentIndex + ${value})`)
+                .join(', ')}
             RETURN count(currentEntity) AS numEntitiesUpdated`;
             return runInTransactionAndNormalize(transaction, numOfEntitiesUpdated, normalizeResponseCount);
         });

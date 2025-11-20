@@ -675,7 +675,6 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
     formData.append('fieldGroups', JSON.stringify(entityTemplate.fieldGroups));
     entityTemplate.walletTransfer && formData.append('walletTransfer', JSON.stringify(entityTemplate.walletTransfer));
-    console.log(...formData);
 
     const { data } = await axios.post<IMongoEntityTemplatePopulated>(entityTemplates, formData);
     return data;

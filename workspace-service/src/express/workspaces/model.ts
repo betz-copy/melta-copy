@@ -47,6 +47,7 @@ const MetadataSchema = new mongoose.Schema<IMetadata>(
         },
         unitsArray: { type: [String] },
         numOfRelationshipFieldsToShow: { type: Number },
+        twinTemplates:{ type: [String]},
     },
     { _id: false },
 );

@@ -50,6 +50,7 @@ export const defaultMetadata = {
     },
     unitsArray: [] as string[],
     numOfRelationshipFieldsToShow: 2,
+    twinTemplates: [] as string[],
 } as const;
 
 export const useWorkspaceStore = create<WorkspaceState>((set) => ({

@@ -7,6 +7,7 @@ import { IChildTemplateMap } from '../../../interfaces/childTemplates';
 import { IEntity } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import TemplateEntitiesAutocomplete from '../TemplateEntitiesAutocomplete';
+import { useWorkspaceStore } from '../../../stores/workspace';
 
 const RjsfTemplateReferenceWidget = ({
     id,
@@ -26,11 +27,13 @@ const RjsfTemplateReferenceWidget = ({
     ...widgetProps
 }: WidgetProps) => {
     const { template } = options;
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { twinTemplates } = workspace.metadata;
 
     const [inputValue, setInputValue] = useState('');
     const fieldName = Object.keys(template.properties.properties).find((key) => template.properties.properties[key].title === label);
 
-    const handleEntityChange = (_event: React.SyntheticEvent, chosenEntity: IEntity | null) => {
+    const handleEntityChange = (_event: React.SyntheticEvent, chosenEntity: IEntity | null | string) => {
         onChange(chosenEntity);
         setInputValue('');
     };
@@ -65,6 +68,22 @@ const RjsfTemplateReferenceWidget = ({
             />
         );
 
+    const sourceTransfer = template.properties.properties[template.walletTransfer?.from];
+    const destTransfer = template.properties.properties[template.walletTransfer?.to];
+
+    const isSourceWallet = sourceTransfer?.format === 'relationshipReference';
+    const isDestWallet = destTransfer?.format === 'relationshipReference';
+
+    const sourceWalletTemplateId = sourceTransfer?.relationshipReference?.relatedTemplateId;
+    const destWalletTemplateId = destTransfer?.relationshipReference?.relatedTemplateId;
+
+    const shouldLinkWallets =
+        template.walletTransfer &&
+        isSourceWallet &&
+        isDestWallet &&
+        twinTemplates.includes(sourceWalletTemplateId) &&
+        twinTemplates.includes(destWalletTemplateId);
+
     return (
         <TemplateEntitiesAutocomplete
             {...widgetProps}
@@ -81,8 +100,8 @@ const RjsfTemplateReferenceWidget = ({
             relationFilters={filters}
             required={required}
             isChildTemplate={!relatedEntityTemplate}
-            sourceTransferKey={template.walletTransfer?.from}
-            fieldName={fieldName}
+            isSourceTransferKey={Boolean(template.walletTransfer?.from === fieldName)}
+            isTwinTransfer={Boolean(shouldLinkWallets && fieldName === template.walletTransfer.to)}
         />
     );
 };

@@ -57,6 +57,7 @@ export interface IMetadata {
     };
     unitsArray: string[];
     numOfRelationshipFieldsToShow: number;
+    twinTemplates: string[];
 }
 export interface IWorkspace {
     _id: string;
