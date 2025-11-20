@@ -1,12 +1,13 @@
+/** biome-ignore-all lint/correctness/useExhaustiveDependencies: useEffects dependencies */
 import * as Cesium from 'cesium';
 import i18next from 'i18next';
 import React, { useEffect, useRef } from 'react';
-import { Root, createRoot } from 'react-dom/client';
+import { createRoot, Root } from 'react-dom/client';
+import { CesiumComponentRef } from 'resium';
 import { EntityPropertiesInternal } from '../../../common/EntityProperties';
 import { IEntity } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { CesiumComponentRef } from 'resium';
-import { IPolygonSearchResult } from '../../../utils/map';
+import { IPolygonSearchResult } from '../../../interfaces/location';
 
 interface EntityTooltipProps {
     entity: IEntity;
@@ -67,7 +68,7 @@ interface UseCesiumTooltipParams {
     filteredPolygons: IPolygonSearchResult[];
 }
 
-export function useCesiumTooltip({ viewerRef, darkMode, entityTemplateMap, searchedEntitiesPolygons, filteredPolygons }: UseCesiumTooltipParams) {
+export const useCesiumTooltip = ({ viewerRef, darkMode, entityTemplateMap, searchedEntitiesPolygons, filteredPolygons }: UseCesiumTooltipParams) => {
     const rootRef = useRef<Root | null>(null);
     const tooltipRef = useRef<HTMLDivElement | null>(null);
 
@@ -138,4 +139,4 @@ export function useCesiumTooltip({ viewerRef, darkMode, entityTemplateMap, searc
             tooltip.remove();
         };
     }, [searchedEntitiesPolygons.length, filteredPolygons.length]);
-}
+};

@@ -2,7 +2,8 @@ import { LayersTwoTone } from '@mui/icons-material';
 import { Box, Divider, FormControlLabel, Grid, IconButton, Radio, RadioGroup, Typography } from '@mui/material';
 import * as Cesium from 'cesium';
 import i18next from 'i18next';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { RefObject, useCallback, useEffect, useMemo, useState } from 'react';
+import { CesiumComponentRef } from 'resium';
 import MeltaCheckbox from '../../common/MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
 import { BackendConfigState } from '../../services/backendConfigService';
@@ -14,11 +15,10 @@ type LayerProvider = {
     type: 'map' | 'text';
 };
 
-export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any>; config: BackendConfigState; popupPosition?: 'right' | 'left' }> = ({
-    viewerRef,
-    config,
-    popupPosition = 'right',
-}) => {
+export const BaseLayers: React.FC<{
+    viewerRef: RefObject<CesiumComponentRef<Cesium.Viewer> | null>;
+    config: BackendConfigState;
+}> = ({ viewerRef, config }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const [isOpen, setIsOpen] = useState(false);
@@ -117,7 +117,7 @@ export const BaseLayers: React.FC<{ viewerRef: React.MutableRefObject<any>; conf
                         borderRadius: 1,
                         boxShadow: 2,
                         zIndex: 1000,
-                        ...(popupPosition === 'right' ? { right: 0 } : { left: 0 }),
+                        right: 0,
                     }}
                 >
                     <Grid>

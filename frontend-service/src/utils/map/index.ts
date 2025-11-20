@@ -2,52 +2,10 @@ import { Cartesian3 } from 'cesium';
 import { environment } from '../../globals';
 import { IEntity, IFilterOfField, SplitBy } from '../../interfaces/entities';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { CoordinatesResult, ICoordinateSearchResult, IPolygonSearchResult, MapItemType } from '../../interfaces/location';
 import { convertECEFToWGS84, convertWGS94ToECEF, isValidWGS84 } from './convert';
 
-const {
-    polygon: { polygonPrefix, polygonSuffix },
-} = environment.map;
-
-export type LatLng = {
-    latitude: number;
-    longitude: number;
-};
-
-export enum MapItemType {
-    Polygon = 'polygon',
-    Coordinate = 'coordinate',
-}
-
-type CoordinatesResult = {
-    type: MapItemType;
-    value: Cartesian3 | Cartesian3[];
-};
-
-export enum ShapeType {
-    Circle = 'circle',
-    Polygon = 'polygon',
-    Line = 'line',
-}
-
-export enum CameraFocusType {
-    Circle = 'circle',
-    Polygon = 'polygon',
-    Search = 'search',
-}
-
-export interface ICoordinateSearchResult {
-    key: string;
-    name: string;
-    node: IEntity;
-    position: Cartesian3;
-}
-
-export interface IPolygonSearchResult {
-    key: string;
-    name: string;
-    node: IEntity;
-    position: Cartesian3[];
-}
+const { polygonPrefix, polygonSuffix } = environment.map.polygon;
 
 export const zoomNumber = 300000;
 
@@ -183,7 +141,7 @@ export const getLocationProperties = (entity: IEntity, selectedTemplates: IMongo
     return { template, locationTemplateProperties, locationProperties };
 };
 
-export const valueAdjustToAutoSearch = (value: any, searchText: string): boolean => {
+export const valueAdjustToAutoSearch = (value: string | number | boolean | string[] | object, searchText: string): boolean => {
     if (value == null) return false;
 
     if (Array.isArray(value)) return value.some((item) => valueAdjustToAutoSearch(item, searchText));
@@ -200,24 +158,22 @@ const matchesAutoSearch = (item: IPolygonSearchResult | ICoordinateSearchResult,
 };
 
 const matchesListFilters = (
-    item: IPolygonSearchResult | ICoordinateSearchResult,
+    { node: { templateId, properties } }: IPolygonSearchResult | ICoordinateSearchResult,
     listFields: Record<string, IFilterOfField['$in']>,
     sourceTemplateId: string,
 ): boolean => {
-    const hasListFilters = Object.values(listFields).some((values) => values && values.length > 0);
+    const hasListFilters = Object.values(listFields).some((values) => !!values?.length);
 
     if (!hasListFilters) return true;
 
-    if (item.node.templateId !== sourceTemplateId) return false;
+    if (templateId !== sourceTemplateId) return false;
 
     return Object.entries(listFields).every(([field, filteredValues]) => {
         if (!filteredValues?.length) return true;
 
-        const itemPropertyValue = item.node.properties[field];
+        if (Array.isArray(properties[field])) return properties[field].some((option) => filteredValues.includes(option));
 
-        if (Array.isArray(itemPropertyValue)) return itemPropertyValue.some((option) => filteredValues.includes(option));
-
-        return filteredValues.includes(itemPropertyValue);
+        return filteredValues.includes(properties[field]);
     });
 };
 
@@ -227,7 +183,4 @@ export const getFilteredItems = (
     listFields: Record<string, IFilterOfField['$in']>,
     polygons: IPolygonSearchResult[],
     coordinates: ICoordinateSearchResult[],
-) => {
-    const allItems = [...polygons, ...coordinates];
-    return allItems.filter((item) => matchesAutoSearch(item, autoSearch) && matchesListFilters(item, listFields, sourceTemplateId));
-};
+) => [...polygons, ...coordinates].filter((item) => matchesAutoSearch(item, autoSearch) && matchesListFilters(item, listFields, sourceTemplateId));

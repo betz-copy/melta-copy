@@ -1,11 +1,10 @@
 import * as Cesium from 'cesium';
 import { Cartesian3, Color } from 'cesium';
-import React from 'react';
 import { BillboardGraphics, Entity, PointGraphics, PolygonGraphics, PolylineGraphics } from 'resium';
 import { environment } from '../../globals';
+import { IEntity } from '../../interfaces/entities';
 import { getColoredLocationIcon } from '../../utils/icons/coloredLocationIcon';
 import { calculateCenterOfPolygon, locationToWGS84String } from '../../utils/map';
-import { IEntity } from '../../interfaces/entities';
 
 export const MeltaPolygon = ({
     name,

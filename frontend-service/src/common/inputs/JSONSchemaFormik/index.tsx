@@ -195,18 +195,13 @@ const mergeErrorSchemas = (
     errors2: ErrorSchema<{}>,
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
 ): ErrorSchema<{}> => {
-    const merged = Object.entries(errors2).reduce(
-        (acc, [key, value]) => {
-            if (!acc?.[key]?.__errors) {
-                acc[key] = { __errors: [value] };
-            } else {
-                acc[key].__errors = [...new Set([...acc[key]._errors, value])];
-            }
-
-            return acc;
-        },
-        { ...errors1 },
-    );
+      const merged = { ...errors1 };
+    for (const key in errors2) {
+        if (errors2.hasOwnProperty(key)) {
+            if (!merged[key]) merged[key] = errors2[key];
+            else merged[key].__errors = [...new Set([...merged[key].__errors, ...errors2[key].__errors])];
+        }
+    }
 
     return convertErrorsToNestedGroups(template, merged);
 };

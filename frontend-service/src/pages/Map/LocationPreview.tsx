@@ -1,6 +1,6 @@
 import * as Cesium from 'cesium';
 import { Cartesian3 } from 'cesium';
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQueryClient } from 'react-query';
 import { CesiumComponentRef, Viewer } from 'resium';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';

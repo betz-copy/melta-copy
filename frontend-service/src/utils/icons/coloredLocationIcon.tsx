@@ -1,6 +1,8 @@
-const COORDINATE_DEFAULT_COLOR = '#FF006B';
+import { environment } from '../../globals';
 
-export const getColoredLocationIcon = (color: string = COORDINATE_DEFAULT_COLOR, borderColor?: string) => {
+const { coordinateDefaultColor } = environment.map;
+
+export const getColoredLocationIcon = (color: string = coordinateDefaultColor, borderColor?: string) => {
     const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"
          viewBox="-12.8 -12.8 89.60 89.60" fill="${color}" stroke="${borderColor}" stroke-width="5">

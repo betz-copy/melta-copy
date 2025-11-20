@@ -100,7 +100,7 @@ export enum TablePageType {
     map = 'map',
 }
 
-export const getDatasource = <Data = EntityData>(
+export const getDatasource = <Data extends EntityData>(
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     // tableCount: number, // comment out  waiting for Itay
     quickFilterText?: string,
@@ -170,7 +170,7 @@ export type IConnection = {
     destinationEntity: IEntity;
 };
 
-export const getRowModelProps = <Data = EntityData>(
+export const getRowModelProps = <Data extends EntityData>(
     rowModelType: 'serverSide' | 'clientSide' | 'infinite',
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     rowData: Data[] | undefined,
@@ -189,7 +189,7 @@ export const getRowModelProps = <Data = EntityData>(
         return {
             rowModelType: 'clientSide',
             rowData,
-            pagination: hasInstances ?? Boolean(usePagination),
+            pagination: hasInstances ?? usePagination,
             paginationPageSize,
             ...(!usePagination && { domLayout: 'normal' }),
         };
@@ -277,8 +277,8 @@ export type EntitiesTableOfTemplateRef<Data> = {
     resizeTableHeight: (newHeight: number) => void;
 };
 
-const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, EntitiesTableOfTemplateProps<unknown>>(
-    <Data,>(
+const EntitiesTableOfTemplate = forwardRef(
+    <Data extends EntityData>(
         {
             template,
             onRowSelected,
@@ -314,7 +314,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             scrollToId,
             usePagination = true,
         }: EntitiesTableOfTemplateProps<Data>,
-        ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
+        ref: React.Ref<EntitiesTableOfTemplateRef<Data>>,
     ) => {
         const queryClient = useQueryClient();
         const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -1034,5 +1034,5 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 );
 
 export default EntitiesTableOfTemplate as <Data = EntityData>(
-    props: EntitiesTableOfTemplateProps<Data> & { ref?: React.ForwardedRef<EntitiesTableOfTemplateRef<Data>> },
+    props: EntitiesTableOfTemplateProps<Data> & { ref?: ForwardedRef<EntitiesTableOfTemplateRef<Data>> },
 ) => ReturnType<typeof EntitiesTableOfTemplate>;

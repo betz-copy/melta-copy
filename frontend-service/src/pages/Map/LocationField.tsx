@@ -16,12 +16,12 @@ import {
     isValidPolygonPoint,
     jerusalemCoordinates,
     locationToWGS84String,
-    MapItemType,
     stringToCoordinates,
 } from '../../utils/map';
 import { convertWGS94ToECEF, isValidWGS84 } from '../../utils/map/convert';
 import { BaseLayers } from './BaseLayers';
 import { MeltaCoordinate, MeltaPolygon } from './LocationEntities';
+import { MapItemType } from '../../interfaces/location';
 
 type Props = {
     defaultLocation?: string;

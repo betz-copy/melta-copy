@@ -4,6 +4,7 @@ import { Grid, ToggleButton, ToggleButtonGroup, useTheme } from '@mui/material';
 import * as Cesium from 'cesium';
 import { Cartesian3, Color } from 'cesium';
 import i18next from 'i18next';
+import { partition } from 'lodash';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -15,22 +16,13 @@ import { EntitiesTable } from '../../../common/wizards/excel/excelSteps/Entities
 import { environment } from '../../../globals';
 import { IEntity, IFilterOfField, ISearchEntitiesByLocationBody } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { CameraFocusType, ICoordinateSearchResult, IPolygonSearchResult, LatLng, ShapeType } from '../../../interfaces/location';
 import { BackendConfigState } from '../../../services/backendConfigService';
 import { getEntitiesByLocation } from '../../../services/entitiesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { useEntitiesWithLocationFields } from '../../../utils/hooks/useLocation';
-import {
-    CameraFocusType,
-    getFilteredItems,
-    ICoordinateSearchResult,
-    IPolygonSearchResult,
-    jerusalemCoordinates,
-    LatLng,
-    locationToWGS84String,
-    ShapeType,
-    stringToCoordinates,
-} from '../../../utils/map';
+import { getFilteredItems, jerusalemCoordinates, locationToWGS84String, stringToCoordinates } from '../../../utils/map';
 import { convertECEFToWGS84, convertWGS94ToECEF } from '../../../utils/map/convert';
 import { BaseLayers } from '../BaseLayers';
 import { MeltaCoordinate, MeltaPolygon } from '../LocationEntities';
@@ -130,19 +122,15 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
 
     const totalCount = coordinates.length + polygons.length;
 
-    const searchedEntitiesBoundsCenter = searchedEntitiesBounds?.center;
-    const searchedEntitiesBoundsRadius = searchedEntitiesBounds?.radius;
-
-    const applyFilterWithShapeSearch = ({ autoSearch, listFields }: { autoSearch: string; listFields: Record<string, IFilterOfField['$in']> }) => {
+    const applyFilterWithShapeSearch = (autoSearch: string, listFields: Record<string, IFilterOfField['$in']>) => {
         const filteredItems = getFilteredItems(sourceTemplateId, autoSearch, listFields, polygons, coordinates);
 
-        setFilteredResults({
-            polygons: filteredItems.filter((item): item is IPolygonSearchResult => Array.isArray(item.position)),
-            coordinates: filteredItems.filter((item): item is ICoordinateSearchResult => !Array.isArray(item.position)),
-        });
+        const [polygonsItems, coordinatesItems] = partition(filteredItems, (item): item is IPolygonSearchResult => Array.isArray(item.position));
+
+        setFilteredResults({ polygons: polygonsItems, coordinates: coordinatesItems });
     };
 
-    useEffect(() => applyFilterWithShapeSearch({ autoSearch, listFields }), [polygons, coordinates]);
+    useEffect(() => applyFilterWithShapeSearch(autoSearch, listFields), [polygons, coordinates]);
 
     useCesiumTooltip({ viewerRef, darkMode, entityTemplateMap, searchedEntitiesPolygons, filteredPolygons });
 
@@ -179,10 +167,10 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                 case CameraFocusType.Search: {
                     if (
                         (searchedEntitiesPolygons.length || searchedEntitiesMarkers.length) &&
-                        searchedEntitiesBoundsCenter &&
-                        searchedEntitiesBoundsRadius
+                        searchedEntitiesBounds?.center &&
+                        searchedEntitiesBounds?.radius
                     ) {
-                        const boundingSphere = new Cesium.BoundingSphere(searchedEntitiesBoundsCenter, searchedEntitiesBoundsRadius);
+                        const boundingSphere = new Cesium.BoundingSphere(searchedEntitiesBounds?.center, searchedEntitiesBounds?.radius);
                         flyToBoundingSphere(boundingSphere);
                     }
 
@@ -332,7 +320,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                         ],
                     }));
 
-                    applyFilterWithShapeSearch({ autoSearch, listFields });
+                    applyFilterWithShapeSearch(autoSearch, listFields);
                 });
             });
         },
@@ -350,7 +338,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                         acc[key] = {};
                         return acc;
                     },
-                    {} as Record<string, {}>,
+                    {} as ISearchEntitiesByLocationBody['templates'],
                 );
 
             const payload: ISearchEntitiesByLocationBody = { textSearch: '', templates: templatesPayload };
@@ -483,7 +471,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                         <div
                             style={{
                                 position: 'absolute',
-                                top: '10px',
+                                top: 10,
                                 right: isSideBarOpen ? '14%' : '5%',
                                 display: 'flex',
                                 gap: '15px',
@@ -558,19 +546,17 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                         <div
                             style={{
                                 position: 'absolute',
-                                top: '10px',
+                                top: 10,
                                 left: '1%',
                                 display: 'flex',
-                                gap: '15px',
-                                transition: 'right 0.3s ease-in-out',
                             }}
                         >
-                            {config && <BaseLayers viewerRef={viewerRef} config={config} popupPosition="right" />}
+                            {config && <BaseLayers viewerRef={viewerRef} config={config} />}
                         </div>
                     </Viewer>
                 </Grid>
 
-                {sourceSearchResults.length > 0 && sourceTemplate && (
+                {sourceSearchResults.length && sourceTemplate && (
                     <Grid width="98%">
                         <EntitiesTable
                             rowData={sourceSearchResults}
