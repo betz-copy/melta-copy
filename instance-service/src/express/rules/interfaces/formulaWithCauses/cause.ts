@@ -1,5 +1,5 @@
-import { Date as Neo4jDate, DateTime as Neo4jDateTime } from 'neo4j-driver';
 import { ICauseInstance } from '@microservices/shared';
+import { Date as Neo4jDate, DateTime as Neo4jDateTime } from 'neo4j-driver';
 
 export interface ICause {
     instance: ICauseInstance;

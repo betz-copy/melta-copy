@@ -1,10 +1,9 @@
 /* eslint-disable no-param-reassign */
 import { ForceGraphMethods as ForceGraphMethods3D, NodeObject } from 'react-force-graph-3d';
 import * as THREE from 'three';
-import { drawLabel, drawNodeIcon, getIconSize, getLabelDimensions, updateNodeLabelIcons } from '.';
-
 import { environment } from '../../globals';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { drawLabel, drawNodeIcon, getIconSize, getLabelDimensions, updateNodeLabelIcons } from '.';
 import { ILabelIcon } from './helperTypes';
 
 const { graphSettings } = environment;

@@ -1,5 +1,5 @@
 import { AppRegistration as DefaultEntityTemplateIcon, VisibilityOff } from '@mui/icons-material';
-import { Grid, tooltipClasses, Typography, useTheme } from '@mui/material';
+import { Grid, Typography, tooltipClasses, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties } from 'react';
 import { useQueryClient } from 'react-query';
@@ -9,6 +9,7 @@ import { IEntity } from '../interfaces/entities';
 import { IEntityTemplateMap } from '../interfaces/entityTemplates';
 import { useUserStore } from '../stores/user';
 import { useWorkspaceStore } from '../stores/workspace';
+import { isEntityFitsToChildTemplate } from '../utils/childTemplates';
 import { getEntityTemplateColor } from '../utils/colors';
 import { locationConverterToString } from '../utils/map/convert';
 import { isWorkspaceAdmin } from '../utils/permissions/instancePermissions';
@@ -17,7 +18,7 @@ import { CustomIcon } from './CustomIcon';
 import { EntityPropertiesInternal } from './EntityProperties';
 import { CoordinateSystem } from './inputs/JSONSchemaFormik/RjsfLocationWidget';
 import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
-import { isEntityFitsToChildTemplate } from '../utils/childTemplates';
+
 interface RelationshipReferenceViewProps {
     entity: IEntity | string;
     relatedTemplateId: string;
@@ -42,12 +43,11 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
     const theme = useTheme();
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const allowedChildTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
-
+    const allowedChildTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
     const childTemplatesOfRelatedTemplate =
         Array.from(allowedChildTemplates.values()).filter((child) => child.parentTemplate._id === relatedTemplateId) ?? [];
 
-    const template = entityTemplates.get(relatedTemplateId!);
+    const template = entityTemplates.get(relatedTemplateId);
     const relatedEntityTemplate = template ?? childTemplatesOfRelatedTemplate[0]?.parentTemplate;
     const entityTemplateColor = relatedEntityTemplate ? getEntityTemplateColor(relatedEntityTemplate) : undefined;
 
@@ -57,7 +57,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
             !template,
             entity,
             currentUserKartoffelId,
-            currentUser?.units?.[workspace._id] ?? [],
+            currentUser.units,
             isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
         ),
     );
@@ -88,7 +88,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
             </Grid>
         );
 
-    if (typeof entity === 'string')
+    if (typeof entity === 'string' || typeof entity === 'number')
         return (
             <Grid display="inline-block" overflow={'hidden'} textOverflow={'ellipsis'}>
                 <ColoredEnumChip
@@ -181,7 +181,11 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
             >
                 <Link
                     href={`/entity/${entity.properties._id}${!template ? `?childTemplateId=${adjustedChildTemplate?._id}` : ''}`}
-                    style={{ color: theme.palette.primary.main, textDecoration: 'inherit', fontWeight: 'bold' }}
+                    style={{
+                        color: theme.palette.primary.main,
+                        textDecoration: 'inherit',
+                        fontWeight: 'bold',
+                    }}
                 >
                     <Grid display="inline-block" overflow={'hidden'} textOverflow={'ellipsis'} width={'100%'}>
                         <ColoredEnumChip

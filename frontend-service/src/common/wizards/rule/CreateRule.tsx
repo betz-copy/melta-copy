@@ -1,17 +1,21 @@
 import { Autocomplete, Divider, FormControl, FormControlLabel, FormHelperText, Grid, Radio, RadioGroup, TextField } from '@mui/material';
+import { getIn } from 'formik';
 import Handlebars from 'handlebars';
 import i18next from 'i18next';
 import { omit } from 'lodash';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import * as Yup from 'yup';
-import { RuleWizardValues } from '.';
+import { environment } from '../../../globals';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { ActionOnFail } from '../../../interfaces/rules';
 import { useUserStore } from '../../../stores/user';
 import { getAllWritePermissionEntityTemplates } from '../../../utils/permissions/templatePermissions';
 import { StepComponentProps } from '../index';
+import { RuleWizardValues } from '.';
 import { CreateRuleColorField, CreateRuleEmailNotification } from './CreateIndicatorRuleControls';
+
+const { errorColor } = environment;
 
 const validMailField = (value: string): boolean => {
     try {
@@ -87,10 +91,15 @@ const createRuleSchema = Yup.object({
         is: ActionOnFail.INDICATOR,
         otherwise: (schema) => schema.strip().nullable(),
     }),
-}).test('at-least-one-indicator-config', i18next.t('wizard.rule.mustSelectOneIndicatorConfig'), (values) => {
+}).test('at-least-one-indicator-config', i18next.t('wizard.rule.mustSelectOneIndicatorConfig'), function (values) {
     if (values.actionOnFail !== ActionOnFail.INDICATOR) return true;
 
-    return values.fieldColor?.display === true || values.mail?.display === true;
+    if (values.fieldColor?.display === true || values.mail?.display === true) return true;
+
+    return this.createError({
+        path: 'indicatorMustChooseOne',
+        message: i18next.t('wizard.rule.mustSelectOneIndicatorConfig'),
+    });
 });
 
 const hasUserFields = (entityTemplate: IMongoEntityTemplatePopulated | null) => {
@@ -130,6 +139,8 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
 
         handleChange(event);
     };
+
+    const hasCheckedOneIndicator = touched.actionOnFail && values.actionOnFail === ActionOnFail.INDICATOR && getIn(errors, 'indicatorMustChooseOne');
 
     return (
         <Grid container direction="column" spacing={1}>
@@ -190,6 +201,9 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
 
                 {values.actionOnFail === ActionOnFail.INDICATOR && (
                     <Grid container direction="column" gap={2}>
+                        <FormHelperText sx={{ color: hasCheckedOneIndicator ? errorColor : '#9398C2', fontSize: '14px' }}>
+                            {i18next.t('wizard.rule.atLeastOne')}
+                        </FormHelperText>
                         <CreateRuleColorField
                             fieldColor={values.fieldColor}
                             touched={touched.fieldColor}

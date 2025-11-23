@@ -1,13 +1,12 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { Box, useTheme } from '@mui/material';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
+import i18next from 'i18next';
 import React, { useEffect, useRef } from 'react';
 import { environment } from '../../../globals';
 import { GeneratedChart, HighchartType, IAxis, IChart, IChartType } from '../../../interfaces/charts';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { getChartAxes } from '../../../utils/charts/getChartAxes';
-import i18next from 'i18next';
 
 const { pieChartColors } = environment.charts;
 

@@ -1,7 +1,7 @@
-import * as joi from 'joi';
 import { ActionTypes } from '@microservices/shared';
-import { mongoIdSchema } from '.';
+import * as joi from 'joi';
 import { validateActionMetadata } from '../validateActionMetadata';
+import { mongoIdSchema } from '.';
 
 const causesOfInstanceSchema = joi.object({
     instance: joi

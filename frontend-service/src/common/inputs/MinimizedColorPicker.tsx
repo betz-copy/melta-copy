@@ -1,6 +1,6 @@
+import { AddCircleOutline as AddColorIcons, Circle as CircleIcon } from '@mui/icons-material';
+import { IconButton, Popover, Typography } from '@mui/material';
 import React, { CSSProperties, useRef, useState } from 'react';
-import { Grid, IconButton, Popover, Typography } from '@mui/material';
-import { Circle as CircleIcon, AddCircleOutline as AddColorIcons } from '@mui/icons-material';
 import { ColorPicker, IColorPickerProps } from './ColorPicker';
 
 interface IMinimizedColorPickerProps extends IColorPickerProps {
@@ -22,7 +22,7 @@ export const MinimizedColorPicker: React.FC<IMinimizedColorPickerProps> = ({
     const [open, setOpen] = useState(false);
 
     return (
-        <Grid container direction="column" alignItems="center">
+        <>
             <IconButton ref={circleRef} onClick={() => setOpen(true)} sx={{ padding: '0.1rem', ...style }}>
                 {color ? (
                     <CircleIcon sx={{ color: error ? '#d32f2f' : color, fontSize: circleSize }} />
@@ -55,6 +55,6 @@ export const MinimizedColorPicker: React.FC<IMinimizedColorPickerProps> = ({
                     doneIcon
                 />
             </Popover>
-        </Grid>
+        </>
     );
 };

@@ -2,13 +2,13 @@ import { Box, Grid, Typography } from '@mui/material';
 import { FormikErrors, FormikProps } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
-import { ProcessDetailsValues } from '.';
 import { IProcessSingleProperty } from '../../../../interfaces/processes/processTemplate';
 import OpenPreview from '../../../FilePreview/OpenPreview';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 import BlueTitle from '../../../MeltaDesigns/BlueTitle';
 import { ProcessStepValues } from '../ProcessSteps';
+import { ProcessDetailsValues } from '.';
 
 type ProcessFormikProps = ProcessStepValues | ProcessDetailsValues;
 

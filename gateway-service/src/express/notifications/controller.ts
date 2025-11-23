@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import NotificationsManager from './manager';
 import DefaultController from '../../utils/express/controller';
+import NotificationsManager from './manager';
 
 class NotificationsController extends DefaultController<NotificationsManager> {
     constructor(workspaceId: string) {

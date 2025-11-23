@@ -1,21 +1,22 @@
 import { Close as CloseIcon } from '@mui/icons-material';
-import { Box, Divider, Grid, IconButton, Typography } from '@mui/material';
+import { Box, Divider, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { FormikComputedProps, FormikHelpers, FormikState } from 'formik';
 import i18next from 'i18next';
 import { DebouncedFunc, isEqual } from 'lodash';
 import React, { Dispatch, SetStateAction, useEffect, useMemo } from 'react';
-import { getEntityTemplateFilesFieldsInfo } from '.';
-import { EntityWizardValues } from '..';
 import { IExternalErrors } from '../../../../interfaces/CreateOrEditEntityDialog';
 import { IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { useDarkModeStore } from '../../../../stores/darkMode';
 import { filterFieldsFromPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
-import BlueTitle from '../../../MeltaDesigns/BlueTitle';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 import { JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
+import BlueTitle from '../../../MeltaDesigns/BlueTitle';
+import { EntityWizardValues } from '..';
 import { ChooseTemplate, IChooseTemplateMode } from '../ChooseTemplate';
 import { Draft } from '../draftWarningDialog/index';
+import { getEntityTemplateFilesFieldsInfo } from '.';
 
 const EditProps: React.FC<{
     values: FormikState<EntityWizardValues>['values'];
@@ -75,6 +76,9 @@ const EditProps: React.FC<{
     parentId,
     getInitialProperties,
 }) => {
+    const theme = useTheme();
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
     const { templateFilesProperties, templateFileKeys, requiredFilesNames } = getEntityTemplateFilesFieldsInfo(values.template || entityTemplate);
     const isPropertiesFirst = (values.template?.propertiesTypeOrder ?? [])[0] === 'properties';
     const schema = filterFieldsFromPropertiesSchema(values.template?.properties, multipleSelectionProps?.selectedFields);
@@ -88,12 +92,11 @@ const EditProps: React.FC<{
             const fieldPropertiesEnum = schema.properties[field]?.enum;
             const itemFieldProperties = schema.properties[field]?.items?.enum;
 
-            if (fieldPropertiesEnum?.length === 1 && fieldPropertiesEnum[0] !== undefined) {
+            if (fieldPropertiesEnum?.length === 1 && fieldPropertiesEnum[0] !== undefined)
                 setFieldValue(`properties.${field}`, fieldPropertiesEnum[0]);
-            }
-            if (itemFieldProperties?.length === 1 && itemFieldProperties[0] !== undefined) {
+
+            if (itemFieldProperties?.length === 1 && itemFieldProperties[0] !== undefined)
                 setFieldValue(`properties.${field}`, [itemFieldProperties[0]]);
-            }
         });
     }, [values.template]);
 
@@ -124,7 +127,7 @@ const EditProps: React.FC<{
     }, [absoluteDirty]);
 
     useEffect(() => {
-        if (multipleSelectionProps) setWasDirty(Object.keys(values.attachmentsProperties).length > 0);
+        if (multipleSelectionProps) setWasDirty(!!Object.keys(values.attachmentsProperties).length);
     }, [values.attachmentsProperties]);
 
     if (isMultipleSelection) {
@@ -139,13 +142,11 @@ const EditProps: React.FC<{
         if (!checked) {
             setFieldTouched(`properties.${field}`, false);
             setFieldValue(`properties.${field}`, undefined);
-        } else if (schema.properties[field].defaultValue) {
-            setFieldValue(`properties.${field}`, schema.properties[field].defaultValue);
-        }
+        } else if (schema.properties[field]?.defaultValue) setFieldValue(`properties.${field}`, schema.properties[field].defaultValue);
 
         const relatedUserFields = {};
 
-        if (schema.properties[field].format === 'user') {
+        if (schema.properties[field]?.format === 'user') {
             Object.entries(schema.properties).forEach(([key, value]) => {
                 if (value.format === 'kartoffelUserField' && value.expandedUserField?.relatedUserField === field) {
                     relatedUserFields[key] = checked;
@@ -176,7 +177,7 @@ const EditProps: React.FC<{
         />
     );
 
-    const propertiesFilesComp = templateFileKeys.length > 0 && (
+    const propertiesFilesComp = !!templateFileKeys.length && (
         <>
             <BlueTitle
                 title={i18next.t('wizard.entityTemplate.attachments')}
@@ -185,12 +186,12 @@ const EditProps: React.FC<{
                 style={{ marginBottom: externalErrors.files ? '0px' : '12px', fontSize: '16px', fontWeight: '600' }}
             />
             {externalErrors.files && (
-                <p id="error" style={{ color: '#d32f2f', margin: 0, padding: 0, marginBottom: '12px' }}>
+                <p id="error" style={{ color: 'error', margin: 0, padding: 0, marginBottom: '12px' }}>
                     {i18next.t('errorCodes.FILES_TOO_BIG')}
                 </p>
             )}
             {Object.entries(templateFilesProperties).map(([key, value], index) => (
-                <Grid key={key} marginTop={index > 0 ? 2 : 0}>
+                <Grid key={key} marginTop={index ? 2 : 0}>
                     {value.items ? (
                         <InstanceFileInput
                             key={key}
@@ -222,80 +223,89 @@ const EditProps: React.FC<{
     );
 
     return (
-        <Grid container width="100%">
-            <Grid container flexDirection="column" width="100%">
-                <Box width="100%">
-                    <Grid container flexDirection="row" flexWrap="nowrap" justifyContent="space-between">
+        <Box display="flex" flexDirection="column" height="100%" width="100%">
+            {(showTitle || currentDraft || showCloseButton) && (
+                <Box
+                    sx={{
+                        flexShrink: 0,
+                        position: 'sticky',
+                        top: 0,
+                        zIndex: 10,
+                        backgroundColor: darkMode ? '#1e1e1e' : 'white',
+                        padding: '16px 24px',
+                    }}
+                >
+                    <Grid container alignItems="center" justifyContent="space-between">
                         {showTitle && (
-                            <Grid>
-                                <BlueTitle
-                                    title={`${i18next.t(`actions.${isEditMode ? 'edit' : 'create'}ment`)} ${
-                                        values.template?.displayName || i18next.t('wizard.entity.createNewEntity')
-                                    }`}
-                                    component="h6"
-                                    variant="h6"
-                                    style={{ fontWeight: '600', fontSize: '20px', marginTop: '0.25rem' }}
-                                />
-                            </Grid>
+                            <BlueTitle
+                                title={`${i18next.t(`actions.${isEditMode ? 'edit' : 'create'}ment`)} ${
+                                    values.template?.displayName || i18next.t('wizard.entity.createNewEntity')
+                                }`}
+                                component="h6"
+                                variant="h6"
+                            />
                         )}
 
-                        {currentDraft && (
-                            <Grid container size={{ xs: 8 }} justifyContent="right">
-                                <Typography color="#53566E" marginTop="0.5rem" fontWeight={100}>
+                        <Box display="flex" alignItems="center" gap={2}>
+                            {currentDraft && (
+                                <Typography color="#53566E" fontWeight={100}>
                                     {i18next.t('draftSaveDialog.lastSavedAt', {
                                         date: new Date(currentDraft.lastSavedAt).toLocaleString('he'),
                                     })}
                                 </Typography>
-                            </Grid>
-                        )}
+                            )}
 
-                        {showCloseButton && (
-                            <Grid>
+                            {showCloseButton && (
                                 <IconButton
                                     onClick={() => (wasDirty ? setIsDraftDialogOpen?.(true) : handleClose?.())}
-                                    sx={{ color: (theme) => theme.palette.primary.main }}
+                                    sx={{ color: theme.palette.primary.main }}
                                 >
                                     <CloseIcon />
                                 </IconButton>
-                            </Grid>
-                        )}
+                            )}
+                        </Box>
                     </Grid>
-                    {!entityTemplate._id && (
-                        <Grid marginTop="20px">
+
+                    {!values.template?._id && (
+                        <Box mt={2}>
                             <ChooseTemplate
                                 setFieldValue={setFieldValue}
                                 values={values}
                                 errors={errors}
                                 touched={touched}
-                                chooseMode={chooseMode}
+                                chooseMode={chooseMode || IChooseTemplateMode.TemplatesAndChildren}
                                 parentId={parentId}
                                 getInitialProperties={getInitialProperties}
                             />
-                        </Grid>
+                        </Box>
                     )}
                 </Box>
-                <Box>
-                    <Grid marginTop="20px" style={{ overflowY: 'auto', maxHeight: '24rem' }}>
-                        {isPropertiesFirst ? propertiesComp : propertiesFilesComp}
-                    </Grid>
-                    {templateFileKeys.length > 0 && (
-                        <Grid container flexDirection="column">
-                            <Grid marginTop="20px" alignSelf="stretch">
-                                <Divider orientation="horizontal" style={{ alignSelf: 'stretch', width: '100%' }} />
-                            </Grid>
-                        </Grid>
-                    )}
-                    <Grid marginTop="20px" marginBottom="20px">
-                        {isPropertiesFirst ? propertiesFilesComp : propertiesComp}
-                    </Grid>
-                    {externalErrors.action && (
-                        <Typography color="error" variant="caption" fontSize="16px">
-                            {externalErrors.action}
-                        </Typography>
-                    )}
-                </Box>
-            </Grid>
-        </Grid>
+            )}
+
+            <Box
+                sx={{
+                    flexGrow: 1,
+                    overflowY: 'auto',
+                    p: 3,
+                }}
+            >
+                {isPropertiesFirst ? propertiesComp : propertiesFilesComp}
+
+                {!!templateFileKeys.length && (
+                    <Box my={2}>
+                        <Divider />
+                    </Box>
+                )}
+
+                {isPropertiesFirst ? propertiesFilesComp : propertiesComp}
+
+                {externalErrors.action && (
+                    <Typography color="error" variant="caption" fontSize="16px">
+                        {externalErrors.action}
+                    </Typography>
+                )}
+            </Box>
+        </Box>
     );
 };
 

@@ -1,4 +1,4 @@
-import { IMongoChart, IChart } from '@microservices/shared';
+import { IChart, IMongoChart } from '@microservices/shared';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 

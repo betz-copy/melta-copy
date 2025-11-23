@@ -1,14 +1,14 @@
-import { initializeRabbit } from './utils/rabbitmq';
-import { initializeMongo } from './utils/mongo';
-import { initializeNeo } from './utils/neo4j';
-import { WorkspaceService, WorkspaceTypes } from './services/workspace';
 import { IMongoEntityTemplate } from '@microservices/shared';
-import { listFilesInDB } from './clients/neo4j';
 import { Driver } from 'neo4j-driver';
+import path from 'path';
+import { getTemplatesWithFiles } from './clients/mongo/repository';
+import { listFilesInDB } from './clients/neo4j';
 import { sendToQueue } from './clients/rabbit/manager';
 import config from './config';
-import { getTemplatesWithFiles } from './clients/mongo/repository';
-import path from 'path';
+import { WorkspaceService, WorkspaceTypes } from './services/workspace';
+import { initializeMongo } from './utils/mongo';
+import { initializeNeo } from './utils/neo4j';
+import { initializeRabbit } from './utils/rabbitmq';
 
 const {
     rabbit,

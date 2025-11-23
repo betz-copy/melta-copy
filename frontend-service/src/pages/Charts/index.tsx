@@ -10,18 +10,18 @@ import { LocalStorageGridLayout } from '../../common/GridLayout/gridLayoutSavedI
 import { LayoutItem } from '../../common/GridLayout/interface';
 import { environment } from '../../globals';
 import { ChartsAndGenerator } from '../../interfaces/charts';
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
 import { DashboardItemType } from '../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { deleteChart, getChartByTemplateId } from '../../services/chartsService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { generateLayoutDetails } from '../../utils/charts/defaultChartSizes';
 import { LocalStorage } from '../../utils/localStorage';
-import { DashboardHeader } from '../Dashboard/dashboardPage/DashboardHeader';
+import { isChildTemplate } from '../../utils/templates';
 import { ConfirmDeleteDashboardItem, ConfirmEditCommonItem } from '../Dashboard/Dialogs';
+import { DashboardHeader } from '../Dashboard/dashboardPage/DashboardHeader';
 import { AddNewChartButton } from './AddNewChartButton';
 import ChartItem from './chartsTemplatePage/chartItem';
-import { IChildTemplateMap } from '../../interfaces/childTemplates';
-import { isChildTemplate } from '../../utils/templates';
 
 const { chartsOrderKey } = environment.charts;
 
@@ -31,9 +31,9 @@ const ChartsPage: React.FC = () => {
     const [currentLocation, navigate] = useLocation();
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childEntityTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 
-    const childEntityTemplate = childEntityTemplates.get(templateId as string);
+    const childEntityTemplate = childTemplates.get(templateId as string);
     const fatherEntityTemplate = entityTemplates.get((childEntityTemplate ? childEntityTemplate.parentTemplate._id : templateId) as string)!;
     const template = childEntityTemplate || fatherEntityTemplate;
     const parentTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;

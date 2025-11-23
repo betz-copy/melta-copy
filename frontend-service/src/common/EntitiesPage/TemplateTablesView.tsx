@@ -25,22 +25,18 @@ export type TemplateTablesViewResultsRef = {
 export const getDefaultFilterFromTemplate = (
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     isChildTemplate: boolean,
-    currentUserKartoffelId?: string,
-    currentUserUnit?: string[],
-    isUserAdmin?: boolean,
+    currentUserKartoffelId: string,
+    units: string[],
+    isUserAdmin: boolean,
 ): ISearchFilter | undefined => {
     if (!isChildTemplate) return undefined;
 
     const filterClauses: (IFilterOfTemplate | IFilterGroup)[] = [];
 
     for (const [key, prop] of Object.entries(template.properties.properties)) {
-        if (prop.isFilterByCurrentUser && currentUserKartoffelId) {
-            filterClauses.push({ [key]: { $eq: currentUserKartoffelId } });
-        }
+        if (prop.isFilterByCurrentUser && currentUserKartoffelId) filterClauses.push({ [key]: { $eq: currentUserKartoffelId } });
 
-        if (prop.isFilterByUserUnit && currentUserUnit && !isUserAdmin) {
-            filterClauses.push({ [key]: { $in: currentUserUnit } });
-        }
+        if (prop.isFilterByUserUnit && units && !isUserAdmin) filterClauses.push({ [key]: { $in: units } });
 
         if (prop.filters) {
             const parsed = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
@@ -48,7 +44,7 @@ export const getDefaultFilterFromTemplate = (
         }
     }
 
-    return filterClauses.length > 0 ? { $and: filterClauses } : undefined;
+    return filterClauses.length ? { $and: filterClauses } : undefined;
 };
 
 const TemplateTablesViewResults = forwardRef<
@@ -109,7 +105,7 @@ const TemplateTablesViewResults = forwardRef<
                 template,
                 isChildTemplate(template),
                 currentUserKartoffelId,
-                currentUser?.units?.[workspace._id] ?? [],
+                currentUser.units,
                 isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
             );
         });

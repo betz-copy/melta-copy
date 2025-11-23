@@ -1,8 +1,11 @@
 import { Field, Fields, ImmutableTree } from '@react-awesome-query-builder/mui';
+import i18next from 'i18next';
 import lodashFindLast from 'lodash.findlast';
 import lodashIsEqual from 'lodash.isequal';
+import { environment } from '../../globals';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
+import { ActionOnFail } from '../../interfaces/rules';
 import { IVariable } from '../../interfaces/rules/formula/argument';
 import { ICurrentUser } from '../../interfaces/users';
 import { getAllAllowedEntities, getAllAllowedRelationships } from '../permissions/templatePermissions';
@@ -13,9 +16,6 @@ import {
     populateRelationshipTemplate,
 } from '../templates';
 import { getAggVariablesInTree } from './getAggVariablesInTree';
-import i18next from 'i18next';
-import { ActionOnFail } from '../../interfaces/rules';
-import { environment } from '../../globals';
 
 const { formulaGetTodayVarName } = environment;
 
@@ -84,7 +84,7 @@ const entityTemplateToFieldsConfig = (
     const fieldEntries: [string, Field][] = [];
     Object.entries(addDefaultFieldsToTemplate(entityTemplate).properties.properties).forEach(([key, value]) => {
         if (value.format === 'relationshipReference' && value.relationshipReference) {
-            const relTemplateId = value.relationshipReference!.relatedTemplateId;
+            const relTemplateId = value.relationshipReference?.relatedTemplateId;
             const relTemplateKey = value.relationshipReference?.relatedTemplateField;
             const refTemplate = entityTemplates.get(relTemplateId)!;
             const relProperty = refTemplate?.properties.properties[relTemplateKey];
@@ -211,7 +211,7 @@ export const getFieldsConfigOfRule = (
 ): Fields => {
     const allowedEntityTemplates = getAllAllowedEntities(Array.from(entityTemplates.values()), currentUser);
     const entityTemplate = allowedEntityTemplates.find((entity) => entity._id === entityTemplateId);
-    if (!entityTemplate) throw new Error('entity template doesnt exist');
+    if (!entityTemplate) throw new Error(`entity template doesn't exist`);
 
     const allowedEntityTemplatesIds: string[] = allowedEntityTemplates.map((entity) => entity._id);
     const allowedRelationships = getAllAllowedRelationships(Array.from(relationshipTemplates.values()), allowedEntityTemplatesIds);

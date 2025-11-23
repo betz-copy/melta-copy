@@ -1,5 +1,5 @@
+import { IRerankRequest, IRerankResult, logger } from '@microservices/shared';
 import axios from 'axios';
-import { logger, IRerankRequest, IRerankResult } from '@microservices/shared';
 import config from '../../config';
 
 const {

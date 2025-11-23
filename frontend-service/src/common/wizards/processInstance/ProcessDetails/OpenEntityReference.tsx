@@ -1,10 +1,10 @@
-import { Dialog, Grid, IconButton, Typography } from '@mui/material';
-import React, { useState } from 'react';
 import { AppRegistration as AppRegistrationIcon } from '@mui/icons-material';
+import { Dialog, Grid, IconButton, Typography } from '@mui/material';
 import { Field } from 'formik';
 import i18next from 'i18next';
-import { EntityReference } from '../EntityReference';
+import { useState } from 'react';
 import { useWorkspaceStore } from '../../../../stores/workspace';
+import { EntityReference } from '../EntityReference';
 
 const OpenEntityReference = ({ fieldName, values, errors, setFieldValue, touched, handleBlur, title, viewMode }) => {
     const [open, setOpen] = useState(false);

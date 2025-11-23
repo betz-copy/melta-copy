@@ -1,10 +1,9 @@
 import { Box } from '@mui/material';
 import i18next from 'i18next';
-import React from 'react';
 import { renderHTML } from '../../../../utils/HtmlTagsStringValue';
 import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
-import BlueTitle from '../../../MeltaDesigns/BlueTitle';
 import { JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
+import BlueTitle from '../../../MeltaDesigns/BlueTitle';
 import { TextAreaProperty } from '../ProcessSteps/processStep';
 
 export const SchemaForm = ({ viewMode, values, errors, touched, setFieldValue, setFieldTouched, toPrint }) => {

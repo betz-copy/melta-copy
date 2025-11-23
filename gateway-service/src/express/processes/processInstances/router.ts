@@ -1,17 +1,16 @@
-import { Router } from 'express';
 import { createController, ValidateRequest } from '@microservices/shared';
-
-import InstancesController from './controller';
-import {
-    createProcessInstanceSchema,
-    deleteProcessInstanceSchema,
-    searchProcessInstancesSchema,
-    updateProcessInstanceSchema,
-    getProcessInstanceSchema,
-    archivedProcessStatusSchema,
-} from './validator.schema';
+import { Router } from 'express';
 import { AuthorizerControllerMiddleware } from '../../../utils/authorizer';
 import busboyMiddleware from '../../../utils/busboy/busboyMiddleware';
+import InstancesController from './controller';
+import {
+    archivedProcessStatusSchema,
+    createProcessInstanceSchema,
+    deleteProcessInstanceSchema,
+    getProcessInstanceSchema,
+    searchProcessInstancesSchema,
+    updateProcessInstanceSchema,
+} from './validator.schema';
 
 const InstancesRouter: Router = Router();
 

@@ -1,6 +1,6 @@
-import BigNumber from 'bignumber.js';
 import { Direction } from '@mui/material';
 import { RJSFSchema } from '@rjsf/utils';
+import BigNumber from 'bignumber.js';
 import { environment } from '../globals';
 
 const { numOfFixedDigits } = environment.entitiesProperties;
@@ -24,4 +24,13 @@ export const getTextDirection = (value: string, schema: RJSFSchema): Direction =
     if (schema.serialCurrent === undefined) return schema.type !== 'number' || Boolean(schema.pattern) ? 'ltr' : 'rtl';
 
     return 'rtl';
+};
+
+export const stringifiedJSONtoObj = (string: string) => {
+    try {
+        const parsed = JSON.parse(string);
+        return parsed !== null && typeof parsed === 'object' ? parsed : undefined;
+    } catch {
+        return undefined;
+    }
 };

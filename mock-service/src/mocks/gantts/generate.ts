@@ -1,5 +1,5 @@
 /* eslint-disable import/prefer-default-export */
-import { IMongoRelationshipTemplate, IGantt, IGanttItem, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
+import { IGantt, IGanttItem, IMongoEntityTemplateWithConstraintsPopulated, IMongoRelationshipTemplate } from '@microservices/shared';
 import { pickOneIf, pickRandomSet, pickSetIf, popRandom } from '../../utils/mock';
 
 const generateGanttItemEntityTemplate = (

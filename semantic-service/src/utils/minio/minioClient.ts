@@ -1,13 +1,13 @@
+import { FileTypes, logger } from '@microservices/shared';
 import http from 'http';
+import mammoth from 'mammoth';
 import { Client } from 'minio';
 import pdf from 'pdf-parse';
-import { logger, FileTypes } from '@microservices/shared';
-import mammoth from 'mammoth';
 import config from '../../config';
 import { streamToBuffer } from '../fs';
+import extractTextFromDoc from '../textExtractors/doc';
 import readExcelData from '../textExtractors/excel';
 import { extractPptxText } from '../textExtractors/pptx';
-import extractTextFromDoc from '../textExtractors/doc';
 
 const { url: endPoint, port, accessKey, secretKey, useSSL, transportAgent } = config.minio;
 

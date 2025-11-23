@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { IServerSideSelectionState, IStatusPanelParams } from '@ag-grid-community/core';
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { IServerSideSelectionState, IStatusPanelParams } from '@ag-grid-community/core';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 export const RowCountGridStatusBar: React.FC<IStatusPanelParams> = ({ api }) => {
     const [count, setCount] = useState(0);
@@ -40,7 +40,7 @@ export const RowCountGridStatusBar: React.FC<IStatusPanelParams> = ({ api }) => 
 
     return (
         <Grid container alignItems="center" sx={{ height: '45px' }}>
-            {selectedCount > 0 && (
+            {!!selectedCount && (
                 <Typography fontSize="15px" sx={{ opacity: 0.5, mr: 2 }}>
                     {`${i18next.t('entitiesTableOfTemplate.selectedLines')} : ${selectedCount}`}
                 </Typography>

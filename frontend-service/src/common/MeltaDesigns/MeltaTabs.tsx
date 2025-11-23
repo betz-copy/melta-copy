@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
-import { Grid, Box, Tab, useTheme } from '@mui/material';
-import { TabContext, TabList, TabPanel } from '@mui/lab';
-import i18next from 'i18next';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
+import { Box, Grid, Tab, useTheme } from '@mui/material';
+import i18next from 'i18next';
+import React, { useEffect } from 'react';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 
 const MeltaTabs: React.FC<{
@@ -12,8 +12,9 @@ const MeltaTabs: React.FC<{
 }> = ({ defaultTab, tabsComponentsMapping, tabsPermissionsMapping }) => {
     const theme = useTheme();
     const { trackPageView } = useMatomo();
+    const allowedTabs = Object.keys(tabsComponentsMapping).filter((tabName) => tabsPermissionsMapping[tabName]);
 
-    const [searchParams, setSearchParams] = useSearchParams({ tab: defaultTab });
+    const [searchParams, setSearchParams] = useSearchParams({ tab: allowedTabs.includes(defaultTab) ? defaultTab : allowedTabs[0] });
     const tabValue = searchParams.get('tab') ?? defaultTab;
 
     useEffect(() => {
@@ -24,7 +25,6 @@ const MeltaTabs: React.FC<{
         });
     }, [tabValue, trackPageView]);
 
-    const allowedTabs = Object.keys(tabsComponentsMapping).filter((tabName) => tabsPermissionsMapping[tabName]);
     const isCurrTab = (tabName: string) => tabValue === tabName;
     return (
         <Box

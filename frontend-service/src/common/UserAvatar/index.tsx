@@ -1,11 +1,11 @@
+import { Box, Chip, ChipProps, Grid, TooltipProps, Typography } from '@mui/material';
 import React from 'react';
-import { ChipProps, TooltipProps, Chip, Grid, Box, Typography } from '@mui/material';
-import UserIcon, { UserIconProps } from './UserIcon';
-import { IUser } from '../../interfaces/users';
-import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
-import { useDarkModeStore } from '../../stores/darkMode';
-import { getKartoffelUserProfileRequest, getUserProfileRequest } from '../../services/userService';
 import { useQueries } from 'react-query';
+import { IUser } from '../../interfaces/users';
+import { getKartoffelUserProfileRequest, getUserProfileRequest } from '../../services/userService';
+import { useDarkModeStore } from '../../stores/darkMode';
+import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
+import UserIcon, { UserIconProps } from './UserIcon';
 
 export interface IUserAvatarProps {
     user: Partial<IUser>;

@@ -1,6 +1,6 @@
 @font-face {
-    font-family: 'amazing';
-    src: URL('nehama-webfont.ttf') format('truetype');
+    font-family: "amazing";
+    src: url("nehama-webfont.ttf") format("truetype");
 }
 
 .return_to_home {
@@ -17,7 +17,7 @@
 
 html,
 body {
-    background: #1E2775;
+    background: #1e2775;
     overflow: hidden;
 }
 
@@ -27,7 +27,7 @@ body {
     left: 0%;
     width: 100%;
     height: 100%;
-    background: #1E2775;
+    background: #1e2775;
     overflow: hidden;
 }
 
@@ -240,7 +240,7 @@ body {
     left: 0%;
     width: 500px;
     height: 100px;
-    background: linear-gradient(to left, #817e97, #1E2775);
+    background: linear-gradient(to left, #817e97, #1e2775);
     /* The points are: centered top, left bottom, right bottom */
     clip-path: polygon(0% 0%, 50% 45%, 50% 55%, 0% 100%);
     transform: translate(-18%, -45%);

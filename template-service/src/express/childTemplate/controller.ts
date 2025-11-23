@@ -1,5 +1,5 @@
-import { Request, Response } from 'express';
 import { DefaultController, fetchPropertyFromRequest, IMongoChildTemplate } from '@microservices/shared';
+import { Request, Response } from 'express';
 import ChildTemplateManager from './manager';
 
 class ChildTemplateController extends DefaultController<IMongoChildTemplate, ChildTemplateManager> {
@@ -36,6 +36,16 @@ class ChildTemplateController extends DefaultController<IMongoChildTemplate, Chi
         const actionToUpsert = fetchPropertyFromRequest<string>(req, 'actions');
 
         res.json(await this.manager.updateEntityTemplateAction(id, actionToUpsert));
+    }
+
+    async updateChildTemplateStatus(req: Request, res: Response) {
+        const { templateId: id } = req.params;
+        res.json(await this.manager.updateChildTemplateStatus(id, req.body.disabled));
+    }
+
+    async multiUpdateChildTemplateStatusByParentId(req: Request, res: Response) {
+        const { parentId } = req.params;
+        res.json(await this.manager.multiUpdateChildTemplateStatusByParentId(parentId, req.body.disabled));
     }
 }
 

@@ -1,14 +1,12 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-// eslint-disable-next-line import/no-extraneous-dependencies
-import SignatureCanvas from 'react-signature-canvas';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { WidgetProps } from '@rjsf/utils';
 import { Box, Button, ThemeProvider, Typography, useTheme } from '@mui/material';
+import { WidgetProps } from '@rjsf/utils';
 import i18next from 'i18next';
-import { useDarkModeStore } from '../../../stores/darkMode';
-import { getFilePreviewRequest } from '../../../services/previewService';
-import { darkTheme, lightTheme } from '../../../theme';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import SignatureCanvas from 'react-signature-canvas';
 import { environment } from '../../../globals';
+import { getFilePreviewRequest } from '../../../services/previewService';
+import { useDarkModeStore } from '../../../stores/darkMode';
+import { darkTheme, lightTheme } from '../../../theme';
 
 const { signaturePrefix } = environment;
 

@@ -1,13 +1,13 @@
 /* eslint-disable no-param-reassign */
 import mapValues from 'lodash.mapvalues';
-import { IMongoStepInstancePopulated } from '../interfaces/processes/stepInstance';
 import axios from '../axios';
+import urlToFile from '../common/fileConversions';
 import { ProcessDetailsValues } from '../common/wizards/processInstance/ProcessDetails';
+import { ProcessStepValues } from '../common/wizards/processInstance/ProcessSteps';
 import { environment } from '../globals';
 import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, ISearchProcessInstancesBody } from '../interfaces/processes/processInstance';
-import { ProcessStepValues } from '../common/wizards/processInstance/ProcessSteps';
 import { IMongoProcessTemplatePopulated } from '../interfaces/processes/processTemplate';
-import urlToFile from '../common/fileConversions';
+import { IMongoStepInstancePopulated } from '../interfaces/processes/stepInstance';
 
 const { processes } = environment.api;
 const { uuidFormat } = environment;
@@ -165,7 +165,7 @@ export const updateProcessRequest = async (processId: string, updatedData: Proce
     const { data } = await axios.put<IMongoProcessInstancePopulated>(`${processes}/${processId}`, formData);
     return data;
 };
-export const archiveProcessRequest = async (processId: string, archived: Boolean) => {
+export const archiveProcessRequest = async (processId: string, archived: boolean) => {
     const { data } = await axios.patch<IMongoProcessInstancePopulated>(`${processes}/archive/${processId}`, {
         archived,
     });

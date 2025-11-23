@@ -1,7 +1,7 @@
-import { searchFilterSchema, variableNameValidation } from '@microservices/shared';
+import { MongoIdSchema, searchFilterSchema, variableNameValidation } from '@microservices/shared';
 import Joi from 'joi';
-import { brokenRuleSchema } from '../rules/ignoredRuleSchema';
 import config from '../../config';
+import { brokenRuleSchema } from '../rules/ignoredRuleSchema';
 
 const { searchEntitiesMaxLimit } = config;
 
@@ -162,6 +162,20 @@ export const chartSchema = Joi.object({
                     xAxis: Joi.any(),
                     yAxis: Joi.any(),
                     filter: searchFilterSchema,
+                }),
+            )
+            .required(),
+        units: Joi.array()
+            .items(
+                Joi.object({
+                    _id: MongoIdSchema,
+                    name: Joi.string(),
+                    workspaceId: MongoIdSchema,
+                    parentId: MongoIdSchema.allow('', null).empty(''),
+                    disabled: Joi.bool(),
+                    createdAt: Joi.date(),
+                    updatedAt: Joi.date(),
+                    path: Joi.string().allow(''),
                 }),
             )
             .required(),

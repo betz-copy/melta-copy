@@ -1,7 +1,7 @@
-import React from 'react';
-import i18next from 'i18next';
-import { NodeObject } from 'react-force-graph-2d';
 import { Grid, Typography } from '@mui/material';
+import i18next from 'i18next';
+import React from 'react';
+import { NodeObject } from 'react-force-graph-2d';
 
 interface NodeLabelIconsDescriptionProps {
     node: NodeObject;

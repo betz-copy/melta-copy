@@ -1,18 +1,18 @@
-import { Request } from 'express';
-import * as ts from 'typescript-actions';
 import {
     addPropertyToRequest,
-    DefaultController,
-    IMongoEntityTemplate,
-    IEntitySingleProperty,
     BadRequestError,
+    DefaultController,
     EntityTemplateType,
-    TemplateItem,
+    IEntitySingleProperty,
+    IMongoEntityTemplate,
     IMongoEntityTemplatePopulated,
+    TemplateItem,
 } from '@microservices/shared';
+import { Request } from 'express';
+import * as ts from 'typescript-actions';
 import { generateInterfaceWithRelationships } from '../../utils/entityTemplateActions/interfacesGenerator';
-import EntityTemplateManager from './manager';
 import { compileTsCode } from '../../utils/entityTemplateActions/tsCompiler';
+import EntityTemplateManager from './manager';
 
 class EntityTemplateValidator extends DefaultController<IMongoEntityTemplate, EntityTemplateManager> {
     constructor(workspaceId: string) {
@@ -23,12 +23,13 @@ class EntityTemplateValidator extends DefaultController<IMongoEntityTemplate, En
         const entityTemplates = await this.manager.getTemplates({ limit: 0, skip: 0 });
         const templatesMap = new Map(entityTemplates.map((template) => [template._id, template]));
         const baseTemplate = templatesMap.get(templateId)!;
+
         const entityPropertiesQueue = [baseTemplate.properties.properties];
         const relationshipReferenceIdsMap = new Map<string, TemplateItem>([
             [templateId, { type: EntityTemplateType.Parent, metaData: baseTemplate as IMongoEntityTemplatePopulated }],
         ]);
 
-        while (entityPropertiesQueue.length > 0) {
+        while (entityPropertiesQueue.length) {
             const currentEntityProperties = entityPropertiesQueue.shift()!;
 
             Object.values(currentEntityProperties).forEach((propertyValues) => {

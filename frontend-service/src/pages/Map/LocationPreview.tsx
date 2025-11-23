@@ -1,13 +1,13 @@
 import * as Cesium from 'cesium';
 import { Cartesian3 } from 'cesium';
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQueryClient } from 'react-query';
-import { Viewer } from 'resium';
+import { CesiumComponentRef, Viewer } from 'resium';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { BackendConfigState } from '../../services/backendConfigService';
-import { useEntityWithLocationFields } from '../../utils/hooks/useLocation';
+import { useEntitiesWithLocationFields } from '../../utils/hooks/useLocation';
 import { jerusalemCoordinates } from '../../utils/map';
 import { convertWGS94ToECEF } from '../../utils/map/convert';
 import { BaseLayers } from './BaseLayers';
@@ -22,11 +22,16 @@ const LocationPreview = ({ entityProperties, entityTemplate }: Props) => {
     const queryClient = useQueryClient();
     const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
 
-    const viewerRef = useRef<any>(null);
+    const viewerRef = useRef<CesiumComponentRef<Cesium.Viewer>>(null);
 
-    const { bounds, polygons, propertyDefinitions, markers } = useEntityWithLocationFields({
-        entityTemplate,
-        entityProperties,
+    const { bounds, polygons, markers } = useEntitiesWithLocationFields({
+        entities: [
+            {
+                templateId: entityTemplate._id,
+                properties: entityProperties,
+            },
+        ],
+        entityTemplateMap: new Map([[entityTemplate._id, entityTemplate]]),
     });
 
     useEffect(() => {
@@ -69,12 +74,12 @@ const LocationPreview = ({ entityProperties, entityTemplate }: Props) => {
                 fullscreenButton={false}
                 navigationHelpButton={false}
             >
-                {polygons.map(({ key, position: polygon }) => (
-                    <MeltaPolygon key={key} name={propertyDefinitions[key].title} polygon={polygon} />
+                {polygons.map(({ key, name, position: polygon }) => (
+                    <MeltaPolygon key={key} name={name} polygon={polygon} />
                 ))}
 
-                {markers.map(({ key, position }) => (
-                    <MeltaCoordinate key={key} name={propertyDefinitions[key].title} position={convertWGS94ToECEF(position) as Cartesian3} />
+                {markers.map(({ key, name, position }) => (
+                    <MeltaCoordinate key={key} name={name} position={convertWGS94ToECEF(position) as Cartesian3} />
                 ))}
 
                 <div style={{ position: 'absolute', top: '10px', left: '10px', display: 'flex', gap: '15px' }}>

@@ -1,12 +1,13 @@
 import { UiSchema } from '@rjsf/utils';
+import { flatten } from 'flat';
+import { FormikHelpers } from 'formik';
+import i18next from 'i18next';
 import _ from 'lodash';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IProperties } from '../../../interfaces/entityTemplates';
-import { EntityWizardValues } from '../../dialogs/entity';
-import i18next from 'i18next';
-import { FormikHelpers } from 'formik';
 import { IKartoffelUser } from '../../../interfaces/users';
-import { flatten } from 'flat';
+import { EntityWizardValues } from '../../dialogs/entity';
 import { kartoffelPersonalDataFields } from '../../wizards/entityTemplate/KartoffelUserField';
+import { IMongoUnit } from '../../../interfaces/units';
 
 const changeRelatedUserFields = (properties: IProperties['properties'], changedUserKey: string, user: IKartoffelUser | null) => {
     return Object.entries(properties).reduce((acc, [key, value]) => {
@@ -40,7 +41,7 @@ const getFieldUiSchema = (
     toPrint: boolean,
     propertyKey: string,
     propertySchema: IEntitySingleProperty,
-    unitsOptions?: string[],
+    unitsOptions?: IMongoUnit[],
 ): UiSchema => {
     const defaultValue = values.template?.properties?.properties?.[propertyKey]?.defaultValue ?? undefined;
     const enumPropertiesColors = values.template?.enumPropertiesColors;
@@ -94,10 +95,10 @@ const getFieldUiSchema = (
             'ui:options': {
                 defaultValue,
                 enumOptions: unitsOptions?.map((option) => ({
-                    label: option,
-                    value: option,
-                    color: enumPropertiesColors?.[propertyKey]?.[option],
+                    label: option.name,
+                    value: option._id,
                 })),
+                disabled: unitsOptions?.find((unit) => unit._id === values.properties?.[propertyKey])?.disabled,
             },
         };
     }
@@ -177,7 +178,7 @@ export const uiSchemaUtils = (
     isEditMode: boolean,
     toPrint: boolean,
     groupTitleColor: string,
-    unitsOptions?: string[],
+    unitsOptions?: IMongoUnit[],
 ): Record<string, UiSchema> => {
     const uiSchema: ReturnType<typeof uiSchemaUtils> = {};
 

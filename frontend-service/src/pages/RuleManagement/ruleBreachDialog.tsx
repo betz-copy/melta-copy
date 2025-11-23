@@ -1,3 +1,5 @@
+import { Close as CloseIcon } from '@mui/icons-material';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
 import {
     Box,
     Button,
@@ -12,25 +14,22 @@ import {
     Tab,
     Typography,
 } from '@mui/material';
-import { Close as CloseIcon } from '@mui/icons-material';
+import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
-
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
-import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { AxiosError } from 'axios';
+import { ActionInfo } from '../../common/ruleBreanchInfo/ActionInfo';
+import { BrokenRulesInfo } from '../../common/ruleBreanchInfo/BrokenRulesInfo';
+import { environment } from '../../globals';
+import { IErrorResponse } from '../../interfaces/error';
+import { PermissionScope } from '../../interfaces/permissions';
+import { BreachType } from '../../interfaces/ruleBreaches/ruleBreach';
 import { IRuleBreachAlertPopulated } from '../../interfaces/ruleBreaches/ruleBreachAlert';
 import { IRuleBreachRequestPopulated, RuleBreachRequestStatus } from '../../interfaces/ruleBreaches/ruleBreachRequest';
 import { approveRuleBreachRequestRequest, cancelRuleBreachRequestRequest, denyRuleBreachRequestRequest } from '../../services/ruleBreachesService';
-import { BreachType } from '../../interfaces/ruleBreaches/ruleBreach';
-import { environment } from '../../globals';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
-import { PermissionScope } from '../../interfaces/permissions';
-import { ActionInfo } from '../../common/ruleBreanchInfo/ActionInfo';
-import { BrokenRulesInfo } from '../../common/ruleBreanchInfo/BrokenRulesInfo';
-import { IErrorResponse } from '../../interfaces/error';
 
 const { errorCodes } = environment;
 

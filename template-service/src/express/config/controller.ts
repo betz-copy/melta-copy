@@ -1,5 +1,5 @@
+import { ConfigTypes, DefaultController, IMongoBaseConfig } from '@microservices/shared';
 import { Request, Response } from 'express';
-import { IMongoBaseConfig, DefaultController, ConfigTypes } from '@microservices/shared';
 import ConfigManager from './manager';
 
 class ConfigController extends DefaultController<IMongoBaseConfig, ConfigManager> {

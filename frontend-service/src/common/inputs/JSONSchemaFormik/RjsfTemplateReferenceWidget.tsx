@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
-import { WidgetProps } from '@rjsf/utils';
-import { useQueryClient } from 'react-query';
 import { TextField } from '@mui/material';
+import { WidgetProps } from '@rjsf/utils';
+import { useFormikContext } from 'formik';
 import i18next from 'i18next';
-import TemplateEntitiesAutocomplete from '../TemplateEntitiesAutocomplete';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { IEntity } from '../../../interfaces/entities';
+import React, { useState } from 'react';
+import { useQueryClient } from 'react-query';
 import { IChildTemplateMap } from '../../../interfaces/childTemplates';
+import { IEntity } from '../../../interfaces/entities';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { EntityWizardValues } from '../../dialogs/entity';
+import TemplateEntitiesAutocomplete from '../TemplateEntitiesAutocomplete';
 
 const RjsfTemplateReferenceWidget = ({
     id,
@@ -24,7 +26,9 @@ const RjsfTemplateReferenceWidget = ({
     placeholder,
     ...widgetProps
 }: WidgetProps) => {
-    const [inputValue, setInputValue] = useState('');
+    const [inputValue, setInputValue] = useState<string>('');
+
+    const { values } = useFormikContext();
 
     const handleEntityChange = (_event: React.SyntheticEvent, chosenEntity: IEntity | null) => {
         onChange(chosenEntity);
@@ -33,7 +37,7 @@ const RjsfTemplateReferenceWidget = ({
     const queryClient = useQueryClient();
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 
     const handleEntityInputChange = (_event: React.SyntheticEvent, newDisplayValue: string) => setInputValue(newDisplayValue);
 
@@ -57,7 +61,7 @@ const RjsfTemplateReferenceWidget = ({
                 required={required}
                 disabled
                 value={i18next.t('templateEntitiesAutocomplete.noWritePermissions')}
-                error={rawErrors.length > 0}
+                error={!!rawErrors.length}
             />
         );
 
@@ -71,12 +75,13 @@ const RjsfTemplateReferenceWidget = ({
             onChange={handleEntityChange}
             onDisplayValueChange={handleEntityInputChange}
             displayValue={inputValue}
-            isError={rawErrors.length > 0}
+            isError={!!rawErrors.length}
             onBlur={handleBlur}
             disabled={disabled}
             relationFilters={filters}
             required={required}
             isChildTemplate={!relatedEntityTemplate}
+            currentEntity={(values as EntityWizardValues).properties}
         />
     );
 };

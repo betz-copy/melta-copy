@@ -1466,7 +1466,7 @@ export const webGLFluidSimulation = (canvas) => {
         let pointer = pointers.find((p) => p.id == -1);
         if (pointer == null) pointer = new pointerPrototype();
         updatePointerDownData(pointer, -1, posX, posY);
-    }
+    };
 
     const mouseMoveCanvasEventLIstener = (e) => {
         const pointer = pointers[0];
@@ -1474,21 +1474,21 @@ export const webGLFluidSimulation = (canvas) => {
         const posX = scaleByPixelRatio(e.offsetX);
         const posY = scaleByPixelRatio(e.offsetY);
         updatePointerMoveData(pointer, posX, posY);
-    }
+    };
 
     const mouseUpWindowEventLIstener = () => {
         updatePointerUpData(pointers[0]);
-    }
+    };
 
     const keyDownWindowEventLIstener = (e) => {
         if (e.code === 'KeyP') config.PAUSED = !config.PAUSED;
         if (e.key === ' ') splatStack.push(parseInt(Math.random() * 20) + 5);
-    }
+    };
 
     return [
         { type: 'canvas', event: 'mousedown', listener: mouseDownCanvasEventLIstener },
         { type: 'canvas', event: 'mousemove', listener: mouseMoveCanvasEventLIstener },
         { type: 'window', event: 'mouseup', listener: mouseUpWindowEventLIstener },
         { type: 'window', event: 'keydown', listener: keyDownWindowEventLIstener },
-    ]
-}
+    ];
+};

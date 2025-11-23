@@ -2,11 +2,11 @@ import { Autocomplete, FormControl, FormControlLabel, FormHelperText, Grid, Text
 import { FormikErrors, FormikTouched, getIn } from 'formik';
 import i18next from 'i18next';
 import React, { useEffect } from 'react';
-import { RuleWizardValues } from '.';
 import { environment } from '../../../globals';
 import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
 import TextArea from '../../inputs/TextArea';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
+import { RuleWizardValues } from '.';
 
 const { errorColor } = environment;
 
@@ -35,7 +35,13 @@ export const CreateRuleEmailNotification: React.FC<CreateRuleEmailNotificationPr
                         checked={mail?.display}
                         onChange={(e) => {
                             if (!e.target.checked) {
-                                setFieldValue('mail', undefined);
+                                setFieldValue('mail', {
+                                    title: '',
+                                    body: '',
+                                    display: false,
+                                    sendAssociatedUsers: false,
+                                    sendPermissionUsers: false,
+                                });
                             } else {
                                 setFieldValue('mail.display', e.target.checked);
                             }
@@ -138,14 +144,13 @@ export const CreateRuleColorField: React.FC<CreateRuleColorFieldProps> = ({
 }) => {
     return (
         <Grid container direction="column" gap={2}>
-            <FormHelperText sx={{ color: '#9398C2', fontSize: '14px' }}>{i18next.t('wizard.rule.atLeastOne')}</FormHelperText>
             <FormControlLabel
                 control={
                     <MeltaCheckbox
                         checked={fieldColor?.display}
                         onChange={(e) => {
                             if (!e.target.checked) {
-                                setFieldValue('fieldColor', undefined);
+                                setFieldValue('fieldColor', { display: false, color: '', field: '' });
                             } else {
                                 setFieldValue('fieldColor.display', e.target.checked);
                             }

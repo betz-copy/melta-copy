@@ -1,24 +1,24 @@
-import { FilterQuery } from 'mongoose';
 import {
-    PermissionScope,
-    PermissionType,
     ICompactNullablePermissions,
     ICompactPermissions,
     IPermission,
     ISubCompactPermissions,
-    RecursiveNullable,
-    RelatedPermission,
     IUser,
     IUserPopulated,
+    PermissionScope,
+    PermissionType,
+    RecursiveNullable,
+    RelatedPermission,
     ValidationError,
 } from '@microservices/shared';
 import mapValues from 'lodash.mapvalues';
+import { FilterQuery } from 'mongoose';
 import { flattenObject, typedObjectEntries } from '../../utils';
 import { transaction } from '../../utils/mongoose';
+import RolesManager from '../roles/manager';
 import UsersManager from '../users/manager';
 import { SinglePermissionOfTypePerUserError } from './errors';
 import PermissionsModel from './model';
-import RolesManager from '../roles/manager';
 
 class PermissionsManager {
     static async getCompactPermissions(permissions: IPermission[]): Promise<ICompactPermissions> {
@@ -54,7 +54,7 @@ class PermissionsManager {
         if (workspaceIds) query.workspaceId = { $in: workspaceIds };
 
         const permissions = await PermissionsModel.find(query).lean().exec();
-        return this.getCompactPermissions(permissions);
+        return PermissionsManager.getCompactPermissions(permissions);
     }
 
     static async syncCompactPermissions(
@@ -71,7 +71,8 @@ class PermissionsManager {
                         permission.rules === null &&
                         permission.instances === null &&
                         permission.processes === null &&
-                        permission.templates === null),
+                        permission.templates === null &&
+                        permission.units === null),
             ) && !dontDeleteUser;
 
         if (permissionType === RelatedPermission.User)
@@ -108,7 +109,7 @@ class PermissionsManager {
             await Promise.all(actions);
         });
 
-        const allRelatedPermissions = await this.getCompactPermissionsOfRelatedId(relatedId, undefined, permissionType);
+        const allRelatedPermissions = await PermissionsManager.getCompactPermissionsOfRelatedId(relatedId, undefined, permissionType);
         if (Object.keys(allRelatedPermissions).length === 0 && isDeletePermission) {
             // no permissions of role or user and it can be deleted from collection
             if (permissionType === RelatedPermission.Role) RolesManager.deleteRoleById(relatedId);

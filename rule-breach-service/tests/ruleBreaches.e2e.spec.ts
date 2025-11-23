@@ -2,15 +2,15 @@
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-restricted-syntax */
+
+import { Express } from 'express';
+import { StatusCodes } from 'http-status-codes';
 import mongoose from 'mongoose';
 import * as request from 'supertest';
-import { Express } from 'express';
-
-import { StatusCodes } from 'http-status-codes';
 import config from '../src/config';
+import { RuleBreachRequestStatus } from '../src/express/ruleBreachRequests/interface';
 import Server from '../src/express/server';
 import { ActionTypes } from '../src/utils/interfaces/actionMetadata';
-import { RuleBreachRequestStatus } from '../src/express/ruleBreachRequests/interface';
 
 const { mongo } = config;
 const { OK: okStatus, BAD_REQUEST: badRequest, NOT_FOUND: notFoundStatus } = StatusCodes;

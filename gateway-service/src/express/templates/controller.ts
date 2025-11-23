@@ -1,15 +1,15 @@
+import { ConfigTypes } from '@microservices/shared';
 import assert from 'assert';
 import { Request, Response } from 'express';
-import { ConfigTypes } from '@microservices/shared';
-import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
-import DefaultController from '../../utils/express/controller';
-import { TemplatesManager } from './manager';
+import config from '../../config';
 import { RequestWithSearchEntityTemplateBody } from '../../externalServices/templates/entityTemplateService';
 import {
     RequestWithSearchRelationshipTemplateBody,
     RequestWithSearchRuleTemplateBody,
 } from '../../externalServices/templates/relationshipsTemplateService';
-import config from '../../config';
+import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
+import DefaultController from '../../utils/express/controller';
+import { TemplatesManager } from './manager';
 
 const { userDoesntExistUnderReq } = config.templateService;
 
@@ -156,6 +156,10 @@ export default class TemplatesController extends DefaultController<TemplatesMana
     async updateChildTemplate(req: Request, res: Response) {
         const { permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
         res.json(await this.manager.updateChildTemplate(req.params.id, req.user!.id, req.body, permissionsOfUserId));
+    }
+
+    async updateChildTemplateStatus(req: Request, res: Response) {
+        res.json(await this.manager.updateChildTemplateStatus(req.params.id, req.body.disabled));
     }
 
     // relationshipTemplates

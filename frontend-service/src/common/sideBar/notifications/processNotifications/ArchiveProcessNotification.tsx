@@ -1,10 +1,10 @@
-import React from 'react';
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { IArchiveProcessNotificationMetadataPopulated, NotificationType } from '../../../../interfaces/notifications';
-import { ProcessName } from './ProcessName';
+import React from 'react';
 import { environment } from '../../../../globals';
+import { IArchiveProcessNotificationMetadataPopulated, NotificationType } from '../../../../interfaces/notifications';
 import { NotificationColor } from '../../../notificationColor';
+import { ProcessName } from './ProcessName';
 
 export const ArchiveProcessNotification: React.FC<{ notificationMetadata: IArchiveProcessNotificationMetadataPopulated }> = ({
     notificationMetadata: { process, isArchived },

@@ -1,7 +1,7 @@
 import { Autocomplete, Grid, MenuItem, TextField } from '@mui/material';
-import React from 'react';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
+import React from 'react';
 import { CommonFormInputProperties } from './commonInterfaces';
 
 export const kartoffelPersonalDataFields: string[] = [

@@ -77,6 +77,7 @@ export const Field = ({
     uniqueConstraints,
     setUniqueConstraints,
     moveGroup,
+    values,
 }: FieldProps) => {
     const ref = React.useRef(null);
 
@@ -132,6 +133,7 @@ export const Field = ({
                     setValues={setValues}
                     uniqueConstraints={uniqueConstraints}
                     setUniqueConstraints={setUniqueConstraints}
+                    values={values}
                 />
             </Grid>
         </Grid>
@@ -141,6 +143,7 @@ export const Field = ({
 export const Group = <PropertiesType extends string, Values extends Record<PropertiesType, PropertyItem[]>>({
     group,
     index,
+    values,
     moveField,
     moveGroup,
     touched,
@@ -310,7 +313,7 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
                             />
 
                             <MeltaTooltip
-                                title={i18next.t(`wizard.entityTemplate.${group.fields.length > 0 ? 'cantDeleteGroupWithFields' : 'deleteGroup'}`)}
+                                title={i18next.t(`wizard.entityTemplate.${group.fields.length ? 'cantDeleteGroupWithFields' : 'deleteGroup'}`)}
                             >
                                 <Grid>
                                     <IconButton
@@ -319,7 +322,7 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
                                             e.stopPropagation();
                                             remove(index);
                                         }}
-                                        disabled={group.fields.length > 0}
+                                        disabled={!!group.fields.length}
                                     >
                                         <DeleteIcon />
                                     </IconButton>
@@ -349,6 +352,7 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
                                 setValues={setDisplayValueWrapper(idx, group.id)}
                                 uniqueConstraints={uniqueConstraints}
                                 setUniqueConstraints={setUniqueConstraints}
+                                values={values}
                             />
                         ))}
 

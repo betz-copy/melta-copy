@@ -1,5 +1,5 @@
 import { WidgetProps } from '@rjsf/utils';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { UserInput } from '../UserInput';
 
 const RjsfUserWidget = ({
@@ -18,6 +18,7 @@ const RjsfUserWidget = ({
     readonly,
     hideError,
     formContext,
+    required,
     ...textFieldProps
 }: WidgetProps) => {
     const [currentUser, setCurrentUser] = useState(value ? JSON.parse(value) : undefined);
@@ -44,8 +45,9 @@ const RjsfUserWidget = ({
             onBlur={({ target: { value: newValue } }) => onBlur(id, newValue)}
             onFocus={({ target: { value: newValue } }) => onFocus(id, newValue)}
             autoFocus={autofocus}
-            isError={rawErrors.length > 0}
+            isError={!!rawErrors.length}
             disabled={disabled}
+            required={required}
             textFieldProps={{
                 ...textFieldProps,
                 uischema: uiSchema,

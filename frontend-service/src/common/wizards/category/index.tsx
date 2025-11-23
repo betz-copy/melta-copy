@@ -5,18 +5,18 @@ import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { ICategory, ICategoryMap } from '../../../interfaces/categories';
+import { ConfigTypes, IMongoCategoryOrderConfig } from '../../../interfaces/config';
 import fileDetails from '../../../interfaces/fileDetails';
 import { createCategoryRequest, updateCategoryRequest } from '../../../services/templates/categoriesService';
+import { getConfigByTypeRequest } from '../../../services/templates/configService';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
+import { updateUserPermissionForCategory } from '../../../utils/permissions/templatePermissions';
 import { ErrorToast } from '../../ErrorToast';
-import { ConfigTypes, IMongoCategoryOrderConfig } from '../../../interfaces/config';
 import { StepType, Wizard, WizardBaseType } from '../index';
 import { ChooseColor, chooseColorSchema } from './ChooseColor';
 import { ChooseIcon } from './ChooseIcon';
 import { CreateCategoryName, useCreateCategoryNameSchema } from './CreateCategoryName';
-import { updateUserPermissionForCategory } from '../../../utils/permissions/templatePermissions';
-import { getConfigByTypeRequest } from '../../../services/templates/configService';
 
 export interface CategoryWizardValues extends Omit<ICategory, 'iconFileId'> {
     icon?: fileDetails;

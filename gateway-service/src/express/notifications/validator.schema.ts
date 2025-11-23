@@ -1,5 +1,5 @@
-import joi from 'joi';
 import { MongoIdSchema } from '@microservices/shared';
+import joi from 'joi';
 
 // GET /api/notifications/my
 export const getMyNotificationsRequestSchema = joi.object({

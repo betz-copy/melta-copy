@@ -1,8 +1,8 @@
 /* eslint-disable react/destructuring-assignment */
 import { Grid } from '@mui/material';
 import React from 'react';
-import { IPureFieldsDisplayProps, PureFieldsDisplay } from './PureFieldsDisplay';
 import { NavButton } from '../../../../common/NavButton';
+import { IPureFieldsDisplayProps, PureFieldsDisplay } from './PureFieldsDisplay';
 
 export const FieldsDisplay: React.FC<IPureFieldsDisplayProps> = (props) => {
     if (props.expanded)

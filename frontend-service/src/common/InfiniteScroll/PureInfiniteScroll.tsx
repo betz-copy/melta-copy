@@ -1,5 +1,5 @@
 import { Grid } from '@mui/material';
-import React, { JSX, Key, useEffect, useRef } from 'react';
+import { JSX, Key, useEffect, useRef } from 'react';
 import { GetNextPageParamFunction, QueryFunction, QueryKey, useInfiniteQuery } from 'react-query';
 import { ShowMore } from './ShowMore';
 
@@ -15,7 +15,7 @@ export interface PureInfiniteScrollProps<T> {
     openIds?: Map<string, boolean>;
 }
 
-export const PureInfiniteScroll = <T extends any>({
+export const PureInfiniteScroll = <T,>({
     children,
     queryKey,
     queryFunction,

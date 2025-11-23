@@ -15,9 +15,9 @@ import {
     ISearchEntityTemplatesBody,
     ISubCompactPermissions,
 } from '@microservices/shared';
-import TemplatesManagerService from '.';
 import config from '../../config';
 import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';
+import TemplatesManagerService from '.';
 
 const {
     service: { workspaceIdHeaderName },
@@ -139,12 +139,6 @@ class EntityTemplateService extends TemplatesManagerService {
         return data;
     }
 
-    async updateChildEntityTemplateAction(templateId: string, actions: string) {
-        const { data } = await this.api.patch<IMongoEntityTemplatePopulated>(`${baseChildTemplatesRoute}/${templateId}/actions`, { actions });
-
-        return data;
-    }
-
     async convertToRelationshipField(entityTemplateId: string, relationshipTemplateId: string, updatedData: Omit<IEntityTemplate, 'disabled'>) {
         const { data } = await this.api.put<{
             updatedRelationShipTemplate: IMongoRelationshipTemplate;
@@ -244,6 +238,28 @@ class EntityTemplateService extends TemplatesManagerService {
 
     async updateChildTemplate(id: string, childTemplate: IChildTemplate) {
         const { data } = await this.api.put<IChildTemplatePopulated>(`${baseChildTemplatesRoute}/${id}`, childTemplate);
+        return data;
+    }
+
+    async updateChildEntityTemplateAction(templateId: string, actions: string) {
+        const { data } = await this.api.patch<IMongoEntityTemplatePopulated>(`${baseChildTemplatesRoute}/${templateId}/actions`, { actions });
+
+        return data;
+    }
+
+    async updateChildTemplateStatus(childTemplateId: string, disabledStatus: boolean) {
+        const { data } = await this.api.patch<IMongoEntityTemplatePopulated>(`${baseChildTemplatesRoute}/${childTemplateId}/status`, {
+            disabled: disabledStatus,
+        });
+
+        return data;
+    }
+
+    async multiUpdateChildTemplateStatusByParentId(parentId: string, disabledStatus: boolean) {
+        const { data } = await this.api.patch<IMongoEntityTemplatePopulated[]>(`${baseChildTemplatesRoute}/${parentId}/multiStatuses`, {
+            disabled: disabledStatus,
+        });
+
         return data;
     }
 }

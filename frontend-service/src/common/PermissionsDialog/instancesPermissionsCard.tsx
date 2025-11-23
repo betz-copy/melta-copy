@@ -6,9 +6,9 @@ import { PermissionScope } from '../../interfaces/permissions';
 import { PermissionData } from '../../interfaces/users';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { entityTemplatePermissionDialog } from '../../utils/permissions/permissionOfUserDialog';
+import SearchInput from '../inputs/SearchInput';
 import BlueTitle from '../MeltaDesigns/BlueTitle';
 import MeltaCheckbox from '../MeltaDesigns/MeltaCheckbox';
-import SearchInput from '../inputs/SearchInput';
 import CategoryCheckboxPermission from './categoryCheckboxPermission';
 
 type checkboxControlProps = {

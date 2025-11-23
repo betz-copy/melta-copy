@@ -85,7 +85,7 @@ export const DashboardProtectedRoute: React.FC<{
 
     if (dashboardType === DashboardItemType.Chart) {
         const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
-        const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates');
+        const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates');
 
         const entityTemplate = entityTemplates?.get(templateId);
         const childTemplate = childTemplates?.get(templateId);
@@ -113,7 +113,8 @@ export const SystemManagementProtectedRoute: React.FC<{ permissions: ISubCompact
         children,
         permissions.admin?.scope === PermissionScope.write ||
             permissions.templates?.scope === PermissionScope.write ||
-            permissions.processes?.scope === PermissionScope.write,
+            permissions.processes?.scope === PermissionScope.write ||
+            permissions.units?.scope === PermissionScope.write,
     );
 };
 

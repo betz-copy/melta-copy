@@ -1,24 +1,24 @@
+import {
+    ActionErrors,
+    ActionTypes,
+    CoordinateSystem,
+    IAction,
+    ICreateEntityMetadata,
+    ICreateRelationshipMetadata,
+    IEntity,
+    IMongoEntityTemplate,
+    IMongoRelationshipTemplate,
+    ValidationError,
+} from '@microservices/shared';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { Request } from 'express';
 import groupBy from 'lodash.groupby';
-import {
-    IMongoEntityTemplate,
-    IMongoRelationshipTemplate,
-    ActionTypes,
-    ICreateEntityMetadata,
-    ICreateRelationshipMetadata,
-    IAction,
-    IEntity,
-    ActionErrors,
-    ValidationError,
-    CoordinateSystem,
-} from '@microservices/shared';
+import config from '../../config';
 import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import DefaultController from '../../utils/express/controller';
 import EntityManager from '../entities/manager';
-import config from '../../config';
 
 const { brokenRulesFakeEntityIdPrefix } = config;
 

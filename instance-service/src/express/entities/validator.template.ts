@@ -51,7 +51,7 @@ ajv.addFormat('user', {
     },
 });
 ajv.addFormat('kartoffelUserField', /.*/);
-ajv.addFormat('unitField', /.*/);
+ajv.addFormat('unitField', ajvCustomFormats.unitFieldRegex);
 ajv.addFormat('text-area', ajvCustomFormats.textAreaFieldRegex);
 ajv.addFormat('relationshipReference', ajvCustomFormats.relationshipReferenceFieldRegex);
 ajv.addFormat('location', {
@@ -330,7 +330,7 @@ export class EntityValidator extends DefaultController {
     private validateSortOfSearchBatch(searchBody: ISearchBatchBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>) {
         const templateIds = Object.keys(searchBody.templates);
 
-        searchBody.sort.forEach(({ field }, sortIndex) => {
+        searchBody.sort?.forEach(({ field }, sortIndex) => {
             templateIds.forEach((templateId, templateIndex) => {
                 const fieldTemplate = entityTemplatesMap.get(templateId)!.properties.properties[field];
                 if (!fieldTemplate) {
@@ -479,9 +479,9 @@ export class EntityValidator extends DefaultController {
         const searchBody: IGetExpandedEntityBody['filters'] = req.body.filters;
         const templateIds = Object.keys(searchBody);
         const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({ ids: templateIds });
-        if (entityTemplates.length < templateIds.length) {
+        if (entityTemplates.length < templateIds.length)
             throw new ValidationError(`some of the templates in search doesn't exist. found only [${entityTemplates.map(({ _id }) => _id)}]`);
-        }
+
         const entityTemplatesMap = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
 
         const entityTemplatesForValidationMap: Map<string, IMongoEntityTemplate> = new Map(

@@ -19,6 +19,7 @@ services:
       MONGO_URL: ${USER_SERVICE_MONGO_URL}
       MONGO_PERMISSIONS_COLLECTION_NAME: ${MONGO_PERMISSIONS_COLLECTION_NAME}
       MONGO_USERS_COLLECTION_NAME: ${MONGO_USERS_COLLECTION_NAME}
+      MONGO_UNITS_COLLECTION_NAME: ${MONGO_UNITS_COLLECTION_NAME}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
 
@@ -194,6 +195,8 @@ services:
     build:
       context: .
       dockerfile: ./preview-service/Dockerfile
+      args:
+        SERVICE_NAME: 'preview-service'
     command: ['npm', 'run', 'start', '-w', 'preview-service']
     environment:
       PORT: 8000
@@ -235,6 +238,25 @@ services:
       MONGO_DASHBOARD_COLLECTION_NAME: ${MONGO_DASHBOARD_COLLECTION_NAME}
       MONGO_IFRAMES_COLLECTION_NAME: ${MONGO_IFRAMES_COLLECTION_NAME}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
+
+  mock-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+      args:
+        SERVICE_NAME: 'mock-service'
+    command: ['npm', 'run', 'start', '-w', 'mock-service']
+    environment:
+      TEMPLATE_SERVICE_URL: ${TEMPLATE_SERVICE_URL}
+      INSTANCE_SERVICE_URL: ${INSTANCE_SERVICE_URL}
+      USER_SERVICE_URL: ${USER_SERVICE_URL}
+      PROCESS_SERVICE_URL: ${PROCESS_SERVICE_URL}
+      STORAGE_SERVICE_URL: ${STORAGE_SERVICE_URL}
+      GANTT_SERVICE_URL: ${GANTT_SERVICE_URL}
+      WORKSPACES_SERVICE_URL: ${WORKSPACE_SERVICE_URL}
+      DASHBOARD_SERVICE_URL: ${DASHBOARD_SERVICE_URL}
+      USER_SERVICE_MANAGERS_KARTOFFEL_IDS: 5e5688324203fc40043591aa,61d37cb5e4de0300121e31ef
+      WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
 
   gateway-service:
     build:
@@ -330,7 +352,6 @@ services:
     environment:
       PORT: 8000
       RABBIT_URL: ${RABBIT_URL}
-      REDIS_CONNECTION_URI: ${REDIS_HOST}
       ELASTIC_CLIENT_URL: ${SEMANTIC_ELASTIC_CLIENT_URL}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       MINIO_ENDPOINT: ${MINIO_ENDPOINT}

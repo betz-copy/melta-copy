@@ -25,7 +25,7 @@ const EntityTemplateCheckboxPermission: React.FC<{
         <Grid container size={{ xs: 12 }} key={entityTemplate.id}>
             <Grid size={{ xs: 1.2 }} />
             <Grid size={{ xs: 4.8 }} display="flex" alignItems="center">
-                {entityTemplate.childTemplates && entityTemplate.childTemplates.length > 0 && (
+                {entityTemplate.childTemplates && !!entityTemplate.childTemplates.length && (
                     <IconButton
                         aria-label="arrowLeftRounded"
                         onClick={() => {

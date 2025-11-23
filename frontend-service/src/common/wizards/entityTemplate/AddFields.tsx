@@ -5,7 +5,7 @@ import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
-import { HTML5Backend, getEmptyImage } from 'react-dnd-html5-backend';
+import { getEmptyImage, HTML5Backend } from 'react-dnd-html5-backend';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
@@ -15,7 +15,7 @@ import { arrayTypes, basePropertyTypes, stringFormats } from '../../../services/
 import { entityTemplateUniqueProperties, regexSchema, variableNameValidation } from '../../../utils/validation';
 import { ErrorToast } from '../../ErrorToast';
 import { StepComponentHelpers, StepComponentProps } from '../index';
-import { CommonFormInputProperties, FieldProperty, GroupProperty, PropertyItem } from './commonInterfaces';
+import { CommonFormInputProperties, FieldProperty, FilterType, GroupProperty, PropertyItem } from './commonInterfaces';
 import { FieldBlockDND } from './fieldBlock/FieldBlock';
 import { ItemTypes } from './fieldBlock/interfaces';
 import { getFieldData } from './fieldBlock/propertiesTypes';
@@ -60,44 +60,69 @@ export const attachmentPropertiesBaseSchema = Yup.object({
 
 const agGridTextFilterSchema = Yup.object({
     filterType: Yup.string().oneOf(['text']).required(),
-    type: Yup.string().oneOf(['contains', 'notContains', 'equals', 'notEqual', 'startsWith', 'endsWith']).required(i18next.t('validation.required')),
+    type: Yup.string().oneOf(filterOptions.text).required(i18next.t('validation.required')),
     filter: Yup.mixed().required(i18next.t('validation.required')),
 });
 
-const agGridNumberFilterSchema = Yup.object({
-    filterType: Yup.string().oneOf(['number']).required(),
-    type: Yup.string()
-        .oneOf(['equals', 'notEqual', 'lessThan', 'lessThanOrEqual', 'greaterThan', 'greaterThanOrEqual', 'inRange'])
-        .required(i18next.t('validation.required')),
-    filter: Yup.number().typeError(i18next.t('validation.invalidNumberField')).required(i18next.t('validation.required')),
-    filterTo: Yup.number()
-        .typeError(i18next.t('validation.invalidNumberField'))
-        .when('type', {
+const agGridNumberFilterSchema = (parentFilterType: FilterType = FilterType.value) =>
+    Yup.object({
+        filterType: Yup.string().oneOf(['number']).strict(true).required(),
+        type: Yup.string().oneOf(filterOptions.number).required(i18next.t('validation.required')),
+        filter: Yup.mixed()
+            .test('number-validation', i18next.t('validation.invalidNumberField'), (value) => {
+                if (value === undefined || value === null) return false;
+
+                if (parentFilterType === FilterType.field) {
+                    if (typeof value !== 'string') return false;
+                    return value.trim() !== '';
+                }
+
+                const valueStr = String(value);
+                const numValue = parseFloat(valueStr);
+
+                return !Number.isNaN(numValue) && Number.isFinite(numValue);
+            })
+            .required(),
+        filterTo: Yup.number()
+            .typeError(i18next.t('validation.invalidNumberField'))
+            .when('type', {
+                is: 'inRange',
+                then: (schema) => schema.required(i18next.t('validation.required')),
+                otherwise: (schema) => schema.notRequired(),
+            }),
+    });
+
+const validateRelativeDate = (value?: string) => {
+    if (!value) return false;
+    return relativeDateFilters.includes(value);
+};
+
+const validateExactDate = (value?: string) => {
+    if (!value) return false;
+    return dateRegex.test(value) || dateTimeRegex.test(value) || isValid(new Date(value));
+};
+
+const agGridDateFilterSchema = (parentFilterType: FilterType = FilterType.value) =>
+    Yup.object({
+        filterType: Yup.string().oneOf(['date']).required(),
+        type: Yup.string().oneOf(filterOptions.date).required(i18next.t('validation.required')),
+        dateFrom:
+            parentFilterType === FilterType.field
+                ? Yup.string().required(i18next.t('validation.required'))
+                : Yup.string()
+                      .when('type', {
+                          is: (type: string) => relativeDateFilters.includes(type),
+                          then: (schema) => schema.test('valid-relative-date', i18next.t('validation.invalidRelativeDate'), validateRelativeDate),
+                          otherwise: (schema) =>
+                              schema.test('valid-date-format', 'must be YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss.sssZ', validateExactDate),
+                      })
+                      .required(i18next.t('validation.required')),
+        dateTo: Yup.string().when('type', {
             is: 'inRange',
             then: (schema) => schema.required(i18next.t('validation.required')),
-            otherwise: (schema) => schema.notRequired(),
+            otherwise: (schema) => schema.nullable().notRequired(),
         }),
-});
-
-const agGridDateFilterSchema = Yup.object({
-    filterType: Yup.string().oneOf(['date']).required(),
-    type: Yup.string().oneOf(filterOptions.date).required(i18next.t('validation.required')),
-    dateFrom: Yup.string()
-        .when('type', {
-            is: (type: string) => relativeDateFilters.includes(type),
-            then: (schema) => schema.oneOf([...relativeDateFilters]),
-            otherwise: (schema) =>
-                schema.test('valid-date-format', 'must be YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss.sssZ', (value) => {
-                    return dateRegex.test(value!) || dateTimeRegex.test(value!) || isValid(new Date(value!));
-                }),
-        })
-        .required(i18next.t('validation.required')),
-    dateTo: Yup.string().when('type', {
-        is: 'inRange',
-        then: (schema) => schema.required(i18next.t('validation.required')),
-        otherwise: (schema) => schema.nullable().notRequired(),
-    }),
-});
+    });
 
 const agGridSetFilterSchema = Yup.object({
     filterType: Yup.string().oneOf(['set']).required(),
@@ -106,16 +131,16 @@ const agGridSetFilterSchema = Yup.object({
 
 // Dynamic filter field validation based on `filterType`
 export const filterFieldSchema = (isRequired: boolean = true) =>
-    Yup.lazy((value: any) => {
-        const makeOptional = (schema) => (isRequired ? schema : schema.notRequired().nullable());
+    Yup.lazy((value: any, { parent }) => {
+        const makeOptional = (schema: Yup.AnySchema) => (isRequired ? schema : schema.notRequired().nullable());
 
         switch (value?.filterType) {
             case 'text':
                 return makeOptional(agGridTextFilterSchema);
             case 'number':
-                return makeOptional(agGridNumberFilterSchema);
+                return makeOptional(agGridNumberFilterSchema(parent.filterType));
             case 'date':
-                return makeOptional(agGridDateFilterSchema);
+                return makeOptional(agGridDateFilterSchema(parent.filterType));
             case 'set':
                 return makeOptional(agGridSetFilterSchema);
             default:
@@ -126,6 +151,7 @@ export const filterFieldSchema = (isRequired: boolean = true) =>
 export const filtersSchema = Yup.array().of(
     Yup.object({
         filterProperty: Yup.string().required(i18next.t('validation.required')),
+        filterType: Yup.string().oneOf([FilterType.field, FilterType.value]),
         filterField: filterFieldSchema(),
     }),
 );
@@ -221,13 +247,10 @@ const propertiesSchema = Yup.array()
         let count = 0;
         for (const item of entries as PropertyItem[]) {
             if (item.type === 'field' && item.data?.mapSearch) count++;
-            if (item.type === 'group') {
-                count += item.fields?.filter((f) => f.mapSearch).length || 0;
-            }
+            if (item.type === 'group') count += item.fields?.filter((f) => f.mapSearch).length || 0;
         }
-        if (count > mapSearchPropertiesLimit) {
-            toast.error(i18next.t('validation.mapSearchPropertiesLimit', { limit: mapSearchPropertiesLimit }));
-        }
+        if (count > mapSearchPropertiesLimit) toast.error(i18next.t('validation.mapSearchPropertiesLimit', { limit: mapSearchPropertiesLimit }));
+
         return count <= mapSearchPropertiesLimit;
     });
 
@@ -271,12 +294,10 @@ export const FieldBlockWrapper = ({
 }) => {
     const hasActions = Boolean(initialValues?.actions);
     const countMapSearchProperties = Object.values(values.properties).flatMap((property: any) => {
-        if (property.type === 'field' && property.data?.mapSearch) {
-            return [property];
-        }
-        if (property.type === 'group' && Array.isArray(property.fields)) {
-            return property.fields.filter((field) => field.mapSearch);
-        }
+        if (property.type === 'field' && property.data?.mapSearch) return [property];
+
+        if (property.type === 'group' && Array.isArray(property.fields)) return property.fields.filter((field) => field.mapSearch);
+
         return [];
     }).length;
 
@@ -297,7 +318,7 @@ export const FieldBlockWrapper = ({
             },
         },
     );
-    const areThereAnyInstances = isEditMode && areThereInstancesByTemplateIdResponse!.count > 0;
+    const areThereAnyInstances = isEditMode && !!areThereInstancesByTemplateIdResponse?.count;
 
     const getNewValues = (
         indexesInTypes: { index: number; type: PropertiesTypes; groupIndex?: number }[],
@@ -474,7 +495,7 @@ export const FieldBlockWrapper = ({
 
     const remove = (
         index: number,
-        isNewProperty: Boolean,
+        isNewProperty: boolean,
         propertyType: PropertiesTypes,
         setShowAreUSureDialogForRemoveProperty: (v: boolean) => void,
         groupIndex?: number,
@@ -661,7 +682,7 @@ export const FieldBlockWrapper = ({
                         setValues((prev) => ({
                             ...prev,
                             uniqueConstraints:
-                                typeof newUniqueConstraints === 'function' ? newUniqueConstraints(prev.uniqueConstraints!) : newUniqueConstraints,
+                                typeof newUniqueConstraints === 'function' ? newUniqueConstraints(prev.uniqueConstraints) : newUniqueConstraints,
                         }));
                     }}
                     initialValues={initialValues}

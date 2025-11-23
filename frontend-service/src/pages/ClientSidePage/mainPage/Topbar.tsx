@@ -1,20 +1,20 @@
-import React, { useState } from 'react';
-import { Typography, Grid, Divider } from '@mui/material';
+import { Divider, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
+import React, { useState } from 'react';
+import { useQuery } from 'react-query';
 import { CustomImage } from '../../../common/CustomIcon';
-import { IKartoffelUser } from '../../../interfaces/users';
 import { NotificationsButton } from '../../../common/sideBar/notifications/NotificationsButton';
 import { NotificationsScreen } from '../../../common/sideBar/notifications/NotificationsScreen';
-import { useQuery } from 'react-query';
+import UserAvatar from '../../../common/UserAvatar';
 import { environment } from '../../../globals';
 import { INotificationCountGroups } from '../../../interfaces/notifications';
+import { IKartoffelUser } from '../../../interfaces/users';
 import {
     getMyClientSideNotificationGroupCountRequest,
-    manyNotificationSeenClientSideRequest,
     getMyNotificationsClientSideRequest,
+    manyNotificationSeenClientSideRequest,
 } from '../../../services/clientSideService';
 import { useWorkspaceStore } from '../../../stores/workspace';
-import UserAvatar from '../../../common/UserAvatar';
 
 const { notifications } = environment;
 

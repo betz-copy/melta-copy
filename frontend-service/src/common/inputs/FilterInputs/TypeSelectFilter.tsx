@@ -1,48 +1,57 @@
-import React from 'react';
-import { IoIosArrowDown } from 'react-icons/io';
 import { MenuItem } from '@mui/material';
 import i18next from 'i18next';
-import { StyledFilterInput } from './StyledFilterInput';
-import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
+import React from 'react';
+import { IoIosArrowDown } from 'react-icons/io';
 import { environment } from '../../../globals';
+import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
+import { StyledFilterInput } from './StyledFilterInput';
 
 const { filterOptions } = environment;
 
+type IAGGridFilter = IAGGridNumberFilter | IAGGridDateFilter | IAGGridTextFilter;
+
 interface TypeSelectFilterProps {
-    filterField: IAGGidNumberFilter | IAGGridDateFilter | IAGGridTextFilter;
+    filterField: IAGGridFilter;
     handleFilterTypeChange: (
-        newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type'],
+        newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGridNumberFilter['type'],
         condition?: boolean,
     ) => void;
     readOnly?: boolean;
     type: string;
+    filterType?: boolean;
 }
 
-const TypeSelectFilter: React.FC<TypeSelectFilterProps> = ({ filterField, handleFilterTypeChange, readOnly, type }) => {
+const TypeSelectFilter: React.FC<TypeSelectFilterProps> = ({ filterField, handleFilterTypeChange, readOnly, type, filterType }) => {
+    const options = !filterType
+        ? filterOptions[type]
+        : filterOptions[type].filter(
+              (option: string) => !['inRange', 'thisWeek', 'thisMonth', 'thisYear', 'untilToday', 'fromToday'].includes(option),
+          );
+
     return (
         <StyledFilterInput
             fullWidth
             select
             size="small"
             value={filterField?.type || ''}
-            inputProps={{
-                readOnly,
-                style: {
-                    textOverflow: 'ellipsis',
+            slotProps={{
+                htmlInput: {
+                    readOnly,
+                    style: {
+                        textOverflow: 'ellipsis',
+                    },
                 },
+                select: { IconComponent: IoIosArrowDown },
             }}
             onChange={(e) =>
                 handleFilterTypeChange(
-                    e.target.value as IAGGidNumberFilter['type'] | IAGGridTextFilter['type'],
+                    e.target.value as IAGGridNumberFilter['type'] | IAGGridTextFilter['type'],
                     Boolean(filterField.filterType === 'date' ? filterField?.dateFrom : filterField?.filter),
                 )
             }
-            SelectProps={{
-                IconComponent: IoIosArrowDown,
-            }}
             disabled={readOnly}
         >
-            {filterOptions[type].map((option: string) => (
+            {options.map((option: string) => (
                 <MenuItem key={option} value={option}>
                     {i18next.t(`filters.${type === 'string' ? 'text' : type}.${option}`)}
                 </MenuItem>

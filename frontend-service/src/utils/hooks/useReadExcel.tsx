@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import * as XLSX from 'xlsx';
-import { toast } from 'react-toastify';
 import i18next from 'i18next';
+import React, { useState } from 'react';
+import { toast } from 'react-toastify';
+import * as XLSX from 'xlsx';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { ExcelStepStatus, IExcelSteps } from '../../interfaces/excel';
 import { useWorkspaceStore } from '../../stores/workspace';
-import { IExcelSteps, ExcelStepStatus } from '../../interfaces/excel';
 
 const convertFileDataToRowData = (gridData: any[][], headers: string[], template: IMongoEntityTemplatePopulated) => {
     return gridData

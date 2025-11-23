@@ -13,7 +13,7 @@ interface ManagementPermissionsCardProps {
     onChange: (checked: boolean, property: string, isManagement?: boolean) => void;
 }
 
-export type managementTypes = 'permissions' | 'templates' | 'rules' | 'processes';
+export type managementTypes = 'permissions' | 'templates' | 'rules' | 'processes' | 'units';
 
 interface ManagementCheckboxProps extends ManagementPermissionsCardProps {
     type: managementTypes;
@@ -48,7 +48,7 @@ const ManagementCheckbox: React.FC<ManagementCheckboxProps> = ({ type, onChange,
 
 const ManagementPermissionsCard: React.FC<ManagementPermissionsCardProps> = ({ disabled, viewMode, isChecked, onChange }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
-    const managementTypesArray = ['permissions', 'templates', 'rules', 'processes'] as const;
+    const managementTypesArray: managementTypes[] = ['permissions', 'templates', 'rules', 'processes', 'units'];
 
     return (
         <Box sx={{ bgcolor: darkMode ? '#242424' : 'white' }}>
@@ -70,7 +70,7 @@ const ManagementPermissionsCard: React.FC<ManagementPermissionsCardProps> = ({ d
                             viewMode={viewMode}
                             isChecked={isChecked}
                             onChange={onChange}
-                            permissionsManagement={managementType == 'permissions'}
+                            permissionsManagement={managementType === 'permissions'}
                         />
                     ))}
                 </FormGroup>

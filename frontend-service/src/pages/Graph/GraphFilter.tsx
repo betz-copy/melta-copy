@@ -1,5 +1,5 @@
 import { Clear, Close, KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
-import { Autocomplete, Box, Divider, Grid, IconButton, Typography, useTheme } from '@mui/material';
+import { Autocomplete, Box, Divider, Grid, IconButton, TextField, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { isEqual } from 'lodash';
 import debounce from 'lodash/debounce';
@@ -18,9 +18,10 @@ import { TextFilterInput } from '../../common/inputs/FilterInputs/TextFilterInpu
 import { environment } from '../../globals';
 import { IGraphFilterBody } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IGetUnits } from '../../interfaces/units';
 import { IUser } from '../../interfaces/users';
 import { useDarkModeStore } from '../../stores/darkMode';
-import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter, IFilterDateType } from '../../utils/agGrid/interfaces';
+import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridSetFilter, IAGGridTextFilter, IFilterDateType } from '../../utils/agGrid/interfaces';
 
 const { relativeDateFilters } = environment;
 
@@ -53,6 +54,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
 }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const units = queryClient.getQueryData<IGetUnits>('getUnits')!;
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
@@ -167,7 +169,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
     };
 
     const handleFilterTypeChange = (
-        newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type'],
+        newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGridNumberFilter['type'],
         condition: boolean = true,
     ) => {
         if (filterField?.filterType === 'date') {
@@ -177,7 +179,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
             }
         }
 
-        handleFilterFieldChange({ ...filterField, type: newTypeFilter } as IAGGridDateFilter | IAGGridTextFilter | IAGGidNumberFilter, condition);
+        handleFilterFieldChange({ ...filterField, type: newTypeFilter } as IAGGridDateFilter | IAGGridTextFilter | IAGGridNumberFilter, condition);
     };
 
     const handleFilterErasion = () => {
@@ -201,7 +203,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                 <MultipleSelectFilterInput
                     filterField={filterField?.filterType === 'set' ? (filterField as IAGGridSetFilter) : undefined}
                     handleCheckboxChange={handleCheckboxChange}
-                    enumOptions={enumOptions}
+                    enumOptions={enumOptions.map((option) => ({ option, label: option }))}
                     readOnly={readOnly}
                 />
             );
@@ -238,12 +240,27 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                 />
             );
 
+        if (format === 'unitField') {
+            const { filter } = (filterField ?? {}) as IAGGridTextFilter;
+
+            return (
+                <Autocomplete
+                    options={units.filter((unit) => unit._id !== filter)}
+                    onChange={(_e, value) => handleFilterFieldChange({ ...filterField, filter: value?._id } as IAGGridTextFilter)}
+                    value={units.find((unit) => unit._id === filter)}
+                    getOptionLabel={(option) => option.name}
+                    renderInput={(params) => <TextField {...params} variant="outlined" label={i18next.t('childTemplate.selectUnitDialog.label')} />}
+                    disabled={readOnly}
+                />
+            );
+        }
+
         return (
             <TextFilterInput
                 entityFilter={entityFilter}
                 filterField={
                     filterField?.filterType === 'number' || filterField?.filterType === 'text'
-                        ? (filterField as IAGGidNumberFilter | IAGGridTextFilter)
+                        ? (filterField as IAGGridNumberFilter | IAGGridTextFilter)
                         : undefined
                 }
                 handleFilterFieldChange={handleFilterFieldChange}

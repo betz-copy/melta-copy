@@ -1,36 +1,36 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { useQueryClient } from 'react-query';
+import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
+import { Grid, ThemeProvider } from '@mui/material';
 import {
-    Query,
     Builder,
-    Config,
-    ImmutableTree,
     BuilderProps,
-    MuiConfig,
-    Utils,
-    JsonItem,
-    MuiWidgets,
+    Config,
     Func,
+    ImmutableTree,
+    JsonItem,
+    MuiConfig,
+    MuiWidgets,
+    Query,
     TextWidgetProps,
+    Utils,
 } from '@react-awesome-query-builder/mui';
 import i18next from 'i18next';
-import { Grid, ThemeProvider } from '@mui/material';
-import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
-import { StepComponentProps, StepType } from '../index';
-import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
+import React, { useCallback, useMemo, useState } from 'react';
+import { useQueryClient } from 'react-query';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { getFieldsConfigOfRule } from '../../../utils/rules/fields';
+import { StepComponentProps, StepType } from '../index';
 import { RuleWizardValues } from '.';
 import '@react-awesome-query-builder/mui/css/styles.css';
-import { RuleParser } from '../../../utils/rules/parser';
+import { environment } from '../../../globals';
 import { LTRProvider } from '../../../LTRProvider';
+import { useUserStore } from '../../../stores/user';
+import { lightTheme } from '../../../theme';
+import { jsonTreeHasTodayVar } from '../../../utils/rules/parseDoesHaveTodayVariable';
+import { RuleParser } from '../../../utils/rules/parser';
+import { RaqbMuiAutocompleteAutoWidth } from './raqb/RaqbAutocompleteAutoWidth';
 import RaqbMuiFieldSelect from './raqb/RaqbMuiFieldSelect';
 import RaqbMuiValueSources from './raqb/RaqbMuiValueSources';
-import { RaqbMuiAutocompeleteAutoWidth } from './raqb/RaqbAutocompleteAutoWidth';
-import { lightTheme } from '../../../theme';
-import { useUserStore } from '../../../stores/user';
-import { jsonTreeHasTodayVar } from '../../../utils/rules/parseDoesHaveTodayVariable';
-import { environment } from '../../../globals';
 
 const { formulaGetTodayVarName } = environment;
 
@@ -135,14 +135,14 @@ const CreateFormula: React.FC<StepComponentProps<RuleWizardValues>> = ({ values,
             settings: {
                 ...MuiConfig.settings,
                 showNot: false,
-                removeIncompleteRulesOnLoad: false, // dont remove empty groups on config reload
-                removeEmptyGroupsOnLoad: false, // dont remove empty groups on config reload
-                removeEmptyRulesOnLoad: false, // dont remove empty rules on config reload
+                removeIncompleteRulesOnLoad: false, // don't remove empty groups on config reload
+                removeEmptyGroupsOnLoad: false, // don't remove empty groups on config reload
+                removeEmptyRulesOnLoad: false, // don't remove empty rules on config reload
                 fieldSources: ['field'], // todo: lib supports lhs functions!, need to use it too
-                renderField: (fieldProps) => <RaqbMuiAutocompeleteAutoWidth {...fieldProps} />,
-                renderOperator: (operatorProps) => {
-                    return <RaqbMuiFieldSelect {...operatorProps} customProps={{ MenuProps: { PaperProps: { dir: 'ltr' } } }} />;
-                },
+                renderField: (fieldProps) => <RaqbMuiAutocompleteAutoWidth {...fieldProps} />,
+                renderOperator: (operatorProps) => (
+                    <RaqbMuiFieldSelect {...operatorProps} customProps={{ MenuProps: { PaperProps: { dir: 'ltr' } } }} />
+                ),
                 renderValueSources: (valueSourcesProps) => <RaqbMuiValueSources {...valueSourcesProps} />,
                 theme: { mui: lightTheme },
             },

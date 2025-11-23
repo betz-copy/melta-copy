@@ -12,8 +12,10 @@ import { BsFillPlusCircleFill } from 'react-icons/bs';
 import { useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useParams } from 'wouter';
+import { ILinkObject, INodeObject } from '../../customTypes';
 import { environment } from '../../globals';
 import { ICategoryMap, IMongoCategory } from '../../interfaces/categories';
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
 import { IEntityExpanded, IGraphFilterBody, IGraphFilterBodyBatch } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
@@ -31,8 +33,6 @@ import { GraphNodeMenu } from './GraphNodeMenu';
 import { GraphTopBar } from './GraphTopBar';
 import { NodeTooltip } from './NodeTooltip';
 import TemplatesSelectGrid from './templatesSelectGrid';
-import { ILinkObject, INodeObject } from '../../customTypes';
-import { IChildTemplateMap } from '../../interfaces/childTemplates';
 
 interface genericMenuState {
     node: NodeObject;
@@ -73,7 +73,7 @@ const Graph: React.FC = () => {
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
     const [filteredEntityTemplates, setFilteredEntityTemplates] = useState<IMongoEntityTemplatePopulated[]>([
         ...entityTemplates.values(),

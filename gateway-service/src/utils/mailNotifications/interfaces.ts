@@ -1,9 +1,9 @@
 import {
+    IMongoProcessInstancePopulated,
+    IMongoStepTemplate,
+    INotificationMetadataPopulated,
     IProcessReviewerUpdateNotificationMetadataPopulated,
     IProcessStatusUpdateNotificationMetadataPopulated,
-    INotificationMetadataPopulated,
-    IMongoStepTemplate,
-    IMongoProcessInstancePopulated,
     NotificationType,
 } from '@microservices/shared';
 

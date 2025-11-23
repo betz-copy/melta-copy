@@ -2,11 +2,14 @@ import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from
 import { Box, Divider, Grid, IconButton, Typography } from '@mui/material';
 import type { Property } from 'csstype';
 import i18next from 'i18next';
+import _ from 'lodash';
 import React, { CSSProperties, JSX, useState } from 'react';
 import { pdfjs } from 'react-pdf';
+import { useQueryClient } from 'react-query';
 import { environment } from '../globals';
 import { IEntity } from '../interfaces/entities';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { IGetUnits } from '../interfaces/units';
 import { useDarkModeStore } from '../stores/darkMode';
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
 import OverflowWrapper from '../utils/agGrid/OverflowWrapper';
@@ -21,7 +24,6 @@ import BlueTitle from './MeltaDesigns/BlueTitle';
 import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
 import RelationshipReferenceView from './RelationshipReferenceView';
 import UserAvatar from './UserAvatar';
-import _ from 'lodash';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
@@ -70,6 +72,7 @@ const getUserAvatar = (
 export const formatToString = (
     value: any,
     property: IEntitySingleProperty,
+    units: IGetUnits,
     key?: string,
     preview?: boolean,
     color?: string,
@@ -139,6 +142,9 @@ export const formatToString = (
                     />
                 </Grid>
             );
+        }
+        if (format === 'unitField') {
+            return units.find(({ _id }) => _id === value)?.name;
         }
     }
     if (format === 'location') {
@@ -278,6 +284,9 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
     textWrap,
     preview,
 }) => {
+    const queryClient = useQueryClient();
+    const units = queryClient.getQueryData<IGetUnits>('getUnits')!;
+
     const [hideFieldsToDisplay, setHideFieldsToDisplay] = useState(entityTemplate.properties.hide);
 
     return (
@@ -297,6 +306,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                 const stringFormatValue = formatToString(
                     propertyValue,
                     propertySchema,
+                    units,
                     propertyKey,
                     preview,
                     coloredFields?.[propertyKey],
@@ -509,7 +519,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
             {imageOfKartoffelKeys.map((key) => getUserAvatar(entityTemplate, key, properties, { size: 120, border: 4 }))}
             {showDivider && <Divider title={dividerTitle} sx={{ marginY: '1rem' }} />}
             <Box sx={{ marginY: '1rem' }}>{dividerTitle && <BlueTitle title={dividerTitle} component="p" variant="subtitle1" />}</Box>
-            <Grid container style={{ ...style, alignItems: textWrap ? 'flex-start' : 'center', alignContent: 'center' }}>
+            <Grid container width="100%" style={{ ...style, alignItems: textWrap ? 'flex-start' : 'center', alignContent: 'center' }}>
                 {showByGroups && entityTemplate.fieldGroups ? (
                     propertiesOrderedToShow.map((propertyKey) => {
                         const group = entityTemplate.fieldGroups?.find((g) => g.fields.includes(propertyKey));

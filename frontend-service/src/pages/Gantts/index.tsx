@@ -1,19 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import { AddCircle as AddCircleIcon } from '@mui/icons-material';
 import { Box, Grid, IconButton } from '@mui/material';
 import i18next from 'i18next';
-import { toast } from 'react-toastify';
-import { AddCircle as AddCircleIcon } from '@mui/icons-material';
+import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { ViewingBox } from '../SystemManagement/components/ViewingBox';
-import { InfiniteScroll } from '../../common/InfiniteScroll';
-import { GanttsCard } from './Card';
-import { searchGantts } from '../../services/ganttsService';
-import { IGantt } from '../../interfaces/gantts';
-import { environment } from '../../globals';
+import { toast } from 'react-toastify';
 import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
-import { CreateGanttDialog } from './CreateGanttDialog';
-import { useUserStore } from '../../stores/user';
+import { InfiniteScroll } from '../../common/InfiniteScroll';
+import { environment } from '../../globals';
+import { IGantt } from '../../interfaces/gantts';
 import { PermissionScope } from '../../interfaces/permissions';
+import { searchGantts } from '../../services/ganttsService';
+import { useUserStore } from '../../stores/user';
+import { ViewingBox } from '../SystemManagement/components/ViewingBox';
+import { GanttsCard } from './Card';
+import { CreateGanttDialog } from './CreateGanttDialog';
 
 const { infiniteScrollPageCount } = environment.ganttSettings;
 

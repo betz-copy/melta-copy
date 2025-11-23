@@ -1,10 +1,10 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-await-in-loop */
-import { IMongoEntityTemplate, IEntityExpanded } from '@microservices/shared';
+import { IEntityExpanded, IMongoEntityTemplate } from '@microservices/shared';
 import { IGetExpandedEntityBody } from '../../express/entities/interface';
-import { templatesFilterToNeoQuery } from './searchBodyToNeoQuery';
 import Neo4jClient from '.';
 import { normalizeReturnedRelAndEntities } from './lib';
+import { templatesFilterToNeoQuery } from './searchBodyToNeoQuery';
 
 export const expandEntityToNeoQuery = async (
     filters: IGetExpandedEntityBody['filters'],

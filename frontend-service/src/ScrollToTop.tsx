@@ -1,5 +1,5 @@
-import { Box, Fab, Fade } from '@mui/material';
 import { KeyboardArrowUp as KeyboardArrowUpIcon } from '@mui/icons-material';
+import { Box, Fab, Fade } from '@mui/material';
 import React from 'react';
 
 const ScrollToTop: React.FC<{ fadeInTrigger: boolean }> = ({ fadeInTrigger }) => {

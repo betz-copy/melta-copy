@@ -26,7 +26,7 @@ const AreYouSureDialog: React.FC<{
     noTitle = i18next.t('areYouSureDialog.no'),
 }) => {
     const theme = useTheme();
-    
+
     return (
         <Dialog open={open} onClose={handleClose} maxWidth="xs" style={{ height: '100%', margin: 'auto', padding: '20px' }} disableEnforceFocus>
             <DialogTitle fontWeight={600} fontSize={20} color={theme.palette.primary.main}>

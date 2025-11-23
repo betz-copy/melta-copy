@@ -1,16 +1,18 @@
 import { Close } from '@mui/icons-material';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, TextField, Typography } from '@mui/material';
+import { Autocomplete, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, TextField, Typography } from '@mui/material';
 import { format } from 'date-fns';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import { isEqual } from 'lodash';
 import React, { useState } from 'react';
+import { useQueryClient } from 'react-query';
 import { environment } from '../../../globals';
 import { ChipType, IChildTemplateForm } from '../../../interfaces/childTemplates';
 import { IGraphFilterBody } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IGetUnits } from '../../../interfaces/units';
 import { IUser } from '../../../interfaces/users';
-import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter, IAGGridTextFilter, IFilterDateType } from '../../../utils/agGrid/interfaces';
+import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridSetFilter, IAGGridTextFilter, IFilterDateType } from '../../../utils/agGrid/interfaces';
 import { initializedFilterField, isValidAGGridFilter } from '../../FilterComponent';
 import { DateFilterInput } from '../../inputs/FilterInputs/DateFilterInput';
 import { MultipleSelectFilterInput } from '../../inputs/FilterInputs/MultipleSelectFilterInput';
@@ -24,7 +26,7 @@ import { IAGGridFilter } from '../../wizards/entityTemplate/commonInterfaces';
 const { loggingDate, loggingDateTime } = environment.formats;
 
 interface IAddFilterFieldDialogProps {
-    addFilterField?: { dialogType: ChipType; fieldName: string };
+    addFilterField: { dialogType: ChipType; fieldName: string };
     formikProps: FormikProps<IChildTemplateForm>;
     entityTemplate: IMongoEntityTemplatePopulated;
     onClose: () => void;
@@ -38,7 +40,6 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
     onClose,
     onSubmit,
 }) => {
-    if (!addFilterField) return null;
     const { dialogType, fieldName } = addFilterField;
 
     const property = entityTemplate.properties.properties[fieldName];
@@ -51,6 +52,9 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
     const [localFilterField, setLocalFilterField] = useState<IAGGridFilter | undefined>(initializedFilter);
     const [currentFieldError, setCurrentFieldError] = useState<string | undefined>(undefined);
 
+    const queryClient = useQueryClient();
+    const units = queryClient.getQueryData<IGetUnits>('getUnits')!;
+
     const readOnly = false;
     const entityFilter = false;
     const isError = !!currentFieldError;
@@ -59,7 +63,7 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
         onClose();
     };
 
-    const handleFilterTypeChange = (newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type']) => {
+    const handleFilterTypeChange = (newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGridNumberFilter['type']) => {
         setCurrentFieldError(undefined);
         setLocalFilterField({ ...localFilterField, type: newTypeFilter } as any);
     };
@@ -125,7 +129,7 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
 
         const ajvErrors = ajvValidate(templateSchema, formData);
 
-        if (ajvErrors && ajvErrors[fieldName]) setCurrentFieldError(ajvErrors[fieldName] as string);
+        if (ajvErrors?.[fieldName]) setCurrentFieldError(ajvErrors[fieldName] as string);
         else onSubmit(defaultValue);
     };
 
@@ -148,6 +152,7 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
                 : {};
 
         const enumOptions = propEnum ?? items?.enum;
+        const singleEnumOptions = enumOptions?.map((option) => ({ option, label: option }));
 
         if (enumOptions) {
             const isDefault = dialogType === ChipType.Default;
@@ -156,7 +161,7 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
                 return (
                     <SelectFilterInput
                         filterField={localFilterField?.filterType === 'text' ? localFilterField : undefined}
-                        enumOptions={enumOptions}
+                        enumOptions={singleEnumOptions}
                         handleFilterFieldChange={(value) => value && handleFilterFieldChange(value)}
                         readOnly={readOnly}
                         error={isError}
@@ -169,7 +174,7 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
                 <MultipleSelectFilterInput
                     filterField={localFilterField?.filterType === 'set' ? localFilterField : undefined}
                     handleCheckboxChange={handleCheckboxChange}
-                    enumOptions={enumOptions}
+                    enumOptions={enumOptions.map((option) => ({ option, label: option }))}
                     readOnly={readOnly}
                     isError={isError}
                     helperText={currentFieldError}
@@ -229,6 +234,29 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
                     isError={isError}
                     helperText={currentFieldError}
                     {...defaultFilterProps}
+                />
+            );
+        }
+
+        if (format === 'unitField') {
+            const { filter } = (localFilterField ?? {}) as IAGGridTextFilter;
+
+            return (
+                <Autocomplete
+                    options={units.filter((unit) => unit._id !== filter)}
+                    onChange={(_e, value) => handleFilterFieldChange({ ...localFilterField, filter: value?._id } as IAGGridTextFilter)}
+                    value={units.find((unit) => unit._id === filter)}
+                    getOptionLabel={(option) => option.name}
+                    renderInput={(params) => (
+                        <TextField
+                            {...params}
+                            error={isError}
+                            helperText={currentFieldError}
+                            variant="outlined"
+                            label={i18next.t('childTemplate.selectUnitDialog.label')}
+                        />
+                    )}
+                    disabled={readOnly}
                 />
             );
         }

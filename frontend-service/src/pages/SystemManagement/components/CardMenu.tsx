@@ -1,6 +1,7 @@
 import {
     Add,
-    ControlPoint as AddIcon,
+    Code,
+    CompareArrows,
     Delete as DeleteIcon,
     DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
     DoNotDisturbOnOutlined as DoNotDisturbOnOutlinedIcon,
@@ -8,10 +9,9 @@ import {
     Edit as EditIcon,
     MoreVertOutlined as OptionsIcon,
 } from '@mui/icons-material';
-import { CompareArrows } from '@mui/icons-material';
 import { Grid, IconButton, Menu } from '@mui/material';
 import i18next from 'i18next';
-import React, { MouseEventHandler, useMemo, useState } from 'react';
+import React, { MouseEventHandler, ReactNode, useMemo, useState } from 'react';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { MenuButton } from '../../../common/MenuButton';
 import { useUserStore } from '../../../stores/user';
@@ -28,6 +28,7 @@ export const CardMenu: React.FC<{
         tooltipTitle: string;
         editTooltipTitle?: string;
         disableForReadPermissions?: boolean;
+        disabledErrorTooltip?: string;
     };
     onDisableClick?: MouseEventHandler;
     onDuplicateClick?: MouseEventHandler;
@@ -36,6 +37,7 @@ export const CardMenu: React.FC<{
     onConvertToRelationShipFieldClick?: MouseEventHandler;
     onOptionsIconClick?: () => Promise<void>;
     optionsIconStyle?: React.CSSProperties;
+    additionalButtons?: [{ title: string; key: string; isDisabled?: boolean; icon?: ReactNode; onClick?: MouseEventHandler }];
 }> = ({
     onOptionsIconClose,
     onEditClick,
@@ -48,6 +50,7 @@ export const CardMenu: React.FC<{
     onConvertToRelationShipFieldClick,
     onOptionsIconClick,
     optionsIconStyle,
+    additionalButtons,
 }) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
@@ -130,7 +133,7 @@ export const CardMenu: React.FC<{
                                 }}
                                 text={i18next.t('actions.addActions')}
                                 disabled={disabledProps?.isDisabled}
-                                icon={<AddIcon color="action" />}
+                                icon={<Code color="action" />}
                             />
                         </Grid>
                     </MeltaTooltip>
@@ -191,7 +194,11 @@ export const CardMenu: React.FC<{
                 )}
 
                 {onDisableClick && (
-                    <MeltaTooltip placement="left" title={editTooltipTitle} disableHoverListener={!disabledProps?.disableForReadPermissions}>
+                    <MeltaTooltip
+                        placement="left"
+                        title={disabledProps?.disabledErrorTooltip}
+                        disableHoverListener={!disabledProps?.disabledErrorTooltip}
+                    >
                         <Grid>
                             <MenuButton
                                 onClick={(e) => {
@@ -206,11 +213,26 @@ export const CardMenu: React.FC<{
                                         <DoNotDisturbOnOutlinedIcon color="action" />
                                     )
                                 }
-                                disabled={disabledProps?.disableForReadPermissions}
+                                disabled={!!disabledProps?.disabledErrorTooltip || disabledProps?.disableForReadPermissions}
                             />
                         </Grid>
                     </MeltaTooltip>
                 )}
+                {additionalButtons?.map((button) => (
+                    <MeltaTooltip placement="left" title={button?.title} disableHoverListener={!!button.isDisabled} key={button.key}>
+                        <Grid>
+                            <MenuButton
+                                onClick={(e) => {
+                                    button?.onClick?.(e);
+                                    handleClose(e);
+                                }}
+                                text={button.title}
+                                icon={button.icon}
+                                disabled={!!button.isDisabled}
+                            />
+                        </Grid>
+                    </MeltaTooltip>
+                ))}
             </Menu>
         </>
     );

@@ -11,13 +11,14 @@ import CreateRelationshipDialog from '../../common/dialogs/createRelationshipDia
 import { ResetFilterButton } from '../../common/EntitiesPage/ResetFilterButton';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef, IConnection } from '../../common/EntitiesTableOfTemplate';
 import { EntityLink } from '../../common/EntityLink';
+import { getChildTemplatesFilter } from '../../common/inputs/TemplateEntitiesAutocomplete';
 import BlueTitle from '../../common/MeltaDesigns/BlueTitle';
 import { EntityTemplateTextComponent, RelationshipTitle } from '../../common/RelationshipTitle';
 import { TableButton } from '../../common/TableButton';
 import '../../css/pages.css';
 import { ICategoryMap } from '../../interfaces/categories';
-import { IChildTemplateMap } from '../../interfaces/childTemplates';
-import { IEntity, IEntityExpanded } from '../../interfaces/entities';
+import { IChildTemplateMap, IChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { IEntity, IEntityExpanded, ISearchFilter } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { PermissionScope } from '../../interfaces/permissions';
 import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
@@ -27,7 +28,7 @@ import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { checkUserTemplatePermission } from '../../utils/permissions/instancePermissions';
-import { getFullRelationshipTemplates } from '../../utils/templates';
+import { getFullRelationshipTemplates, groupChildTemplatesByParent } from '../../utils/templates';
 import { EntityDetails } from './components/EntityDetails';
 import { EntityTopBar } from './components/TopBar';
 import DeleteRelationshipDialog from './DeleteRelationshipDialog';
@@ -37,12 +38,19 @@ export const getButtonState = (
     isEntityDisabled: boolean,
     hasWritePermissionToCurrTemplate: boolean,
     relatedTemplate: IMongoEntityTemplatePopulated,
+    groupChildTemplate: Record<string, IChildTemplatePopulated[]>,
     permissions?: ISubCompactPermissions,
 ) => {
     let isEditButtonsDisabled = false;
     let disabledButtonText = '';
+
+    const childIds = groupChildTemplate[relatedTemplate._id]?.map(({ _id }) => _id);
+
     const categoryPermission = permissions?.instances?.categories?.[relatedTemplate.category._id];
-    const permissionToRelatedTemplate = categoryPermission?.entityTemplates?.[relatedTemplate._id] || categoryPermission;
+    const permissionToRelatedTemplate =
+        categoryPermission?.entityTemplates?.[relatedTemplate._id] ||
+        childIds?.map((childId) => categoryPermission?.entityTemplates?.[childId]).find((perm) => !!perm) ||
+        categoryPermission;
 
     if (isEntityDisabled) {
         isEditButtonsDisabled = true;
@@ -93,6 +101,7 @@ export const ConnectionsTable: React.FC<{
     isEditButtonsDisabled: boolean;
     disabledButtonText: string;
     hasPermissionToTemplate: boolean;
+    groupChildTemplate?: Record<string, IChildTemplatePopulated[]>;
 }> = ({
     expandedEntity,
     connectionTemplate: { relationshipTemplate, isExpandedEntityRelationshipSource, hasInstances },
@@ -100,6 +109,7 @@ export const ConnectionsTable: React.FC<{
     isEditButtonsDisabled,
     disabledButtonText,
     hasPermissionToTemplate,
+    groupChildTemplate,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
@@ -129,6 +139,8 @@ export const ConnectionsTable: React.FC<{
         { [expandedEntity.entity.properties._id]: { maxLevel: 1 } },
         { templateIds },
     ];
+
+    const template = isExpandedEntityRelationshipSource ? relationshipTemplate.destinationEntity : relationshipTemplate.sourceEntity;
 
     const onCreateRelationship = (createdRelationship: IRelationship, sourceEntity: IEntity, destinationEntity: IEntity) => {
         const doesCreatedRelationshipWithCurrEntity = [createdRelationship.sourceEntityId, createdRelationship.destinationEntityId].includes(
@@ -200,9 +212,7 @@ export const ConnectionsTable: React.FC<{
                             iconButtonWithPopoverProps={{
                                 popoverText: i18next.t(`entitiesTableOfTemplate.expand${isExpand ? 'Less' : 'More'}`),
                                 iconButtonProps: {
-                                    onClick: () => {
-                                        setIsExpand(!isExpand);
-                                    },
+                                    onClick: () => setIsExpand(!isExpand),
                                 },
                             }}
                             icon={isExpand ? <CloseFullscreenRounded fontSize="small" /> : <Expand fontSize="small" />}
@@ -253,7 +263,7 @@ export const ConnectionsTable: React.FC<{
                 <EntitiesTableOfTemplate
                     hasInstances={hasInstances}
                     ref={entitiesTableRef}
-                    template={isExpandedEntityRelationshipSource ? relationshipTemplate.destinationEntity : relationshipTemplate.sourceEntity}
+                    template={template}
                     showNavigateToRowButton
                     deleteRowButtonProps={{
                         popoverText: isEditButtonsDisabled
@@ -265,9 +275,7 @@ export const ConnectionsTable: React.FC<{
                         disabledButton: isEditButtonsDisabled || relationshipTemplate.isProperty || false,
                     }}
                     getRowId={(connection: IEntity | IConnection) => {
-                        if ('relationship' in connection) {
-                            return connection.relationship.properties._id;
-                        }
+                        if ('relationship' in connection) return connection.relationship.properties._id;
 
                         const foundConnection = expandedEntity.connections.find(
                             (conn) =>
@@ -285,17 +293,12 @@ export const ConnectionsTable: React.FC<{
                         return connection.properties;
                     }}
                     rowModelType={isExpand ? 'infinite' : 'clientSide'}
-                    rowData={expandedEntity.connections.filter((connection) => {
-                        if (connection.relationship.templateId !== relationshipTemplate._id) return false;
+                    rowData={expandedEntity.connections.filter(({ relationship, sourceEntity, destinationEntity }) => {
+                        if (relationship.templateId !== relationshipTemplate._id) return false;
 
-                        if (isExpandedEntityRelationshipSource && expandedEntity.entity.properties._id === connection.sourceEntity.properties._id)
+                        if (isExpandedEntityRelationshipSource && expandedEntity.entity.properties._id === sourceEntity.properties._id) return true;
+                        if (!isExpandedEntityRelationshipSource && expandedEntity.entity.properties._id === destinationEntity.properties._id)
                             return true;
-                        if (
-                            !isExpandedEntityRelationshipSource &&
-                            expandedEntity.entity.properties._id === connection.destinationEntity.properties._id
-                        ) {
-                            return true;
-                        }
 
                         return false;
                     })}
@@ -314,6 +317,7 @@ export const ConnectionsTable: React.FC<{
                     onFilter={() => setIsFiltered(entitiesTableRef.current?.isFiltered() ?? false)}
                     hasPermissionToTemplate={hasPermissionToTemplate}
                     mainEntity={expandedEntity}
+                    childTemplatesOfParent={groupChildTemplate?.[template._id]}
                 />
             </Box>
             <CreateRelationshipDialog
@@ -355,17 +359,33 @@ const Entity: React.FC = () => {
     const childTemplateId = searchParams.get('childTemplateId') ?? undefined;
 
     const currentUser = useUserStore((state) => state.user);
+    const workspace = useWorkspaceStore((state) => state.workspace);
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
 
-    const templateIds = childTemplateId ? [] : Array.from(entityTemplates.keys());
+    const templateIds = Array.from(entityTemplates.keys());
+
+    const groupChildTemplate = groupChildTemplatesByParent(childTemplates, entityTemplates);
+
+    const filters: any =
+        Object.entries(groupChildTemplate).length > 0
+            ? Object.fromEntries(
+                  Object.entries(groupChildTemplate)
+                      .map(([key, children]) => {
+                          const childFilter = getChildTemplatesFilter(children, workspace, currentUser, true);
+                          if (!childFilter) return null;
+                          return [key, { filter: childFilter }] as const;
+                      })
+                      .filter((f): f is readonly [string, { filter: ISearchFilter }] => f !== null),
+              )
+            : undefined;
 
     const expanded = entityId ? { [entityId]: { maxLevel: 1 } } : {};
     const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId, expanded, { templateIds }], () =>
-        getExpandedEntityByIdRequest(entityId!, expanded, { templateIds, childTemplateId }),
+        getExpandedEntityByIdRequest(entityId!, expanded, { templateIds, childTemplateId }, {}, filters),
     );
 
     const [selectedTabId, setSelectedTabId] = useState<string | null>(null);
@@ -379,8 +399,8 @@ const Entity: React.FC = () => {
 
     const isEntityDisabled = !!expandedEntity?.entity.properties.disabled;
     const currentEntityTemplate = childTemplateId
-        ? childTemplates.get(childTemplateId)
-        : entityTemplates.get(expandedEntity?.entity.templateId ?? '');
+        ? childTemplates.get(childTemplateId)!
+        : entityTemplates.get(expandedEntity?.entity.templateId ?? '')!;
 
     const hasWritePermissionToCurrTemplate = checkUserTemplatePermission(
         currentUser.currentWorkspacePermissions,
@@ -392,7 +412,21 @@ const Entity: React.FC = () => {
     const connectionsTemplates = useMemo(() => {
         if (!currentEntityTemplate) return;
 
-        return getFullRelationshipTemplates(relationshipTemplates, entityTemplates, currentEntityTemplate, 1, undefined, expandedEntity);
+        return getFullRelationshipTemplates(
+            relationshipTemplates,
+            entityTemplates,
+            {
+                ...currentEntityTemplate,
+                _id: childTemplateId ? (currentEntityTemplate as IChildTemplatePopulated).parentTemplate._id : currentEntityTemplate._id,
+                displayName: childTemplateId
+                    ? (currentEntityTemplate as IChildTemplatePopulated).parentTemplate.displayName
+                    : currentEntityTemplate.displayName,
+            },
+            1,
+            undefined,
+            expandedEntity,
+            groupChildTemplate,
+        );
     }, [currentEntityTemplate, expandedEntity]);
 
     const categoriesWithConnectionsTemplates = useMemo(() => {
@@ -402,16 +436,14 @@ const Entity: React.FC = () => {
             return {
                 category,
                 connectionsTemplates: connectionsTemplates
-                    .filter(({ relationshipTemplate, isExpandedEntityRelationshipSource }) => {
-                        const otherEntityTemplate = isExpandedEntityRelationshipSource
-                            ? relationshipTemplate.destinationEntity
-                            : relationshipTemplate.sourceEntity;
+                    .filter(({ relationshipTemplate: { destinationEntity, sourceEntity }, isExpandedEntityRelationshipSource }) => {
+                        const otherEntityTemplate = isExpandedEntityRelationshipSource ? destinationEntity : sourceEntity;
                         return otherEntityTemplate?.category._id === category._id;
                     })
                     .sort((a, b) => Number(b.hasInstances) - Number(a.hasInstances)),
                 // calculate the amount of the related connections of each entity
-                relationshipCount: expandedEntity?.connections.filter((connection) => {
-                    const connectionRelationshipTemplate = relationshipTemplates.get(connection.relationship.templateId)!;
+                relationshipCount: expandedEntity?.connections.filter(({ relationship, sourceEntity, destinationEntity }) => {
+                    const connectionRelationshipTemplate = relationshipTemplates.get(relationship.templateId)!;
 
                     if (
                         connectionRelationshipTemplate?.isProperty &&
@@ -420,10 +452,16 @@ const Entity: React.FC = () => {
                     )
                         return false;
 
-                    if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id)
-                        return entityTemplates.get(connection.sourceEntity.templateId)!.category._id === category._id;
+                    if (expandedEntity.entity.properties._id === destinationEntity.properties._id)
+                        return (
+                            (entityTemplates.get(sourceEntity.templateId) ?? groupChildTemplate[sourceEntity.templateId][0])?.category._id ===
+                            category._id
+                        );
 
-                    return entityTemplates.get(connection.destinationEntity.templateId)?.category._id === category._id;
+                    return (
+                        (entityTemplates.get(destinationEntity.templateId) ?? groupChildTemplate[destinationEntity.templateId][0])?.category._id ===
+                        category._id
+                    );
                 }).length,
             };
         })
@@ -432,7 +470,7 @@ const Entity: React.FC = () => {
     }, [connectionsTemplates, expandedEntity]);
 
     useEffect(() => {
-        if (categoriesWithConnectionsTemplates && categoriesWithConnectionsTemplates.length > 0 && selectedTabId === null) {
+        if (categoriesWithConnectionsTemplates && categoriesWithConnectionsTemplates.length && selectedTabId === null) {
             setSelectedTabId(categoriesWithConnectionsTemplates[0].category._id);
         }
     }, [categoriesWithConnectionsTemplates, selectedTabId]);
@@ -453,7 +491,7 @@ const Entity: React.FC = () => {
                 <Grid marginTop="20px" data-tour="entity-details">
                     <EntityDetails entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} />
                 </Grid>
-                {categoriesWithConnectionsTemplates && categoriesWithConnectionsTemplates.length > 0 && (
+                {!!categoriesWithConnectionsTemplates?.length && (
                     <Grid data-tour="connected-entities" style={{ marginTop: '2rem' }}>
                         <Grid container size={{ xs: 5 }} alignItems="center" gap="20px">
                             <Grid alignContent="center">
@@ -525,6 +563,7 @@ const Entity: React.FC = () => {
                                             <TabPanel key={_id} value={_id}>
                                                 {connectionsTemplatesOfCategory.map((connectionTemplate, connectedRelationshipTemplateIndex) => {
                                                     const relationship = connectionTemplate.relationshipTemplate;
+
                                                     const relatedTemplate =
                                                         relationship.destinationEntity._id !== currentEntityTemplate?._id
                                                             ? relationship.destinationEntity
@@ -534,6 +573,7 @@ const Entity: React.FC = () => {
                                                         isEntityDisabled,
                                                         hasWritePermissionToCurrTemplate,
                                                         relatedTemplate,
+                                                        groupChildTemplate,
                                                         currentUser.currentWorkspacePermissions,
                                                     );
 
@@ -547,6 +587,7 @@ const Entity: React.FC = () => {
                                                             isEditButtonsDisabled={isEditButtonsDisabled}
                                                             disabledButtonText={disabledButtonText}
                                                             hasPermissionToTemplate={Boolean(permissionToRelatedTemplate) || isAdmin}
+                                                            groupChildTemplate={groupChildTemplate}
                                                         />
                                                     );
                                                 })}

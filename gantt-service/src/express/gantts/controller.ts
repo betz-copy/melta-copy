@@ -1,5 +1,5 @@
-import { Request, Response } from 'express';
 import { DefaultController, IGantt } from '@microservices/shared';
+import { Request, Response } from 'express';
 import GanttManager from './manager';
 
 export default class GanttController extends DefaultController<IGantt, GanttManager> {

@@ -1,5 +1,5 @@
 import { Grid, GridProps } from '@mui/material';
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { PureInfiniteScroll, PureInfiniteScrollProps } from './PureInfiniteScroll';
 
 interface InfiniteScrollProps<T> extends PureInfiniteScrollProps<T> {
@@ -10,7 +10,7 @@ interface InfiniteScrollProps<T> extends PureInfiniteScrollProps<T> {
     style?: object;
 }
 
-export const InfiniteScroll = <T extends any>({
+export const InfiniteScroll = <T,>({
     useContainer = true,
     direction = 'column',
     wrap = 'nowrap',

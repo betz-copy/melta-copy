@@ -1,6 +1,6 @@
 import React from 'react';
-import { ImagePicker } from '../../inputs/ImagePicker';
 import fileDetails from '../../../interfaces/fileDetails';
+import { ImagePicker } from '../../inputs/ImagePicker';
 
 export const ChooseStepsIcon: React.FC<{
     icon: fileDetails | undefined;

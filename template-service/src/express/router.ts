@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import categoryRouter from './category/router';
+import childTemplateRouter from './childTemplate/router';
+import configRouter from './config/router';
+import entityTemplateRouter from './entityTemplate/router';
+import printingTemplateRouter from './printingTemplate/router';
 import relationshipTemplateRouter from './relationshipTemplate/router';
 import ruleRouter from './rule/router';
-import entityTemplateRouter from './entityTemplate/router';
-import childTemplateRouter from './childTemplate/router';
-import categoryRouter from './category/router';
-import configRouter from './config/router';
-import printingTemplateRouter from './printingTemplate/router';
 
 const appRouter = Router();
 

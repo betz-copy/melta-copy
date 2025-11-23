@@ -7,10 +7,10 @@ export interface IAGGridTextFilter {
     filter?: string;
 }
 
-export interface IAGGidNumberFilter {
+export interface IAGGridNumberFilter {
     filterType: 'number';
     type: 'equals' | 'notEqual' | 'lessThan' | 'lessThanOrEqual' | 'greaterThan' | 'greaterThanOrEqual' | 'inRange' | 'blank' | 'notBlank';
-    filter?: number;
+    filter?: number | string;
     filterTo?: number; // only inRange type
 }
 
@@ -26,6 +26,8 @@ export interface IAGGridDateFilter {
         | 'thisWeek'
         | 'thisMonth'
         | 'thisYear'
+        | 'untilToday'
+        | 'fromToday'
         | 'inRange'
         | 'blank'
         | 'notBlank';
@@ -37,15 +39,11 @@ export enum RelativeDateFilters {
     thisWeek = 'thisWeek',
     thisMonth = 'thisMonth',
     thisYear = 'thisYear',
+    untilToday = 'untilToday',
+    fromToday = 'fromToday',
 }
 
-export type IFilterDateType =
-    | Date
-    | ByCurrentDefaultValue.byCurrentDate
-    | RelativeDateFilters.thisWeek
-    | RelativeDateFilters.thisMonth
-    | RelativeDateFilters.thisYear
-    | null;
+export type IFilterDateType = Date | ByCurrentDefaultValue.byCurrentDate | RelativeDateFilters | null;
 
 export interface IAGGridSetFilter {
     filterType: 'set';
@@ -53,7 +51,7 @@ export interface IAGGridSetFilter {
 }
 
 export interface IAGGridFilterModel {
-    [key: string]: IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter;
+    [key: string]: IAGGridTextFilter | IAGGridNumberFilter | IAGGridDateFilter | IAGGridSetFilter;
 }
 
 export interface IAGGridSort {
