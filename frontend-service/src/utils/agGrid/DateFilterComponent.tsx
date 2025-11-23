@@ -10,7 +10,10 @@ import { useDarkModeStore } from '../../stores/darkMode';
 
 const { date: dateFormat } = environment.formats;
 
-const DateFilterComponent: React.FC<{ date: Date; onDateChange: (newDate: Date | null) => void }> = ({ date, onDateChange }) => {
+const DateFilterComponent: React.FC<{
+    date: Date;
+    onDateChange: (newDate: Date | null) => void;
+}> = ({ date, onDateChange }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return (
@@ -19,13 +22,18 @@ const DateFilterComponent: React.FC<{ date: Date; onDateChange: (newDate: Date |
             <LocalizationProvider
                 dateAdapter={AdapterDateFns}
                 adapterLocale={he}
-                localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true }) as PickersLocaleText}
+                localeText={
+                    i18next.t('muiDatePickersLocaleText', {
+                        returnObjects: true,
+                    }) as PickersLocaleText
+                }
             >
                 <MobileDatePicker
                     value={date}
                     onChange={onDateChange}
                     format={dateFormat}
                     enableAccessibleFieldDOMStructure={false}
+                    views={['year', 'month', 'day']}
                     label={i18next.t('wizard.date')}
                     slots={{
                         toolbar: CustomDateTimePickerToolbar,

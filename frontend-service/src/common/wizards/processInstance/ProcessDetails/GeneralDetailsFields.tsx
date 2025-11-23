@@ -124,14 +124,22 @@ export const GeneralDetailsFields = ({
                         <LocalizationProvider
                             dateAdapter={AdapterDateFns}
                             adapterLocale={he}
-                            localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true }) as PickersLocaleText}
+                            localeText={
+                                i18next.t('muiDatePickersLocaleText', {
+                                    returnObjects: true,
+                                }) as PickersLocaleText
+                            }
                         >
                             <DatePicker
                                 maxDate={values.endDate}
                                 label={i18next.t('wizard.processInstance.processInstanceStartDate')}
                                 value={values.startDate}
                                 onChange={(newStartDate) => setFieldValue('startDate', newStartDate)}
-                                slots={{ textField: (params) => <TextField {...params} />, openPickerIcon: viewMode ? () => null : undefined }}
+                                views={['year', 'month', 'day']}
+                                slots={{
+                                    textField: (params) => <TextField {...params} />,
+                                    openPickerIcon: viewMode ? () => null : undefined,
+                                }}
                                 slotProps={{
                                     textField: {
                                         size: 'small',
@@ -139,7 +147,6 @@ export const GeneralDetailsFields = ({
                                         variant,
                                         sx: textFieldStyle,
                                         InputLabelProps: { shrink: viewMode || undefined },
-                                        inputProps: { readOnly: viewMode },
                                         onBlur: () => setFieldTouched('startDate'),
                                         error: touched.startDate && Boolean(errors.startDate),
                                         helperText: touched.startDate ? errors.startDate : '',
@@ -156,16 +163,24 @@ export const GeneralDetailsFields = ({
                         <LocalizationProvider
                             dateAdapter={AdapterDateFns}
                             adapterLocale={he}
-                            localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true }) as PickersLocaleText}
+                            localeText={
+                                i18next.t('muiDatePickersLocaleText', {
+                                    returnObjects: true,
+                                }) as PickersLocaleText
+                            }
                         >
                             <DatePicker
                                 minDate={values.startDate}
                                 format={date}
                                 enableAccessibleFieldDOMStructure={false}
+                                views={['year', 'month', 'day']}
                                 label={i18next.t('wizard.processInstance.processInstanceEndDate')}
                                 value={values.endDate}
                                 onChange={(newEndDate) => setFieldValue('endDate', newEndDate)}
-                                slots={{ textField: (params) => <TextField {...params} />, openPickerIcon: viewMode ? () => null : undefined }}
+                                slots={{
+                                    textField: (params) => <TextField {...params} />,
+                                    openPickerIcon: viewMode ? () => null : undefined,
+                                }}
                                 slotProps={{
                                     textField: {
                                         size: 'small',
@@ -173,7 +188,6 @@ export const GeneralDetailsFields = ({
                                         variant,
                                         sx: textFieldStyle,
                                         InputLabelProps: { shrink: viewMode || undefined },
-                                        inputProps: { readOnly: viewMode },
                                         onBlur: () => setFieldTouched('endDate'),
                                         error: touched.endDate && Boolean(errors.endDate),
                                         helperText: touched.endDate ? errors.endDate : '',

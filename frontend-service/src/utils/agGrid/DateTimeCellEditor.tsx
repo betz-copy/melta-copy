@@ -36,7 +36,11 @@ const DateTimeCellEditor: React.FC<DateTimeCellEditorProps> = ({ value, onValueC
         <LocalizationProvider
             dateAdapter={AdapterDateFns}
             adapterLocale={he}
-            localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true }) as PickersLocaleText}
+            localeText={
+                i18next.t('muiDatePickersLocaleText', {
+                    returnObjects: true,
+                }) as PickersLocaleText
+            }
         >
             <FormControl fullWidth>
                 {dateOrDateTime === 'dateTime' ? (
@@ -46,7 +50,10 @@ const DateTimeCellEditor: React.FC<DateTimeCellEditorProps> = ({ value, onValueC
                         format={dateTime}
                         enableAccessibleFieldDOMStructure={false}
                         ampm={false}
-                        slots={{ toolbar: CustomDateTimePickerToolbar, textField: (params) => <TextField {...params} /> }}
+                        slots={{
+                            toolbar: CustomDateTimePickerToolbar,
+                            textField: (params) => <TextField {...params} />,
+                        }}
                         slotProps={{
                             actionBar: { actions: ['clear', 'cancel', 'accept'] },
                             textField: { fullWidth: true },
@@ -58,7 +65,11 @@ const DateTimeCellEditor: React.FC<DateTimeCellEditorProps> = ({ value, onValueC
                         onChange={handleDateChange}
                         format={dateFormat}
                         enableAccessibleFieldDOMStructure={false}
-                        slots={{ toolbar: CustomDateTimePickerToolbar, textField: (params) => <TextField {...params} /> }}
+                        views={['year', 'month', 'day']}
+                        slots={{
+                            toolbar: CustomDateTimePickerToolbar,
+                            textField: (params) => <TextField {...params} />,
+                        }}
                         slotProps={{
                             actionBar: { actions: ['clear', 'cancel', 'accept'] },
                             textField: { fullWidth: true },
