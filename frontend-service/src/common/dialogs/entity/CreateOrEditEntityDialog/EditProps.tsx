@@ -198,7 +198,7 @@ const EditProps: React.FC<{
                             fileFieldName={`attachmentsProperties.${key}`}
                             fieldTemplateTitle={value.title}
                             setFieldValue={setFieldValue}
-                            required={requiredFilesNames.includes(key)}
+                            required={isMultipleSelection ? false : requiredFilesNames.includes(key)}
                             value={values.attachmentsProperties[key] as File[] | undefined}
                             error={errors.attachmentsProperties?.[key] as string}
                             setFieldTouched={setFieldTouched}
@@ -210,7 +210,7 @@ const EditProps: React.FC<{
                             fileFieldName={`attachmentsProperties.${key}`}
                             fieldTemplateTitle={value.title}
                             setFieldValue={setFieldValue}
-                            required={requiredFilesNames.includes(key)}
+                            required={isMultipleSelection ? false : requiredFilesNames.includes(key)}
                             value={values.attachmentsProperties[key] as File | undefined}
                             error={errors.attachmentsProperties?.[key] as string}
                             setFieldTouched={setFieldTouched}
