@@ -177,19 +177,23 @@ const TemplateTable = forwardRef<
     };
 
     const checkIfLoadExcelIsDisabled = () => {
-        const { properties } = template.properties;
-        const requiredProperties = new Set(template.properties.required);
+        const { properties, required } = template.properties;
+        const requiredProperties = new Set(required);
 
         return Object.entries(properties).some(([key, property]) => {
-            if (property.format === 'fileId' && requiredProperties.has(key)) return true;
+            const isRequiredProperty = requiredProperties.has(key);
+
+            if (property.format === 'fileId' && isRequiredProperty) return true;
 
             if (property.format === 'relationshipReference') {
                 const relatedTemplateId = property.relationshipReference?.relatedTemplateId;
                 const relatedTemplate = entityTemplates.get(relatedTemplateId!);
 
+                if (!relatedTemplate) return true;
+
                 const hasIdentifier = Object.values(relatedTemplate?.properties?.properties ?? {}).some((prop) => !!prop.identifier);
 
-                return !hasIdentifier;
+                return !hasIdentifier && isRequiredProperty;
             }
 
             return false;

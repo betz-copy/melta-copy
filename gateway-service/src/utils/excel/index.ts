@@ -27,13 +27,23 @@ export const getAllEntitiesFromExcel = async (
     failedEntities: IFailedEntity[],
     workspace: IWorkspace,
     relatedTemplatesMap: Record<string, IMongoEntityTemplatePopulated>,
+    requiredConstraints: string[] = [],
 ) => {
     const workspaceFilesLimit = workspace.metadata?.excel?.filesLimit;
 
     const effectiveFilesLimit = workspaceFilesLimit ?? loadExcel.filesLimit;
     if (files.length > effectiveFilesLimit) throw new BadRequestError(`files limit: more than ${effectiveFilesLimit} files`, {});
 
-    return readExcelFile(files, template, failedEntities, relatedTemplatesMap, workspace._id, workspace.metadata?.excel?.entitiesFileLimit);
+    return readExcelFile(
+        files,
+        template,
+        failedEntities,
+        relatedTemplatesMap,
+        workspace._id,
+        workspace.metadata?.excel?.entitiesFileLimit,
+        [],
+        requiredConstraints,
+    );
 };
 
 export const generateSerialNumbers = (index: number, serialStarters: Record<string, number>) =>

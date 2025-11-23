@@ -36,6 +36,7 @@ import Excel, { CellModel } from 'exceljs';
 import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
 import UserService from '../../externalServices/userService';
+import { showRelationshipRefColumn } from './createFunctions';
 import excelConfig from './excelConfig';
 
 const { invalidDate, invalidTime, invalidLocation, invalidUnit } = config.loadExcel;
@@ -217,12 +218,18 @@ export const readExcelFile = async (
     workspaceId: string,
     entitiesFileLimit = config.loadExcel.entitiesFileLimit,
     oldEntities: IEntityWithDirectRelationships[] = [],
+    requiredConstraints: string[] = [],
 ) => {
     const isEditMode = oldEntities.length > 0;
 
     const entities: IEntityWithIgnoredRules[] = [];
     const columns = Object.fromEntries(
-        Object.entries(template.properties.properties).filter(([_propertyKey, propertyTemplate]) => isEditMode || isIncludedColumn(propertyTemplate)),
+        Object.entries(template.properties.properties).filter(([propertyKey, propertyTemplate]) => {
+            const showRelationshipRef = showRelationshipRefColumn(propertyKey, propertyTemplate, relatedTemplatesMap, requiredConstraints);
+            if (!showRelationshipRef) return false;
+
+            return isEditMode || isIncludedColumn(propertyTemplate);
+        }),
     );
 
     const identifier = Object.entries(template.properties.properties).find(([_key, value]) => value.identifier === true)?.[0];

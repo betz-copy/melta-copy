@@ -127,7 +127,7 @@ export const indexToExcelColumn = (index: number): string => {
 //     }
 // };
 
-const showRelationshipRefColumn = (
+export const showRelationshipRefColumn = (
     propertyKey: string,
     propertyTemplate: IEntitySingleProperty,
     relatedTemplatesMap: Record<string, IMongoEntityTemplatePopulated>,
