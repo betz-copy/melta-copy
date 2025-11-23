@@ -31,7 +31,6 @@ const DateFilterComponent: React.FC<{
                     value={date}
                     onChange={onDateChange}
                     format={dateFormat}
-                    enableAccessibleFieldDOMStructure={false}
                     views={['year', 'month', 'day']}
                     label={i18next.t('wizard.date')}
                     slots={{

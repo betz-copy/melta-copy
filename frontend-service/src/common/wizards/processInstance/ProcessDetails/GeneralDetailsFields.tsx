@@ -137,6 +137,7 @@ export const GeneralDetailsFields = ({
                                 onChange={(newStartDate) => setFieldValue('startDate', newStartDate)}
                                 views={['year', 'month', 'day']}
                                 slots={{
+                                    textField: (params) => <TextField {...params} />,
                                     openPickerIcon: viewMode ? () => null : undefined,
                                 }}
                                 slotProps={{
@@ -176,6 +177,7 @@ export const GeneralDetailsFields = ({
                                 value={values.endDate}
                                 onChange={(newEndDate) => setFieldValue('endDate', newEndDate)}
                                 slots={{
+                                    textField: (params) => <TextField {...params} />,
                                     openPickerIcon: viewMode ? () => null : undefined,
                                 }}
                                 slotProps={{

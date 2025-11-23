@@ -85,7 +85,6 @@ const getRjsfDateOrDateTimeWidget =
                 <MuiDatePicker
                     value={parseDefaultDate(value)}
                     format={inputFormat}
-                    enableAccessibleFieldDOMStructure={false}
                     onChange={(val) => onChangeDateWidget(val)}
                     slotProps={{
                         textField: {

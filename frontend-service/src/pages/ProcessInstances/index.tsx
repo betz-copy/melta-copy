@@ -197,6 +197,7 @@ const ProcessInstancesPage: React.FC = () => {
                                 startDateInput={startDateInput}
                                 endDateInput={endDateInput}
                                 directionIsRow
+                                legacyField
                             />
                         </Grid>
                     </Grid>
