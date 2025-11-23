@@ -11,6 +11,7 @@ import {
     IRule,
     PermissionScope,
     ServiceError,
+    ValidationError,
 } from '@microservices/shared';
 import { Request } from 'express';
 import lodashUniqby from 'lodash.uniqby';
@@ -70,16 +71,17 @@ class InstancesValidator extends DefaultController {
         const units: string[] = [];
         const relationshipRefs: Record<string, string[]> = {};
         const users: string[] = [];
+        const multiUsers: string[] = [];
 
         Object.entries(properties).forEach(([key, value]) => {
             const prop = template.properties.properties[key];
 
-            switch (prop.format) {
+            switch (prop?.format) {
                 case 'unitField':
                     units.push(value);
                     break;
                 case 'user':
-                    users.push(value._id);
+                    if (value) users.push(JSON.parse(value)._id);
                     break;
                 case 'relationshipReference': {
                     // biome-ignore lint/style/noNonNullAssertion: types are bad
@@ -90,13 +92,15 @@ class InstancesValidator extends DefaultController {
                 }
             }
 
-            if (prop.items?.format === 'user') users.push(...value.map(({ _id }) => _id));
+            if (prop?.items?.format === 'user' && !!value) {
+                multiUsers.push(...value.map((userString) => JSON.parse(userString)._id));
+            }
         });
 
         if (units.length) {
             const fullUnits = await UserService.getUnitsByIds(units);
 
-            if (fullUnits.length !== units.length) throw new Error('homo');
+            if (fullUnits.length !== units.length) throw new ValidationError('some units are not existing');
         }
 
         if (Object.entries(relationshipRefs).length) {
@@ -109,15 +113,19 @@ class InstancesValidator extends DefaultController {
                         entityIdsToInclude: ids,
                     });
 
-                    if (entities.count !== ids.length) throw new Error('homo');
+                    if (entities.count !== ids.length) throw new ValidationError('some relationship references are not existing');
                 }),
             );
         }
 
         if (users.length) {
             const kartoffelUsers = await Kartoffel.getUsersByIds(users);
+            if (kartoffelUsers.length !== users.length) throw new ValidationError('some users are not existing');
+        }
 
-            if (kartoffelUsers.length !== users.length) throw new Error('homo');
+        if (multiUsers.length) {
+            const kartoffelUsers = await UserService.searchUserIds({ ids: multiUsers, limit: searchEntitiesMaxLimit });
+            if (kartoffelUsers.length !== multiUsers.length) throw new ValidationError('some users are not existing');
         }
     }
 

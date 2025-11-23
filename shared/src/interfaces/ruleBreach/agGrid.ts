@@ -67,6 +67,7 @@ export interface IUserAgGridRequest {
     step: number;
     filterModel: Record<string, IAgGridFilterModel>;
     sortModel?: IAgGridSort[];
+    ids?: string[];
 }
 export interface IAgGridRequest {
     startRow: number;
