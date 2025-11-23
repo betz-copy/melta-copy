@@ -70,7 +70,7 @@ const createWorkbook = async (fileName: string) => {
     };
 };
 
-const TypesToHebrew = (propertyTemplate: IEntitySingleProperty) => {
+const TypesToHebrew = (propertyTemplate: IEntitySingleProperty, relatedTemplatesMap: Record<string, IMongoEntityTemplatePopulated>) => {
     const { propertyType } = excelConfig;
     const type = propertyType[propertyTemplate.format ?? propertyTemplate.type];
 
@@ -82,6 +82,14 @@ const TypesToHebrew = (propertyTemplate: IEntitySingleProperty) => {
         if (propertyTemplate.items.format === 'user') return propertyType.users;
         if (propertyTemplate.items.format === 'fileId') return propertyType.files;
         return `${propertyType.multiEnum}: ${propertyTemplate.items.enum?.join(', ')}`;
+    }
+
+    if (type === propertyType.relationshipReference) {
+        if (propertyTemplate.relationshipReference?.relatedTemplateId) {
+            const relatedTemplate = relatedTemplatesMap[propertyTemplate.relationshipReference.relatedTemplateId];
+
+            return `${type} ${relatedTemplate?.displayName}`;
+        }
     }
     return type;
 };
@@ -176,14 +184,18 @@ const createWorksheet = async (
         }
     });
     const externalColumns = excelConfig.excelDefaultColumns.filter((externalColumn) => displayColumns?.includes(externalColumn.key));
+
     worksheet.columns = headersOnly ? sheetColumns : sheetColumns.concat(externalColumns);
     worksheet.getRow(1).eachCell((cell) => {
         cell.font = excelStyle.columnHeader.font;
         cell.alignment = excelStyle.columnHeader.alignment;
 
         const type =
-            externalColumns.find(({ header }) => header === cell.value) ??
-            TypesToHebrew(Object.values(template.properties.properties).find((propertyTemplate) => propertyTemplate.title === cell.value)!);
+            externalColumns.find(({ header }) => header === cell.value)?.header ??
+            TypesToHebrew(
+                Object.values(template.properties.properties).find((propertyTemplate) => propertyTemplate.title === cell.value)!,
+                relatedTemplatesMap,
+            );
 
         cell.note = type;
         cell.fill = {

@@ -25,6 +25,7 @@ const excelConfig = {
         enum: 'רשימה',
         regex: 'תבנית (regex)',
         location: 'מיקום: x,y / POLYGON(( x y, x y....))/ zoneHemi x y / POLYGON((zoneHemi x y, zoneHemi x y))',
+        relationshipReference: 'שדה מזהה ייחודי מתבנית',
         users: 'משתמשים',
         comment: 'הערה',
         user: 'משתמש',
