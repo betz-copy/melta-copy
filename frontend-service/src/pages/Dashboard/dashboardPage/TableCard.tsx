@@ -58,21 +58,11 @@ const TableCard: React.FC<{ metaData: TableMetaData & { _id: string } }> = ({ me
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const template = getRelevantEntityTemplate(entityTemplates, metaData.templateId, metaData.childTemplateId);
 
-    const { kartoffelId } = useUserStore((state) => state.user);
-
     const [isFiltered, setIsFiltered] = useState(false);
     const memorizedFilter = useMemo(() => (metaData.filter ? JSON.parse(metaData.filter) : undefined), [metaData.filter]);
 
     const workspace = useWorkspaceStore((state) => state.workspace);
-    const currentUser = useUserStore((state) => state.user);
-    const isAdmin = isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]);
     const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
-
-    const childTemplateFilter = useMemo(
-        () => getDefaultFilterFromTemplate(template, !!metaData.childTemplateId, kartoffelId, currentUser.units, isAdmin),
-        [metaData.templateId, metaData.childTemplateId, kartoffelId, currentUser.units, isAdmin, template],
-    );
-    const allFilters = useMemo(() => getFilterModal(memorizedFilter, childTemplateFilter), [memorizedFilter, childTemplateFilter]);
 
     const resizeTable = () => {
         if (!containerRef.current || !entitiesTableRef.current) return;
@@ -158,7 +148,7 @@ const TableCard: React.FC<{ metaData: TableMetaData & { _id: string } }> = ({ me
                         showNavigateToRowButton
                         actionsColumnWidth={125}
                         editable={false}
-                        defaultFilter={allFilters}
+                        defaultFilter={memorizedFilter}
                         columnsToShow={metaData.columns}
                         infiniteModeWithoutExpand
                         onFilter={() => setIsFiltered(entitiesTableRef.current?.isFiltered() ?? false)}
