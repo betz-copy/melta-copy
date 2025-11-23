@@ -13,6 +13,13 @@ export const getUnitsRequestSchema = joi.object({
     params: {},
 });
 
+// POST /api/units/ids
+export const getUnitsByIdsRequestSchema = joi.object({
+    query: {},
+    body: { ids: joi.array().items(mongoIdSchema.required()).required() },
+    params: {},
+});
+
 // POST /api/units
 export const createUnitRequestSchema = joi.object({
     query: {},
