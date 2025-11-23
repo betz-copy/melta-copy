@@ -48,7 +48,7 @@ export const CardTitle = ({ title, description }: { title: string; description?:
     );
 };
 
-const TableCard: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
+const TableCard: React.FC<{ metaData: TableMetaData & { _id: string } }> = ({ metaData }) => {
     const titleSectionHeight = 80;
 
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
@@ -162,6 +162,7 @@ const TableCard: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
                         columnsToShow={metaData.columns}
                         infiniteModeWithoutExpand
                         onFilter={() => setIsFiltered(entitiesTableRef.current?.isFiltered() ?? false)}
+                        externalId={{ id: metaData._id, type: 'dashboard' }}
                     />
                 </Box>
             </Grid>

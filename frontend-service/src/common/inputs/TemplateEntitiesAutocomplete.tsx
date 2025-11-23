@@ -157,11 +157,10 @@ const TemplateEntitiesAutocomplete: React.FC<{
     const searchFunction = (templateId: string, clientSideUserEntityId: string, searchBody: ISearchEntitiesOfTemplateBody) =>
         clientSideUserEntity?.properties?._id
             ? searchEntitiesOfTemplateClientSideRequest(templateId, clientSideUserEntityId, searchBody)
-            : searchEntitiesOfTemplateRequest(
-                  templateId,
-                  searchBody,
-                  childTemplatesOfRelatedTemplate.map((childTemplate) => childTemplate._id),
-              );
+            : searchEntitiesOfTemplateRequest(templateId, {
+                  ...searchBody,
+                  childTemplateIds: childTemplatesOfRelatedTemplate.map((childTemplate) => childTemplate._id),
+              });
 
     const emptyDependentFields = Object.entries(dependentFields)
         .filter(([_, value]) => value === undefined || value === null)

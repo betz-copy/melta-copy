@@ -165,7 +165,7 @@ export const getExpandedEntityByIdRequest = async (
     const { data } = await axios.post<IEntityExpanded>(`${entities}/expanded/${entityId}`, {
         ...options,
         expandedParams,
-        filters: combineFilters(filters['filter'],childTemplateFilters ),
+        filters: combineFilters(filters['filter'], childTemplateFilters),
     });
     return data;
 };
@@ -500,8 +500,11 @@ export const deleteEntityRequest = async (deleteBody: IDeleteEntityBody) => {
     return data;
 };
 
-export const searchEntitiesOfTemplateRequest = async (templateId: string, searchBody: ISearchEntitiesOfTemplateBody, childTemplateId?: string[]) => {
-    const { data } = await axios.post<ISearchResult>(`${entities}/search/template/${templateId}`, { ...searchBody, childTemplateId });
+export const searchEntitiesOfTemplateRequest = async (
+    templateId: string,
+    searchBody: ISearchEntitiesOfTemplateBody & { childTemplateIds?: string[]; externalId?: { id: string; type: 'dashboard' | 'chart' } },
+) => {
+    const { data } = await axios.post<ISearchResult>(`${entities}/search/template/${templateId}`, searchBody);
     return data;
 };
 

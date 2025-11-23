@@ -28,7 +28,7 @@ export const getRelevantEntityTemplate = (
     return childEntityTemplate || fatherEntityTemplate;
 };
 
-const BodyComponent: React.FC<StepComponentProps<ChartForm>> = ({ values }) => {
+const BodyComponent: React.FC<StepComponentProps<ChartForm & { _id: string }>> = ({ values }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const template = getRelevantEntityTemplate(entityTemplates, values.templateId, values.childTemplateId);
@@ -69,6 +69,7 @@ const BodyComponent: React.FC<StepComponentProps<ChartForm>> = ({ values }) => {
                         },
                     }}
                     ignoreType={false}
+                    chartId={values._id}
                 />
             </Grid>
         </Grid>

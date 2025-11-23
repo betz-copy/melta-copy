@@ -15,7 +15,7 @@ import { isWorkspaceAdmin } from '../../../../utils/permissions/instancePermissi
 import { isChildTemplate } from '../../../../utils/templates';
 import { getRelevantEntityTemplate } from '../Chart/BodyComponent';
 
-const BodyComponent: React.FC<StepComponentProps<TableForm>> = ({ values }) => {
+const BodyComponent: React.FC<StepComponentProps<TableForm & { _id?: string }>> = ({ values }) => {
     const theme = useTheme();
     const queryClient = useQueryClient();
 
@@ -73,6 +73,7 @@ const BodyComponent: React.FC<StepComponentProps<TableForm>> = ({ values }) => {
                         defaultFilter={allFilters}
                         disableFilter
                         columnsToShow={values.columns}
+                        externalId={values._id ? { id: values._id, type: 'dashboard' } : undefined}
                     />
                 </Card>
             )}

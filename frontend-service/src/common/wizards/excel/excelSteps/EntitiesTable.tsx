@@ -26,6 +26,7 @@ export const EntitiesTable: React.FC<{
     ignoreType?: boolean;
     relatedTemplateProperties?: string;
     pageType?: TablePageType;
+    chartId?: string;
 }> = ({
     rowData,
     rowModelType = 'clientSide',
@@ -42,6 +43,7 @@ export const EntitiesTable: React.FC<{
     ignoreType = true,
     relatedTemplateProperties,
     pageType,
+    chartId,
 }) => {
     const theme = useTheme();
     const workspace = useWorkspaceStore((state) => state.workspace);
@@ -131,6 +133,7 @@ export const EntitiesTable: React.FC<{
                     defaultFilter={defaultFilter}
                     disableFilter={disableFilter}
                     addRelationshipReferenceButtonProps={relatedTemplateProperties}
+                    externalId={chartId ? { id: chartId, type: 'chart' } : undefined}
                 />
             </AccordionDetails>
         </Accordion>

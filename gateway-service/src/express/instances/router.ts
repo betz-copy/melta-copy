@@ -22,6 +22,7 @@ import {
     searchEntitiesBatchRequestSchema,
     searchEntitiesByLocationRequestSchema,
     searchEntitiesByTemplatesSchema,
+    searchEntitiesOfTemplateSchema,
     updateEntityInstanceSchema,
     updateEntityStatusSchema,
     updateMultipleEntitiesSchema,
@@ -60,11 +61,13 @@ InstancesRouter.post(
 
 InstancesRouter.post(
     '/entities/search/template/:templateId',
+    ValidateRequest(searchEntitiesOfTemplateSchema),
     InstancesValidatorMiddleware.validateUserCanSearchEntitiesOfTemplate,
     InstancesControllerMiddleware.searchEntitiesOfTemplate,
 );
 
-InstancesRouter.post('/entities/chart/:templateId',
+InstancesRouter.post(
+    '/entities/chart/:templateId',
     ValidateRequest(chartSchema),
     InstancesValidatorMiddleware.validateUserCanGetChart,
     InstancesControllerMiddleware.getChartOfTemplate,

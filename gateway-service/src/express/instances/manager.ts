@@ -5,6 +5,7 @@ import {
     ActionTypes,
     BadRequestError,
     combineFilters,
+    DashboardItemType,
     EntityTemplateType,
     FilterLogicalOperator,
     getFilterFromChildTemplate,
@@ -14,6 +15,7 @@ import {
     IBulkOfActions,
     IBulkRuleMail,
     IChartBody,
+    IChildTemplatePopulated,
     ICountSearchResult,
     ICreateEntityMetadata,
     ICreateRelationshipMetadata,
@@ -24,6 +26,8 @@ import {
     IEntityWithIgnoredRules,
     IExportEntitiesBody,
     IFailedEntity,
+    IFilterGroup,
+    IFilterOfTemplate,
     IFullMongoEntityTemplate,
     IMongoChildTemplatePopulated,
     IMongoEntityTemplatePopulated,
@@ -37,9 +41,11 @@ import {
     ISearchResult,
     ISearchSort,
     ISemanticSearchResult,
+    ISubCompactPermissions,
     ITemplateSearchBody,
     IUpdateEntityMetadata,
     logger,
+    MongoDashboardItemPopulated,
     matchValueAgainstFilter,
     NotFoundError,
     NotFoundErrorTypes,
@@ -53,6 +59,8 @@ import { menash } from 'menashmq';
 import pMap from 'p-map';
 import config from '../../config';
 import FilterValidation from '../../error';
+import ChartService from '../../externalServices/dashboardService/chartService';
+import DashboardItemService from '../../externalServices/dashboardService/dashboardItemService';
 import InstancesService from '../../externalServices/instanceService';
 import { PreviewService } from '../../externalServices/previewService';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
@@ -91,6 +99,10 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     private previewService: PreviewService;
 
+    private dashboardItemService: DashboardItemService;
+
+    private chartService: ChartService;
+
     constructor(workspaceId: string) {
         super(new InstancesService(workspaceId));
         this.workspaceId = workspaceId;
@@ -100,6 +112,8 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         this.ruleBreachesManager = new RuleBreachesManager(workspaceId);
         this.rabbitManager = new RabbitManager(workspaceId);
         this.previewService = new PreviewService(workspaceId);
+        this.dashboardItemService = new DashboardItemService(workspaceId);
+        this.chartService = new ChartService(workspaceId);
     }
 
     async uploadInstanceFiles<TProps = Record<string, any>>(
@@ -191,29 +205,114 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         await Promise.all(tasks);
     }
 
+    private isWorkspaceAdmin = (permissions: ISubCompactPermissions) => Boolean(permissions?.admin) || false;
+
+    private getDefaultFilterFromTemplate = (
+        template: IChildTemplatePopulated,
+        currentUserKartoffelId: string,
+        units: string[],
+        isUserAdmin: boolean,
+    ): ISearchFilter | undefined => {
+        const filterClauses: (IFilterOfTemplate | IFilterGroup)[] = [];
+
+        for (const [key, prop] of Object.entries(template.properties.properties)) {
+            if (template.isFilterByCurrentUser && currentUserKartoffelId && template.filterByCurrentUserField === key)
+                filterClauses.push({ [key]: { $eq: currentUserKartoffelId } });
+
+            if (template.isFilterByUserUnit && units && !isUserAdmin && template.filterByUnitUserField === key)
+                filterClauses.push({ [key]: { $in: units } });
+
+            if (prop.filters) {
+                const parsed = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
+                if (parsed) filterClauses.push(parsed);
+            }
+        }
+
+        return filterClauses.length ? { $and: filterClauses } : undefined;
+    };
+
+    private getFilterModal = (
+        allFilters: (ISearchFilter | undefined)[],
+        filterLogicalOperator: FilterLogicalOperator = FilterLogicalOperator.AND,
+    ): ISearchFilter | undefined => {
+        const filters = allFilters.filter((filter): filter is ISearchFilter => filter !== undefined);
+
+        if (!filters.length) return undefined;
+
+        return filterLogicalOperator === FilterLogicalOperator.AND
+            ? { [FilterLogicalOperator.AND]: filters }
+            : { [FilterLogicalOperator.OR]: filters };
+    };
+
+    private getDashboardFilters(dashboard: MongoDashboardItemPopulated): ISearchFilter | undefined {
+        switch (dashboard.type) {
+            case DashboardItemType.Table:
+            case DashboardItemType.Chart:
+                return dashboard.metaData.filter ? JSON.parse(dashboard.metaData.filter) : undefined;
+            default:
+                return undefined;
+        }
+    }
+
     async searchEntitiesOfTemplate(
         templateId: string,
         searchBody: ISearchEntitiesOfTemplateBody & { entitiesWithFiles: ISemanticSearchResult[string] },
+        userId: string,
+        childTemplateIds?: string[],
+        externalId?: { id: string; type: 'chart' | 'dashboard' },
     ) {
-        const { entitiesWithFiles, ...body } = searchBody;
+        const { entitiesWithFiles, filter: defaultFilter, ...body } = searchBody;
+        const currentUser = await UserService.getUserById(userId);
 
-        if (!entitiesWithFiles || !Object.keys(entitiesWithFiles)?.length || !body.textSearch) {
-            return this.service.searchEntitiesOfTemplateRequest(templateId, body);
+        const childTemplates = await this.entityTemplateService.searchChildTemplates({ ids: childTemplateIds });
+        const userUnits = Object.keys(currentUser.permissions[this.workspaceId].units?.ids ?? {});
+
+        const childTemplatesFilters = childTemplates.map((childTemplate) =>
+            this.getDefaultFilterFromTemplate(
+                childTemplate,
+                currentUser.kartoffelId,
+                userUnits,
+                this.isWorkspaceAdmin(currentUser?.permissions?.[this.workspaceId]),
+            ),
+        );
+
+        const mergedFilterChildren = this.getFilterModal(childTemplatesFilters, FilterLogicalOperator.OR);
+
+        let dashboardFilters: ISearchFilter | undefined;
+        if (externalId) {
+            switch (externalId.type) {
+                case 'chart': {
+                    const chart = await this.chartService.getChartById(externalId.id);
+                    dashboardFilters = chart.filter ? JSON.parse(chart.filter) : undefined;
+                    break;
+                }
+                case 'dashboard': {
+                    const dashboard = await this.dashboardItemService.getDashboardItemById(externalId.id);
+                    dashboardFilters = this.getDashboardFilters(dashboard);
+                    break;
+                }
+            }
         }
+
+        const filter = this.getFilterModal([mergedFilterChildren, defaultFilter, dashboardFilters]);
+
+        if (!entitiesWithFiles || !Object.keys(entitiesWithFiles)?.length || !body.textSearch)
+            return this.service.searchEntitiesOfTemplateRequest(templateId, { ...body, filter });
 
         const searchResult = await this.service.searchEntitiesOfTemplateRequest(templateId, {
             ...body,
+            filter,
             entityIdsToInclude: Object.keys(entitiesWithFiles),
         });
 
         if (body.sort?.length) return searchResult;
 
         const texts = createTextsFromEntitiesWithFiles(searchResult, entitiesWithFiles, body.textSearch);
-        const rerank = await this.semanticSearchSearch.rerank({ query: body.textSearch, texts: Object.keys(texts) });
+        const reRank = await this.semanticSearchSearch.rerank({ query: body.textSearch, texts: Object.keys(texts) });
 
-        if (!rerank?.length) return searchResult;
+        if (!reRank?.length) return searchResult;
 
-        return { ...searchResult, entities: sortEntities(searchResult.entities, rerank, texts) };
+        return { ...searchResult, entities: sortEntities(searchResult.entities, reRank, texts) };
     }
 
     async getAllTemplateEntities(templateId: string, childTemplateId?: string) {

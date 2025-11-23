@@ -42,6 +42,7 @@ import { IRelationship } from '../../interfaces/relationships';
 import { ActionTypes, IAction, IActionPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
 import { IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
 import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
+import { IGetUnits } from '../../interfaces/units';
 import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { searchEntitiesOfTemplateClientSideRequest } from '../../services/clientSideService';
 import {
@@ -69,7 +70,6 @@ import { ResizeBox } from '../EntitiesPage/ResizeBox';
 import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
 import { ErrorToast } from '../ErrorToast';
 import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
-import { IGetUnits } from '../../interfaces/units';
 
 const { errorCodes } = environment;
 const { cacheBlockSize, maxConcurrentDatasourceRequests, actionPrefix, actionsWidth, rowCountInfiniteModeWithoutExpand } = environment.agGrid;
@@ -111,6 +111,7 @@ export const getDatasource = <Data = EntityData>(
     pageType?: string,
     clientSideUserEntityId?: string,
     childTemplatesOfParentIds?: string[],
+    externalId?: { id: string; type: 'chart' | 'dashboard' },
 ): IServerSideDatasource => {
     const parentTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;
     const childTemplateIds = isChildTemplate(template) ? (childTemplatesOfParentIds ?? [template._id]) : [];
@@ -139,16 +140,16 @@ export const getDatasource = <Data = EntityData>(
                               defaultFilter,
                           ),
                       )
-                    : searchEntitiesOfTemplateRequest(
-                          parentTemplateId,
-                          agGridToSearchEntitiesOfTemplateRequest(
+                    : searchEntitiesOfTemplateRequest(parentTemplateId, {
+                          ...agGridToSearchEntitiesOfTemplateRequest(
                               { ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest,
                               template,
                               // tableCount, // comment out  waiting for Itay
                               defaultFilter,
                           ),
                           childTemplateIds,
-                      ),
+                          externalId,
+                      }),
             );
 
             if (err || !data) {
@@ -184,6 +185,7 @@ export const getRowModelProps = <Data = EntityData>(
     pageType?: string,
     clientSideUserEntityId?: string,
     childTemplatesOfParentIds?: string[],
+    externalId?: { id: string; type: 'chart' | 'dashboard' },
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
     if (rowModelType === 'clientSide') {
         return {
@@ -205,6 +207,7 @@ export const getRowModelProps = <Data = EntityData>(
             pageType,
             clientSideUserEntityId,
             childTemplatesOfParentIds,
+            externalId,
         ),
         cacheBlockSize: rowModelType === 'serverSide' ? cacheBlockSize : undefined,
         pagination: rowModelType === 'serverSide',
@@ -259,6 +262,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
     actionsColumnWidth?: number;
     childTemplatesOfParent?: IChildTemplatePopulated[];
+    externalId?: { id: string; type: 'chart' | 'dashboard' };
 };
 
 export type EntitiesTableOfTemplateRef<Data> = {
@@ -309,6 +313,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             setUpdatedTemplateIds,
             actionsColumnWidth,
             childTemplatesOfParent,
+            externalId,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
@@ -415,7 +420,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             return sortBy(
                 colState.filter((s) => Boolean(s.sort)),
                 (c) => c.sortIndex,
-            ).map((s) => ({ colId: s.colId, sort: s.sort! }))!;
+            ).map((s) => ({ colId: s.colId, sort: s.sort }));
         };
 
         const columnDefProps: IGetColumnDefsOptions<Data> = {
@@ -457,7 +462,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const childTemplatesOfParentIds = childTemplatesOfParent?.map(({ _id }) => _id);
 
         const datasourceOnFail = (err: unknown) => {
-        toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
+            toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
             console.error('Failed to load data from datasource. Error:', err);
         };
 
@@ -496,7 +501,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const handleColumnVisible = (params: ColumnVisibleEvent<Data>) => {
             if (!saveStorageProps.shouldSaveVisibleColumns) return;
             if (params?.column?.getColId() && params.column.getColId() === 'disabled') {
-                const { disabled, ...rest } = params.api.getFilterModel();
+                const { disabled: _disabled, ...rest } = params.api.getFilterModel();
                 const filterModel = params.column.isVisible() ? rest : { ...rest, ...defaultFilterModel };
                 params.api.setFilterModel(filterModel);
             }
@@ -731,6 +736,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     saveStorageProps.pageType,
                     clientSideUserEntity?.properties?._id,
                     childTemplatesOfParentIds,
+                    externalId,
                 ),
             [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances, defaultFilter, childTemplatesOfParentIds],
         );

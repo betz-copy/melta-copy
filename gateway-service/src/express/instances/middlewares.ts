@@ -80,9 +80,8 @@ class InstancesValidator extends DefaultController {
         const allowedEntityTemplateIds = [...allowedEntityTemplates.map(({ _id }) => _id), ...allowedChildTemplates.map(({ _id }) => _id)];
 
         const unauthorizedTemplates = templateIds.filter((templateId) => !allowedEntityTemplateIds.includes(templateId));
-        if (unauthorizedTemplates.length > 0) {
+        if (unauthorizedTemplates.length)
             throw new ForbiddenError('user not authorized', { metadata: `unauthorized templates ${JSON.stringify(unauthorizedTemplates)}` });
-        }
     }
 
     async getAllowedChildTemplatesForInstances(
@@ -110,7 +109,7 @@ class InstancesValidator extends DefaultController {
 
     async validateUserCanSearchEntitiesOfTemplate(req: Request) {
         const { templateId } = req.params;
-        await this.validateHasPermissionsToEntitiesInTemplates(req.user!, req.body.childTemplateId || [templateId]);
+        await this.validateHasPermissionsToEntitiesInTemplates(req.user!, req.body.childTemplateIds || [templateId]);
     }
 
     async validateUserCanExportEntities(req: Request) {
