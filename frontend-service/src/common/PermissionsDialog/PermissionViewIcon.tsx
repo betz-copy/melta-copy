@@ -1,6 +1,5 @@
 import { Check, Clear, HorizontalRule } from '@mui/icons-material';
 import { Checkbox } from '@mui/material';
-import React from 'react';
 
 const CheckedIcon = () => <Check htmlColor="green" />;
 const UncheckedIcon = () => <Clear htmlColor="#a81105" />;

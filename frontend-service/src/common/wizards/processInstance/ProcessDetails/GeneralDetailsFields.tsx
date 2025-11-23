@@ -4,7 +4,6 @@ import { DatePicker, LocalizationProvider, PickersLocaleText } from '@mui/x-date
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { he } from 'date-fns/locale';
 import i18next from 'i18next';
-import React from 'react';
 import { environment } from '../../../../globals';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import BlueTitle from '../../../MeltaDesigns/BlueTitle';

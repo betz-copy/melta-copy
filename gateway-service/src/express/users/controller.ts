@@ -40,16 +40,10 @@ class UsersController {
         res.json(await UsersManager.updateUserRoleIds(req.params.userId, workspaceId, permissions, roleIds));
     }
 
-    static async updateUserUnits(req: Request, res: Response) {
-        const { units } = req.body;
-
-        res.json(await UsersManager.updateUserUnits(req.params.userId, units));
-    }
-
     static async createUser(req: Request, res: Response) {
-        const { kartoffelId, permissions, workspaceId, roleIds, units } = req.body;
+        const { kartoffelId, permissions, workspaceId, roleIds } = req.body;
 
-        res.json(await UsersManager.createUser(kartoffelId, permissions, workspaceId, roleIds, units));
+        res.json(await UsersManager.createUser(kartoffelId, permissions, workspaceId, roleIds));
     }
 
     static async updateUserPreferencesMetadata(req: Request, res: Response) {

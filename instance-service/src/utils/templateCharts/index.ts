@@ -1,4 +1,4 @@
-import { CoordinateSystem, IAggregation, IAggregationType, IAxisField, IMongoEntityTemplate, locationConverterToString } from '@microservices/shared';
+import { CoordinateSystem, IAggregation, IAggregationType, IAxisField, IGetUnits, IMongoEntityTemplate, locationConverterToString } from '@microservices/shared';
 import { fromZonedTime } from 'date-fns-tz';
 import neo4j from 'neo4j-driver';
 import config from '../../config';
@@ -127,6 +127,7 @@ export const manipulateReturnedChart = async (
     chart: { x: any; y: number; coordinateSystem?: string }[],
     entityTemplate: IMongoEntityTemplate,
     workspaceId: string,
+    units: IGetUnits,
 ) => {
     if (typeof xAxis !== 'string') return chart;
 
@@ -142,6 +143,8 @@ export const manipulateReturnedChart = async (
             if (format === 'fileId') return { x: getFileName(x), y };
 
             if (items?.format === 'fileId') return { x: getFilesName(x), y };
+
+            if (format === 'unitField') return { x: units.find(({ _id }) => _id === x)?.name, y };
 
             if (x instanceof neo4j.types.LocalDateTime) return { x: fromZonedTime(new Date(x.toString()), timezone).toISOString(), y };
 

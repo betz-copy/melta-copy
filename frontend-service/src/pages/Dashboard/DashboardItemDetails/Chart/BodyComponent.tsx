@@ -9,8 +9,10 @@ import { IChildTemplateMap, IChildTemplatePopulated } from '../../../../interfac
 import { ChartForm } from '../../../../interfaces/dashboard';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { useUserStore } from '../../../../stores/user';
+import { useWorkspaceStore } from '../../../../stores/workspace';
 import { getFilterModal } from '../../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { useDebouncedFilter } from '../../../../utils/dashboard/useDebouncedFilter';
+import { isWorkspaceAdmin } from '../../../../utils/permissions/instancePermissions';
 import { ChartGenerator } from '../../../Charts/chartGenerator.tsx';
 
 export const getRelevantEntityTemplate = (
@@ -31,12 +33,15 @@ const BodyComponent: React.FC<StepComponentProps<ChartForm>> = ({ values }) => {
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const template = getRelevantEntityTemplate(entityTemplates, values.templateId, values.childTemplateId);
 
+    const workspace = useWorkspaceStore((state) => state.workspace);
     const currentUser = useUserStore((state) => state.user);
+
     const currentUserKartoffelId = currentUser?.kartoffelId;
+    const isAdmin = isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]);
 
     const childTemplateDefaultFilters = useMemo(
-        () => getDefaultFilterFromTemplate(template, !!values.childTemplateId, currentUserKartoffelId),
-        [values.templateId, values.childTemplateId, currentUserKartoffelId],
+        () => getDefaultFilterFromTemplate(template, !!values.childTemplateId, currentUserKartoffelId, currentUser.units, isAdmin),
+        [values.templateId, values.childTemplateId, currentUserKartoffelId, currentUser.units, isAdmin, template],
     );
     const memoizedFilter = useDebouncedFilter(values, queryClient, 500);
     const allFilters = useMemo(() => getFilterModal(memoizedFilter, childTemplateDefaultFilters), [memoizedFilter, childTemplateDefaultFilters]);

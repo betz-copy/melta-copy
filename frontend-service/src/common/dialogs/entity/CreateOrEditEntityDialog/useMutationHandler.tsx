@@ -2,7 +2,7 @@ import { Button, Grid } from '@mui/material';
 import { AxiosError } from 'axios';
 import { StatusCodes } from 'http-status-codes';
 import i18next from 'i18next';
-import React, { Dispatch, SetStateAction } from 'react';
+import { Dispatch, SetStateAction } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';

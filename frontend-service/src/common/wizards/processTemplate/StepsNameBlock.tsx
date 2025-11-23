@@ -1,6 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable import/no-extraneous-dependencies */
-
 import { Grid, TextField } from '@mui/material';
 import { FormikErrors } from 'formik';
 import i18next from 'i18next';

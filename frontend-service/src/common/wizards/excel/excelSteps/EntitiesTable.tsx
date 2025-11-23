@@ -26,6 +26,9 @@ export const EntitiesTable: React.FC<{
     ignoreType?: boolean;
     relatedTemplateProperties?: string;
     pageType?: TablePageType;
+    scrollId?: string;
+    onRowSelected?: (data: IEntity | IFailedEntity) => void;
+    usePagination?: boolean;
 }> = ({
     rowData,
     rowModelType = 'clientSide',
@@ -42,6 +45,9 @@ export const EntitiesTable: React.FC<{
     ignoreType = true,
     relatedTemplateProperties,
     pageType,
+    scrollId,
+    onRowSelected,
+    usePagination = true,
 }) => {
     const theme = useTheme();
     const workspace = useWorkspaceStore((state) => state.workspace);
@@ -131,6 +137,9 @@ export const EntitiesTable: React.FC<{
                     defaultFilter={defaultFilter}
                     disableFilter={disableFilter}
                     addRelationshipReferenceButtonProps={relatedTemplateProperties}
+                    scrollToId={scrollId}
+                    onRowSelected={onRowSelected}
+                    usePagination={usePagination}
                 />
             </AccordionDetails>
         </Accordion>

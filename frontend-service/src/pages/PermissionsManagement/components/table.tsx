@@ -92,6 +92,12 @@ const columnDefs = (
         title: i18next.t('permissions.processesManagement'),
         valuesMap: scopesTranslation,
     }),
+    translatedEnumColDef<PermissionData>({
+        field: 'unitsManagement',
+        valueGetter: (params) => (params.data?.permissions[workspaceId]?.units?.scope || params.data?.permissions[workspaceId]?.admin?.scope) ?? '',
+        title: i18next.t('permissions.permissionsOfUserDialog.unitsManagement'),
+        valuesMap: scopesTranslation,
+    }),
     {
         field: 'categoriesPermissions',
         headerName: i18next.t('permissions.permissionsOfUserDialog.instancesPermissions'),

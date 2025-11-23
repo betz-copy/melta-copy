@@ -4,7 +4,7 @@ import config from '../../config';
 import { IKartoffelUser } from './interface';
 
 const {
-    kartoffel: { url, baseEntitiesRoute, searchRoute, fieldToSearch, getByIdRoute, requestTimeout, profilePath },
+    kartoffel: { url, baseEntitiesRoute, searchRoute, fieldToSearch, getByIdRoute, requestTimeout, profilePath, maxPageSize },
 } = config;
 
 class Kartoffel {
@@ -40,6 +40,19 @@ class Kartoffel {
         } catch (error) {
             throw new BadRequestError('Kartoffel profile not found', { error });
         }
+    };
+
+    // identityCards refer to tz, but the kartoffel field name is identityCard
+    static getUsersByIdentityCards = async (identityCards: string[]): Promise<IKartoffelUser[]> => {
+        const { data } = await this.kartoffel.get<IKartoffelUser[]>(``, {
+            params: {
+                identityCards: identityCards,
+                page: 1,
+                pageSize: maxPageSize,
+            },
+        });
+
+        return data;
     };
 }
 
