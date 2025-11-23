@@ -1,4 +1,3 @@
-import { TextField } from '@mui/material';
 import { LocalizationProvider, MobileDatePicker, PickersLocaleText } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { he } from 'date-fns/locale';
@@ -37,7 +36,6 @@ const DateFilterComponent: React.FC<{
                     label={i18next.t('wizard.date')}
                     slots={{
                         toolbar: CustomDateTimePickerToolbar,
-                        textField: (params) => <TextField {...params} />,
                     }}
                     slotProps={{
                         textField: { fullWidth: true },

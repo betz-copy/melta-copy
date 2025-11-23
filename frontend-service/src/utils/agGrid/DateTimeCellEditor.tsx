@@ -1,4 +1,4 @@
-import { FormControl, TextField } from '@mui/material';
+import { FormControl } from '@mui/material';
 import { DatePicker, DateTimePicker, PickersLocaleText } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -52,7 +52,6 @@ const DateTimeCellEditor: React.FC<DateTimeCellEditorProps> = ({ value, onValueC
                         ampm={false}
                         slots={{
                             toolbar: CustomDateTimePickerToolbar,
-                            textField: (params) => <TextField {...params} />,
                         }}
                         slotProps={{
                             actionBar: { actions: ['clear', 'cancel', 'accept'] },
@@ -68,7 +67,6 @@ const DateTimeCellEditor: React.FC<DateTimeCellEditorProps> = ({ value, onValueC
                         views={['year', 'month', 'day']}
                         slots={{
                             toolbar: CustomDateTimePickerToolbar,
-                            textField: (params) => <TextField {...params} />,
                         }}
                         slotProps={{
                             actionBar: { actions: ['clear', 'cancel', 'accept'] },

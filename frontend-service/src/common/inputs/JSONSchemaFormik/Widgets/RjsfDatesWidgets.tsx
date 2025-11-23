@@ -1,6 +1,6 @@
 /* eslint-disable consistent-return */
 /* eslint-disable no-underscore-dangle */
-import { styled, TextField, TextFieldProps } from '@mui/material';
+import { styled, TextFieldProps } from '@mui/material';
 import { DateTimePickerToolbar, dateTimePickerToolbarClasses, LocalizationProvider, PickersLocaleText } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -84,11 +84,9 @@ const getRjsfDateOrDateTimeWidget =
             >
                 <MuiDatePicker
                     value={parseDefaultDate(value)}
+                    format={inputFormat}
                     enableAccessibleFieldDOMStructure={false}
                     onChange={(val) => onChangeDateWidget(val)}
-                    slots={{
-                        textField: (params) => <TextField {...params} style={{ textAlign: 'right' }} inputformat={inputFormat} />,
-                    }}
                     slotProps={{
                         textField: {
                             ...textFieldProps,
