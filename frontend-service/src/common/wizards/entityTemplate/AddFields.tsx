@@ -270,7 +270,7 @@ type AddFieldsDNDProps = Pick<
     FormikProps<EntityTemplateWizardValues>,
     'values' | 'setValues' | 'touched' | 'errors' | 'setFieldValue' | 'initialValues'
 > &
-    Pick<StepComponentHelpers, 'isEditMode' | 'setBlock'> & { showAccountDisplay?: boolean; setIsTransferTemplate?: (val: boolean) => void };
+    Pick<StepComponentHelpers, 'isEditMode' | 'setBlock'> & { isAccountTemplate?: boolean; setIsTransferTemplate?: (val: boolean) => void };
 
 export enum PropertiesTypes {
     properties = 'properties',
@@ -291,7 +291,7 @@ export const FieldBlockWrapper = ({
     initialValues,
     isEditMode,
     setBlock,
-    showAccountDisplay,
+    isAccountTemplate,
     setIsTransferTemplate,
 }) => {
     const hasActions = Boolean(initialValues?.actions);
@@ -752,7 +752,7 @@ export const FieldBlockWrapper = ({
                     archive={(ind, groupIndex) => archive(ind, itemId, groupIndex)}
                     remove={remove}
                     onDeleteSure={onDeleteSure}
-                    showAccountDisplay={showAccountDisplay}
+                    isAccountTemplate={isAccountTemplate}
                     hasAccountBalanceField={isWalletTemplate}
                     isAlreadyWalletTemplate={isAlreadyWalletTemplate}
                     setIsTransferTemplate={setIsTransferTemplate}
@@ -771,7 +771,7 @@ export const AddFieldsDND: React.FC<AddFieldsDNDProps> = ({
     initialValues,
     isEditMode,
     setBlock,
-    showAccountDisplay,
+    isAccountTemplate,
     setIsTransferTemplate,
 }) => {
     const moveItem = useCallback(
@@ -801,7 +801,7 @@ export const AddFieldsDND: React.FC<AddFieldsDNDProps> = ({
                     initialValues={initialValues}
                     isEditMode={isEditMode}
                     setBlock={setBlock}
-                    showAccountDisplay={showAccountDisplay}
+                    isAccountTemplate={isAccountTemplate}
                     setIsTransferTemplate={setIsTransferTemplate}
                 />
             ))}
@@ -811,7 +811,7 @@ export const AddFieldsDND: React.FC<AddFieldsDNDProps> = ({
 
 const AddFields: React.FC<
     StepComponentProps<EntityTemplateWizardValues, 'isEditMode' | 'setBlock'> & {
-        showAccountDisplay?: boolean;
+        isAccountTemplate?: boolean;
         setIsTransferTemplate?: (val: boolean) => void;
     }
 > = ({
@@ -823,7 +823,7 @@ const AddFields: React.FC<
     initialValues,
     isEditMode,
     setBlock,
-    showAccountDisplay = false,
+    isAccountTemplate = false,
     setIsTransferTemplate,
 }) => {
     return (
@@ -837,7 +837,7 @@ const AddFields: React.FC<
                 initialValues={initialValues}
                 isEditMode={isEditMode}
                 setBlock={setBlock}
-                showAccountDisplay={showAccountDisplay}
+                isAccountTemplate={isAccountTemplate}
                 setIsTransferTemplate={setIsTransferTemplate}
             />
         </DndProvider>

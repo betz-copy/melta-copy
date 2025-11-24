@@ -2,51 +2,27 @@ import { InfoOutlined } from '@mui/icons-material';
 import { Box, Grid, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
+import { omit } from 'lodash';
 import React from 'react';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
-import * as Yup from 'yup';
-import { EntityTemplateWizardValues, hasAccountBalanceField } from '.';
 import { searchEntitiesOfTemplateRequest } from '../../../services/entitiesService';
-import { variableNameValidation } from '../../../utils/validation';
 import { ErrorToast } from '../../ErrorToast';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
 import { StepComponentProps } from '../index';
+import { EntityTemplateWizardValues, hasAccountBalanceField } from '.';
 import { ChooseCategory } from './ChooseCategory';
-import { PropertyItem } from './commonInterfaces';
 import { CreateTemplateName } from './CreateTemplateName';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { omit } from 'lodash';
-
-export const useCreateOrEditTemplateNameSchema = (templates: IEntityTemplateMap, currentTemplateId?: string) => {
-    const otherTemplates = Array.from(templates.values()).filter((template) => template._id !== currentTemplateId);
-
-    const existingTemplateNames = otherTemplates.map((template) => template.name);
-    const existingTemplateDisplayNames = otherTemplates.map((template) => template.displayName);
-
-    return Yup.object({
-        name: Yup.string()
-            .matches(variableNameValidation, i18next.t('validation.variableName'))
-            .required(i18next.t('validation.required'))
-            .test('unique-name', i18next.t('validation.existingName'), (value) => {
-                return !existingTemplateNames.includes(value || '');
-            }),
-        displayName: Yup.string()
-            .required(i18next.t('validation.required'))
-            .test('unique-displayName', i18next.t('validation.existingDisplayName'), (value) => {
-                return !existingTemplateDisplayNames.includes(value || '');
-            }),
-    });
-};
+import { PropertyItem } from './commonInterfaces';
 
 const CreateTemplateSettings: React.FC<
     StepComponentProps<EntityTemplateWizardValues, 'isEditMode'> & {
         exportFormats: { value: boolean; set: (val: boolean) => void };
-        showAccountDisplay: { value: boolean; set: (val: boolean) => void };
+        isAccountTemplate: { value: boolean; set: (val: boolean) => void };
     }
 > = (props) => {
-    const { values, exportFormats, showAccountDisplay, isEditMode, setFieldValue } = props;
+    const { values, exportFormats, isAccountTemplate, isEditMode, setFieldValue } = props;
 
     const { data: areThereInstancesByTemplateIdResponse } = useQuery(
         ['areThereInstancesByTemplateId', values._id],
@@ -79,10 +55,10 @@ const CreateTemplateSettings: React.FC<
             <Grid container direction="column" alignItems="flex-start" spacing={1}>
                 <Box sx={{ display: 'flex', alignItems: 'center' }} marginBottom={1}>
                     <MeltaCheckbox
-                        checked={showAccountDisplay.value}
+                        checked={isAccountTemplate.value}
                         onChange={(e) => {
                             const isChecked = e.target.checked;
-                            showAccountDisplay.set(isChecked);
+                            isAccountTemplate.set(isChecked);
 
                             if (!isChecked) {
                                 setFieldValue(
@@ -137,6 +113,7 @@ const CreateTemplateSettings: React.FC<
                                 fontSize: 16,
                                 opacity: 0.7,
                                 ml: 1,
+                                color: '#9398C2',
                             }}
                         />
                     </MeltaTooltip>
@@ -155,6 +132,7 @@ const CreateTemplateSettings: React.FC<
                                 fontSize: 16,
                                 opacity: 0.7,
                                 ml: 1,
+                                color: '#9398C2',
                             }}
                         />
                     </MeltaTooltip>

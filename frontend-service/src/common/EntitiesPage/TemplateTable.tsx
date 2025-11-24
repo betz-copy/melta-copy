@@ -491,9 +491,7 @@ const TemplateTable = forwardRef<
                                   payload: editDialog.entity!,
                               }
                             : { actionType: ActionTypes.CreateEntity, payload: undefined }),
-                        onError: (currEntityValues) => {
-                            setEditDialog((prev) => ({ ...prev, isOpen: true, wizardValues: currEntityValues }));
-                        },
+                        onError: (currEntityValues) => setEditDialog((prev) => ({ ...prev, isOpen: true, wizardValues: currEntityValues })),
                         onSuccess: (entity: IEntity) => {
                             entitiesTableRef.current?.updateRowDataClientSide(entity);
                             setUpdatedEntities?.(

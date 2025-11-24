@@ -614,14 +614,12 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         mapSearchProperties,
         fieldGroups: updatedFieldsGroups,
         walletTransfer: walletTransfer
-            ? walletTransfer?.from.name
-                ? {
-                      from: walletTransfer?.from.name,
-                      to: walletTransfer?.to.name,
-                      description: walletTransfer?.description,
-                      amount: walletTransfer.amount,
-                  }
-                : undefined
+            ? {
+                  from: typeof walletTransfer.from === 'string' ? walletTransfer.from : walletTransfer.from.name,
+                  to: typeof walletTransfer.to === 'string' ? walletTransfer.to : walletTransfer.to.name,
+                  description: walletTransfer.description,
+                  amount: walletTransfer.amount,
+              }
             : null,
     };
 };
@@ -691,14 +689,14 @@ const updateEntityTemplateRequest = async (
     queryClient: QueryClient,
 ) => {
     const formData = new FormData();
-    console.log({ updatedEntityTemplate });
 
-    let walletTransfer;
+    let walletTransfer: { from: string; to: string; amount: string; description: string } | null = null;
     if (updatedEntityTemplate.walletTransfer) {
         const { from, to, amount, description } = (updatedEntityTemplate as EntityTemplateWizardValues).walletTransfer!;
-        walletTransfer = { from: from.name ?? from, to: to.name ?? to, amount, description };
+        const fromValue = typeof from === 'string' ? from : from.name;
+        const toValue = typeof to === 'string' ? to : to.name;
+        walletTransfer = { from: fromValue, to: toValue, amount, description };
     }
-    walletTransfer = walletTransfer ?? null;
 
     const entityTemplate: IEntityTemplate =
         'attachmentProperties' in updatedEntityTemplate

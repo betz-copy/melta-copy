@@ -68,7 +68,7 @@ export interface FieldEditCardProps {
     onDuplicateKartoffelField?: (fieldIndex: number, groupIndex?: number) => void;
     groupIndex?: number;
     propertiesType: string;
-    showAccountDisplay?: boolean;
+    isAccountTemplate?: boolean;
     hasAccountBalanceField?: boolean;
     isAlreadyWalletTemplate?: boolean;
 }
@@ -112,7 +112,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     onDuplicateKartoffelField,
     groupIndex,
     propertiesType,
-    showAccountDisplay,
+    isAccountTemplate,
     hasAccountBalanceField,
     isAlreadyWalletTemplate,
 }) => {
@@ -404,7 +404,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     supportUnique={supportUnique}
                                     supportIdentifier={supportIdentifier}
                                     hasIdentifier={hasIdentifier}
-                                    showAccountDisplay={showAccountDisplay}
+                                    isAccountTemplate={isAccountTemplate}
                                     hasAccountBalanceField={hasAccountBalanceField}
                                     isAlreadyWalletTemplate={isAlreadyWalletTemplate}
                                 />
@@ -464,7 +464,12 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                         <Box>
                                             <IconButton
                                                 onClick={() => remove(index, isNewProperty, groupIndex)}
-                                                disabled={!supportDeleteForExistingInstances || initialValue?.required || hasActions}
+                                                disabled={
+                                                    !supportDeleteForExistingInstances ||
+                                                    initialValue?.required ||
+                                                    hasActions ||
+                                                    (value.accountBalance && areThereAnyInstances)
+                                                }
                                             >
                                                 {value.deleted ? <DeleteOff /> : <DeleteIcon />}
                                             </IconButton>

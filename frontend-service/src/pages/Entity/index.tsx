@@ -1,4 +1,4 @@
-import { AddCircle, CloseFullscreenRounded, Expand, TableRowsOutlined, AccountBalanceWallet } from '@mui/icons-material';
+import { AccountBalanceWallet, AddCircle, CloseFullscreenRounded, Expand, TableRowsOutlined } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, CircularProgress, Grid, Tab, useTheme } from '@mui/material';
 import { useTour } from '@reactour/tour';
@@ -14,9 +14,7 @@ import { EntityTemplateTextComponent, RelationshipTitle } from '../../common/Rel
 import { TableButton } from '../../common/TableButton';
 import '../../css/pages.css';
 import { getChildTemplatesFilter } from '../../common/inputs/TemplateEntitiesAutocomplete';
-import BlueTitle from '../../common/MeltaDesigns/BlueTitle';
 import '../../css/pages.css';
-import { ICategoryMap } from '../../interfaces/categories';
 import { IChildTemplateMap, IChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { IEntity, IEntityExpanded, ISearchFilter } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -32,8 +30,8 @@ import { getFullRelationshipTemplates, groupChildTemplatesByParent } from '../..
 import { EntityDetails } from './components/EntityDetails';
 import { EntityTopBar } from './components/TopBar';
 import DeleteRelationshipDialog from './DeleteRelationshipDialog';
-import { RelationshipIcon } from './RelationshipIcon';
 import { EntityConnections } from './entityConnections';
+import { RelationshipIcon } from './RelationshipIcon';
 import { WalletTransfers } from './walletTransfers';
 
 export const getButtonState = (
@@ -478,7 +476,7 @@ const Entity: React.FC = () => {
                                     onChange={(_event, newValue) => setSelectTransfersOrConnections(newValue)}
                                     slotProps={{
                                         indicator: { style: { display: 'none' } },
-                                    }} 
+                                    }}
                                     sx={{
                                         '& .MuiTab-root': {
                                             minWidth: 'auto',
@@ -512,7 +510,7 @@ const Entity: React.FC = () => {
                         </TabContext>
                     )}
                 </Grid>
-            </Grid >
+            </Grid>
         </>
     );
 };

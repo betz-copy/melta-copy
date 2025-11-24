@@ -25,12 +25,24 @@ interface WalletTransferData {
     direction: string;
 }
 
+interface IWalletTransfers {
+    templateId: string;
+    expandedEntity: IEntityExpanded;
+    connectionsTemplates?: INestedRelationshipTemplates[];
+    getButtonStateByRelatedTemplate: (relatedTemplate: IMongoEntityTemplatePopulated) => {
+        isEditButtonsDisabled: boolean;
+        disabledButtonText: string;
+        hasPermissionToRelatedTemplate: boolean;
+    };
+}
+
+
 export type WalletTransferTableRef<WalletTransferData> = {
     refreshServerSide: () => void;
     updateRowDataClientSide: (data: WalletTransferData) => void;
 };
 
-export const WalletTransfers: React.FC<any> = ({
+export const WalletTransfers: React.FC<IWalletTransfers> = ({
     templateId,
     connectionsTemplates,
     expandedEntity,
@@ -100,7 +112,7 @@ export const WalletTransfers: React.FC<any> = ({
         .map(({ _sortKey, ...rest }) => rest);
 
     function calculateBalancesFromCurrent(transfers: WalletTransferData[], currentBalance: number) {
-        let balance = Number(currentBalance);
+        let balance = currentBalance;
 
         const withBalances: WalletTransferData[] = transfers.map((t) => {
             const walletTransferAmountKey = t.template?.walletTransfer?.amount;
@@ -117,7 +129,7 @@ export const WalletTransfers: React.FC<any> = ({
         });
 
         const initialRow: WalletTransferData = {
-            template: {} as any,
+            template: {} as IMongoEntityTemplatePopulated,
             entity: expandedEntity.entity,
             direction: 'initial',
             balanceAtThatTime: balance,
@@ -175,7 +187,6 @@ export const WalletTransfers: React.FC<any> = ({
             headerName: i18next.t('entityPage.walletTransfer.createdAt'),
             valueGetter: (params: any) =>
                 params.data?.entity.properties.createdAt ? new Date(params.data.entity.properties.createdAt).toLocaleString() : '',
-            filter: 'agDateColumnFilter',
         },
         {
             field: 'transfer.entity',
@@ -236,7 +247,6 @@ export const WalletTransfers: React.FC<any> = ({
                     />
                 );
             },
-            filter: 'agTextColumnFilter',
         },
         {
             field: 'transfer.description',
@@ -254,13 +264,11 @@ export const WalletTransfers: React.FC<any> = ({
                 color: params.data?.direction === 'to' ? '#EA6466' : '#12B08A',
                 fontWeight: 600,
             }),
-            filter: 'agTextColumnFilter',
         },
         {
             field: 'balanceAtThatTime',
             headerName: i18next.t('entityPage.walletTransfer.accountBalance'),
             valueFormatter: (p) => p.value?.toLocaleString(),
-            filter: 'agTextColumnFilter',
         },
         {
             field: 'transfer.actions',
@@ -309,7 +317,6 @@ export const WalletTransfers: React.FC<any> = ({
                     </Grid>
                 );
             }),
-            filter: 'agTextColumnFilter',
         },
     ];
 

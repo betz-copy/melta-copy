@@ -168,12 +168,13 @@ export const ajvValidate = (
 
     const walletTemplateErrors: FormikErrors<any> = {};
     if (walletTransfer) {
-        const sourceWalletEntityId = data[walletTransfer.from]?.properties?._id;
-        const destWalletEntityId = data[walletTransfer.to]?.properties?._id;
+        const { from, to } = walletTransfer;
+        const sourceWalletEntityId = data[from]?.properties?._id;
+        const destWalletEntityId = data[to]?.properties?._id;
 
         if (sourceWalletEntityId && destWalletEntityId && sourceWalletEntityId === destWalletEntityId) {
-            walletTemplateErrors[walletTransfer.from] = i18next.t('validation.sameSourceAndDestWallet');
-            walletTemplateErrors[walletTransfer.to] = i18next.t('validation.sameSourceAndDestWallet');
+            walletTemplateErrors[from] = i18next.t('validation.sameSourceAndDestWallet');
+            walletTemplateErrors[to] = i18next.t('validation.sameSourceAndDestWallet');
         }
     }
 

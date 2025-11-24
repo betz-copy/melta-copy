@@ -23,6 +23,9 @@ export const useCreateOrEditTemplateNameSchema = (templates: Map<any, any>, curr
             .test('unique-displayName', i18next.t('validation.existingDisplayName'), (value) => {
                 return !existingTemplateDisplayNames.includes(value || '');
             }),
+        category: Yup.object({
+            displayName: Yup.string().required(i18next.t('validation.required')),
+        }).required(i18next.t('validation.required')),
     });
 };
 
@@ -35,7 +38,7 @@ const CreateTemplateName = <Values extends { name: string; displayName: string }
     gridProps,
 }: React.PropsWithChildren<StepComponentProps<Values, 'isEditMode'>> & { gridProps?: object }) => {
     return (
-        <Grid container sx={gridProps ? {...gridProps} :{direction:'column', alignItems:'center'}} spacing={2}>
+        <Grid container sx={gridProps ? { ...gridProps } : { direction: 'column', alignItems: 'center' }} spacing={2}>
             <Grid>
                 <TextField
                     name="name"
