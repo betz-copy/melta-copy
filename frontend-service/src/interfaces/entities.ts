@@ -256,7 +256,7 @@ export type IMultipleSelect<T extends boolean = boolean> = {
 
 export type IDeleteEntityBody<T extends boolean = boolean> = IDeleteEntityBodyBase & IMultipleSelect<T>;
 
-export type EntityData = IEntity | IFailedEntity;
+export type EntityData = IEntity | IFailedEntity | IConnection;
 
 export interface IEntityWithIgnoredRules extends ICreateEntityMetadata {
     ignoredRules: IBrokenRule[];

@@ -1,6 +1,6 @@
 import { CircularProgress, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import React, { forwardRef, useImperativeHandle, useRef } from 'react';
+import { forwardRef, useImperativeHandle, useRef } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import TemplateTable, { TemplateTableRef } from '../../../common/EntitiesPage/TemplateTable';
 import { TemplateTablesViewResultsRef } from '../../../common/EntitiesPage/TemplateTablesView';

@@ -63,7 +63,7 @@ const SelectFilterInput: React.FC<SelectFilterInputProps> = ({
                     select
                     size="small"
                     fullWidth
-                    value={filterField?.[key] ?? ''}
+                    value={filterField?.[key]}
                     onChange={(e) =>
                         handleFilterFieldChange({ ...filterField, [key]: e.target.value } as
                             | IAGGridNumberFilter
