@@ -58,6 +58,7 @@ const DateTimeCellEditor: React.FC<DateTimeCellEditorProps> = ({ value, onValueC
                         onChange={handleDateChange}
                         format={dateFormat}
                         enableAccessibleFieldDOMStructure={false}
+                        views={['year', 'month', 'day']}
                         slots={{ toolbar: CustomDateTimePickerToolbar, textField: (params) => <TextField {...params} /> }}
                         slotProps={{
                             actionBar: { actions: ['clear', 'cancel', 'accept'] },

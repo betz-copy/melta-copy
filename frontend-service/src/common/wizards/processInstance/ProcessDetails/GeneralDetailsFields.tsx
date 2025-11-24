@@ -131,6 +131,7 @@ export const GeneralDetailsFields = ({
                                 label={i18next.t('wizard.processInstance.processInstanceStartDate')}
                                 value={values.startDate}
                                 onChange={(newStartDate) => setFieldValue('startDate', newStartDate)}
+                                views={['year', 'month', 'day']}
                                 slots={{ textField: (params) => <TextField {...params} />, openPickerIcon: viewMode ? () => null : undefined }}
                                 slotProps={{
                                     textField: {
@@ -162,6 +163,7 @@ export const GeneralDetailsFields = ({
                                 minDate={values.startDate}
                                 format={date}
                                 enableAccessibleFieldDOMStructure={false}
+                                views={['year', 'month', 'day']}
                                 label={i18next.t('wizard.processInstance.processInstanceEndDate')}
                                 value={values.endDate}
                                 onChange={(newEndDate) => setFieldValue('endDate', newEndDate)}
