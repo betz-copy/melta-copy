@@ -13,7 +13,7 @@ import { PieChart } from '../chartsType/PieChart';
 import { ChartTypeButton } from './ChartTypeButton';
 
 interface ChartProps {
-    formik: FormikProps<ChartForm>;
+    formik: FormikProps<ChartForm & { _id: string }>;
     entityTemplate: IMongoEntityTemplatePopulated;
     disabled: boolean;
 }

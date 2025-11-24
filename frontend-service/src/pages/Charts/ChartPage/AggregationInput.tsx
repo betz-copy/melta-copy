@@ -12,7 +12,7 @@ import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../inte
 import { filteredMap } from '../../../utils/filteredMap';
 
 interface AxisInputProps {
-    formik: FormikProps<ChartForm>;
+    formik: FormikProps<ChartForm & { _id: string }>;
     formikField: string;
     label: string;
     entityTemplate: IMongoEntityTemplatePopulated;

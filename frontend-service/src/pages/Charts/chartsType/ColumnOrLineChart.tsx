@@ -8,7 +8,7 @@ import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplat
 import { AxisInput } from '../ChartPage/AggregationInput';
 
 const ColumnOrLineChart: React.FC<{
-    formik: FormikProps<ChartForm>;
+    formik: FormikProps<ChartForm & { _id: string }>;
     entityTemplate: IMongoEntityTemplatePopulated;
     disabled: boolean;
 }> = ({ formik, entityTemplate, disabled }) => {

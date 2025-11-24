@@ -116,12 +116,13 @@ const Chart: React.FC = () => {
     const getBackPath = () => {
         const path = isDashboardPage ? dashboardPath : `${chartPath}/${templateId}`;
 
-        const title = `${i18next.t(`dashboard.${isDashboardPage ? 'mainScreen' : 'charts.chartsPage'}`)} ${isDashboardPage
+        const title = `${i18next.t(`dashboard.${isDashboardPage ? 'mainScreen' : 'charts.chartsPage'}`)} ${
+            isDashboardPage
                 ? ''
                 : childTemplate
-                    ? childTemplates.get(childTemplate._id)?.displayName
-                    : entityTemplates.get(currTemplateId!)?.displayName
-            } `;
+                  ? childTemplates.get(childTemplate._id)?.displayName
+                  : entityTemplates.get(currTemplateId!)?.displayName
+        } `;
 
         return { path, title };
     };
@@ -131,6 +132,7 @@ const Chart: React.FC = () => {
 
         if (isDashboardPage && !chart)
             return {
+                _id: '',
                 ...baseValues,
                 filter: undefined,
                 permission: IPermission.Protected,
@@ -138,6 +140,7 @@ const Chart: React.FC = () => {
             };
 
         return {
+            _id: '',
             ...baseValues,
             ...(chart ? {} : { templateId: currTemplateId }),
             childTemplateId: childTemplate?._id,
@@ -145,7 +148,7 @@ const Chart: React.FC = () => {
         };
     };
 
-    const steps: TabStepComponent<ChartForm>[] = [
+    const steps: TabStepComponent<ChartForm & { _id: string }>[] = [
         {
             label: i18next.t('charts.generalDetails'),
             component: (props) => <ChartSideBar {...props} isDashboardPage={isDashboardPage} viewMode={viewMode} />,
@@ -163,7 +166,7 @@ const Chart: React.FC = () => {
     if (isLoadingGetChart) return <CircularProgress />;
 
     return (
-        <DashboardItemDetails<ChartForm>
+        <DashboardItemDetails<ChartForm & { _id: string }>
             title={i18next.t(`dashboard.charts.${viewMode === ViewMode.Add ? 'create' : 'edit'}Chart`)}
             backPath={getBackPath()}
             onDelete={deleteMutateAsync}

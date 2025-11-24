@@ -6,7 +6,6 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { ResetFilterButton } from '../../../common/EntitiesPage/ResetFilterButton';
-import { getDefaultFilterFromTemplate } from '../../../common/EntitiesPage/TemplateTablesView';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../../common/EntitiesTableOfTemplate';
 import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
 import { TableButton } from '../../../common/TableButton';
@@ -15,10 +14,8 @@ import { TableMetaData } from '../../../interfaces/dashboard';
 import { IEntity } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { exportEntitiesRequest } from '../../../services/entitiesService';
-import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { filterModelToFilterOfTemplate, getFilterModal } from '../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
-import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
 import { isChildTemplate } from '../../../utils/templates';
 import { getRelevantEntityTemplate } from '../DashboardItemDetails/Chart/BodyComponent';
 

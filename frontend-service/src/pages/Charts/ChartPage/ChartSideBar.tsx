@@ -34,7 +34,7 @@ import ChartAutoComplete from '../../Dashboard/DashboardItemDetails/Chart/charts
 import { ChangeTemplate, ConfirmEditPermissionCommonItem } from '../../Dashboard/Dialogs';
 import { ChartTypesEdit } from './ChartTypesEdit';
 
-const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: boolean; viewMode: ViewMode }> = (props) => {
+const ChartSideBar: React.FC<StepComponentProps<ChartForm & { _id: string }> & { isDashboardPage: boolean; viewMode: ViewMode }> = (props) => {
     const { isDashboardPage, viewMode } = props;
     const { values, setValues, errors, touched, handleChange, setFieldValue } = props as FormikProps<IChart & { _id?: string }>;
 

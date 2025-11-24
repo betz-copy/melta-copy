@@ -699,7 +699,12 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 return gridRef.current!.api.getFilterModel();
             },
             getSortModel() {
-                return getSortModel();
+                return getSortModel()
+                    .filter((s) => s.sort)
+                    .map((s) => ({
+                        colId: s.colId,
+                        sort: s.sort as 'asc' | 'desc',
+                    }));
             },
             scrollIntoView() {
                 if (!tableRef.current) return;
