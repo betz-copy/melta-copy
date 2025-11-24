@@ -1323,6 +1323,10 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return this.populateTemplateConstraints({ ...updatedChild, parentTemplate: parentWithConstraints }, requiredConstraints, uniqueConstraints);
     }
 
+    async getChildTemplateById(id: string) {
+        return this.entityTemplateService.getChildTemplateById(id);
+    }
+
     private checkValidAmountOfArchiveProperties(updatedTemplateProperties: Record<string, IEntitySingleProperty>) {
         const archivePropertiesNumber = Object.values(updatedTemplateProperties).reduce((count, { archive }) => (archive ? count + 1 : count), 0);
 
