@@ -1171,8 +1171,6 @@ class EntityManager extends DefaultManagerNeo4j {
         entityTemplate: IMongoEntityTemplate,
         showRelationships: boolean = true,
     ): Promise<IEntityWithDirectRelationships[]> {
-        const fullEntities: IEntityWithDirectRelationships[] = [];
-
         if (searchBody.selectAll) {
             const { idsToExclude, filter, textSearch = '' } = searchBody as IMultipleSelect<true>;
 
@@ -1180,19 +1178,24 @@ class EntityManager extends DefaultManagerNeo4j {
                 { sort: [], limit: deleteEntitiesMaxLimit, skip: 0, filter, showRelationships, textSearch, entityIdsToExclude: idsToExclude },
                 entityTemplate,
             );
-            fullEntities.push(...entities);
+
+            return entities;
         } else {
             const { idsToInclude } = searchBody as IMultipleSelect<false>;
             const { entities } = await this.searchEntitiesOfTemplate(
-                { sort: [], limit: deleteEntitiesMaxLimit, skip: 0, showRelationships, entityIdsToInclude: idsToInclude },
+                {
+                    sort: [],
+                    limit: deleteEntitiesMaxLimit,
+                    skip: 0,
+                    showRelationships,
+                    entityIdsToInclude: idsToInclude,
+                    filter: { $and: [{ _id: { $in: idsToInclude } }] },
+                },
                 entityTemplate,
             );
 
-            const filteredEntities = entities.filter(({ entity }) => idsToInclude.includes(entity.properties._id));
-            fullEntities.push(...filteredEntities);
+            return entities;
         }
-
-        return fullEntities;
     }
 
     async getEntitiesToDeleteWithoutRelationships(
