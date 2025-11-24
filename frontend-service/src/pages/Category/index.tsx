@@ -132,10 +132,4 @@ const Category: React.FC = () => {
     );
 };
 
-const CategoryWrapper: React.FC = () => {
-    const { categoryId } = useParams<{ categoryId: string }>();
-
-    return <Category key={categoryId} />;
-};
-
-export default CategoryWrapper;
+export default Category;
