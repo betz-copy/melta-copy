@@ -24,6 +24,13 @@ const normalizeUser = (identityCard: string, usersMap: Map<string, IKartoffelUse
     return user;
 };
 
+/**
+ * @param kartoffelFieldKey The key of any kartoffelField in the template.
+ * @param user The value in the related user field.
+ * @returns the value that should be in the kartoffel field
+ *          if its complex (i.e. array, like phone & etc.) return it as a string (a,b,c)
+ *          if its an object ignore (only picture, which is ignored in backend anyway)
+ */
 const complicatedKartoffelField = (kartoffelFieldKey: string, user: IKartoffelUser) => {
     const fieldVal = user[kartoffelFieldKey];
 
