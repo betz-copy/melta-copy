@@ -214,7 +214,7 @@ const config = {
         fieldToSearch: env.get('KARTOFFEL_FIELDS_TO_SEARCH').default('fullName,uniqueId,personalNumber,identityCard').asString(),
         requestTimeout: env.get('KARTOFFEL_REQUEST_TIMEOUT').default(10000).asIntPositive(),
         profilePath: env.get('KARTOFFEL_PROFILE_PATH').default('pictures/profile').asString(),
-        maxPageSize: env.get('KARTOFFEL_MAX_PAGE_SIZE').default(10000).asIntPositive()
+        maxPageSize: env.get('KARTOFFEL_MAX_PAGE_SIZE').default(10000).asIntPositive(),
     },
     hebrew: { yes: 'כן', no: 'לא' },
     errorCodes: {

@@ -2315,7 +2315,10 @@ class EntityManager extends DefaultManagerNeo4j {
         return filterDependentRulesViaAggregation(rules, relationshipTemplateId);
     }
 
-    async getChartByTemplate(templateId: string, { chartsData, childTemplateId, units }: { chartsData: IChartBody[]; childTemplateId?: string; units: IGetUnits }) {
+    async getChartByTemplate(
+        templateId: string,
+        { chartsData, childTemplateId, units }: { chartsData: IChartBody[]; childTemplateId?: string; units: IGetUnits },
+    ) {
         const childTemplate = childTemplateId ? await this.childTemplateManagerService.getChildTemplateById(childTemplateId) : undefined;
 
         const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);

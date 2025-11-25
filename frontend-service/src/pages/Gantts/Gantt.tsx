@@ -147,6 +147,7 @@ export const Gantt: React.FC<IGanttProps> = ({ gantt }) => {
         root.render(<ScheduleToolbar scheduleRef={scheduleRef} darkMode={darkMode} />);
     };
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: it's needed!
     useEffect(() => injectToolbar(), [darkMode]);
 
     return (

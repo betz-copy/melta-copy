@@ -17,10 +17,10 @@ import {
 import ChartService from '../../externalServices/dashboardService/chartService';
 import DashboardItemService from '../../externalServices/dashboardService/dashboardItemService';
 import InstancesService from '../../externalServices/instanceService';
+import UserService from '../../externalServices/userService';
 import DefaultManagerProxy from '../../utils/express/manager';
 import { getMetaDataAxes } from '../../utils/templateCharts/getMetaDataAxes';
 import TemplatesManager from '../templates/manager';
-import UserService from '../../externalServices/userService';
 
 class ChartManager extends DefaultManagerProxy<ChartService> {
     private instanceService: InstancesService;
@@ -134,7 +134,10 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
 
         const units = await UserService.getUnits({ workspaceId: this.workspaceId });
 
-        const generatedCharts = await this.instanceService.getChartsOfTemplate(templateId, { chartsData, childTemplateId }, units) as { _id: string; chart: { x: any; y: number }[] }[];
+        const generatedCharts = (await this.instanceService.getChartsOfTemplate(templateId, { chartsData, childTemplateId }, units)) as {
+            _id: string;
+            chart: { x: any; y: number }[];
+        }[];
 
         const generatedChartsMap = new Map(generatedCharts.map(({ _id, chart }) => [_id, chart]));
 
