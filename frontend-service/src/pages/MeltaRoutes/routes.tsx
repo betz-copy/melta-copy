@@ -49,6 +49,7 @@ const Entity = lazy(() => import('../Entity'));
 const Graph = lazy(() => import('../Graph'));
 const MapPage = lazy(() => import('../Map/mapPage'));
 const Duplicate = lazy(() => import('../Entity/components/DuplicateEntity'));
+
 const FluidSimulation = lazy(() => import('../MeltaPlus/FluidSimulation'));
 
 const {
