@@ -1,4 +1,4 @@
-import { IInstancePermissionOrderedHierarchy, IUnitPermissionOrderedHierarchy, PermissionType } from '@microservices/shared';
+import { IInstancePermissionOrderedHierarchy, PermissionType } from '@microservices/shared';
 import * as joi from 'joi';
 import { UnknownPermissionTypeError } from '../../../../express/permissions/errors';
 import { getPermissionMetadataSchema } from './metadata';
@@ -28,7 +28,7 @@ const getSubCompactPermissionSchema = (allowNull = false) => {
                     schema = getPermissionMetadataSchema(IInstancePermissionOrderedHierarchy, allowNull);
                     break;
                 case PermissionType.units:
-                    schema = getPermissionMetadataSchema(IUnitPermissionOrderedHierarchy, allowNull);
+                    schema = getPermissionMetadataSchema([], allowNull);
                     break;
 
                 default:
