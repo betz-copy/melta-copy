@@ -286,7 +286,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             ) && (
                                 <NavButton
                                     key={category._id}
-                                    to={`/category/${category._id}`}
+                                    to={`/category/${category._id}?semanticSearch=false&search=&viewMode=templates-tables-view`}
                                     text={category.displayName}
                                     isDrawerOpen={isDrawerOpen}
                                     onChangeToActive={(isActive) => {

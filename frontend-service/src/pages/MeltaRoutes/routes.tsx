@@ -1,5 +1,5 @@
 import { useMatomo } from '@datapunt/matomo-tracker-react';
-import { Box, Button, debounce, useScrollTrigger } from '@mui/material';
+import { Box, Button, CircularProgress, debounce, useScrollTrigger } from '@mui/material';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
@@ -25,7 +25,7 @@ import {
     DashboardProtectedRoute,
     EntityProtectedRoute,
     PermissionsManagementProtectedRoute,
-    SystemManagementProtectedRoute,
+    SystemManagementProtectedRoute
 } from '../../utils/ProtectedRoutes';
 
 const GlobalSearch = lazy(() => import('../GlobalSearch'));
@@ -49,7 +49,6 @@ const Entity = lazy(() => import('../Entity'));
 const Graph = lazy(() => import('../Graph'));
 const MapPage = lazy(() => import('../Map/mapPage'));
 const Duplicate = lazy(() => import('../Entity/components/DuplicateEntity'));
-
 const FluidSimulation = lazy(() => import('../MeltaPlus/FluidSimulation'));
 
 const {
@@ -184,7 +183,7 @@ export const MeltaRoutesInner: React.FC = () => {
                 style={{ overflowY: match ? 'hidden' : 'auto', overflowAnchor: 'none' }}
             >
                 <Box>
-                    <Suspense fallback={<div />}>
+                    <Suspense fallback={<CircularProgress />}>
                         <Switch>
                             <Route path="/system-management">
                                 <TopBar title={title} />
