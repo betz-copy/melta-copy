@@ -5,6 +5,7 @@ import {
     IMongoChildTemplatePopulated,
     IMongoEntityTemplatePopulated,
     IProperties,
+    logger,
     NotFoundError,
     NotFoundErrorTypes,
 } from '@microservices/shared';
@@ -23,6 +24,26 @@ const normalizeUser = (identityCard: string, usersMap: Map<string, IKartoffelUse
     return user;
 };
 
+/**
+ * @param kartoffelFieldKey The key of any kartoffelField in the template.
+ * @param user The value in the related user field.
+ * @returns the value that should be in the kartoffel field
+ *          if its complex (i.e. array, like phone & etc.) return it as a string (a,b,c)
+ *          if its an object ignore (only picture, which is ignored in backend anyway)
+ */
+const complicatedKartoffelField = (kartoffelFieldKey: string, user: IKartoffelUser) => {
+    const fieldVal = user[kartoffelFieldKey];
+
+    if (typeof fieldVal === 'object') {
+        if (Array.isArray(fieldVal)) return fieldVal.toString();
+
+        logger.warn('ERROR: related kartoffel field is an object');
+        return;
+    }
+
+    return fieldVal;
+};
+
 const updateKartoffelFields = (
     user: IKartoffelUser,
     relatedFieldKey: string,
@@ -39,7 +60,7 @@ const updateKartoffelFields = (
         const relatedKartoffelField = templateField.expandedUserField?.kartoffelField;
 
         if (relatedUserField === relatedFieldKey && relatedKartoffelField)
-            entityProperties[fieldKey] = user[relatedKartoffelField] ?? entityProperties[fieldKey];
+            entityProperties[fieldKey] = complicatedKartoffelField(relatedFieldKey, user) ?? entityProperties[fieldKey];
     }
 };
 
