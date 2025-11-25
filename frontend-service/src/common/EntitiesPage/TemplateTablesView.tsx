@@ -1,7 +1,7 @@
 import { CircularProgress, Grid, Typography } from '@mui/material';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
-import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
@@ -9,9 +9,6 @@ import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { IEntity, IFilterGroup, IFilterOfTemplate, ISearchFilter } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getCountByTemplateIdsRequest } from '../../services/entitiesService';
-import { useUserStore } from '../../stores/user';
-import { useWorkspaceStore } from '../../stores/workspace';
-import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
 import { isChildTemplate } from '../../utils/templates';
 import { TablePageType } from '../EntitiesTableOfTemplate';
 import TemplateTable, { TemplateTableRef } from './TemplateTable';
@@ -93,25 +90,6 @@ const TemplateTablesViewResults = forwardRef<
         sessionStorage.setItem('visibleTemplatesCount', visibleTemplatesCount.toString());
     }, [visibleTemplatesCount]);
 
-    const currentUser = useUserStore((state) => state.user);
-    const workspace = useWorkspaceStore((state) => state.workspace);
-
-    const currentUserKartoffelId = currentUser?.kartoffelId;
-
-    const childTemplateDefaultFilters = useMemo(() => {
-        const filters: Record<string, any> = {};
-        templates.forEach((template) => {
-            filters[template._id] = getDefaultFilterFromTemplate(
-                template,
-                isChildTemplate(template),
-                currentUserKartoffelId,
-                currentUser.units,
-                isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
-            );
-        });
-        return filters;
-    }, [templates, currentUser, currentUserKartoffelId, workspace._id]);
-
     return (
         <Grid direction="column" spacing={1} width="100%">
             {templates.slice(0, visibleTemplatesCount).map((template) => {
@@ -130,7 +108,6 @@ const TemplateTablesViewResults = forwardRef<
                             page={pageType}
                             setUpdatedEntities={setUpdatedEntities}
                             setUpdatedTemplateIds={setUpdatedTemplateIds}
-                            defaultFilter={childTemplateDefaultFilters[template._id]}
                         />
                     </Grid>
                 );

@@ -15,7 +15,7 @@ export const editDashboardItem = async (dashboardItemId: string, updatedDashboar
 };
 
 export const getDashboardItemById = async (dashboardItemId: string) => {
-    const { data } = await axios.get<TableItem>(`${dashboard}/${dashboardItemId}`);
+    const { data } = await axios.get<TableItem & { _id: string }>(`${dashboard}/${dashboardItemId}`);
     return data;
 };
 

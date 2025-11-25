@@ -7,6 +7,10 @@ class UnitsController {
         res.json(await UnitsManager.getUnits(req.query as unknown as IUnit));
     }
 
+    static async getUnitsByIds(req: Request, res: Response) {
+        res.json(await UnitsManager.getUnitsByIds(req.body.ids));
+    }
+
     static async createUser(req: Request, res: Response) {
         res.json(await UnitsManager.createUnit(req.body));
     }
