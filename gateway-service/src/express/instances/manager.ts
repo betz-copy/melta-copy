@@ -77,6 +77,7 @@ import RabbitManager from '../../utils/rabbit';
 import { createTextsFromEntitiesWithFiles, formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
 import { getRelatedTemplateIds } from '../../utils/templates';
 import RuleBreachesManager from '../ruleBreaches/manager';
+import UsersManager from '../users/manager';
 import WorkspaceService from '../workspaces/service';
 import { patchDocumentAsStream } from './documentExport';
 import { ExternalIdType, IExternalId } from './interface';
@@ -212,16 +213,15 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         externalId?: IExternalId,
     ) {
         const { entitiesWithFiles, filter: defaultFilter, ...body } = searchBody;
-        const currentUser = await UserService.getUserById(userId);
+        const [currentUser, units] = await Promise.all([UserService.getUserById(userId), UserService.getUnits({ workspaceId: this.workspaceId })]);
 
         const childTemplates = await this.entityTemplateService.searchChildTemplates({ ids: childTemplateIds });
-        const userUnits = Object.keys(currentUser.permissions[this.workspaceId].units?.ids ?? {});
 
         const childTemplatesFilters = childTemplates.map((childTemplate) =>
             getDefaultFilterFromChildTemplate(
                 childTemplate,
                 currentUser.kartoffelId,
-                userUnits,
+                UsersManager.getUnitsWithInheritance(units, currentUser.units?.[this.workspaceId] ?? []),
                 isWorkspaceAdmin(currentUser?.permissions?.[this.workspaceId]),
             ),
         );

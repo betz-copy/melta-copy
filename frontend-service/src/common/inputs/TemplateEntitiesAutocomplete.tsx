@@ -40,7 +40,7 @@ export const getChildTemplatesFilter = (
                 childTemplate,
                 true,
                 currentUserKartoffelId,
-                currentUser?.units,
+                currentUser?.currentUnits,
                 isWorkspaceAdmin(currentUser?.permissions?.[workspace._id] ?? {}),
             ),
         )

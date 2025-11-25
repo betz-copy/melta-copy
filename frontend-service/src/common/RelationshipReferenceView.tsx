@@ -57,7 +57,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
             !template,
             entity,
             currentUserKartoffelId,
-            currentUser.units,
+            currentUser.currentUnits,
             isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
         ),
     );
