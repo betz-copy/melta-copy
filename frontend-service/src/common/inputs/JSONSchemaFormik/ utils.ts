@@ -184,7 +184,7 @@ export const uiSchemaUtils = (
     for (const [propertyKey, propertySchema] of Object.entries(schema.properties)) {
         // is property in group
         if (propertySchema.properties) {
-            if (!uiSchema[propertyKey]) uiSchema[propertyKey] = { 'ui:style': { color: groupTitleColor }, 'ui:classNames': 'fullWidth' };
+            if (!uiSchema[propertyKey]) uiSchema[propertyKey] = { 'ui:style': { color: groupTitleColor } };
 
             for (const [groupedPropertyKey, groupedPropertySchema] of Object.entries(propertySchema.properties)) {
                 const groupedUiSchema = getFieldUiSchema(
