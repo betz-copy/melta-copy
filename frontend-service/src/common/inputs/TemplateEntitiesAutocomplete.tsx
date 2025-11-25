@@ -54,6 +54,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
     showField: string;
     value: IEntity | null;
     currentEntity: EntityWizardValues['properties'];
+    noRelationPermission: boolean;
     displayValue?: string;
     onChange: AutocompleteProps<IEntity, undefined, undefined, undefined>['onChange'];
     onDisplayValueChange?: AutocompleteProps<IEntity, undefined, undefined, undefined>['onInputChange'];
@@ -74,6 +75,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
     showField,
     value,
     currentEntity,
+    noRelationPermission,
     displayValue,
     onChange,
     onDisplayValueChange,
@@ -177,9 +179,9 @@ const TemplateEntitiesAutocomplete: React.FC<{
     );
 
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery(
-        ['searchEntitiesOfTemplate', template._id, inputValue],
+        ['searchEntitiesOfTemplate', template?._id, inputValue],
         ({ pageParam = 0 }) => {
-            return searchFunction(template._id, clientSideUserEntity?.properties?._id, {
+            return searchFunction(template?._id, clientSideUserEntity?.properties?._id, {
                 skip: pageParam * cacheBlockSize,
                 limit: cacheBlockSize,
                 filter: parseAndAddDisabled(relationFilters),
@@ -187,7 +189,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
             });
         },
         {
-            enabled: !isDisabled && inputValue.length >= 2,
+            enabled: !noRelationPermission && !isDisabled,
             getNextPageParam: (lastPage, pages) => {
                 if (lastPage.entities.length < cacheBlockSize) return undefined;
                 return pages.length;
@@ -205,7 +207,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
     const handleInputChange = (_e: any, newValue: string, reason: AutocompleteInputChangeReason) => {
         setInputValue(newValue);
         onDisplayValueChange?.(_e, newValue, reason);
-        if (reason === 'input' && newValue.length >= 2) debouncedSearch(newValue);
+        if (reason === 'input') debouncedSearch(newValue);
     };
 
     const loadMore = useCallback(() => {
@@ -229,10 +231,10 @@ const TemplateEntitiesAutocomplete: React.FC<{
 
     const displayKeys: string[] = [showField];
 
-    const orderedProperties = [
-        ...template.propertiesPreview,
-        ...template.propertiesOrder.filter((prop) => !template.propertiesPreview.includes(prop)),
-    ];
+    const preview = template?.propertiesPreview ?? [];
+    const order = template?.propertiesOrder ?? [];
+
+    const orderedProperties = [...preview, ...order.filter((prop) => !preview.includes(prop))];
 
     orderedProperties
         .filter((prop) => prop !== showField && !displayKeys.includes(prop))
@@ -295,7 +297,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
             options={allEntities}
             loading={isLoading || isFetchingNextPage}
             loadingText={i18next.t('templateEntitiesAutocomplete.loading')}
-            noOptionsText={i18next.t('templateEntitiesAutocomplete.noOptions')}
+            noOptionsText={i18next.t(`templateEntitiesAutocomplete.no${noRelationPermission ? 'WritePermissions' : 'Options'}`)}
             getOptionLabel={(option) => convertPropertyToString(option.properties[showField]) || option.properties._id.toString()}
             isOptionEqualToValue={(option, currValue) => option.properties._id === currValue.properties._id}
             filterOptions={(options) => options}
@@ -350,7 +352,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
                             <MeltaTooltip
                                 key={`${displayOptionValue}${index}`}
                                 placement="top"
-                                title={template.properties.properties[displayKeys[index]].title}
+                                title={template?.properties.properties[displayKeys[index]].title}
                             >
                                 <Typography
                                     color="#53566E"
@@ -368,7 +370,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
 
                         <MeltaTooltip
                             title={
-                                template.propertiesPreview.length === 0 ? (
+                                !preview.length ? (
                                     i18next.t('templateEntitiesAutocomplete.noPreviewFields')
                                 ) : (
                                     <EntityPropertiesInternal

@@ -1,4 +1,4 @@
-import { AppRegistration as DefaultEntityTemplateIcon, VisibilityOff } from '@mui/icons-material';
+import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
 import { Grid, Typography, tooltipClasses, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties } from 'react';
@@ -48,8 +48,8 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
         Array.from(allowedChildTemplates.values()).filter((child) => child.parentTemplate._id === relatedTemplateId) ?? [];
 
     const template = entityTemplates.get(relatedTemplateId);
-    const relatedEntityTemplate = template ?? childTemplatesOfRelatedTemplate[0]?.parentTemplate;
-    const entityTemplateColor = relatedEntityTemplate ? getEntityTemplateColor(relatedEntityTemplate) : undefined;
+    const relatedTemplate = template ?? childTemplatesOfRelatedTemplate[0]?.parentTemplate;
+    const entityTemplateColor = relatedTemplate ? getEntityTemplateColor(relatedTemplate) : undefined;
 
     const adjustedChildTemplate = childTemplatesOfRelatedTemplate.find((child) =>
         isEntityFitsToChildTemplate(
@@ -62,32 +62,6 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
         ),
     );
 
-    if (!template && !adjustedChildTemplate)
-        return (
-            <Grid container alignItems="center" justifyContent="flex-start" height="100%" paddingTop={1.5}>
-                <MeltaTooltip
-                    slotProps={{
-                        popper: {
-                            sx: {
-                                [`& .${tooltipClasses.tooltip}`]: {
-                                    fontSize: '1rem',
-                                    color: '#F2F4FA',
-                                    backgroundColor: '#F2F4FA !important',
-                                    boxShadow: 10,
-                                },
-                            },
-                        },
-                        arrow: { style: { color: '#F2F4FA' } },
-                    }}
-                    arrow
-                    placement="top"
-                    title={<Typography color="primary">{i18next.t('templateEntitiesAutocomplete.noWritePermissions')}</Typography>}
-                >
-                    <VisibilityOff sx={{ height, width, color: theme.palette.action.disabled }} />
-                </MeltaTooltip>
-            </Grid>
-        );
-
     if (typeof entity === 'string' || typeof entity === 'number')
         return (
             <Grid display="inline-block" overflow={'hidden'} textOverflow={'ellipsis'}>
@@ -96,8 +70,8 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
                     label={entity}
                     enumColor={color ?? entityTemplateColor}
                     icon={
-                        relatedEntityTemplate.iconFileId ? (
-                            <CustomIcon iconUrl={relatedEntityTemplate.iconFileId} height={height} width={width} color={theme.palette.primary.main} />
+                        relatedTemplate?.iconFileId ? (
+                            <CustomIcon iconUrl={relatedTemplate.iconFileId} height={height} width={width} color={theme.palette.primary.main} />
                         ) : (
                             <DefaultEntityTemplateIcon
                                 sx={{
@@ -114,13 +88,13 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
         );
 
     const relationshipObjectToField = (): string => {
-        if (relatedEntityTemplate.properties.properties[relatedTemplateField].format === 'location') {
+        if (relatedTemplate?.properties.properties[relatedTemplateField].format === 'location') {
             return entity.properties[`${relatedTemplateField}_coordinateSystem`] === CoordinateSystem.UTM
                 ? (locationConverterToString(entity.properties[relatedTemplateField].location, CoordinateSystem.WGS84, CoordinateSystem.UTM) ?? '')
                 : entity.properties[relatedTemplateField].location;
         }
 
-        if (relatedEntityTemplate.properties.properties[relatedTemplateField].format === 'user') {
+        if (relatedTemplate?.properties.properties[relatedTemplateField].format === 'user') {
             const userProperty = entity.properties[relatedTemplateField];
             try {
                 return JSON.parse(userProperty).fullName;
@@ -130,8 +104,8 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
         }
 
         if (
-            relatedEntityTemplate.properties.properties[relatedTemplateField].type === 'array' &&
-            relatedEntityTemplate.properties.properties[relatedTemplateField]?.items?.format === 'user'
+            relatedTemplate?.properties.properties[relatedTemplateField].type === 'array' &&
+            relatedTemplate?.properties.properties[relatedTemplateField]?.items?.format === 'user'
         ) {
             const usersProperty = entity.properties[relatedTemplateField];
             if (Array.isArray(usersProperty)) {
@@ -145,6 +119,31 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
     };
 
     const field = relationshipObjectToField();
+
+    const chip = (
+        <Grid display="inline-block" overflow={'hidden'} textOverflow={'ellipsis'} width={'100%'}>
+            <ColoredEnumChip
+                key={field}
+                label={field}
+                enumColor={entityTemplateColor}
+                icon={
+                    relatedTemplate?.iconFileId ? (
+                        <CustomIcon iconUrl={relatedTemplate?.iconFileId} height={height} width={width} color={theme.palette.primary.main} />
+                    ) : (
+                        <DefaultEntityTemplateIcon
+                            sx={{
+                                color: theme.palette.primary.main,
+                                height,
+                                width,
+                            }}
+                        />
+                    )
+                }
+                color={color}
+                searchValue={searchValue}
+            />
+        </Grid>
+    );
 
     return (
         <Grid>
@@ -165,7 +164,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
                 arrow
                 placement="top"
                 title={
-                    relatedEntityTemplate.propertiesPreview.length === 0 ? (
+                    !relatedTemplate?.propertiesPreview.length ? (
                         <Typography color="#53566E">{i18next.t('templateEntitiesAutocomplete.noPreviewFields')}</Typography>
                     ) : (
                         <EntityPropertiesInternal
@@ -179,42 +178,20 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
                     )
                 }
             >
-                <Link
-                    href={`/entity/${entity.properties._id}${!template ? `?childTemplateId=${adjustedChildTemplate?._id}` : ''}`}
-                    style={{
-                        color: theme.palette.primary.main,
-                        textDecoration: 'inherit',
-                        fontWeight: 'bold',
-                    }}
-                >
-                    <Grid display="inline-block" overflow={'hidden'} textOverflow={'ellipsis'} width={'100%'}>
-                        <ColoredEnumChip
-                            key={field}
-                            label={field}
-                            enumColor={entityTemplateColor}
-                            icon={
-                                relatedEntityTemplate.iconFileId ? (
-                                    <CustomIcon
-                                        iconUrl={relatedEntityTemplate.iconFileId}
-                                        height={height}
-                                        width={width}
-                                        color={theme.palette.primary.main}
-                                    />
-                                ) : (
-                                    <DefaultEntityTemplateIcon
-                                        sx={{
-                                            color: theme.palette.primary.main,
-                                            height,
-                                            width,
-                                        }}
-                                    />
-                                )
-                            }
-                            color={color}
-                            searchValue={searchValue}
-                        />
-                    </Grid>
-                </Link>
+                {!template ? (
+                    chip
+                ) : (
+                    <Link
+                        href={`/entity/${entity.properties._id}${!template ? `?childTemplateId=${adjustedChildTemplate?._id}` : ''}`}
+                        style={{
+                            color: theme.palette.primary.main,
+                            textDecoration: 'inherit',
+                            fontWeight: 'bold',
+                        }}
+                    >
+                        {chip}
+                    </Link>
+                )}
             </MeltaTooltip>
         </Grid>
     );
