@@ -23,6 +23,20 @@ const normalizeUser = (identityCard: string, usersMap: Map<string, IKartoffelUse
     return user;
 };
 
+const complicatedKartoffelField = (kartoffelFieldKey: string, user: IKartoffelUser) => {
+    const fieldVal = user[kartoffelFieldKey];
+    if (!fieldVal) return undefined;
+
+    if (typeof fieldVal === 'object') {
+        if (Array.isArray(fieldVal)) return fieldVal.toString();
+
+        console.error('ERROR: related kartoffel field is an object');
+        return;
+    }
+
+    return fieldVal;
+};
+
 const updateKartoffelFields = (
     user: IKartoffelUser,
     relatedFieldKey: string,
@@ -38,8 +52,10 @@ const updateKartoffelFields = (
         const relatedUserField = templateField.expandedUserField?.relatedUserField;
         const relatedKartoffelField = templateField.expandedUserField?.kartoffelField;
 
-        if (relatedUserField === relatedFieldKey && relatedKartoffelField)
-            entityProperties[fieldKey] = user[relatedKartoffelField] ?? entityProperties[fieldKey];
+        if (relatedUserField === relatedFieldKey && relatedKartoffelField) {
+            console.log(user[relatedKartoffelField]);
+            entityProperties[fieldKey] = complicatedKartoffelField(relatedFieldKey, user) ?? entityProperties[fieldKey];
+        }
     }
 };
 
