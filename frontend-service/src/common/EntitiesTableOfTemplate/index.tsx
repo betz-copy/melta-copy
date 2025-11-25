@@ -75,6 +75,16 @@ const { errorCodes } = environment;
 const { cacheBlockSize, maxConcurrentDatasourceRequests, actionPrefix, actionsWidth, rowCountInfiniteModeWithoutExpand } = environment.agGrid;
 const { columnWidths, columnsOrder, visibleColumns } = environment.agGrid.localStorage;
 
+export enum ExternalIdType {
+    chart = 'chart',
+    dashboard = 'dashboard',
+}
+
+export interface IExternalId {
+    id: string;
+    type: ExternalIdType;
+}
+
 export const defaultFilterModel = {
     disabled: {
         filterType: 'set',
@@ -111,7 +121,7 @@ export const getDatasource = <Data extends EntityData>(
     pageType?: string,
     clientSideUserEntityId?: string,
     childTemplatesOfParentIds?: string[],
-    externalId?: { id: string; type: 'chart' | 'dashboard' },
+    externalId?: IExternalId,
 ): IServerSideDatasource => {
     const parentTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;
     const childTemplateIds = isChildTemplate(template) ? (childTemplatesOfParentIds ?? [template._id]) : [];
@@ -185,7 +195,7 @@ export const getRowModelProps = <Data extends EntityData>(
     pageType?: string,
     clientSideUserEntityId?: string,
     childTemplatesOfParentIds?: string[],
-    externalId?: { id: string; type: 'chart' | 'dashboard' },
+    externalId?: IExternalId,
     usePagination?: boolean,
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
     if (rowModelType === 'clientSide')
@@ -263,7 +273,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
     actionsColumnWidth?: number;
     childTemplatesOfParent?: IChildTemplatePopulated[];
-    externalId?: { id: string; type: 'chart' | 'dashboard' };
+    externalId?: IExternalId
     scrollToId?: string;
     usePagination?: boolean;
 };

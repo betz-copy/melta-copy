@@ -1,7 +1,7 @@
 import { Card, Grid, Typography, useTheme } from '@mui/material';
 import React from 'react';
 import { useQueryClient } from 'react-query';
-import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../../../common/EntitiesTableOfTemplate';
+import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef, ExternalIdType } from '../../../../common/EntitiesTableOfTemplate';
 import { StepComponentProps } from '../../../../common/wizards';
 import { TableForm } from '../../../../interfaces/dashboard';
 import { IEntity } from '../../../../interfaces/entities';
@@ -60,7 +60,7 @@ const BodyComponent: React.FC<StepComponentProps<TableForm & { _id?: string }>> 
                         defaultFilter={dirty ? memoizedFilter : undefined}
                         disableFilter
                         columnsToShow={values.columns}
-                        externalId={values._id ? { id: values._id, type: 'dashboard' } : undefined}
+                        externalId={values._id ? { id: values._id, type: ExternalIdType.dashboard } : undefined}
                     />
                 </Card>
             )}

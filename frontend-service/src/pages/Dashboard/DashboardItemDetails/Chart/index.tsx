@@ -132,7 +132,6 @@ const Chart: React.FC = () => {
 
         if (isDashboardPage && !chart)
             return {
-                _id: '',
                 ...baseValues,
                 filter: undefined,
                 permission: IPermission.Protected,
@@ -140,7 +139,6 @@ const Chart: React.FC = () => {
             };
 
         return {
-            _id: '',
             ...baseValues,
             ...(chart ? {} : { templateId: currTemplateId }),
             childTemplateId: childTemplate?._id,
@@ -148,7 +146,7 @@ const Chart: React.FC = () => {
         };
     };
 
-    const steps: TabStepComponent<ChartForm & { _id: string }>[] = [
+    const steps: TabStepComponent<ChartForm>[] = [
         {
             label: i18next.t('charts.generalDetails'),
             component: (props) => <ChartSideBar {...props} isDashboardPage={isDashboardPage} viewMode={viewMode} />,
@@ -166,7 +164,7 @@ const Chart: React.FC = () => {
     if (isLoadingGetChart) return <CircularProgress />;
 
     return (
-        <DashboardItemDetails<ChartForm & { _id: string }>
+        <DashboardItemDetails<ChartForm>
             title={i18next.t(`dashboard.charts.${viewMode === ViewMode.Add ? 'create' : 'edit'}Chart`)}
             backPath={getBackPath()}
             onDelete={deleteMutateAsync}

@@ -104,7 +104,7 @@ const getDefaultFilterFromChildTemplate = (
 ): ISearchFilter | undefined => {
     const filterClauses: (IFilterOfTemplate | IFilterGroup)[] = [];
 
-    for (const [key, prop] of Object.entries(template.properties.properties)) {
+    Object.entries(template.properties.properties).forEach(([key, prop]) => {
         if (template.isFilterByCurrentUser && currentUserKartoffelId && template.filterByCurrentUserField === key)
             filterClauses.push({ [key]: { $eq: currentUserKartoffelId } });
 
@@ -115,7 +115,7 @@ const getDefaultFilterFromChildTemplate = (
             const parsed = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
             if (parsed) filterClauses.push(parsed);
         }
-    }
+    });
 
     return filterClauses.length ? { $and: filterClauses } : undefined;
 };

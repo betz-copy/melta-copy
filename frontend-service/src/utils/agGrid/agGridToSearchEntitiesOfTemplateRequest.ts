@@ -292,7 +292,7 @@ export const agGridToSearchEntitiesOfTemplateRequest = (
         skip: startRow,
         limit: endRow - startRow,
         textSearch: quickFilter,
-        filter: getFilterModal(filterModelToFilterOfTemplate(filterModel, entityTemplate), defaultFilter), //TODO: fix it
+        filter: getFilterModal(filterModelToFilterOfTemplate(filterModel, entityTemplate), defaultFilter),
         showRelationships: false,
         sort: sortModelToSortOfSearchRequest(sortModel),
         entitiesWithFiles: entityTemplate.entitiesWithFiles,

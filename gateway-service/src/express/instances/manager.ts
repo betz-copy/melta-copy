@@ -79,6 +79,7 @@ import { getRelatedTemplateIds } from '../../utils/templates';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import WorkspaceService from '../workspaces/service';
 import { patchDocumentAsStream } from './documentExport';
+import { ExternalIdType, IExternalId } from './interface';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
 
@@ -208,7 +209,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         searchBody: ISearchEntitiesOfTemplateBody & { entitiesWithFiles: ISemanticSearchResult[string] },
         userId: string,
         childTemplateIds?: string[],
-        externalId?: { id: string; type: 'chart' | 'dashboard' },
+        externalId?: IExternalId,
     ) {
         const { entitiesWithFiles, filter: defaultFilter, ...body } = searchBody;
         const currentUser = await UserService.getUserById(userId);
@@ -230,12 +231,12 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         let dashboardFilters: ISearchFilter | undefined;
         if (externalId) {
             switch (externalId.type) {
-                case 'chart': {
+                case ExternalIdType.chart: {
                     const chart = await this.chartService.getChartById(externalId.id);
                     dashboardFilters = chart.filter ? JSON.parse(chart.filter) : undefined;
                     break;
                 }
-                case 'dashboard': {
+                case ExternalIdType.dashboard: {
                     const dashboard = await this.dashboardItemService.getDashboardItemById(externalId.id);
                     dashboardFilters = getDashboardFilters(dashboard);
                     break;

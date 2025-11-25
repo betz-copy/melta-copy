@@ -6,7 +6,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { ResetFilterButton } from '../../../common/EntitiesPage/ResetFilterButton';
-import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../../common/EntitiesTableOfTemplate';
+import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef, ExternalIdType } from '../../../common/EntitiesTableOfTemplate';
 import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
 import { TableButton } from '../../../common/TableButton';
 import { environment } from '../../../globals';
@@ -149,7 +149,7 @@ const TableCard: React.FC<{ metaData: TableMetaData & { _id: string } }> = ({ me
                         columnsToShow={metaData.columns}
                         infiniteModeWithoutExpand
                         onFilter={() => setIsFiltered(entitiesTableRef.current?.isFiltered() ?? false)}
-                        externalId={{ id: metaData._id, type: 'dashboard' }}
+                        externalId={{ id: metaData._id, type: ExternalIdType.dashboard }}
                     />
                 </Box>
             </Grid>
