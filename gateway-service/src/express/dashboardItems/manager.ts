@@ -38,7 +38,7 @@ class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
         }
     }
 
-    private async processChartItems(chartItems: (ChartItemPopulated & MongoBaseFields)[], chartManager: ChartManager) {
+    private async processChartItems(chartItems: (ChartItemPopulated & MongoBaseFields)[], chartManager: ChartManager, userId: string) {
         const chartMetaList = map(chartItems, 'metaData');
         const [childChartsItems, parentChartItems] = partition(chartMetaList, (item) => !!item.childTemplateId);
 
@@ -46,14 +46,14 @@ class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
         const chartsByChildTemplateId = groupBy(childChartsItems, 'childTemplateId');
 
         const generatedCharts = flatten(
-            await Promise.all(map(chartsByTemplateId, (charts, templateId) => chartManager.generateCharts(charts, templateId))),
+            await Promise.all(map(chartsByTemplateId, (charts, templateId) => chartManager.generateCharts(charts, templateId, userId))),
         );
 
         const generatedChildCharts = flatten(
             await Promise.all(
                 map(chartsByChildTemplateId, (charts, childTemplateId) => {
                     const templateId = charts[0]?.templateId;
-                    return chartManager.generateCharts(charts, templateId, childTemplateId);
+                    return chartManager.generateCharts(charts, templateId, userId, childTemplateId);
                 }),
             ),
         );
@@ -90,9 +90,10 @@ class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
 
         const [chartItems, nonChartItems] = partition(allowedItems, (item) => item.type === DashboardItemType.Chart);
 
-        if (chartItems.length === 0) return this.sortItemsByCreatedDate(nonChartItems);
+        if (!chartItems.length) return this.sortItemsByCreatedDate(nonChartItems);
 
-        const processedCharts = await this.processChartItems(chartItems, chartManager);
+        const processedCharts = await this.processChartItems(chartItems, chartManager, userId);
+
         const allItems = [...processedCharts, ...nonChartItems];
 
         return this.sortItemsByCreatedDate(allItems);
