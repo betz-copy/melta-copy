@@ -2,7 +2,7 @@ import { LayersTwoTone } from '@mui/icons-material';
 import { Box, Divider, FormControlLabel, Grid, IconButton, Radio, RadioGroup, Typography } from '@mui/material';
 import * as Cesium from 'cesium';
 import i18next from 'i18next';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { RefObject, useCallback, useEffect, useMemo, useState } from 'react';
 import { CesiumComponentRef } from 'resium';
 import MeltaCheckbox from '../../common/MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
@@ -15,10 +15,10 @@ type LayerProvider = {
     type: 'map' | 'text';
 };
 
-export const BaseLayers: React.FC<{ viewerRef: React.RefObject<CesiumComponentRef<Cesium.Viewer> | null>; config: BackendConfigState }> = ({
-    viewerRef,
-    config,
-}) => {
+export const BaseLayers: React.FC<{
+    viewerRef: RefObject<CesiumComponentRef<Cesium.Viewer> | null>;
+    config: BackendConfigState;
+}> = ({ viewerRef, config }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const [isOpen, setIsOpen] = useState(false);
@@ -108,7 +108,6 @@ export const BaseLayers: React.FC<{ viewerRef: React.RefObject<CesiumComponentRe
                     sx={{
                         position: 'absolute',
                         top: '100%',
-                        right: 0,
                         marginTop: 1,
                         minWidth: 250,
                         maxWidth: 300,
@@ -117,6 +116,7 @@ export const BaseLayers: React.FC<{ viewerRef: React.RefObject<CesiumComponentRe
                         borderRadius: 1,
                         boxShadow: 2,
                         zIndex: 1000,
+                        right: 0,
                     }}
                 >
                     <Grid>

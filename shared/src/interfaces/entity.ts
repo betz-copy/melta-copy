@@ -50,9 +50,9 @@ export interface IUniqueConstraint {
 
 export interface IRequiredConstraint {
     type: 'REQUIRED';
+    property: string;
     constraintName: string;
     templateId: string;
-    property: string;
     index?: number;
 }
 
@@ -63,11 +63,25 @@ export type IValidationError = {
     params: Partial<IEntitySingleProperty> & { allowedValues?: string[] };
 };
 
-export type INotFoundRelationshipRefError = {
+export enum NotFoundErrorTypes {
+    userNotFound = 'USER_NOT_FOUND',
+    relationshipRefNotFound = 'RELATIONSHIP_REF_NOT_FOUND',
+}
+
+export type IRelationshipRefNotFoundError = {
+    type: NotFoundErrorTypes.relationshipRefNotFound;
     property: string;
-    relatedTemplateId: string;
     relatedIdentifier: string;
+    relatedTemplateId: string;
 };
+
+export type IUsersNotFoundError = {
+    type: NotFoundErrorTypes.userNotFound;
+    property: string;
+    attemptedIds: string[];
+};
+
+export type IExcelNotFoundError = IUsersNotFoundError | IRelationshipRefNotFoundError;
 
 export interface EntitiesWizardValues {
     files?: File[];

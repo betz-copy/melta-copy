@@ -138,7 +138,8 @@ const CreateOrEditEntityDetails: React.FC<{
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
 
     const initialValues = useMemo(() => {
-        if (isEditMode) return getInitialValuesWithDefaults(convertIEntityToEntityWizardValues(payload!, entityTemplate, initialTemplateFileKeys));
+        if (isEditMode)
+            return getInitialValuesWithDefaults(convertIEntityToEntityWizardValues(payload!, entityTemplate, initialTemplateFileKeys), currentUser);
 
         return getInitialValuesWithDefaults(
             initialCurrValues ?? {
@@ -210,9 +211,11 @@ const CreateOrEditEntityDetails: React.FC<{
             }}
         >
             {({ setFieldValue, values, errors, touched, setFieldTouched, setValues, dirty, initialValues: formInitialValues }) => {
+                // biome-ignore lint/correctness/useExhaustiveDependencies: biome is wrong
+                // biome-ignore lint/correctness/useHookAtTopLevel: :(
                 useEffect(() => {
-                    if (initialCurrValues) setValues(getInitialValuesWithDefaults(initialCurrValues));
-                }, [initialCurrValues, setValues]);
+                    if (initialCurrValues) setValues(getInitialValuesWithDefaults(initialCurrValues, currentUser));
+                }, [initialCurrValues]);
 
                 return (
                     <>

@@ -41,16 +41,30 @@ export interface IUniqueConstraint {
 
 export interface IRequiredConstraint {
     type: 'REQUIRED';
+    property: string;
     constraintName: string;
     templateId: string;
-    property: string;
 }
 
-export interface INotFoundRelationshipRefError {
-    relatedTemplateId: string;
-    relatedIdentifier: string;
-    property: string;
+export enum NotFoundErrorTypes {
+    relationshipRefNotFound = 'RELATIONSHIP_REF_NOT_FOUND',
+    userNotFound = 'USER_NOT_FOUND',
 }
+
+export interface IRelationshipRefNotFoundError {
+    type: NotFoundErrorTypes.relationshipRefNotFound;
+    property: string;
+    relatedIdentifier: string;
+    relatedTemplateId: string;
+}
+
+export interface IUsersNotFoundError {
+    type: NotFoundErrorTypes.userNotFound;
+    property: string;
+    attemptedIds: string[];
+}
+
+export type INotFoundError = IRelationshipRefNotFoundError | IUsersNotFoundError;
 
 export type IConstraint = IRequiredConstraint | IUniqueConstraint;
 
@@ -242,7 +256,7 @@ export type IMultipleSelect<T extends boolean = boolean> = {
 
 export type IDeleteEntityBody<T extends boolean = boolean> = IDeleteEntityBodyBase & IMultipleSelect<T>;
 
-export type EntityData = IEntity | IFailedEntity;
+export type EntityData = IEntity | IFailedEntity | IConnection;
 
 export interface IEntityWithIgnoredRules extends ICreateEntityMetadata {
     ignoredRules: IBrokenRule[];

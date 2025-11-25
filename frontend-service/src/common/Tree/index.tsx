@@ -1,14 +1,14 @@
 /** biome-ignore-all lint/correctness/useExhaustiveDependencies: useEffect dependencies */
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
-import { Box, Divider } from '@mui/material';
-import { RichTreeViewPro, RichTreeViewProProps, TreeItemProps, TreeViewBaseItem, useTreeViewApiRef } from '@mui/x-tree-view-pro';
+import { Box, Divider, SxProps, Theme, ThemeProvider } from '@mui/material';
+import { RichTreeViewPro, RichTreeViewProProps, TreeItemProps, TreeViewBaseItem, UseTreeItemStatus, useTreeViewApiRef } from '@mui/x-tree-view-pro';
 import { TreeViewItemReorderPosition } from '@mui/x-tree-view-pro/internals/plugins/useTreeViewItemsReordering';
 import _ from 'lodash';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { SelectAll } from './SelectAll';
 import TreeItem from './TreeItem';
 
-interface TreeProps<T extends {}> extends Omit<RichTreeViewProProps<T, true>, 'onDragEnd' | 'items'> {
+export interface TreeProps<T extends {}> extends Omit<RichTreeViewProProps<T, true>, 'onDragEnd' | 'items'> {
     // All of the treeItems that the tree has.
     treeItems: TreeViewBaseItem<T>[];
     getItemId: (item: T) => string;
@@ -28,7 +28,13 @@ interface TreeProps<T extends {}> extends Omit<RichTreeViewProProps<T, true>, 'o
     dragAllowNewRoot?: boolean;
     onDragEnd?: (params: { itemId: string; oldPosition: TreeViewItemReorderPosition; newPosition: TreeViewItemReorderPosition }) => void;
     removeDivider?: boolean;
+    // Left side buttons
+    additionalOptions?: ((node: T) => ReactNode)[];
     showIcon?: boolean;
+    getStyles?: (params: { node: T; status: UseTreeItemStatus; itemDepth: number }) => {
+        treeItemContent?: SxProps<Theme>;
+        treeNodeGroupTransition?: SxProps<Theme>;
+    };
 }
 
 export const flattenTree = <T extends {}>(
@@ -60,6 +66,8 @@ const Tree = <T extends {}>({
     allowMultiSelect = true,
     isDraggable = false,
     dragAllowNewRoot = true,
+    additionalOptions,
+    getStyles,
     onDragEnd,
     removeDivider,
     selectAll,
@@ -75,14 +83,25 @@ const Tree = <T extends {}>({
 
     const apiRef = useTreeViewApiRef();
 
+    const getItemById = useCallback((itemId: string) => apiRef.current?.getItem(itemId), [apiRef]);
+
     const memoizedTreeItem = useCallback(
-        (props: TreeItemProps) => <TreeItem {...props} removeDivider={removeDivider} showIcon={showIcon} />,
-        [showIcon],
+        (props: TreeItemProps) => (
+            <TreeItem
+                {...props}
+                removeDivider={removeDivider}
+                node={getItemById(props.itemId)}
+                showIcon={showIcon}
+                getStyles={getStyles as any}
+                additionalOptions={additionalOptions as ((node: unknown) => ReactNode)[]}
+            />
+        ),
+        [showIcon, additionalOptions, getItemById, getStyles, removeDivider],
     );
 
     const flattenTreeIds = useMemo(
-        () => flattenTree(treeItems, getItemId, !selectionPropagation.parents).map(getItemId),
-        [getItemId, treeItems, selectionPropagation, flattenTree],
+        () => flattenTree(treeItems, getItemId, !selectionPropagation.parents).map((node) => getItemId(node as T)),
+        [getItemId, treeItems, selectionPropagation],
     );
 
     useEffect(() => {
@@ -91,11 +110,13 @@ const Tree = <T extends {}>({
 
     useEffect(() => {
         setExpandedItemsIds(preExpandedItemIds ?? []);
-    }, [preExpandedItemIds, setExpandedItemsIds]);
+    }, [preExpandedItemIds]);
 
     useEffect(() => {
-        if (!_.isEqual(preSelectedItemsIds, selectedItemIds)) setSelectedItemIds(preSelectedItemsIds ?? []);
-    }, [preSelectedItemsIds, setSelectedItemIds]);
+        if (!_.isEqual(preSelectedItemsIds, selectedItemIds)) {
+            setSelectedItemIds(preSelectedItemsIds ?? []);
+        }
+    }, [preSelectedItemsIds]);
 
     return (
         <>
@@ -107,37 +128,38 @@ const Tree = <T extends {}>({
                     </Box>
                 </>
             )}
-            <RichTreeViewPro
-                style={{ direction: 'rtl' }}
-                checkboxSelection={isSelectable}
-                multiSelect
-                items={filteredTreeItems}
-                getItemId={getItemId}
-                getItemLabel={getItemLabel}
-                apiRef={apiRef}
-                onSelectedItemsChange={(_, itemIds) => setSelectedItemIds(itemIds)}
-                selectedItems={selectedItemIds}
-                onExpandedItemsChange={(_, itemIds) => setExpandedItemsIds(itemIds)}
-                expandedItems={expandedItemsIds}
-                itemsReordering={isDraggable}
-                expansionTrigger="iconContainer"
-                slots={{
-                    expandIcon: ChevronLeft,
-                    collapseIcon: ExpandLess,
-                    item: memoizedTreeItem,
-                }}
-                canMoveItemToNewPosition={(params) => {
-                    const isDraggingToRoot = params.newPosition.parentId === null;
+            <ThemeProvider theme={{ direction: 'rtl' }}>
+                <RichTreeViewPro
+                    checkboxSelection={isSelectable}
+                    multiSelect
+                    items={filteredTreeItems}
+                    getItemId={getItemId}
+                    getItemLabel={getItemLabel}
+                    apiRef={apiRef}
+                    onSelectedItemsChange={(_, itemIds) => setSelectedItemIds(itemIds)}
+                    selectedItems={selectedItemIds}
+                    onExpandedItemsChange={(_, itemIds) => setExpandedItemsIds(itemIds)}
+                    expandedItems={expandedItemsIds}
+                    itemsReordering={isDraggable}
+                    expansionTrigger="iconContainer"
+                    slots={{
+                        expandIcon: ChevronLeft,
+                        collapseIcon: ExpandLess,
+                        item: memoizedTreeItem,
+                    }}
+                    canMoveItemToNewPosition={(params) => {
+                        const isDraggingToRoot = params.newPosition.parentId === null;
 
-                    return (
-                        (!isDraggingToRoot || dragAllowNewRoot) &&
-                        (allowDraggingBetweenParents || params.oldPosition.parentId === params.newPosition.parentId)
-                    );
-                }}
-                onItemPositionChange={onDragEnd}
-                selectionPropagation={selectionPropagation}
-                {...restOfProps}
-            />
+                        return (
+                            (!isDraggingToRoot || dragAllowNewRoot) &&
+                            (allowDraggingBetweenParents || params.oldPosition.parentId === params.newPosition.parentId)
+                        );
+                    }}
+                    onItemPositionChange={onDragEnd}
+                    selectionPropagation={selectionPropagation}
+                    {...restOfProps}
+                />
+            </ThemeProvider>
         </>
     );
 };

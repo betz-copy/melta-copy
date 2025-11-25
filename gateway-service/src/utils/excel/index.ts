@@ -6,7 +6,9 @@ import {
     IBrokenRulesError,
     IChildTemplatePopulated,
     IEntity,
+    IExcelNotFoundError,
     IFailedEntity,
+    IFailedEntityError,
     IMongoEntityTemplatePopulated,
     INotFoundRelationshipRefError,
     IWorkspace,
@@ -32,7 +34,7 @@ export const getAllEntitiesFromExcel = async (
     const effectiveFilesLimit = workspaceFilesLimit ?? loadExcel.filesLimit;
     if (files.length > effectiveFilesLimit) throw new BadRequestError(`files limit: more than ${effectiveFilesLimit} files`, {});
 
-    return readExcelFile(files, template, failedEntities, relatedTemplatesMap, workspace.metadata?.excel?.entitiesFileLimit);
+    return readExcelFile(files, template, failedEntities, relatedTemplatesMap, workspace._id, workspace.metadata?.excel?.entitiesFileLimit);
 };
 
 export const generateSerialNumbers = (index: number, serialStarters: Record<string, number>) =>
@@ -59,10 +61,19 @@ export const classifyEntityErrors = (
         ...(originalEntity || {}),
     };
 
+    if (error instanceof AggregateError) {
+        const fixedErrors: IFailedEntityError[] = error.errors.map((err) => ({ type: ActionErrors.notFound, metadata: err.metadata }));
+
+        failedEntities.push({
+            properties,
+            errors: fixedErrors,
+        });
+    }
+
     if (error instanceof ServiceError && error.code === StatusCodes.NOT_FOUND)
         failedEntities.push({
             properties,
-            errors: [{ type: ActionErrors.notFound, metadata: error.metadata as INotFoundRelationshipRefError }],
+            errors: [{ type: ActionErrors.notFound, metadata: error.metadata as IExcelNotFoundError }],
         });
 
     if (error instanceof AxiosError) {
@@ -89,7 +100,7 @@ export const classifyEntityErrors = (
                 });
             }
 
-        if (data.metadata && data.metadata.errorCode === errorCodes.failedConstraintsValidation) {
+        if (data.metadata && data.metadata?.errorCode === errorCodes.failedConstraintsValidation) {
             const { constraint } = data.metadata;
             switch (constraint.type) {
                 case ActionErrors.unique:
@@ -110,8 +121,8 @@ export const classifyEntityErrors = (
         }
 
         if (data.type === errorCodes.templateValidationError || data.type === 'FilterValidationError')
-            getValidationErrorEntities(error as AxiosError, failedEntities);
-    } else if ((error as IBrokenRulesError).metadata.errorCode === errorCodes.ruleBlock) {
+            getValidationErrorEntities(error as AxiosError, failedEntities, originalEntity);
+    } else if ((error as IBrokenRulesError).metadata?.errorCode === errorCodes.ruleBlock) {
         allBrokenRulesEntities.push({
             brokenRules: error.metadata.brokenRules,
             rawBrokenRules: error.metadata.rawBrokenRules,

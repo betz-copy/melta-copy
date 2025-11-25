@@ -11,6 +11,7 @@ export enum PermissionType {
     processes = 'processes',
     templates = 'templates',
     instances = 'instances',
+    units = 'units',
 }
 export const PermissionTypeOptions = Object.values(PermissionType);
 

@@ -1,6 +1,6 @@
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
 import { Grid, Typography } from '@mui/material';
-import { RichTreeViewPro, TreeItemProps } from '@mui/x-tree-view-pro';
+import { RichTreeViewPro, TreeItemProps, useTreeViewApiRef } from '@mui/x-tree-view-pro';
 import i18next from 'i18next';
 import React, { Dispatch, SetStateAction, useCallback, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
@@ -47,6 +47,7 @@ const RelationshipSelection: React.FC<{
 }) => {
     const queryClient = useQueryClient();
     const currentUser = useUserStore((state) => state.user);
+    const apiRef = useTreeViewApiRef();
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const allRelationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
@@ -157,7 +158,12 @@ const RelationshipSelection: React.FC<{
         return Array.from(currentSelectedNodesIds);
     };
 
-    const TreeItemWrapper = useCallback((props: TreeItemProps) => <TreeItem {...props} showIcon={false} removeDivider />, []);
+    const getItemById = useCallback((itemId: string) => apiRef.current?.getItem(itemId), [apiRef]);
+
+    const TreeItemWrapper = useCallback(
+        (props: TreeItemProps) => <TreeItem node={getItemById(props.itemId)} {...props} showIcon={false} removeDivider />,
+        [getItemById],
+    );
 
     const fetchTreeItems = async (parentId?: string): Promise<INestedRelationshipTemplates[]> => {
         const { data } = await getExpandedData();

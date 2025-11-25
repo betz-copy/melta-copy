@@ -145,6 +145,7 @@ const config = {
         usersRoute: env.get('USER_SERVICE_USERS_BASE_ROUTE').default('/api/users').asString(),
         rolesRoute: env.get('USER_SERVICE_ROLES_BASE_ROUTE').default('/api/roles').asString(),
         permissionsRoute: env.get('USER_SERVICE_PERMISSION_BASE_ROUTE').default('/api/permissions').asString(),
+        unitsRoute: env.get('USER_SERVICE_UNITS_BASE_ROUTE').default('/api/units').asString(),
         checkAuthorizationRoute: env.get('PERMISSION_SERVICE_CHECK_AUTHERIZATION_ROUTE').default('authorization').asString(),
         requestTimeout: env.get('PERMISSION_SERVICE_REQUEST_TIMEOUT').default(100000).asIntPositive(),
         profilePathPattern: env
@@ -213,6 +214,7 @@ const config = {
         fieldToSearch: env.get('KARTOFFEL_FIELDS_TO_SEARCH').default('fullName,uniqueId,personalNumber,identityCard').asString(),
         requestTimeout: env.get('KARTOFFEL_REQUEST_TIMEOUT').default(10000).asIntPositive(),
         profilePath: env.get('KARTOFFEL_PROFILE_PATH').default('pictures/profile').asString(),
+        maxPageSize: env.get('KARTOFFEL_MAX_PAGE_SIZE').default(10000).asIntPositive()
     },
     hebrew: { yes: 'כן', no: 'לא' },
     errorCodes: {
@@ -290,6 +292,8 @@ const config = {
         filesLimit: env.get('FILES_LIMIT').default(5).asIntPositive(),
         invalidDate: env.get('INVALID_DATE').default('Invalid Date').asString(),
         invalidTime: env.get('INVALID_TIME').default('Invalid time value').asString(),
+        invalidLocation: env.get('INVALID_LOCATION_FORMAT').default('Invalid location format').asString(),
+        invalidUnit: env.get('INVALID_UNIT').default('Invalid unit').asString(),
         templateIdRegex: env.get('TEMPLATE_ID_REGEX').default('label `([^`]*)`').asRegExp(),
         propertiesRegex: env.get('PROPERTIES_REGEX').default('properties \\((.*?)\\)').asRegExp(),
     },

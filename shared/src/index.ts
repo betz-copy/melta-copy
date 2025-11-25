@@ -22,6 +22,7 @@ export * from './interfaces/rule';
 export * from './interfaces/ruleBreach';
 export * from './interfaces/ruleBreach/agGrid';
 export * from './interfaces/semanticSearch';
+export * from './interfaces/unit';
 export * from './interfaces/user';
 export * from './interfaces/user';
 export * from './interfaces/workspace';

@@ -1,5 +1,5 @@
 import { Clear, Close, KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
-import { Autocomplete, Box, Divider, Grid, IconButton, Typography, useTheme } from '@mui/material';
+import { Autocomplete, Box, Divider, Grid, IconButton, TextField, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { isEqual } from 'lodash';
 import debounce from 'lodash/debounce';
@@ -18,6 +18,7 @@ import { TextFilterInput } from '../../common/inputs/FilterInputs/TextFilterInpu
 import { environment } from '../../globals';
 import { IGraphFilterBody } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IGetUnits } from '../../interfaces/units';
 import { IUser } from '../../interfaces/users';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridSetFilter, IAGGridTextFilter, IFilterDateType } from '../../utils/agGrid/interfaces';
@@ -53,6 +54,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
 }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const units = queryClient.getQueryData<IGetUnits>('getUnits')!;
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
@@ -236,6 +238,21 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                     readOnly={readOnly}
                 />
             );
+
+        if (format === 'unitField') {
+            const { filter } = (filterField ?? {}) as IAGGridTextFilter;
+
+            return (
+                <Autocomplete
+                    options={units.filter((unit) => unit._id !== filter)}
+                    onChange={(_e, value) => handleFilterFieldChange({ ...filterField, filter: value?._id } as IAGGridTextFilter)}
+                    value={units.find((unit) => unit._id === filter)}
+                    getOptionLabel={(option) => option.name}
+                    renderInput={(params) => <TextField {...params} variant="outlined" label={i18next.t('childTemplate.selectUnitDialog.label')} />}
+                    disabled={readOnly}
+                />
+            );
+        }
 
         return (
             <TextFilterInput

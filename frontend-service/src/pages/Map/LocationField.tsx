@@ -1,4 +1,4 @@
-import { Close, Delete, PentagonTwoTone, PlaceTwoTone } from '@mui/icons-material';
+import { Close, DeleteTwoTone, PentagonTwoTone, PlaceTwoTone } from '@mui/icons-material';
 import { ToggleButton, ToggleButtonGroup, useTheme } from '@mui/material';
 import * as Cesium from 'cesium';
 import { Cartesian3 } from 'cesium';
@@ -8,6 +8,7 @@ import { useQueryClient } from 'react-query';
 import { CesiumComponentRef, CesiumMovementEvent, Viewer } from 'resium';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
+import { MapItemType } from '../../interfaces/location';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import {
@@ -16,7 +17,6 @@ import {
     isValidPolygonPoint,
     jerusalemCoordinates,
     locationToWGS84String,
-    MapItemType,
     stringToCoordinates,
 } from '../../utils/map';
 import { convertWGS94ToECEF, isValidWGS84 } from '../../utils/map/convert';
@@ -226,8 +226,14 @@ const LocationField = ({ defaultLocation, field, updateValue, handleCloseDialog 
                                 height: '34px',
                             }}
                         >
-                            <Delete htmlColor={theme.palette.primary.main} />
+                            <DeleteTwoTone
+                                sx={{
+                                    height: 20,
+                                    color: darkMode ? '#9398c2' : '#1E2775',
+                                }}
+                            />
                         </IconButtonWithPopover>
+
                         {config && <BaseLayers viewerRef={viewerRef} config={config} />}
                     </div>
                 </div>

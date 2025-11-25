@@ -19,6 +19,7 @@ import React, { useMemo } from 'react';
 import { CustomIcon } from '../CustomIcon';
 import MeltaCheckbox from '../MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
+import { TreeProps } from '.';
 
 const LabelWithToolTip = ({ children, className }) => (
     <Box
@@ -70,8 +71,17 @@ const draggableHandle = (
     </TreeItemIconContainer>
 );
 
-const TreeItem = React.forwardRef<HTMLLIElement, TreeItemProps & { showIcon?: boolean; removeDivider?: boolean }>((props, ref) => {
-    const { id, itemId, label, disabled, children, showIcon, removeDivider, ...other } = props;
+const TreeItem = React.forwardRef(function CustomTreeItem<T extends Record<string, any>>(
+    props: TreeItemProps & {
+        node: T;
+        additionalOptions?: TreeProps<T>['additionalOptions'];
+        getStyles?: TreeProps<T>['getStyles'];
+        removeDivider?: TreeProps<T>['removeDivider'];
+        showIcon?: TreeProps<T>['showIcon'];
+    },
+    ref: React.Ref<HTMLLIElement>,
+) {
+    const { id, itemId, label, disabled, children, showIcon, removeDivider, node, additionalOptions, getStyles, ...other } = props;
     const {
         getRootProps,
         getContentProps,
@@ -109,8 +119,9 @@ const TreeItem = React.forwardRef<HTMLLIElement, TreeItemProps & { showIcon?: bo
         );
     }, [item, showIcon, theme.palette.primary.main]);
 
+    const styles = getStyles?.({ node, status, itemDepth });
+
     return (
-        // To fix this error probably requires to upgrade to react 18.
         // @ts-ignore
         <TreeItemProvider {...props} ref={ref} itemId={itemId}>
             <TreeItemRoot
@@ -125,27 +136,45 @@ const TreeItem = React.forwardRef<HTMLLIElement, TreeItemProps & { showIcon?: bo
                     {...getContentProps()}
                     sx={{
                         backgroundColor: 'transparent !important',
+                        ...styles?.treeItemContent,
                     }}
                 >
-                    {(status.expandable || itemDepth !== 0 || !draggable) &&
-                        (status.loading ? (
-                            <CircularProgress size={20} />
-                        ) : (
-                            <TreeItemIconContainer {...getIconContainerProps()}>
-                                <TreeItemIcon status={status} />
-                            </TreeItemIconContainer>
-                        ))}
-                    {draggable && draggableHandle(handleDragStart, onDragOver, onDragEnd)}
-                    {checkBoxProps.visible && (
-                        <Box onClick={(e) => e.stopPropagation()}>
-                            <MeltaCheckbox {...checkBoxProps} sxChecked={{ width: '18px', height: '18px' }} />
-                        </Box>
-                    )}
-                    {additionalRowIcon}
-                    <LabelWithToolTip {...getLabelProps()} />
-                    <TreeItemDragAndDropOverlay {...getDragAndDropOverlayProps()} />
+                    <div
+                        style={{
+                            display: 'flex',
+                            gap: '8px',
+                            alignItems: 'center',
+                        }}
+                    >
+                        {draggable && draggableHandle(handleDragStart, onDragOver, onDragEnd)}
+
+                        {(status.expandable || itemDepth !== 0 || !draggable) &&
+                            (status.loading ? (
+                                <CircularProgress size={20} />
+                            ) : (
+                                <TreeItemIconContainer {...getIconContainerProps()}>
+                                    <TreeItemIcon status={status} />
+                                </TreeItemIconContainer>
+                            ))}
+
+                        {checkBoxProps.visible && (
+                            <Box onClick={(e) => e.stopPropagation()}>
+                                <MeltaCheckbox {...checkBoxProps} sxChecked={{ width: '18px', height: '18px' }} />
+                            </Box>
+                        )}
+
+                        <LabelWithToolTip {...getLabelProps()} />
+
+                        {additionalRowIcon}
+
+                        <TreeItemDragAndDropOverlay {...getDragAndDropOverlayProps()} />
+                    </div>
+
+                    {additionalOptions?.map((option) => option(node))}
                 </TreeItemContent>
-                {children && <TreeItemGroupTransition {...getGroupTransitionProps()} />}
+
+                {children && <TreeItemGroupTransition {...getGroupTransitionProps()} sx={styles?.treeNodeGroupTransition} />}
+
                 {!removeDivider && itemDepth === 0 && status.expandable && DivideMenuItems}
             </TreeItemRoot>
         </TreeItemProvider>

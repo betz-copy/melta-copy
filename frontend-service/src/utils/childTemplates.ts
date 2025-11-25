@@ -59,7 +59,7 @@ export const isEntityFitsToChildTemplate = (
     isChildTemplate: boolean,
     entity: IEntity | string,
     currentUserKartoffelId?: string,
-    currentUserUnit?: string[],
+    units?: string[],
     isUserAdmin?: boolean,
 ): boolean | undefined => {
     if (!isChildTemplate || typeof entity === 'string') return true;
@@ -69,7 +69,7 @@ export const isEntityFitsToChildTemplate = (
 
         if (prop.isFilterByCurrentUser && currentUserKartoffelId && value !== currentUserKartoffelId) return false;
 
-        if (prop.isFilterByUserUnit && currentUserUnit && !isUserAdmin && !currentUserUnit.includes(value)) return false;
+        if (prop.isFilterByUserUnit && units && !isUserAdmin && !units.includes(value)) return false;
 
         if (prop.filters) {
             const parsed = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;

@@ -10,6 +10,7 @@ import {
     IEntityExpanded,
     IEntitySingleProperty,
     IEntityWithDirectRelationships,
+    IGetUnits,
     IMongoRule,
     IMultipleSelect,
     IRelationship,
@@ -161,14 +162,17 @@ class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    getChartsOfTemplate = async (templateId: string, chartsData: IChartBody[], childTemplateId?: string) => {
-        const { data } = await this.api.post<{ _id: string; chart: { x: any; y: number }[] }[]>(`${baseEntitiesRoute}/chart/${templateId}`, {
-            chartsData,
-            childTemplateId,
-        });
+    async getChartsOfTemplate(templateId: string, body: { chartsData: IChartBody[]; childTemplateId?: string }, units: IGetUnits) {
+        const { data } = await this.api.post<{ _id: string; chart: { x: any; y: number }[] }[] | { x: any; y: number }[][]>(
+            `${baseEntitiesRoute}/chart/${templateId}`,
+            {
+                ...body,
+                units,
+            },
+        );
 
         return data;
-    };
+    }
 
     // relationships instances
     async getRelationshipInstanceById(id: string) {

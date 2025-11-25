@@ -104,9 +104,9 @@ const ClientSideEntityPage: React.FC = () => {
                     return false;
 
                 if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id)
-                    return entityTemplates.get(connection.sourceEntity.templateId)!.category._id === category._id;
+                    return entityTemplates.get(connection.sourceEntity.templateId)?.category._id === category._id;
 
-                return entityTemplates.get(connection.destinationEntity.templateId)!.category._id === category._id;
+                return entityTemplates.get(connection.destinationEntity.templateId)?.category._id === category._id;
             }).length,
         };
     })

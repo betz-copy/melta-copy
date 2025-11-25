@@ -100,10 +100,6 @@ class UsersManager {
         return UserService.updateUser(userId, { roleIds: updatedRoleIds });
     }
 
-    static async updateUserUnits(userId: string, units: IUser['units']): Promise<IUser> {
-        return UserService.updateUser(userId, { units } as Partial<IBaseUser>);
-    }
-
     private static validateDigitalIdentity(
         kartoffelId: string,
         digitalIdentity: Pick<IExternalUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'>,
@@ -116,13 +112,7 @@ class UsersManager {
         }
     }
 
-    static async createUser(
-        kartoffelId: string,
-        permissions: ICompactPermissions,
-        workspaceId: string,
-        roleIds?: string[],
-        units?: IUser['units'],
-    ): Promise<IUser> {
+    static async createUser(kartoffelId: string, permissions: ICompactPermissions, workspaceId: string, roleIds?: string[]): Promise<IUser> {
         const existingUser = await UserService.getUserByExternalId(kartoffelId).catch(() => {});
 
         if (existingUser) return UsersManager.updateUserRoleIds(existingUser._id, workspaceId, permissions, roleIds);
@@ -137,7 +127,6 @@ class UsersManager {
             kartoffelId,
             preferences,
             roleIds,
-            units,
         });
     }
 
@@ -213,7 +202,23 @@ class UsersManager {
         return normalizedKartoffelUsers.flat().filter((normalizedKartoffelUser) => !normalizedKartoffelUser.permissions[workspaceId || '']);
     }
 
-    private static async kartoffelUserToUser(kartoffelUser: IKartoffelUser): Promise<IExternalUser | never[]> {
+    static async getUsersByIdentityCard(
+        identityCards: string[],
+        isKartoffelUser: boolean = false,
+        workspaceId?: string,
+    ): Promise<IExternalUser[] | IKartoffelUser[]> {
+        const kartoffelUsers = await Kartoffel.getUsersByIdentityCards(identityCards);
+
+        if (isKartoffelUser) return kartoffelUsers;
+
+        const normalizedKartoffelUsers = await Promise.all(
+            kartoffelUsers.flatMap((kartoffelUser) => UsersManager.kartoffelUserToUser(kartoffelUser)),
+        );
+
+        return normalizedKartoffelUsers.flat().filter(({ permissions }) => !permissions[workspaceId || '']);
+    }
+
+    static async kartoffelUserToUser(kartoffelUser: IKartoffelUser): Promise<IExternalUser | never[]> {
         if (!kartoffelUser.digitalIdentities?.length) return [];
 
         return UsersManager.kartoffelUserDigitalIdentityToExternalUser(kartoffelUser.digitalIdentities?.[0], kartoffelUser);

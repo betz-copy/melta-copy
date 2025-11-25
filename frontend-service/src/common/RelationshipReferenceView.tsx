@@ -47,7 +47,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
     const childTemplatesOfRelatedTemplate =
         Array.from(allowedChildTemplates.values()).filter((child) => child.parentTemplate._id === relatedTemplateId) ?? [];
 
-    const template = entityTemplates.get(relatedTemplateId!);
+    const template = entityTemplates.get(relatedTemplateId);
     const relatedEntityTemplate = template ?? childTemplatesOfRelatedTemplate[0]?.parentTemplate;
     const entityTemplateColor = relatedEntityTemplate ? getEntityTemplateColor(relatedEntityTemplate) : undefined;
 
@@ -57,7 +57,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
             !template,
             entity,
             currentUserKartoffelId,
-            currentUser?.units?.[workspace._id] ?? [],
+            currentUser.units,
             isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
         ),
     );
