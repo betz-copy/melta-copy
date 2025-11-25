@@ -230,17 +230,12 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         let dashboardFilters: ISearchFilter | undefined;
         if (externalId) {
-            switch (externalId.type) {
-                case ExternalIdType.chart: {
-                    const chart = await this.chartService.getChartById(externalId.id);
-                    dashboardFilters = chart.filter ? JSON.parse(chart.filter) : undefined;
-                    break;
-                }
-                case ExternalIdType.dashboard: {
-                    const dashboard = await this.dashboardItemService.getDashboardItemById(externalId.id);
-                    dashboardFilters = getDashboardFilters(dashboard);
-                    break;
-                }
+            if (externalId.type === ExternalIdType.chart) {
+                const chart = await this.chartService.getChartById(externalId.id);
+                dashboardFilters = chart.filter ? JSON.parse(chart.filter) : undefined;
+            } else {
+                const dashboard = await this.dashboardItemService.getDashboardItemById(externalId.id);
+                dashboardFilters = getDashboardFilters(dashboard);
             }
         }
 
