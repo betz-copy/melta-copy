@@ -148,6 +148,11 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return lodashUniqby([...bySource, ...byDestination], '_id');
     }
 
+    async getAllowedRelationshipTemplatesIds(entityTemplateIds: string[]): Promise<string[]> {
+        const allowedRelationshipTemplates = await this.getAllowedRelationshipTemplates(entityTemplateIds);
+        return allowedRelationshipTemplates.map(({ _id }) => _id);
+    }
+
     async getAllowedTemplatesAndRules(entityTemplateIds: string[], relationshipTemplates: IMongoRelationshipTemplate[], userId: string) {
         const allowedEntityTemplatesIdsByOneRelationship = this.getAllEntityTemplateThatAreOneRelationshipAwayFromUsersPermissions(
             relationshipTemplates,

@@ -92,12 +92,12 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({
 
         tooltipHeader = (
             <Typography variant="body2" fontStyle="italic">
-                {entityForLink.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix)
+                {entityForLink.properties._id?.startsWith(environment.brokenRulesFakeEntityIdPrefix)
                     ? i18next.t('ruleBreachInfo.theEntityThatIsSupposedToBeCreated')
                     : i18next.t('ruleBreachInfo.theEntityThatWasCreated')}
             </Typography>
         );
-        linkable = !entityForLink.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix);
+        linkable = !entityForLink.properties._id?.startsWith(environment.brokenRulesFakeEntityIdPrefix);
     } else {
         const updatedProperties = actions.reduce(
             (previousUpdatedProperties, currentAction) => {
