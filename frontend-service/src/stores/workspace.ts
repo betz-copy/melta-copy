@@ -7,7 +7,7 @@ export interface WorkspaceState {
     updateWorkspaceMetadata: (metadata: Partial<IMetadata>) => void;
 }
 
-export const defaultMetadata = {
+export const defaultMetadata: IMetadata = {
     shouldNavigateToEntityPage: false,
     isDrawerOpen: false,
     flowCube: false,
@@ -48,7 +48,6 @@ export const defaultMetadata = {
         destTemplateId: '',
         sourceFieldForColor: '',
     },
-    unitsArray: [] as string[],
     numOfRelationshipFieldsToShow: 2,
 } as const;
 

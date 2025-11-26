@@ -16,7 +16,7 @@ import { initialValues } from '../../../../utils/charts/getChartAxes';
 const renderMetaDtaChartByType = (option: IMongoChart) => {
     switch (option.type) {
         case IChartType.Column:
-        case IChartType.Line:
+        case IChartType.Line: {
             const columnLineData = option.metaData as IColumnOrLineMetaData;
 
             return (
@@ -29,7 +29,8 @@ const renderMetaDtaChartByType = (option: IMongoChart) => {
                     </Grid>
                 </>
             );
-        case IChartType.Pie:
+        }
+        case IChartType.Pie: {
             const pieData = option.metaData as IPieMetaData;
             return (
                 <>
@@ -41,19 +42,21 @@ const renderMetaDtaChartByType = (option: IMongoChart) => {
                     </Grid>
                 </>
             );
-        case IChartType.Number:
+        }
+        case IChartType.Number: {
             const numberData = option.metaData as INumberMetaData;
             return (
                 <Grid>
                     {i18next.t('charts.accumulateAccordingTo')} : {numberData.accumulator.type}
                 </Grid>
             );
+        }
         default:
             return null;
     }
 };
 
-const ChartAutoComplete: React.FC<{ formikProps: FormikProps<ChartForm & { _id?: string }> }> = ({ formikProps: { values, setValues } }) => {
+const ChartAutoComplete: React.FC<{ formikProps: FormikProps<ChartForm> }> = ({ formikProps: { values, setValues } }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const entityTemplate = entityTemplates.get(values.templateId!);

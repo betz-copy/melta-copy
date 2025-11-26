@@ -2,10 +2,8 @@
 /* eslint-disable no-param-reassign */
 import {
     BadRequestError,
-    childTemplateKeys,
     ConfigTypes,
     DashboardItemType,
-    dePopulateChildProperties,
     IAxisField,
     ICategory,
     ICategoryOrderConfig,
@@ -36,13 +34,13 @@ import {
     IPrintingTemplate,
     IRelationship,
     IRule,
-    isChildTemplate,
     ISearchEntityTemplatesBody,
     ISearchRelationshipTemplatesBody,
     ISearchRulesBody,
     ISubCompactPermissions,
     IUniqueConstraintOfTemplate,
     IUpdateOrDeleteEnumFieldReqData,
+    isChildTemplate,
     logger,
     MongoBaseFields,
     NotFoundError,
@@ -56,10 +54,10 @@ import {
 } from '@microservices/shared';
 import { AxiosError, AxiosResponse } from 'axios';
 import { StatusCodes } from 'http-status-codes';
-import _, { cloneDeep, groupBy, pick } from 'lodash';
+import _, { groupBy } from 'lodash';
+import _omit from 'lodash/omit';
 import _isEqual from 'lodash.isequal';
 import lodashUniqby from 'lodash.uniqby';
-import _omit from 'lodash/omit';
 import config from '../../config';
 import DashboardItemService from '../../externalServices/dashboardService/dashboardItemService';
 import GanttsService from '../../externalServices/ganttsService';
@@ -74,7 +72,13 @@ import RelationshipsTemplateService from '../../externalServices/templates/relat
 import { trycatch } from '../../utils';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
-import { buildNewRelationshipField, validateNoDependentRules, validateRequiredConstraints, validateUniqueRelationships } from '../../utils/templates';
+import {
+    buildNewRelationshipField,
+    updateChildTemplatesOnParentUpdate,
+    validateNoDependentRules,
+    validateRequiredConstraints,
+    validateUniqueRelationships,
+} from '../../utils/templates';
 import { prepareChartForUpdate, prepareDashboardItemForUpdate, processAndUpdateItems } from '../../utils/templates/deletePropertyFromFilter';
 import InstancesManager from '../instances/manager';
 import ProcessTemplatesManager from '../processes/processTemplates/manager';
@@ -258,9 +262,15 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             this.getAllowedEntitiesTemplates(permissionsOfUserId, userId),
         ]);
 
-        const allowedEntityTemplatesIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
+        const allowedEntityTemplatesIds = allowedEntityTemplates.map(({ _id }) => _id);
 
-        const allowedRelationshipsTemplates = await this.getAllowedRelationshipTemplates(allowedEntityTemplatesIds);
+        const childTemplatesPopulated = await this.getAllowedChildEntitiesTemplates(permissionsOfUserId);
+
+        const allowedChildTemplatesIds = childTemplatesPopulated
+            .map(({ parentTemplate: { _id } }) => _id)
+            .filter((id) => !allowedEntityTemplatesIds.includes(id));
+
+        const allowedRelationshipsTemplates = await this.getAllowedRelationshipTemplates([...allowedEntityTemplatesIds, ...allowedChildTemplatesIds]);
         const { allowedRelationshipTemplatesBecauseOfRules, allowedEntityTemplatesIdsByOneRelationship } = await this.getAllowedTemplatesAndRules(
             allowedEntityTemplatesIds,
             allowedRelationshipsTemplates,
@@ -286,8 +296,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             this.getAndPopulateAllTemplatesConstraints(allAllowedEntityTemplates, uniqueConstraints),
             ...processTemplatesBeforePopulate.map((processTemplate) => this.processManager.getTemplateWithPopulatedStepReviewers(processTemplate)),
         ]);
-
-        const childTemplatesPopulated = await this.getAllowedChildEntitiesTemplates(permissionsOfUserId);
 
         let categoryOrder: IMongoCategoryOrderConfig | null;
         try {
@@ -738,8 +746,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             (key) => updatedTemplateData.properties.properties[key].serialCurrent !== undefined,
         );
 
-        // eslint-disable-next-line no-prototype-builtins
-        const newSerialNumberFields = updatedSerialNumberFields.filter((key) => !currTemplate.properties.properties.hasOwnProperty(key));
+        const newSerialNumberFields = updatedSerialNumberFields.filter((key) => !(key in currTemplate.properties.properties));
 
         if (newSerialNumberFields.length) {
             const newSerialNumberValues = {};
@@ -1157,8 +1164,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             (property) => !currProperties.properties[property] && !removedProperties.includes(property),
         );
 
-        const newRequiredProperties = newProperties.filter((property) => updatedTemplateData.properties.required.includes(property));
-
         if (count > 0) {
             if (updatedTemplateData.name !== currTemplate.name) throw new BadRequestError('can not change template name');
 
@@ -1228,8 +1233,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             (key) => delete restOfTemplatePropertiesObject.properties[key].isNewPropNameEqualDeletedPropName,
         );
 
-        const childTemplates = await this.entityTemplateService.searchChildTemplates({ parentTemplatesIds: [id] });
-
         const updatedTemplate = await this.entityTemplateService.updateEntityTemplate(id, {
             ...restOfTemplateData,
             properties: restOfTemplatePropertiesObject,
@@ -1239,9 +1242,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         await this.deletePropertyOfEntityTemplate(id, count, removedProperties, currTemplate);
 
-        if (newExpandedUserFields.length) {
-            await this.updateInstancesWithUserFields(id, newExpandedUserFields, updatedTemplateData);
-        }
+        if (newExpandedUserFields.length) await this.updateInstancesWithUserFields(id, newExpandedUserFields, updatedTemplateData);
 
         try {
             if (propertiesKeysToPluralize.length > 0) await this.instancesService.convertFieldsToPlural(id, propertiesKeysToPluralize);
@@ -1260,52 +1261,13 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         if (updatedTemplate.category._id !== currTemplate.category._id)
             await this.updateEntityTemplateScope(updatedTemplate, permissionsOfUserId, userId);
 
-        const updatedChildTemplates = await Promise.all([
-            ...childTemplates
-                .map((childTemplate) => {
-                    let hasChildChanged = false;
-                    const { properties: childProperties, parentTemplate, category, ...restOfChildTemplate } = childTemplate;
-
-                    if (removedProperties.some((removedPropertyKey) => Object.keys(childProperties.properties).includes(removedPropertyKey))) {
-                        hasChildChanged = true;
-
-                        removedProperties.forEach((removedPropertyKey) => delete childProperties.properties[removedPropertyKey]);
-                    }
-
-                    if (newRequiredProperties.length > 0 || hasChildChanged) {
-                        const newProps = {};
-                        newRequiredProperties.forEach((prop) => {
-                            newProps[prop] = {
-                                display: true,
-                            };
-                        });
-
-                        const { filterByCurrentUserField, filterByUnitUserField, ...newChildTemplate } = pick(
-                            {
-                                parentTemplateId: parentTemplate._id,
-                                category: category._id,
-                                properties: {
-                                    properties: cloneDeep({
-                                        ...dePopulateChildProperties(childProperties.properties),
-                                        ...newProps,
-                                    }),
-                                },
-                                ...restOfChildTemplate,
-                            },
-                            childTemplateKeys,
-                        );
-
-                        return this.entityTemplateService.updateChildTemplate(childTemplate._id, {
-                            ...newChildTemplate,
-                            filterByCurrentUserField: filterByCurrentUserField || undefined,
-                            filterByUnitUserField: filterByUnitUserField || undefined,
-                        });
-                    }
-
-                    return null;
-                })
-                .filter((childTemplate) => childTemplate !== null),
-        ]);
+        const updatedChildTemplates = await updateChildTemplatesOnParentUpdate(
+            this.entityTemplateService,
+            id,
+            removedProperties,
+            updatedTemplateData.properties.required,
+            required,
+        );
 
         const template = this.populateTemplateConstraints(updatedTemplate, requiredConstraints, uniqueConstraints);
 
@@ -1361,6 +1323,10 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return this.populateTemplateConstraints({ ...updatedChild, parentTemplate: parentWithConstraints }, requiredConstraints, uniqueConstraints);
     }
 
+    async getChildTemplateById(id: string) {
+        return this.entityTemplateService.getChildTemplateById(id);
+    }
+
     private checkValidAmountOfArchiveProperties(updatedTemplateProperties: Record<string, IEntitySingleProperty>) {
         const archivePropertiesNumber = Object.values(updatedTemplateProperties).reduce((count, { archive }) => (archive ? count + 1 : count), 0);
 
@@ -1369,15 +1335,29 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     async updateEntityTemplateStatus(id: string, disabledStatus: boolean) {
         const updatedEntityTemplate = await this.entityTemplateService.updateEntityTemplateStatus(id, disabledStatus);
+        const updatedChildTemplates = !disabledStatus
+            ? []
+            : await this.entityTemplateService.multiUpdateChildTemplateStatusByParentId(id, disabledStatus);
 
         const allConstraints = await this.instancesService.getAllConstraints();
-        const constraintsOfTemplate = allConstraints.find(({ templateId }) => templateId === updatedEntityTemplate._id);
+        const constraintsOfTemplate = allConstraints.filter(({ templateId }) => templateId === updatedEntityTemplate._id);
 
-        return this.populateTemplateConstraints(
-            updatedEntityTemplate,
-            constraintsOfTemplate?.requiredConstraints ?? [],
-            constraintsOfTemplate?.uniqueConstraints ?? [],
+        const { requiredConstraints, uniqueConstraints } = constraintsOfTemplate.reduce(
+            (acc, constraint) => {
+                acc.requiredConstraints.push(...constraint.requiredConstraints);
+                acc.uniqueConstraints.push(...constraint.uniqueConstraints);
+
+                return acc;
+            },
+            { requiredConstraints: [] as string[], uniqueConstraints: [] as IUniqueConstraintOfTemplate[] },
         );
+
+        return {
+            entityTemplate: this.populateTemplateConstraints(updatedEntityTemplate, requiredConstraints ?? [], uniqueConstraints ?? []),
+            childTemplates: updatedChildTemplates.map((childTemplate) => {
+                return this.populateTemplateConstraints(childTemplate, requiredConstraints ?? [], uniqueConstraints ?? []);
+            }),
+        };
     }
 
     removeBasicFields(template: IMongoEntityTemplatePopulated) {
@@ -1529,7 +1509,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     }
 
     private async checkFieldValueUsage(id: string, fieldValue: string, fieldName: string, fieldType: string): Promise<void> {
-        const data = await this.instancesService.getIfValuefieldIsUsed(id, fieldValue, fieldName, fieldType);
+        const data = await this.instancesService.getIfValueFieldIsUsed(id, fieldValue, fieldName, fieldType);
         const cantDeleteFieldValue = Boolean(data);
         if (cantDeleteFieldValue) throw new BadRequestError('cant remove used values');
     }
@@ -1737,17 +1717,17 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     async getAllowedChildEntitiesTemplates(userPermissions: RequestWithPermissionsOfUserId['permissionsOfUserId']) {
         if (!userPermissions?.admin && !userPermissions?.instances) return [];
 
-        const allChildEntityTemplates = await this.entityTemplateService.searchChildTemplates({});
+        const allChildTemplates = await this.entityTemplateService.searchChildTemplates({});
 
-        if (userPermissions?.admin) return allChildEntityTemplates;
+        if (userPermissions?.admin) return allChildTemplates;
 
         const ids: string[] = [];
-        const allChildTemplateIds = new Set(Object.values(allChildEntityTemplates).map((childTemplate) => childTemplate._id));
+        const allChildTemplateIds = new Set(Object.values(allChildTemplates).map((childTemplate) => childTemplate._id));
 
         for (const [categoryId, category] of Object.entries(userPermissions?.instances?.categories ?? {})) {
             const entityTemplateIds = Object.keys(category?.entityTemplates ?? {});
             if (category.scope) {
-                const templatesInCategory = Object.values(allChildEntityTemplates)
+                const templatesInCategory = Object.values(allChildTemplates)
                     .filter((template) => template.category._id === categoryId)
                     .map((template) => template._id);
 
@@ -1759,6 +1739,40 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         }
 
         return this.entityTemplateService.searchChildTemplates({ ids });
+    }
+
+    async updateChildTemplateStatus(id: string, disabledStatus: boolean) {
+        const updatedChildTemplate = await this.entityTemplateService.updateChildTemplateStatus(id, disabledStatus);
+
+        const allConstraints = await this.instancesService.getAllConstraints();
+        const constraintsOfTemplate = allConstraints.filter(({ templateId }) => templateId === updatedChildTemplate._id);
+
+        const { requiredConstraints, uniqueConstraints } = constraintsOfTemplate.reduce(
+            (acc, constraint) => {
+                acc.requiredConstraints.push(...constraint.requiredConstraints);
+                acc.uniqueConstraints.push(...constraint.uniqueConstraints);
+
+                return acc;
+            },
+            { requiredConstraints: [] as string[], uniqueConstraints: [] as IUniqueConstraintOfTemplate[] },
+        );
+
+        return this.populateTemplateConstraints(updatedChildTemplate, requiredConstraints, uniqueConstraints);
+    }
+
+    async updateChildTemplateById(templateId: string, childTemplate: IChildTemplate) {
+        const updatedChild = await this.entityTemplateService.updateChildTemplate(templateId, childTemplate);
+        if (!updatedChild) throw new BadRequestError('Failed to updated child');
+
+        const { requiredConstraints } = await this.instancesService.getConstraintsOfTemplate(childTemplate.parentTemplateId);
+
+        const requiredNotInProperties = requiredConstraints.find(
+            (requiredKey) => !Object.keys(childTemplate.properties.properties).includes(requiredKey),
+        );
+        if (requiredNotInProperties) throw new ValidationError(`required key ${requiredNotInProperties} isn't in properties`);
+
+        const [childTemplatePopulatedWithConstraints] = await this.getAndPopulateAllTemplatesConstraints([updatedChild]);
+        return childTemplatePopulatedWithConstraints;
     }
 
     // rules
@@ -1809,22 +1823,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     async searchPrintingTemplates(searchBody: ISearchEntityTemplatesBody) {
         return this.printingTemplateService.searchPrintingTemplates(searchBody);
-    }
-
-    // Child templates
-    async updateChildTemplateById(templateId: string, childTemplate: IChildTemplate) {
-        const updatedChild = await this.entityTemplateService.updateChildTemplate(templateId, childTemplate);
-        if (!updatedChild) throw new BadRequestError('Failed to updated child');
-
-        const { requiredConstraints } = await this.instancesService.getConstraintsOfTemplate(childTemplate.parentTemplateId);
-
-        const requiredNotInProperties = requiredConstraints.find(
-            (requiredKey) => !Object.keys(childTemplate.properties.properties).includes(requiredKey),
-        );
-        if (requiredNotInProperties) throw new ValidationError(`required key ${requiredNotInProperties} isn't in properties`);
-
-        const [childTemplatePopulatedWithConstraints] = await this.getAndPopulateAllTemplatesConstraints([updatedChild]);
-        return childTemplatePopulatedWithConstraints;
     }
 }
 

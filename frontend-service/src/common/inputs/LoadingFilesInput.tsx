@@ -24,7 +24,7 @@ export const LoadingFilesInput: React.FC<{
     return (
         <Grid container style={loadingStyle} direction="column">
             <Grid container alignItems="center" wrap="nowrap">
-                <Grid size={{ xs: 10}}>
+                <Grid size={{ xs: 10 }}>
                     <Typography
                         style={{
                             overflow: 'hidden',

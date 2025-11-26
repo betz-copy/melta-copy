@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { Box, Button, debounce, useScrollTrigger } from '@mui/material';
 import { useTour } from '@reactour/tour';
@@ -48,7 +47,7 @@ const Unavailable = lazy(() => import('../Unavailable'));
 const ErrorPage = lazy(() => import('../ErrorPage'));
 const Entity = lazy(() => import('../Entity'));
 const Graph = lazy(() => import('../Graph'));
-const Map = lazy(() => import('../Map/mapPage'));
+const MapPage = lazy(() => import('../Map/mapPage'));
 const Duplicate = lazy(() => import('../Entity/components/DuplicateEntity'));
 
 const FluidSimulation = lazy(() => import('../MeltaPlus/FluidSimulation'));
@@ -75,7 +74,7 @@ export const MeltaRoutesInner: React.FC = () => {
 
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
     const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
 
     const meltaPlus = useMeltaPlusStore((state) => state.meltaPlus);
@@ -207,7 +206,7 @@ export const MeltaRoutesInner: React.FC = () => {
                             </Route>
 
                             <Route path="/map">
-                                <Map isSideBarOpen={open} />
+                                <MapPage isSideBarOpen={open} />
                             </Route>
 
                             <Route path="/charts/:templateId?/:chartId?/chart">

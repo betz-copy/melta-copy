@@ -3,9 +3,12 @@ import { Button, Divider, FormControlLabel, Grid, Typography } from '@mui/materi
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useState } from 'react';
+import { useQueryClient } from 'react-query';
 import { ByCurrentDefaultValue, ChipType, IChildTemplateForm, IChildTemplateProperty, ViewType } from '../../../interfaces/childTemplates';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IGetUnits, IMongoUnit } from '../../../interfaces/units';
 import { IUser } from '../../../interfaces/users';
+import { IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
 import { ColoredEnumChip } from '../../ColoredEnumChip';
 import { getFilterFieldReadonly } from '../../inputs/FilterInputs/ReadonlyFilterInput';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
@@ -36,7 +39,7 @@ const getFormattedDefaultValue = (value: IChildTemplateProperty['defaultValue'],
                     ? i18next.t('childTemplate.currentDate')
                     : new Date(value).toLocaleDateString('he-IL');
 
-            case 'user':
+            case 'user': {
                 if (value === ByCurrentDefaultValue.byCurrentUser) return i18next.t('childTemplate.byUser');
 
                 const userObj = JSON.parse(value);
@@ -45,6 +48,7 @@ const getFormattedDefaultValue = (value: IChildTemplateProperty['defaultValue'],
                 }
 
                 return value;
+            }
             default:
                 return value;
         }
@@ -58,6 +62,7 @@ const renderChips = (
     chips: IAGGridFilter[] | IChildTemplateProperty['defaultValue'][],
     fieldSchema: IEntitySingleProperty,
     onDelete: (chip: IChip, mode: ChipType) => void,
+    units: IMongoUnit[],
     isFilterByUser?: boolean,
     isFilterByUserUnit?: boolean,
 ): React.ReactNode[] => {
@@ -70,10 +75,24 @@ const renderChips = (
     }
 
     return chips.map((chip, index) => {
-        const label = mode === ChipType.Filter ? getFilterFieldReadonly(chip, fieldSchema.type) : getFormattedDefaultValue(chip, fieldSchema);
+        let renderedChip = chip;
+
+        if (fieldSchema.format === 'unitField') {
+            if (mode === ChipType.Filter) {
+                const unitName = units.find((unit) => unit._id === (chip as IAGGridTextFilter).filter)?.name;
+                if (unitName) renderedChip = { ...chip, filter: unitName } as IAGGridFilter;
+            } else {
+                const unitName = units.find((unit) => unit._id === (chip as string))?.name;
+                if (unitName) renderedChip = unitName;
+            }
+        }
+
+        const label =
+            mode === ChipType.Filter ? getFilterFieldReadonly(renderedChip, fieldSchema.type) : getFormattedDefaultValue(renderedChip, fieldSchema);
 
         return (
-            <Grid key={`${chip}-${mode}-${index}`} justifyItems="center">
+            // biome-ignore lint/suspicious/noArrayIndexKey: <index is needed here>
+            <Grid key={`${renderedChip}-${mode}-${index}`} justifyItems="center">
                 <ColoredEnumChip label={label} onDelete={() => onDelete(chip, mode)} enumColor="default" />
             </Grid>
         );
@@ -89,6 +108,9 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
     const { values, setFieldValue, setFieldTouched } = formikProps;
 
     const [addFilterField, setAddFilterField] = useState<{ dialogType: ChipType; fieldName: string } | undefined>(undefined);
+
+    const queryClient = useQueryClient();
+    const units = queryClient.getQueryData<IGetUnits>('getUnits')!;
 
     return (
         <>
@@ -113,7 +135,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
                     };
 
                     const onDeleteFilterChip = (chip: IChip, mode: ChipType) => {
-                        if (isRequired && mode == ChipType.Default) onCheckboxChange(true);
+                        if (isRequired && mode === ChipType.Default) onCheckboxChange(true);
 
                         setFieldTouched(`properties.properties.${fieldName}`, true);
                         const prev = values.properties.properties[fieldName];
@@ -172,6 +194,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
                                             value.filters ?? [],
                                             property,
                                             onDeleteFilterChip,
+                                            units,
                                             isFilterByUser,
                                             isFilterByUserUnit,
                                         )}
@@ -199,6 +222,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
                                             value.defaultValue ? [value.defaultValue] : [],
                                             property,
                                             onDeleteFilterChip,
+                                            units,
                                             isFilterByUser,
                                             isFilterByUserUnit,
                                         )}
@@ -253,7 +277,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
                         setFieldValue(`properties.properties.${addFilterField.fieldName}`, {
                             ...value,
                             [addFilterField.dialogType]:
-                                addFilterField.dialogType === ChipType.Default ? fieldValue : [...((value && value.filters) ?? []), fieldValue],
+                                addFilterField.dialogType === ChipType.Default ? fieldValue : [...(value?.filters ?? []), fieldValue],
                         });
                         setAddFilterField(undefined);
                     }}

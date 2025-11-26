@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import InstancesManager from './manager';
-import { ShragaUser } from '../../../utils/express/passport';
 import DefaultController from '../../../utils/express/controller';
+import { ShragaUser } from '../../../utils/express/passport';
+import InstancesManager from './manager';
 
 class ProcessInstancesController extends DefaultController<InstancesManager> {
     constructor(workspaceId: string) {

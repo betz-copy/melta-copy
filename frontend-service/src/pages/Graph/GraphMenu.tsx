@@ -1,8 +1,9 @@
 /* eslint-disable no-param-reassign */
-import React from 'react';
-import { Menu as MuiMenu, MenuItem } from '@mui/material';
-import { GraphData } from 'react-force-graph-2d';
+
+import { MenuItem, Menu as MuiMenu } from '@mui/material';
 import i18next from 'i18next';
+import React from 'react';
+import { GraphData } from 'react-force-graph-2d';
 
 const GraphMenu: React.FC<{
     graphData: GraphData;

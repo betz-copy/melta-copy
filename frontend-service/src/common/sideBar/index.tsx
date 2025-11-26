@@ -351,7 +351,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         to="/iframes"
                         text={i18next.t('pages.iFrames')}
                         extension={
-                            iFramesInSidebar?.length! > 0 ? (
+                            iFramesInSidebar?.length! ? (
                                 <Grid container display="flex" flexDirection="column">
                                     <Grid width="150px" maxHeight="450px" sx={{ overflow: 'auto' }}>
                                         {iFramesInSidebar?.map((iFrame) => (
@@ -477,6 +477,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
                     {(currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write ||
                         currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write ||
+                        currentUser.currentWorkspacePermissions.units?.scope === PermissionScope.write ||
                         currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write) && (
                         <NavButton
                             to="/system-management"

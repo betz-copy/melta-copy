@@ -1,5 +1,5 @@
-import axios from 'axios';
 import { IUserSearchBody } from '@microservices/shared';
+import axios from 'axios';
 import config from '../config';
 
 const {
@@ -13,7 +13,7 @@ class UserService {
     });
 
     static async searchUserIds(searchBody: IUserSearchBody): Promise<string[]> {
-        const { data } = await this.userService.post<string[]>(`${usersRoute}/search-ids`, searchBody);
+        const { data } = await UserService.userService.post<string[]>(`${usersRoute}/search-ids`, searchBody);
         return data;
     }
 }

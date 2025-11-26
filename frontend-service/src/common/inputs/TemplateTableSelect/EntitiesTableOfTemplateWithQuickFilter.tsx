@@ -1,24 +1,40 @@
 import { Box, Grid } from '@mui/material';
 import _debounce from 'lodash.debounce';
 import React, { useState } from 'react';
+import { useQueryClient } from 'react-query';
+import { IChildTemplateMap, IChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { IEntity } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { useUserStore } from '../../../stores/user';
+import { useWorkspaceStore } from '../../../stores/workspace';
 import EntitiesTableOfTemplate, { TablePageType } from '../../EntitiesTableOfTemplate';
 import SearchInput from '../SearchInput';
+import { getChildTemplatesFilter } from '../TemplateEntitiesAutocomplete';
 
 const EntitiesTableOfTemplateWithQuickFilter: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
     onRowSelected: (entity: IEntity) => void;
     hideNonPreview?: boolean;
 }> = ({ entityTemplate, onRowSelected, hideNonPreview }) => {
+    const queryClient = useQueryClient();
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
+
+    const currentUser = useUserStore((state) => state.user);
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const [quickFilterText, setQuickFilterText] = useState('');
     const setQuickFilterTextDebounced = _debounce(setQuickFilterText, 1000);
+
+    const childTemplatesOfParent: IChildTemplatePopulated[] = Array.from(childTemplates.values()).filter(
+        ({ parentTemplate: { _id } }) => _id === entityTemplate._id,
+    );
+    const defaultFilter = getChildTemplatesFilter(childTemplatesOfParent, workspace, currentUser, true);
 
     return (
         <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'stretch' }}>
             <div>
                 <Grid container justifyContent="center">
-                    <Grid size={{ xs: 8}}>
+                    <Grid size={{ xs: 8 }}>
                         <SearchInput onChange={setQuickFilterTextDebounced} />
                     </Grid>
                 </Grid>
@@ -33,6 +49,7 @@ const EntitiesTableOfTemplateWithQuickFilter: React.FC<{
                     rowModelType="serverSide"
                     quickFilterText={quickFilterText}
                     rowHeight={25}
+                    defaultFilter={defaultFilter}
                     fontSize="14px"
                     hideNonPreview={hideNonPreview}
                     saveStorageProps={{
@@ -46,6 +63,7 @@ const EntitiesTableOfTemplateWithQuickFilter: React.FC<{
                         pageType: TablePageType.relationship,
                     }}
                     paginationPageSizeSelector={false}
+                    childTemplatesOfParent={childTemplatesOfParent}
                 />
             </div>
         </Box>

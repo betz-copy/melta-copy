@@ -1,5 +1,5 @@
-import { Request, Response } from 'express';
 import { DefaultController, IMongoChart } from '@microservices/shared';
+import { Request, Response } from 'express';
 import ChartManager from './manager';
 
 class ChartController extends DefaultController<IMongoChart, ChartManager> {
@@ -12,7 +12,8 @@ class ChartController extends DefaultController<IMongoChart, ChartManager> {
     }
 
     async getChartByTemplateId(req: Request, res: Response) {
-        res.json(await this.manager.getChartsByTemplateId(req.params.templateId, req.body.textSearch, req.body.childTemplateId));
+        const { textSearch, childTemplateId } = req.body;
+        res.json(await this.manager.getChartsByTemplateId(req.params.templateId, textSearch, childTemplateId));
     }
 
     async createChart(req: Request, res: Response) {

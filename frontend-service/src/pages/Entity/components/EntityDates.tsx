@@ -1,8 +1,8 @@
-import React from 'react';
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { getLongDate } from '../../../utils/date';
+import React from 'react';
 import { useDarkModeStore } from '../../../stores/darkMode';
+import { getLongDate } from '../../../utils/date';
 
 const EntityDates: React.FC<{ createdAt: string; updatedAt: string; toPrint?: boolean }> = ({ createdAt, updatedAt, toPrint = false }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);

@@ -22,7 +22,7 @@ import { arrayTypes } from '../../../services/templates/entityTemplatesService';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
 import { validPropertyTypes } from './AddFields';
-import { CommonFormInputProperties } from './commonInterfaces';
+import { CommonFormInputProperties, PropertyItem } from './commonInterfaces';
 import { PropertiesTypes } from './Property/PropertyTypes';
 import { Switches } from './Property/Switches';
 import { FilterEntitiesByCriteria } from './RelationshipReference/filterEntitiesByCriteria';
@@ -32,6 +32,7 @@ const { mapSearchPropertiesLimit } = environment.map;
 export interface FieldEditCardProps {
     entity: string;
     value: CommonFormInputProperties;
+    values: Record<string, PropertyItem[]>;
     index: number;
     isEditMode?: boolean;
     initialValue: CommonFormInputProperties | undefined;
@@ -72,6 +73,7 @@ export interface FieldEditCardProps {
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     entity,
     value,
+    values,
     index,
     isEditMode,
     initialValue,
@@ -142,7 +144,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
 
     const createNewUniqueGroup = (groupName) => {
         if (groupName) {
-            setUniqueConstraints!((prev) => {
+            setUniqueConstraints?.((prev) => {
                 const existingGroup = prev?.find((group) => group.groupName === groupName);
                 if (!existingGroup) {
                     const newGroup = { groupName, properties: [value.name] };
@@ -152,7 +154,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                     }));
                     updatedConstraints.push(newGroup);
 
-                    const updatedConstraintsWithoutEmptyGroups = updatedConstraints.filter((group) => group.properties.length > 0);
+                    const updatedConstraintsWithoutEmptyGroups = updatedConstraints.filter((group) => group.properties.length);
                     return updatedConstraintsWithoutEmptyGroups;
                 }
                 return prev;
@@ -161,7 +163,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     };
 
     const addToProperties = (selectedGroupName) => {
-        setUniqueConstraints!((prev) => {
+        setUniqueConstraints?.((prev) => {
             const existingGroup = prev?.find((group) => group.groupName === selectedGroupName);
             const propertyExists = existingGroup?.properties.includes(value.name);
 
@@ -180,9 +182,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                 properties: group.properties.filter((prop) => prop !== value.name),
                             };
 
-                            if (!updatedGroup.properties.length) {
-                                return null;
-                            }
+                            if (!updatedGroup.properties.length) return null;
+
                             return updatedGroup;
                         }
                         return group;
@@ -195,7 +196,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     };
 
     const movePropAndCreateGroup = (fieldName) => {
-        setUniqueConstraints!((prev) => {
+        setUniqueConstraints?.((prev) => {
             const existingGroupIndex = prev?.findIndex((group) => group.properties.includes(fieldName));
 
             if (existingGroupIndex !== -1) {
@@ -230,16 +231,16 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     };
 
     const deleteAndCreateEmptyGroup = (groupName) => {
-        setUniqueConstraints!((prevConstraints) => {
+        setUniqueConstraints?.((prevConstraints) => {
             const groupToDelete = prevConstraints.find((group) => group.groupName === groupName);
             const updatedConstraints = prevConstraints.filter((group) => group.groupName !== groupName);
-            groupToDelete!.properties.forEach((fieldName) => {
+            groupToDelete?.properties.forEach((fieldName) => {
                 const fieldInExistingGroup = updatedConstraints.some((group) => group.properties.includes(fieldName));
                 if (!fieldInExistingGroup) {
                     updatedConstraints.push({ groupName: '', properties: [fieldName] });
                 }
             });
-            setValues!((prev) => ({
+            setValues?.((prev) => ({
                 ...prev,
                 groupName: undefined,
             }));
@@ -594,10 +595,11 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     name={`relationshipReference.filters`}
                                     value={value}
                                     setFieldValue={setFieldValue}
-                                    selectedEntityTemplate={entityTemplates.get(value.relationshipReference?.relatedTemplateId!)}
+                                    selectedEntityTemplate={entityTemplates.get(value.relationshipReference?.relatedTemplateId || '')}
                                     initialValue={initialValue}
                                     errors={errors}
                                     touched={touched}
+                                    values={values}
                                 />
                             )}
                         </Grid>
@@ -615,6 +617,7 @@ export const MemoFieldEditCard = memo(
         prev.groupIndex === next.groupIndex &&
         prev.areThereAnyInstances === next.areThereAnyInstances &&
         isEqual(prev.value, next.value) &&
+        isEqual(prev.values, next.values) &&
         isEqual(prev.touched, next.touched) &&
         isEqual(prev.errors, next.errors) &&
         isEqual(prev.uniqueConstraints, next.uniqueConstraints) &&

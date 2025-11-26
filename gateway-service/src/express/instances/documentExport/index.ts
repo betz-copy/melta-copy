@@ -1,7 +1,7 @@
 /* eslint-disable import/prefer-default-export */
 import { IEntity, IMongoEntityTemplatePopulated } from '@microservices/shared';
 import { load } from 'cheerio';
-import { ImageRun, IPatch, patchDocument, PatchType, TextRun } from 'docx';
+import { ImageRun, IPatch, PatchType, patchDocument, TextRun } from 'docx';
 import { toHebrewJewishDate, toJewishDate } from 'jewish-date';
 import mammoth from 'mammoth';
 import config from '../../../config';

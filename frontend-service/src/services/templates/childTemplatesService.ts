@@ -1,6 +1,6 @@
 import axios from '../../axios';
-import { IChildTemplate, IMongoChildTemplate, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { environment } from '../../globals';
+import { IChildTemplate, IMongoChildTemplate, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 
 const { childTemplates } = environment.api;
 
@@ -24,4 +24,11 @@ const deleteChildTemplate = async (id: string) => {
     return data;
 };
 
-export { createChildTemplate, updateChildTemplate, getAllChildTemplates, deleteChildTemplate };
+const updateChildTemplateStatusRequest = async (childTemplateId: string, disabledStatus: boolean) => {
+    const { data } = await axios.patch<IMongoChildTemplatePopulated>(`${childTemplates}/${childTemplateId}/status`, {
+        disabled: disabledStatus,
+    });
+    return data;
+};
+
+export { createChildTemplate, updateChildTemplate, getAllChildTemplates, deleteChildTemplate, updateChildTemplateStatusRequest };

@@ -1,4 +1,4 @@
-import { IMongoChart, IChart } from '@microservices/shared';
+import { IChart, IMongoChart, ISearchFilter } from '@microservices/shared';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 
@@ -11,8 +11,8 @@ class ChartService extends DefaultExternalServiceApi {
         super(workspaceId, { baseURL: `${url}${baseRoute}${charts.baseRoute}`, timeout: requestTimeout });
     }
 
-    async getChartsByTemplateId(templateId: string, textSearch?: string, childTemplateId?: string): Promise<IMongoChart[]> {
-        const { data } = await this.api.post<IMongoChart[]>(`/by-template/${templateId}`, { textSearch, childTemplateId });
+    async getChartsByTemplateId(templateId: string, textSearch?: string, childTemplateId?: string, filters?: ISearchFilter): Promise<IMongoChart[]> {
+        const { data } = await this.api.post<IMongoChart[]>(`/by-template/${templateId}`, { textSearch, childTemplateId, filters });
         return data;
     }
 

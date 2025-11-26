@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { WidgetProps, asNumber, getUiOptions, guessType } from '@rjsf/utils';
+import { asNumber, getUiOptions, guessType, WidgetProps } from '@rjsf/utils';
 import React from 'react';
 import MultipleSelect from '../MultipleSelect';
 
@@ -8,22 +8,16 @@ const nums = new Set(['number', 'integer']);
 const processValue = (schema: any, value: any) => {
     const { type, items } = schema;
     if (value === null) return undefined;
-    if (type === 'array' && items && nums.has(items.type)) {
-        return value.map(asNumber);
-    }
-    if (type === 'boolean') {
-        return value === 'true';
-    }
-    if (type === 'number') {
-        return asNumber(value);
-    }
+    if (type === 'array' && items && nums.has(items.type)) return value.map(asNumber);
+
+    if (type === 'boolean') return value === 'true';
+
+    if (type === 'number') return asNumber(value);
+
     if (schema.enum) {
-        if (schema.enum.every((x: any) => guessType(x) === 'number')) {
-            return asNumber(value);
-        }
-        if (schema.enum.every((x: any) => guessType(x) === 'boolean')) {
-            return value === 'true';
-        }
+        if (schema.enum.every((x: any) => guessType(x) === 'number')) return asNumber(value);
+
+        if (schema.enum.every((x: any) => guessType(x) === 'boolean')) return value === 'true';
     }
     return value;
 };

@@ -35,7 +35,7 @@ const DashboardItemCard: React.FC<DashboardItemCardProps> = ({ itemDetails, isHo
             }
 
             case DashboardItemType.Table:
-                return <TableCard metaData={itemDetails.metaData} />;
+                return <TableCard metaData={{ ...itemDetails.metaData, _id: itemDetails._id }} />;
 
             case DashboardItemType.Iframe:
                 return <IFrameCard metaData={itemDetails.metaData} />;

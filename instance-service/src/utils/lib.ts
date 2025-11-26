@@ -1,11 +1,10 @@
-import { pipeline } from 'stream';
-import { promisify } from 'util';
+import { Awaited } from '@microservices/shared';
 import isEqual from 'lodash.isequal';
 import isEqualWith from 'lodash.isequalwith';
 import isObject from 'lodash.isobject';
 import pickBy from 'lodash.pickby';
-
-import { Awaited } from '@microservices/shared';
+import { pipeline } from 'stream';
+import { promisify } from 'util';
 
 // eslint-disable-next-line import/prefer-default-export
 export const promisePipe = promisify(pipeline);

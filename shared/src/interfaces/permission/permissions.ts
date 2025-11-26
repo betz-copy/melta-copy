@@ -17,6 +17,7 @@ export type IPermissionsPermission = IBasePermission<PermissionType.permissions>
 export type IProcessesPermission = IBasePermission<PermissionType.processes>;
 export type ITemplatesPermission = IBasePermission<PermissionType.templates>;
 export type IInstancesPermission = IBasePermission<PermissionType.instances, typeof IInstancePermissionOrderedHierarchy>;
+export type IUnitsPermission = IBasePermission<PermissionType.units>;
 
 export type IPermission =
     | IAdminPermission
@@ -24,7 +25,8 @@ export type IPermission =
     | IPermissionsPermission
     | IProcessesPermission
     | ITemplatesPermission
-    | IInstancesPermission;
+    | IInstancesPermission
+    | IUnitsPermission;
 
 export type ICompact<P extends IPermission> = P['metadata'];
 
@@ -35,6 +37,7 @@ export type ISubCompactPermissions = {
     [PermissionType.processes]?: ICompact<IProcessesPermission>;
     [PermissionType.templates]?: ICompact<ITemplatesPermission>;
     [PermissionType.instances]?: ICompact<IInstancesPermission>;
+    [PermissionType.units]?: ICompact<IUnitsPermission>;
 };
 
 // [workspaceId: string]: ISubCompactPermissions

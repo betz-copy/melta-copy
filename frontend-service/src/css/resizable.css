@@ -10,10 +10,10 @@
     background-repeat: no-repeat;
     background-origin: content-box;
     box-sizing: border-box;
-    background-image: url('/icons/arrow-more.svg');
+    background-image: url("/icons/arrow-more.svg");
     background-position: bottom right;
     padding: 0;
-    margin: 0; 
+    margin: 0;
 }
 
 .react-resizable-handle-se {

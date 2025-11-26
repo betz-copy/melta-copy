@@ -9,13 +9,14 @@ import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import React, { memo, useEffect, useState } from 'react';
+import { useQueryClient } from 'react-query';
 import { environment } from '../../../globals';
 import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { useWorkspaceStore } from '../../../stores/workspace';
 import { matchValueAgainstFilter } from '../../../utils/filters';
 import { uiSchemaUtils } from './ utils';
 import './form.css';
+import { IGetUnits } from '../../../interfaces/units';
 import InputAccordion from './InputAccordion';
 import RjsfCheckboxWidget from './RjsfCheckboxWidget';
 import RjsfCommentWidget from './RjsfCommentWidget';
@@ -27,8 +28,8 @@ import RjsfTextWidget from './RjsfStringWidget';
 import RjsfTemplateReferenceWidget from './RjsfTemplateReferenceWidget';
 import RjsfTextAreaWidget from './RjsfTextAreaWidget';
 import RjsfUserArrayWidget from './RjsfUserArrayWidget';
-import RjsfUserWidget from './RjsfUserWidget';
 import RjsfUserAvatarWidget from './RjsfUserAvarWidget';
+import RjsfUserWidget from './RjsfUserWidget';
 
 const { dateRegex } = environment;
 
@@ -40,19 +41,14 @@ export type ErrorMessage<T extends string | LeafError> = {
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
-        if (ajvError.keyword === 'required') {
-            return [ajvError.params.missingProperty, i18next.t('validation.required')];
-        }
+        if (ajvError.keyword === 'required') return [ajvError.params.missingProperty, i18next.t('validation.required')];
 
         const field = ajvError.instancePath.slice(1); // for example: /field1/subfield2
         const schemaOfField = schema.properties[field];
-        if (ajvError.keyword === 'format') {
+        if (ajvError.keyword === 'format')
             return [field, `${i18next.t('validation.mustBeEqualToFormat')}  ${i18next.t(`propertyTypes.${ajvError.params.format}`)}`];
-        }
 
-        if (ajvError.keyword === 'pattern') {
-            return [field, schemaOfField.patternCustomErrorMessage!];
-        }
+        if (ajvError.keyword === 'pattern') return [field, schemaOfField.patternCustomErrorMessage!];
 
         return [field, ajvError.message];
     });
@@ -67,9 +63,7 @@ const convertErrorsToNestedGroups = <T extends ErrorMessage<string> | ErrorSchem
 
     template?.fieldGroups?.forEach((fieldGroup) => {
         fieldGroup.fields.forEach((field) => {
-            if (originalErrors[field]) {
-                finalErrors[fieldGroup.name] = { ...(finalErrors[fieldGroup.name] ?? {}), [field]: originalErrors[field] };
-            }
+            if (originalErrors[field]) finalErrors[fieldGroup.name] = { ...(finalErrors[fieldGroup.name] ?? {}), [field]: originalErrors[field] };
         });
     });
 
@@ -128,6 +122,8 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         'filters',
         'defaultValue',
         'isFilterByCurrentUser',
+        'filterByCurrentUserField',
+        'filterByUnitUserField',
         'isFilterByUserUnit',
         'display',
         'isProfileImage',
@@ -161,9 +157,8 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         if (typeof parsedFilter !== 'object' || parsedFilter === null) return;
 
         const value = data[field];
-        if (!matchValueAgainstFilter({ [field]: value }, parsedFilter)) {
+        if (!matchValueAgainstFilter({ [field]: value }, parsedFilter))
             childTemplateFilterErrors[field] = i18next.t('validation.fieldFilterCondition');
-        }
     });
 
     return { ...formikErrors, ...childTemplateFilterErrors };
@@ -173,13 +168,9 @@ const formikErrorsToRjsfExtraErrorsRec = (
     formikErrors: ErrorMessage<string> | string,
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
 ): ErrorSchema<{}> => {
-    if (typeof formikErrors === 'string') {
-        return { __errors: [formikErrors] };
-    }
+    if (typeof formikErrors === 'string') return { __errors: [formikErrors] };
 
-    if (Array.isArray(formikErrors)) {
-        return formikErrors.map((err) => formikErrorsToRjsfExtraErrorsRec(err, template));
-    }
+    if (Array.isArray(formikErrors)) return formikErrors.map((err) => formikErrorsToRjsfExtraErrorsRec(err, template));
 
     if (typeof formikErrors === 'object' && formikErrors !== null) {
         const newObj: Record<string, any> = {};
@@ -204,10 +195,10 @@ const mergeErrorSchemas = (
     errors1: ErrorSchema<{}>,
     errors2: ErrorSchema<{}>,
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
-) => {
+): ErrorSchema<{}> => {
     const merged = { ...errors1 };
     for (const key in errors2) {
-        if (errors2.hasOwnProperty(key)) {
+        if (Object.hasOwn(errors2, key)) {
             if (!merged[key]) merged[key] = errors2[key];
             else merged[key].__errors = [...new Set([...merged[key].__errors, ...errors2[key].__errors])];
         }
@@ -228,9 +219,7 @@ const getComponent = (
             const { label, disabled, name, value, schema, onChange } = props;
             const [checked, setChecked] = useState(checkboxProps.isFieldChecked(name));
 
-            if (schema.format === 'comment') {
-                return <Component {...props} />;
-            }
+            if (schema.format === 'comment') return <Component {...props} />;
 
             if (checked && schema.type === 'boolean' && (value === null || value === undefined)) onChange(Boolean(value));
 
@@ -251,10 +240,9 @@ const getComponent = (
         return getWrappedComponent;
     }
 
-    const getWrappedComponent: React.FC<WidgetProps> = (props: WidgetProps) => {
-        return <Component {...props} readonly={!props.schema.isEditableByUser && props.readonly} />;
-    };
-
+    const getWrappedComponent: React.FC<WidgetProps> = (props: WidgetProps) => (
+        <Component {...props} readonly={!props.schema.isEditableByUser && props.readonly} />
+    );
     return getWrappedComponent;
 };
 
@@ -282,7 +270,6 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     setValues,
     errors,
     uniqueErrors,
-    touched,
     setFieldTouched,
     isEditMode = false,
     toPrint = false,
@@ -304,16 +291,8 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
         });
     }, [values.template]);
 
-    const rjsfExtraErrors = formikErrorsToRjsfExtraErrors(errors, values.template);
-    const ajvExtraErrorsOnlyTouched: ErrorSchema<{}> = pickBy(rjsfExtraErrors, (_value, key) => {
-        const fieldGroup = values.template?.fieldGroups?.find((group) => group.fields.includes(key));
-        if (fieldGroup) return touched[`${fieldGroup.name}_${key}`];
-        return touched[key];
-    });
+    const rjsfExtraErrors = formikErrorsToRjsfExtraErrors(errors ?? {}, values.template);
     const rjsfExtraUniqueErrors = formikErrorsToRjsfExtraErrors(uniqueErrors ?? {}, values.template);
-
-    const notTouchedUnique: ErrorSchema<{}> = pickBy(rjsfExtraUniqueErrors, (_value, key) => !touched[key]);
-    const mergedErrors: ErrorSchema<{}> = mergeErrorSchemas(ajvExtraErrorsOnlyTouched, notTouchedUnique, values.template);
 
     const Widgets: RegistryWidgetsType = React.useMemo(
         () => ({
@@ -358,23 +337,35 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
 
     schema.properties = { ...schema.properties, ...(schemaWithGroups ?? {}) };
 
-    const workspaceStore = useWorkspaceStore((state) => state.workspace);
+    const queryClient = useQueryClient();
+    const units = queryClient.getQueryData<IGetUnits>('getUnits');
 
     return (
         <JSONSchemaForm
             id="json-schema"
             schema={schema}
-            uiSchema={uiSchemaUtils(schema, values, setValues, isEditMode, toPrint, theme.palette.primary.main, workspaceStore.metadata.unitsArray)}
+            uiSchema={uiSchemaUtils(schema, values, setValues, isEditMode, toPrint, theme.palette.primary.main, units)}
             onChange={({ formData }) => {
                 Object.entries(formData as Record<string, IEntitySingleProperty>).forEach(([key, value]) => {
-                    if (JSON.stringify(value) === JSON.stringify([undefined]) || JSON.stringify(value) === JSON.stringify([null])) {
+                    if (JSON.stringify(value) === JSON.stringify([undefined]) || JSON.stringify(value) === JSON.stringify([null]))
                         formData[key] = undefined;
-                    }
+
                     // if the value is an object without properties, we assume it's a grouped field and flatten it
                     // rjsf library does support grouped fields, but we do not save them as so in the db.
-                    if (value && typeof value === 'object' && !value.properties && schema.properties[key]?.format !== 'location') {
+                    if (
+                        value &&
+                        typeof value === 'object' &&
+                        !value.properties &&
+                        schema.properties[key] &&
+                        schema.properties[key]?.format !== 'location'
+                    ) {
                         for (const [groupedKey, groupedValue] of Object.entries(value)) {
-                            formData[groupedKey] = groupedValue;
+                            if (Array.isArray(groupedValue)) {
+                                const isPlaceHolderArray = groupedValue.length === 1 && (groupedValue[0] === undefined || groupedValue[0] === null);
+
+                                if (!groupedValue.length) formData[groupedKey] = [undefined];
+                                else if (!isPlaceHolderArray) formData[groupedKey] = groupedValue;
+                            } else formData[groupedKey] = groupedValue;
                         }
                     }
                 });
@@ -392,7 +383,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 emptyObjectFields: 'skipEmptyDefaults', // library has for array a default empty array ([]). disable this
             }}
             validator={validator}
-            extraErrors={mergedErrors}
+            extraErrors={mergeErrorSchemas(rjsfExtraErrors, rjsfExtraUniqueErrors, values.template)}
             tagName="div"
             readonly={readonly}
             widgets={Widgets}

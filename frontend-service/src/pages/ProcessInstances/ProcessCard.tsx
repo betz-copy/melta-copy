@@ -10,9 +10,9 @@ import {
     Step,
     StepConnector,
     Stepper,
-    Typography,
     stepConnectorClasses,
     styled,
+    Typography,
     useTheme,
 } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';

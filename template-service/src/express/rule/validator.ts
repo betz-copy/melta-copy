@@ -1,27 +1,27 @@
+import {
+    DefaultController,
+    defaultValidationOptions,
+    IAggregationGroup,
+    IConstant,
+    ICountAggFunction,
+    IEntitySingleProperty,
+    IEntityTemplatePopulated,
+    IFormula,
+    IMongoRelationshipTemplate,
+    IPropertyOfVariable,
+    IRegularFunction,
+    IRelevantTemplates,
+    IRule,
+    ISumAggFunction,
+    IVariable,
+    isConstant,
+} from '@microservices/shared';
 import assert from 'assert';
 import { isValid as isValidDate, parse } from 'date-fns';
 import { Request } from 'express';
+import { flatten } from 'flat';
 import Joi from 'joi';
 import isEqual from 'lodash.isequal';
-import {
-    IEntitySingleProperty,
-    IEntityTemplatePopulated,
-    IMongoRelationshipTemplate,
-    IRelevantTemplates,
-    IRule,
-    IConstant,
-    IPropertyOfVariable,
-    IVariable,
-    isConstant,
-    ICountAggFunction,
-    IRegularFunction,
-    ISumAggFunction,
-    IAggregationGroup,
-    DefaultController,
-    defaultValidationOptions,
-    IFormula,
-} from '@microservices/shared';
-import { flatten } from 'flat';
 import { joiValidate } from '../../utils/joi';
 import EntityTemplateManager from '../entityTemplate/manager';
 import { RelationshipTemplateManager } from '../relationshipTemplate/manager';

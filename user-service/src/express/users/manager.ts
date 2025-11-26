@@ -1,22 +1,23 @@
 /* eslint-disable no-param-reassign */
+
+import { IBaseUser, IRole, ISubCompactPermissions, IUser, IUserAgGridRequest, IUserPopulated, RelatedPermission } from '@microservices/shared';
 import { FilterQuery } from 'mongoose';
-import { ISubCompactPermissions, IBaseUser, IUser, IUserAgGridRequest, RelatedPermission, IUserPopulated, IRole } from '@microservices/shared';
-import UsersModel from './model';
-import PermissionsManager from '../permissions/manager';
 import { typedObjectEntries } from '../../utils';
-import { UserDoesNotExistError } from './errors';
 import { translateAgGridFilterModel, translateAgGridSortModel } from '../../utils/agGrid';
+import PermissionsManager from '../permissions/manager';
 import RolesManager from '../roles/manager';
+import { UserDoesNotExistError } from './errors';
+import UsersModel from './model';
 
 class UsersManager {
     static async getUserById(id: string, workspaceIds?: string[], withPermissions: boolean = true): Promise<IUser | Partial<IUser>> {
         const baseUser = await UsersModel.findById(id).orFail(new UserDoesNotExistError(id)).lean().exec();
-        return withPermissions ? this.baseUserToUser(baseUser, workspaceIds) : baseUser;
+        return withPermissions ? UsersManager.baseUserToUser(baseUser, workspaceIds) : baseUser;
     }
 
     static async getUserByExternalId(id: string, workspaceIds?: string[]): Promise<IUser> {
         const baseUser = await UsersModel.findOne({ kartoffelId: id }).orFail(new UserDoesNotExistError(id)).lean().exec();
-        return this.baseUserToUser(baseUser, workspaceIds);
+        return UsersManager.baseUserToUser(baseUser, workspaceIds);
     }
 
     static async searchBaseUsers(
@@ -25,7 +26,7 @@ class UsersManager {
         workspaceIds: string[] | undefined,
         limit: number,
         step: number,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        ids?: string[],
         { displayName, permissionsManagement, templatesManagement, rulesManagement, processesManagement, ...query }: FilterQuery<IBaseUser> = {},
         { displayName: displayNameSort }: Record<string, number> = {},
     ): Promise<{ users: IBaseUser[]; count: number }> {
@@ -61,6 +62,15 @@ class UsersManager {
             } else query.$or = searchByRelatedIds;
         }
 
+        if (ids?.length) {
+            const idsQuery = [{ _id: { $in: ids } }];
+
+            if (query.$or) {
+                query.$and = [{ $or: query.$or }, { $or: idsQuery }];
+                delete query.$or;
+            } else query.$or = idsQuery;
+        }
+
         const users = await UsersModel.find(query, {}, { limit, skip: step * limit, sort })
             .lean()
             .exec();
@@ -76,19 +86,20 @@ class UsersManager {
         workspaceIds: string[] | undefined,
         limit: number,
         step: number,
+        ids?: string[],
     ): Promise<string[]> {
-        const { users } = await this.searchBaseUsers(search, permissions, workspaceIds, limit, step);
+        const { users } = await UsersManager.searchBaseUsers(search, permissions, workspaceIds, limit, step, ids);
         return users.map(({ _id }) => _id);
     }
 
     static async searchUsers(request: IUserAgGridRequest): Promise<{ users: IUserPopulated[]; count: number }> {
-        const { limit, step, workspaceIds, permissions, filterModel, sortModel, search } = request;
+        const { limit, step, workspaceIds, permissions, filterModel, sortModel, search, ids } = request;
 
         const sort = sortModel ? translateAgGridSortModel(sortModel) : {};
         const query = filterModel ? translateAgGridFilterModel(filterModel) : {};
 
-        const { users, count } = await this.searchBaseUsers(search, permissions, workspaceIds, limit, step, query, sort);
-        const permissionsToUsers = await this.appendPermissionsToUsers(users, true);
+        const { users, count } = await UsersManager.searchBaseUsers(search, permissions, workspaceIds, limit, step, ids, query, sort);
+        const permissionsToUsers = await UsersManager.appendPermissionsToUsers(users, true);
 
         return { users: permissionsToUsers, count };
     }
@@ -100,7 +111,7 @@ class UsersManager {
             await RolesManager.getRoleById(userData.roleIds[0]); // Validate role exists
         else await PermissionsManager.syncCompactPermissions(baseUser._id, RelatedPermission.User, permissions);
 
-        return this.baseUserToUser(baseUser);
+        return UsersManager.baseUserToUser(baseUser);
     }
 
     static async updateUser(id: string, updateData: Partial<IBaseUser>): Promise<IUser> {
@@ -113,7 +124,7 @@ class UsersManager {
 
         const baseUser = await UsersModel.findByIdAndUpdate(id, updateQuery, { new: true }).orFail(new UserDoesNotExistError(id)).lean().exec();
 
-        return this.baseUserToUser(baseUser);
+        return UsersManager.baseUserToUser(baseUser);
     }
 
     static async updateUsersBulk(bulkUpdateData: Record<string, IBaseUser>): Promise<void> {
@@ -139,7 +150,7 @@ class UsersManager {
     }
 
     private static async appendPermissionsToUsers(users: IBaseUser[], populated?: boolean): Promise<IUser[] | IUserPopulated[]> {
-        return Promise.all(users.map((user) => this.baseUserToUser(user, undefined, populated)));
+        return Promise.all(users.map((user) => UsersManager.baseUserToUser(user, undefined, populated)));
     }
 
     static async searchUsersByPermissions(workspaceId: string, search?: string, pagination?: { step: number; limit: number }): Promise<IUser[]> {
@@ -164,7 +175,7 @@ class UsersManager {
 
         const users = await UsersModel.find(query).lean().exec();
 
-        return this.appendPermissionsToUsers(users);
+        return UsersManager.appendPermissionsToUsers(users);
     }
 
     static async deleteUserById(userId: string) {
@@ -174,7 +185,7 @@ class UsersManager {
     static async searchUsersByPermWithCount(workspaceId: string, limit: number, step: number): Promise<{ users: IUser[]; count: number }> {
         const { permissions, count } = await PermissionsManager.getPermissionsByWorkspaceIdWithCount(workspaceId, limit, step);
 
-        const users = await Promise.all(permissions.map(({ relatedId }) => this.getUserById(relatedId)));
+        const users = await Promise.all(permissions.map(({ relatedId }) => UsersManager.getUserById(relatedId)));
 
         return { users: users as IUser[], count };
     }

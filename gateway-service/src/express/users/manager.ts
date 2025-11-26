@@ -1,23 +1,24 @@
 /* eslint-disable no-param-reassign */
-import { menash } from 'menashmq';
 import {
+    BadRequestError,
+    DeepPartial,
+    IBaseRole,
     IBaseUser,
-    IExternalUser,
-    IUser,
-    IUserSearchBody,
-    RecursiveNullable,
     ICompactNullablePermissions,
     ICompactPermissions,
+    IExternalUser,
+    IMongoUnit,
     IPermission,
-    ISubCompactPermissions,
-    BadRequestError,
-    UploadedFile,
     IRole,
-    IBaseRole,
-    DeepPartial,
-    RelatedPermission,
+    ISubCompactPermissions,
+    IUser,
     IUserPopulated,
+    IUserSearchBody,
+    RecursiveNullable,
+    RelatedPermission,
+    UploadedFile,
 } from '@microservices/shared';
+import { menash } from 'menashmq';
 import config from '../../config';
 import Kartoffel from '../../externalServices/kartoffel';
 import { IKartoffelUser, IKartoffelUserDigitalIdentity } from '../../externalServices/kartoffel/interface';
@@ -54,12 +55,12 @@ class UsersManager {
         if (!profilePath) return null;
 
         if (profilePath === 'kartoffelProfile') {
-            return this.getKartoffelUserProfileRequest(user.kartoffelId).catch(() => {
+            return UsersManager.getKartoffelUserProfileRequest(user.kartoffelId).catch(() => {
                 throw new BadRequestError('kartoffel profile not found');
             });
         }
 
-        return this.storageService.downloadProfileFile(profilePath);
+        return UsersManager.storageService.downloadProfileFile(profilePath);
     }
 
     static async searchUserIds(searchBody: IUserSearchBody): Promise<string[]> {
@@ -76,12 +77,12 @@ class UsersManager {
         updatedPermissions: IUser['permissions'],
         roleIds?: string[],
     ): Promise<IUser> {
-        const existingUser = await this.getUserById(userId);
+        const existingUser = await UsersManager.getUserById(userId);
         const prevRole =
             existingUser.roleIds && existingUser.roleIds.length > 0
-                ? await this.getUserRolePerWorkspace(workspaceId, existingUser.roleIds)
+                ? await UsersManager.getUserRolePerWorkspace(workspaceId, existingUser.roleIds)
                 : undefined;
-        const updatedRole = roleIds && roleIds.length > 0 ? await this.getUserRolePerWorkspace(workspaceId, roleIds) : undefined;
+        const updatedRole = roleIds && roleIds.length > 0 ? await UsersManager.getUserRolePerWorkspace(workspaceId, roleIds) : undefined;
 
         if (prevRole && roleIds?.includes(prevRole._id) && updatedRole && roleIds?.includes(updatedRole._id))
             throw new BadRequestError('only one role per workspace to user');
@@ -94,15 +95,11 @@ class UsersManager {
         if (updatedRole === undefined) {
             // adding personal permissions
             const newUser = await UserService.updateUser(userId, { roleIds });
-            const newPermissions = await this.syncUserPermissions(userId, RelatedPermission.User, updatedPermissions);
+            const newPermissions = await UsersManager.syncUserPermissions(userId, RelatedPermission.User, updatedPermissions);
             return { ...newUser, permissions: newPermissions };
         }
 
         return UserService.updateUser(userId, { roleIds: updatedRoleIds });
-    }
-
-    static async updateUserUnits(userId: string, units: IUser['units']): Promise<IUser> {
-        return UserService.updateUser(userId, { units } as Partial<IBaseUser>);
     }
 
     private static validateDigitalIdentity(
@@ -117,18 +114,12 @@ class UsersManager {
         }
     }
 
-    static async createUser(
-        kartoffelId: string,
-        permissions: ICompactPermissions,
-        workspaceId: string,
-        roleIds?: string[],
-        units?: IUser['units'],
-    ): Promise<IUser> {
+    static async createUser(kartoffelId: string, permissions: ICompactPermissions, workspaceId: string, roleIds?: string[]): Promise<IUser> {
         const existingUser = await UserService.getUserByExternalId(kartoffelId).catch(() => {});
 
-        if (existingUser) return this.updateUserRoleIds(existingUser._id, workspaceId, permissions, roleIds);
+        if (existingUser) return UsersManager.updateUserRoleIds(existingUser._id, workspaceId, permissions, roleIds);
 
-        const { _id, displayName: _displayName, preferences, ...digitalIdentity } = await this.getExternalUser(kartoffelId);
+        const { _id, displayName: _displayName, preferences, ...digitalIdentity } = await UsersManager.getExternalUser(kartoffelId);
 
         UsersManager.validateDigitalIdentity(kartoffelId, digitalIdentity);
 
@@ -138,7 +129,6 @@ class UsersManager {
             kartoffelId,
             preferences,
             roleIds,
-            units,
         });
     }
 
@@ -161,7 +151,7 @@ class UsersManager {
 
         if (file) {
             await deleteCurrentProfileFile();
-            const newProfilePath = await this.storageService.uploadFile(file);
+            const newProfilePath = await UsersManager.storageService.uploadFile(file);
             updates.profilePath = newProfilePath;
         } else if (currentProfilePath && (!preferences.profilePath || preferences.profilePath !== currentProfilePath)) {
             await deleteCurrentProfileFile();
@@ -195,7 +185,7 @@ class UsersManager {
             permissions: _permissions,
             preferences: _preferences,
             ...digitalIdentity
-        } = await this.getExternalUser(user.kartoffelId);
+        } = await UsersManager.getExternalUser(user.kartoffelId);
 
         UsersManager.validateDigitalIdentity(user.kartoffelId, digitalIdentity);
         if (objectContains(user, digitalIdentity)) return user;
@@ -208,14 +198,32 @@ class UsersManager {
 
         if (isKartoffelUser) return kartoffelUsers;
 
-        const normalizedKartoffelUsers = await Promise.all(kartoffelUsers.flatMap((kartoffelUser) => this.kartoffelUserToUser(kartoffelUser)));
+        const normalizedKartoffelUsers = await Promise.all(
+            kartoffelUsers.flatMap((kartoffelUser) => UsersManager.kartoffelUserToUser(kartoffelUser)),
+        );
         return normalizedKartoffelUsers.flat().filter((normalizedKartoffelUser) => !normalizedKartoffelUser.permissions[workspaceId || '']);
     }
 
-    private static async kartoffelUserToUser(kartoffelUser: IKartoffelUser): Promise<IExternalUser | never[]> {
+    static async getUsersByIdentityCard(
+        identityCards: string[],
+        isKartoffelUser: boolean = false,
+        workspaceId?: string,
+    ): Promise<IExternalUser[] | IKartoffelUser[]> {
+        const kartoffelUsers = await Kartoffel.getUsersByIdentityCards(identityCards);
+
+        if (isKartoffelUser) return kartoffelUsers;
+
+        const normalizedKartoffelUsers = await Promise.all(
+            kartoffelUsers.flatMap((kartoffelUser) => UsersManager.kartoffelUserToUser(kartoffelUser)),
+        );
+
+        return normalizedKartoffelUsers.flat().filter(({ permissions }) => !permissions[workspaceId || '']);
+    }
+
+    static async kartoffelUserToUser(kartoffelUser: IKartoffelUser): Promise<IExternalUser | never[]> {
         if (!kartoffelUser.digitalIdentities?.length) return [];
 
-        return this.kartoffelUserDigitalIdentityToExternalUser(kartoffelUser.digitalIdentities?.[0], kartoffelUser);
+        return UsersManager.kartoffelUserDigitalIdentityToExternalUser(kartoffelUser.digitalIdentities?.[0], kartoffelUser);
     }
 
     private static async getExternalUser(kartoffelId: string): Promise<IExternalUser> {
@@ -224,7 +232,7 @@ class UsersManager {
         const kartoffelDigitalIdentity = kartoffelUser.digitalIdentities?.[0];
         if (!kartoffelDigitalIdentity) throw new ExternalUserNotFound(kartoffelId);
 
-        return this.kartoffelUserDigitalIdentityToExternalUser(kartoffelDigitalIdentity, kartoffelUser);
+        return UsersManager.kartoffelUserDigitalIdentityToExternalUser(kartoffelDigitalIdentity, kartoffelUser);
     }
 
     private static async kartoffelUserDigitalIdentityToExternalUser(
@@ -291,6 +299,25 @@ class UsersManager {
 
     static async getAllWorkspaceRoles(workspaceIds: string[]): Promise<IRole[]> {
         return UserService.getAllWorkspaceRoles(workspaceIds);
+    }
+
+    static getUnitsWithInheritance(units: IMongoUnit[], unitIds: string[]) {
+        const userUnits = new Set(unitIds);
+        const unitsCopy = [...units];
+
+        for (const unitId of userUnits) {
+            // no walrus operator :(
+            while (true) {
+                const childIndex = unitsCopy.findIndex(({ parentId }) => parentId === unitId);
+
+                if (childIndex === -1) break;
+
+                userUnits.add(unitsCopy[childIndex]._id);
+                unitsCopy.splice(childIndex, 1);
+            }
+        }
+
+        return Array.from(userUnits);
     }
 }
 

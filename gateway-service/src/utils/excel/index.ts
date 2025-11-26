@@ -4,9 +4,11 @@ import {
     BadRequestError,
     IBrokenRuleEntity,
     IBrokenRulesError,
-    IEntity,
     IChildTemplatePopulated,
+    IEntity,
+    IExcelNotFoundError,
     IFailedEntity,
+    IFailedEntityError,
     IMongoEntityTemplatePopulated,
     IWorkspace,
     ServiceError,
@@ -24,13 +26,14 @@ export const getAllEntitiesFromExcel = async (
     template: IMongoEntityTemplatePopulated | IChildTemplatePopulated,
     failedEntities: IFailedEntity[],
     workspace: IWorkspace,
+    relatedTemplatesMap: Record<string, IMongoEntityTemplatePopulated>,
 ) => {
     const workspaceFilesLimit = workspace.metadata?.excel?.filesLimit;
 
     const effectiveFilesLimit = workspaceFilesLimit ?? loadExcel.filesLimit;
     if (files.length > effectiveFilesLimit) throw new BadRequestError(`files limit: more than ${effectiveFilesLimit} files`, {});
 
-    return readExcelFile(files, template, failedEntities, workspace.metadata?.excel?.entitiesFileLimit);
+    return readExcelFile(files, template, failedEntities, relatedTemplatesMap, workspace._id, workspace.metadata?.excel?.entitiesFileLimit);
 };
 
 export const generateSerialNumbers = (index: number, serialStarters: Record<string, number>) =>
@@ -45,42 +48,69 @@ export const getSerialStarters = (template: IMongoEntityTemplatePopulated | IChi
         }, {});
 };
 
-export const classifyEntityErrors = (error: any, failedEntities: IFailedEntity[], entity: IEntity, allBrokenRulesEntities: IBrokenRuleEntity[]) => {
+export const classifyEntityErrors = (
+    error: any,
+    failedEntities: IFailedEntity[],
+    entity: IEntity,
+    allBrokenRulesEntities: IBrokenRuleEntity[],
+    originalEntity?: IEntity['properties'],
+) => {
+    const properties = {
+        ...entity.properties,
+        ...(originalEntity || {}),
+    };
+
+    if (error instanceof AggregateError) {
+        const fixedErrors: IFailedEntityError[] = error.errors.map((err) => ({ type: ActionErrors.notFound, metadata: err.metadata }));
+
+        failedEntities.push({
+            properties,
+            errors: fixedErrors,
+        });
+    }
+
+    if (error instanceof ServiceError && error.code === StatusCodes.NOT_FOUND)
+        failedEntities.push({
+            properties,
+            errors: [{ type: ActionErrors.notFound, metadata: error.metadata as IExcelNotFoundError }],
+        });
+
     if (error instanceof AxiosError) {
         if (!error.response) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'no error. response in axiosError', error);
 
         const { data } = error.response;
+
         if (typeof data.StatusCodes === 'string')
             if (data.StatusCodes === 'Neo.ClientError.Schema.ConstraintValidationFailed') {
                 const templateIdMatch = error.message.match(loadExcel.templateIdRegex);
                 const templateId = templateIdMatch ? templateIdMatch[1] : '';
 
                 const propertiesMatch = error.message.match(loadExcel.propertiesRegex);
-                const properties = propertiesMatch ? propertiesMatch[1].replace(/`/g, '').split(', ') : [];
+                const propertiesError = propertiesMatch ? propertiesMatch[1].replace(/`/g, '').split(', ') : [];
 
                 failedEntities.push({
-                    properties: entity.properties,
+                    properties,
                     errors: [
                         {
                             type: ActionErrors.unique,
-                            metadata: { type: ActionErrors.unique, constraintName: '', templateId, properties, uniqueGroupName: '' },
+                            metadata: { type: ActionErrors.unique, constraintName: '', templateId, properties: propertiesError, uniqueGroupName: '' },
                         },
                     ],
                 });
             }
 
-        if (data.metadata && data.metadata.errorCode === errorCodes.failedConstraintsValidation) {
+        if (data.metadata && data.metadata?.errorCode === errorCodes.failedConstraintsValidation) {
             const { constraint } = data.metadata;
             switch (constraint.type) {
                 case ActionErrors.unique:
                     failedEntities.push({
-                        properties: entity.properties,
+                        properties,
                         errors: [{ type: ActionErrors.unique, metadata: constraint }],
                     });
                     break;
                 case ActionErrors.required:
                     failedEntities.push({
-                        properties: entity.properties,
+                        properties,
                         errors: [{ type: ActionErrors.required, metadata: constraint }],
                     });
                     break;
@@ -90,8 +120,8 @@ export const classifyEntityErrors = (error: any, failedEntities: IFailedEntity[]
         }
 
         if (data.type === errorCodes.templateValidationError || data.type === 'FilterValidationError')
-            getValidationErrorEntities(error as AxiosError, failedEntities);
-    } else if ((error as IBrokenRulesError).metadata.errorCode === errorCodes.ruleBlock) {
+            getValidationErrorEntities(error as AxiosError, failedEntities, originalEntity);
+    } else if ((error as IBrokenRulesError).metadata?.errorCode === errorCodes.ruleBlock) {
         allBrokenRulesEntities.push({
             brokenRules: error.metadata.brokenRules,
             rawBrokenRules: error.metadata.rawBrokenRules,
@@ -107,7 +137,11 @@ export const classifyEntityErrors = (error: any, failedEntities: IFailedEntity[]
                     actionMetadata: entity,
                 },
             ],
-            entities: [{ properties: entity.properties }],
+            entities: [
+                {
+                    properties,
+                },
+            ],
         });
     }
 };

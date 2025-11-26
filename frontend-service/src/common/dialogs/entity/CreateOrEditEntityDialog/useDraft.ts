@@ -1,17 +1,16 @@
-import { Dispatch, SetStateAction, useCallback, useMemo } from 'react';
 import { cloneDeep, debounce } from 'lodash';
+import { Dispatch, SetStateAction, useCallback, useMemo } from 'react';
 import { v4 as uuid } from 'uuid';
+import { environment } from '../../../../globals';
+import { IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
+import { IEntity } from '../../../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { useDraftIdStore, useDraftsStore } from '../../../../stores/drafts';
 import { EntityWizardValues } from '..';
-import { environment } from '../../../../globals';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { IEntity } from '../../../../interfaces/entities';
-import { IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
 
 const useDraftEntityDialogHook = (
     entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     setInitialValuePropsToFilter: Dispatch<SetStateAction<object>>,
-    signaturePrefix: string,
     entityToUpdate: IEntity | undefined,
 ) => {
     const drafts = useDraftsStore((state) => state.drafts);
@@ -41,9 +40,7 @@ const useDraftEntityDialogHook = (
             }
 
             const filterProperties = {
-                ...Object.fromEntries(
-                    Object.entries(newValues.properties).filter(([_key, value]) => typeof value === 'string' && !value.startsWith(signaturePrefix)),
-                ),
+                ...newValues.properties,
                 disabled: newValues.properties.disabled ?? false,
             };
 

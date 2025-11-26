@@ -3,6 +3,7 @@ import { mapValues } from 'lodash';
 import axios from '../axios';
 import { EntityWizardValues } from '../common/dialogs/entity';
 import { IUpdateMultipleEntitiesResponse } from '../common/EntitiesPage/MultiSelectStatusBar';
+import { IExternalId } from '../common/EntitiesTableOfTemplate';
 import urlToFile from '../common/fileConversions';
 import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
 import { environment } from '../globals';
@@ -28,6 +29,7 @@ import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
 import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
+import { combineFilters } from '../utils/filters';
 import { locationConverterToString } from '../utils/map/convert';
 import { isChildTemplate } from '../utils/templates';
 
@@ -59,8 +61,6 @@ export const loadEntitiesRequest = async (
             templateId: entity.templateId,
             properties: mapValues(entity.properties, (property, key) => {
                 switch (template.properties.properties[key]?.format) {
-                    case 'relationshipReference':
-                        return property?.properties._id;
                     case 'location': {
                         if (!property) return undefined;
                         const location = JSON.parse(property);
@@ -159,16 +159,16 @@ export const getExpandedEntityByIdRequest = async (
         childTemplateId?: string;
     },
     filterRecord: IGraphFilterBodyBatch = {},
+    childTemplateFilters?: ISearchFilter,
 ) => {
     const filters = filterModelToFilterOfGraph(filterRecord);
-    const batch = (
-        await axios.post<IEntityExpanded>(`${entities}/expanded/${entityId}`, {
-            ...options,
-            expandedParams,
-            filters,
-        })
-    ).data;
-    return batch;
+
+    const { data } = await axios.post<IEntityExpanded>(`${entities}/expanded/${entityId}`, {
+        ...options,
+        expandedParams,
+        filters: combineFilters(filters['filter'], childTemplateFilters),
+    });
+    return data;
 };
 
 export const getRelationshipInstancesCountByTemplateIdRequest = async (templateId: string) => {
@@ -192,9 +192,7 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
                     filesToUpload.push([`${key}`, file]);
                 }
             });
-        } else {
-            filesToUpload.push([`${key}`, value]);
-        }
+        } else filesToUpload.push([`${key}`, value]);
     });
 
     Object.entries(entity.properties).forEach(([key, value]: [string, any]) => {
@@ -244,13 +242,9 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
 
     formData.append('templateId', isChildTemplate(entity.template) ? entity.template.parentTemplate._id : entity.template._id);
 
-    if (isChildTemplate(entity.template)) {
-        formData.append('childTemplateId', entity.template._id);
-    }
+    if (isChildTemplate(entity.template)) formData.append('childTemplateId', entity.template._id);
 
-    if (ignoredRules) {
-        formData.append('ignoredRules', JSON.stringify(ignoredRules));
-    }
+    if (ignoredRules) formData.append('ignoredRules', JSON.stringify(ignoredRules));
 
     const { data } = await axios.post<IEntity>(entities, formData);
     return data;
@@ -507,8 +501,11 @@ export const deleteEntityRequest = async (deleteBody: IDeleteEntityBody) => {
     return data;
 };
 
-export const searchEntitiesOfTemplateRequest = async (templateId: string, searchBody: ISearchEntitiesOfTemplateBody, childTemplateId?: string[]) => {
-    const { data } = await axios.post<ISearchResult>(`${entities}/search/template/${templateId}`, { ...searchBody, childTemplateId });
+export const searchEntitiesOfTemplateRequest = async (
+    templateId: string,
+    searchBody: ISearchEntitiesOfTemplateBody & { childTemplateIds?: string[]; externalId?: IExternalId },
+) => {
+    const { data } = await axios.post<ISearchResult>(`${entities}/search/template/${templateId}`, searchBody);
     return data;
 };
 

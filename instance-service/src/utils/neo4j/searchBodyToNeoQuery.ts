@@ -36,16 +36,16 @@ const convertRhsToRelativeDate = (operator: string, rhs: boolean | string | numb
     const today: Date = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const setToEndOfDay = (date: Date) => {
-        if (isDateTime) date.setHours(23, 59, 59, 999);
-
-        return convertToTimeZone(date);
-    };
-
     const convertToTimeZone = (date: Date) => {
         if (isDateTime) return fromZonedTime(date, timezone);
 
         return date;
+    };
+
+    const setToEndOfDay = (date: Date) => {
+        if (isDateTime) date.setHours(23, 59, 59, 999);
+
+        return convertToTimeZone(date);
     };
 
     switch (rhs) {
@@ -71,6 +71,14 @@ const convertRhsToRelativeDate = (operator: string, rhs: boolean | string | numb
             const lastDay = new Date(today.getFullYear(), 11, 31);
 
             return operator === '$gte' ? convertToTimeZone(firstDay) : setToEndOfDay(lastDay);
+        }
+
+        case 'untilToday': {
+            return setToEndOfDay(today);
+        }
+
+        case 'fromToday': {
+            return convertToTimeZone(today);
         }
 
         default: {
@@ -429,7 +437,7 @@ export const templatesFilterToNeoQuery = (
 };
 
 export const sortToNeo4JSort = (sortModel: ISearchBatchBody['sort']) => {
-    return sortModel.map(({ field, sort }) => `node.${field} ${sort}`).join(',');
+    return sortModel?.map(({ field, sort }) => `node.${field} ${sort}`).join(',');
 };
 
 const buildFullTextSearchQuery = (

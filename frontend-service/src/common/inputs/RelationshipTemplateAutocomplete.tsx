@@ -1,12 +1,12 @@
-import React from 'react';
 import { Autocomplete, AutocompleteChangeDetails, AutocompleteProps, TextField } from '@mui/material';
-import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
-import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
+import React from 'react';
+import { useQueryClient } from 'react-query';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { populateRelationshipTemplate } from '../../utils/templates';
-import { getAllAllowedEntities, getAllAllowedRelationships } from '../../utils/permissions/templatePermissions';
+import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { useUserStore } from '../../stores/user';
+import { getAllAllowedEntities, getAllAllowedRelationships } from '../../utils/permissions/templatePermissions';
+import { populateRelationshipTemplate } from '../../utils/templates';
 
 type PartialByKeys<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 type IMongoRelationshipTemplatePopulatedOption = PartialByKeys<IMongoRelationshipTemplatePopulated, 'sourceEntity' | 'destinationEntity'>;

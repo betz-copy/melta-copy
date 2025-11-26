@@ -1,15 +1,16 @@
 import { Readable } from 'stream';
+import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridSetFilter, IAGGridTextFilter } from '../utils/agGrid/interfaces';
 import { IMongoEntityTemplatePopulated } from './entityTemplates';
-import { IMongoRelationshipTemplate } from './relationshipTemplates';
-import { IRelationship } from './relationships';
-import { ISemanticSearchResult } from './semanticSearch';
 import { IFailedEntity } from './excel';
-import { IBrokenRule } from './ruleBreaches/ruleBreach';
+import { IRelationship } from './relationships';
+import { IMongoRelationshipTemplate } from './relationshipTemplates';
 import { ICreateEntityMetadata } from './ruleBreaches/actionMetadata';
-import { IAGGridTextFilter, IAGGidNumberFilter, IAGGridDateFilter, IAGGridSetFilter } from '../utils/agGrid/interfaces';
+import { IBrokenRule } from './ruleBreaches/ruleBreach';
+import { ISemanticSearchResult } from './semanticSearch';
 
 export interface IEntity {
     templateId: string;
+    childTemplateId?: string;
     properties: {
         _id: string;
         createdAt: string;
@@ -40,10 +41,30 @@ export interface IUniqueConstraint {
 
 export interface IRequiredConstraint {
     type: 'REQUIRED';
+    property: string;
     constraintName: string;
     templateId: string;
-    property: string;
 }
+
+export enum NotFoundErrorTypes {
+    relationshipRefNotFound = 'RELATIONSHIP_REF_NOT_FOUND',
+    userNotFound = 'USER_NOT_FOUND',
+}
+
+export interface IRelationshipRefNotFoundError {
+    type: NotFoundErrorTypes.relationshipRefNotFound;
+    property: string;
+    relatedIdentifier: string;
+    relatedTemplateId: string;
+}
+
+export interface IUsersNotFoundError {
+    type: NotFoundErrorTypes.userNotFound;
+    property: string;
+    attemptedIds: string[];
+}
+
+export type INotFoundError = IRelationshipRefNotFoundError | IUsersNotFoundError;
 
 export type IConstraint = IRequiredConstraint | IUniqueConstraint;
 
@@ -95,7 +116,7 @@ export enum FilterLogicalOperator {
     OR = '$or',
 }
 
-type AndFilter = {
+export type AndFilter = {
     [FilterLogicalOperator.AND]: IFilterOfTemplate | IFilterGroup[];
     [FilterLogicalOperator.OR]?: never;
 };
@@ -208,7 +229,7 @@ export interface IExportEntitiesBody {
 export interface IGraphFilterBody {
     selectedTemplate: IMongoEntityTemplatePopulated;
     selectedProperty?: string;
-    filterField?: IAGGridTextFilter | IAGGidNumberFilter | IAGGridDateFilter | IAGGridSetFilter;
+    filterField?: IAGGridTextFilter | IAGGridNumberFilter | IAGGridDateFilter | IAGGridSetFilter;
 }
 
 export interface IGraphFilterBodyBatch {
@@ -235,7 +256,7 @@ export type IMultipleSelect<T extends boolean = boolean> = {
 
 export type IDeleteEntityBody<T extends boolean = boolean> = IDeleteEntityBodyBase & IMultipleSelect<T>;
 
-export type EntityData = IEntity | IFailedEntity;
+export type EntityData = IEntity | IFailedEntity | IConnection;
 
 export interface IEntityWithIgnoredRules extends ICreateEntityMetadata {
     ignoredRules: IBrokenRule[];

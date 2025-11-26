@@ -1,18 +1,19 @@
-import { Autocomplete, AutocompleteProps, Chip, TextField } from '@mui/material';
 import { Clear } from '@mui/icons-material';
+import { Autocomplete, AutocompleteProps, Chip, TextField } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
+import { IMongoUnit } from '../../interfaces/units';
 import { useDarkModeStore } from '../../stores/darkMode';
+import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 
 export interface IUnitAutocomplete {
-    value?: string[];
-    options?: string[];
+    value?: IMongoUnit[];
+    options?: IMongoUnit[];
     isLoading: boolean;
-    onChange: AutocompleteProps<string, true, false, false>['onChange'];
+    onChange: AutocompleteProps<IMongoUnit, true, false, false>['onChange'];
     onBlur?: (event: React.FocusEvent) => void;
     onFocus?: (event: React.FocusEvent) => void;
-    isOptionDisabled?: AutocompleteProps<string, true, false, false>['getOptionDisabled'];
+    isOptionDisabled?: AutocompleteProps<IMongoUnit, true, false, false>['getOptionDisabled'];
     disabled?: boolean;
     readOnly?: boolean;
     label?: string;
@@ -49,47 +50,51 @@ const UnitAutocomplete: React.FC<IUnitAutocomplete> = ({
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return (
-        <MeltaTooltip title={value?.join(', ') ?? ''} sx={{ maxWidth: 'none' }}>
+        <MeltaTooltip title={value?.map(({ name }) => name).join(', ') ?? ''} sx={{ maxWidth: 'none' }}>
             <Autocomplete
                 multiple
                 value={value}
-                onChange={(_e, newValue, reason) => {
-                    const uniqueValues = Array.from(new Set(newValue.map((val) => val.trim())));
-                    onChange?.(_e, reason === 'clear' ? [] : uniqueValues, reason);
-                }}
+                onChange={(_e, newValue, reason) => onChange?.(_e, reason === 'clear' ? [] : newValue, reason)}
                 disabled={disabled}
-                getOptionLabel={(option) => option}
+                getOptionLabel={({ name }) => name}
                 getOptionDisabled={isOptionDisabled}
-                isOptionEqualToValue={(option, currentValue) => option === currentValue}
+                isOptionEqualToValue={(option, currentValue) => option._id === currentValue._id}
                 options={options}
                 loading={isLoading}
                 loadingText={i18next.t('unitAutocomplete.loading')}
                 noOptionsText={i18next.t('unitAutocomplete.noOptions')}
-                renderValue={(selected, getTagProps) =>
-                    selected.map((option, index) => (
-                        <Chip
-                            {...getTagProps({ index })}
-                            key={option}
-                            label={option}
-                            deleteIcon={<Clear sx={{ color: darkMode ? '#EBEFFA' : '#9398C2', fontSize: 16 }} />}
-                            sx={{
-                                fontFamily: 'Rubik, sans-serif',
-                                fontWeight: 400,
-                                fontSize: '14px',
-                                borderRadius: '10px',
-                                padding: '12px 4px',
-                                backgroundColor: darkMode ? '#53566E' : '#EBEFFA',
-                                color: darkMode ? '#EBEFFA' : '#53566E',
-                                '& .MuiChip-deleteIcon': {
-                                    color: darkMode ? '#EBEFFA' : '#9398C2',
-                                },
-                                height: '22px',
-                                minWidth: '74px',
-                            }}
-                            variant="outlined"
-                        />
-                    ))
-                }
+                renderValue={(selected, getTagProps) => (
+                    <div
+                        style={{
+                            maxHeight: '100px',
+                            overflowY: 'auto',
+                        }}
+                    >
+                        {selected.map(({ _id, name }, index) => (
+                            <Chip
+                                {...getTagProps({ index })}
+                                key={_id}
+                                label={name}
+                                deleteIcon={<Clear sx={{ color: darkMode ? '#EBEFFA' : '#9398C2', fontSize: 16 }} />}
+                                sx={{
+                                    fontFamily: 'Rubik, sans-serif',
+                                    fontWeight: 400,
+                                    fontSize: '14px',
+                                    borderRadius: '10px',
+                                    padding: '12px 4px',
+                                    backgroundColor: darkMode ? '#53566E' : '#EBEFFA',
+                                    color: darkMode ? '#EBEFFA' : '#53566E',
+                                    '& .MuiChip-deleteIcon': {
+                                        color: darkMode ? '#EBEFFA' : '#9398C2',
+                                    },
+                                    height: '22px',
+                                    minWidth: '74px',
+                                }}
+                                variant="outlined"
+                            />
+                        ))}
+                    </div>
+                )}
                 renderInput={(params) => (
                     <TextField
                         {...params}

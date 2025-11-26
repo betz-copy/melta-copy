@@ -1,4 +1,4 @@
-import { NavigateBefore, Close } from '@mui/icons-material';
+import { Close, NavigateBefore } from '@mui/icons-material';
 import { Box, Dialog, Divider, Fab, Grid, IconButton, Step, StepLabel, Stepper } from '@mui/material';
 import { AxiosError } from 'axios';
 import { FormikProvider } from 'formik';
@@ -38,6 +38,7 @@ const steps = [
 
 const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, processInstance, viewMode = false, isEditMode = false, mutateAsync }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
+    const isNextStepPressed = useRef(false);
 
     const queryClient = useQueryClient();
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
@@ -51,6 +52,7 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
     const { details } = template || {};
 
     const handleNext = useCallback(() => {
+        isNextStepPressed.current = true;
         const currentTouched: Record<string, any> = getAllFieldsTouched(detailsFormikData.values);
 
         const templateFileProperties = template
@@ -179,7 +181,7 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
                                 viewMode={viewMode}
                                 variant={variant}
                                 touched={touched}
-                                errors={errors}
+                                errors={isNextStepPressed.current ? errors : {}}
                                 handleBlur={handleBlur}
                                 setFieldTouched={setFieldTouched}
                             />
@@ -207,7 +209,7 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
                                         toPrint={false}
                                         values={values}
                                         viewMode={viewMode}
-                                        errors={errors}
+                                        errors={isNextStepPressed.current ? errors : {}}
                                         touched={touched}
                                         setFieldValue={setFieldValue}
                                         setFieldTouched={setFieldTouched}

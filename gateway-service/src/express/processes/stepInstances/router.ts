@@ -1,8 +1,8 @@
-import { Router } from 'express';
 import { createController, ValidateRequest } from '@microservices/shared';
+import { Router } from 'express';
+import busboyMiddleware from '../../../utils/busboy/busboyMiddleware';
 import StepInstanceController from './controller';
 import { updateStepSchema } from './validator.schema';
-import busboyMiddleware from '../../../utils/busboy/busboyMiddleware';
 
 const StepInstanceRouter: Router = Router({ mergeParams: true });
 

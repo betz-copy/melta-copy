@@ -1,4 +1,3 @@
-import React from 'react';
 import linkifyHtml from 'linkify-html';
 
 const splitValueToLines = (value: string) => {

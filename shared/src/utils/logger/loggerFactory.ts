@@ -1,5 +1,5 @@
 import 'winston-daily-rotate-file';
-import { Logform, createLogger, Logger, transport, transports } from 'winston';
+import { createLogger, Logform, Logger, transport, transports } from 'winston';
 
 import config from '../../config';
 

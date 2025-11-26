@@ -1,8 +1,8 @@
 import axios from 'axios';
 import 'elastic-apm-node/start';
-import menash from 'menashmq';
 
 import { logger } from '@microservices/shared';
+import menash from 'menashmq';
 import config from './config';
 import updateIndexConsumeFunction from './search/consumer';
 import Neo4jClient from './utils/neo4j/neo4j';

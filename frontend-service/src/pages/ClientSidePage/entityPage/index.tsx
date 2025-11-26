@@ -12,7 +12,8 @@ import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { getClientSideExpandedEntityByIdRequest } from '../../../services/clientSideService';
 import { populateRelationshipTemplate } from '../../../utils/templates';
-import { ConnectionsTable, INestedRelationshipTemplates } from '../../Entity';
+import { INestedRelationshipTemplates } from '../../Entity';
+import { ConnectionsTable } from '../../Entity/ConnectionsTable';
 import { EntityDetails } from '../../Entity/components/EntityDetails';
 import { RelationshipIcon } from '../../Entity/RelationshipIcon';
 
@@ -104,9 +105,9 @@ const ClientSideEntityPage: React.FC = () => {
                     return false;
 
                 if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id)
-                    return entityTemplates.get(connection.sourceEntity.templateId)!.category._id === category._id;
+                    return entityTemplates.get(connection.sourceEntity.templateId)?.category._id === category._id;
 
-                return entityTemplates.get(connection.destinationEntity.templateId)!.category._id === category._id;
+                return entityTemplates.get(connection.destinationEntity.templateId)?.category._id === category._id;
             }).length,
         };
     })

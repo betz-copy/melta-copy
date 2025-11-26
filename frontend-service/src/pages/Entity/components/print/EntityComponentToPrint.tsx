@@ -1,12 +1,12 @@
 import { Box, SxProps, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import { INestedRelationshipTemplates } from '../..';
 import { EntityPropertiesInternal } from '../../../../common/EntityProperties';
 import BlueTitle from '../../../../common/MeltaDesigns/BlueTitle';
 import { IConnection, IEntity } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplatePopulated } from '../../../../interfaces/relationshipTemplates';
+import { INestedRelationshipTemplates } from '../..';
 import { EntityDates } from '../EntityDates';
 import { EntityDisableCheckbox } from '../EntityDisableCheckbox';
 import { renderConnectionTree } from './ComponentToPrint';

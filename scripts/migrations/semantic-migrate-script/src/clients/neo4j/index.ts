@@ -1,6 +1,6 @@
 import { Driver, Session } from 'neo4j-driver';
-import { IEntity, normalizeReturnedEntity } from '../../utils/neo4j';
 import config from '../../config';
+import { IEntity, normalizeReturnedEntity } from '../../utils/neo4j';
 
 const {
     neo4j: { workspaceNamePrefix },

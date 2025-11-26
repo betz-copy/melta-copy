@@ -2,14 +2,14 @@
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-restricted-syntax */
+
+import { Express } from 'express';
+import { StatusCodes } from 'http-status-codes';
 import mongoose from 'mongoose';
 import * as request from 'supertest';
-import { Express } from 'express';
-
-import { StatusCodes } from 'http-status-codes';
 import config from '../src/config';
-import Server from '../src/express/server';
 import { INotification, NotificationType } from '../src/express/notifications/interface';
+import Server from '../src/express/server';
 import { ProcessStatus } from '../src/utils/interfaces/processes';
 
 const { mongo } = config;

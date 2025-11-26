@@ -1,10 +1,9 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useRef, useState } from 'react';
 import { Box, Grid } from '@mui/material';
+import React, { useEffect, useRef, useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
-import FlexBox from '../FlexBox';
 import { IFile } from '../../interfaces/preview';
 import { useFilePreview } from '../../utils/hooks/useFilePreview';
+import FlexBox from '../FlexBox';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 

@@ -1,40 +1,28 @@
 import { Card, Grid, Typography, useTheme } from '@mui/material';
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useQueryClient } from 'react-query';
-import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../../../common/EntitiesTableOfTemplate';
+import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef, ExternalIdType } from '../../../../common/EntitiesTableOfTemplate';
 import { StepComponentProps } from '../../../../common/wizards';
 import { TableForm } from '../../../../interfaces/dashboard';
 import { IEntity } from '../../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { useWorkspaceStore } from '../../../../stores/workspace';
-import { getDefaultFilterFromTemplate } from '../../../../common/EntitiesPage/TemplateTablesView';
-import { getRelevantEntityTemplate } from '../Chart/BodyComponent';
 import { useDebouncedFilter } from '../../../../utils/dashboard/useDebouncedFilter';
-import { getFilterModal } from '../../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
-import { isChildTemplate } from '../../../../utils/templates';
-import { useUserStore } from '../../../../stores/user';
+import { getRelevantEntityTemplate } from '../Chart/BodyComponent';
 
-const BodyComponent: React.FC<StepComponentProps<TableForm>> = ({ values }) => {
+const BodyComponent: React.FC<StepComponentProps<TableForm & { _id?: string }>> = ({ values, dirty }) => {
     const theme = useTheme();
     const queryClient = useQueryClient();
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const entitiesTableRef = React.useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
 
-    const currentUser = useUserStore((state) => state.user);
-    const currentUserKartoffelId = currentUser?.kartoffelId;
-
-    const { metadata } = useWorkspaceStore((state) => state.workspace);
-    const { defaultRowHeight, defaultFontSize } = metadata.agGrid;
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
 
     const template = getRelevantEntityTemplate(entityTemplates, values.templateId, values.childTemplateId);
 
-    const childTemplateDefaultFilters = useMemo(
-        () => getDefaultFilterFromTemplate(template, isChildTemplate(template), currentUserKartoffelId),
-        [values.templateId, values.childTemplateId, currentUserKartoffelId],
-    );
     const memoizedFilter = useDebouncedFilter(values, queryClient, 500);
-    const allFilters = useMemo(() => getFilterModal(memoizedFilter, childTemplateDefaultFilters), [memoizedFilter, childTemplateDefaultFilters]);
 
     return (
         <Grid container width="100%" height="70%" alignItems="center" justifyContent="center" paddingTop="20px">
@@ -69,9 +57,10 @@ const BodyComponent: React.FC<StepComponentProps<TableForm>> = ({ values }) => {
                         }}
                         showNavigateToRowButton={false}
                         editable={false}
-                        defaultFilter={allFilters}
+                        defaultFilter={dirty ? memoizedFilter : undefined}
                         disableFilter
                         columnsToShow={values.columns}
+                        externalId={values._id ? { id: values._id, type: ExternalIdType.dashboard } : undefined}
                     />
                 </Card>
             )}

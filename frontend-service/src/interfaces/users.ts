@@ -17,12 +17,13 @@ export interface IBaseUser {
     };
     kartoffelId: string;
     userType?: string;
+    units?: Record<string, string[]>;
 }
 export interface IUser extends IBaseUser {
     permissions: ICompactPermissions;
+    currentUnits: string[];
     roleIds?: string[];
     displayName: string; // custom displayName, not of kartoffel: `${fullName} - ${hierarchy}/${jobTitle}`
-    units?: Record<string, string[]>;
     isRoot?: boolean;
 }
 

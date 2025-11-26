@@ -1,6 +1,6 @@
+import axios from 'axios';
 import * as express from 'express';
 import { StatusCodes } from 'http-status-codes';
-import axios from 'axios';
 import logger from '../logger/logsLogger';
 
 export class ServiceError extends Error {

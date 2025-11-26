@@ -1,15 +1,14 @@
 import { Add } from '@mui/icons-material';
 import { Button, Divider, FormHelperText, Grid } from '@mui/material';
 import i18next from 'i18next';
-import React from 'react';
 import { useQueryClient } from 'react-query';
 import { SelectCheckbox } from '../../../common/SelectCheckBox';
 import { StepComponentProps } from '../../../common/wizards';
 import { IAGGridFilter, IFilterTemplate } from '../../../common/wizards/entityTemplate/commonInterfaces';
 import { ChartForm, TableForm, ViewMode } from '../../../interfaces/dashboard';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import FilterCompetent from './FilterCompetent';
 import { getRelevantEntityTemplate } from '../../Dashboard/DashboardItemDetails/Chart/BodyComponent';
+import FilterCompetent from './FilterCompetent';
 
 const FilterSideBar = <T extends TableForm | ChartForm>(
     props: StepComponentProps<T> & {

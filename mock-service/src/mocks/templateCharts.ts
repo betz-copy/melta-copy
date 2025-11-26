@@ -1,5 +1,5 @@
 /* eslint-disable import/prefer-default-export */
-import { IAggregationType, IChart, IChartType, IColumnOrLineMetaData, INUmberMetaData, IChartPermission, IPieMetaData } from '@microservices/shared';
+import { IAggregationType, IChart, IChartPermission, IChartType, IColumnOrLineMetaData, INUmberMetaData, IPieMetaData } from '@microservices/shared';
 
 export const chartsCreator = (
     travelAgentId: string,

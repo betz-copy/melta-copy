@@ -1,7 +1,7 @@
-import React from 'react';
 import { Search as SearchIcon } from '@mui/icons-material';
-import { TextField, InputAdornment, Divider, Grid, useTheme } from '@mui/material';
+import { Divider, Grid, InputAdornment, TextField, useTheme } from '@mui/material';
 import i18next from 'i18next';
+import React from 'react';
 import { useDarkModeStore } from '../../stores/darkMode';
 
 export const Search: React.FC<{ value: string; onChange: (value: string) => void; toTopBar?: boolean; templatesSelectGrid?: boolean }> = ({

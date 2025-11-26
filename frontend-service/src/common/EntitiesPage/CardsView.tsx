@@ -1,6 +1,6 @@
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
-import React, { forwardRef, useImperativeHandle, useState } from 'react';
+import { forwardRef, useImperativeHandle, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
@@ -11,12 +11,13 @@ import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import EntityCard from '../../pages/GlobalSearch/components/entityCard';
 import { getEntitiesWithDirectConnections } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { convertToBool } from '../../utils/convertStringToBool';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
+import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
 import { isChildTemplate } from '../../utils/templates';
 import { InfiniteScroll } from '../InfiniteScroll';
 import { getDefaultFilterFromTemplate } from './TemplateTablesView';
-import { useWorkspaceStore } from '../../stores/workspace';
 
 const { infiniteScrollPageCount } = environment.entitiesCardsView;
 
@@ -41,9 +42,9 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
     useImperativeHandle(ref, () => ({ refetch }));
 
     const currentUser = useUserStore((state) => state.user);
-    const currentWorkspace = useWorkspaceStore((state) => state.workspace);
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const currentUserKartoffelId = currentUser?.kartoffelId;
-    const currentUserUnit = currentUser?.units?.[currentWorkspace._id] ?? [];
 
     return (
         <Grid container direction="column" spacing={4}>
@@ -67,10 +68,10 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                             const childTemplates = templates.filter(isChildTemplate);
                             const parentTemplates = templates.filter((template) => !isChildTemplate(template));
 
-                            let entities: (IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string] })[] = [];
+                            const entities: (IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string] })[] = [];
                             let count = 0;
 
-                            if (parentTemplates.length > 0) {
+                            if (parentTemplates.length) {
                                 const result = await getEntitiesWithDirectConnections({
                                     skip: startRow,
                                     limit: infiniteScrollPageCount,
@@ -84,7 +85,13 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                             }
 
                             for (const template of childTemplates) {
-                                const filter = getDefaultFilterFromTemplate(template, true, currentUserKartoffelId, currentUserUnit);
+                                const filter = getDefaultFilterFromTemplate(
+                                    template,
+                                    true,
+                                    currentUserKartoffelId,
+                                    currentUser.currentUnits,
+                                    isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
+                                );
 
                                 const result = await getEntitiesWithDirectConnections({
                                     skip: startRow,
@@ -129,7 +136,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                     >
                         {({ entity, minioFileIdsWithTexts, childTemplateId }) => {
                             const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
-                            const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildEntityTemplates')!;
+                            const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 
                             const entityTemplate = entityTemplates?.get(entity.templateId)!;
                             const childEntityTemplate = childTemplateId ? childTemplates?.get(childTemplateId)! : undefined;

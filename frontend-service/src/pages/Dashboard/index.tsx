@@ -16,10 +16,10 @@ import { useWorkspaceStore } from '../../stores/workspace';
 import { generateLayoutDetails } from '../../utils/charts/defaultChartSizes';
 import { LocalStorage } from '../../utils/localStorage';
 import { AddDashboardItem } from './AddDashboardItem';
+import { ConfirmDeleteDashboardItem, ConfirmEditCommonItem } from './Dialogs';
 import { DashboardHeader } from './dashboardPage/DashboardHeader';
 import DashboardItemCard from './dashboardPage/DashboardItemCard';
 import NoItemsCard from './dashboardPage/NoItemsCard';
-import { ConfirmDeleteDashboardItem, ConfirmEditCommonItem } from './Dialogs';
 
 const { dashboardOrderKey, chartPath, iFramePath, tablePath } = environment.dashboard;
 

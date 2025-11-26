@@ -1,8 +1,8 @@
 import { ActionOnFail, IBrokenRule, IMongoRule } from '@microservices/shared';
 import pLimit from 'p-limit';
-import { getNeo4jDateTime, normalizeReturnedEntity, runInTransactionAndNormalize } from '../../utils/neo4j/lib';
-import Neo4jClient from '../../utils/neo4j';
 import config from '../../config';
+import Neo4jClient from '../../utils/neo4j';
+import { getNeo4jDateTime, normalizeReturnedEntity, runInTransactionAndNormalize } from '../../utils/neo4j/lib';
 
 const {
     neo4j: { colorPropertySuffix, updateColorsForRulesWithTodayFuncParallelLimit },

@@ -1,39 +1,41 @@
+import { ValidateRequest, wrapController } from '@microservices/shared';
 import { Router } from 'express';
-import { createProxyMiddleware } from 'http-proxy-middleware';
-import { wrapController, ValidateRequest } from '@microservices/shared';
-import UsersController from './controller';
+import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import config from '../../config';
-import {
-    createUserRequestSchema,
-    deletePermissionsFromMetadataRequestSchema,
-    getUserProfileRequestSchema,
-    getMyUserRequestSchema,
-    getUserByIdRequestSchema,
-    searchExternalUsersRequestSchema,
-    searchUsersByPermissionsSchema,
-    searchUsersRequestSchema,
-    updateUserPreferencesMetadataRequestSchema,
-    getKartoffelUserProfileRequestSchema,
-    getKartoffelUserByIdSchema,
-    getRoleByIdRequestSchema,
-    searchRolesRequestSchema,
-    createRoleRequestSchema,
-    updateRoleRequestSchema,
-    searchRolesByPermissionsSchema,
-    syncPermissionsRequestSchema,
-    updateUserRoleIdsRequestSchema,
-    userRoleWorkspaceRequestSchema,
-    getAllWorkspaceRolesSchema,
-    updateUserUnitsRequestSchema,
-} from './validator.schema';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
+import UsersController from './controller';
+import {
+    createRoleRequestSchema,
+    createUserRequestSchema,
+    deletePermissionsFromMetadataRequestSchema,
+    getAllWorkspaceRolesSchema,
+    getKartoffelUserByIdSchema,
+    getKartoffelUserProfileRequestSchema,
+    getMyUserRequestSchema,
+    getRoleByIdRequestSchema,
+    getUserByIdRequestSchema,
+    getUserProfileRequestSchema,
+    searchExternalUsersRequestSchema,
+    searchRolesByPermissionsSchema,
+    searchRolesRequestSchema,
+    searchUsersByPermissionsSchema,
+    searchUsersRequestSchema,
+    syncPermissionsRequestSchema,
+    updateRoleRequestSchema,
+    updateUserPreferencesMetadataRequestSchema,
+    updateUserRoleIdsRequestSchema,
+    userRoleWorkspaceRequestSchema,
+} from './validator.schema';
 
 const { userService } = config;
 
 const UserManagerProxy = createProxyMiddleware({
     target: `${userService.url}${userService.usersRoute}`,
     changeOrigin: true,
+    on: {
+        proxyReq: fixRequestBody,
+    },
     proxyTimeout: userService.requestTimeout,
 });
 
@@ -65,8 +67,6 @@ usersRouter.patch(
     ValidateRequest(updateUserRoleIdsRequestSchema),
     wrapController(UsersController.updateUserRoleIds),
 );
-
-usersRouter.patch('/:userId/units', ValidateRequest(updateUserUnitsRequestSchema), wrapController(UsersController.updateUserUnits));
 
 usersRouter.post(
     '/',
@@ -127,5 +127,7 @@ usersRouter.post(
 usersRouter.post('/roles/workspaces', ValidateRequest(getAllWorkspaceRolesSchema), wrapController(UsersController.getAllWorkspaceRoles));
 
 usersRouter.get('/roles/search/:workspaceId', ValidateRequest(searchRolesByPermissionsSchema), UserManagerProxy);
+
+usersRouter.patch('/:userId', AuthorizerControllerMiddleware.userCanWritePermissions, UserManagerProxy);
 
 export default usersRouter;

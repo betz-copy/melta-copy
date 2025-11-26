@@ -1,11 +1,11 @@
 import {
+    ActionTypes,
+    IActionMetadata,
+    IAgGridRequest,
+    IBrokenRule,
     IRuleBreachAlert,
     IRuleBreachRequest,
     RuleBreachRequestStatus,
-    ActionTypes,
-    IActionMetadata,
-    IBrokenRule,
-    IAgGridRequest,
 } from '@microservices/shared';
 import config from '../../config';
 import { IAgGridResult } from '../../utils/agGrid/interface';

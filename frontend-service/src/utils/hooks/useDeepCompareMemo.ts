@@ -1,5 +1,5 @@
-import { useRef, useMemo } from 'react';
 import { isEqual } from 'lodash';
+import { useMemo, useRef } from 'react';
 
 const useDeepCompareMemo = (value: () => any, dependencies: any[]) => {
     const ref = useRef(dependencies);

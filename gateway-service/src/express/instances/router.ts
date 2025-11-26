@@ -1,30 +1,32 @@
+import { createController, ValidateRequest } from '@microservices/shared';
 import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
-import { createController, ValidateRequest } from '@microservices/shared';
 import config from '../../config';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
+import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 import InstancesController from './controller';
 import InstancesValidator from './middlewares';
 import {
+    chartSchema,
     createEntityInstanceSchema,
     createRelationshipSchema,
     deleteEntityInstancesSchema,
     deleteRelationshipSchema,
+    editManyEntitiesByExcelSchema,
     exportEntitiesSchema,
     exportEntityToDocumentSchema,
     exportEntityToDocumentSchemaByEntityId,
-    searchEntitiesBatchRequestSchema,
+    getChangedEntitiesFromExcelSchema,
     getEntitiesCountByTemplates,
-    searchEntitiesByTemplatesSchema,
+    loadEntitiesSchema,
+    searchEntitiesBatchRequestSchema,
     searchEntitiesByLocationRequestSchema,
+    searchEntitiesByTemplatesSchema,
+    searchEntitiesOfTemplateSchema,
     updateEntityInstanceSchema,
     updateEntityStatusSchema,
-    loadEntitiesSchema,
-    editManyEntitiesByExcelSchema,
     updateMultipleEntitiesSchema,
-    getChangedEntitiesFromExcelSchema,
 } from './validator.schema';
-import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 
 const { instanceService } = config;
 
@@ -59,10 +61,17 @@ InstancesRouter.post(
 
 InstancesRouter.post(
     '/entities/search/template/:templateId',
+    ValidateRequest(searchEntitiesOfTemplateSchema),
     InstancesValidatorMiddleware.validateUserCanSearchEntitiesOfTemplate,
     InstancesControllerMiddleware.searchEntitiesOfTemplate,
 );
-InstancesRouter.post('/entities/chart/:templateId', InstancesValidatorMiddleware.validateUserCanGetChart, InstanceManagerProxy);
+
+InstancesRouter.post(
+    '/entities/chart/:templateId',
+    ValidateRequest(chartSchema),
+    InstancesValidatorMiddleware.validateUserCanGetChart,
+    InstancesControllerMiddleware.getChartOfTemplate,
+);
 
 InstancesRouter.post(
     '/entities/count',
@@ -90,6 +99,7 @@ InstancesRouter.post(
     busboyMiddleware,
     ValidateRequest(loadEntitiesSchema),
     InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
+    InstancesValidatorMiddleware.validateUserCanLoadExcel,
     InstancesControllerMiddleware.loadEntities,
 );
 
@@ -119,6 +129,7 @@ InstancesRouter.put(
 );
 
 InstancesRouter.get('/entities/:id', InstancesValidatorMiddleware.validateUserCanReadEntityInstance, InstanceManagerProxy);
+
 InstancesRouter.get('/entities/constraints/:templateId', AuthorizerControllerMiddleware.userCanReadTemplates, InstanceManagerProxy);
 
 InstancesRouter.post(
@@ -133,29 +144,36 @@ InstancesRouter.post(
     busboyMiddleware,
     ValidateRequest(createEntityInstanceSchema),
     InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
+    InstancesValidatorMiddleware.validateEntityProperties,
     InstancesControllerMiddleware.createEntityInstance,
 );
+
 InstancesRouter.put(
     '/entities/:id',
     busboyMiddleware,
     ValidateRequest(updateEntityInstanceSchema),
     InstancesValidatorMiddleware.validateUserCanWriteEntityInstance,
     InstancesValidatorMiddleware.validateUserCanIgnoreRules,
+    InstancesValidatorMiddleware.validateEntityProperties,
     InstancesControllerMiddleware.updateEntityInstance,
 );
+
 InstancesRouter.post(
     '/entities/:id/duplicate',
     busboyMiddleware,
     ValidateRequest(updateEntityInstanceSchema),
     InstancesValidatorMiddleware.validateUserCanWriteEntityInstance,
+    InstancesValidatorMiddleware.validateEntityProperties,
     InstancesControllerMiddleware.duplicateEntityInstance,
 );
+
 InstancesRouter.post(
     '/entities/delete/bulk',
     ValidateRequest(deleteEntityInstancesSchema),
     InstancesValidatorMiddleware.validateUserCanWriteBulkEntityInstances,
     InstancesControllerMiddleware.deleteEntityInstances,
 );
+
 InstancesRouter.patch(
     '/entities/:id/status',
     ValidateRequest(updateEntityStatusSchema),
@@ -179,6 +197,7 @@ InstancesRouter.post(
 
 // relationships (Instances)
 InstancesRouter.get('/relationships/count', AuthorizerControllerMiddleware.userCanReadTemplates, InstanceManagerProxy);
+
 InstancesRouter.post(
     '/relationships',
     ValidateRequest(createRelationshipSchema),
@@ -186,7 +205,9 @@ InstancesRouter.post(
     InstancesValidatorMiddleware.validateUserCanIgnoreRules,
     InstancesControllerMiddleware.createRelationshipInstance,
 );
+
 InstancesRouter.put('/relationships/:id', InstancesValidatorMiddleware.validateUserCanUpdateOrDeleteRelationshipInstance, InstanceManagerProxy);
+
 InstancesRouter.delete(
     '/relationships/:id',
     ValidateRequest(deleteRelationshipSchema),
@@ -194,6 +215,7 @@ InstancesRouter.delete(
     InstancesValidatorMiddleware.validateUserCanIgnoreRules,
     InstancesControllerMiddleware.deleteRelationshipInstance,
 );
+
 InstancesRouter.post('/bulk', InstancesValidatorMiddleware.validateUserCanWriteBulkEntityInstance, InstancesControllerMiddleware.runBulkOfActions);
 
 export default InstancesRouter;

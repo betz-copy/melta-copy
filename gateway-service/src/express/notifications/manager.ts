@@ -1,42 +1,42 @@
 import {
-    IDateAboutToExpireNotificationMetadata,
-    INewProcessNotificationMetadata,
-    IProcessReviewerUpdateNotificationMetadata,
-    IProcessStatusUpdateNotificationMetadata,
-    IRuleBreachAlertNotificationMetadata,
-    IRuleBreachRequestNotificationMetadata,
-    IRuleBreachResponseNotificationMetadata,
-    IDeleteProcessNotificationMetadata,
-    INotification,
     IArchiveProcessNotificationMetadata,
     IArchiveProcessNotificationMetadataPopulated,
     IDateAboutToExpireMetadataPopulated,
+    IDateAboutToExpireNotificationMetadata,
+    IDeleteProcessNotificationMetadata,
     IDeleteProcessNotificationMetadataPopulated,
+    INewProcessNotificationMetadata,
     INewProcessNotificationMetadataPopulated,
+    INotification,
     INotificationMetadataPopulated,
     INotificationPopulated,
+    IProcessReviewerUpdateNotificationMetadata,
     IProcessReviewerUpdateNotificationMetadataPopulated,
+    IProcessStatusUpdateNotificationMetadata,
     IProcessStatusUpdateNotificationMetadataPopulated,
+    IRuleBreachAlertNotificationMetadata,
     IRuleBreachAlertNotificationMetadataPopulated,
+    IRuleBreachRequestNotificationMetadata,
     IRuleBreachRequestNotificationMetadataPopulated,
+    IRuleBreachResponseNotificationMetadata,
     IRuleBreachResponseNotificationMetadataPopulated,
 } from '@microservices/shared';
+import InstancesService from '../../externalServices/instanceService';
+import NotificationService from '../../externalServices/notificationService';
 import {
+    isArchiveProcessNotification,
     isDateAboutToExpireNotification,
+    isDeleteProcessNotification,
     isNewProcessNotification,
     isProcessReviewerUpdateNotification,
     isProcessStatusUpdateNotification,
     isRuleBreachAlertNotification,
     isRuleBreachRequestNotification,
     isRuleBreachResponseNotification,
-    isDeleteProcessNotification,
-    isArchiveProcessNotification,
 } from '../../externalServices/notificationService/interfaces';
-import NotificationService from '../../externalServices/notificationService';
-import RuleBreachesManager from '../ruleBreaches/manager';
-import ProcessesInstancesManager from '../processes/processInstances/manager';
-import InstancesService from '../../externalServices/instanceService';
 import DefaultManagerProxy from '../../utils/express/manager';
+import ProcessesInstancesManager from '../processes/processInstances/manager';
+import RuleBreachesManager from '../ruleBreaches/manager';
 
 class NotificationsManager extends DefaultManagerProxy<NotificationService> {
     private instancesService: InstancesService;

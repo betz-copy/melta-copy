@@ -1,12 +1,12 @@
-import React, { useEffect, useMemo } from 'react';
+import { Masonry } from '@mui/lab';
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { Masonry } from '@mui/lab';
-import { IScheduleComponentData, IScheduleComponentResourceData } from '../../../interfaces/syncfusion';
+import React, { useEffect, useMemo } from 'react';
 import { environment } from '../../../globals';
+import { IScheduleComponentData, IScheduleComponentResourceData } from '../../../interfaces/syncfusion';
 import { getGanttHeatmapData } from '../../../utils/gantts';
-import { HeatmapBox } from './HeatmapBox';
 import { ViewingBox } from '../../SystemManagement/components/ViewingBox';
+import { HeatmapBox } from './HeatmapBox';
 
 const { heatmapColors } = environment.ganttSettings;
 
@@ -55,15 +55,13 @@ export const Heatmap: React.FC<IHeatmapProps> = ({ ganttEvents, groupByEntityRes
 
             <Grid>
                 <ViewingBox minHeight="82vh">
-                    <Grid container>
-                        <Masonry columns={5} spacing={2}>
-                            {heatmapData.map((heatmapBox) => (
-                                <Grid key={heatmapBox.id}>
-                                    <HeatmapBox heatmapBox={heatmapBox} />
-                                </Grid>
-                            ))}
-                        </Masonry>
-                    </Grid>
+                    <Masonry columns={5} spacing={2}>
+                        {heatmapData.map((heatmapBox) => (
+                            <Grid key={heatmapBox.id}>
+                                <HeatmapBox heatmapBox={heatmapBox} />
+                            </Grid>
+                        ))}
+                    </Masonry>
                 </ViewingBox>
             </Grid>
         </Grid>

@@ -1,11 +1,11 @@
-import Joi from 'joi';
 import {
-    MongoIdSchema,
-    IAggregationType,
-    IChartType,
-    IChartPermission,
     filterOfFieldSchema as filterOfFieldSchemaShared,
+    IAggregationType,
+    IChartPermission,
+    IChartType,
+    MongoIdSchema,
 } from '@microservices/shared';
+import Joi from 'joi';
 
 const filterOfFieldSchema = filterOfFieldSchemaShared.min(1).id('filterOfField');
 const filterOfTemplateSchema = Joi.object().pattern(Joi.string(), filterOfFieldSchema).min(1);

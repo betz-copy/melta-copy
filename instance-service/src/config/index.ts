@@ -55,7 +55,7 @@ const config = {
         // https://lucene.apache.org/core/8_2_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#Escaping_Special_Characters
         specialCharsToEscapeNeo4jQuery: env.get('SPECIAL_CHARS_TO_ESCAPE_NEO4J_QUERY').default('+,-,&&,||,!,(,),{,},[,],^,",~,*,?,:,\\,/').asArray(),
         workspaceNamePrefix: env.get('NEO4J_WORKSPACE_NAME_PREFIX').default('workspace-').asString(),
-        relativeDateFilters: env.get('RELATIVE_DATE_FILTERS').default('thisWeek,thisMonth,thisYear').asArray(),
+        relativeDateFilters: env.get('RELATIVE_DATE_FILTERS').default('thisWeek,thisMonth,thisYear,untilToday,fromToday').asArray(),
         updateColorsForRulesWithTodayFuncParallelLimit: env.get('UPDATE_COLORS_FOR_RULES_WITH_TODAY_FUNC_PARALLEL_LIMIT').default(20).asIntPositive(),
         sendAlertForRulesWithTodayFuncParallelLimit: env.get('SEND_ALERTS_FOR_RULES_WITH_TODAY_FUNC_PARALLEL_LIMIT').default(100).asIntPositive(),
     },
@@ -115,6 +115,7 @@ const config = {
         textAreaFieldRegex: env.get('TEXT_AREA_FIELD_REGEX').default('.*').asRegExp(),
         relationshipReferenceFieldRegex: env.get('RELATIONSHIP_REFERENCE_FIELD_REGEX').default('.*').asRegExp(),
         commentFieldRegex: env.get('COMMENT_FIELD_REGEX').default('.*').asRegExp(),
+        unitFieldRegex: env.get('UNIT_FIELD_REGEX').default('^[0-9a-fA-F]{24}$').asRegExp(),
     },
     brokenRulesFakeEntityIdPrefix: env.get('BROKEN_RULES_FAKE_ENTITY_ID_PREFIX').default('$').asString(),
     createdEntityIdInBrokenRules: env.get('CREATED_ENTITY_ID_IN_BROKEN_RULES').default('created-entity-id').asString(),

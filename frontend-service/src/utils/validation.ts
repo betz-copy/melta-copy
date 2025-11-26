@@ -1,20 +1,21 @@
 import i18next from 'i18next';
 import * as Yup from 'yup';
 import { EntityTemplateFormInputProperties } from '../common/wizards/entityTemplate';
+import { GroupProperty } from '../common/wizards/entityTemplate/commonInterfaces';
 import { ProcessTemplateFormInputProperties } from '../common/wizards/processTemplate';
 import { extractGroups, extractProperties } from '../services/templates/entityTemplatesService';
-import { GroupProperty } from '../common/wizards/entityTemplate/commonInterfaces';
 
-export const regexSchema = Yup.string().test('is-regex', (value, context) => {
-    if (!value) return true;
-    try {
-        // eslint-disable-next-line no-new
-        new RegExp(value);
-        return true;
-    } catch (error) {
-        return context.createError({ message: (error as Error).message });
-    }
-});
+export const regexSchema = Yup.string()
+    .test('is-regex', (value, context) => {
+        if (!value) return true;
+        try {
+            // eslint-disable-next-line no-new
+            new RegExp(value);
+            return true;
+        } catch (error) {
+            return context.createError({ message: (error as Error).message });
+        }
+    });
 
 export const variableNameValidation = /^[a-zA-Z][a-zA-Z_$0-9]*$/;
 export const variableUrlValidation =

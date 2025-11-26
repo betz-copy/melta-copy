@@ -5,10 +5,9 @@ import { Form, Formik } from 'formik';
 import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import React, { useEffect, useMemo, useState } from 'react';
-import { EntityWizardValues } from '..';
 import { environment } from '../../../../globals';
-import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
 import { ICreateOrUpdateWithRuleBreachDialogState, IExternalErrors, IMutationProps } from '../../../../interfaces/CreateOrEditEntityDialog';
+import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
 import { IEntity } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { ActionTypes } from '../../../../interfaces/ruleBreaches/actionMetadata';
@@ -18,14 +17,13 @@ import { UserState, useUserStore } from '../../../../stores/user';
 import { useWorkspaceStore } from '../../../../stores/workspace';
 import { filterFieldsFromPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { ajvValidate } from '../../../inputs/JSONSchemaFormik';
+import { EntityWizardValues } from '..';
 import { IChooseTemplateMode } from '../ChooseTemplate';
 import { DraftWarningDialog } from '../draftWarningDialog';
 import { ExportFormats } from '../ExportFormats';
 import EditProps from './EditProps';
 import useDraftEntityDialogHook from './useDraft';
 import useMutationHandler from './useMutationHandler';
-
-const { signaturePrefix } = environment;
 
 export const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => {
     const templateFilesProperties = pickBy(
@@ -128,6 +126,7 @@ const CreateOrEditEntityDetails: React.FC<{
     const { payload, actionType } = mutationProps;
     const [isDraftDialogOpen, setIsDraftDialogOpen] = useState(false);
     const [wasDirty, setWasDirty] = useState(false);
+    const [isSubmitPressed, setIsSubmitPressed] = useState(false);
     const [initialValuePropsToFilter, setInitialValuePropsToFilter] = useState<Record<string, any>>({});
 
     const isEditMode = actionType === ActionTypes.UpdateEntity;
@@ -139,7 +138,7 @@ const CreateOrEditEntityDetails: React.FC<{
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
 
     const initialValues = useMemo(() => {
-        if (isEditMode) return getInitialValuesWithDefaults(convertIEntityToEntityWizardValues(payload!, entityTemplate, initialTemplateFileKeys));
+        if (isEditMode) return getInitialValuesWithDefaults(convertIEntityToEntityWizardValues(payload!, entityTemplate, initialTemplateFileKeys), currentUser);
 
         return getInitialValuesWithDefaults(
             initialCurrValues ?? {
@@ -157,7 +156,7 @@ const CreateOrEditEntityDetails: React.FC<{
     const clientSideUserEntity: IEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
 
     const finalMutationProps = useMemo(() => {
-        if (Object.keys(clientSideUserEntity).length > 0) {
+        if (Object.keys(clientSideUserEntity).length) {
             return {
                 ...mutationProps,
                 actionType: ActionTypes.CreateClientSideEntity,
@@ -179,7 +178,6 @@ const CreateOrEditEntityDetails: React.FC<{
     const [deleteDraft, currentDraft, originalDrafts, createOrUpdateDraftDebounced, draftId] = useDraftEntityDialogHook(
         entityTemplate,
         setInitialValuePropsToFilter,
-        signaturePrefix,
         payload,
     );
 
@@ -215,19 +213,26 @@ const CreateOrEditEntityDetails: React.FC<{
         >
             {({ setFieldValue, values, errors, touched, setFieldTouched, setValues, dirty, initialValues: formInitialValues }) => {
                 useEffect(() => {
-                    if (initialCurrValues) setValues(getInitialValuesWithDefaults(initialCurrValues));
+                    if (initialCurrValues) setValues(getInitialValuesWithDefaults(initialCurrValues, currentUser));
                 }, [initialCurrValues]);
 
                 return (
                     <>
                         <Form>
-                            <Card>
-                                <CardContent>
-                                    <Grid justifyContent="center">
+                            <Card sx={{ display: 'flex', flexDirection: 'column', maxHeight: '90vh' }}>
+                                <CardContent
+                                    sx={{
+                                        flex: 1,
+                                        overflowY: 'auto',
+                                        position: 'relative',
+                                        paddingTop: 0,
+                                    }}
+                                >
+                                    <Grid container justifyContent="center">
                                         <EditProps
                                             setFieldValue={setFieldValue}
                                             values={values}
-                                            errors={errors}
+                                            errors={isSubmitPressed ? errors : {}}
                                             touched={touched}
                                             setFieldTouched={setFieldTouched}
                                             initialValues={formInitialValues}
@@ -250,58 +255,60 @@ const CreateOrEditEntityDetails: React.FC<{
                                             parentId={parentId}
                                             getInitialProperties={getInitialProperties}
                                         />
-
-                                        <Divider orientation="horizontal" style={{ alignSelf: 'stretch', width: '100%' }} />
-                                        <Grid
-                                            container
-                                            flexDirection="row"
-                                            flexWrap="nowrap"
-                                            justifyContent="space-between"
-                                            alignItems="center"
-                                            paddingTop="25px"
-                                            width="100%"
-                                        >
-                                            {(entityTemplate.documentTemplatesIds || values.template?.documentTemplatesIds)?.length && isEditMode ? (
-                                                <ExportFormats
-                                                    properties={{
-                                                        createdAt: payload?.properties.createdAt || new Date(),
-                                                        updatedAt: payload?.properties.updatedAt || new Date(),
-                                                        ...values.properties,
-                                                    }}
-                                                    documentTemplateIds={entityTemplate.documentTemplatesIds || values.template?.documentTemplatesIds}
-                                                    templateId={values.template._id}
-                                                />
-                                            ) : (
-                                                <Grid size={{ xs: 6 }}>
-                                                    <Button
-                                                        style={{ borderRadius: '7px' }}
-                                                        variant="outlined"
-                                                        startIcon={<ClearIcon />}
-                                                        onClick={() => (wasDirty ? setIsDraftDialogOpen(true) : handleClose())}
-                                                    >
-                                                        {i18next.t('entityPage.cancel')}
-                                                    </Button>
-                                                </Grid>
-                                            )}
-                                            <Grid size={{ xs: 6 }} container justifyContent="end">
-                                                <Button
-                                                    style={{ borderRadius: '7px' }}
-                                                    type="submit"
-                                                    variant="contained"
-                                                    startIcon={isLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />}
-                                                    onClick={() =>
-                                                        Object.keys(errors).length > 0
-                                                            ? ''
-                                                            : setTimeout(() => (externalErrors ? undefined : handleClose()), 5000)
-                                                    }
-                                                    disabled={!dirty || isLoading}
-                                                >
-                                                    {i18next.t('entityPage.save')}
-                                                </Button>
-                                            </Grid>
-                                        </Grid>
                                     </Grid>
                                 </CardContent>
+                                <Divider />
+                                <div style={{ position: 'sticky', bottom: 0, zIndex: 2 }}>
+                                    <Grid
+                                        container
+                                        flexDirection="row"
+                                        flexWrap="nowrap"
+                                        justifyContent="space-between"
+                                        alignItems="center"
+                                        padding="0.8rem"
+                                        width="100%"
+                                    >
+                                        {(entityTemplate.documentTemplatesIds || values.template?.documentTemplatesIds)?.length && isEditMode ? (
+                                            <ExportFormats
+                                                properties={{
+                                                    createdAt: payload?.properties.createdAt || new Date(),
+                                                    updatedAt: payload?.properties.updatedAt || new Date(),
+                                                    ...values.properties,
+                                                }}
+                                                documentTemplateIds={entityTemplate.documentTemplatesIds || values.template?.documentTemplatesIds}
+                                                templateId={values.template._id}
+                                            />
+                                        ) : (
+                                            <Grid size={{ xs: 6 }}>
+                                                <Button
+                                                    style={{ borderRadius: '7px' }}
+                                                    variant="outlined"
+                                                    startIcon={<ClearIcon />}
+                                                    onClick={() => (wasDirty ? setIsDraftDialogOpen(true) : handleClose())}
+                                                >
+                                                    {i18next.t('entityPage.cancel')}
+                                                </Button>
+                                            </Grid>
+                                        )}
+                                        <Grid size={{ xs: 6 }} container justifyContent="end">
+                                            <Button
+                                                style={{ borderRadius: '7px' }}
+                                                type="submit"
+                                                variant="contained"
+                                                startIcon={isLoading ? <CircularProgress sx={{ color: 'white' }} size={20} /> : <DoneIcon />}
+                                                onClick={() => {
+                                                    setIsSubmitPressed(true);
+                                                    Object.keys(errors).length
+                                                        ? ''
+                                                        : setTimeout(() => (externalErrors ? undefined : handleClose()), 5000);
+                                                }}
+                                                disabled={!dirty || isLoading}
+                                            >
+                                                {i18next.t('entityPage.save')}
+                                            </Button>
+                                        </Grid>
+                                    </Grid>
+                                </div>
                             </Card>
                         </Form>
                         {createOrUpdateWithRuleBreachDialogState.isOpen && (

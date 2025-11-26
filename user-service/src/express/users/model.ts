@@ -1,5 +1,5 @@
-import * as mongoose from 'mongoose';
 import { IBaseUser } from '@microservices/shared';
+import * as mongoose from 'mongoose';
 import config from '../../config';
 
 const UserSchema = new mongoose.Schema(
@@ -28,10 +28,6 @@ const UserSchema = new mongoose.Schema(
             type: String,
         },
         roleIds: { type: [String], index: true },
-        units: {
-            type: Map,
-            of: [String],
-        },
         preferences: {
             darkMode: {
                 type: Boolean,
@@ -50,6 +46,10 @@ const UserSchema = new mongoose.Schema(
             required: true,
             unique: true,
             index: true,
+        },
+        units: {
+            type: Map,
+            of: [String],
         },
     },
     { timestamps: true, versionKey: false },

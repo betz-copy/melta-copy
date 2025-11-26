@@ -8,11 +8,11 @@ import { toast } from 'react-toastify';
 import { environment } from '../../globals';
 import { getFileName } from '../../utils/getFileName';
 import { getFileExtension } from '../../utils/getFileType';
+import Camera from '../dialogs/Camera';
+import ImageView from '../dialogs/Camera/ImageView';
 import FileIcon from '../FilePreview/FileIcon';
 import OpenPreview from '../FilePreview/OpenPreview';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
-import Camera from '../dialogs/Camera';
-import ImageView from '../dialogs/Camera/ImageView';
 import { LoadingFilesInput } from './LoadingFilesInput';
 
 interface FileInputProps {

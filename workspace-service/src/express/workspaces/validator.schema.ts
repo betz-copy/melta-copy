@@ -1,5 +1,5 @@
+import { Colors, FilePathSchema, HexColorSchema, MongoIdSchema, WorkspaceNameSchema, WorkspaceTypes } from '@microservices/shared';
 import * as Joi from 'joi';
-import { Colors, WorkspaceTypes, FilePathSchema, HexColorSchema, MongoIdSchema, WorkspaceNameSchema } from '@microservices/shared';
 
 // Joi schema for IMetadata
 const metadataSchema = Joi.object({
@@ -43,7 +43,6 @@ const metadataSchema = Joi.object({
         destTemplateId: Joi.string().allow(''),
         sourceFieldForColor: Joi.string().allow(''),
     }).optional(),
-    unitsArray: Joi.array().items(Joi.string().trim()).optional(),
     numOfRelationshipFieldsToShow: Joi.number(),
 }).optional();
 

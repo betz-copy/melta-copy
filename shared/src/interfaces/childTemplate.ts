@@ -1,4 +1,3 @@
-import { Document } from 'mongoose';
 import { IMongoCategory } from './category';
 import { IUniqueConstraintOfTemplate } from './entity';
 import {
@@ -44,7 +43,7 @@ export interface IChildTemplate {
     filterByUnitUserField?: string | null;
 }
 
-export interface IMongoChildTemplate extends IChildTemplate, Document<string> {
+export interface IMongoChildTemplate extends IChildTemplate {
     _id: string;
 }
 

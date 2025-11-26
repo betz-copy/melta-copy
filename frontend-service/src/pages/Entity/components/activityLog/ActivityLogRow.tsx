@@ -21,7 +21,7 @@ const ActivityLogRow: React.FC<{
 
     return (
         <Grid container flexDirection="column" padding="15px">
-            <Grid container size={{ xs: 9}}>
+            <Grid container size={{ xs: 9 }}>
                 <Grid container marginTop="-3px">
                     {isLoading ? <Skeleton width="15vw" /> : <ActionText log={log} entityTemplate={entityTemplate} />}
                 </Grid>

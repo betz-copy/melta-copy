@@ -1,15 +1,15 @@
 import { v4 as uuid } from 'uuid';
 import axios from '../../axios';
+import { ProcessTemplateFormInputProperties, ProcessTemplatePropertyByType, ProcessTemplateWizardValues } from '../../common/wizards/processTemplate';
 import { environment } from '../../globals';
 import fileDetails from '../../interfaces/fileDetails';
-import { ProcessTemplateFormInputProperties, ProcessTemplatePropertyByType, ProcessTemplateWizardValues } from '../../common/wizards/processTemplate';
 import {
-    IMongoProcessTemplatePopulated,
     ICreateProcessTemplateBody,
-    IUpdateProcessTemplateBody,
+    IMongoProcessTemplatePopulated,
     IProcessDetails,
     IProcessSingleProperty,
     ISearchProcessTemplatesBody,
+    IUpdateProcessTemplateBody,
 } from '../../interfaces/processes/processTemplate';
 import { extractProperties } from './entityTemplatesService';
 

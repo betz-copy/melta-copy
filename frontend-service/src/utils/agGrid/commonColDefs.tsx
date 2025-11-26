@@ -1,5 +1,7 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: properties... */
 import {
     ColDef,
+    ICellEditorParams,
     ICellRendererParams,
     IDateFilterParams,
     ISetFilterParams,
@@ -10,49 +12,66 @@ import {
 import { PriorityHigh } from '@mui/icons-material';
 import { Box, Grid, Tooltip, tooltipClasses } from '@mui/material';
 import i18next from 'i18next';
-import React from 'react';
+import { EntityWizardValues } from '../../common/dialogs/entity';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
+import UserAvatar, { IUserAvatarProps } from '../../common/UserAvatar';
+import { environment } from '../../globals';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { EntityData, IEntity, IRequiredConstraint, ISearchFilter, IUniqueConstraint } from '../../interfaces/entities';
+import {
+    EntityData,
+    IEntity,
+    INotFoundError,
+    IRelationshipRefNotFoundError,
+    IRequiredConstraint,
+    ISearchFilter,
+    IUniqueConstraint,
+    IUsersNotFoundError,
+    NotFoundErrorTypes,
+} from '../../interfaces/entities';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IError, IFailedEntity, IValidationError } from '../../interfaces/excel';
 import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
+import { IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
+import { IRuleBreachRequestPopulated } from '../../interfaces/ruleBreaches/ruleBreachRequest';
 import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
-import { IUser } from '../../interfaces/users';
+import { IGetUnits, IMongoUnit } from '../../interfaces/units';
+import { IUser, PermissionData } from '../../interfaces/users';
 import OpenMap from '../../pages/Map/OpenMap';
 import { getDateWithoutTime, getLongDate } from '../date';
 import { getFileName } from '../getFileName';
 import { convertToPlainText } from '../HtmlTagsStringValue';
+import { stringifiedJSONtoObj } from '../stringValues';
 import { agGridLocaleText } from './agGridLocaleText';
 import DateTimeCellEditor from './DateTimeCellEditor';
 import OverflowWrapper from './OverflowWrapper';
 import RelationshipRefCellEditor from './RelationshipRefCellEditor';
 import SelectCellEditor from './SelectCellEditor';
 import { Value } from './Value';
-import UserAvatar, { IUserAvatarProps } from '../../common/UserAvatar';
 
-const getColor = <Data extends any = EntityData>(props: ICellRendererParams<Data, any | undefined>, field: string) =>
+type IColDefData = EntityData | IRuleBreachPopulated | PermissionData | IRuleBreachRequestPopulated | undefined;
+
+const getColor = <Data extends IUser | IEntity | IColDefData>(props: ICellRendererParams<Data, any | undefined>, field: string) =>
     (props.data as { coloredFields: IEntity['coloredFields'] })?.coloredFields?.[field];
 
 const hasErrors = (data: any): data is IFailedEntity =>
     data && Array.isArray(data.errors) && data.errors.every((error) => 'type' in error && 'metadata' in error);
 
-const isPropertyInvalid = <Data extends any = EntityData>(
-    props: ICellRendererParams<Data, any | undefined>,
-    property: string,
-    ignoreType = false,
-) => {
+const isPropertyInvalid = <Data extends IColDefData>(props: ICellRendererParams<Data, any | undefined>, property: string, ignoreType = false) => {
     if (!ignoreType || !hasErrors(props.data)) return undefined;
 
     return props.data.errors.find((error) => {
         switch (error.type) {
             case ActionErrors.required:
-                return (error.metadata as IRequiredConstraint).property === property;
+                return (error.metadata as IRequiredConstraint).property.split('.').filter(Boolean)[0] === property;
             case ActionErrors.unique:
-                return (error.metadata as IUniqueConstraint).properties.some((errorProperty) => errorProperty === property);
-            case ActionErrors.validation: {
-                return (error.metadata as IValidationError).path.slice(1).includes(property);
+                return (error.metadata as IUniqueConstraint).properties.some(
+                    (errorProperty) => errorProperty.split('.').filter(Boolean)[0] === property,
+                );
+            case ActionErrors.validation:
+                return (error.metadata as IValidationError).path.split('/').filter(Boolean)[0] === property;
+            case ActionErrors.notFound: {
+                return (error.metadata as INotFoundError).property === property;
             }
             default:
                 break;
@@ -61,10 +80,11 @@ const isPropertyInvalid = <Data extends any = EntityData>(
     });
 };
 
-const errorColDef = <Data extends any = EntityData>(
+const errorColDef = <Data extends IColDefData>(
     props: ICellRendererParams<Data, any | undefined>,
     error: IError,
     value: Partial<IEntitySingleProperty>,
+    entityTemplatesMap?: IEntityTemplateMap,
 ) => {
     let message = '';
     switch (error.type) {
@@ -84,6 +104,23 @@ const errorColDef = <Data extends any = EntityData>(
                 const typeDescription = i18next.t(`propertyTypes.${value.format ?? value.type}`);
                 message = `${i18next.t('wizard.entity.loadEntities.notValid')} ${allowedValues || typeDescription}`;
             } else message = metadata.message;
+            break;
+        }
+        case ActionErrors.notFound: {
+            const errorMetadata: INotFoundError = error.metadata as INotFoundError;
+            if (errorMetadata.type === NotFoundErrorTypes.relationshipRefNotFound) {
+                const { relatedTemplateId, relatedIdentifier } = errorMetadata as IRelationshipRefNotFoundError;
+                message = i18next.t('wizard.entity.loadEntities.relatedEntityNotFound', {
+                    templateName: entityTemplatesMap?.get(relatedTemplateId)?.displayName,
+                    propertyName: relatedIdentifier,
+                });
+            } else if (errorMetadata.type === NotFoundErrorTypes.userNotFound) {
+                const { attemptedIds, type } = error.metadata as IUsersNotFoundError;
+                if (type === NotFoundErrorTypes.userNotFound)
+                    message = i18next.t(`wizard.entity.loadEntities.${attemptedIds.length > 1 ? 'usersNotFound' : 'userNotFound'}`, {
+                        attemptedIds: attemptedIds.join(','),
+                    });
+            }
             break;
         }
         default:
@@ -122,7 +159,7 @@ const errorColDef = <Data extends any = EntityData>(
     );
 };
 
-export const numberColDef = <Data extends any = EntityData>(
+export const numberColDef = <Data extends EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
@@ -166,7 +203,7 @@ export const numberColDef = <Data extends any = EntityData>(
     };
 };
 
-export const regexColDef = <Data extends any = EntityData>(
+export const regexColDef = <Data extends EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
@@ -196,7 +233,7 @@ export const regexColDef = <Data extends any = EntityData>(
     };
 };
 
-export const stringColDef = <Data extends any = EntityData>(
+export const stringColDef = <Data extends EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
@@ -231,7 +268,7 @@ export const stringColDef = <Data extends any = EntityData>(
     };
 };
 
-export const fileColDef = <Data extends any = EntityData>(
+export const fileColDef = <Data extends EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
@@ -261,7 +298,7 @@ export const fileColDef = <Data extends any = EntityData>(
     };
 };
 
-export const locationColDef = <Data extends any = EntityData>(
+export const locationColDef = <Data extends EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     entityGetter: ValueGetterFunc<any, any>,
@@ -278,9 +315,11 @@ export const locationColDef = <Data extends any = EntityData>(
         headerName: value.title,
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
-            if (!props.value) return null;
             const error = isPropertyInvalid(props, field, ignoreType);
             if (error) return errorColDef(props, error, value);
+
+            if (!props.value) return null;
+
             return (
                 <OpenMap
                     field={value.title!}
@@ -299,7 +338,7 @@ export const locationColDef = <Data extends any = EntityData>(
     };
 };
 
-export const relatedTemplateColDef = <Data extends any = EntityData>(
+export const relatedTemplateColDef = <Data extends EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
@@ -309,17 +348,23 @@ export const relatedTemplateColDef = <Data extends any = EntityData>(
     isLastColumn: boolean,
     entityTemplates: IEntityTemplateMap,
     hideColumn = false,
+    ignoreType = false,
     searchValue: string | undefined = undefined,
     editable: (data: any) => boolean = () => false,
     filters?: string | ISearchFilter,
 ): ColDef => {
     const relatedEntityTemplate = entityTemplates.get(relatedTemplateId!)!;
+
     return {
         field,
         headerName: value.title,
-        valueGetter,
-        cellRenderer: (props: ICellRendererParams<Data, IEntity | undefined>) =>
-            props.value ? (
+        cellRenderer: (props: ICellRendererParams<Data, IEntity | undefined>) => {
+            const error = isPropertyInvalid(props, field, ignoreType);
+
+            if (error) return errorColDef(props, error, value, entityTemplates);
+            if (!props.value) return null;
+
+            return (
                 <RelationshipReferenceView
                     entity={props.value}
                     relatedTemplateId={relatedTemplateId}
@@ -327,22 +372,25 @@ export const relatedTemplateColDef = <Data extends any = EntityData>(
                     searchValue={searchValue}
                     color={getColor(props, field)}
                 />
-            ) : null,
+            );
+        },
+        valueGetter,
         filter: 'agTextColumnFilter',
         width: hardcodedWidth,
         flex: isLastColumn ? 1 : 0,
         hide: hideColumn,
         editable: (params) => !!(relatedEntityTemplate && editable(params.data)),
         cellEditor: RelationshipRefCellEditor,
-        cellEditorParams: {
+        cellEditorParams: (params: ICellEditorParams<Data>) => ({
             relatedTemplateId,
             template: value,
             filters,
-        },
+            currentEntity: (params.data as unknown as EntityWizardValues).properties,
+        }),
     };
 };
 
-export const booleanColDef = <Data extends any = EntityData>(
+export const booleanColDef = <Data extends EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
@@ -387,7 +435,7 @@ export const booleanColDef = <Data extends any = EntityData>(
     };
 };
 
-export const enumColDef = <Data extends any = EntityData>(
+export const enumColDef = <Data extends EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
@@ -438,7 +486,7 @@ export const enumColDef = <Data extends any = EntityData>(
     };
 };
 
-export const enumArrayColDef = <Data extends any = EntityData>(
+export const enumArrayColDef = <Data extends EntityData | IRuleBreachPopulated>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
@@ -500,7 +548,8 @@ export const enumArrayColDef = <Data extends any = EntityData>(
         },
     };
 };
-export const userColDef = <Data extends any = IUser>(
+
+export const userColDef = <Data extends IUser>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
@@ -510,6 +559,7 @@ export const userColDef = <Data extends any = IUser>(
     darkMode: boolean,
     hideColumn = false,
     userAvatarProps?: Partial<Omit<IUserAvatarProps, 'user'>>,
+    ignoreType = false,
 ): ColDef => {
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
@@ -521,7 +571,12 @@ export const userColDef = <Data extends any = IUser>(
         headerName: value.title,
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, any | undefined>) => {
+            const error = isPropertyInvalid(props, field, ignoreType);
+            if (error) return errorColDef(props, error, { ...value, format: 'user' });
             if (!props.value) return '';
+
+            if (ignoreType && !stringifiedJSONtoObj(props.value))
+                return <Value hideValue={hideColumn} color={getColor(props, field)} value={props.value ?? ''} />;
 
             const user = JSON.parse(props.value);
             return (
@@ -549,7 +604,7 @@ export const userColDef = <Data extends any = IUser>(
     };
 };
 
-export const userArrayColDef = <Data extends any = IEntity>(
+export const userArrayColDef = <Data extends IEntity>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
@@ -559,6 +614,7 @@ export const userArrayColDef = <Data extends any = IEntity>(
     isLastColumn: boolean,
     hideColumn = false,
     darkMode = false,
+    ignoreType = false,
 ): ColDef => {
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
@@ -570,16 +626,24 @@ export const userArrayColDef = <Data extends any = IEntity>(
         headerName: value.title,
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, any[] | undefined>) => {
+            const error = isPropertyInvalid(props, field, ignoreType);
+            if (error) {
+                const errorValue = Array.isArray(props.value) ? props.value.join(', ') : props.value;
+
+                return errorColDef({ ...props, value: errorValue }, error, { ...value, format: 'users' });
+            }
+
             if (!props.value) return '';
+            if (ignoreType) {
+                if (typeof props.value === 'string' || typeof props.value === 'number')
+                    return <Value hideValue={hideColumn} color={getColor(props, field)} value={(props.value as string) ?? ''} />;
+                if (Array.isArray(props.value) && props.value.some((item) => !stringifiedJSONtoObj(item)))
+                    return <Value hideValue={hideColumn} color={getColor(props, field)} value={props.value.join(', ') ?? ''} />;
+            }
+
             return (
                 <OverflowWrapper
-                    items={props.value.map((val) => {
-                        try {
-                            return JSON.parse(val);
-                        } catch {
-                            return JSON.parse(JSON.stringify(val));
-                        }
-                    })}
+                    items={props.value.map((val) => stringifiedJSONtoObj(val) ?? JSON.parse(JSON.stringify(val)))}
                     getItemKey={(item) => item._id}
                     renderItem={(item) => (
                         <UserAvatar
@@ -607,7 +671,7 @@ export const userArrayColDef = <Data extends any = IEntity>(
     };
 };
 
-export const enumFilesColDef = <Data extends any = EntityData>(
+export const enumFilesColDef = <Data extends EntityData>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: { title: string },
@@ -659,7 +723,7 @@ export const enumFilesColDef = <Data extends any = EntityData>(
     };
 };
 
-export const dateColDef = <Data extends any = EntityData>(
+export const dateColDef = <Data extends EntityData | IRuleBreachPopulated>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
@@ -740,7 +804,7 @@ interface TranslatedEnumColDefOptions<Data> {
     isLastColumn?: boolean;
 }
 
-export const translatedEnumColDef = <Data extends any = EntityData>({
+export const translatedEnumColDef = <Data extends EntityData | PermissionData | IRuleBreachRequestPopulated>({
     field,
     valueGetter,
     title,
@@ -775,5 +839,56 @@ export const translatedEnumColDef = <Data extends any = EntityData>({
         width: hardcodedWidth,
         flex: isLastColumn ? 1 : 0,
         hide: hideColumn,
+    };
+};
+
+const getUnitField = (units: IGetUnits, unitId: string, property: keyof IGetUnits[number]) =>
+    (units.find(({ _id }) => _id === unitId)?.[property] as string) ?? '';
+
+export const unitColDef = <Data extends IColDefData>(
+    field: string,
+    value: Partial<IEntitySingleProperty>,
+    units: IGetUnits,
+    hardcodedWidth: number | undefined,
+    isLastColumn: boolean,
+    hideColumn = false,
+    hideValue = false,
+    ignoreType = false,
+    searchValue: string | undefined = undefined,
+    _editable: (data: any) => boolean = () => false,
+): ColDef => {
+    const filterParams: ISetFilterParams<Data, string | undefined> = {
+        suppressMiniFilter: true,
+        valueFormatter: (params: ValueFormatterParams<IMongoUnit, string | undefined>) => {
+            if (params.value === null) return agGridLocaleText.blanks;
+
+            return params.value ? getUnitField(units, params.value, 'name') : '';
+        },
+        values: [...units.map((unit) => unit._id), undefined],
+    };
+
+    return {
+        field,
+        valueGetter: ({ data }) => {
+            const value = data.properties[field];
+            return environment.objectIdRegex.test(value) ? getUnitField(units, value, 'name') : value;
+        },
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
+            const error = isPropertyInvalid(props, field, ignoreType);
+            if (error) return errorColDef(props, error, value);
+
+            return <Value hideValue={hideValue} color={getColor(props, field)} value={props.value?.toString() ?? ''} searchValue={searchValue} />;
+        },
+        headerName: value.title,
+        filter: 'agSetColumnFilter',
+        filterParams,
+        width: hardcodedWidth,
+        flex: isLastColumn ? 1 : 0,
+        hide: hideColumn,
+        tooltipValueGetter: (params) => {
+            const path = getUnitField(units, params.data.properties[field], 'path');
+            return path ? `${path}/` : '';
+        },
+        editable: false,
     };
 };

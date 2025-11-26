@@ -1,25 +1,28 @@
 import { Box } from '@mui/material';
 import i18next from 'i18next';
+import _ from 'lodash';
 import React, { useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { LoadingAnimation } from '../../common/LoadingAnimation';
 import { ICategoryMap } from '../../interfaces/categories';
+import { IChildTemplateMap } from '../../interfaces/childTemplates';
+import { IMongoCategoryOrderConfig } from '../../interfaces/config';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
+import { IPrintingTemplateMap } from '../../interfaces/printingTemplates';
 import { IProcessTemplateMap } from '../../interfaces/processes/processTemplate';
 import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { IRuleMap } from '../../interfaces/rules';
-import { getAllTemplates, GetAllTemplatesType } from '../../services/templates/getAllTemplates';
+import { GetAllTemplatesType, getAllTemplates } from '../../services/templates/getAllTemplates';
+import { getUnits } from '../../services/userService';
 import { getFile } from '../../services/workspacesService';
+import { useUnitStore } from '../../stores/unit';
 import { useUserStore } from '../../stores/user';
 import { defaultMetadata, useWorkspaceStore } from '../../stores/workspace';
 import { handleWorkspace } from '../../utils/permissions';
 import { mapCategories, mapTemplates } from '../../utils/templates';
 import ErrorPage from '../ErrorPage';
 import { MeltaRoutesInner } from './routes';
-import { IChildTemplateMap } from '../../interfaces/childTemplates';
-import { IMongoCategoryOrderConfig } from '../../interfaces/config';
-import { IPrintingTemplateMap } from '../../interfaces/printingTemplates';
 
 interface IMeltaRoutesProps {
     path: string;
@@ -28,6 +31,8 @@ interface IMeltaRoutesProps {
 export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
     const setWorkspace = useWorkspaceStore((state) => state.setWorkspace);
     const currentUser = useUserStore((state) => state.user);
+    const setUser = useUserStore((state) => state.setUser);
+    const setUnits = useUnitStore((state) => state.setFilteredUnits);
 
     const queryClient = useQueryClient();
 
@@ -35,7 +40,7 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
     useQuery('getCategories', () => undefined, { enabled: false });
     useQuery('getCategoryOrder', () => undefined, { enabled: false });
     useQuery('getEntityTemplates', () => undefined, { enabled: false });
-    useQuery('getChildEntityTemplates', () => undefined, { enabled: false });
+    useQuery('getChildTemplates', () => undefined, { enabled: false });
     useQuery('getRelationshipTemplates', () => undefined, { enabled: false });
     useQuery('getRules', () => undefined, { enabled: false });
     useQuery('getProcessTemplates', () => undefined, { enabled: false });
@@ -68,7 +73,7 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
             queryClient.setQueryData<ICategoryMap>('getCategories', mapCategories(categories, categoryOrder ? categoryOrder.order : []));
             queryClient.setQueryData<IMongoCategoryOrderConfig>('getCategoryOrder', categoryOrder);
             queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', mapTemplates(entityTemplates));
-            queryClient.setQueryData<IChildTemplateMap>('getChildEntityTemplates', mapTemplates(childTemplates, 'name'));
+            queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', mapTemplates(childTemplates, 'name'));
             queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', mapTemplates(relationshipTemplates));
             queryClient.setQueryData<IProcessTemplateMap>('getProcessTemplates', mapTemplates(processTemplates));
             queryClient.setQueryData<IRuleMap>('getRules', mapTemplates(rules, 'name'));
@@ -76,6 +81,37 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
         },
         enabled: Boolean(workspace?._id),
     });
+
+    // TODO move to all?
+    const { data: units = [] } = useQuery({
+        queryKey: 'getUnits',
+        queryFn: () => getUnits({ workspaceId: workspace!._id }),
+        enabled: Boolean(workspace?._id),
+    });
+
+    useEffect(() => {
+        if (!units || !workspace) return;
+
+        setUnits(units.filter(({ disabled }) => !disabled));
+
+        const userUnits = new Set(currentUser.units?.[workspace._id] ?? []);
+        const unitsCopy = [...units];
+
+        for (const unitId of userUnits) {
+            // no walrus operator :(
+            while (true) {
+                const childIndex = unitsCopy.findIndex(({ parentId }) => parentId === unitId);
+
+                if (childIndex === -1) break;
+
+                userUnits.add(unitsCopy[childIndex]._id);
+                unitsCopy.splice(childIndex, 1);
+            }
+        }
+
+        const unitsWithInheritance = Array.from(userUnits);
+        if (!_.isEqual(currentUser.currentUnits, unitsWithInheritance)) setUser({ ...currentUser, currentUnits: unitsWithInheritance });
+    }, [units, setUnits, workspace, currentUser, setUser]);
 
     useEffect(() => {
         if (workspace) {

@@ -50,9 +50,9 @@ export interface IUniqueConstraint {
 
 export interface IRequiredConstraint {
     type: 'REQUIRED';
+    property: string;
     constraintName: string;
     templateId: string;
-    property: string;
     index?: number;
 }
 
@@ -62,6 +62,26 @@ export type IValidationError = {
     schemaPath: string;
     params: Partial<IEntitySingleProperty> & { allowedValues?: string[] };
 };
+
+export enum NotFoundErrorTypes {
+    userNotFound = 'USER_NOT_FOUND',
+    relationshipRefNotFound = 'RELATIONSHIP_REF_NOT_FOUND',
+}
+
+export type IRelationshipRefNotFoundError = {
+    type: NotFoundErrorTypes.relationshipRefNotFound;
+    property: string;
+    relatedIdentifier: string;
+    relatedTemplateId: string;
+};
+
+export type IUsersNotFoundError = {
+    type: NotFoundErrorTypes.userNotFound;
+    property: string;
+    attemptedIds: string[];
+};
+
+export type IExcelNotFoundError = IUsersNotFoundError | IRelationshipRefNotFoundError;
 
 export interface EntitiesWizardValues {
     files?: File[];
@@ -160,7 +180,7 @@ export interface ISearchEntitiesOfTemplateBody {
     textSearch?: string;
     filter?: ISearchFilter;
     showRelationships: boolean | Array<IMongoRelationshipTemplate['_id']>;
-    sort: ISearchSort;
+    sort?: ISearchSort;
     entitiesWithFiles?: ICountSearchResult['entitiesWithFiles'];
     entityIdsToInclude?: string[];
     entityIdsToExclude?: string[];
@@ -186,7 +206,7 @@ export interface ISearchBatchBody {
             childTemplateId?: string;
         };
     };
-    sort: ISearchSort;
+    sort?: ISearchSort;
     shouldSemanticSearch?: boolean;
     userEntityId?: string;
 }

@@ -1,5 +1,5 @@
-import React, { CSSProperties, ElementType } from 'react';
 import { Typography, TypographyTypeMap, useTheme } from '@mui/material';
+import React, { CSSProperties, ElementType } from 'react';
 
 interface BlueTitleProps {
     title: string;

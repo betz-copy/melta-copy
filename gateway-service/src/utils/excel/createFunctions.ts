@@ -1,5 +1,13 @@
 /* eslint-disable no-param-reassign */
-import { CoordinateSystem, EntityTemplateType, IEntity, IEntitySingleProperty, locationConverterToString, TemplateItem } from '@microservices/shared';
+import {
+    CoordinateSystem,
+    EntityTemplateType,
+    IEntity,
+    IEntitySingleProperty,
+    IMongoEntityTemplatePopulated,
+    locationConverterToString,
+    TemplateItem,
+} from '@microservices/shared';
 import Excel, { Cell } from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
 import config from '../../config/index';
@@ -119,7 +127,30 @@ export const indexToExcelColumn = (index: number): string => {
 //     }
 // };
 
-const createWorksheet = async (workbook: Excel.Workbook, templateItem: TemplateItem, displayColumns?: string[], headersOnly?: boolean) => {
+const showRelationshipRefColumn = (
+    propertyKey: string,
+    propertyTemplate: IEntitySingleProperty,
+    relatedTemplatesMap: Record<string, IMongoEntityTemplatePopulated>,
+    requiredConstraints: string[],
+) => {
+    if (propertyTemplate.format !== 'relationshipReference') return true;
+
+    const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId;
+    const relatedTemplate = relatedTemplatesMap[relatedTemplateId!];
+    const identifierField = Object.entries(relatedTemplate!.properties.properties).find(([_key, value]) => value.identifier)?.[0];
+    const isRequiredProperty = requiredConstraints?.includes(propertyKey);
+
+    return !!(identifierField || isRequiredProperty);
+};
+
+const createWorksheet = async (
+    workbook: Excel.Workbook,
+    templateItem: TemplateItem,
+    relatedTemplatesMap: Record<string, IMongoEntityTemplatePopulated>,
+    requiredConstraints: string[],
+    displayColumns?: string[],
+    headersOnly?: boolean,
+) => {
     const { metaData: template } = templateItem;
 
     const worksheet = workbook.addWorksheet(template.displayName);
@@ -129,7 +160,9 @@ const createWorksheet = async (workbook: Excel.Workbook, templateItem: TemplateI
     let columnIndex = 0; // TODO: make data validation work in office excel
 
     Object.entries(template.properties.properties).forEach(([propertyKey, propertyTemplate]) => {
-        const shouldAddColumn = headersOnly ? isIncludedColumn(propertyTemplate) : displayColumns?.includes(propertyKey);
+        const shouldAddColumn = headersOnly
+            ? showRelationshipRefColumn(propertyKey, propertyTemplate, relatedTemplatesMap, requiredConstraints) && isIncludedColumn(propertyTemplate)
+            : displayColumns?.includes(propertyKey);
 
         if (shouldAddColumn) {
             // TODO: make data validation work in office excel
@@ -166,11 +199,28 @@ export const getFileName = (fileId: string) => {
     return fileId.slice(config.storageService.fileIdLength);
 };
 
-const relationshipRefCell = (cell: Excel.Cell, [key, value]: [string, IEntitySingleProperty], row: Record<string, any>, workspacePath: string) => {
-    cell.value = {
-        text: row[key].properties[value.relationshipReference!.relatedTemplateField],
-        hyperlink: `${config.service.meltaBaseUrl}${workspacePath}/entity/${row[key].properties._id}`,
-    };
+const relationshipRefCell = (
+    cell: Excel.Cell,
+    [key, value]: [string, IEntitySingleProperty],
+    row: Record<string, any>,
+    workspacePath: string,
+    insertEntities?: boolean,
+) => {
+    cell.value = insertEntities
+        ? row[key]
+        : {
+              text: row[key].properties[value.relationshipReference!.relatedTemplateField],
+              hyperlink: `${config.service.meltaBaseUrl}${workspacePath}/entity/${row[key].properties._id}`,
+          };
+};
+
+const userArrayCell = (cell: Excel.Cell, row: Record<string, any>, key: string, insertEntities?: boolean) => {
+    const currentValue = row[key];
+    cell.value = insertEntities
+        ? Array.isArray(currentValue)
+            ? currentValue.join(', ')
+            : currentValue
+        : currentValue.map((stringUser) => JSON.parse(stringUser).fullName).join(', ');
 };
 
 const filesCell = (cell: Excel.Cell, isFileArray: boolean, rowIndex: number, value: string, workspaceId: string) => {
@@ -186,19 +236,28 @@ const fixComplexProperties = (
     [key, value]: [string, IEntitySingleProperty],
     rowIndex: number,
     workspace: { path: string; id: string },
+    insertEntities?: boolean,
 ) => {
     const isFileArray = value.type === 'array' && value.items?.format === 'fileId';
     const isSingleFile = value.format === 'fileId';
     const isSignature = value.format === 'signature';
+    const isUserArray = value.type === 'array' && value.items?.format === 'user';
 
     if (value.format === 'relationshipReference') {
-        relationshipRefCell(cell, [key, value], row, workspace.path);
+        relationshipRefCell(cell, [key, value], row, workspace.path, insertEntities);
         return true;
     }
+
     if (isSingleFile || isFileArray || isSignature) {
         filesCell(cell, isFileArray, rowIndex, row[key], workspace.id);
         return true;
     }
+
+    if (isUserArray) {
+        userArrayCell(cell, row, key, insertEntities);
+        return true;
+    }
+
     return false;
 };
 
@@ -215,8 +274,10 @@ const styleAWorksheet = (
     rows: IEntity['properties'][],
     templateItem: TemplateItem,
     workspace: { path: string; id: string },
+    unitsMap: Map<string, string>,
     displayColumns?: string[],
     headersOnly?: boolean,
+    insertEntities?: boolean,
     skip: number = 0,
 ) => {
     const { type, metaData: template } = templateItem;
@@ -247,14 +308,12 @@ const styleAWorksheet = (
                 cell.alignment = excelStyle.cell.alignment;
                 cell.font = excelStyle.cell.font;
 
-                const isComplex = fixComplexProperties(cell, row, [key, value], rowIndex, workspace);
+                const isComplex = fixComplexProperties(cell, row, [key, value], rowIndex, workspace, insertEntities);
                 if (!isComplex) {
                     cell.value = row[key];
 
                     if (typeof cell.value === 'boolean') cell.value = cell.value ? excelConfig.TRUE_TO_HEBREW : excelConfig.FALSE_TO_HEBREW;
-                    if (value.format === 'user') cell.value = JSON.parse(cell.value as string).fullName;
-                    if (value.items?.format === 'user')
-                        cell.value = (cell.value as any).map((stringUser) => JSON.parse(stringUser).fullName).join(', ');
+                    if (value.format === 'user') cell.value = insertEntities ? cell.value : JSON.parse(cell.value as string).fullName;
                     if (value.format === 'location') {
                         if (typeof cell.value === 'string' && !cell.value.includes('{')) return;
                         const location: { location: string; coordinateSystem: CoordinateSystem.UTM | CoordinateSystem.WGS84 } =
@@ -263,6 +322,9 @@ const styleAWorksheet = (
                             location.coordinateSystem === CoordinateSystem.UTM
                                 ? locationConverterToString(location.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
                                 : location.location;
+                    }
+                    if (value.format === 'unitField') {
+                        cell.value = unitsMap.get(cell.value as string);
                     }
 
                     // Check if value is date
@@ -304,6 +366,7 @@ const styleAWorksheet = (
             }
         });
     });
+
     Object.entries(allProperties).forEach(([_key, value], columnIndex) => {
         if (value.archive) worksheet.getColumn(columnIndex + 1).hidden = true;
     });

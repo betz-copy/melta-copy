@@ -1,12 +1,12 @@
-import React, { SetStateAction } from 'react';
 import { Accordion, styled } from '@mui/material';
 import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import _debounce from 'lodash.debounce';
-import { FieldEditCardProps } from '../FieldEditCard';
-import { StepComponentHelpers } from '../..';
+import React, { SetStateAction } from 'react';
 import { IUniqueConstraintOfTemplate } from '../../../../interfaces/entities';
-import { CommonFormInputProperties, GroupProperty, PropertyItem } from '../commonInterfaces';
+import { StepComponentHelpers } from '../..';
 import { PropertiesTypes } from '../AddFields';
+import { CommonFormInputProperties, GroupProperty, PropertyItem } from '../commonInterfaces';
+import { FieldEditCardProps } from '../FieldEditCard';
 
 export const ItemTypes = {
     FIELD: 'field',
@@ -23,6 +23,7 @@ export const FieldBlockAccordion = styled(Accordion)({
 
 export interface FieldProps {
     field: CommonFormInputProperties;
+    values: Record<string, PropertyItem[]>;
     index: number;
     parentId: string | null;
     onDrop: (item: any, toIndex: number, toGroupId: string | null) => void;
@@ -30,12 +31,13 @@ export interface FieldProps {
     setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
     setValues: (value: SetStateAction<CommonFormInputProperties>) => void;
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
-    setUniqueConstraints: ((uniqueConstraints: SetStateAction<IUniqueConstraintOfTemplate[]>) => void) | undefined;
+    setUniqueConstraints?: (uniqueConstraints: SetStateAction<IUniqueConstraintOfTemplate[]>) => void;
     moveGroup?: (group: GroupProperty, toIndex: number, toGroupId?: string | null) => void;
 }
 
 export interface GroupProps<PropertiesType extends string, Values extends Record<PropertiesType, PropertyItem[]>> {
     group: GroupProperty;
+    values: Values;
     index: number;
     moveField: (item: CommonFormInputProperties, toIndex: number, toGroupId: string | null) => void;
     moveGroup?: (group: GroupProperty, toIndex: number, toGroupId?: string | null) => void;
@@ -102,7 +104,7 @@ export interface FieldBlockProps<PropertiesType extends string, Values extends R
     archive?: (index: number, groupIndex?: number) => void;
     remove?: (
         index: number,
-        isNewProperty: Boolean,
+        isNewProperty: boolean,
         propertiesType: PropertiesTypes,
         setShowAreUSureDialogForRemoveProperty: (v: boolean) => void,
         groupIndex?: number,

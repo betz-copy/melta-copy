@@ -1,5 +1,5 @@
-import mongoose from 'mongoose';
 import { DashboardItemType } from '@microservices/shared';
+import mongoose from 'mongoose';
 import config from '../../config';
 
 const TableMetaDataSchema = new mongoose.Schema(

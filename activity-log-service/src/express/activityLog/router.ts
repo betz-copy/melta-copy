@@ -1,5 +1,5 @@
-import { Router } from 'express';
 import { createController, ValidateRequest } from '@microservices/shared';
+import { Router } from 'express';
 import ActivityLogController from './controller';
 import { getActivitySchema } from './validator.schema';
 

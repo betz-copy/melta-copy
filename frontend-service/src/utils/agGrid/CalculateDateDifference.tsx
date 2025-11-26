@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
 import { intervalToDuration, isFuture, isToday, isTomorrow, isYesterday, parse } from 'date-fns';
 import i18next from 'i18next';
-import { HighlightText } from '../HighlightText';
+import React, { useEffect, useState } from 'react';
 import { environment } from '../../globals';
+import { HighlightText } from '../HighlightText';
 
 const { date: dateFormat, time } = environment.formats;
 

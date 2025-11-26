@@ -1,7 +1,7 @@
 import { IEntity } from '../entity';
 import { IRelationshipPopulated } from '../relationship';
 import { IUser } from '../user';
-import { IActionMetadata, ActionTypes, IActionMetadataPopulated } from './actionMetadata';
+import { ActionTypes, IActionMetadata, IActionMetadataPopulated } from './actionMetadata';
 
 export interface ICauseInstance {
     // same format of IVariable in Formula interfaces, but with instance ids
