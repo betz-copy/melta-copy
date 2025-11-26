@@ -1,5 +1,5 @@
 import { ExpandMore, InfoOutlined } from '@mui/icons-material';
-import { Autocomplete, AutocompleteInputChangeReason, AutocompleteProps, TextField, Typography } from '@mui/material';
+import { Autocomplete, AutocompleteInputChangeReason, AutocompleteProps, Grid, TextField, Typography } from '@mui/material';
 import i18next from 'i18next';
 import _debounce from 'lodash.debounce';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -50,7 +50,7 @@ export const getChildTemplatesFilter = (
 };
 
 const TemplateEntitiesAutocomplete: React.FC<{
-    template: IMongoEntityTemplatePopulated;
+    template: IMongoEntityTemplatePopulated | undefined;
     showField: string;
     value: IEntity | null;
     currentEntity: EntityWizardValues['properties'];
@@ -166,7 +166,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
 
     const emptyDependentFields = Object.entries(dependentFields)
         .filter(([_, value]) => value === undefined || value === null)
-        .map(([key]) => template.properties.properties[key].title);
+        .map(([key]) => template?.properties.properties[key].title);
 
     const isDisabled = React.useMemo(() => disabled || !!emptyDependentFields.length, [disabled, dependentFields]);
 
@@ -180,7 +180,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery(
         ['searchEntitiesOfTemplate', template?._id, inputValue],
         ({ pageParam = 0 }) => {
-            return searchFunction(template?._id, clientSideUserEntity?.properties?._id, {
+            return searchFunction(template!._id, clientSideUserEntity?.properties?._id, {
                 skip: pageParam * cacheBlockSize,
                 limit: cacheBlockSize,
                 filter: parseAndAddDisabled(relationFilters),
@@ -324,7 +324,13 @@ const TemplateEntitiesAutocomplete: React.FC<{
                                 readOnly,
                                 endAdornment: readOnly ? undefined : params.InputProps.endAdornment,
                                 startAdornment: relProperty ? (
-                                    <RelationshipReferenceView entity={value} relatedTemplateId={value.templateId} relatedTemplateField={showField} />
+                                    <Grid width="100%">
+                                        <RelationshipReferenceView
+                                            entity={value}
+                                            relatedTemplateId={value.templateId}
+                                            relatedTemplateField={showField}
+                                        />
+                                    </Grid>
                                 ) : undefined,
                                 inputProps: {
                                     ...params.inputProps,
@@ -374,7 +380,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
                                 ) : (
                                     <EntityPropertiesInternal
                                         properties={option.properties}
-                                        entityTemplate={template}
+                                        entityTemplate={template!}
                                         coloredFields={option.coloredFields}
                                         showPreviewPropertiesOnly
                                         mode="white"
