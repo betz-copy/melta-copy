@@ -215,18 +215,21 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const { entitiesWithFiles, filter: defaultFilter, ...body } = searchBody;
         const [currentUser, units] = await Promise.all([UserService.getUserById(userId), UserService.getUnits({ workspaceId: this.workspaceId })]);
 
-        const childTemplates = await this.entityTemplateService.searchChildTemplates({ ids: childTemplateIds });
+        let mergedFilterChildren: ISearchFilter | undefined;
 
-        const childTemplatesFilters = childTemplates.map((childTemplate) =>
-            getDefaultFilterFromChildTemplate(
-                childTemplate,
-                currentUser.kartoffelId,
-                UsersManager.getUnitsWithInheritance(units, currentUser.units?.[this.workspaceId] ?? []),
-                isWorkspaceAdmin(currentUser?.permissions?.[this.workspaceId]),
-            ),
-        );
+        if (childTemplateIds?.length) {
+            const childTemplates = await this.entityTemplateService.searchChildTemplates({ ids: childTemplateIds });
 
-        const mergedFilterChildren = getFilterModal(childTemplatesFilters, FilterLogicalOperator.OR);
+            const childTemplatesFilters = childTemplates.map((childTemplate) =>
+                getDefaultFilterFromChildTemplate(
+                    childTemplate,
+                    currentUser.kartoffelId,
+                    UsersManager.getUnitsWithInheritance(units, currentUser.units?.[this.workspaceId] ?? []),
+                    isWorkspaceAdmin(currentUser?.permissions?.[this.workspaceId]),
+                ),
+            );
+            mergedFilterChildren = getFilterModal(childTemplatesFilters, FilterLogicalOperator.OR);
+        }
 
         let dashboardFilters: ISearchFilter | undefined;
         if (externalId) {
