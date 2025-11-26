@@ -18,6 +18,7 @@ import { CustomIcon } from './CustomIcon';
 import { EntityPropertiesInternal } from './EntityProperties';
 import { CoordinateSystem } from './inputs/JSONSchemaFormik/RjsfLocationWidget';
 import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
+import { getFirstXFilledPropsKeys } from '../utils/templates';
 
 interface RelationshipReferenceViewProps {
     entity: IEntity | string;
@@ -164,20 +165,24 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
                 }}
                 arrow
                 placement="top"
-                title={
-                    relatedEntityTemplate.propertiesPreview.length === 0 ? (
-                        <Typography color="#53566E">{i18next.t('templateEntitiesAutocomplete.noPreviewFields')}</Typography>
-                    ) : (
-                        <EntityPropertiesInternal
-                            properties={entity.properties}
-                            coloredFields={entity.coloredFields}
-                            entityTemplate={template ?? adjustedChildTemplate!}
-                            showPreviewPropertiesOnly
-                            mode="normal"
-                            textWrap
-                        />
-                    )
-                }
+             title={
+    (() => {
+        const fieldsToShow = getFirstXFilledPropsKeys(5, relatedEntityTemplate, entity);
+        
+        return fieldsToShow.length === 0 ? (
+            <Typography color="#53566E">{i18next.t('templateEntitiesAutocomplete.noPreviewFields')}</Typography>
+        ) : (
+            <EntityPropertiesInternal
+                properties={entity.properties}
+                coloredFields={entity.coloredFields}
+                entityTemplate={template ?? adjustedChildTemplate!}
+                overridePropertiesToShow={fieldsToShow}
+                mode="normal"
+                textWrap
+            />
+        );
+    })()
+}
             >
                 <Link
                     href={`/entity/${entity.properties._id}${!template ? `?childTemplateId=${adjustedChildTemplate?._id}` : ''}`}

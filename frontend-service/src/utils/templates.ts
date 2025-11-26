@@ -1,6 +1,6 @@
 import { IMongoCategory } from '../interfaces/categories';
 import { IChildTemplateMap, IChildTemplatePopulated, IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
-import { IEntityExpanded } from '../interfaces/entities';
+import { IEntity, IEntityExpanded } from '../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../interfaces/relationshipTemplates';
 import { INestedRelationshipTemplates } from '../pages/Entity';
@@ -189,6 +189,21 @@ export const getFirstXPropsKeys = (numOfPropsToShow: number, entityTemplate: IMo
             )
             .slice(0, Math.max(numOfPropsToShow - entityTemplate.propertiesPreview.length, 0)),
     ];
+};
+
+export const getFirstXFilledPropsKeys = (
+    numOfPropsToShow: number,
+    entityTemplate: IMongoEntityTemplatePopulated,
+    entity: IEntity,
+): string[] => {
+    if (entityTemplate.propertiesPreview.length > 0) {
+        return entityTemplate.propertiesPreview;
+    }
+
+    return getFirstXPropsKeys(numOfPropsToShow, entityTemplate).filter((field) => {
+        const value = entity.properties[field];
+        return value !== undefined && value !== null && value !== '';
+    });
 };
 
 export const isChildTemplate = (
