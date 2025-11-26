@@ -4,7 +4,6 @@ import i18next from 'i18next';
 import _ from 'lodash';
 import _cloneDeep from 'lodash.clonedeep';
 import _debounce from 'lodash.debounce';
-import _isEqual from 'lodash.isequal';
 import React, { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -136,7 +135,12 @@ const MyPermissions: React.FC<{
             console.error('failed to edit user units. error:', error);
             toast.error(i18next.t('permissions.permissionsOfUserDialog.failedToEditUnitsOfUser'));
         },
-        onSuccess,
+        onSuccess: (newUser) => {
+            onSuccess?.(newUser);
+            queryClient.invalidateQueries('allIFrames');
+            toast.success(i18next.t('permissions.permissionsOfUserDialog.succeededToUpdatePermission'));
+            handleClose();
+        },
     });
 
     const { mutateAsync: syncUserPermissions } = useMutation(
@@ -157,7 +161,7 @@ const MyPermissions: React.FC<{
 
                 onSuccess?.({ ...existingUser, permissions: newPermissions });
 
-                if (existingUser?._id === currentUser._id && !_isEqual(currentUser.currentWorkspacePermissions, newPermissions[workspace._id])) {
+                if (existingUser?._id === currentUser._id && !_.isEqual(currentUser.currentWorkspacePermissions, newPermissions[workspace._id])) {
                     setUser({
                         ...currentUser,
                         permissions: { ...currentUser.permissions, ...newPermissions },
@@ -207,7 +211,7 @@ const MyPermissions: React.FC<{
                 else {
                     if (!currentRole && !_.isEqual(existingUser?.permissions, formUser.permissions)) {
                         await syncUserPermissions(formUser); // update personal permissions (without roles)
-                    } else {
+                    } else if (!_.isEqual(prevRole, currentRole)) {
                         if (prevRole === undefined && !!currentRole) await deletePermissionsOfUser(); // when role added instead of personal permissions, remove personal permissions
                         await updateUserRoleId(formUser); // role changed, added or deleted
                     }
