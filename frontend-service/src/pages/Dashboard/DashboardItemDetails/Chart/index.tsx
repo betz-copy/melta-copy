@@ -116,12 +116,13 @@ const Chart: React.FC = () => {
     const getBackPath = () => {
         const path = isDashboardPage ? dashboardPath : `${chartPath}/${templateId}`;
 
-        const title = `${i18next.t(`dashboard.${isDashboardPage ? 'mainScreen' : 'charts.chartsPage'}`)} ${isDashboardPage
+        const title = `${i18next.t(`dashboard.${isDashboardPage ? 'mainScreen' : 'charts.chartsPage'}`)} ${
+            isDashboardPage
                 ? ''
                 : childTemplate
-                    ? childTemplates.get(childTemplate._id)?.displayName
-                    : entityTemplates.get(currTemplateId!)?.displayName
-            } `;
+                  ? childTemplates.get(childTemplate._id)?.displayName
+                  : entityTemplates.get(currTemplateId!)?.displayName
+        } `;
 
         return { path, title };
     };

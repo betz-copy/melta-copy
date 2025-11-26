@@ -3,8 +3,6 @@ import { Box, Button, Dialog, DialogActions, DialogContent, Grid, Typography, us
 import i18next from 'i18next';
 import React from 'react';
 import Confetti from 'react-confetti';
-import ReactDOM from 'react-dom';
-import { position } from 'stylis';
 import MeltaTooltip from './common/MeltaDesigns/MeltaTooltip';
 import { useDarkModeStore } from './stores/darkMode';
 

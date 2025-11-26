@@ -23,9 +23,10 @@ export const tableFilterDetailsSchema = Yup.object().shape({
 });
 
 export const dashboardInitialValues = {
-    table: { templateId: '', name: '', description: '', columns: [] } as TableForm,
+    table: { _id: undefined, templateId: '', name: '', description: '', columns: [] } as TableForm,
     iframe: { name: '', url: '' } as IFrame,
     chart: {
+        _id: '',
         name: '',
         description: '',
         type: IChartType.Line,

@@ -506,6 +506,7 @@ export default {
             createBtn: 'הוספה',
             failedToCreatePermissionsOfUser: 'נכשל להוסיף הרשאות למשתמש',
             failedToEditPermissionsOfUser: 'נכשל לערוך הרשאות של משתמש',
+            failedToEditUnitsOfUser: 'נכשל לערוך יחידות של משתמש',
             succeededToCreatePermission: 'נוצר הרשאות משתמש בהצלחה',
             succeededToUpdatePermission: 'עודכן הרשאות משתמש בהצלחה',
             userAlreadyExistOnCreateMessage: 'המשתמש כבר קיים',

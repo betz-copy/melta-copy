@@ -2,6 +2,8 @@ import {
     ChartItem,
     ChartsAndGenerator,
     DashboardItemType,
+    getDefaultFilterFromChildTemplate,
+    getFilterModal,
     IAxisField,
     IChart,
     IChartBody,
@@ -12,15 +14,18 @@ import {
     IMongoChart,
     IMongoEntityTemplatePopulated,
     IPieMetaData,
+    ISearchFilter,
     ISubCompactPermissions,
+    isWorkspaceAdmin,
 } from '@microservices/shared';
 import ChartService from '../../externalServices/dashboardService/chartService';
 import DashboardItemService from '../../externalServices/dashboardService/dashboardItemService';
 import InstancesService from '../../externalServices/instanceService';
+import UserService from '../../externalServices/userService';
 import DefaultManagerProxy from '../../utils/express/manager';
 import { getMetaDataAxes } from '../../utils/templateCharts/getMetaDataAxes';
 import TemplatesManager from '../templates/manager';
-import UserService from '../../externalServices/userService';
+import UsersManager from '../users/manager';
 
 class ChartManager extends DefaultManagerProxy<ChartService> {
     private instanceService: InstancesService;
@@ -107,6 +112,26 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
         }
     }
 
+    async getFullChartFilters(chart: IMongoChart, userId: string): Promise<IMongoChart> {
+        const [currentUser, units] = await Promise.all([UserService.getUserById(userId), UserService.getUnits({ workspaceId: this.workspaceId })]);
+
+        let childFilters: ISearchFilter | undefined;
+        if (chart.childTemplateId) {
+            const childTemplate = await this.templateManager.getChildTemplateById(chart.childTemplateId);
+
+            childFilters = getDefaultFilterFromChildTemplate(
+                childTemplate,
+                currentUser.kartoffelId,
+                UsersManager.getUnitsWithInheritance(units, currentUser.units?.[this.workspaceId] ?? []),
+                isWorkspaceAdmin(currentUser?.permissions?.[this.workspaceId]),
+            );
+        }
+
+        const chartFilterObj = chart.filter ? JSON.parse(chart.filter) : undefined;
+        const filter = childFilters || chartFilterObj ? JSON.stringify(getFilterModal([childFilters, chartFilterObj])) : undefined;
+        return { ...chart, filter };
+    }
+
     async getChartsWithPermissions(charts: IMongoChart[], userId: string, permissionsOfUserId: ISubCompactPermissions) {
         const chartPermissionChecks = await Promise.all(
             charts.map(async (chart) => {
@@ -115,26 +140,35 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
 
                 const isAllowedRelatedTemplate = await this.validateAllowedRelatedTemplate(userId, permissionsOfUserId, chart);
 
-                return hasPermission && isAllowedRelatedTemplate ? chart : null;
+                return hasPermission && isAllowedRelatedTemplate ? await this.getFullChartFilters(chart, userId) : null;
             }),
         );
 
-        return chartPermissionChecks.filter((chart): chart is IMongoChart => chart !== null);
+        return chartPermissionChecks.filter((chart) => chart !== null);
     }
 
     async getChartsByTemplateId(templateId: string, textSearch?: string, childTemplateId?: string) {
         return this.service.getChartsByTemplateId(templateId, textSearch, childTemplateId);
     }
 
-    async generateCharts(allowedCharts: IMongoChart[], templateId: string, childTemplateId?: string) {
-        const chartsData: IChartBody[] = allowedCharts.map(({ _id, type, metaData, filter }) => ({
-            _id,
-            ...getMetaDataAxes(type, metaData, filter),
-        }));
+    async generateCharts(allowedCharts: IMongoChart[], templateId: string, userId: string, childTemplateId?: string) {
+        const chartsData: IChartBody[] = await Promise.all(
+            allowedCharts.map(async (chart) => {
+                const { _id, type, metaData, filter } = await this.getFullChartFilters(chart, userId);
+
+                return {
+                    _id,
+                    ...getMetaDataAxes(type, metaData, filter),
+                };
+            }),
+        );
 
         const units = await UserService.getUnits({ workspaceId: this.workspaceId });
 
-        const generatedCharts = await this.instanceService.getChartsOfTemplate(templateId, { chartsData, childTemplateId }, units) as { _id: string; chart: { x: any; y: number }[] }[];
+        const generatedCharts = (await this.instanceService.getChartsOfTemplate(templateId, { chartsData, childTemplateId }, units)) as {
+            _id: string;
+            chart: { x: any; y: number }[];
+        }[];
 
         const generatedChartsMap = new Map(generatedCharts.map(({ _id, chart }) => [_id, chart]));
 
@@ -160,7 +194,7 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
 
         const allowedCharts = await this.getChartsWithPermissions(charts, userId, permissionsOfUserId);
 
-        const generatedAndDataCharts = await this.generateCharts(allowedCharts, templateId, childTemplateId);
+        const generatedAndDataCharts = await this.generateCharts(allowedCharts, templateId, userId, childTemplateId);
 
         return generatedAndDataCharts.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     }

@@ -92,9 +92,9 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
     useEffect(() => {
         if (!units || !workspace) return;
 
-        setUnits(units);
+        setUnits(units.filter(({ disabled }) => !disabled));
 
-        const userUnits = new Set(Object.keys(currentUser.permissions[workspace._id]?.units?.ids ?? {}));
+        const userUnits = new Set(currentUser.units?.[workspace._id] ?? []);
         const unitsCopy = [...units];
 
         for (const unitId of userUnits) {
@@ -110,7 +110,7 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
         }
 
         const unitsWithInheritance = Array.from(userUnits);
-        if (!_.isEqual(currentUser.units, unitsWithInheritance)) setUser({ ...currentUser, units: unitsWithInheritance });
+        if (!_.isEqual(currentUser.currentUnits, unitsWithInheritance)) setUser({ ...currentUser, currentUnits: unitsWithInheritance });
     }, [units, setUnits, workspace, currentUser, setUser]);
 
     useEffect(() => {

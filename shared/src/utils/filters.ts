@@ -1,4 +1,4 @@
-import { IFilterGroup, ISearchEntitiesOfTemplateBody, ISearchFilter } from '../interfaces/entity';
+import { FilterLogicalOperator, IFilterGroup, ISearchEntitiesOfTemplateBody, ISearchFilter } from '../interfaces/entity';
 
 const evaluateOperator = (op: string, actual: any, expected: any): boolean => {
     switch (op) {
@@ -78,4 +78,15 @@ const combineFilters = (
     };
 };
 
-export { combineFilters, evaluateOperator, matchValueAgainstFilter };
+const getFilterModal = (
+    allFilters: (ISearchFilter | undefined)[],
+    filterLogicalOperator: FilterLogicalOperator = FilterLogicalOperator.AND,
+): ISearchFilter | undefined => {
+    const filters = allFilters.filter((filter): filter is ISearchFilter => filter !== undefined);
+
+    if (!filters.length) return undefined;
+
+    return filterLogicalOperator === FilterLogicalOperator.AND ? { [FilterLogicalOperator.AND]: filters } : { [FilterLogicalOperator.OR]: filters };
+};
+
+export { combineFilters, evaluateOperator, matchValueAgainstFilter, getFilterModal };

@@ -1,11 +1,19 @@
 import { ValidateRequest, wrapController } from '@microservices/shared';
 import { Router } from 'express';
 import UnitsController from './controller';
-import { createUnitRequestSchema, getUnitHierarchyRequestSchema, getUnitsRequestSchema, updateUnitRequestSchema } from './validator.schema';
+import {
+    createUnitRequestSchema,
+    getUnitHierarchyRequestSchema,
+    getUnitsByIdsRequestSchema,
+    getUnitsRequestSchema,
+    updateUnitRequestSchema,
+} from './validator.schema';
 
 const unitsRouter: Router = Router();
 
 unitsRouter.get('/', ValidateRequest(getUnitsRequestSchema), wrapController(UnitsController.getUnits));
+
+unitsRouter.post('/ids', ValidateRequest(getUnitsByIdsRequestSchema), wrapController(UnitsController.getUnitsByIds));
 
 unitsRouter.post('/', ValidateRequest(createUnitRequestSchema), wrapController(UnitsController.createUser));
 

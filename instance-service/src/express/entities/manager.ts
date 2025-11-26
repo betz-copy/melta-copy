@@ -581,17 +581,17 @@ class EntityManager extends DefaultManagerNeo4j {
             case IEntityCrudAction.onCreateEntity:
                 return duplicatedFromId
                     ? {
-                        actionType: ActionTypes.DuplicateEntity,
-                        actionMetadata: {
-                            templateId: entityTemplate._id,
-                            properties,
-                            entityIdToDuplicate: duplicatedFromId,
-                        } as IDuplicateEntityMetadata,
-                    }
+                          actionType: ActionTypes.DuplicateEntity,
+                          actionMetadata: {
+                              templateId: entityTemplate._id,
+                              properties,
+                              entityIdToDuplicate: duplicatedFromId,
+                          } as IDuplicateEntityMetadata,
+                      }
                     : {
-                        actionType: ActionTypes.CreateEntity,
-                        actionMetadata: { templateId: entityTemplate._id, properties } as ICreateEntityMetadata,
-                    };
+                          actionType: ActionTypes.CreateEntity,
+                          actionMetadata: { templateId: entityTemplate._id, properties } as ICreateEntityMetadata,
+                      };
 
             default:
                 throw new ValidationError('Invalid crudAction');
@@ -2205,8 +2205,8 @@ class EntityManager extends DefaultManagerNeo4j {
             UNWIND range(0, size(entities)-1) AS index
             WITH entities[index] AS currentEntity,  index AS currentIndex
             SET ${Object.entries(newSerialNumberFields)
-                    .map(([key, value]) => `\`currentEntity\`.${key} = toFloat(currentIndex + ${value})`)
-                    .join(', ')}
+                .map(([key, value]) => `\`currentEntity\`.${key} = toFloat(currentIndex + ${value})`)
+                .join(', ')}
             RETURN count(currentEntity) AS numEntitiesUpdated`;
             return runInTransactionAndNormalize(transaction, numOfEntitiesUpdated, normalizeResponseCount);
         });
@@ -2317,7 +2317,10 @@ class EntityManager extends DefaultManagerNeo4j {
         return filterDependentRulesViaAggregation(rules, relationshipTemplateId);
     }
 
-    async getChartByTemplate(templateId: string, { chartsData, childTemplateId, units }: { chartsData: IChartBody[]; childTemplateId?: string; units: IGetUnits }) {
+    async getChartByTemplate(
+        templateId: string,
+        { chartsData, childTemplateId, units }: { chartsData: IChartBody[]; childTemplateId?: string; units: IGetUnits },
+    ) {
         const childTemplate = childTemplateId ? await this.childTemplateManagerService.getChildTemplateById(childTemplateId) : undefined;
 
         const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);

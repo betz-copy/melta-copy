@@ -9,6 +9,11 @@ class DashboardItemService extends DefaultExternalServiceApi {
         super(workspaceId, { baseURL: `${url}${baseRoute}${dashboard.baseRoute}`, timeout: requestTimeout });
     }
 
+    async getDashboardItemById(dashboardItemId: string): Promise<MongoDashboardItemPopulated> {
+        const { data } = await this.api.get<MongoDashboardItemPopulated>(`/${dashboardItemId}`);
+        return data;
+    }
+
     async createDashboardItem(dashboardItem: DashboardItem): Promise<DashboardItem> {
         const { data } = await this.api.post('/', dashboardItem);
         return data;
