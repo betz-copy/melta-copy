@@ -1,5 +1,4 @@
 import { WidgetProps } from '@rjsf/utils';
-import React from 'react';
 import 'react-quill-new/dist/quill.snow.css';
 import TextArea from '../TextArea';
 

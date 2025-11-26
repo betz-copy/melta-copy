@@ -23,7 +23,7 @@ export const FieldBlockAccordion = styled(Accordion)({
 
 export interface FieldProps {
     field: CommonFormInputProperties;
-    values: any;
+    values: Record<string, PropertyItem[]>;
     index: number;
     parentId: string | null;
     onDrop: (item: any, toIndex: number, toGroupId: string | null) => void;

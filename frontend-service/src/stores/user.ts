@@ -13,7 +13,6 @@ export interface UserState {
         };
         displayName: string;
         unit: string;
-        units?: Record<string, string[]>;
         rank: string;
         exp: number;
         iat: number;
@@ -49,7 +48,9 @@ export const useUserStore = create<UserState>((set) => ({
         preferences: {},
         kartoffelId: '',
         permissions: {},
+        units: {},
         currentWorkspacePermissions: {},
+        currentUnits: [],
     },
     setUser: (user) => set({ user }),
 }));

@@ -22,6 +22,7 @@ export * from './interfaces/rule';
 export * from './interfaces/ruleBreach';
 export * from './interfaces/ruleBreach/agGrid';
 export * from './interfaces/semanticSearch';
+export * from './interfaces/unit';
 export * from './interfaces/user';
 export * from './interfaces/user';
 export * from './interfaces/workspace';
@@ -29,6 +30,7 @@ export * from './interfaces/workspace';
 export * from './interfaces/workspaceConfigs';
 export * from './types';
 export * from './utils/childTemplate';
+export * from './utils/dashboard';
 export * from './utils/express';
 export {
     addPropertyToRequest,
@@ -57,4 +59,5 @@ export { default as logger } from './utils/logger/logsLogger';
 export * from './utils/map';
 export * from './utils/map';
 export { default as DefaultManagerMongo } from './utils/mongo/manager';
+export * from './utils/permissions';
 export { searchFilterSchema } from './utils/validationSchema/searchFilterSchema';

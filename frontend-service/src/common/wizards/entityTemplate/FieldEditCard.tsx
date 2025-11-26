@@ -22,7 +22,7 @@ import { arrayTypes } from '../../../services/templates/entityTemplatesService';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
 import { validPropertyTypes } from './AddFields';
-import { CommonFormInputProperties } from './commonInterfaces';
+import { CommonFormInputProperties, PropertyItem } from './commonInterfaces';
 import { PropertiesTypes } from './Property/PropertyTypes';
 import { Switches } from './Property/Switches';
 import { FilterEntitiesByCriteria } from './RelationshipReference/filterEntitiesByCriteria';
@@ -32,7 +32,7 @@ const { mapSearchPropertiesLimit } = environment.map;
 export interface FieldEditCardProps {
     entity: string;
     value: CommonFormInputProperties;
-    values: any;
+    values: Record<string, PropertyItem[]>;
     index: number;
     isEditMode?: boolean;
     initialValue: CommonFormInputProperties | undefined;

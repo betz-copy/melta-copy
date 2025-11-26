@@ -17,7 +17,11 @@
                 "noStaticOnlyClass": "off"
             },
             "style": {
-                "useImportType": "off"
+                "useImportType": "off",
+                "noNonNullAssertion": "off"
+            },
+            "suspicious": {
+                "noThenProperty": "off"
             }
         }
     },

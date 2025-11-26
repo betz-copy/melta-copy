@@ -9,13 +9,14 @@ import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import React, { memo, useEffect, useState } from 'react';
+import { useQueryClient } from 'react-query';
 import { environment } from '../../../globals';
 import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { useWorkspaceStore } from '../../../stores/workspace';
 import { matchValueAgainstFilter } from '../../../utils/filters';
 import { uiSchemaUtils } from './ utils';
 import './form.css';
+import { IGetUnits } from '../../../interfaces/units';
 import InputAccordion from './InputAccordion';
 import RjsfCheckboxWidget from './RjsfCheckboxWidget';
 import RjsfCommentWidget from './RjsfCommentWidget';
@@ -195,18 +196,13 @@ const mergeErrorSchemas = (
     errors2: ErrorSchema<{}>,
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
 ): ErrorSchema<{}> => {
-    const merged = Object.entries(errors2).reduce(
-        (acc, [key, value]) => {
-            if (!acc?.[key]?.__errors) {
-                acc[key] = { __errors: [value] };
-            } else {
-                acc[key].__errors = [...new Set([...acc[key]._errors, value])];
-            }
-
-            return acc;
-        },
-        { ...errors1 },
-    );
+    const merged = { ...errors1 };
+    for (const key in errors2) {
+        if (Object.hasOwn(errors2, key)) {
+            if (!merged[key]) merged[key] = errors2[key];
+            else merged[key].__errors = [...new Set([...merged[key].__errors, ...errors2[key].__errors])];
+        }
+    }
 
     return convertErrorsToNestedGroups(template, merged);
 };
@@ -283,9 +279,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
 
     useEffect(() => {
         // define 100% width to text-area field
-        const containerDiv = document.querySelectorAll(
-            '#json-schema > .rjsf-field.rjsf-field-object > .MuiFormControl-root > .MuiGrid-root > .MuiGrid-root',
-        );
+        const containerDiv = document.querySelectorAll('#json-schema .MuiGrid-root > .MuiGrid-root:not(:has(> .rjsf-field.rjsf-field-object))');
         containerDiv.forEach((innerDiv) => {
             const biggerFieldCss = innerDiv.querySelector('.fullWidth') || checkboxProps;
             const classesToAdd: string[] = [];
@@ -343,13 +337,14 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
 
     schema.properties = { ...schema.properties, ...(schemaWithGroups ?? {}) };
 
-    const workspaceStore = useWorkspaceStore((state) => state.workspace);
+    const queryClient = useQueryClient();
+    const units = queryClient.getQueryData<IGetUnits>('getUnits');
 
     return (
         <JSONSchemaForm
             id="json-schema"
             schema={schema}
-            uiSchema={uiSchemaUtils(schema, values, setValues, isEditMode, toPrint, theme.palette.primary.main, workspaceStore.metadata.unitsArray)}
+            uiSchema={uiSchemaUtils(schema, values, setValues, isEditMode, toPrint, theme.palette.primary.main, units)}
             onChange={({ formData }) => {
                 Object.entries(formData as Record<string, IEntitySingleProperty>).forEach(([key, value]) => {
                     if (JSON.stringify(value) === JSON.stringify([undefined]) || JSON.stringify(value) === JSON.stringify([null]))

@@ -3,7 +3,7 @@ import { Autocomplete, Divider, Grid, IconButton, useTheme } from '@mui/material
 import { Box } from '@mui/system';
 import { FormikErrors, FormikProps, FormikTouched, getIn } from 'formik';
 import i18next from 'i18next';
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
 import { useQueryClient } from 'react-query';
 import { handleRemoveFilter, initializedFilterField, renderFilterInput } from '../../../common/FilterComponent';

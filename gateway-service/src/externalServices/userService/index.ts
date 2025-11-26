@@ -4,9 +4,13 @@ import {
     IBaseUser,
     ICompactNullablePermissions,
     ICompactPermissions,
+    IGetUnits,
+    IMongoUnit,
     IPermission,
     IRole,
     ISubCompactPermissions,
+    IUnit,
+    IUnitHierarchy,
     IUser,
     IUserPopulated,
     IUserSearchBody,
@@ -16,9 +20,7 @@ import {
 import axios from 'axios';
 import config from '../../config';
 
-const {
-    userService: { url, usersRoute, rolesRoute, permissionsRoute, requestTimeout },
-} = config;
+const { url, usersRoute, rolesRoute, permissionsRoute, unitsRoute, requestTimeout } = config.userService;
 
 class UserService {
     private static userService = axios.create({
@@ -132,6 +134,31 @@ class UserService {
 
     static async getAllWorkspaceRoles(workspaceIds: string[]) {
         const { data } = await UserService.userService.post<IRole[]>(`${rolesRoute}/workspaces`, { workspaceIds });
+        return data;
+    }
+
+    static async getUnits(params: Partial<IUnit> & Pick<IUnit, 'workspaceId'>) {
+        const { data } = await UserService.userService.get<IGetUnits>(`${unitsRoute}`, { params });
+        return data;
+    }
+
+    static async getUnitsByIds(ids: string[]) {
+        const { data } = await UserService.userService.post<IMongoUnit[]>(`${unitsRoute}/ids`, { ids });
+        return data;
+    }
+
+    static async createUnit(unit: IUnit) {
+        const { data } = await UserService.userService.post<IMongoUnit>(`${unitsRoute}`, unit);
+        return data;
+    }
+
+    static async updateUnit(id: string, update: Partial<IUnit>) {
+        const { data } = await UserService.userService.patch<IMongoUnit>(`${unitsRoute}/${id}`, update);
+        return data;
+    }
+
+    static async getUnitHierarchy(workspaceId: string) {
+        const { data } = await UserService.userService.get<IUnitHierarchy[]>(`${unitsRoute}/${workspaceId}/hierarchy`);
         return data;
     }
 }

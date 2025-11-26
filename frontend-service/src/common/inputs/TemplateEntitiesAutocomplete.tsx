@@ -29,10 +29,10 @@ const { fieldFilterPrefix } = environment;
 export const getChildTemplatesFilter = (
     childTemplatesOfRelatedTemplate: IChildTemplatePopulated[],
     workspace: IWorkspace,
+    currentUser: UserState['user'],
     isChildTemplate?: boolean,
-    currentUser?: UserState['user'],
 ): ISearchFilter | undefined => {
-    const currentUserKartoffelId = currentUser?.kartoffelId;
+    const currentUserKartoffelId = currentUser.kartoffelId;
 
     const childTemplatesFilters = childTemplatesOfRelatedTemplate
         .map((childTemplate) =>
@@ -40,7 +40,7 @@ export const getChildTemplatesFilter = (
                 childTemplate,
                 true,
                 currentUserKartoffelId,
-                currentUser?.units?.[workspace._id] ?? [],
+                currentUser?.currentUnits,
                 isWorkspaceAdmin(currentUser?.permissions?.[workspace._id] ?? {}),
             ),
         )
@@ -144,7 +144,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
 
     const parseAndAddDisabled = (filters: string | undefined): ISearchFilter => {
         const disabledCondition: ISearchFilter = { $and: { disabled: { $eq: false } } };
-        const childTemplatesFilter = getChildTemplatesFilter(childTemplatesOfRelatedTemplate, workspace, isChildTemplate, currentUser);
+        const childTemplatesFilter = getChildTemplatesFilter(childTemplatesOfRelatedTemplate, workspace, currentUser, isChildTemplate);
 
         const filtersArray = getDependentFieldsValues(filters, currentEntity).newFilters;
 
@@ -157,11 +157,10 @@ const TemplateEntitiesAutocomplete: React.FC<{
     const searchFunction = (templateId: string, clientSideUserEntityId: string, searchBody: ISearchEntitiesOfTemplateBody) =>
         clientSideUserEntity?.properties?._id
             ? searchEntitiesOfTemplateClientSideRequest(templateId, clientSideUserEntityId, searchBody)
-            : searchEntitiesOfTemplateRequest(
-                  templateId,
-                  searchBody,
-                  childTemplatesOfRelatedTemplate.map((childTemplate) => childTemplate._id),
-              );
+            : searchEntitiesOfTemplateRequest(templateId, {
+                  ...searchBody,
+                  childTemplateIds: childTemplatesOfRelatedTemplate.map((childTemplate) => childTemplate._id),
+              });
 
     const emptyDependentFields = Object.entries(dependentFields)
         .filter(([_, value]) => value === undefined || value === null)

@@ -44,6 +44,7 @@ export interface IUserSearchBody {
     workspaceIds?: string[];
     limit: number;
     step?: number;
+    ids?: string[];
     filterModel?: Record<string, object>;
     sortModel?: object[];
 }

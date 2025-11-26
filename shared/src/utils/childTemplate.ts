@@ -96,4 +96,35 @@ const childTemplateKeys: (keyof IChildTemplate)[] = [
     'filterByUnitUserField',
 ];
 
-export { dePopulateChildProperties, getChildPropertiesFiltered, getFilterFromChildTemplate, childTemplateKeys, isChildTemplate };
+const getDefaultFilterFromChildTemplate = (
+    template: IChildTemplatePopulated,
+    currentUserKartoffelId: string,
+    units: string[],
+    isUserAdmin: boolean,
+): ISearchFilter | undefined => {
+    const filterClauses: (IFilterOfTemplate | IFilterGroup)[] = [];
+
+    Object.entries(template.properties.properties).forEach(([key, prop]) => {
+        if (template.isFilterByCurrentUser && currentUserKartoffelId && template.filterByCurrentUserField === key)
+            filterClauses.push({ [key]: { $eq: currentUserKartoffelId } });
+
+        if (template.isFilterByUserUnit && units && !isUserAdmin && template.filterByUnitUserField === key)
+            filterClauses.push({ [key]: { $in: units } });
+
+        if (prop.filters) {
+            const parsed = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
+            if (parsed) filterClauses.push(parsed);
+        }
+    });
+
+    return filterClauses.length ? { $and: filterClauses } : undefined;
+};
+
+export {
+    dePopulateChildProperties,
+    getChildPropertiesFiltered,
+    getFilterFromChildTemplate,
+    childTemplateKeys,
+    isChildTemplate,
+    getDefaultFilterFromChildTemplate,
+};

@@ -7,6 +7,7 @@ import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
 import InstancesController from './controller';
 import InstancesValidator from './middlewares';
 import {
+    chartSchema,
     createEntityInstanceSchema,
     createRelationshipSchema,
     deleteEntityInstancesSchema,
@@ -21,6 +22,7 @@ import {
     searchEntitiesBatchRequestSchema,
     searchEntitiesByLocationRequestSchema,
     searchEntitiesByTemplatesSchema,
+    searchEntitiesOfTemplateSchema,
     updateEntityInstanceSchema,
     updateEntityStatusSchema,
     updateMultipleEntitiesSchema,
@@ -59,11 +61,17 @@ InstancesRouter.post(
 
 InstancesRouter.post(
     '/entities/search/template/:templateId',
+    ValidateRequest(searchEntitiesOfTemplateSchema),
     InstancesValidatorMiddleware.validateUserCanSearchEntitiesOfTemplate,
     InstancesControllerMiddleware.searchEntitiesOfTemplate,
 );
 
-InstancesRouter.post('/entities/chart/:templateId', InstancesValidatorMiddleware.validateUserCanGetChart, InstanceManagerProxy);
+InstancesRouter.post(
+    '/entities/chart/:templateId',
+    ValidateRequest(chartSchema),
+    InstancesValidatorMiddleware.validateUserCanGetChart,
+    InstancesControllerMiddleware.getChartOfTemplate,
+);
 
 InstancesRouter.post(
     '/entities/count',
@@ -136,6 +144,7 @@ InstancesRouter.post(
     busboyMiddleware,
     ValidateRequest(createEntityInstanceSchema),
     InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
+    InstancesValidatorMiddleware.validateEntityProperties,
     InstancesControllerMiddleware.createEntityInstance,
 );
 
@@ -145,6 +154,7 @@ InstancesRouter.put(
     ValidateRequest(updateEntityInstanceSchema),
     InstancesValidatorMiddleware.validateUserCanWriteEntityInstance,
     InstancesValidatorMiddleware.validateUserCanIgnoreRules,
+    InstancesValidatorMiddleware.validateEntityProperties,
     InstancesControllerMiddleware.updateEntityInstance,
 );
 
@@ -153,6 +163,7 @@ InstancesRouter.post(
     busboyMiddleware,
     ValidateRequest(updateEntityInstanceSchema),
     InstancesValidatorMiddleware.validateUserCanWriteEntityInstance,
+    InstancesValidatorMiddleware.validateEntityProperties,
     InstancesControllerMiddleware.duplicateEntityInstance,
 );
 
