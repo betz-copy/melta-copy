@@ -278,11 +278,15 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     const theme = useTheme();
 
     useEffect(() => {
-        // define 100% width to text-area field
-        const containerDiv = document.querySelectorAll('#json-schema .MuiGrid-root > .MuiGrid-root:not(:has(> .rjsf-field.rjsf-field-object))');
-        containerDiv.forEach((innerDiv) => {
+        const allInnerDivs = document.querySelectorAll('#json-schema .MuiGrid-root > .MuiGrid-root');
+
+        // Make cells not fullWidth in groups
+        allInnerDivs.forEach((innerDiv) => {
+            if (innerDiv.querySelector('.rjsf-field.rjsf-field-object')) return;
+
             const biggerFieldCss = innerDiv.querySelector('.fullWidth') || checkboxProps;
             const classesToAdd: string[] = [];
+
             classesToAdd.push(biggerFieldCss ? 'full-width-field' : 'half-width-field');
             if (biggerFieldCss) classesToAdd.push('direction-rtl');
             if (checkboxProps) classesToAdd.push('no-padding-top');
