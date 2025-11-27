@@ -35,13 +35,9 @@ export const BrokenRulesInfo: React.FC<{
                                         borderRadius: '10px',
                                         border: darkMode ? '1px solid #F0F2F7' : '',
                                     }}
+                                    key={`${brokenRule.ruleId}/${index}`}
                                 >
-                                    <BrokenRuleFull
-                                        key={`${brokenRule.ruleId}/${index}`}
-                                        brokenRule={brokenRule}
-                                        ruleTemplate={ruleTemplate}
-                                        actions={actions}
-                                    />
+                                    <BrokenRuleFull brokenRule={brokenRule} ruleTemplate={ruleTemplate} actions={actions} />
                                 </Grid>
                             );
                         })}

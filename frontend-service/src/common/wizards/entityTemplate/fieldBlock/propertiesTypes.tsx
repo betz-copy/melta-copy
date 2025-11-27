@@ -44,6 +44,7 @@ export const Attachment = ({ field, index, buildProps, onDrop }: AttachmentsProp
         }),
     });
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: let's keep it that way
     useEffect(() => {
         preview(getEmptyImage(), { captureDraggingState: true });
     }, []);
@@ -110,6 +111,7 @@ export const Field = ({
         }),
     });
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: let's keep it
     useEffect(() => {
         preview(getEmptyImage(), { captureDraggingState: true });
     }, []);

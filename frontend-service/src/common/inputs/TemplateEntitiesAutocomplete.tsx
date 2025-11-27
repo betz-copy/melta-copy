@@ -355,6 +355,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
                     >
                         {displayOptionValues.map((displayOptionValue, index) => (
                             <MeltaTooltip
+                                // biome-ignore lint/suspicious/noArrayIndexKey: lol
                                 key={`${displayOptionValue}${index}`}
                                 placement="top"
                                 title={template?.properties.properties[displayKeys[index]].title}

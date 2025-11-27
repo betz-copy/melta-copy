@@ -14,7 +14,7 @@ interface StepNameProps {
 export const StepName: React.FC<StepNameProps> = ({ step }) => {
     const queryClient = useQueryClient();
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
-    const stepName = useMemo(() => (step ? getStepName(step.templateId, processTemplatesMap) : undefined), [step]);
+    const stepName = useMemo(() => (step ? getStepName(step.templateId, processTemplatesMap) : undefined), [step, processTemplatesMap]);
 
     return (
         <MeltaTooltip title={!step && i18next.t('notifications.stepDeleted')}>

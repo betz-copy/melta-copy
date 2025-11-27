@@ -44,6 +44,7 @@ const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>
         setSelectedCategories(allSelected ? [...allowedCategoriesIds] : []);
     };
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         setFieldValue('categoryIds', selectedCategories);
     }, [selectedCategories]);

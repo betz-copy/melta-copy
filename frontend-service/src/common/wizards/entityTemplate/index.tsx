@@ -110,173 +110,171 @@ const EntityTemplateWizard: React.FC<
     },
     isEditMode = false,
 }) => {
-        const queryClient = useQueryClient();
-        const currentUser = useUserStore((state) => state.user);
-        const setUser = useUserStore((state) => state.setUser);
-        const currentWorkspace = useWorkspaceStore((state) => state.workspace);
+    const queryClient = useQueryClient();
+    const currentUser = useUserStore((state) => state.user);
+    const setUser = useUserStore((state) => state.setUser);
+    const currentWorkspace = useWorkspaceStore((state) => state.workspace);
 
-        const currentTemplateId = isEditMode ? (initialValues as EntityTemplateWizardValues & { _id: string })._id : undefined;
-        const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates') || new Map();
+    const currentTemplateId = isEditMode ? (initialValues as EntityTemplateWizardValues & { _id: string })._id : undefined;
+    const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates') || new Map();
 
-        const createTemplateNameSchema = useCreateOrEditTemplateNameSchema(templates, currentTemplateId);
+    const createTemplateNameSchema = useCreateOrEditTemplateNameSchema(templates, currentTemplateId);
 
-        const { isLoading, mutateAsync } = useMutation(
-            async (entityTemplate: EntityTemplateWizardValues) => {
+    const { isLoading, mutateAsync } = useMutation(
+        async (entityTemplate: EntityTemplateWizardValues) => {
+            if (isEditMode) {
+                return await updateEntityTemplateRequest(
+                    (initialValues as EntityTemplateWizardValues & { _id: string })._id,
+                    entityTemplate,
+                    queryClient,
+                );
+            }
+            const createdTemplate = await createEntityTemplateRequest(entityTemplate, queryClient);
+            return { template: createdTemplate, childTemplates: [] };
+        },
+        {
+            onSuccess: async ({ template: data, childTemplates }) => {
+                queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
+                queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) => {
+                    childTemplates.forEach((child) => childTemplateMap!.set(child._id, child));
+                    return childTemplateMap!;
+                });
+
+                queryClient.invalidateQueries(searchEntityTemplatesQueryKey);
+
                 if (isEditMode) {
-                    return await updateEntityTemplateRequest(
-                        (initialValues as EntityTemplateWizardValues & { _id: string })._id,
-                        entityTemplate,
-                        queryClient,
-                    );
-                }
-                const createdTemplate = await createEntityTemplateRequest(entityTemplate, queryClient);
-                return { template: createdTemplate, childTemplates: [] };
-            },
-            {
-                onSuccess: async ({ template: data, childTemplates }) => {
-                    queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
-                    queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) => {
-                        childTemplates.forEach((child) => childTemplateMap!.set(child._id, child));
-                        return childTemplateMap!;
-                    });
-
-                    queryClient.invalidateQueries(searchEntityTemplatesQueryKey);
-
-                    if (isEditMode) {
-                        toast.success(i18next.t('wizard.entityTemplate.editedSuccessfully'));
-
-                        try {
-                            const childTemplates: IMongoChildTemplatePopulated[] = await getAllChildTemplates();
-                            queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', mapTemplates(childTemplates, 'name'));
-                        } catch (error) {
-                            console.error(error);
-                            toast.error(i18next.t('wizard.failedToUpdateSystemData'));
-                        }
-                    } else {
-                        toast.success(i18next.t('wizard.entityTemplate.createdSuccessfully'));
-                        try {
-                            queryClient.setQueryData<ICategoryMap>('getCategories', (categories) => {
-                                const newCategoryMap = new Map(categories!);
-                                newCategoryMap.set(data.category._id, data.category);
-
-                                return newCategoryMap;
-                            });
-                        } catch (error) {
-                            console.error(error);
-                            toast.error(i18next.t('wizard.failedToUpdateSystemData'));
-                        }
-                    }
+                    toast.success(i18next.t('wizard.entityTemplate.editedSuccessfully'));
 
                     try {
-                        const relationshipTemplates = await getAllRelationshipTemplatesRequest();
-                        queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', mapTemplates(relationshipTemplates));
+                        const childTemplates: IMongoChildTemplatePopulated[] = await getAllChildTemplates();
+                        queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', mapTemplates(childTemplates, 'name'));
                     } catch (error) {
                         console.error(error);
                         toast.error(i18next.t('wizard.failedToUpdateSystemData'));
                     }
+                } else {
+                    toast.success(i18next.t('wizard.entityTemplate.createdSuccessfully'));
+                    try {
+                        queryClient.setQueryData<ICategoryMap>('getCategories', (categories) => {
+                            const newCategoryMap = new Map(categories!);
+                            newCategoryMap.set(data.category._id, data.category);
 
-                    const updatedUserPermissions = updateUserPermissionForEntityTemplate(data, currentUser, currentWorkspace._id);
-                    setUser(updatedUserPermissions);
-                    handleClose();
-                },
-                onError: (error: AxiosError, entityTemplateValues) => {
-                    const errorMetadata = (error.response?.data as IErrorResponse)?.metadata;
-
-                    if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToDeleteField) {
-                        const { type, property, relatedTemplateName } = errorMetadata;
-
-                        const errorMessages = {
-                            rules: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInRules', { property })}`,
-                            gantts: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInGantts', { property })}`,
-                            relationshipReference: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInRelationshipReference', {
-                                property,
-                                relatedTemplateName,
-                            })}`,
-                            charts: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInCharts', { property })}`,
-                        };
-
-                        toast.error(errorMessages[type]);
-                        return;
+                            return newCategoryMap;
+                        });
+                    } catch (error) {
+                        console.error(error);
+                        toast.error(i18next.t('wizard.failedToUpdateSystemData'));
                     }
-                    if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToCreateConstraints) {
-                        const { constraint }: { constraint: IConstraint } = errorMetadata;
-
-                        const newEntityTemplate = formToJSONSchema(entityTemplateValues, false, queryClient);
-
-                        if (constraint.type === 'REQUIRED') {
-                            const { title: constraintPropertyDisplayName } = newEntityTemplate.properties.properties[constraint.property];
-                            toast.error(
-                                `${i18next.t(
-                                    'wizard.entityTemplate.failedToUpdateRequiredConstraintsBecauseOfEntitiesWithMissing',
-                                )} ${constraintPropertyDisplayName}`,
-                            );
-                        } else {
-                            const constraintPropsDisplayNames = constraint.properties.map((prop) => newEntityTemplate.properties.properties[prop].title);
-
-                            const constraintPropsListString = constraintPropsDisplayNames.map((prop) => `"${prop}"`).join('+');
-                            toast.error(
-                                `${i18next.t(
-                                    'wizard.entityTemplate.failedToUpdateUniqueConstraintsBecauseOfEntitiesWithDuplicates',
-                                )} ${constraintPropsListString}`,
-                            );
-                        }
-
-                        return;
-                    }
-
-                    toast.error(
-                        <ErrorToast
-                            axiosError={error}
-                            defaultErrorMessage={i18next.t(`wizard.entityTemplate.${isEditMode ? 'failedToEdit' : 'failedToCreate'}`)}
-                        />,
-                    );
-
-                    console.error('failed to create/update entity template. error', error);
-                },
-            },
-        );
-
-        const steps: StepType<EntityTemplateWizardValues>[] = [
-            {
-                label: i18next.t('wizard.entityTemplate.chooseCategory'),
-                component: (props) => <ChooseCategory {...props} />,
-                validationSchema: chooseCategorySchema,
-            },
-            {
-                label: i18next.t('wizard.entityTemplate.chooseEntityTemplateName'),
-                component: (props, { isEditMode }) => <CreateTemplateName {...props} isEditMode={isEditMode} />,
-                validationSchema: createTemplateNameSchema,
-            },
-            {
-                label: i18next.t('wizard.entityTemplate.chooseIcon'),
-                component: (props) => <ChooseIcon {...props} />,
-            },
-            {
-                label: i18next.t('wizard.entityTemplate.properties'),
-                component: (props, { isEditMode, setBlock }) => <AddFields {...props} isEditMode={isEditMode} setBlock={setBlock} />,
-                validationSchema: addFieldsSchema,
-            },
-            {
-                label: i18next.t('wizard.entityTemplate.exportDocuments'),
-                component: (props) => <UploadExportFormats {...props} />,
-            },
-        ];
-
-        return (
-            <Wizard
-                open={open}
-                handleClose={handleClose}
-                initialValues={initialValues}
-                initialStep={initialStep}
-                isEditMode={isEditMode}
-                title={
-                    `${i18next.t(`wizard.entityTemplate.${isEditMode ? 'update' : 'create'}Title`)}${isEditMode ? `- ${initialValues.displayName}` : ''}`
                 }
-                steps={steps}
-                isLoading={isLoading}
-                submitFunction={(values) => mutateAsync(values)}
-            />
-        );
-    };
+
+                try {
+                    const relationshipTemplates = await getAllRelationshipTemplatesRequest();
+                    queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', mapTemplates(relationshipTemplates));
+                } catch (error) {
+                    console.error(error);
+                    toast.error(i18next.t('wizard.failedToUpdateSystemData'));
+                }
+
+                const updatedUserPermissions = updateUserPermissionForEntityTemplate(data, currentUser, currentWorkspace._id);
+                setUser(updatedUserPermissions);
+                handleClose();
+            },
+            onError: (error: AxiosError, entityTemplateValues) => {
+                const errorMetadata = (error.response?.data as IErrorResponse)?.metadata;
+
+                if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToDeleteField) {
+                    const { type, property, relatedTemplateName } = errorMetadata;
+
+                    const errorMessages = {
+                        rules: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInRules', { property })}`,
+                        gantts: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInGantts', { property })}`,
+                        relationshipReference: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInRelationshipReference', {
+                            property,
+                            relatedTemplateName,
+                        })}`,
+                        charts: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInCharts', { property })}`,
+                    };
+
+                    toast.error(errorMessages[type]);
+                    return;
+                }
+                if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToCreateConstraints) {
+                    const { constraint }: { constraint: IConstraint } = errorMetadata;
+
+                    const newEntityTemplate = formToJSONSchema(entityTemplateValues, false, queryClient);
+
+                    if (constraint.type === 'REQUIRED') {
+                        const { title: constraintPropertyDisplayName } = newEntityTemplate.properties.properties[constraint.property];
+                        toast.error(
+                            `${i18next.t(
+                                'wizard.entityTemplate.failedToUpdateRequiredConstraintsBecauseOfEntitiesWithMissing',
+                            )} ${constraintPropertyDisplayName}`,
+                        );
+                    } else {
+                        const constraintPropsDisplayNames = constraint.properties.map((prop) => newEntityTemplate.properties.properties[prop].title);
+
+                        const constraintPropsListString = constraintPropsDisplayNames.map((prop) => `"${prop}"`).join('+');
+                        toast.error(
+                            `${i18next.t(
+                                'wizard.entityTemplate.failedToUpdateUniqueConstraintsBecauseOfEntitiesWithDuplicates',
+                            )} ${constraintPropsListString}`,
+                        );
+                    }
+
+                    return;
+                }
+
+                toast.error(
+                    <ErrorToast
+                        axiosError={error}
+                        defaultErrorMessage={i18next.t(`wizard.entityTemplate.${isEditMode ? 'failedToEdit' : 'failedToCreate'}`)}
+                    />,
+                );
+
+                console.error('failed to create/update entity template. error', error);
+            },
+        },
+    );
+
+    const steps: StepType<EntityTemplateWizardValues>[] = [
+        {
+            label: i18next.t('wizard.entityTemplate.chooseCategory'),
+            component: (props) => <ChooseCategory {...props} />,
+            validationSchema: chooseCategorySchema,
+        },
+        {
+            label: i18next.t('wizard.entityTemplate.chooseEntityTemplateName'),
+            component: (props, { isEditMode }) => <CreateTemplateName {...props} isEditMode={isEditMode} />,
+            validationSchema: createTemplateNameSchema,
+        },
+        {
+            label: i18next.t('wizard.entityTemplate.chooseIcon'),
+            component: (props) => <ChooseIcon {...props} />,
+        },
+        {
+            label: i18next.t('wizard.entityTemplate.properties'),
+            component: (props, { isEditMode, setBlock }) => <AddFields {...props} isEditMode={isEditMode} setBlock={setBlock} />,
+            validationSchema: addFieldsSchema,
+        },
+        {
+            label: i18next.t('wizard.entityTemplate.exportDocuments'),
+            component: (props) => <UploadExportFormats {...props} />,
+        },
+    ];
+
+    return (
+        <Wizard
+            open={open}
+            handleClose={handleClose}
+            initialValues={initialValues}
+            initialStep={initialStep}
+            isEditMode={isEditMode}
+            title={`${i18next.t(`wizard.entityTemplate.${isEditMode ? 'update' : 'create'}Title`)}${isEditMode ? `- ${initialValues.displayName}` : ''}`}
+            steps={steps}
+            isLoading={isLoading}
+            submitFunction={(values) => mutateAsync(values)}
+        />
+    );
+};
 
 export { EntityTemplateWizard };

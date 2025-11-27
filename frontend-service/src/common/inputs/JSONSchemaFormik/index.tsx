@@ -314,7 +314,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             SignatureWidget: getComponent(RjsfSignatureWidgets, checkboxProps),
             UserAvatarWidget: getComponent(RjsfUserAvatarWidget, checkboxProps),
         }),
-        [],
+        [checkboxProps],
     );
 
     const schemaWithGroups = values.template?.fieldGroups?.reduce((acc, { fields, displayName, name }) => {
