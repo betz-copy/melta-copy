@@ -295,6 +295,7 @@ class EntityManager extends DefaultManagerNeo4j {
         properties: IEntity['properties'],
         entityTemplate: IMongoEntityTemplate,
         userId?: string,
+        newDestinationWallet?: IEntity,
         duplicatedFromId?: string,
     ) {
         const fixedProperties = JSON.parse(JSON.stringify(properties));
@@ -309,13 +310,34 @@ class EntityManager extends DefaultManagerNeo4j {
                         const { fixedField, relatedEntity } = await this.fixRelationshipReferenceField(relatedEntityId, transaction);
 
                         fixedProperties[name] = fixedField;
-                        relatedEntitiesByIds[relatedEntityId] = relatedEntity;
+
+                        if (entityTemplate.walletTransfer && name === entityTemplate.walletTransfer.to && newDestinationWallet) {
+                            const { properties, templateId } = newDestinationWallet;
+                            const { updatedAt, createdAt, disabled, _id } = properties;
+                            console.log({ 1: fixedProperties[name], 2: properties });
+
+                            fixedProperties[name] = { ...fixedProperties[name], updatedAt, createdAt, disabled, _id };
+                            relatedEntitiesByIds[properties._id] = {
+                                ...relatedEntity,
+                                properties: { ...relatedEntity.properties, ...properties },
+                                templateId,
+                            };
+                        } else relatedEntitiesByIds[relatedEntityId] = relatedEntity;
                     }
                 }
             }),
         );
-
-        console.log({ fixedProperties });
+        console.dir(
+            {
+                fixedProperties,
+                relatedEntitiesByIds,
+                important: {
+                    ...generateDefaultProperties(),
+                    ...(await addStringFieldsAndNormalizeSpecialStringValues(fixedProperties, entityTemplate, this.entityTemplateManagerService)),
+                },
+            },
+            { depth: Infinity },
+        );
 
         const createdEntity = await runInTransactionAndNormalize(
             transaction,
@@ -328,8 +350,7 @@ class EntityManager extends DefaultManagerNeo4j {
                 },
             },
         );
-
-        console.log({ createdEntity });
+        console.dir({ createdEntity }, { depth: Infinity });
 
         await Promise.all(
             Object.entries(entityTemplate.properties.properties).map(async ([name, property]) => {
@@ -709,6 +730,7 @@ class EntityManager extends DefaultManagerNeo4j {
         userId: string,
         duplicatedFromId?: string,
         childTemplateId?: string,
+        newDestWalletData?: IEntity,
     ) {
         let template = entityTemplate;
         let childTemplate: IChildTemplatePopulated | undefined;
@@ -741,45 +763,31 @@ class EntityManager extends DefaultManagerNeo4j {
             .performComplexTransaction('writeTransaction', async (transaction) => {
                 const allActivityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
 
-                if (template.walletTransfer) {
-                    const isDestinationWallet = template.properties.properties[template.walletTransfer.to].format === 'relationshipReference';
+                let newDestinationWallet: IEntity | undefined;
+                if (template.walletTransfer && newDestWalletData) {
+                    console.log({ newDestWalletData });
 
-                    if (isDestinationWallet && properties[template.walletTransfer.to] === '$twin') {
-                        const sourceWallet = await this.getEntityByIdInTransaction(properties[template.walletTransfer.from], transaction);
-                        console.log({ sourceWallet, x: template.properties.properties[template.walletTransfer.to] });
+                    const { createdEntity: newDestWallet, activityLogsToCreate } = await this.createEntityInTransaction(
+                        transaction,
+                        newDestWalletData.properties,
+                        await this.entityTemplateManagerService.getEntityTemplateById(newDestWalletData.templateId),
+                        userId,
+                    );
 
-                        for (const property of ['_id', 'createdAt', 'updatedAt'] as const) {
-                            delete sourceWallet.properties[property];
-                        }
+                    console.log('test', newDestWallet.properties);
 
-                        const newDestWalletData: IEntity = {
-                            ...sourceWallet,
-                            templateId: template.properties.properties[template.walletTransfer.to].relationshipReference?.relatedTemplateId ?? '',
-                        };
-
-                        console.log({ newDestWalletData });
-
-                        console.log('template', await this.entityTemplateManagerService.getEntityTemplateById(newDestWalletData.templateId));
-
-                        const { createdEntity: newDestWallet, activityLogsToCreate } = await this.createEntityInTransaction(
-                            transaction,
-                            newDestWalletData,
-                            await this.entityTemplateManagerService.getEntityTemplateById(newDestWalletData.templateId),
-                            userId,
-                        );
-                        console.log({ newDestWallet });
-
-                        properties[template.walletTransfer.to] = newDestWallet.properties._id;
-
-                        allActivityLogsToCreate.push(...activityLogsToCreate);
-                    }
+                    properties[template.walletTransfer.to] = properties[template.walletTransfer.from];
+                    newDestinationWallet = newDestWallet;
+                    allActivityLogsToCreate.push(...activityLogsToCreate);
                 }
 
+                console.log('test2', { ...properties });
                 const { createdEntity, activityLogsToCreate } = await this.createEntityInTransaction(
                     transaction,
                     properties,
                     template,
                     userId,
+                    newDestinationWallet,
                     duplicatedFromId,
                 );
                 const ruleFailuresAfterAction = await this.runRulesOnEntity(transaction, createdEntity);

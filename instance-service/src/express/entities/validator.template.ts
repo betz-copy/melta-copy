@@ -128,8 +128,11 @@ export class EntityValidator extends DefaultController {
     }
 
     validateEntity(entityTemplate: IMongoEntityTemplate, properties: Record<string, any>) {
+        console.log('validate', { properties });
+
         const validateFunction = ajv.compile(entityTemplate.properties);
         const valid = validateFunction(properties);
+        console.log({ valid });
 
         if (!valid) {
             const errors = validateFunction.errors?.map((error) => ({
@@ -141,6 +144,7 @@ export class EntityValidator extends DefaultController {
                     params: error.params,
                 },
             }));
+            console.dir({ errors }, {depth: null});
 
             throw new ValidationError(`Entity does not match template schema`, {
                 properties,
