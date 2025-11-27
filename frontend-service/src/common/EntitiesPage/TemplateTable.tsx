@@ -498,11 +498,11 @@ const TemplateTable = forwardRef<
                                 entitiesTableRef.current?.updateRowDataClientSide(entity);
                                 const entityTemplatesArray = Array.from(entityTemplates.values());
 
-                                const relatedTemplatesToUpdate = entityTemplatesArray.filter((entityTemplate) => {
-                                    return Object.values(entityTemplate.properties.properties).some((value) => {
-                                        return value.relationshipReference?.relatedTemplateId === entity.templateId;
-                                    });
-                                });
+                                const relatedTemplatesToUpdate = entityTemplatesArray.filter((entityTemplate) =>
+                                    Object.values(entityTemplate.properties.properties).some(
+                                        (value) => value.relationshipReference?.relatedTemplateId === entity.templateId,
+                                    ),
+                                );
 
                                 templateIdsToUpdate.push(...relatedTemplatesToUpdate.map((template) => template._id));
 
