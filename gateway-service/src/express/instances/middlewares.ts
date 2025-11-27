@@ -111,6 +111,7 @@ class InstancesValidator extends DefaultController {
                         limit: searchEntitiesMaxLimit,
                         showRelationships: false,
                         entityIdsToInclude: ids,
+                        filter: { $and: [{ _id: { $in: ids } }] },
                     });
 
                     if (entities.count !== ids.length) throw new ValidationError('some relationship references are not existing');
