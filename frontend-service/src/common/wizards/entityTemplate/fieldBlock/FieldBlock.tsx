@@ -227,13 +227,11 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                     displayValuesCopy.forEach((item, idx) => {
                         if (item.type === 'group') {
                             item.fields.forEach((nestedField, nestedIndex) => {
-                                if (nestedField.type === 'user' && nestedField.name === relatedUserFieldName && nestedField.deleted) {
+                                if (nestedField.type === 'user' && nestedField.name === relatedUserFieldName && nestedField.deleted) 
                                     indexesToUpdate.push({ index: nestedIndex, groupIndex: idx });
-                                }
                             });
-                        } else if (item.data.type === 'user' && item.data.name === relatedUserFieldName && item.data.deleted) {
+                        } else if (item.data.type === 'user' && item.data.name === relatedUserFieldName && item.data.deleted) 
                             indexesToUpdate.push({ index: idx });
-                        }
                     });
                 }
             }

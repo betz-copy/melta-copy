@@ -115,6 +115,7 @@ const Entity: React.FC = () => {
 
     const [selectedTabId, setSelectedTabId] = useState<string | null>(null);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         if (!expandedEntity) return;
 
@@ -152,7 +153,7 @@ const Entity: React.FC = () => {
             expandedEntity,
             groupChildTemplate,
         );
-    }, [currentEntityTemplate, expandedEntity]);
+    }, [currentEntityTemplate, expandedEntity, childTemplateId, groupChildTemplate, entityTemplates, relationshipTemplates]);
 
     const categoriesWithConnectionsTemplates = useMemo(() => {
         if (!connectionsTemplates) return;
@@ -192,7 +193,7 @@ const Entity: React.FC = () => {
         })
             .filter((currCategory) => currCategory.connectionsTemplates?.length > 0)
             .sort((a, b) => (b?.relationshipCount ?? 0) - (a?.relationshipCount ?? 0));
-    }, [connectionsTemplates, expandedEntity]);
+    }, [connectionsTemplates, expandedEntity, categories, entityTemplates, relationshipTemplates, groupChildTemplate, currentEntityTemplate]);
 
     useEffect(() => {
         if (categoriesWithConnectionsTemplates?.length && selectedTabId === null) {

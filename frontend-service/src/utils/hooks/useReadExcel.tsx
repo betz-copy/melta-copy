@@ -25,7 +25,7 @@ const convertFileDataToRowData = (gridData: any[][], headers: string[], template
 };
 
 const importDataToGrid = (fileData: any[][], template: IMongoEntityTemplatePopulated): { properties: Record<string, any> }[] | [] => {
-    if (fileData.length === 0) return [];
+    if (!fileData.length) return [];
 
     const headers = fileData[0] as string[];
     const newRows = convertFileDataToRowData(fileData.slice(1), headers, template);

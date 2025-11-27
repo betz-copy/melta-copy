@@ -1,5 +1,5 @@
 // Icons 2
-/** biome-ignore-all lint/suspicious/noShadowRestrictedNames: <explanation> */
+/** biome-ignore-all lint/suspicious/noShadowRestrictedNames: lol */
 import {
     Fa500Px as _500Px,
     FaAccessibleIcon as AccessibleIcon,

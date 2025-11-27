@@ -19,6 +19,7 @@ interface CreateRuleEmailNotificationProps {
 }
 
 export const CreateRuleEmailNotification: React.FC<CreateRuleEmailNotificationProps> = ({ mail, touched, errors, hasUserFields, setFieldValue }) => {
+    // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
     useEffect(() => {
         // set checkboxes to default on change
         if (mail && !hasUserFields) setFieldValue('mail.sendPermissionUsers', true);

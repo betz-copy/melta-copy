@@ -22,6 +22,7 @@ export const Navigation: React.FC = () => {
                     .filter(Boolean)
                     .map((segment, index) => (
                         <Button
+                            // biome-ignore lint/suspicious/noArrayIndexKey: the indexes never change
                             key={index}
                             sx={{ color: '#fff' }}
                             onClick={() =>

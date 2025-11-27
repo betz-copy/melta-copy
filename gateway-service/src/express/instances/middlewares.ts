@@ -84,7 +84,6 @@ class InstancesValidator extends DefaultController {
                     if (value) users.push(JSON.parse(value)._id);
                     break;
                 case 'relationshipReference': {
-                    // biome-ignore lint/style/noNonNullAssertion: types are bad
                     const { relatedTemplateId } = prop.relationshipReference!;
                     if (!relationshipRefs[relatedTemplateId]) relationshipRefs[relatedTemplateId] = [];
                     relationshipRefs[relatedTemplateId].push(value);

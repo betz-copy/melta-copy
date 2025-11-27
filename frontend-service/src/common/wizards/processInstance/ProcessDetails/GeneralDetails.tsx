@@ -37,6 +37,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({
         ? pickBy(values.template.details.properties.properties, (value) => value.format === 'entityReference')
         : undefined;
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: render
     useEffect(() => {
         if (values.template) {
             setPreviousTemplate(values.template);

@@ -1,5 +1,5 @@
 // Icons 3
-/** biome-ignore-all lint/suspicious/noShadowRestrictedNames: <explanation> */
+/** biome-ignore-all lint/suspicious/noShadowRestrictedNames: lol */
 import {
     BiAbacus as Abacus,
     BiAlarmExclamation as AlarmExclamation,

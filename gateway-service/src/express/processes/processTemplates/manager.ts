@@ -115,7 +115,7 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
             Object.keys(removedFileProperties.stepsProperties).forEach((stepId) => {
                 const stepWithFilesToRemove = processInstance.steps.find((step) => step.templateId === stepId);
 
-                if (stepWithFilesToRemove && stepWithFilesToRemove.properties) {
+                if (stepWithFilesToRemove?.properties) {
                     Object.entries(removedFileProperties.stepsProperties[stepId]).forEach(([filePropertyName, isMultipleFiles]) => {
                         const fileToRemove = stepWithFilesToRemove.properties![filePropertyName];
 

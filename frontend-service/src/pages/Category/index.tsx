@@ -97,6 +97,7 @@ const Category: React.FC = () => {
         });
     };
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: setTemplateIdsToShowCheckbox can't be in dependencies
     useEffect(() => {
         setCategoryTemplatesId((prevCategoryTemplatesId) => {
             const allAuthorizedTemplatesList = Array.from(allAuthorizedTemplatesMap.values());

@@ -111,6 +111,7 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
         previousTemplate.current = values.template;
     }, [values.template]);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
     useEffect(() => {
         if (values.template && !isEditMode) {
             if (values.template.name !== previousTemplate?.current?.name) {

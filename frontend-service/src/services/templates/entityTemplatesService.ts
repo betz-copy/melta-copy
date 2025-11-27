@@ -71,16 +71,41 @@ export const entityTemplateObjectToEntityTemplateForm = (
     const propertyData = (key: string, fieldGroup?: FieldGroupData) => {
         const value = properties.properties[key];
         let type = value.format || value.type;
-        if (value.serialStarter !== undefined) type = 'serialNumber';
-        else if (value.format === 'unitField') type = PropertyFormat.unitField;
-        else if (value.enum) type = 'enum';
-        else if (value.pattern) type = 'pattern';
-        else if (value.format && value.format === PropertyFormat['text-area']) type = PropertyFormat['text-area'];
-        else if (value.format && value.format === PropertyFormat.location) type = PropertyFormat.location;
-        else if (value.items?.enum) type = 'enumArray';
-        else if (value.items?.format === PropertyFormat.fileId) type = 'multipleFiles';
-        else if (value.items?.format === PropertyFormat.user) type = 'users';
-        else if (value.format && value.format === PropertyFormat.comment) type = PropertyFormat.comment;
+
+        if (value.serialStarter !== undefined) {
+            type = 'serialNumber';
+        } else if (value.enum) {
+            type = 'enum';
+        } else if (value.pattern) {
+            type = 'pattern';
+        } else if (value.items?.enum) {
+            type = 'enumArray';
+        } else if (value.items?.format === PropertyFormat.fileId) {
+            type = 'multipleFiles';
+        } else if (value.items?.format === PropertyFormat.user) {
+            type = 'users';
+        } else if (value.format) {
+            switch (value.format) {
+                case PropertyFormat.unitField:
+                    type = PropertyFormat.unitField;
+                    break;
+
+                case PropertyFormat['text-area']:
+                    type = PropertyFormat['text-area'];
+                    break;
+
+                case PropertyFormat.location:
+                    type = PropertyFormat.location;
+                    break;
+
+                case PropertyFormat.comment:
+                    type = PropertyFormat.comment;
+                    break;
+
+                default:
+                    type = value.format; // fallback for any other format
+            }
+        }
 
         const property: EntityTemplateFormInputProperties = {
             id: uuid(),
@@ -341,15 +366,14 @@ const buildBasePropertySchema = (property: EntityTemplateFormInputProperties, qu
         hideFromDetailsPage,
         isProfileImage,
         color: comment && !color ? '#4752B6' : color,
-        uniqueItems: type === 'enumArray' || type === 'users' ? true : undefined,
+        uniqueItems: ['enumArray', 'users'].includes(type) ? true : undefined,
         pattern: type === 'pattern' ? pattern : undefined,
         patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
         dateNotification: dateNotification as number | undefined,
         calculateTime: calculateTime ?? undefined,
         isDailyAlert: isDailyAlert ?? (dateNotification !== undefined ? true : undefined),
         isDatePastAlert: isDatePastAlert ?? (dateNotification !== undefined ? true : undefined),
-        serialStarter: type === 'serialNumber' ? serialStarter : undefined,
-        serialCurrent: type === 'serialNumber' ? serialStarter : undefined,
+        ...(type === 'serialNumber' ? { serialStarter, serialCurrent: serialStarter } : {}),
         relationshipReference: relationshipReference
             ? {
                   ...relationshipReference,
@@ -388,7 +412,7 @@ const collectEnumColors = (
     property: EntityTemplateFormInputProperties,
     enumPropertiesColors: IEntityTemplate['enumPropertiesColors'] | undefined,
 ) => {
-    if (property.type !== 'enum' && property.type !== 'enumArray') return enumPropertiesColors;
+    if (!['enum', 'enumArray'].includes(property.type)) return enumPropertiesColors;
 
     Object.entries(property.optionColors).forEach(([option, enumColor]) => {
         if (!enumColor) return;

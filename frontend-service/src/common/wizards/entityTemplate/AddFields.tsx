@@ -375,15 +375,13 @@ export const FieldBlockWrapper = ({
             if (property.type === 'group' && 'fields' in property && Array.isArray(property.fields)) {
                 for (let idx = 0; idx < property.fields.length; idx++) {
                     const field = property.fields[idx];
-                    if (field.type === 'kartoffelUserField' && field.expandedUserField?.relatedUserField === propertyToCheck.name) {
+                    if (field.type === 'kartoffelUserField' && field.expandedUserField?.relatedUserField === propertyToCheck.name)
                         indexesArray.push({ propertyIndex: idx, propertyGroupIndex: index });
-                    }
                 }
             } else if (property.type !== 'group') {
                 const propertyData = (property as FieldProperty).data;
-                if (propertyData.type === 'kartoffelUserField' && propertyData.expandedUserField?.relatedUserField === propertyToCheck.name) {
+                if (propertyData.type === 'kartoffelUserField' && propertyData.expandedUserField?.relatedUserField === propertyToCheck.name)
                     indexesArray.push({ propertyIndex: index });
-                }
             }
         }
 

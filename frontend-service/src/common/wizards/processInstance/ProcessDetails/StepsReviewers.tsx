@@ -22,6 +22,7 @@ const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processIn
         }
     };
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         updateCardWidth();
         window.addEventListener('resize', updateCardWidth);
@@ -29,6 +30,7 @@ const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processIn
             window.removeEventListener('resize', updateCardWidth);
         };
     }, []);
+
     return (
         <Grid size={{ xs: 10 }} marginBottom={1}>
             <Card

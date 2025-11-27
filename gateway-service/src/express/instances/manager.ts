@@ -1123,14 +1123,13 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             const propertyTemplate = entityTemplate.properties.properties[field];
 
             let newValue: any;
-            if (propertyTemplate?.format === 'fileId' || propertyTemplate?.items?.format === 'fileId') {
+            if (propertyTemplate?.format === 'fileId' || propertyTemplate?.items?.format === 'fileId')
                 newValue = uploadedFilesAndProperties[field] ?? updatedEntity.properties[field];
-            } else if (propertyTemplate?.format === 'relationshipReference') {
+            else if (propertyTemplate?.format === 'relationshipReference') {
                 if (updatedEntity.properties[field]?.properties) newValue = updatedEntity.properties[field].properties._id;
                 if (currentEntity.properties[field]?.properties) currentEntity.properties[field] = currentEntity.properties[field].properties._id;
-            } else {
-                newValue = updatedEntity.properties[field];
-            }
+            } else newValue = updatedEntity.properties[field];
+
             if (
                 newValue !== undefined &&
                 Array.isArray(currentEntity.properties[field]) &&

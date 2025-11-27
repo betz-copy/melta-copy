@@ -190,6 +190,7 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
                     <RadioGroup row name="actionOnFail" onChange={onRadioChange} value={values.actionOnFail}>
                         {[ActionOnFail.WARNING, ActionOnFail.ENFORCEMENT, ActionOnFail.INDICATOR].map((actionOnFail) => (
                             <FormControlLabel
+                                key={actionOnFail}
                                 value={actionOnFail}
                                 control={<Radio />}
                                 label={i18next.t(`wizard.rule.actions.${actionOnFail.toLowerCase()}`)}

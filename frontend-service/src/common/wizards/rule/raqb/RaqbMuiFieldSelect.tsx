@@ -28,11 +28,11 @@ export default ({
 
     const onOpen = useCallback(() => {
         setOpen(true);
-    }, [setOpen]);
+    }, []);
 
     const onClose = useCallback(() => {
         setOpen(false);
-    }, [setOpen]);
+    }, []);
 
     const renderOptions = (fields, level = 0) =>
         Object.keys(fields).map((fieldKey) => {

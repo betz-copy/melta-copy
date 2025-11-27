@@ -287,14 +287,16 @@ const ChildTemplateDialog: React.FC<{
                                                     onChange={(e) => handleChange({ target: { name: title, value: e.target.value.trimStart() } })}
                                                     error={touched[title] && Boolean(errors[title])}
                                                     helperText={touched[title] && errors[title]}
-                                                    InputProps={{
-                                                        startAdornment: startAdornment && (
-                                                            <InputAdornment position="start">
-                                                                <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>
-                                                                    {startAdornment}
-                                                                </Typography>
-                                                            </InputAdornment>
-                                                        ),
+                                                    slotProps={{
+                                                        input: {
+                                                            startAdornment: startAdornment && (
+                                                                <InputAdornment position="start">
+                                                                    <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>
+                                                                        {startAdornment}
+                                                                    </Typography>
+                                                                </InputAdornment>
+                                                            ),
+                                                        },
                                                     }}
                                                     disabled={disableInUpdate && actionType === ActionMode.Update}
                                                 />

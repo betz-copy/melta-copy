@@ -163,15 +163,18 @@ const CreateFormula: React.FC<StepComponentProps<RuleWizardValues>> = ({ values,
                 // getToday -- TODO: currently getToday function is as variable in fieldsConfig (because raqb doesnt support lhs functions see raqb issue #287. need to upgrade version)
             },
         };
-    }, [entityTemplateId, entityTemplates, relationshipTemplates, formula]);
+    }, [entityTemplateId, entityTemplates, relationshipTemplates, formula, actionOnFail, currentUser]);
 
     const [formulaHasGetTodayFunc, setFormulaHasGetTodayFunc] = useState(jsonTreeHasTodayVar(Utils.getTree(values.formula) as JsonItem));
 
-    const onChange = useCallback((immutableTree: ImmutableTree) => {
-        setFieldValue('formula', immutableTree);
+    const onChange = useCallback(
+        (immutableTree: ImmutableTree) => {
+            setFieldValue('formula', immutableTree);
 
-        setFormulaHasGetTodayFunc(jsonTreeHasTodayVar(Utils.getTree(immutableTree) as JsonItem));
-    }, []);
+            setFormulaHasGetTodayFunc(jsonTreeHasTodayVar(Utils.getTree(immutableTree) as JsonItem));
+        },
+        [setFieldValue],
+    );
 
     const renderBuilder = useCallback((props: BuilderProps) => {
         return (

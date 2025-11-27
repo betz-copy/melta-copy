@@ -292,7 +292,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
 
             setFieldValue('steps', newValuesOrder);
         },
-        [values.steps],
+        [values.steps, setFieldValue],
     );
 
     return (

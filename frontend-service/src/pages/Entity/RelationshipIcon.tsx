@@ -5,7 +5,16 @@ export const RelationshipIcon: React.FC = () => {
     const theme = useTheme();
 
     return (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            role="img"
+            aria-labelledby="relationshipIconTitle"
+        >
+            <title id="relationshipIconTitle">Relationship Icon</title>
             <path
                 d="M13.6229 10.8617C13.0436 9.8588 12.0897 9.12704 10.971 8.82729C9.85234 8.52754 8.6604 8.68434 7.6573 9.2632L3.87432 11.4465C2.8711 12.0257 2.13907 12.9797 1.83925 14.0986C1.53943 15.2176 1.69639 16.4098 2.27559 17.413C2.8548 18.4162 3.80881 19.1483 4.92775 19.4481C6.04669 19.7479 7.2389 19.5909 8.24212 19.0117L10.1331 17.92"
                 stroke={theme.palette.primary.main}

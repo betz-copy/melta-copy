@@ -29,7 +29,9 @@ const deletePrintingTemplateRequest = async (printingTemplateId: string) => {
     return data;
 };
 
-const searchPrintingTemplatesRequest = async (searchBody: any = {}) => {
+const searchPrintingTemplatesRequest = async (
+    searchBody: { search?: string; limit?: number; skip?: number; ids?: string[]; categoryIds?: string[] } = {},
+) => {
     const { data } = await axios.post<IMongoPrintingTemplate[]>(`${printingTemplates}/search`, searchBody);
     return data;
 };

@@ -47,7 +47,7 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
 
     const debouncedSetSearchInput = useCallback(
         debounce((value: string) => setSearchInput(value), 1000),
-        [setSearchInput],
+        [],
     );
 
     const { data: users = [], isLoading } = useQuery<IMongoUser[]>(usersQueryKey, () => searchUsersByPermissions(workspace._id, searchInput), {

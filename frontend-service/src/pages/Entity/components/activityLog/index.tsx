@@ -15,6 +15,7 @@ const ActivityLog: React.FC<{ expandedEntity?: IEntityExpanded; entityTemplate: 
     const theme = useTheme();
     const [openPopper, setOpenPopper] = useState(false);
     const entityId = expandedEntity?.entity.properties._id || '';
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         setOpenPopper(false);
     }, [entityId]);

@@ -8,6 +8,7 @@ import {
     IAgGridRequest,
     IBrokenRule,
     IBrokenRulePopulated,
+    IBulkOfActions,
     ICauseInstancePopulated,
     ICausesOfInstancePopulated,
     ICreateEntityMetadata,
@@ -213,7 +214,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     > {
         const ruleBreachRequest = await this.service.getRuleBreachRequestById(ruleBreachRequestId);
         this.checkIfRuleBreachRequestIsReviewable(ruleBreachRequest);
-        let actionsResults;
+        let actionsResults: any;
 
         if (ruleBreachRequest.actions.length > 1) {
             const fixedActionsPromises = await this.addBeforeFieldToUpdateAction(ruleBreachRequest.actions);
@@ -272,9 +273,8 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                         ruleBreachRequest.brokenRules,
                     );
             } catch (error: any) {
-                if (error.metadata.errorCode === errorCodes.ruleBlock) {
+                if (error.metadata.errorCode === errorCodes.ruleBlock)
                     await this.service.updateRuleBreachRequestBrokenRules(ruleBreachRequestId, error.metadata.rawBrokenRules);
-                }
 
                 throw error;
             }
@@ -296,9 +296,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
             [ruleBreachRequest.originUserId],
         );
 
-        if (ruleBreachRequest.actions.length > 1) {
-            return { ruleBreachRequestPopulated, actionsResults };
-        }
+        if (ruleBreachRequest.actions.length > 1) return { ruleBreachRequestPopulated, actionsResults };
 
         return ruleBreachRequestPopulated;
     }
