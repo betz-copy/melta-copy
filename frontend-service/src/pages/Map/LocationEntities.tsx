@@ -1,8 +1,8 @@
 import * as Cesium from 'cesium';
 import { Cartesian3, Color } from 'cesium';
-import React from 'react';
 import { BillboardGraphics, Entity, PointGraphics, PolygonGraphics, PolylineGraphics } from 'resium';
 import { environment } from '../../globals';
+import { IEntity } from '../../interfaces/entities';
 import { getColoredLocationIcon } from '../../utils/icons/coloredLocationIcon';
 import { calculateCenterOfPolygon, locationToWGS84String } from '../../utils/map';
 
@@ -14,6 +14,8 @@ export const MeltaPolygon = ({
     outlineColor = Color.WHITE,
     fill = true,
     showCenteredPoint = true,
+    node,
+    selected,
 }: {
     name: string;
     polygon: Cartesian3[];
@@ -22,13 +24,15 @@ export const MeltaPolygon = ({
     fill?: boolean;
     outlineColor?: Cesium.Color;
     showCenteredPoint?: boolean;
+    node?: IEntity;
+    selected?: boolean;
 }) => {
     const centroid = calculateCenterOfPolygon(polygon);
 
     return (
         <>
             <Entity name={name}>
-                <PolylineGraphics positions={[...polygon, polygon[0]]} material={outlineColor} width={2} />
+                <PolylineGraphics positions={[...polygon, polygon[0]]} material={outlineColor} width={selected ? 5 : 2} />
                 <PolygonGraphics
                     hierarchy={polygon}
                     fill={fill}
@@ -42,7 +46,7 @@ export const MeltaPolygon = ({
             </Entity>
 
             {showCenteredPoint && (
-                <Entity name={name} description={locationToWGS84String(polygon)} position={centroid} onClick={onClick}>
+                <Entity properties={{ _node: node }} name={name} description={locationToWGS84String(polygon)} position={centroid} onClick={onClick}>
                     <PointGraphics color={Color.fromCssColorString(color)} outlineColor={outlineColor} pixelSize={12} outlineWidth={2} />
                 </Entity>
             )}
@@ -50,8 +54,22 @@ export const MeltaPolygon = ({
     );
 };
 
-export const MeltaCoordinate = ({ name, position, onClick, color }: { name: string; position: Cartesian3; onClick?: () => void; color?: string }) => (
-    <Entity name={name} description={locationToWGS84String(position)} position={position} onClick={onClick}>
-        <BillboardGraphics image={getColoredLocationIcon(color)} scale={1} verticalOrigin={Cesium.VerticalOrigin.BOTTOM} />
+export const MeltaCoordinate = ({
+    name,
+    position,
+    onClick,
+    color,
+    node,
+    selected,
+}: {
+    name: string;
+    position: Cartesian3;
+    onClick?: () => void;
+    color?: string;
+    node?: IEntity;
+    selected?: boolean;
+}) => (
+    <Entity properties={{ _node: node }} name={name} description={locationToWGS84String(position)} position={position} onClick={onClick}>
+        <BillboardGraphics image={getColoredLocationIcon(color, selected ? '#fff' : color)} scale={1} verticalOrigin={Cesium.VerticalOrigin.BOTTOM} />
     </Entity>
 );

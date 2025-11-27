@@ -142,6 +142,11 @@ class UserService {
         return data;
     }
 
+    static async getUnitsByIds(ids: string[]) {
+        const { data } = await UserService.userService.post<IMongoUnit[]>(`${unitsRoute}/ids`, { ids });
+        return data;
+    }
+
     static async createUnit(unit: IUnit) {
         const { data } = await UserService.userService.post<IMongoUnit>(`${unitsRoute}`, unit);
         return data;

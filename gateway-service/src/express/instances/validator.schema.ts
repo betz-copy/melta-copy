@@ -1,12 +1,28 @@
-import { fileSchema, MongoIdSchema, searchFilterSchema } from '@microservices/shared';
+import { fileSchema, MongoIdSchema, searchFilterSchema, variableNameValidation } from '@microservices/shared';
 import Joi from 'joi';
 import config from '../../config';
 import { ExtendedJoi, excelTemplateSchema } from '../../utils/joi';
 import { brokenRuleSchema } from '../ruleBreaches/validator.schema';
 
-const {
-    instanceService: { searchEntitiesMaxLimit },
-} = config;
+const { searchEntitiesMaxLimit } = config.instanceService;
+
+const searchByTemplateSchema = {
+    skip: Joi.number().integer().min(0).default(0),
+    limit: Joi.number().integer().min(1).max(searchEntitiesMaxLimit).required(),
+    textSearch: Joi.string().allow(''),
+    filter: searchFilterSchema,
+    showRelationships: Joi.alternatives(Joi.boolean(), Joi.array().items(Joi.string())).default(false),
+    sort: Joi.array()
+        .items(
+            Joi.object({
+                field: variableNameValidation, // important when translating to neo4j query (prevent injection)
+                sort: Joi.string().valid('asc', 'desc'),
+            }),
+        )
+        .unique('field')
+        .default([]),
+    userEntityId: Joi.string().optional(),
+};
 
 // POST /api/instances/entities
 export const createEntityInstanceSchema = Joi.object({
@@ -189,6 +205,21 @@ const semanticSearchResult = Joi.object().pattern(
         ),
     ),
 );
+
+// POST /api/instances/entities/search/template/:templateId
+export const searchEntitiesOfTemplateSchema = Joi.object({
+    body: {
+        ...searchByTemplateSchema,
+        entityIdsToInclude: Joi.array().items(Joi.string()),
+        childTemplateIds: Joi.array().items(Joi.string()),
+        entitiesWithFiles: Joi.boolean(),
+        externalId: { id: MongoIdSchema.allow(''), type: Joi.string().allow('chart', 'dashboard') },
+    },
+    query: {},
+    params: {
+        templateId: Joi.string().required(),
+    },
+});
 
 // POST /api/instances/search/templates
 export const searchEntitiesByTemplatesSchema = Joi.object({

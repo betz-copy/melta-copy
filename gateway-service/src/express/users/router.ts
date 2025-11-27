@@ -1,6 +1,6 @@
 import { ValidateRequest, wrapController } from '@microservices/shared';
 import { Router } from 'express';
-import { createProxyMiddleware } from 'http-proxy-middleware';
+import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import config from '../../config';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 import busboyMiddleware from '../../utils/busboy/busboyMiddleware';
@@ -33,6 +33,9 @@ const { userService } = config;
 const UserManagerProxy = createProxyMiddleware({
     target: `${userService.url}${userService.usersRoute}`,
     changeOrigin: true,
+    on: {
+        proxyReq: fixRequestBody,
+    },
     proxyTimeout: userService.requestTimeout,
 });
 
@@ -124,5 +127,7 @@ usersRouter.post(
 usersRouter.post('/roles/workspaces', ValidateRequest(getAllWorkspaceRolesSchema), wrapController(UsersController.getAllWorkspaceRoles));
 
 usersRouter.get('/roles/search/:workspaceId', ValidateRequest(searchRolesByPermissionsSchema), UserManagerProxy);
+
+usersRouter.patch('/:userId', AuthorizerControllerMiddleware.userCanWritePermissions, UserManagerProxy);
 
 export default usersRouter;

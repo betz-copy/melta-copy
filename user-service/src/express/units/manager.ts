@@ -40,6 +40,13 @@ class UnitsManager {
         return UnitsModel.findById(id).orFail(new UnitDoesNotExistError(id)).lean().exec();
     }
 
+    static async getUnitsByIds(ids: string[]): Promise<IUnit[]> {
+        return UnitsModel.find({ _id: { $in: ids } })
+            .orFail(new UnitDoesNotExistError(ids.join(', ')))
+            .lean()
+            .exec();
+    }
+
     static async createUnit(unit: IUnit): Promise<IUnit> {
         return UnitsModel.create(unit);
     }

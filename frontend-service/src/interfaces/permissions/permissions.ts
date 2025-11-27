@@ -11,18 +11,13 @@ export const IInstancePermissionOrderedHierarchy = [
     InstancesSubclassesPermissions.fields,
 ] as const;
 
-export enum UnitSubclassesPermissions {
-    ids = 'ids',
-}
-export const IUnitPermissionOrderedHierarchy = [UnitSubclassesPermissions.ids] as const;
-
 export type IAdminPermission = IBasePermission<PermissionType.admin>;
 export type IRulesPermission = IBasePermission<PermissionType.rules>;
 export type IPermissionsPermission = IBasePermission<PermissionType.permissions>;
 export type IProcessesPermission = IBasePermission<PermissionType.processes>;
 export type ITemplatesPermission = IBasePermission<PermissionType.templates>;
 export type IInstancesPermission = IBasePermission<PermissionType.instances, typeof IInstancePermissionOrderedHierarchy>;
-export type IUnitsPermission = IBasePermission<PermissionType.units, typeof IUnitPermissionOrderedHierarchy>;
+export type IUnitsPermission = IBasePermission<PermissionType.units>;
 
 export type IPermission =
     | IAdminPermission

@@ -66,6 +66,7 @@ export interface TableForm extends Omit<TableMetaData, 'filter'> {
 
 export interface ChartForm extends Omit<IChart, 'filter'> {
     filter?: IFilterTemplate[];
+    _id: string;
 }
 
 export interface ChartToBackend extends Omit<IChart, 'filter'> {

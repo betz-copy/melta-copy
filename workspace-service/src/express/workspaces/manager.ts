@@ -107,7 +107,7 @@ class WorkspacesManager {
                 );
             }
 
-            return WorkspacesModel.findOneAndReplace({ _id: id }, workspace, { new: true, session })
+            return WorkspacesModel.findOneAndUpdate({ _id: id }, workspace, { new: true, session })
                 .orFail(new DocumentNotFoundError(id))
                 .lean()
                 .exec();

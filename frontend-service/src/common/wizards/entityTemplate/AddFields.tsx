@@ -59,14 +59,14 @@ export const attachmentPropertiesBaseSchema = Yup.object({
 });
 
 const agGridTextFilterSchema = Yup.object({
-    filterType: Yup.string().oneOf(['text']).required(),
+    filterType: Yup.string().oneOf(['text']).required(i18next.t('validation.required')),
     type: Yup.string().oneOf(filterOptions.text).required(i18next.t('validation.required')),
     filter: Yup.mixed().required(i18next.t('validation.required')),
 });
 
 const agGridNumberFilterSchema = (parentFilterType: FilterType = FilterType.value) =>
     Yup.object({
-        filterType: Yup.string().oneOf(['number']).strict(true).required(),
+        filterType: Yup.string().oneOf(['number']).strict(true).required(i18next.t('validation.required')),
         type: Yup.string().oneOf(filterOptions.number).required(i18next.t('validation.required')),
         filter: Yup.mixed()
             .test('number-validation', i18next.t('validation.invalidNumberField'), (value) => {
@@ -82,7 +82,7 @@ const agGridNumberFilterSchema = (parentFilterType: FilterType = FilterType.valu
 
                 return !Number.isNaN(numValue) && Number.isFinite(numValue);
             })
-            .required(),
+            .required(i18next.t('validation.required')),
         filterTo: Yup.number()
             .typeError(i18next.t('validation.invalidNumberField'))
             .when('type', {
@@ -104,7 +104,7 @@ const validateExactDate = (value?: string) => {
 
 const agGridDateFilterSchema = (parentFilterType: FilterType = FilterType.value) =>
     Yup.object({
-        filterType: Yup.string().oneOf(['date']).required(),
+        filterType: Yup.string().oneOf(['date']).required(i18next.t('validation.required')),
         type: Yup.string().oneOf(filterOptions.date).required(i18next.t('validation.required')),
         dateFrom:
             parentFilterType === FilterType.field
@@ -125,7 +125,7 @@ const agGridDateFilterSchema = (parentFilterType: FilterType = FilterType.value)
     });
 
 const agGridSetFilterSchema = Yup.object({
-    filterType: Yup.string().oneOf(['set']).required(),
+    filterType: Yup.string().oneOf(['set']).required(i18next.t('validation.required')),
     values: Yup.array().of(Yup.string().nullable()).min(1, i18next.t('validation.atLeastOne')).required(i18next.t('validation.required')),
 });
 

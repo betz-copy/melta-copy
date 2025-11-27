@@ -1,5 +1,5 @@
 import { WidgetProps } from '@rjsf/utils';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { UserArrayInput } from '../UserArrayInput';
 
 const RjsfUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, onFocus, options, required }: WidgetProps) => {

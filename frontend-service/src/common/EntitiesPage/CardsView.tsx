@@ -1,6 +1,6 @@
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
-import React, { forwardRef, useImperativeHandle, useState } from 'react';
+import { forwardRef, useImperativeHandle, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
@@ -89,7 +89,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                                     template,
                                     true,
                                     currentUserKartoffelId,
-                                    currentUser.units,
+                                    currentUser.currentUnits,
                                     isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
                                 );
 

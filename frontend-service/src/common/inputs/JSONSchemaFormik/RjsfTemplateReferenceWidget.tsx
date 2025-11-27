@@ -1,4 +1,3 @@
-import { TextField } from '@mui/material';
 import { WidgetProps } from '@rjsf/utils';
 import { useFormikContext } from 'formik';
 import i18next from 'i18next';
@@ -54,20 +53,7 @@ const RjsfTemplateReferenceWidget = ({
     const childTemplatesOfRelatedTemplate =
         Array.from(childTemplates.values()).filter((child) => child.parentTemplate._id === relatedTemplateId) ?? [];
 
-    if (!relatedEntityTemplate && !childTemplatesOfRelatedTemplate.length)
-        return (
-            <TextField
-                color="primary"
-                fullWidth
-                id={id}
-                placeholder={placeholder}
-                label={schema.title}
-                required={required}
-                disabled
-                value={i18next.t('templateEntitiesAutocomplete.noWritePermissions')}
-                error={!!rawErrors.length}
-            />
-        );
+    const noRelationPermission = !relatedEntityTemplate && !childTemplatesOfRelatedTemplate.length;
 
     return (
         <TemplateEntitiesAutocomplete
@@ -81,13 +67,15 @@ const RjsfTemplateReferenceWidget = ({
             displayValue={inputValue}
             isError={!!rawErrors.length}
             onBlur={handleBlur}
-            disabled={disabled}
+            disabled={disabled || (required && noRelationPermission)}
+            noRelationPermission={noRelationPermission}
             relationFilters={filters}
             required={required}
             isChildTemplate={!relatedEntityTemplate}
             sourceTransferKey={template.walletTransfer?.from}
             fieldName={fieldName}
             currentEntity={(values as EntityWizardValues).properties}
+            helperText={required && noRelationPermission ? i18next.t('templateEntitiesAutocomplete.noWritePermissions') : undefined}
         />
     );
 };
