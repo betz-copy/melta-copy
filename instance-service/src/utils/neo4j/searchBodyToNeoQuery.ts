@@ -313,7 +313,7 @@ const filterOfFieldToNeoQuery = (
                 throw new Error(`missing implementation for filter type "${filterType}" of filter of field`);
         }
 
-        if (fieldTemplate.format === 'user') {
+        if (fieldTemplate.format === 'user' && filterType === '$eq') {
             const userIdFilterString = simplePartFilterOfFieldToNeoQuery(
                 `\`${field}.id_userField\``,
                 filterType as '$eq' | '$ne' | '$rgx' | '$gt' | '$gte' | '$lt' | '$lte' | '$not',
