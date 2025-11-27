@@ -26,6 +26,7 @@
     "author": "Itay Marder",
     "license": "ISC",
     "dependencies": {
+        "@microservices/shared": "^1.0.0",
         "@ag-grid-community/client-side-row-model": "^32.3.9",
         "@ag-grid-community/core": "^32.3.9",
         "@ag-grid-community/locale": "^34.1.1",

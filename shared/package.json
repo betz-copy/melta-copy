@@ -2,14 +2,24 @@
     "name": "@microservices/shared",
     "version": "1.0.0",
     "main": "dist/index.js",
+    "module": "dist/index.mjs",
     "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.mjs",
+            "require": "./dist/index.js"
+        }
+    },
     "scripts": {
-        "build": "tsc",
+        "build": "tsup src/index.ts --format cjs,esm --dts",
         "clean": "rimraf dist"
     },
     "dependencies": {
         "neo4j-driver": "^5.23.0",
         "proj4": "^2.15.0"
     },
-    "devDependencies": {}
+    "devDependencies": {
+        "tsup": "^8.5.1"
+    }
 }

@@ -4,7 +4,7 @@ WORKDIR /usr/src/app
 # Copy root files
 COPY package*.json ./
 COPY tsconfig.json ./
-
+COPY turbo.json ./
 
 # Copy shared
 COPY shared/package*.json ./shared/
@@ -15,10 +15,11 @@ ARG SERVICE_NAME
 COPY ${SERVICE_NAME}/package*.json ./${SERVICE_NAME}/
 COPY ${SERVICE_NAME}/ ./${SERVICE_NAME}/
 
-# Install dependencies & build 'shared'
+# Install dependencies
 RUN npm ci --silent
-RUN npm run build -w @microservices/shared
-RUN npm run build -w ${SERVICE_NAME}
+
+# Build using Turborepo (automatically builds shared first due to dependencies)
+RUN npx turbo build --filter=${SERVICE_NAME}
 
 # ---------------------------
 # Production stage

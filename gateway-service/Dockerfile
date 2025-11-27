@@ -4,6 +4,7 @@ WORKDIR /usr/src/app
 
 COPY package*.json ./
 COPY tsconfig.json ./
+COPY turbo.json ./
 COPY shared/package*.json ./shared/
 COPY gateway-service/package*.json ./gateway-service/
 COPY gateway-service/.npmrc ./gateway-service/.npmrc
@@ -16,8 +17,7 @@ RUN --mount=type=secret,id=npm_token \
 COPY shared/ ./shared/
 COPY gateway-service ./gateway-service
 
-RUN npm run build -w @microservices/shared
-RUN npm run build -w gateway-service
+RUN npx turbo build --filter=gateway-service
 
 RUN rm -f .npmrc
 
@@ -43,4 +43,4 @@ COPY --from=builder /usr/src/app/gateway-service/dist ./gateway-service/dist
 
 EXPOSE 8000
 
-CMD ["npm", "run", "start", "-w", "gateway-service"]
+CMD ["npx", "turbo", "start", "--filter=gateway-service"]

@@ -13,6 +13,7 @@ RUN apk add --no-cache \
 # Copy root files
 COPY ./package*.json ./
 COPY ./tsconfig.json ./
+COPY ./turbo.json ./
 
 # Copy shared
 COPY ../shared/package*.json ./shared/
@@ -21,10 +22,9 @@ COPY ../shared/ ./shared/
 COPY ./preview-service/package*.json ./preview-service/
 COPY ./preview-service ./preview-service/
 
-# Install dependencies & build 'shared'
+# Install dependencies & build using Turborepo
 RUN npm ci --silent
-RUN npm run build -w @microservices/shared
-RUN npm run build -w preview-service
+RUN npx turbo build --filter=preview-service
 
 # ---------------------------
 # Production stage

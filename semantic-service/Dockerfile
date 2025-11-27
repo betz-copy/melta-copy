@@ -4,6 +4,7 @@ WORKDIR /usr/src/app
 
 COPY package*.json ./
 COPY tsconfig.json ./
+COPY turbo.json ./
 COPY shared/package*.json ./shared/
 COPY semantic-service/package*.json ./semantic-service/
 
@@ -12,8 +13,7 @@ RUN npm ci --silent
 COPY shared/ ./shared/
 COPY semantic-service ./semantic-service/
 
-RUN npm run build -w @microservices/shared
-RUN npm run build -w semantic-service
+RUN npx turbo build --filter=semantic-service
 
 FROM node:22-alpine
 RUN apk add --no-cache antiword
@@ -30,4 +30,4 @@ COPY --from=builder /usr/src/app/semantic-service/dist ./semantic-service/dist
 
 EXPOSE 8000
 
-CMD ["npm", "run", "start", "-w", "semantic-service"]
+CMD ["npx", "turbo", "start", "--filter=semantic-service"]
