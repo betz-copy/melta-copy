@@ -166,9 +166,8 @@ export const normalizeReturnedEntity =
     (result: QueryResult): Response<T, IEntity> => {
         const entities = result.records.map((record) => nodeToEntity(record.get(0) as Node));
 
-        if (response === 'singleResponse' || response === 'singleResponseNotNullable') {
+        if (['singleResponse', 'singleResponseNotNullable'].includes(response))
             return (entities.length > 0 ? entities[0] : null) as Response<T, IEntity>;
-        }
 
         return entities as Response<T, IEntity>;
     };
