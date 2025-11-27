@@ -1600,6 +1600,10 @@ class EntityManager extends DefaultManagerNeo4j {
                             relatedEntitiesChangedValues[
                                 `${fieldToChange}.properties.${updatedProperty}${config.neo4j.relationshipReferencePropertySuffix}`
                             ] = entityProperties[updatedProperty].properties[fieldName!];
+                        } else if (property?.format === 'location') {
+                            relatedEntitiesChangedValues[
+                                `${fieldToChange}.properties.${updatedProperty}${config.neo4j.relationshipReferencePropertySuffix}`
+                            ] = JSON.stringify(entityProperties[updatedProperty]);
                         } else {
                             relatedEntitiesChangedValues[
                                 `${fieldToChange}.properties.${updatedProperty}${config.neo4j.relationshipReferencePropertySuffix}`
@@ -1618,11 +1622,7 @@ class EntityManager extends DefaultManagerNeo4j {
                     {
                         updateParams: {
                             ids: entityIdsToUpdate,
-                            value: await addStringFieldsAndNormalizeSpecialStringValues(
-                                relatedEntitiesChangedValues,
-                                entityTemplate,
-                                this.entityTemplateManagerService,
-                            ),
+                            value: relatedEntitiesChangedValues,
                         },
                     },
                 );
