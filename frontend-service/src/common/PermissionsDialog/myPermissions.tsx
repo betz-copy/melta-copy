@@ -1,18 +1,23 @@
 import { Box, Button, CircularProgress, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material';
 import { Form, Formik, FormikProps } from 'formik';
 import i18next from 'i18next';
-import _, { cloneDeep, debounce, isEqual } from 'lodash';
+import { cloneDeep, debounce, isEqual } from 'lodash';
 import React, { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
 import { IChildTemplateMap } from '../../interfaces/childTemplates';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import { PermissionScope } from '../../interfaces/permissions';
 import { IGetUnits } from '../../interfaces/units';
 import { IUser, PermissionData, RelatedPermission } from '../../interfaces/users';
 import { deletePermissions } from '../../pages/PermissionsManagement/components/deleteDialog';
-import { createUserRequest, getAllWorkspaceRolesRequest, syncPermissionsRequest, updateUserRoleIdsRequest } from '../../services/userService';
+import {
+    createUserRequest,
+    getAllWorkspaceRolesRequest,
+    syncPermissionsRequest,
+    updateUserRequest,
+    updateUserRoleIdsRequest,
+} from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUnitStore } from '../../stores/unit';
 import { useUserStore } from '../../stores/user';
@@ -35,9 +40,10 @@ export const defaultEmptyUser = {
         darkMode: false,
     },
     kartoffelId: '',
+    units: {},
     permissions: {},
     displayName: '',
-    units: {},
+    currentUnits: [],
 } as IUser;
 
 export const getDefaultEmptyUser = (workspaceId: string) => ({
@@ -56,6 +62,7 @@ export const getDefaultEmptyUser = (workspaceId: string) => ({
     units: {
         [workspaceId]: [],
     },
+    currentUnits: [],
 });
 
 const MyPermissions: React.FC<{
@@ -79,8 +86,8 @@ const MyPermissions: React.FC<{
     const filteredUnits = useUnitStore((state) => state.filteredUnits);
     const unitOptions = useMemo(() => (mode === 'view' ? units : filteredUnits), [mode, units, filteredUnits]);
 
-    const { mutate: createUser } = useMutation(
-        (formUser: IUser) => createUserRequest(formUser.kartoffelId, formUser.permissions, workspace._id, formUser.roleIds),
+    const { mutateAsync: createUser } = useMutation(
+        (formUser: IUser) => createUserRequest(formUser.kartoffelId, formUser.permissions, workspace._id, formUser.roleIds, formUser.units),
         {
             onError: (error) => {
                 console.error('failed to upsert permission. error:', error);
@@ -95,7 +102,7 @@ const MyPermissions: React.FC<{
         },
     );
 
-    const { mutate: updateUserRoleId } = useMutation(
+    const { mutateAsync: updateUserRoleId } = useMutation(
         (formUser: IUser) => updateUserRoleIdsRequest(formUser._id, workspace._id, formUser.permissions, formUser.roleIds),
         {
             onError: (error) => {
@@ -121,7 +128,20 @@ const MyPermissions: React.FC<{
         },
     );
 
-    const { mutate: syncUserPermissions } = useMutation(
+    const { mutateAsync: updateUserUnits } = useMutation(({ id, units }: { id: string; units: IUser['units'] }) => updateUserRequest(id, { units }), {
+        onError: (error) => {
+            console.error('failed to edit user units. error:', error);
+            toast.error(i18next.t('permissions.permissionsOfUserDialog.failedToEditUnitsOfUser'));
+        },
+        onSuccess: (newUser) => {
+            onSuccess?.(newUser);
+            queryClient.invalidateQueries('allIFrames');
+            toast.success(i18next.t('permissions.permissionsOfUserDialog.succeededToUpdatePermission'));
+            handleClose();
+        },
+    });
+
+    const { mutateAsync: syncUserPermissions } = useMutation(
         async (formUser: IUser) => {
             return syncPermissionsRequest(formUser._id, RelatedPermission.User, {
                 [workspace._id]: {
@@ -182,17 +202,19 @@ const MyPermissions: React.FC<{
 
                 return {};
             }}
-            onSubmit={(formUser) => {
+            onSubmit={async (formUser) => {
                 const currentRole = workspaceRoles?.find((role) => formUser.roleIds?.includes(role._id));
 
-                if (mode === 'create') createUser(formUser);
+                if (mode === 'create') await createUser(formUser);
                 else {
-                    if (!_.isEqual(existingUser?.permissions, formUser.permissions)) {
-                        syncUserPermissions(formUser); // update personal permissions (without roles)
-                    } else {
-                        if (prevRole === undefined && !!currentRole) deletePermissionsOfUser(); // when role added instead of personal permissions, remove personal permissions
-                        updateUserRoleId(formUser); // role changed, added or deleted
+                    if (!currentRole && !isEqual(existingUser?.permissions, formUser.permissions)) {
+                        await syncUserPermissions(formUser); // update personal permissions (without roles)
+                    } else if (!isEqual(prevRole, currentRole)) {
+                        if (prevRole === undefined && !!currentRole) await deletePermissionsOfUser(); // when role added instead of personal permissions, remove personal permissions
+                        await updateUserRoleId(formUser); // role changed, added or deleted
                     }
+
+                    if (!isEqual(existingUser?.units, formUser.units)) await updateUserUnits({ id: formUser._id, units: formUser.units });
                 }
             }}
         >
@@ -265,19 +287,19 @@ const MyPermissions: React.FC<{
 
                             <Box sx={{ bgcolor: darkMode ? '#242424' : 'white', marginBottom: '15px', marginTop: '5px' }}>
                                 <UnitAutocomplete
-                                    value={unitOptions.filter((unit) => values.permissions[workspace._id]?.units?.ids?.[unit._id]?.scope)}
+                                    value={
+                                        values.units?.[workspace._id]?.flatMap((unitId) => unitOptions.find(({ _id }) => _id === unitId) ?? []) ?? []
+                                    }
                                     options={unitOptions}
                                     onChange={(_e, chosenUnits, reason) => {
                                         if (reason === 'clear') {
-                                            const scope = values.permissions[workspace._id]?.units?.scope;
-                                            setFieldValue(`permissions.${workspace._id}.units`, scope ? { scope } : null);
+                                            setFieldValue('units', {
+                                                ...values.units,
+                                                [workspace._id]: [],
+                                            });
                                             return;
                                         }
-
-                                        setFieldValue(
-                                            `permissions.${workspace._id}.units.ids`,
-                                            Object.fromEntries(chosenUnits.map((unit) => [unit._id, { scope: PermissionScope.write }])),
-                                        );
+                                        setFieldValue('units', { ...values.units, [workspace._id]: chosenUnits.map(({ _id }) => _id) });
                                     }}
                                     onBlur={handleBlur}
                                     readOnly={mode === 'view'}
@@ -307,7 +329,8 @@ const MyPermissions: React.FC<{
                                             type="submit"
                                             disabled={
                                                 userHasNoPermissions(values.permissions[workspace._id]) &&
-                                                isPermissionsEquals(initialValues.permissions, values.permissions)
+                                                isPermissionsEquals(initialValues.permissions, values.permissions) &&
+                                                isEqual(initialValues.units, values.units)
                                             }
                                             variant="contained"
                                         >

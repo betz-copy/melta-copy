@@ -2,6 +2,7 @@ import { mapValues } from 'lodash';
 import axios from '../axios';
 import { EntityWizardValues } from '../common/dialogs/entity';
 import { IUpdateMultipleEntitiesResponse } from '../common/EntitiesPage/MultiSelectStatusBar';
+import { IExternalId } from '../common/EntitiesTableOfTemplate';
 import urlToFile from '../common/fileConversions';
 import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
 import { environment } from '../globals';
@@ -498,8 +499,11 @@ export const deleteEntityRequest = async (deleteBody: IDeleteEntityBody) => {
     return data;
 };
 
-export const searchEntitiesOfTemplateRequest = async (templateId: string, searchBody: ISearchEntitiesOfTemplateBody, childTemplateId?: string[]) => {
-    const { data } = await axios.post<ISearchResult>(`${entities}/search/template/${templateId}`, { ...searchBody, childTemplateId });
+export const searchEntitiesOfTemplateRequest = async (
+    templateId: string,
+    searchBody: ISearchEntitiesOfTemplateBody & { childTemplateIds?: string[]; externalId?: IExternalId },
+) => {
+    const { data } = await axios.post<ISearchResult>(`${entities}/search/template/${templateId}`, searchBody);
     return data;
 };
 

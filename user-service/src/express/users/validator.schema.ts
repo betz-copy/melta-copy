@@ -38,6 +38,7 @@ export const searchUsersRequestSchema = joi.object({
         limit: joi.number().integer().min(1).max(maxFindLimit).required(),
         step: joi.number().integer().min(0).default(0),
         search: joi.string(),
+        ids: joi.array().items(mongoIdSchema.required()),
         filterModel: joi
             .object()
             .pattern(/^/, joi.alternatives(agGridTextFilterSchema, agGridDateFilterSchema, agGridNumberFilterSchema, agGridSetFilterSchema)),

@@ -81,6 +81,7 @@ const Table: React.FC = () => {
     const initialValues = table
         ? {
               ...table.metaData,
+              _id: table._id,
               filter: table?.metaData.filter
                   ? FilterModelToFilterRecord(parseFilters(table?.metaData.filter), template?._id!, queryClient)
                   : undefined,

@@ -56,7 +56,6 @@ const config = {
         meltaUpdates: env.get('FRONTEND_CONFIG_MELTA_UPDATES').default({ אא: 'בב', גג: 'דד' }).asJsonObject(),
         meltaUpdatesDescription: env.get('FRONTEND_CONFIG_MELTA_UPDATES_DESCRIPTION').default('תיאור').asString(),
         clientSideWorkspaceId: env.get('CLIENT_SIDE_WORKSPACE_ID').default('68347c4b1652e05582afa8b8').asString(),
-        units: env.get('FRONTEND_CONFIG_UNITS').default('es,unit1,unit2,unit3,unit4,unit5,unit6,unit7,unit8,unit9,unit10').asArray(',').map(String),
     },
 
     authentication: {

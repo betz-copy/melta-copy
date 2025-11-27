@@ -5,7 +5,10 @@ import {
     combineFilters,
     EntityTemplateType,
     FilterLogicalOperator,
+    getDashboardFilters,
+    getDefaultFilterFromChildTemplate,
     getFilterFromChildTemplate,
+    getFilterModal,
     IAction,
     IBrokenRule,
     IBrokenRuleEntity,
@@ -37,6 +40,7 @@ import {
     ISemanticSearchResult,
     ITemplateSearchBody,
     IUpdateEntityMetadata,
+    isWorkspaceAdmin,
     logger,
     matchValueAgainstFilter,
     NotFoundError,
@@ -51,6 +55,8 @@ import { menash } from 'menashmq';
 import pMap from 'p-map';
 import config from '../../config';
 import FilterValidation from '../../error';
+import ChartService from '../../externalServices/dashboardService/chartService';
+import DashboardItemService from '../../externalServices/dashboardService/dashboardItemService';
 import InstancesService from '../../externalServices/instanceService';
 import { PreviewService } from '../../externalServices/previewService';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
@@ -69,8 +75,10 @@ import RabbitManager from '../../utils/rabbit';
 import { createTextsFromEntitiesWithFiles, formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
 import { getRelatedTemplateIds } from '../../utils/templates';
 import RuleBreachesManager from '../ruleBreaches/manager';
+import UsersManager from '../users/manager';
 import WorkspaceService from '../workspaces/service';
 import { patchDocumentAsStream } from './documentExport';
+import { ExternalIdType, IExternalId } from './interface';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
 
@@ -89,6 +97,10 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     private previewService: PreviewService;
 
+    private dashboardItemService: DashboardItemService;
+
+    private chartService: ChartService;
+
     constructor(workspaceId: string) {
         super(new InstancesService(workspaceId));
         this.workspaceId = workspaceId;
@@ -98,6 +110,8 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         this.ruleBreachesManager = new RuleBreachesManager(workspaceId);
         this.rabbitManager = new RabbitManager(workspaceId);
         this.previewService = new PreviewService(workspaceId);
+        this.dashboardItemService = new DashboardItemService(workspaceId);
+        this.chartService = new ChartService(workspaceId);
     }
 
     async uploadInstanceFiles<TProps = Record<string, any>>(
@@ -192,15 +206,48 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
     async searchEntitiesOfTemplate(
         templateId: string,
         searchBody: ISearchEntitiesOfTemplateBody & { entitiesWithFiles: ISemanticSearchResult[string] },
+        userId: string,
+        childTemplateIds?: string[],
+        externalId?: IExternalId,
     ) {
-        const { entitiesWithFiles, ...body } = searchBody;
+        const { entitiesWithFiles, filter: defaultFilter, ...body } = searchBody;
+        const [currentUser, units] = await Promise.all([UserService.getUserById(userId), UserService.getUnits({ workspaceId: this.workspaceId })]);
 
-        if (!entitiesWithFiles || !Object.keys(entitiesWithFiles)?.length || !body.textSearch) {
-            return this.service.searchEntitiesOfTemplateRequest(templateId, body);
+        let mergedFilterChildren: ISearchFilter | undefined;
+
+        if (childTemplateIds?.length) {
+            const childTemplates = await this.entityTemplateService.searchChildTemplates({ ids: childTemplateIds });
+
+            const childTemplatesFilters = childTemplates.map((childTemplate) =>
+                getDefaultFilterFromChildTemplate(
+                    childTemplate,
+                    currentUser.kartoffelId,
+                    UsersManager.getUnitsWithInheritance(units, currentUser.units?.[this.workspaceId] ?? []),
+                    isWorkspaceAdmin(currentUser?.permissions?.[this.workspaceId]),
+                ),
+            );
+            mergedFilterChildren = getFilterModal(childTemplatesFilters, FilterLogicalOperator.OR);
         }
+
+        let dashboardFilters: ISearchFilter | undefined;
+        if (externalId) {
+            if (externalId.type === ExternalIdType.chart) {
+                const chart = await this.chartService.getChartById(externalId.id);
+                dashboardFilters = chart.filter ? JSON.parse(chart.filter) : undefined;
+            } else {
+                const dashboard = await this.dashboardItemService.getDashboardItemById(externalId.id);
+                dashboardFilters = getDashboardFilters(dashboard);
+            }
+        }
+
+        const filter = getFilterModal([mergedFilterChildren, defaultFilter, dashboardFilters]);
+
+        if (!entitiesWithFiles || !Object.keys(entitiesWithFiles)?.length || !body.textSearch)
+            return this.service.searchEntitiesOfTemplateRequest(templateId, { ...body, filter });
 
         const searchResult = await this.service.searchEntitiesOfTemplateRequest(templateId, {
             ...body,
+            filter,
             entityIdsToInclude: Object.keys(entitiesWithFiles),
         });
 

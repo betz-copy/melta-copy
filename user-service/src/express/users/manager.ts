@@ -24,6 +24,7 @@ class UsersManager {
         workspaceIds: string[] | undefined,
         limit: number,
         step: number,
+        ids?: string[],
         { displayName, permissionsManagement, templatesManagement, rulesManagement, processesManagement, ...query }: FilterQuery<IBaseUser> = {},
         { displayName: displayNameSort }: Record<string, number> = {},
     ): Promise<{ users: IBaseUser[]; count: number }> {
@@ -59,6 +60,15 @@ class UsersManager {
             } else query.$or = searchByRelatedIds;
         }
 
+        if (ids?.length) {
+            const idsQuery = [{ _id: { $in: ids } }];
+
+            if (query.$or) {
+                query.$and = [{ $or: query.$or }, { $or: idsQuery }];
+                delete query.$or;
+            } else query.$or = idsQuery;
+        }
+
         const users = await UsersModel.find(query, {}, { limit, skip: step * limit, sort })
             .lean()
             .exec();
@@ -74,18 +84,19 @@ class UsersManager {
         workspaceIds: string[] | undefined,
         limit: number,
         step: number,
+        ids?: string[],
     ): Promise<string[]> {
-        const { users } = await UsersManager.searchBaseUsers(search, permissions, workspaceIds, limit, step);
+        const { users } = await UsersManager.searchBaseUsers(search, permissions, workspaceIds, limit, step, ids);
         return users.map(({ _id }) => _id);
     }
 
     static async searchUsers(request: IUserAgGridRequest): Promise<{ users: IUserPopulated[]; count: number }> {
-        const { limit, step, workspaceIds, permissions, filterModel, sortModel, search } = request;
+        const { limit, step, workspaceIds, permissions, filterModel, sortModel, search, ids } = request;
 
         const sort = sortModel ? translateAgGridSortModel(sortModel) : {};
         const query = filterModel ? translateAgGridFilterModel(filterModel) : {};
 
-        const { users, count } = await UsersManager.searchBaseUsers(search, permissions, workspaceIds, limit, step, query, sort);
+        const { users, count } = await UsersManager.searchBaseUsers(search, permissions, workspaceIds, limit, step, ids, query, sort);
         const permissionsToUsers = await UsersManager.appendPermissionsToUsers(users, true);
 
         return { users: permissionsToUsers, count };

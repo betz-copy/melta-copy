@@ -12,7 +12,8 @@ import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { getClientSideExpandedEntityByIdRequest } from '../../../services/clientSideService';
 import { populateRelationshipTemplate } from '../../../utils/templates';
-import { ConnectionsTable, INestedRelationshipTemplates } from '../../Entity';
+import { INestedRelationshipTemplates } from '../../Entity';
+import { ConnectionsTable } from '../../Entity/ConnectionsTable';
 import { EntityDetails } from '../../Entity/components/EntityDetails';
 import { RelationshipIcon } from '../../Entity/RelationshipIcon';
 

@@ -1,5 +1,5 @@
 import { ExpandMore, InfoOutlined } from '@mui/icons-material';
-import { Autocomplete, AutocompleteInputChangeReason, AutocompleteProps, TextField, Typography } from '@mui/material';
+import { Autocomplete, AutocompleteInputChangeReason, AutocompleteProps, Grid, TextField, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { debounce } from 'lodash';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -40,7 +40,7 @@ export const getChildTemplatesFilter = (
                 childTemplate,
                 true,
                 currentUserKartoffelId,
-                currentUser?.units,
+                currentUser?.currentUnits,
                 isWorkspaceAdmin(currentUser?.permissions?.[workspace._id] ?? {}),
             ),
         )
@@ -50,10 +50,11 @@ export const getChildTemplatesFilter = (
 };
 
 const TemplateEntitiesAutocomplete: React.FC<{
-    template: IMongoEntityTemplatePopulated;
+    template: IMongoEntityTemplatePopulated | undefined;
     showField: string;
     value: IEntity | null;
     currentEntity: EntityWizardValues['properties'];
+    noRelationPermission: boolean;
     displayValue?: string;
     onChange: AutocompleteProps<IEntity, undefined, undefined, undefined>['onChange'];
     onDisplayValueChange?: AutocompleteProps<IEntity, undefined, undefined, undefined>['onInputChange'];
@@ -74,6 +75,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
     showField,
     value,
     currentEntity,
+    noRelationPermission,
     displayValue,
     onChange,
     onDisplayValueChange,
@@ -157,15 +159,14 @@ const TemplateEntitiesAutocomplete: React.FC<{
     const searchFunction = (templateId: string, clientSideUserEntityId: string, searchBody: ISearchEntitiesOfTemplateBody) =>
         clientSideUserEntity?.properties?._id
             ? searchEntitiesOfTemplateClientSideRequest(templateId, clientSideUserEntityId, searchBody)
-            : searchEntitiesOfTemplateRequest(
-                  templateId,
-                  searchBody,
-                  childTemplatesOfRelatedTemplate.map((childTemplate) => childTemplate._id),
-              );
+            : searchEntitiesOfTemplateRequest(templateId, {
+                  ...searchBody,
+                  childTemplateIds: childTemplatesOfRelatedTemplate.map((childTemplate) => childTemplate._id),
+              });
 
     const emptyDependentFields = Object.entries(dependentFields)
         .filter(([_, value]) => value === undefined || value === null)
-        .map(([key]) => template.properties.properties[key].title);
+        .map(([key]) => template?.properties.properties[key].title);
 
     const isDisabled = useMemo(() => disabled || !!emptyDependentFields.length, [disabled, dependentFields]);
 
@@ -177,9 +178,9 @@ const TemplateEntitiesAutocomplete: React.FC<{
     );
 
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery(
-        ['searchEntitiesOfTemplate', template._id, inputValue],
+        ['searchEntitiesOfTemplate', template?._id, inputValue],
         ({ pageParam = 0 }) => {
-            return searchFunction(template._id, clientSideUserEntity?.properties?._id, {
+            return searchFunction(template!._id, clientSideUserEntity?.properties?._id, {
                 skip: pageParam * cacheBlockSize,
                 limit: cacheBlockSize,
                 filter: parseAndAddDisabled(relationFilters),
@@ -187,7 +188,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
             });
         },
         {
-            enabled: !isDisabled && inputValue.length >= 2,
+            enabled: !noRelationPermission && !isDisabled,
             getNextPageParam: (lastPage, pages) => {
                 if (lastPage.entities.length < cacheBlockSize) return undefined;
                 return pages.length;
@@ -205,7 +206,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
     const handleInputChange = (_e: any, newValue: string, reason: AutocompleteInputChangeReason) => {
         setInputValue(newValue);
         onDisplayValueChange?.(_e, newValue, reason);
-        if (reason === 'input' && newValue.length >= 2) debouncedSearch(newValue);
+        if (reason === 'input') debouncedSearch(newValue);
     };
 
     const loadMore = useCallback(() => {
@@ -229,10 +230,10 @@ const TemplateEntitiesAutocomplete: React.FC<{
 
     const displayKeys: string[] = [showField];
 
-    const orderedProperties = [
-        ...template.propertiesPreview,
-        ...template.propertiesOrder.filter((prop) => !template.propertiesPreview.includes(prop)),
-    ];
+    const preview = template?.propertiesPreview ?? [];
+    const order = template?.propertiesOrder ?? [];
+
+    const orderedProperties = [...preview, ...order.filter((prop) => !preview.includes(prop))];
 
     orderedProperties
         .filter((prop) => prop !== showField && !displayKeys.includes(prop))
@@ -295,7 +296,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
             options={allEntities}
             loading={isLoading || isFetchingNextPage}
             loadingText={i18next.t('templateEntitiesAutocomplete.loading')}
-            noOptionsText={i18next.t('templateEntitiesAutocomplete.noOptions')}
+            noOptionsText={i18next.t(`templateEntitiesAutocomplete.no${noRelationPermission ? 'WritePermissions' : 'Options'}`)}
             getOptionLabel={(option) => convertPropertyToString(option.properties[showField]) || option.properties._id.toString()}
             isOptionEqualToValue={(option, currValue) => option.properties._id === currValue.properties._id}
             filterOptions={(options) => options}
@@ -323,7 +324,13 @@ const TemplateEntitiesAutocomplete: React.FC<{
                                 readOnly,
                                 endAdornment: readOnly ? undefined : params.InputProps.endAdornment,
                                 startAdornment: relProperty ? (
-                                    <RelationshipReferenceView entity={value} relatedTemplateId={value.templateId} relatedTemplateField={showField} />
+                                    <Grid width="100%">
+                                        <RelationshipReferenceView
+                                            entity={value}
+                                            relatedTemplateId={value.templateId}
+                                            relatedTemplateField={showField}
+                                        />
+                                    </Grid>
                                 ) : undefined,
                                 inputProps: {
                                     ...params.inputProps,
@@ -350,7 +357,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
                             <MeltaTooltip
                                 key={`${displayOptionValue}${index}`}
                                 placement="top"
-                                title={template.properties.properties[displayKeys[index]].title}
+                                title={template?.properties.properties[displayKeys[index]].title}
                             >
                                 <Typography
                                     color="#53566E"
@@ -368,12 +375,12 @@ const TemplateEntitiesAutocomplete: React.FC<{
 
                         <MeltaTooltip
                             title={
-                                template.propertiesPreview.length === 0 ? (
+                                !preview.length ? (
                                     i18next.t('templateEntitiesAutocomplete.noPreviewFields')
                                 ) : (
                                     <EntityPropertiesInternal
                                         properties={option.properties}
-                                        entityTemplate={template}
+                                        entityTemplate={template!}
                                         coloredFields={option.coloredFields}
                                         showPreviewPropertiesOnly
                                         mode="white"

@@ -22,6 +22,7 @@ import {
     searchEntitiesBatchRequestSchema,
     searchEntitiesByLocationRequestSchema,
     searchEntitiesByTemplatesSchema,
+    searchEntitiesOfTemplateSchema,
     updateEntityInstanceSchema,
     updateEntityStatusSchema,
     updateMultipleEntitiesSchema,
@@ -60,6 +61,7 @@ InstancesRouter.post(
 
 InstancesRouter.post(
     '/entities/search/template/:templateId',
+    ValidateRequest(searchEntitiesOfTemplateSchema),
     InstancesValidatorMiddleware.validateUserCanSearchEntitiesOfTemplate,
     InstancesControllerMiddleware.searchEntitiesOfTemplate,
 );
@@ -142,6 +144,7 @@ InstancesRouter.post(
     busboyMiddleware,
     ValidateRequest(createEntityInstanceSchema),
     InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
+    InstancesValidatorMiddleware.validateEntityProperties,
     InstancesControllerMiddleware.createEntityInstance,
 );
 
@@ -151,6 +154,7 @@ InstancesRouter.put(
     ValidateRequest(updateEntityInstanceSchema),
     InstancesValidatorMiddleware.validateUserCanWriteEntityInstance,
     InstancesValidatorMiddleware.validateUserCanIgnoreRules,
+    InstancesValidatorMiddleware.validateEntityProperties,
     InstancesControllerMiddleware.updateEntityInstance,
 );
 
@@ -159,6 +163,7 @@ InstancesRouter.post(
     busboyMiddleware,
     ValidateRequest(updateEntityInstanceSchema),
     InstancesValidatorMiddleware.validateUserCanWriteEntityInstance,
+    InstancesValidatorMiddleware.validateEntityProperties,
     InstancesControllerMiddleware.duplicateEntityInstance,
 );
 

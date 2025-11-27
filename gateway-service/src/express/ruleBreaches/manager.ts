@@ -223,7 +223,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
             actionsResults = await this.instancesService.runBulkOfActions([ruleBreachRequest.actions], false, user.id, ruleBreachRequest.brokenRules);
 
-            await this.updateRuleBreachRequestData(ruleBreachRequest._id, ruleBreachRequest.actions, actionsResults[0].value);
+            await this.updateRuleBreachRequestData(ruleBreachRequest._id, ruleBreachRequest.actions, actionsResults[0].value.instances);
         } else
             try {
                 // only 1 action
@@ -739,6 +739,10 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
         const allowedEntityTemplateIds = await templateManager.getAllowedEntityTemplateIds(usersPermissions, user.id);
 
+        const allowedRelationshipTemplatesIds = await templateManager.getAllowedRelationshipTemplatesIds(allowedEntityTemplateIds);
+
+        const allowedTemplatesIdsSet = new Set([...allowedEntityTemplateIds, ...allowedRelationshipTemplatesIds]);
+
         const res = await Promise.all(
             result.rows.map(async (row) => {
                 const isRowAllowed = await Promise.all(
@@ -758,11 +762,14 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                                 entityTemplateId = entity.templateId;
                                 break;
                             }
+                            case ActionTypes.CreateRelationship:
+                                entityTemplateId = (action.actionMetadata as ICreateRelationshipMetadata).relationshipTemplateId;
+                                break;
                             default:
                                 entityTemplateId = '-';
                         }
 
-                        return allowedEntityTemplateIds.includes(entityTemplateId);
+                        return allowedTemplatesIdsSet.has(entityTemplateId);
                     }),
                 );
 

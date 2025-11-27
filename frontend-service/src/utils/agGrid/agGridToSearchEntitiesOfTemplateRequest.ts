@@ -282,7 +282,7 @@ export const getFilterModal = (filterModel?: ISearchFilter, defaultModal?: ISear
 export const agGridToSearchEntitiesOfTemplateRequest = (
     agGridRequest: IAGGridRequest,
     entityTemplate: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) & { entitiesWithFiles?: ICountSearchResult['entitiesWithFiles'] },
-    defaultFilter?: ISearchEntitiesOfTemplateBody['filter'],
+    defaultFilter?: ISearchEntitiesOfTemplateBody['filter'], // only for create dashboard/ chart
 ): ISearchEntitiesOfTemplateBody => {
     const { startRow, endRow, filterModel, quickFilter, sortModel } = agGridRequest;
 

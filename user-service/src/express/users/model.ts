@@ -47,6 +47,10 @@ const UserSchema = new mongoose.Schema(
             unique: true,
             index: true,
         },
+        units: {
+            type: Map,
+            of: [String],
+        },
     },
     { timestamps: true, versionKey: false },
 );

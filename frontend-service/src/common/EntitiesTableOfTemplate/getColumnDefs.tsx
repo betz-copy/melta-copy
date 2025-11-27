@@ -136,7 +136,7 @@ export const getColumnDefs = <Data = EntityData>({
                 !template,
                 entityId,
                 currentUser?.kartoffelId,
-                currentUser?.units,
+                currentUser?.currentUnits,
                 isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
             ),
         );

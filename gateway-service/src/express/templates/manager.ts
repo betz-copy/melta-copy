@@ -147,6 +147,11 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return uniqBy([...bySource, ...byDestination], '_id');
     }
 
+    async getAllowedRelationshipTemplatesIds(entityTemplateIds: string[]): Promise<string[]> {
+        const allowedRelationshipTemplates = await this.getAllowedRelationshipTemplates(entityTemplateIds);
+        return allowedRelationshipTemplates.map(({ _id }) => _id);
+    }
+
     async getAllowedTemplatesAndRules(entityTemplateIds: string[], relationshipTemplates: IMongoRelationshipTemplate[], userId: string) {
         const allowedEntityTemplatesIdsByOneRelationship = this.getAllEntityTemplateThatAreOneRelationshipAwayFromUsersPermissions(
             relationshipTemplates,
@@ -1320,6 +1325,10 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const parentWithConstraints = this.populateTemplateConstraints(parentTemplate, currRequired, currUnique);
 
         return this.populateTemplateConstraints({ ...updatedChild, parentTemplate: parentWithConstraints }, requiredConstraints, uniqueConstraints);
+    }
+
+    async getChildTemplateById(id: string) {
+        return this.entityTemplateService.getChildTemplateById(id);
     }
 
     private checkValidAmountOfArchiveProperties(updatedTemplateProperties: Record<string, IEntitySingleProperty>) {

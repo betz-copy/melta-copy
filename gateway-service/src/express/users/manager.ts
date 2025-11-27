@@ -6,6 +6,7 @@ import {
     ICompactNullablePermissions,
     ICompactPermissions,
     IExternalUser,
+    IMongoUnit,
     IPermission,
     IRole,
     ISubCompactPermissions,
@@ -297,6 +298,25 @@ class UsersManager {
 
     static async getAllWorkspaceRoles(workspaceIds: string[]): Promise<IRole[]> {
         return UserService.getAllWorkspaceRoles(workspaceIds);
+    }
+
+    static getUnitsWithInheritance(units: IMongoUnit[], unitIds: string[]) {
+        const userUnits = new Set(unitIds);
+        const unitsCopy = [...units];
+
+        for (const unitId of userUnits) {
+            // no walrus operator :(
+            while (true) {
+                const childIndex = unitsCopy.findIndex(({ parentId }) => parentId === unitId);
+
+                if (childIndex === -1) break;
+
+                userUnits.add(unitsCopy[childIndex]._id);
+                unitsCopy.splice(childIndex, 1);
+            }
+        }
+
+        return Array.from(userUnits);
     }
 }
 
