@@ -56,7 +56,7 @@ const renderMetaDtaChartByType = (option: IMongoChart) => {
     }
 };
 
-const ChartAutoComplete: React.FC<{ formikProps: FormikProps<ChartForm & { _id?: string }> }> = ({ formikProps: { values, setValues } }) => {
+const ChartAutoComplete: React.FC<{ formikProps: FormikProps<ChartForm> }> = ({ formikProps: { values, setValues } }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const entityTemplate = entityTemplates.get(values.templateId!);

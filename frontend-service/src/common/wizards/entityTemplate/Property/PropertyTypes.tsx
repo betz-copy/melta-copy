@@ -90,7 +90,6 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
     supportRelationshipReference,
     supportEditEnum,
 }) => {
-    const walletInfo = i18next.t('wizard.entityTemplate.wallet.walletInfo', { returnObjects: true }) as string[];
     const queryClient = useQueryClient();
 
     const isComment = value.type === 'comment';
@@ -298,7 +297,8 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
         }));
     };
 
-    const handleUpdateEnumField = (id: string, tagIndex: number, option: string, fieldValue: CommonFormInputProperties) => updateEnumField({ id, tagIndex, option, fieldValue });
+    const handleUpdateEnumField = (id: string, tagIndex: number, option: string, fieldValue: CommonFormInputProperties) =>
+        updateEnumField({ id, tagIndex, option, fieldValue });
 
     const handleDeleteEnumField = (id: string, tagIndex: number, fieldValue: CommonFormInputProperties) => {
         if (fieldValue.options.length || initialOptionArray.length) {
@@ -339,7 +339,6 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
                             const chipDisabled = isDisabled && initialOptionArray.length > tagIndex;
                             return (
                                 <Box position="relative" key={option}>
-
                                     <Chip
                                         variant="outlined"
                                         label={option}
@@ -471,7 +470,7 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
                                             )}
                                         </Box>
                                     </Popover>
-                                </Box >
+                                </Box>
                             );
                         })
                     }
@@ -489,104 +488,93 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
                     disabled={value.deleted}
                 />
             )}
-            {
-                value.type === 'pattern' && (
-                    <Grid container justifyContent="space-between" flexWrap="nowrap">
-                        <TextField
-                            label={i18next.t('propertyTypes.pattern')}
-                            id={pattern}
-                            name={pattern}
-                            value={value.pattern}
-                            onChange={onChange}
-                            error={touchedPattern && Boolean(errorPattern)}
-                            helperText={touchedPattern && errorPattern}
-                            disabled={isDisabled || value.deleted}
-                            dir="ltr"
-                            sx={{ marginRight: '5px' }}
-                            fullWidth
-                        />
-                        <TextField
-                            label={i18next.t('wizard.entityTemplate.customErrorMessage')}
-                            id={patternCustomErrorMessage}
-                            name={patternCustomErrorMessage}
-                            value={value.patternCustomErrorMessage}
-                            onChange={onChange}
-                            error={touchedPatternCustomErrorMessage && Boolean(errorPatternCustomErrorMessage)}
-                            helperText={
-                                touchedPatternCustomErrorMessage && errorPatternCustomErrorMessage
-                                    ? errorPatternCustomErrorMessage
-                                    : i18next.t('wizard.entityTemplate.customErrorMessageHelperText')
-                            }
-                            sx={{ marginRight: '5px' }}
-                            fullWidth
-                            disabled={value.deleted}
-                        />
-                    </Grid>
-                )
-            }
-            {
-                value.type === 'serialNumber' && (
+            {value.type === 'pattern' && (
+                <Grid container justifyContent="space-between" flexWrap="nowrap">
                     <TextField
-                        label={i18next.t('wizard.entityTemplate.serialStarter')}
-                        id={serialStarter}
-                        name={serialStarter}
-                        value={value.serialStarter}
-                        onChange={(e) => {
-                            setFieldValue('serialStarter', Number(e.target.value));
-                        }}
-                        type="number"
-                        error={touchedSerialStarter && Boolean(errorSerialStarter)}
-                        helperText={touchedSerialStarter && errorSerialStarter}
+                        label={i18next.t('propertyTypes.pattern')}
+                        id={pattern}
+                        name={pattern}
+                        value={value.pattern}
+                        onChange={onChange}
+                        error={touchedPattern && Boolean(errorPattern)}
+                        helperText={touchedPattern && errorPattern}
                         disabled={isDisabled || value.deleted}
                         dir="ltr"
                         sx={{ marginRight: '5px' }}
                         fullWidth
                     />
-                )
-            }
-            {
-                isComment && (
-                    <Grid position="relative" width="99.5%">
-                        <TextArea
-                            id={value.id}
-                            value={value.comment}
-                            label={i18next.t('propertyTypes.comment')}
-                            onChange={(editorContentAsHtml: string) =>
-                                setFieldValue('comment', editorContentAsHtml === '<p><br></p>' ? '' : editorContentAsHtml)
-                            }
-                            placeholder={i18next.t('propertyTypes.comment')}
-                        />
-                        {errorComment && <FormHelperText error>{i18next.t('validation.required')}</FormHelperText>}
-                    </Grid>
-                )
-            }
-            {
-                value.type === 'relationshipReference' && supportRelationshipReference && (
-                    <RelationshipReferenceField
-                        value={value}
-                        index={index}
-                        touched={touched}
-                        errors={errors}
-                        setFieldValue={setFieldValue}
-                        isDisabled={isDisabled}
+                    <TextField
+                        label={i18next.t('wizard.entityTemplate.customErrorMessage')}
+                        id={patternCustomErrorMessage}
+                        name={patternCustomErrorMessage}
+                        value={value.patternCustomErrorMessage}
+                        onChange={onChange}
+                        error={touchedPatternCustomErrorMessage && Boolean(errorPatternCustomErrorMessage)}
+                        helperText={
+                            touchedPatternCustomErrorMessage && errorPatternCustomErrorMessage
+                                ? errorPatternCustomErrorMessage
+                                : i18next.t('wizard.entityTemplate.customErrorMessageHelperText')
+                        }
+                        sx={{ marginRight: '5px' }}
+                        fullWidth
+                        disabled={value.deleted}
                     />
-                )
-            }
-            {
-                value.type === 'kartoffelUserField' && (
-                    <KartoffelUserField
-                        value={value}
-                        index={index}
-                        touched={touched}
-                        errors={errors}
-                        setFieldValue={setFieldValue}
-                        isDisabled={isDisabled}
-                        userPropertiesInTemplate={userPropertiesInTemplate}
+                </Grid>
+            )}
+            {value.type === 'serialNumber' && (
+                <TextField
+                    label={i18next.t('wizard.entityTemplate.serialStarter')}
+                    id={serialStarter}
+                    name={serialStarter}
+                    value={value.serialStarter}
+                    onChange={(e) => {
+                        setFieldValue('serialStarter', Number(e.target.value));
+                    }}
+                    type="number"
+                    error={touchedSerialStarter && Boolean(errorSerialStarter)}
+                    helperText={touchedSerialStarter && errorSerialStarter}
+                    disabled={isDisabled || value.deleted}
+                    dir="ltr"
+                    sx={{ marginRight: '5px' }}
+                    fullWidth
+                />
+            )}
+            {isComment && (
+                <Grid position="relative" width="99.5%">
+                    <TextArea
+                        id={value.id}
+                        value={value.comment}
+                        label={i18next.t('propertyTypes.comment')}
+                        onChange={(editorContentAsHtml: string) =>
+                            setFieldValue('comment', editorContentAsHtml === '<p><br></p>' ? '' : editorContentAsHtml)
+                        }
+                        placeholder={i18next.t('propertyTypes.comment')}
                     />
-                )
-            }
-            {
-                (value.type === 'date' || value.type === 'date-time') &&
+                    {errorComment && <FormHelperText error>{i18next.t('validation.required')}</FormHelperText>}
+                </Grid>
+            )}
+            {value.type === 'relationshipReference' && supportRelationshipReference && (
+                <RelationshipReferenceField
+                    value={value}
+                    index={index}
+                    touched={touched}
+                    errors={errors}
+                    setFieldValue={setFieldValue}
+                    isDisabled={isDisabled}
+                />
+            )}
+            {value.type === 'kartoffelUserField' && (
+                <KartoffelUserField
+                    value={value}
+                    index={index}
+                    touched={touched}
+                    errors={errors}
+                    setFieldValue={setFieldValue}
+                    isDisabled={isDisabled}
+                    userPropertiesInTemplate={userPropertiesInTemplate}
+                />
+            )}
+            {(value.type === 'date' || value.type === 'date-time') &&
                 'dateNotification' in value &&
                 (value.dateNotification !== undefined ? (
                     <Grid container direction="row">
@@ -615,18 +603,7 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
                                     </MeltaTooltip>
                                 </ToggleButton>
                                 <ToggleButton value={false}>
-                                    <MeltaTooltip
-                                        title={
-                                            <>
-                                                <div>{i18next.t('wizard.entityTemplate.wallet.walletInfo')}</div>
-                                                <ul>
-                                                    {walletInfo.map((item, index) => (
-                                                        <li key={index}>{item}</li>
-                                                    ))}
-                                                </ul>
-                                            </>
-                                        }
-                                    >
+                                    <MeltaTooltip title={TooltipTitleWithLinesSpace('wizard.entityTemplate.customAlert')}>
                                         <CustomAlertIcon />
                                     </MeltaTooltip>
                                 </ToggleButton>
@@ -676,8 +653,7 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
                     <IconButton onClick={() => setFieldValue('dateNotification', null)} sx={{ borderRadius: 10 }} disabled={value.deleted}>
                         <NotificationsOffIcon />
                     </IconButton>
-                ))
-            }
+                ))}
             <AreYouSureDialog
                 open={open || openDelete}
                 handleClose={() => {

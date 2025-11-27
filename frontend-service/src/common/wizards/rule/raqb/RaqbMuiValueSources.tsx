@@ -7,20 +7,16 @@ import ListItemText from '@mui/material/ListItemText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { ValueSourcesProps } from '@react-awesome-query-builder/mui';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 // copied file from raqb library. github.com/ukrbublik/react-awesome-query-builder/blob/d17da0103e90c96d3aa081304129b2b355b89c9a/packages/mui/modules/widgets/core/MuiValueSources.jsx
 // added explicit "ltr". see below. in order to work in RTL mui enviorment, but speicifly keep the raqb in LTR
 export default ({ valueSources, valueSrc, title, setValueSrc }: ValueSourcesProps) => {
     const [anchorEl, setAnchorEl] = useState(null);
 
-    const handleOpen = (event) => {
-        setAnchorEl(event.currentTarget);
-    };
+    const handleOpen = (event) => setAnchorEl(event.currentTarget);
 
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
+    const handleClose = () => setAnchorEl(null);
 
     const toggleOpenClose = (event) => {
         // eslint-disable-next-line no-unused-expressions

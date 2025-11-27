@@ -118,18 +118,18 @@ const entityTemplateObjectToEntityTemplateForm = (
             serialStarter: value.serialStarter,
             relationshipReference: value.relationshipReference
                 ? {
-                    relationshipTemplateId: value.relationshipReference.relationshipTemplateId,
-                    relationshipTemplateDirection: value.relationshipReference.relationshipTemplateDirection,
-                    relatedTemplateId: value.relationshipReference.relatedTemplateId,
-                    relatedTemplateField: value.relationshipReference.relatedTemplateField,
-                    filters: value.relationshipReference.filters
-                        ? FilterModelToFilterRecord(
-                            parseFilters(value.relationshipReference.filters),
-                            value.relationshipReference.relatedTemplateId,
-                            queryClient,
-                        )
-                        : undefined,
-                }
+                      relationshipTemplateId: value.relationshipReference.relationshipTemplateId,
+                      relationshipTemplateDirection: value.relationshipReference.relationshipTemplateDirection,
+                      relatedTemplateId: value.relationshipReference.relatedTemplateId,
+                      relatedTemplateField: value.relationshipReference.relatedTemplateField,
+                      filters: value.relationshipReference.filters
+                          ? FilterModelToFilterRecord(
+                                parseFilters(value.relationshipReference.filters),
+                                value.relationshipReference.relatedTemplateId,
+                                queryClient,
+                            )
+                          : undefined,
+                  }
                 : undefined,
             archive: value.archive || undefined,
             identifier: value.identifier || undefined,
@@ -241,7 +241,7 @@ const updateFieldGroupsOrder = (updatedProperties: EntityTemplateFormInputProper
             });
         }
 
-        groupMap.get(fieldGroup.name)!.fields.push(name);
+        groupMap.get(fieldGroup.name)?.fields.push(name);
     });
 
     const fieldGroups = Array.from(groupMap.values());
@@ -294,6 +294,23 @@ export const extractGroups = (
         groupsProperties,
         groupsPath,
     };
+};
+
+export const getPropertyType = (type: string): IEntitySingleProperty['type'] => {
+    switch (type) {
+        case 'string':
+        case 'number':
+        case 'boolean':
+            return type;
+        case 'serialNumber':
+            return 'number';
+        case 'enumArray':
+            return 'array';
+        case 'users':
+            return 'array';
+        default:
+            return 'string';
+    }
 };
 
 export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode: boolean, queryClient: QueryClient): IEntityTemplate => {
@@ -361,25 +378,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             if (deleted) return;
             if (type === 'comment' && !comment) return;
 
-            let propertyType: IEntitySingleProperty['type'];
-            switch (type) {
-                case 'string':
-                case 'number':
-                case 'boolean':
-                    propertyType = type;
-                    break;
-                case 'serialNumber':
-                    propertyType = 'number';
-                    break;
-                case 'enumArray':
-                    propertyType = 'array';
-                    break;
-                case 'users':
-                    propertyType = 'array';
-                    break;
-                default:
-                    propertyType = 'string';
-            }
+            const propertyType = getPropertyType(type);
 
             schema.properties[name] = {
                 title,
@@ -415,16 +414,16 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 isDatePastAlert: isDatePastAlert ?? (dateNotification !== undefined ? true : undefined),
                 serialStarter: type === 'serialNumber' ? serialStarter : undefined,
                 serialCurrent: type === 'serialNumber' ? serialStarter : undefined,
-                relationshipReference: relationshipReference
+                relationshipReference: relationshipReference && type === 'relationshipReference'
                     ? {
-                        relationshipTemplateId: relationshipReference.relationshipTemplateId,
-                        relationshipTemplateDirection: relationshipReference.relationshipTemplateDirection,
-                        relatedTemplateId: relationshipReference.relatedTemplateId,
-                        relatedTemplateField: relationshipReference.relatedTemplateField,
-                        filters: relationshipReference.filters
-                            ? filterTemplateToSearchFilter(relationshipReference.filters, relationshipReference.relatedTemplateId, queryClient)
-                            : undefined,
-                    }
+                          relationshipTemplateId: relationshipReference.relationshipTemplateId,
+                          relationshipTemplateDirection: relationshipReference.relationshipTemplateDirection,
+                          relatedTemplateId: relationshipReference.relatedTemplateId,
+                          relatedTemplateField: relationshipReference.relatedTemplateField,
+                          filters: relationshipReference.filters
+                              ? filterTemplateToSearchFilter(relationshipReference.filters, relationshipReference.relatedTemplateId, queryClient)
+                              : undefined,
+                      }
                     : undefined,
                 comment,
                 expandedUserField,
@@ -528,14 +527,14 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 serialCurrent: type === 'serialNumber' ? serialStarter : undefined,
                 relationshipReference: relationshipReference
                     ? {
-                        relationshipTemplateId: relationshipReference.relationshipTemplateId,
-                        relationshipTemplateDirection: relationshipReference.relationshipTemplateDirection,
-                        relatedTemplateId: relationshipReference.relatedTemplateId,
-                        relatedTemplateField: relationshipReference.relatedTemplateField,
-                        filters: relationshipReference.filters
-                            ? filterTemplateToSearchFilter(relationshipReference.filters, relationshipReference.relatedTemplateId, queryClient)
-                            : undefined,
-                    }
+                          relationshipTemplateId: relationshipReference.relationshipTemplateId,
+                          relationshipTemplateDirection: relationshipReference.relationshipTemplateDirection,
+                          relatedTemplateId: relationshipReference.relatedTemplateId,
+                          relatedTemplateField: relationshipReference.relatedTemplateField,
+                          filters: relationshipReference.filters
+                              ? filterTemplateToSearchFilter(relationshipReference.filters, relationshipReference.relatedTemplateId, queryClient)
+                              : undefined,
+                      }
                     : undefined,
                 comment,
                 expandedUserField,
@@ -598,7 +597,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         if (required) schema.required.push(name);
     });
 
-    const serialUniqueConstraints = serialsUniqueConstraints.map((serial) => ({ groupName: '', properties: [serial] }))
+    const serialUniqueConstraints = serialsUniqueConstraints.map((serial) => ({ groupName: '', properties: [serial] }));
 
     return {
         ...restOfProperties,
@@ -611,18 +610,16 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         propertiesTypeOrder,
         propertiesPreview,
         enumPropertiesColors,
-        uniqueConstraints: [...restOfProperties.uniqueConstraints ?? [], ...serialUniqueConstraints],
+        uniqueConstraints: [...(restOfProperties.uniqueConstraints ?? []), ...serialUniqueConstraints],
         mapSearchProperties,
         fieldGroups: updatedFieldsGroups,
         walletTransfer: walletTransfer
-            ? walletTransfer?.from.name
-                ? {
-                      from: walletTransfer?.from.name,
-                      to: walletTransfer?.to.name,
-                      description: walletTransfer?.description,
-                      amount: walletTransfer.amount,
-                  }
-                : undefined
+            ? {
+                  from: typeof walletTransfer.from === 'string' ? walletTransfer.from : walletTransfer.from.name,
+                  to: typeof walletTransfer.to === 'string' ? walletTransfer.to : walletTransfer.to.name,
+                  description: walletTransfer.description,
+                  amount: walletTransfer.amount,
+              }
             : null,
     };
 };
@@ -638,10 +635,8 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
     const entityTemplate = formToJSONSchema(newEntityTemplate, false, queryClient);
 
     if (newEntityTemplate.icon) {
-        if (newEntityTemplate.icon.file instanceof File)
-            formData.append('file', newEntityTemplate.icon.file);
-        else if (newEntityTemplate.icon.file?.name)
-            formData.append('iconFileId', newEntityTemplate.icon.file.name);
+        if (newEntityTemplate.icon.file instanceof File) formData.append('file', newEntityTemplate.icon.file);
+        else if (newEntityTemplate.icon.file?.name) formData.append('iconFileId', newEntityTemplate.icon.file.name);
     }
 
     newEntityTemplate.documentTemplatesIds?.filter((item): item is File => item instanceof File).forEach((file) => formData.append('files', file));
@@ -652,17 +647,14 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
         })
         .map((item) => (typeof item === 'string' ? item : item.name));
 
-    if (docTemplateIds?.length)
-        formData.append('documentTemplatesIds', JSON.stringify(docTemplateIds));
+    if (docTemplateIds?.length) formData.append('documentTemplatesIds', JSON.stringify(docTemplateIds));
 
-    if (entityTemplate.enumPropertiesColors)
-        formData.append('enumPropertiesColors', JSON.stringify(entityTemplate.enumPropertiesColors));
+    if (entityTemplate.enumPropertiesColors) formData.append('enumPropertiesColors', JSON.stringify(entityTemplate.enumPropertiesColors));
 
     if (entityTemplate.propertiesTypeOrder.includes('archiveProperties'))
         entityTemplate.propertiesTypeOrder = entityTemplate.propertiesTypeOrder.filter((str) => str !== 'archiveProperties');
 
-    if (entityTemplate.mapSearchProperties)
-        formData.append('mapSearchProperties', JSON.stringify(entityTemplate.mapSearchProperties));
+    if (entityTemplate.mapSearchProperties) formData.append('mapSearchProperties', JSON.stringify(entityTemplate.mapSearchProperties));
 
     formData.append('displayName', entityTemplate.displayName);
     formData.append('name', entityTemplate.name);
@@ -696,14 +688,14 @@ const updateEntityTemplateRequest = async (
     queryClient: QueryClient,
 ) => {
     const formData = new FormData();
-    console.log({ updatedEntityTemplate });
 
-    let walletTransfer;
+    let walletTransfer: { from: string; to: string; amount: string; description: string } | null = null;
     if (updatedEntityTemplate.walletTransfer) {
         const { from, to, amount, description } = (updatedEntityTemplate as EntityTemplateWizardValues).walletTransfer!;
-        walletTransfer = { from: from.name ?? from, to: to.name ?? to, amount, description };
+        const fromValue = typeof from === 'string' ? from : from.name;
+        const toValue = typeof to === 'string' ? to : to.name;
+        walletTransfer = { from: fromValue, to: toValue, amount, description };
     }
-    walletTransfer = walletTransfer ?? null;
 
     const entityTemplate: IEntityTemplate =
         'attachmentProperties' in updatedEntityTemplate

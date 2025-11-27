@@ -23,6 +23,7 @@ export const FieldBlockAccordion = styled(Accordion)({
 
 export interface FieldProps {
     field: CommonFormInputProperties;
+    values: Record<string, PropertyItem[]>;
     index: number;
     parentId: string | null;
     onDrop: (item: any, toIndex: number, toGroupId: string | null) => void;
@@ -30,13 +31,14 @@ export interface FieldProps {
     setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
     setValues: (value: SetStateAction<CommonFormInputProperties>) => void;
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
-    setUniqueConstraints?: ((uniqueConstraints: SetStateAction<IUniqueConstraintOfTemplate[]>) => void);
+    setUniqueConstraints?: (uniqueConstraints: SetStateAction<IUniqueConstraintOfTemplate[]>) => void;
     moveGroup?: (group: GroupProperty, toIndex: number, toGroupId?: string | null) => void;
-    showAccountDisplay?: boolean;
+    isAccountTemplate?: boolean;
 }
 
 export interface GroupProps<PropertiesType extends string, Values extends Record<PropertiesType, PropertyItem[]>> {
     group: GroupProperty;
+    values: Values;
     index: number;
     moveField: (item: CommonFormInputProperties, toIndex: number, toGroupId: string | null) => void;
     moveGroup?: (group: GroupProperty, toIndex: number, toGroupId?: string | null) => void;
@@ -55,7 +57,7 @@ export interface GroupProps<PropertiesType extends string, Values extends Record
     areThereAnyInstances: boolean;
     isEditMode: boolean;
     initialValue?: PropertyItem;
-    showAccountDisplay?: boolean;
+    isAccountTemplate?: boolean;
 }
 
 export interface AttachmentsProps {
@@ -110,7 +112,7 @@ export interface FieldBlockProps<PropertiesType extends string, Values extends R
         groupIndex?: number,
     ) => void;
     onDeleteSure?: (setShowAreUSureDialogForRemoveProperty: (v: boolean) => void) => void;
-    showAccountDisplay?: boolean;
+    isAccountTemplate?: boolean;
     hasAccountBalanceField?: boolean;
     isAlreadyWalletTemplate?: boolean;
     setIsTransferTemplate?: (val: boolean) => void;

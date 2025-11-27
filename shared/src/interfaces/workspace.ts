@@ -50,7 +50,6 @@ export interface IMetadata {
         destTemplateId: string;
         sourceFieldForColor: string;
     };
-    unitsArray: string[];
     numOfRelationshipFieldsToShow: number;
     twinTemplates: string[];
 }

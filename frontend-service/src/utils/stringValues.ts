@@ -25,3 +25,12 @@ export const getTextDirection = (value: string, schema: RJSFSchema): Direction =
 
     return 'rtl';
 };
+
+export const stringifiedJSONtoObj = (string: string) => {
+    try {
+        const parsed = JSON.parse(string);
+        return parsed !== null && typeof parsed === 'object' ? parsed : undefined;
+    } catch {
+        return undefined;
+    }
+};

@@ -6,6 +6,7 @@ import ReactDiffViewer from 'react-diff-viewer';
 import { useQueryClient } from 'react-query';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IUpdateEntityMetadataPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
+import { IGetUnits } from '../../interfaces/units';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { getFileName } from '../../utils/getFileName';
 import { containsHTMLTags } from '../../utils/HtmlTagsStringValue';
@@ -16,6 +17,7 @@ const getEntityPropertyString = (
     propertyTemplate: IEntitySingleProperty,
     oldValue: any,
     entityTemplates: IEntityTemplateMap,
+    units: IGetUnits,
     items?: any,
 ) => {
     const { format } = propertyTemplate;
@@ -43,7 +45,7 @@ const getEntityPropertyString = (
     }
 
     if (format !== 'fileId' && !items) {
-        return formatToString(value, propertyTemplate);
+        return formatToString(value, propertyTemplate, units);
     }
 
     // single
@@ -76,12 +78,13 @@ const getEntityPropertiesString = (
     entityProperties: Record<string, any>,
     entityTemplates: IEntityTemplateMap,
     entityTemplate: IMongoEntityTemplatePopulated,
+    units: IGetUnits,
     oldEntityProperties?: Record<string, any>,
 ) => {
     const fieldPropertiesStrings = Object.entries(entityTemplate?.properties?.properties || []).map(([propertyKey, propertyTemplate]) => {
         const oldValue = oldEntityProperties?.[propertyKey];
         const value = entityProperties[propertyKey];
-        const valueFormatted = getEntityPropertyString(value, propertyTemplate, oldValue, entityTemplates, propertyTemplate.items);
+        const valueFormatted = getEntityPropertyString(value, propertyTemplate, oldValue, entityTemplates, units, propertyTemplate.items);
         return `${propertyTemplate.title}: ${valueFormatted}`;
     });
     return fieldPropertiesStrings.join('\n');
@@ -93,6 +96,7 @@ export const UpdatedFieldsDiff: React.FC<{
 }> = ({ actionMetadata, entityTemplate }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const units = queryClient.getQueryData<IGetUnits>('getUnits')!;
 
     const { entity, before, updatedFields } = actionMetadata;
     const oldProperties = before ?? entity?.properties;
@@ -106,12 +110,12 @@ export const UpdatedFieldsDiff: React.FC<{
         <ReactDiffViewer
             oldValue={
                 oldProperties
-                    ? getEntityPropertiesString(oldProperties, entityTemplates, entityTemplate!)
+                    ? getEntityPropertiesString(oldProperties, entityTemplates, entityTemplate!, units)
                     : i18next.t('ruleBreachInfo.updateEntityActionInfo.entityBeforeUnknown')
             }
             newValue={
                 entityTemplate
-                    ? getEntityPropertiesString(newProperties, entityTemplates, entityTemplate, oldProperties)
+                    ? getEntityPropertiesString(newProperties, entityTemplates, entityTemplate, units, oldProperties)
                     : i18next.t('ruleBreachInfo.updateEntityActionInfo.entityAfterUnknown')
             }
             hideLineNumbers

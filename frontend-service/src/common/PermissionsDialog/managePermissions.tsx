@@ -34,7 +34,7 @@ const ManagePermissions: React.FC<{
     const categoriesPermissions = currentPermissions?.instances?.categories ?? {};
 
     const handleManagementPermissionCheck = (path: string, checked: boolean, permissionsManagement?: boolean) => {
-        formikProps.setFieldValue(path, checked ? { scope: PermissionScope.write } : undefined);
+        formikProps.setFieldValue(path, checked ? { scope: PermissionScope.write } : null);
         if (!permissionsManagement) return;
         formikProps.setFieldValue(
             `${permissionsPath}.instances.categories`,

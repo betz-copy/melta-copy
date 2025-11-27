@@ -12,6 +12,7 @@ import { EntityData, IEntity } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
 import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
+import { IGetUnits } from '../../interfaces/units';
 import { IWorkspace } from '../../interfaces/workspaces';
 import { CardMenu } from '../../pages/SystemManagement/components/CardMenu';
 import { UserState } from '../../stores/user';
@@ -27,6 +28,7 @@ import {
     regexColDef,
     relatedTemplateColDef,
     stringColDef,
+    unitColDef,
     userArrayColDef,
     userColDef,
 } from '../../utils/agGrid/commonColDefs';
@@ -79,6 +81,7 @@ export interface IGetColumnDefsOptions<Data> {
     darkMode: boolean;
     workspace: IWorkspace;
     childTemplatesOfParent?: IChildTemplatePopulated[];
+    units: IGetUnits;
 }
 
 export const getColumnDefs = <Data = EntityData>({
@@ -114,6 +117,7 @@ export const getColumnDefs = <Data = EntityData>({
     darkMode,
     workspace,
     childTemplatesOfParent,
+    units,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const invisibleColumnsAmount = Object.values(defaultVisibleColumns).filter((value) => value === false).length;
     const lastColumnIndex = Object.keys(defaultColumnsOrder).length - invisibleColumnsAmount - 2;
@@ -131,7 +135,7 @@ export const getColumnDefs = <Data = EntityData>({
                 !template,
                 entityId,
                 currentUser?.kartoffelId,
-                currentUser?.units?.[workspace._id] ?? [],
+                currentUser?.currentUnits,
                 isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
             ),
         );
@@ -323,6 +327,7 @@ export const getColumnDefs = <Data = EntityData>({
                     shouldRenderChip: !isKartoffelImageRef,
                     ...(isKartoffelImageRef && { userIcon: { size: 34, overrideSx: { marginTop: '0.5rem' } } }),
                 },
+                ignoreType,
             );
         }
 
@@ -337,6 +342,22 @@ export const getColumnDefs = <Data = EntityData>({
                 isLastColumn,
                 hideColumn,
                 darkMode,
+                ignoreType,
+            );
+        }
+
+        if (propertyTemplate.format === 'unitField') {
+            return unitColDef(
+                property,
+                propertyTemplate,
+                units,
+                defaultColumnWidths[property],
+                isLastColumn,
+                hideColumn,
+                hideField,
+                ignoreType,
+                searchValue,
+                editable,
             );
         }
 

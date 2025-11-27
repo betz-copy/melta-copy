@@ -1,7 +1,6 @@
 import { Add } from '@mui/icons-material';
 import { Button, Divider, FormHelperText, Grid } from '@mui/material';
 import i18next from 'i18next';
-import React from 'react';
 import { useQueryClient } from 'react-query';
 import { SelectCheckbox } from '../../../common/SelectCheckBox';
 import { StepComponentProps } from '../../../common/wizards';

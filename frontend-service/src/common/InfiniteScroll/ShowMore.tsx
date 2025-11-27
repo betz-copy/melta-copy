@@ -1,5 +1,5 @@
 import { CircularProgress, Grid } from '@mui/material';
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 
 interface ShowMoreProps {
     isLoading: boolean;

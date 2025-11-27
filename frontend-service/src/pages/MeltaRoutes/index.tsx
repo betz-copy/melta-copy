@@ -1,5 +1,6 @@
 import { Box } from '@mui/material';
 import i18next from 'i18next';
+import _ from 'lodash';
 import React, { useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -13,7 +14,9 @@ import { IProcessTemplateMap } from '../../interfaces/processes/processTemplate'
 import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { IRuleMap } from '../../interfaces/rules';
 import { GetAllTemplatesType, getAllTemplates } from '../../services/templates/getAllTemplates';
+import { getUnits } from '../../services/userService';
 import { getFile } from '../../services/workspacesService';
+import { useUnitStore } from '../../stores/unit';
 import { useUserStore } from '../../stores/user';
 import { defaultMetadata, useWorkspaceStore } from '../../stores/workspace';
 import { handleWorkspace } from '../../utils/permissions';
@@ -28,6 +31,8 @@ interface IMeltaRoutesProps {
 export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
     const setWorkspace = useWorkspaceStore((state) => state.setWorkspace);
     const currentUser = useUserStore((state) => state.user);
+    const setUser = useUserStore((state) => state.setUser);
+    const setUnits = useUnitStore((state) => state.setFilteredUnits);
 
     const queryClient = useQueryClient();
 
@@ -76,6 +81,37 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
         },
         enabled: Boolean(workspace?._id),
     });
+
+    // TODO move to all?
+    const { data: units = [] } = useQuery({
+        queryKey: 'getUnits',
+        queryFn: () => getUnits({ workspaceId: workspace!._id }),
+        enabled: Boolean(workspace?._id),
+    });
+
+    useEffect(() => {
+        if (!units || !workspace) return;
+
+        setUnits(units.filter(({ disabled }) => !disabled));
+
+        const userUnits = new Set(currentUser.units?.[workspace._id] ?? []);
+        const unitsCopy = [...units];
+
+        for (const unitId of userUnits) {
+            // no walrus operator :(
+            while (true) {
+                const childIndex = unitsCopy.findIndex(({ parentId }) => parentId === unitId);
+
+                if (childIndex === -1) break;
+
+                userUnits.add(unitsCopy[childIndex]._id);
+                unitsCopy.splice(childIndex, 1);
+            }
+        }
+
+        const unitsWithInheritance = Array.from(userUnits);
+        if (!_.isEqual(currentUser.currentUnits, unitsWithInheritance)) setUser({ ...currentUser, currentUnits: unitsWithInheritance });
+    }, [units, setUnits, workspace, currentUser, setUser]);
 
     useEffect(() => {
         if (workspace) {

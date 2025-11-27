@@ -491,18 +491,28 @@ const TemplateTable = forwardRef<
                                   payload: editDialog.entity!,
                               }
                             : { actionType: ActionTypes.CreateEntity, payload: undefined }),
-                        onError: (currEntityValues) => {
-                            setEditDialog((prev) => ({ ...prev, isOpen: true, wizardValues: currEntityValues }));
-                        },
+                        onError: (currEntityValues) => setEditDialog((prev) => ({ ...prev, isOpen: true, wizardValues: currEntityValues })),
                         onSuccess: (entity: IEntity) => {
-                            entitiesTableRef.current?.updateRowDataClientSide(entity);
-                            setUpdatedEntities?.(
-                                Object.values(entity.properties).filter(
-                                    (property): property is IEntity =>
-                                        typeof property === 'object' && 'templateId' in property && 'properties' in property,
-                                ),
-                            );
-                            setUpdatedTemplateIds?.([entity.templateId]);
+                            const templateIdsToUpdate = [entity.templateId];
+                            if (editDialog.isEditMode) {
+                                entitiesTableRef.current?.updateRowDataClientSide(entity);
+                                const entityTemplatesArray = Array.from(entityTemplates.values());
+
+                                const relatedTemplatesToUpdate = entityTemplatesArray.filter((entityTemplate) =>
+                                    Object.values(entityTemplate.properties.properties).some(
+                                        (value) => value.relationshipReference?.relatedTemplateId === entity.templateId,
+                                    ),
+                                );
+
+                                templateIdsToUpdate.push(...relatedTemplatesToUpdate.map((template) => template._id));
+
+                                setUpdatedEntities?.(
+                                    Object.values(entity.properties).filter(
+                                        (property): property is IEntity => typeof property === 'object' && 'templateId' in property && 'properties' in property,
+                                    ),
+                                );
+                            }
+                            setUpdatedTemplateIds?.(templateIdsToUpdate);
                             setEditDialog((prev) => ({ ...prev, isOpen: false }));
                             setExternalErrors(initializedExternalErrors);
                         },

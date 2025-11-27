@@ -77,7 +77,8 @@ export const Field = ({
     uniqueConstraints,
     setUniqueConstraints,
     moveGroup,
-    showAccountDisplay,
+    isAccountTemplate,
+    values,
 }: FieldProps) => {
     const ref = React.useRef(null);
 
@@ -133,7 +134,8 @@ export const Field = ({
                     setValues={setValues}
                     uniqueConstraints={uniqueConstraints}
                     setUniqueConstraints={setUniqueConstraints}
-                    showAccountDisplay={showAccountDisplay}
+                    isAccountTemplate={isAccountTemplate}
+                    values={values}
                 />
             </Grid>
         </Grid>
@@ -143,6 +145,7 @@ export const Field = ({
 export const Group = <PropertiesType extends string, Values extends Record<PropertiesType, PropertyItem[]>>({
     group,
     index,
+    values,
     moveField,
     moveGroup,
     touched,
@@ -160,7 +163,7 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
     areThereAnyInstances,
     isEditMode,
     initialValue,
-    showAccountDisplay,
+    isAccountTemplate,
 }: React.PropsWithChildren<GroupProps<PropertiesType, Values>>) => {
     const ref = React.useRef(null);
     const isNewProperty = !initialValue;
@@ -352,7 +355,8 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
                                 setValues={setDisplayValueWrapper(idx, group.id)}
                                 uniqueConstraints={uniqueConstraints}
                                 setUniqueConstraints={setUniqueConstraints}
-                                showAccountDisplay={showAccountDisplay}
+                                isAccountTemplate={isAccountTemplate}
+                                values={values}
                             />
                         ))}
 

@@ -7,7 +7,7 @@ import { IEntity, ISearchFilter } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IFailedEntity } from '../../../../interfaces/excel';
 import { useWorkspaceStore } from '../../../../stores/workspace';
-import EntitiesTableOfTemplate, { TablePageType } from '../../../EntitiesTableOfTemplate';
+import EntitiesTableOfTemplate, { ExternalIdType, TablePageType } from '../../../EntitiesTableOfTemplate';
 import { TableButton } from '../../../TableButton';
 
 export const EntitiesTable: React.FC<{
@@ -26,6 +26,10 @@ export const EntitiesTable: React.FC<{
     ignoreType?: boolean;
     relatedTemplateProperties?: string;
     pageType?: TablePageType;
+    chartId?: string;
+    scrollId?: string;
+    onRowSelected?: (data: IEntity | IFailedEntity) => void;
+    usePagination?: boolean;
 }> = ({
     rowData,
     rowModelType = 'clientSide',
@@ -42,6 +46,10 @@ export const EntitiesTable: React.FC<{
     ignoreType = true,
     relatedTemplateProperties,
     pageType,
+    chartId,
+    scrollId,
+    onRowSelected,
+    usePagination = true,
 }) => {
     const theme = useTheme();
     const workspace = useWorkspaceStore((state) => state.workspace);
@@ -131,6 +139,10 @@ export const EntitiesTable: React.FC<{
                     defaultFilter={defaultFilter}
                     disableFilter={disableFilter}
                     addRelationshipReferenceButtonProps={relatedTemplateProperties}
+                    externalId={chartId ? { id: chartId, type: ExternalIdType.chart } : undefined}
+                    scrollToId={scrollId}
+                    onRowSelected={onRowSelected}
+                    usePagination={usePagination}
                 />
             </AccordionDetails>
         </Accordion>

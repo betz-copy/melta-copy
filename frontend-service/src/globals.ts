@@ -26,6 +26,7 @@ export const environment = {
         storage: '/files',
         preview: '/preview',
         permissions: '/permissions',
+        units: '/units',
         users: '/users',
         roles: '/users/roles',
         activityLog: '/activity-log',
@@ -299,6 +300,7 @@ export const environment = {
             'untilToday',
             'fromToday',
         ],
+        field: ['equals', 'notEqual'],
     },
     relativeDateFilters: ['thisWeek', 'thisMonth', 'thisYear', 'untilToday', 'fromToday'] as readonly string[],
     accessTokenName: 'rabaz-access-token',
@@ -323,6 +325,7 @@ export const environment = {
         squareLength: 2500,
         polygon: { polygonPrefix: 'POLYGON((', polygonSuffix: '))' },
         polygonDefaultColor: '#11695a',
+        coordinateDefaultColor: '#FF006B',
         mapSearchPropertiesLimit: 2,
         epsgCode: { epsg: 'EPSG', wgs84: 'EPSG:4326', southHemiUTM: '327', northHemiUTM: '326' },
         utm: {
@@ -336,6 +339,8 @@ export const environment = {
             utmPolygonRegex: /\b([1-9]|[1-5][0-9]|60)([C-HJ-NP-X])\s([0-9]+(?:\.[0-9]+)?)\s([0-9]+(?:\.[0-9]+)?)\b/g,
         },
         wgs84: { maxLongitude: 180, maxLatitude: 90 },
+        minSearchLength: 2,
+        maxNumberOfSearchResults: 1000,
     },
     signaturePrefix: 'data:image/png;base64,',
     meltaUpdatesShown: 'meltaUpdatesShown',
@@ -344,6 +349,7 @@ export const environment = {
     uuidFormat: /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{8}/,
     dateRegex: /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/,
     dateTimeRegex: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
+    objectIdRegex: /^[0-9a-fA-F]{24}$/,
     maxPrintLevel: 5,
     formats: {
         date: 'dd/MM/yyyy',
@@ -353,6 +359,7 @@ export const environment = {
         loggingDate: 'yyyy-MM-dd',
         loggingDateTime: 'yyyy-MM-dd HH:mm:ss',
     },
+    fieldFilterPrefix: '$$current.properties.',
     fileExtensions: {
         defaultImage: 'png',
         image: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'ico', 'psd', 'raw', 'heif', 'indd', 'ai', 'eps'],

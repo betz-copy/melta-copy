@@ -43,7 +43,6 @@ const metadataSchema = Joi.object({
         destTemplateId: Joi.string().allow(''),
         sourceFieldForColor: Joi.string().allow(''),
     }).optional(),
-    unitsArray: Joi.array().items(Joi.string().trim()).optional(),
     numOfRelationshipFieldsToShow: Joi.number(),
     twinTemplates: Joi.array().items(Joi.string().trim()).optional(),
 }).optional();

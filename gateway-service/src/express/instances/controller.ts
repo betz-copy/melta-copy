@@ -98,8 +98,8 @@ class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async searchEntitiesOfTemplate(req: Request, res: Response) {
-        const { childTemplateId, ...restBody } = req.body;
-        res.json(await this.manager.searchEntitiesOfTemplate(req.params.templateId, restBody));
+        const { childTemplateIds, externalId, ...restBody } = req.body;
+        res.json(await this.manager.searchEntitiesOfTemplate(req.params.templateId, restBody, req.user!.id, childTemplateIds, externalId));
     }
 
     async getEntitiesCountByTemplates(req: Request, res: Response) {
@@ -161,6 +161,10 @@ class InstancesController extends DefaultController<InstancesManager> {
         const { actionsGroups, ignoredRules } = req.body;
 
         res.json(await this.manager.runBulkOfActions(actionsGroups, req.query.dryRun as unknown as boolean, req.user!.id, ignoredRules));
+    }
+
+    async getChartOfTemplate(req: Request, res: Response) {
+        res.json(await this.manager.getChartOfTemplate(req.params.templateId, req.body));
     }
 }
 

@@ -24,6 +24,7 @@ import {
     IEntitySingleProperty,
     IEntityTemplate,
     IEntityWithDirectRelationships,
+    IGetUnits,
     IMongoEntityTemplate,
     IMongoRule,
     IMultipleSelect,
@@ -754,8 +755,8 @@ class EntityManager extends DefaultManagerNeo4j {
             const bulkManager = new BulkActionManager(this.workspaceId);
 
             const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
-            const createdEntity = await this.getEntityById(results.entitiesWithUpdatedColors[0].properties._id);
-            const fixedActions = this.fixActions(actions, results.entitiesWithUpdatedColors);
+            const createdEntity = await this.getEntityById(results.instances[0].properties._id);
+            const fixedActions = this.fixActions(actions, results.instances);
             return { createdEntity, actions: fixedActions, emails: results.emails };
         }
 
@@ -1220,8 +1221,6 @@ class EntityManager extends DefaultManagerNeo4j {
         entityTemplate: IMongoEntityTemplate,
         showRelationships: boolean = true,
     ): Promise<IEntityWithDirectRelationships[]> {
-        const fullEntities: IEntityWithDirectRelationships[] = [];
-
         if (searchBody.selectAll) {
             const { idsToExclude, filter, textSearch = '' } = searchBody as IMultipleSelect<true>;
 
@@ -1229,19 +1228,24 @@ class EntityManager extends DefaultManagerNeo4j {
                 { sort: [], limit: deleteEntitiesMaxLimit, skip: 0, filter, showRelationships, textSearch, entityIdsToExclude: idsToExclude },
                 entityTemplate,
             );
-            fullEntities.push(...entities);
+
+            return entities;
         } else {
             const { idsToInclude } = searchBody as IMultipleSelect<false>;
             const { entities } = await this.searchEntitiesOfTemplate(
-                { sort: [], limit: deleteEntitiesMaxLimit, skip: 0, showRelationships, entityIdsToInclude: idsToInclude },
+                {
+                    sort: [],
+                    limit: deleteEntitiesMaxLimit,
+                    skip: 0,
+                    showRelationships,
+                    entityIdsToInclude: idsToInclude,
+                    filter: { $and: [{ _id: { $in: idsToInclude } }] },
+                },
                 entityTemplate,
             );
 
-            const filteredEntities = entities.filter(({ entity }) => idsToInclude.includes(entity.properties._id));
-            fullEntities.push(...filteredEntities);
+            return entities;
         }
-
-        return fullEntities;
     }
 
     async getEntitiesToDeleteWithoutRelationships(
@@ -1646,6 +1650,10 @@ class EntityManager extends DefaultManagerNeo4j {
                             relatedEntitiesChangedValues[
                                 `${fieldToChange}.properties.${updatedProperty}${config.neo4j.relationshipReferencePropertySuffix}`
                             ] = entityProperties[updatedProperty].properties[fieldName!];
+                        } else if (property?.format === 'location') {
+                            relatedEntitiesChangedValues[
+                                `${fieldToChange}.properties.${updatedProperty}${config.neo4j.relationshipReferencePropertySuffix}`
+                            ] = JSON.stringify(entityProperties[updatedProperty]);
                         } else {
                             relatedEntitiesChangedValues[
                                 `${fieldToChange}.properties.${updatedProperty}${config.neo4j.relationshipReferencePropertySuffix}`
@@ -1664,11 +1672,7 @@ class EntityManager extends DefaultManagerNeo4j {
                     {
                         updateParams: {
                             ids: entityIdsToUpdate,
-                            value: await addStringFieldsAndNormalizeSpecialStringValues(
-                                relatedEntitiesChangedValues,
-                                entityTemplate,
-                                this.entityTemplateManagerService,
-                            ),
+                            value: relatedEntitiesChangedValues,
                         },
                     },
                 );
@@ -1819,8 +1823,8 @@ class EntityManager extends DefaultManagerNeo4j {
 
             const bulkManager = new BulkActionManager(this.workspaceId);
             const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
-            const updatedEntity = await this.getEntityById(results.entitiesWithUpdatedColors[0].properties._id);
-            const fixedActions = this.fixActions(actions, results.entitiesWithUpdatedColors);
+            const updatedEntity = await this.getEntityById(results.instances[0].properties._id);
+            const fixedActions = this.fixActions(actions, results.instances);
 
             return { updatedEntity, actions: fixedActions, emails: results.emails };
         }
@@ -2363,7 +2367,10 @@ class EntityManager extends DefaultManagerNeo4j {
         return filterDependentRulesViaAggregation(rules, relationshipTemplateId);
     }
 
-    async getChartByTemplate(templateId: string, { chartsData, childTemplateId }: { chartsData: IChartBody[]; childTemplateId?: string }) {
+    async getChartByTemplate(
+        templateId: string,
+        { chartsData, childTemplateId, units }: { chartsData: IChartBody[]; childTemplateId?: string; units: IGetUnits },
+    ) {
         const childTemplate = childTemplateId ? await this.childTemplateManagerService.getChildTemplateById(childTemplateId) : undefined;
 
         const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
@@ -2380,7 +2387,7 @@ class EntityManager extends DefaultManagerNeo4j {
             const query = buildChartAggregationQuery(xAxis, yAxis, specialProperties, entityTemplate, filterQuery);
 
             const chart = await this.neo4jClient.readTransaction(query, normalizeChartResponse, parameters);
-            const manipulatedChart = await manipulateReturnedChart(xAxis, chart, entityTemplate, this.workspaceId);
+            const manipulatedChart = await manipulateReturnedChart(xAxis, chart, entityTemplate, this.workspaceId, units);
 
             return _id ? { _id, chart: manipulatedChart } : manipulatedChart;
         });

@@ -6,6 +6,7 @@ import _debounce from 'lodash.debounce';
 import React, { SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import { DndProvider, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { useQueryClient } from 'react-query';
 import { v4 as uuid } from 'uuid';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { AreYouSureDialog } from '../../../dialogs/AreYouSureDialog';
@@ -14,7 +15,6 @@ import { CommonFormInputProperties, FieldProperty, GroupProperty, PropertyItem }
 import { FieldEditCardProps } from '../FieldEditCard';
 import { FieldBlockAccordion, FieldBlockProps, ItemTypes } from './interfaces';
 import { Attachment, Field, Group, getFieldData } from './propertiesTypes';
-import { useQueryClient } from 'react-query';
 
 export const FieldBlockDND = <PropertiesType extends string, Values extends Record<PropertiesType, PropertyItem[]>>({
     propertiesType,
@@ -81,7 +81,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
     onDeleteSure,
     remove,
     userPropertiesInTemplate,
-    showAccountDisplay = false,
+    isAccountTemplate = false,
     hasAccountBalanceField,
     isAlreadyWalletTemplate,
     setIsTransferTemplate,
@@ -112,29 +112,20 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
 
     useEffect(() => {
         if (!orderedItems?.length || !templates?.size) return;
-        const templateHasAccountBalance = (template: IMongoEntityTemplatePopulated) => {
-            return Object.values(template?.properties?.properties ?? {}).some((property) => property.accountBalance);
-        };
+        const templateHasAccountBalance = (template: IMongoEntityTemplatePopulated) =>
+            Object.values(template?.properties?.properties ?? {}).some((property) => property.accountBalance);
 
+        const hasRelatedAccountBalance = (relatedId?: string) => {
+            if (!relatedId) return false;
+            const relatedTemplate = templates.get(relatedId);
+            return relatedTemplate ? templateHasAccountBalance(relatedTemplate) : false;
+        };
         setIsTransferTemplate?.(
             orderedItems.some((property) => {
-                if (property.type === 'field' && property.data?.relationshipReference) {
-                    const relatedId = property.data.relationshipReference.relatedTemplateId;
-                    const relatedTemplate = templates.get(relatedId);
-                    return relatedTemplate ? templateHasAccountBalance(relatedTemplate) : false;
-                }
-
-                if (property.type === 'group') {
-                    return property.fields.some((field: any) => {
-                        if (field.relationshipReference) {
-                            const relatedId = field.relationshipReference.relatedTemplateId;
-                            const relatedTemplate = templates.get(relatedId);
-                            return relatedTemplate ? templateHasAccountBalance(relatedTemplate) : false;
-                        }
-                        return false;
-                    });
-                }
-
+                if (property.type === 'field' && property.data?.relationshipReference)
+                    return hasRelatedAccountBalance(property.data.relationshipReference.relatedTemplateId);
+                if (property.type === 'group')
+                    return property.fields.some((field) => hasRelatedAccountBalance(field.relationshipReference?.relatedTemplateId));
                 return false;
             }),
         );
@@ -399,9 +390,8 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         let error: FieldEditCardProps['errors'];
         let touch: FieldEditCardProps['touched'];
 
-        const getTouchedOrError = (obj?: FormikTouched<Values> | FormikErrors<Values>) => {
-            return isGroup ? obj?.[propertiesType]?.[groupIndex]?.fields?.[index] : obj?.[propertiesType]?.[index]?.data;
-        };
+        const getTouchedOrError = (obj?: FormikTouched<Values> | FormikErrors<Values>) =>
+            isGroup ? obj?.[propertiesType]?.[groupIndex]?.fields?.[index] : obj?.[propertiesType]?.[index]?.data;
 
         const findInitialValue = ():
             | FieldProperty
@@ -418,11 +408,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
             const group = currentTypeValues?.find(
                 (item) => item.type === 'group' && item.fields?.some((f) => f.id === propertyProp.id),
             ) as GroupProperty;
-            if (group) {
-                return {
-                    data: group.fields?.find((f) => f.id === propertyProp.id),
-                };
-            }
+            if (group) return { data: group.fields?.find((f) => f.id === propertyProp.id) };
 
             return undefined;
         };
@@ -465,6 +451,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
             propertiesType,
             hasAccountBalanceField,
             isAlreadyWalletTemplate,
+            values,
         };
     };
 
@@ -607,6 +594,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                                             <Group
                                                 group={item}
                                                 index={index}
+                                                values={values}
                                                 moveField={moveField}
                                                 moveGroup={moveGroup}
                                                 touched={touched}
@@ -626,7 +614,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                                                 initialValue={initialValues?.[propertiesType]?.find(
                                                     (property) => property.type === 'group' && property.id === item.id,
                                                 )}
-                                                showAccountDisplay={showAccountDisplay}
+                                                isAccountTemplate={isAccountTemplate}
                                             />
                                         ) : (
                                             <Field
@@ -641,7 +629,8 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                                                 uniqueConstraints={uniqueConstraints}
                                                 setUniqueConstraints={setUniqueConstraints}
                                                 moveGroup={moveGroup}
-                                                showAccountDisplay={showAccountDisplay}
+                                                isAccountTemplate={isAccountTemplate}
+                                                values={values}
                                             />
                                         )}
                                     </Box>

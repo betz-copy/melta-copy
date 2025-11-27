@@ -2,9 +2,11 @@ import { Close, ExpandMore } from '@mui/icons-material';
 import { Autocomplete, Grid, MenuItem, TextField, TextFieldProps } from '@mui/material';
 import { RJSFSchema } from '@rjsf/utils';
 import React from 'react';
+import { useQueryClient } from 'react-query';
+import { IMongoUnit } from '../../interfaces/units';
 import { IUser } from '../../interfaces/users';
+import { useUnitStore } from '../../stores/unit';
 import { useUserStore } from '../../stores/user';
-import { useWorkspaceStore } from '../../stores/workspace';
 import OverflowWrapper from '../../utils/agGrid/OverflowWrapper';
 import { ColoredEnumChip } from '../ColoredEnumChip';
 import MeltaCheckbox from '../MeltaDesigns/MeltaCheckbox';
@@ -56,13 +58,17 @@ const MultipleSelect: React.FC<{
     placeholder,
     required,
 }) => {
-    const workspace = useWorkspaceStore((state) => state.workspace);
     const currentUser = useUserStore<IUser>((state) => state.user);
 
-    if (schema?.format === 'unitField') {
-        items = workspace.metadata.unitsArray.map((unit) => ({ label: unit, value: unit }));
+    const filteredUnits = useUnitStore((state) => state.filteredUnits);
 
-        if (!currentUser.isRoot) items = items.filter((unit) => currentUser.units?.[workspace._id]?.includes(unit.label));
+    const queryClient = useQueryClient();
+    const units = queryClient.getQueryData<IMongoUnit[]>('getUnits');
+
+    if (schema?.format === 'unitField') {
+        items = (disabled ? units : filteredUnits)?.map((unit) => ({ label: unit.name, value: unit._id })) ?? [];
+
+        if (!currentUser.isRoot) items = items.filter((unit) => currentUser.currentUnits.includes(unit.value));
     }
 
     return (

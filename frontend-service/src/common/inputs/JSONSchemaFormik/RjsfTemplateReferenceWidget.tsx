@@ -1,13 +1,14 @@
-import { TextField } from '@mui/material';
 import { WidgetProps } from '@rjsf/utils';
+import { useFormikContext } from 'formik';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { IChildTemplateMap } from '../../../interfaces/childTemplates';
 import { IEntity } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import TemplateEntitiesAutocomplete from '../TemplateEntitiesAutocomplete';
 import { useWorkspaceStore } from '../../../stores/workspace';
+import { EntityWizardValues } from '../../dialogs/entity';
+import TemplateEntitiesAutocomplete from '../TemplateEntitiesAutocomplete';
 
 const RjsfTemplateReferenceWidget = ({
     id,
@@ -30,10 +31,12 @@ const RjsfTemplateReferenceWidget = ({
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { twinTemplates } = workspace.metadata;
 
-    const [inputValue, setInputValue] = useState('');
+    const [inputValue, setInputValue] = useState<string>('');
     const fieldName = Object.keys(template.properties.properties).find((key) => template.properties.properties[key].title === label);
 
-    const handleEntityChange = (_event: React.SyntheticEvent, chosenEntity: IEntity | null | string) => {
+    const { values } = useFormikContext();
+
+    const handleEntityChange = (_event: React.SyntheticEvent, chosenEntity: IEntity | null) => {
         onChange(chosenEntity);
         setInputValue('');
     };
@@ -53,20 +56,7 @@ const RjsfTemplateReferenceWidget = ({
     const childTemplatesOfRelatedTemplate =
         Array.from(childTemplates.values()).filter((child) => child.parentTemplate._id === relatedTemplateId) ?? [];
 
-    if (!relatedEntityTemplate && !childTemplatesOfRelatedTemplate.length)
-        return (
-            <TextField
-                color="primary"
-                fullWidth
-                id={id}
-                placeholder={placeholder}
-                label={schema.title}
-                required={required}
-                disabled
-                value={i18next.t('templateEntitiesAutocomplete.noWritePermissions')}
-                error={!!rawErrors.length}
-            />
-        );
+    const noRelationPermission = !relatedEntityTemplate && !childTemplatesOfRelatedTemplate.length;
 
     const sourceTransfer = template.properties.properties[template.walletTransfer?.from];
     const destTransfer = template.properties.properties[template.walletTransfer?.to];
@@ -96,12 +86,16 @@ const RjsfTemplateReferenceWidget = ({
             displayValue={inputValue}
             isError={!!rawErrors.length}
             onBlur={handleBlur}
-            disabled={disabled}
+            disabled={disabled || (required && noRelationPermission)}
+            noRelationPermission={noRelationPermission}
             relationFilters={filters}
             required={required}
             isChildTemplate={!relatedEntityTemplate}
             isSourceTransferKey={Boolean(template.walletTransfer?.from === fieldName)}
             isTwinTransfer={Boolean(shouldLinkWallets && fieldName === template.walletTransfer.to)}
+            currentEntity={(values as EntityWizardValues).properties}
+            helperText={required && noRelationPermission ? i18next.t('templateEntitiesAutocomplete.noWritePermissions') : undefined}
+
         />
     );
 };

@@ -27,6 +27,9 @@ const getSubCompactPermissionSchema = (allowNull = false) => {
                 case PermissionType.instances:
                     schema = getPermissionMetadataSchema(IInstancePermissionOrderedHierarchy, allowNull);
                     break;
+                case PermissionType.units:
+                    schema = getPermissionMetadataSchema([], allowNull);
+                    break;
 
                 default:
                     throw new UnknownPermissionTypeError(type);

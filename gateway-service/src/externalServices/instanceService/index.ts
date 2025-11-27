@@ -10,6 +10,7 @@ import {
     IEntityExpanded,
     IEntitySingleProperty,
     IEntityWithDirectRelationships,
+    IGetUnits,
     IMongoRule,
     IMultipleSelect,
     IRelationship,
@@ -49,7 +50,7 @@ class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async getIfValuefieldIsUsed(id: string, fieldValue: string, fieldName: string, type: string) {
+    async getIfValueFieldIsUsed(id: string, fieldValue: string, fieldName: string, type: string) {
         const { data } = await this.api.get<IEntity>(`${baseEntitiesRoute}/get-is-field-used/${id}`, {
             params: {
                 fieldValue,
@@ -169,14 +170,17 @@ class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    getChartsOfTemplate = async (templateId: string, chartsData: IChartBody[], childTemplateId?: string) => {
-        const { data } = await this.api.post<{ _id: string; chart: { x: any; y: number }[] }[]>(`${baseEntitiesRoute}/chart/${templateId}`, {
-            chartsData,
-            childTemplateId,
-        });
+    async getChartsOfTemplate(templateId: string, body: { chartsData: IChartBody[]; childTemplateId?: string }, units: IGetUnits) {
+        const { data } = await this.api.post<{ _id: string; chart: { x: any; y: number }[] }[] | { x: any; y: number }[][]>(
+            `${baseEntitiesRoute}/chart/${templateId}`,
+            {
+                ...body,
+                units,
+            },
+        );
 
         return data;
-    };
+    }
 
     // relationships instances
     async getRelationshipInstanceById(id: string) {

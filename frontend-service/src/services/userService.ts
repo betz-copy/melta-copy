@@ -3,7 +3,9 @@ import { environment } from '../globals';
 import { NotificationType } from '../interfaces/notifications';
 import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '../interfaces/permissions/permissions';
 import { IMongoRole, IRole } from '../interfaces/roles';
+import { IGetUnits, IMongoUnit, IUnit, IUnitHierarchy } from '../interfaces/units';
 import {
+    IBaseUser,
     IExternalUser,
     IKartoffelUser,
     IMongoUser,
@@ -16,7 +18,7 @@ import {
 import { RecursiveNullable } from '../utils/types';
 
 const {
-    api: { users, roles },
+    api: { users, roles, units },
 } = environment;
 
 export const getMyUserRequest = async () => {
@@ -47,6 +49,11 @@ export const createUserRequest = async (
     units?: Record<string, string[]>,
 ) => {
     const { data } = await axios.post<IUser>(users, { kartoffelId, permissions, workspaceId, roleIds, units });
+    return data;
+};
+
+export const updateUserRequest = async (id: string, update: Partial<IBaseUser>) => {
+    const { data } = await axios.patch<IUser>(`${users}/${id}`, update);
     return data;
 };
 
@@ -81,23 +88,16 @@ export const updateUserRoleIdsRequest = async (
     return data;
 };
 
-export const updateUserUnitsRequest = async (userId: string, workspaceId: string, units?: IUser['units']) => {
-    const { data } = await axios.patch<IUser>(`${users}/${userId}/units`, { workspaceId, units });
-    return data;
-};
-
 export const syncPermissionsRequest = async (
     relatedId: string,
     permissionType: RelatedPermission,
     permissions: ICompactNullablePermissions,
     dontDeleteUser?: boolean,
-    units?: IUser['units'],
 ) => {
     const { data } = await axios.post<ICompactPermissions>(`${users}/${relatedId}/permissions/sync`, {
         permissionType,
         permissions,
         dontDeleteUser,
-        units,
     });
     return data;
 };
@@ -109,7 +109,7 @@ export const searchExternalUsersRequest = async (search: string, workspaceId?: s
 };
 
 export const deletePermissionsFromMetadata = async (
-    query: Pick<IPermission, 'type' | 'workspaceId'> & { userId?: IPermission['userId'] },
+    query: Pick<IPermission, 'type' | 'workspaceId'> & { relatedId?: IPermission['relatedId'] },
     metadata: RecursiveNullable<ISubCompactPermissions>,
 ) => {
     const { data } = await axios.patch<void>(`${users}/metadata`, { query, metadata });
@@ -160,5 +160,25 @@ export const getUserRolePerWorkspaceRequest = async (workspaceId: string, roleId
 
 export const getAllWorkspaceRolesRequest = async (workspaceIds: string[]) => {
     const { data } = await axios.post<IRole[]>(`${users}/roles/workspaces`, { workspaceIds });
+    return data;
+};
+
+export const getUnits = async (params: Partial<IUnit> & Pick<IUnit, 'workspaceId'>) => {
+    const { data } = await axios.get<IGetUnits>(`${units}`, { params });
+    return data;
+};
+
+export const createUnit = async (unit: Omit<IUnit, 'disabled'>) => {
+    const { data } = await axios.post<IMongoUnit>(`${units}`, unit);
+    return data;
+};
+
+export const updateUnit = async (id: string, update: Partial<IUnit>, shouldEffectChildren?: boolean) => {
+    const { data } = await axios.patch<IMongoUnit>(`${units}/${id}`, { ...update, shouldEffectChildren });
+    return data;
+};
+
+export const getUnitHierarchy = async (workspaceId: string) => {
+    const { data } = await axios.get<IUnitHierarchy[]>(`${units}/${workspaceId}/hierarchy`);
     return data;
 };

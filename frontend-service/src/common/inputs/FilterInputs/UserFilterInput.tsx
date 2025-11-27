@@ -4,14 +4,14 @@ import React, { useEffect, useState } from 'react';
 import { ByCurrentDefaultValue } from '../../../interfaces/childTemplates';
 import { IGraphFilterBody } from '../../../interfaces/entities';
 import { IKartoffelUserStringFields } from '../../../interfaces/users';
-import { IAGGidNumberFilter, IAGGridDateFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
+import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import { UserInput } from '../UserInput';
 
 interface UserFilterProps {
     filterField: IAGGridTextFilter | undefined;
     handleFilterTypeChange: (
-        newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGidNumberFilter['type'],
+        newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGridNumberFilter['type'],
         condition?: boolean,
     ) => void;
     handleFilterFieldChange: (value: IGraphFilterBody['filterField'], condition?: boolean) => void;

@@ -24,7 +24,7 @@ export interface SwitchesProps {
     supportUnique?: boolean;
     supportIdentifier?: boolean;
     hasIdentifier?: boolean;
-    showAccountDisplay?: boolean;
+    isAccountTemplate?: boolean;
     hasAccountBalanceField?: boolean;
     isAlreadyWalletTemplate?: boolean;
 }
@@ -45,7 +45,7 @@ export const Switches: React.FC<SwitchesProps> = ({
     supportUnique,
     supportIdentifier,
     hasIdentifier,
-    showAccountDisplay,
+    isAccountTemplate,
     hasAccountBalanceField,
     isAlreadyWalletTemplate,
 }) => {
@@ -180,7 +180,7 @@ export const Switches: React.FC<SwitchesProps> = ({
                             value.archive ||
                             value.type === 'kartoffelUserField' ||
                             isComment ||
-                            (value.accountBalance && value.type === 'number' && areThereAnyInstances)
+                            (value.accountBalance && value.type === 'number')
                         }
                         checked={value.readOnly || isComment}
                     />
@@ -326,7 +326,7 @@ export const Switches: React.FC<SwitchesProps> = ({
                     />
                 </>
             )}
-            {showAccountDisplay && value.type === 'number' && (
+            {isAccountTemplate && value.type === 'number' && (
                 <>
                     <FormControlLabel
                         control={

@@ -2,7 +2,7 @@ import { AppRegistration as AppRegistrationIcon } from '@mui/icons-material';
 import { Dialog, Grid, IconButton, Typography } from '@mui/material';
 import { Field } from 'formik';
 import i18next from 'i18next';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useWorkspaceStore } from '../../../../stores/workspace';
 import { EntityReference } from '../EntityReference';
 
