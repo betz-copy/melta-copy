@@ -10,7 +10,6 @@ import {
     IFailedEntity,
     IFailedEntityError,
     IMongoEntityTemplatePopulated,
-    INotFoundRelationshipRefError,
     IWorkspace,
     ServiceError,
     UploadedFile,

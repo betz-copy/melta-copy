@@ -286,7 +286,7 @@ const Entity: React.FC = () => {
 
                                         return (
                                             <TabPanel key={_id} value={_id}>
-                                                {connectionsTemplatesOfCategory.map((connectionTemplate, connectedRelationshipTemplateIndex) => {
+                                                {connectionsTemplatesOfCategory.map((connectionTemplate) => {
                                                     const relationship = connectionTemplate.relationshipTemplate;
 
                                                     const relatedTemplate =
@@ -304,7 +304,7 @@ const Entity: React.FC = () => {
 
                                                     return (
                                                         <ConnectionsTable
-                                                            key={connectedRelationshipTemplateIndex}
+                                                            key={connectionTemplate.relationshipTemplate._id}
                                                             expandedEntity={expandedEntity}
                                                             templateIds={templateIds}
                                                             connectionTemplate={connectionTemplate}

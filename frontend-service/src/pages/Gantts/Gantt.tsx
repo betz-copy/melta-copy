@@ -126,6 +126,7 @@ export const Gantt: React.FC<IGanttProps> = ({ gantt }) => {
         },
     );
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: Yahalom knows what he's doing
     const data = useMemo(() => {
         if (hasNextPage) fetchNextPage();
 

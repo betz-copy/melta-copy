@@ -27,6 +27,7 @@ import {
     isValidWGS84,
     locationConverterToString,
     logger,
+    PropertyFormat,
     ServiceError,
     stringToCoordinates,
     UploadedFile,
@@ -255,21 +256,21 @@ export const readExcelFile = async (
                     try {
                         const formatCellValue = formatExcel(cellValue, value, isEditMode, relatedTemplatesMap, unitsMap);
                         if (formatCellValue === invalidDate) {
-                            failedProperties.push({ key, value, cellValue, format: 'date' });
+                            failedProperties.push({ key, value, cellValue, format: PropertyFormat.date });
                             isFailed = true;
                         } else rowData[key] = formatCellValue;
                     } catch (error: any) {
                         logger.error("there's an error in the entity", { error });
                         if (error.message.includes(invalidTime)) {
-                            failedProperties.push({ key, value, cellValue, format: 'date-time' });
+                            failedProperties.push({ key, value, cellValue, format: PropertyFormat['date-time'] });
                             isFailed = true;
                         }
                         if (error.message.includes(invalidLocation)) {
-                            failedProperties.push({ key, value, cellValue, format: 'location' });
+                            failedProperties.push({ key, value, cellValue, format: PropertyFormat.location });
                             isFailed = true;
                         }
                         if (error.message.includes(invalidUnit)) {
-                            failedProperties.push({ key, value, cellValue, format: 'unitField' });
+                            failedProperties.push({ key, value, cellValue, format: PropertyFormat.unitField });
                             isFailed = true;
                         }
                     }
