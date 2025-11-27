@@ -161,7 +161,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
             ? searchEntitiesOfTemplateClientSideRequest(templateId, clientSideUserEntityId, searchBody)
             : searchEntitiesOfTemplateRequest(templateId, {
                   ...searchBody,
-                  childTemplateIds: childTemplatesOfRelatedTemplate.map((childTemplate) => childTemplate._id),
+                  ...(isChildTemplate ? { childTemplateIds: childTemplatesOfRelatedTemplate.map((childTemplate) => childTemplate._id) } : {}),
               });
 
     const emptyDependentFields = Object.entries(dependentFields)

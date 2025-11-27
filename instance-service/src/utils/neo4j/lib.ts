@@ -225,17 +225,14 @@ export const normalizeReturnedRelationship =
             };
         });
 
-        if (response === 'singleResponse' || response === 'singleResponseNotNullable') {
-            return (relationships.length > 0 ? relationships[0] : null) as Response<T, IRelationship>;
-        }
+        if (['singleResponse', 'singleResponseNotNullable'].includes(response))
+            return (relationships.length ? relationships[0] : null) as Response<T, IRelationship>;
 
         return relationships as Response<T, IRelationship>;
     };
 
 export const normalizeReturnedDeletedRelationship = (result: QueryResult) => {
-    if (result.records.length === 0) {
-        return null;
-    }
+    if (!result.records.length) return null;
 
     const relationshipResult = result.records[0];
 
