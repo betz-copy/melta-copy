@@ -16,7 +16,7 @@ import {
     IPieMetaData,
     ISearchFilter,
     ISubCompactPermissions,
-    isWorkspaceAdmin,
+    isAdmin,
 } from '@microservices/shared';
 import ChartService from '../../externalServices/dashboardService/chartService';
 import DashboardItemService from '../../externalServices/dashboardService/dashboardItemService';
@@ -26,6 +26,7 @@ import DefaultManagerProxy from '../../utils/express/manager';
 import { getMetaDataAxes } from '../../utils/templateCharts/getMetaDataAxes';
 import TemplatesManager from '../templates/manager';
 import UsersManager from '../users/manager';
+import WorkspaceService from '../workspaces/service';
 
 class ChartManager extends DefaultManagerProxy<ChartService> {
     private instanceService: InstancesService;
@@ -117,13 +118,16 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
 
         let childFilters: ISearchFilter | undefined;
         if (chart.childTemplateId) {
-            const childTemplate = await this.templateManager.getChildTemplateById(chart.childTemplateId);
+            const [childTemplate, workspaceHierarchyIds] = await Promise.all([
+                this.templateManager.getChildTemplateById(chart.childTemplateId),
+                WorkspaceService.getWorkspaceHierarchyIds(this.workspaceId),
+            ]);
 
             childFilters = getDefaultFilterFromChildTemplate(
                 childTemplate,
                 currentUser.kartoffelId,
                 UsersManager.getUnitsWithInheritance(units, currentUser.units?.[this.workspaceId] ?? []),
-                isWorkspaceAdmin(currentUser?.permissions?.[this.workspaceId]),
+                isAdmin(currentUser?.permissions, workspaceHierarchyIds),
             );
         }
 

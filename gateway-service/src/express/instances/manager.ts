@@ -42,7 +42,7 @@ import {
     ISemanticSearchResult,
     ITemplateSearchBody,
     IUpdateEntityMetadata,
-    isWorkspaceAdmin,
+    isAdmin,
     logger,
     matchValueAgainstFilter,
     NotFoundError,
@@ -218,14 +218,17 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         let mergedFilterChildren: ISearchFilter | undefined;
 
         if (childTemplateIds?.length) {
-            const childTemplates = await this.entityTemplateService.searchChildTemplates({ ids: childTemplateIds });
+            const [childTemplates, workspaceHierarchyIds] = await Promise.all([
+                await this.entityTemplateService.searchChildTemplates({ ids: childTemplateIds }),
+                WorkspaceService.getWorkspaceHierarchyIds(this.workspaceId),
+            ]);
 
             const childTemplatesFilters = childTemplates.map((childTemplate) =>
                 getDefaultFilterFromChildTemplate(
                     childTemplate,
                     currentUser.kartoffelId,
                     UsersManager.getUnitsWithInheritance(units, currentUser.units?.[this.workspaceId] ?? []),
-                    isWorkspaceAdmin(currentUser?.permissions?.[this.workspaceId]),
+                    isAdmin(currentUser?.permissions, workspaceHierarchyIds),
                 ),
             );
             mergedFilterChildren = getFilterModal(childTemplatesFilters, FilterLogicalOperator.OR);
