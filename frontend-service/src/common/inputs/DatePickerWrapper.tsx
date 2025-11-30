@@ -22,7 +22,6 @@ interface DatePickerWrapperProps {
     readOnly?: boolean;
     borderRadius?: string;
     disableKeyboardInput?: boolean;
-    legacyField?: boolean;
 }
 
 const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
@@ -37,7 +36,6 @@ const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
     readOnly = false,
     borderRadius,
     disableKeyboardInput = false,
-    legacyField = false,
 }) => (
     <LocalizationProvider
         dateAdapter={AdapterDateFns}
@@ -57,9 +55,10 @@ const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
             label={label}
             value={!value ? null : typeof value === 'string' ? new Date(value) : value}
             onChange={onChange}
+            onAccept={onChange}
             readOnly={readOnly || disableKeyboardInput}
             disabled={readOnly}
-            enableAccessibleFieldDOMStructure={legacyField ? false : undefined}
+            enableAccessibleFieldDOMStructure={false}
             slotProps={{
                 field: {
                     readOnly: readOnly || disableKeyboardInput,

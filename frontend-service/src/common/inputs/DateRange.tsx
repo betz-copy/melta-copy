@@ -14,7 +14,6 @@ const DateRange: React.FC<{
     maxStartDate?: Date;
     readOnly?: boolean;
     borderRadius?: string;
-    legacyField?: boolean;
 }> = ({
     onStartDateChange,
     onEndDateChange,
@@ -26,7 +25,6 @@ const DateRange: React.FC<{
     maxStartDate,
     readOnly = false,
     borderRadius,
-    legacyField = false,
 }) => {
     return (
         <Grid
@@ -50,7 +48,6 @@ const DateRange: React.FC<{
                     directionIsRow={directionIsRow}
                     readOnly={readOnly}
                     borderRadius={borderRadius}
-                    legacyField={legacyField}
                 />
             </Grid>
             <Grid className="processList-dateContainer">
@@ -64,7 +61,6 @@ const DateRange: React.FC<{
                     directionIsRow={directionIsRow}
                     readOnly={readOnly}
                     borderRadius={borderRadius}
-                    legacyField={legacyField}
                 />
             </Grid>
         </Grid>
