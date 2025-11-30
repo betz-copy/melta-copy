@@ -137,7 +137,7 @@ class UserService {
         return data;
     }
 
-    static async getUnits(params: Partial<IUnit> & Pick<IUnit, 'workspaceId'>) {
+    static async getUnits(params: Partial<Omit<IUnit, 'workspaceId'>> & { workspaceIds: string[] }) {
         const { data } = await UserService.userService.get<IGetUnits>(`${unitsRoute}`, { params });
         return data;
     }

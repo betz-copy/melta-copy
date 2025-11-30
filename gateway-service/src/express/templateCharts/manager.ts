@@ -25,7 +25,6 @@ import UserService from '../../externalServices/userService';
 import DefaultManagerProxy from '../../utils/express/manager';
 import { getMetaDataAxes } from '../../utils/templateCharts/getMetaDataAxes';
 import TemplatesManager from '../templates/manager';
-import UsersManager from '../users/manager';
 import WorkspaceService from '../workspaces/service';
 
 class ChartManager extends DefaultManagerProxy<ChartService> {
@@ -114,7 +113,7 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
     }
 
     async getFullChartFilters(chart: IMongoChart, userId: string): Promise<IMongoChart> {
-        const [currentUser, units] = await Promise.all([UserService.getUserById(userId), UserService.getUnits({ workspaceId: this.workspaceId })]);
+        const currentUser = await UserService.getUserById(userId);
 
         let childFilters: ISearchFilter | undefined;
         if (chart.childTemplateId) {
@@ -126,7 +125,7 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
             childFilters = getDefaultFilterFromChildTemplate(
                 childTemplate,
                 currentUser.kartoffelId,
-                UsersManager.getUnitsWithInheritance(units, currentUser.units?.[this.workspaceId] ?? []),
+                currentUser.units?.[this.workspaceId] ?? [],
                 isAdmin(currentUser?.permissions, workspaceHierarchyIds),
             );
         }
@@ -167,7 +166,7 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
             }),
         );
 
-        const units = await UserService.getUnits({ workspaceId: this.workspaceId });
+        const units = await UserService.getUnits({ workspaceIds: [this.workspaceId] });
 
         const generatedCharts = (await this.instanceService.getChartsOfTemplate(templateId, { chartsData, childTemplateId }, units)) as {
             _id: string;

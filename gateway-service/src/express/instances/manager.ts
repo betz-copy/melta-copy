@@ -77,7 +77,6 @@ import RabbitManager from '../../utils/rabbit';
 import { createTextsFromEntitiesWithFiles, formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
 import { getRelatedTemplateIds } from '../../utils/templates';
 import RuleBreachesManager from '../ruleBreaches/manager';
-import UsersManager from '../users/manager';
 import WorkspaceService from '../workspaces/service';
 import { patchDocumentAsStream } from './documentExport';
 import { ExternalIdType, IExternalId } from './interface';
@@ -213,7 +212,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         externalId?: IExternalId,
     ) {
         const { entitiesWithFiles, filter: defaultFilter, ...body } = searchBody;
-        const [currentUser, units] = await Promise.all([UserService.getUserById(userId), UserService.getUnits({ workspaceId: this.workspaceId })]);
+        const currentUser = await UserService.getUserById(userId);
 
         let mergedFilterChildren: ISearchFilter | undefined;
 
@@ -227,7 +226,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 getDefaultFilterFromChildTemplate(
                     childTemplate,
                     currentUser.kartoffelId,
-                    UsersManager.getUnitsWithInheritance(units, currentUser.units?.[this.workspaceId] ?? []),
+                    currentUser.units?.[this.workspaceId] ?? [],
                     isAdmin(currentUser?.permissions, workspaceHierarchyIds),
                 ),
             );
@@ -366,7 +365,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         if (headersOnly) return;
 
-        const units = await UserService.getUnits({ workspaceId: this.workspaceId });
+        const units = await UserService.getUnits({ workspaceIds: [this.workspaceId] });
         const unitsMap = new Map(units.map((unit) => [unit._id, unit.name]));
 
         if (insertEntities) {
@@ -1462,7 +1461,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async getChartOfTemplate(templateId: string, body: { chartsData: IChartBody[]; childTemplateId?: string }) {
-        const units = await UserService.getUnits({ workspaceId: this.workspaceId });
+        const units = await UserService.getUnits({ workspaceIds: [this.workspaceId] });
 
         return this.service.getChartsOfTemplate(templateId, body, units);
     }

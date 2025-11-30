@@ -6,7 +6,7 @@ export const getUnitsRequestSchema = joi.object({
     query: {
         name: joi.string(),
         parentId: mongoIdSchema,
-        workspaceId: mongoIdSchema.required(),
+        workspaceIds: joi.array().items(mongoIdSchema).min(1).required(),
         disabled: joi.boolean(),
     },
     body: {},

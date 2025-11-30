@@ -1,5 +1,5 @@
 import { IGetUnits, IMongoUnit, IUnit, IUnitHierarchy } from '@microservices/shared';
-import mongoose from 'mongoose';
+import mongoose, { FilterQuery } from 'mongoose';
 import config from '../../config';
 import { CyclicalTreeError, DisabledChildUnderEnabledParent, UnitDoesNotExistError } from './errors';
 import UnitsModel from './model';
@@ -7,7 +7,12 @@ import UnitsModel from './model';
 const { unitsCollectionName } = config.mongo;
 
 class UnitsManager {
-    static async getUnits(query: Partial<IUnit> & Pick<IUnit, 'workspaceId'>): Promise<IGetUnits> {
+    static async getUnits({
+        workspaceIds,
+        ...query
+    }: FilterQuery<Partial<Omit<IUnit, 'workspaceId'>> & { workspaceIds?: string[] }>): Promise<IGetUnits> {
+        if (workspaceIds) query.workspaceId = { $in: workspaceIds };
+
         const units = await UnitsModel.aggregate<IMongoUnit & { hierarchy: (IMongoUnit & { depth: number })[] }>([
             { $match: query },
             { $sort: { disabled: 1, name: 1 } },

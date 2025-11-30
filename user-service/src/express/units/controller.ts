@@ -4,7 +4,7 @@ import UnitsManager from './manager';
 
 class UnitsController {
     static async getUnits(req: Request, res: Response) {
-        res.json(await UnitsManager.getUnits(req.query as unknown as IUnit));
+        res.json(await UnitsManager.getUnits(req.query as unknown as IUnit & { workspaceIds: string[] }));
     }
 
     static async getUnitsByIds(req: Request, res: Response) {
