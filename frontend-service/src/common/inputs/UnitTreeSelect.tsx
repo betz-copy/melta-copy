@@ -21,6 +21,7 @@ export interface UnitSelectProps {
     placeholder?: string;
     hideError?: boolean;
     error?: boolean;
+    required?: boolean;
     textFieldProps?: TextFieldProps;
 }
 
@@ -41,6 +42,7 @@ const UnitSelect = ({
     autofocus = false,
     placeholder = '',
     error = false,
+    required = false,
     textFieldProps = {},
 }: UnitSelectProps) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
@@ -119,7 +121,7 @@ const UnitSelect = ({
                 }}
                 onMouseEnter={() => setHover(true)}
                 onMouseLeave={() => setHover(false)}
-                required={!value}
+                required={required && !value}
                 slotProps={{
                     input: {
                         autoComplete: 'off',
@@ -137,6 +139,7 @@ const UnitSelect = ({
                                               overflowY: 'auto',
                                               overflowX: 'hidden',
                                               direction: 'rtl',
+                                              padding: '0.5rem',
                                           }
                                         : {}),
                                 }}

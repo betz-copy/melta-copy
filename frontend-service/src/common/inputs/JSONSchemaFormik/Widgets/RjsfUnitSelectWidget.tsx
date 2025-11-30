@@ -33,6 +33,7 @@ const RjsfUnitSelectWidget = ({
                 onFocus: (e: React.FocusEvent<HTMLInputElement>) => onFocus(id, e.target.value),
                 required,
             }}
+            required={required}
         />
     );
 };
