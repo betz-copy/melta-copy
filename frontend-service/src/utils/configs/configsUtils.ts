@@ -26,7 +26,7 @@ export const setNestedValue = (obj: any, path: string, value: IValue) => {
     current[keys[keys.length - 1]] = value;
 };
 
-export const getValueByPath = (obj: Record<string, any>, path: string) => {
+export const getValueByPath = (obj: any, path: string) => {
     const keys = path.split('.');
     let current = obj;
     for (const key of keys) {

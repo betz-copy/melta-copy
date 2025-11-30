@@ -22,6 +22,17 @@ import { getFileName } from '../../utils/getFileName';
 
 const { entityTemplates } = environment.api;
 
+export const PropertyWizardType = {
+    ...PropertyType,
+    ...PropertyFormat,
+    users: 'users',
+    serialNumber: 'serialNumber',
+    enum: 'enum',
+    pattern: 'pattern',
+    multipleFiles: 'multipleFiles',
+    enumArray: 'enumArray',
+};
+
 export const basePropertyTypes = [PropertyType.string, PropertyType.number, PropertyType.boolean];
 export const stringFormats = Object.values(PropertyFormat);
 export const arrayTypes = ['multipleFiles', 'enumArray', 'users'];
@@ -70,21 +81,15 @@ export const entityTemplateObjectToEntityTemplateForm = (
 
     const propertyData = (key: string, fieldGroup?: FieldGroupData) => {
         const value = properties.properties[key];
-        let type = value.format || value.type;
+        let type: any = value.format || value.type;
 
-        if (value.serialStarter !== undefined) {
-            type = 'serialNumber';
-        } else if (value.enum) {
-            type = 'enum';
-        } else if (value.pattern) {
-            type = 'pattern';
-        } else if (value.items?.enum) {
-            type = 'enumArray';
-        } else if (value.items?.format === PropertyFormat.fileId) {
-            type = 'multipleFiles';
-        } else if (value.items?.format === PropertyFormat.user) {
-            type = 'users';
-        } else if (value.format) {
+        if (value.serialStarter !== undefined) type = PropertyWizardType.serialNumber;
+        else if (value.enum) type = PropertyWizardType.enum;
+        else if (value.pattern) type = PropertyWizardType.pattern;
+        else if (value.items?.enum) type = PropertyWizardType.enumArray;
+        else if (value.items?.format === PropertyFormat.fileId) type = PropertyWizardType.multipleFiles;
+        else if (value.items?.format === PropertyFormat.user) type = PropertyWizardType.users;
+        else if (value.format) {
             switch (value.format) {
                 case PropertyFormat.unitField:
                     type = PropertyFormat.unitField;
@@ -153,7 +158,7 @@ export const entityTemplateObjectToEntityTemplateForm = (
             color: value.color,
         };
 
-        if (value.format === 'fileId' || value.items?.format === 'fileId') {
+        if (value.format === PropertyFormat.fileId || value.items?.format === PropertyFormat.fileId) {
             attachmentProperties.push({
                 type: 'field',
                 data: property,
@@ -351,7 +356,7 @@ const buildBasePropertySchema = (property: EntityTemplateFormInputProperties, qu
     return {
         title,
         type: propertyType,
-        format: stringFormats.includes(type) ? (type as PropertyFormat) : undefined,
+        format: stringFormats.includes(type as any) ? (type as PropertyFormat) : undefined,
         enum: type === 'enum' ? options : undefined,
         items:
             type === 'enumArray'

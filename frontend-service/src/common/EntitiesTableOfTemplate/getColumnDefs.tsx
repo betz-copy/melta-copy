@@ -41,7 +41,6 @@ import { AddEntityButton } from '../EntitiesPage/Buttons/AddEntity';
 import { isUserHasWritePermissions } from '../EntitiesPage/TemplateTable';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { ImageWithDisable } from '../ImageWithDisable';
-import { ErrorResponseData } from '../PermissionsDialog/RoleDialog';
 import { IButtonPopoverProps } from '.';
 
 export interface IGetColumnDefsOptions<Data> {

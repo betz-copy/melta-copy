@@ -29,7 +29,7 @@ import {
     IUsersNotFoundError,
     NotFoundErrorTypes,
 } from '../../interfaces/entities';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated, PropertyFormat } from '../../interfaces/entityTemplates';
 import { IError, IFailedEntity, IValidationError } from '../../interfaces/excel';
 import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
@@ -38,6 +38,7 @@ import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import { IGetUnits, IMongoUnit } from '../../interfaces/units';
 import { IUser, PermissionData } from '../../interfaces/users';
 import OpenMap from '../../pages/Map/OpenMap';
+import { PropertyWizardType } from '../../services/templates/entityTemplatesService';
 import { getDateWithoutTime, getLongDate } from '../date';
 import { getFileName } from '../getFileName';
 import { convertToPlainText } from '../HtmlTagsStringValue';
@@ -572,7 +573,7 @@ export const userColDef = <Data extends IUser>(
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, any | undefined>) => {
             const error = isPropertyInvalid(props, field, ignoreType);
-            if (error) return errorColDef(props, error, { ...value, format: 'user' });
+            if (error) return errorColDef(props, error, { ...value, format: PropertyFormat.user });
             if (!props.value) return '';
 
             if (ignoreType && !stringifiedJSONtoObj(props.value))
@@ -630,7 +631,7 @@ export const userArrayColDef = <Data extends IEntity>(
             if (error) {
                 const errorValue = Array.isArray(props.value) ? props.value.join(', ') : props.value;
 
-                return errorColDef({ ...props, value: errorValue }, error, { ...value, format: 'users' });
+                return errorColDef({ ...props, value: errorValue }, error, { ...value, format: PropertyWizardType.users as any });
             }
 
             if (!props.value) return '';

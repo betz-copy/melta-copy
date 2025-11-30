@@ -6,7 +6,7 @@ import 'react-quill-new/dist/quill.snow.css';
 import '../../css/quill.css';
 import { environment } from '../../globals';
 
-const { emptyHtmlStringValues, color } = environment;
+const { emptyHtmlStringValues } = environment;
 
 const TextArea = ({
     id,

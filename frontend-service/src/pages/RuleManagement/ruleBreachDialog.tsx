@@ -19,7 +19,6 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
-import { json } from 'stream/consumers';
 import { ActionInfo } from '../../common/ruleBreanchInfo/ActionInfo';
 import { BrokenRulesInfo } from '../../common/ruleBreanchInfo/BrokenRulesInfo';
 import { environment } from '../../globals';

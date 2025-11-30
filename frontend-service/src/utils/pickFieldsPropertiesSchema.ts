@@ -1,5 +1,5 @@
 import { pickBy } from 'lodash';
-import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { IMongoEntityTemplatePopulated, PropertyFormat } from '../interfaces/entityTemplates';
 import { IProcessDetails } from '../interfaces/processes/processTemplate';
 
 export const filterFieldsFromPropertiesSchema = (
@@ -12,13 +12,14 @@ export const filterFieldsFromPropertiesSchema = (
         ...schema,
         properties: pickBy(
             schema?.properties,
-            (value) => !formats.includes(value.format ?? '') && value.items?.format !== 'fileId' && !value.archive && value.display !== false,
+            (value) =>
+                !formats.includes(value.format ?? '') && value.items?.format !== PropertyFormat.fileId && !value.archive && value.display !== false,
         ),
         required:
             schema?.required?.filter(
                 (requiredKey) =>
                     !formats.includes(getProperty(requiredKey)?.format ?? '') &&
-                    getProperty(requiredKey)?.items?.format !== 'fileId' &&
+                    getProperty(requiredKey)?.items?.format !== PropertyFormat.fileId &&
                     getProperty(requiredKey)?.serialCurrent === undefined &&
                     (!fieldsToFilter || !!fieldsToFilter?.[requiredKey]),
             ) ?? [],
@@ -30,7 +31,7 @@ export const pickProcessFieldsPropertiesSchema = (schema: IProcessDetails): IMon
         ...schema.properties,
         hide: [],
         required: schema.properties.required,
-    });
+    } as any);
 
     return {
         ...filteredProperties,

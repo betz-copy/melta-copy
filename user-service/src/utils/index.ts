@@ -6,11 +6,8 @@ export const flattenObject = (obj: Record<string, any>, path: string[] = []): Re
     const acc: Record<string, any> = {};
     for (const [key, value] of Object.entries(obj)) {
         const newPath = [...path, key];
-        if (typeof value === 'object' && value !== null) {
-            Object.assign(acc, flattenObject(value, newPath));
-        } else {
-            acc[newPath.join('.')] = value;
-        }
+        if (typeof value === 'object' && value !== null) Object.assign(acc, flattenObject(value, newPath));
+        else acc[newPath.join('.')] = value;
     }
     return acc;
 };

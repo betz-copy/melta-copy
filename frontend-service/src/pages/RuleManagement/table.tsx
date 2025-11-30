@@ -141,7 +141,7 @@ const getColumnDefs = (
             ({ data }) => data?.reviewedAt,
             {
                 title: i18next.t('ruleManagement.reviewedAt'),
-                format: 'date-time',
+                format: PropertyFormat['date-time'],
             },
             true,
         ),

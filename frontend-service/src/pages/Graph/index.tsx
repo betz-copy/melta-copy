@@ -44,7 +44,7 @@ const { graphSettings } = environment;
 const { BatchSize, limit3DConnections } = graphSettings;
 
 const Graph: React.FC = () => {
-    const ref = useRef<React.Ref<unknown>>(null);
+    const ref = useRef<any>(null);
     const forceRef = useRef<ForceGraphMethods | ForceGraphMethods3D | undefined>(undefined);
 
     const [graphData, setGraphData] = useState<GraphData>({ nodes: [], links: [] });

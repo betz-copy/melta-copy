@@ -8,7 +8,6 @@ import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/st
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { ActivitiesContent } from '../../../../pages/Entity/components/activityLog/ActivitiesContent';
 import { StepIcon } from '../../../../pages/ProcessInstances/ProcessCard';
-import { useDarkModeStore } from '../../../../stores/darkMode';
 import BlueTitle from '../../../MeltaDesigns/BlueTitle';
 import MeltaTooltip from '../../../MeltaDesigns/MeltaTooltip';
 import { ProcessStep } from './processStep';

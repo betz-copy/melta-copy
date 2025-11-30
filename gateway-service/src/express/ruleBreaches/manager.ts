@@ -8,7 +8,6 @@ import {
     IAgGridRequest,
     IBrokenRule,
     IBrokenRulePopulated,
-    IBulkOfActions,
     ICauseInstancePopulated,
     ICausesOfInstancePopulated,
     ICreateEntityMetadata,

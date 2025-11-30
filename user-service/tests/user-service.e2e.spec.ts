@@ -11,8 +11,6 @@ const { mongo } = config;
 const { OK: okStatus, NOT_FOUND: notFoundStatus } = StatusCodes;
 
 const fakeObjectId = '111111111111111111111111';
-const fakeObjectId2 = '222222222222222222222222';
-const fakeObjectId3 = '333333333333333333333333';
 
 const userData1: Omit<IUser, '_id'> = {
     fullName: 'a a',
@@ -26,32 +24,6 @@ const userData1: Omit<IUser, '_id'> = {
 
     permissions: {},
     displayName: 'aaa',
-};
-
-const userData2: Omit<IUser, '_id'> = {
-    fullName: 'b b',
-    jobTitle: 'b',
-    hierarchy: 'b/b/b/b',
-    mail: 'b@gmail.com',
-    preferences: {
-        darkMode: false,
-    },
-    kartoffelId: fakeObjectId2,
-    permissions: {},
-    displayName: 'aaa',
-};
-
-const userData3: Omit<IUser, '_id'> = {
-    fullName: 'c c',
-    jobTitle: 'c',
-    hierarchy: 'c/c/c/c',
-    mail: 'c@gmail.com',
-    preferences: {
-        darkMode: true,
-    },
-    displayName: 'aaa',
-    kartoffelId: fakeObjectId3,
-    permissions: {},
 };
 
 const removeAllCollections = async () => {

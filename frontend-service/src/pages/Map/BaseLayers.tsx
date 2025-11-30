@@ -7,7 +7,6 @@ import { CesiumComponentRef } from 'resium';
 import MeltaCheckbox from '../../common/MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
 import { BackendConfigState } from '../../services/backendConfigService';
-import { useDarkModeStore } from '../../stores/darkMode';
 
 type LayerProvider = {
     id: string;
