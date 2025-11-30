@@ -4,22 +4,22 @@ import { useLocation, useSearch } from 'wouter';
 // TODO switch to useSearchParams from wouter when it's released
 // https://github.com/molefrog/wouter/issues/368
 export const useSearchParams = <T extends Record<string, string>>(defaultValue?: T) => {
-    const [location, navigate] = useLocation();
-    const searchString = useSearch();
+  const [location, navigate] = useLocation();
+  const searchString = useSearch();
 
     const setSearchParams = (params: Partial<T> | Record<string, string>, isDefault = false) => {
         let navigationLocation = location === '/' ? '' : location;
 
-        if (Object.keys(params).length !== 0) {
-            navigationLocation += `?${new URLSearchParams(params as T).toString()}`;
-        }
+    if (Object.keys(params).length !== 0) {
+      navigationLocation += `?${new URLSearchParams(params as T).toString()}`;
+    }
 
-        navigate(navigationLocation, { replace: isDefault });
-    };
+    navigate(navigationLocation, { replace: isDefault, state: window.history.state});
+  };
 
-    useEffect(() => {
-        if (!searchString && defaultValue) setSearchParams(defaultValue, true);
-    }, [searchString]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!searchString && defaultValue) setSearchParams(defaultValue, true);
+  }, [searchString]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return [new URLSearchParams((searchString || defaultValue) ?? {}), setSearchParams] as const;
 };
