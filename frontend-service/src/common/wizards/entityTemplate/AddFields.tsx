@@ -657,7 +657,7 @@ export const FieldBlockWrapper = ({
 
     useEffect(() => {
         preview(getEmptyImage(), { captureDraggingState: true });
-    }, []);
+    }, [preview]);
 
     drag(drop(ref));
 
@@ -710,24 +710,18 @@ export const FieldBlockWrapper = ({
                     draggable={{ isDraggable: true }}
                     locationSearchFields={{
                         show: (Object.values(values.properties) as PropertyItem[]).some((property) => {
-                            if (property.type === 'field') {
-                                return property.data.type === 'location';
-                            }
-                            if (property.type === 'group') {
-                                return property.fields.some((field) => field.type === 'location');
-                            }
+                            if (property.type === 'field') return property.data.type === 'location';
+                            if (property.type === 'group') return property.fields.some((field) => field.type === 'location');
+
                             return false;
                         }),
                         disabled: countMapSearchProperties >= 2,
                     }}
                     supportIdentifier
                     hasIdentifier={(Object.values(values.properties) as PropertyItem[]).some((property) => {
-                        if (property.type === 'field') {
-                            return 'identifier' in property.data && Boolean(property.data.identifier);
-                        }
-                        if (property.type === 'group') {
-                            return property.fields.some((field) => 'identifier' in field && Boolean(field.identifier));
-                        }
+                        if (property.type === 'field') return 'identifier' in property.data && Boolean(property.data.identifier);
+                        if (property.type === 'group') return property.fields.some((field) => 'identifier' in field && Boolean(field.identifier));
+
                         return false;
                     })}
                     userPropertiesInTemplate={userPropertiesInTemplate}
@@ -758,7 +752,7 @@ export const AddFieldsDND: React.FC<AddFieldsDNDProps> = ({
 
             setFieldValue('propertiesTypeOrder', newValuesOrder);
         },
-        [values.propertiesTypeOrder],
+        [values.propertiesTypeOrder, setFieldValue],
     );
 
     return (

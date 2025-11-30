@@ -1,7 +1,9 @@
+import { useTheme } from '@mui/material';
 import React from 'react';
 import { useDarkModeStore } from '../../stores/darkMode';
 
 export const OpenDrawerButton: React.FC = () => {
+    const theme = useTheme();
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return (
@@ -18,7 +20,7 @@ export const OpenDrawerButton: React.FC = () => {
             <title>Open sidebar</title>
             <path
                 d="M17 0.297112C17 0.13302 16.867 0 16.7029 0V0C16.3182 0 15.9971 0.293751 15.963 0.676955L15 11.5L14.6581 14.0905C13.9631 19.3576 11.4163 24.2055 7.47362 27.7665V27.7665C-2.21403 36.5162 -2.38376 51.6675 7.10545 60.6321L7.55365 61.0555C11.4488 64.7353 13.933 69.6626 14.5753 74.9824L15 78.5L15.9575 88.3253C15.9948 88.7081 16.3166 89 16.7011 89V89C16.8662 89 17 88.8662 17 88.7011V0.297112Z"
-                fill={darkMode ? '#000' : '#1E2775'}
+                fill={darkMode ? '#000' : theme.palette.primary.main}
             />
 
             <path d="M11.5002 48.0833L7.9585 44.5417L11.5002 41" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -27,6 +29,7 @@ export const OpenDrawerButton: React.FC = () => {
 };
 
 export const CloseDrawerButton: React.FC = () => {
+    const theme = useTheme();
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return (
@@ -48,7 +51,7 @@ export const CloseDrawerButton: React.FC = () => {
 
             <path
                 d="M8.49984 48.0833L12.0415 44.5417L8.49984 41"
-                stroke={darkMode ? '#fff' : '#1E2775'}
+                stroke={darkMode ? '#fff' : theme.palette.primary.main}
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"

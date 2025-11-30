@@ -19,7 +19,7 @@ import StepsApproversBlock from './StepsApproversBlock';
 import StepsIconBlock from './StepsIconBlock';
 import { StepsNameBlock } from './StepsNameBlock';
 
-const stepTemplateUniqueNames = (value, context: Yup.TestContext) => {
+const stepTemplateUniqueNames = (value: any, context: Yup.TestContext) => {
     if (!value) return true;
     const steps = value.steps as ProcessTemplateWizardValues['steps'];
     const errors: Yup.ValidationError[] = [];
@@ -28,12 +28,11 @@ const stepTemplateUniqueNames = (value, context: Yup.TestContext) => {
         const doesStepHasDuplicateDisplayName = steps.some(
             ({ displayName }, restStepsIndex) => step.displayName === displayName && index !== restStepsIndex,
         );
-        if (doesStepHasDuplicateName) {
+        if (doesStepHasDuplicateName)
             errors.push(context.createError({ message: i18next.t('validation.stepNameExists'), path: `steps[${index}].name` }));
-        }
-        if (doesStepHasDuplicateDisplayName) {
+
+        if (doesStepHasDuplicateDisplayName)
             errors.push(context.createError({ message: i18next.t('validation.stepDisplayNameExists'), path: `steps[${index}].displayName` }));
-        }
     });
 
     if (errors.length) {
@@ -302,7 +301,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                     <Grid>
                         <Grid>
                             {errorsOfSteps === i18next.t('validation.oneField') && (
-                                <div style={{ color: '#d32f2f', alignItems: 'center', justifyContent: 'center' }}>
+                                <div style={{ color: 'error', alignItems: 'center', justifyContent: 'center' }}>
                                     {i18next.t('validation.oneStep')}
                                 </div>
                             )}

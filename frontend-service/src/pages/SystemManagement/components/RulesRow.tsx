@@ -15,6 +15,7 @@ import MeltaCheckbox from '../../../common/MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
 import { RuleWizard } from '../../../common/wizards/rule';
+import { environment } from '../../../globals';
 import { ICategoryMap } from '../../../interfaces/categories';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
@@ -30,12 +31,14 @@ import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
 
+const { warning } = environment.color;
+
 const getRuleIcon = (rule: IMongoRule) => {
     switch (rule.actionOnFail) {
         case ActionOnFail.WARNING:
-            return <WarningAmberRounded sx={{ color: '#FFAC2F' }} />;
+            return <WarningAmberRounded sx={{ color: warning }} />;
         case ActionOnFail.ENFORCEMENT:
-            return <WarningRounded sx={{ color: '#DD3500' }} />;
+            return <WarningRounded sx={{ color: 'error' }} />;
         case ActionOnFail.INDICATOR: {
             const icons = [
                 rule.mail?.display && <Email key="email" sx={{ color: '#166BD4' }} />,

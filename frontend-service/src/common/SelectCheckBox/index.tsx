@@ -219,13 +219,13 @@ const SelectCheckbox = <Option extends {}, Group = Option>({
                         : {
                               '& .MuiOutlinedInput-notchedOutline': { display: 'none' },
                               background: toTopBar ? '#EBEFFA' : '#FFFFFF',
-                              color: toTopBar ? '#1E2775' : '#787C9E',
+                              color: toTopBar ? theme.palette.primary.main : '#787C9E',
                           }),
                     maxWidth: !overrideSx ? (toTopBar ? '130px' : '131px') : undefined,
                     maxHeight: toTopBar ? '35px' : '34px',
                     padding: toTopBar ? '6.99px, 13.98px' : '0px, 8px',
                     '& .MuiSvgIcon-root': {
-                        color: filterIcon ? (darkMode ? '#9398C2' : '#1E2775') : '',
+                        color: filterIcon ? theme.palette.primary.main : '',
                         transform: filterIcon ? 'none' : '',
                     },
                 }}

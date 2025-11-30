@@ -52,7 +52,7 @@ const StepsApproversBlock: React.FC<
                                     ))}
                                 </Grid>
                                 {errorsOfStep?.reviewers === i18next.t('validation.oneField') && (
-                                    <div style={{ color: '#d32f2f', alignItems: 'center', justifyContent: 'center' }}>
+                                    <div style={{ color: 'error', alignItems: 'center', justifyContent: 'center' }}>
                                         {i18next.t('validation.oneStepApprover')}
                                     </div>
                                 )}

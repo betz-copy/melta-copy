@@ -32,7 +32,7 @@ import { RaqbMuiAutocompleteAutoWidth } from './raqb/RaqbAutocompleteAutoWidth';
 import RaqbMuiFieldSelect from './raqb/RaqbMuiFieldSelect';
 import RaqbMuiValueSources from './raqb/RaqbMuiValueSources';
 
-const { formulaGetTodayVarName } = environment;
+const { formulaGetTodayVarName, color } = environment;
 
 const { MuiTextWidget } = MuiWidgets;
 
@@ -194,13 +194,13 @@ const CreateFormula: React.FC<StepComponentProps<RuleWizardValues>> = ({ values,
                 <Query {...config} value={values.formula} onChange={onChange} renderBuilder={renderBuilder} />
             </ThemeProvider>
             {errors.formula && (
-                <Grid container alignItems="center" sx={{ color: '#d32f2f' }}>
+                <Grid container alignItems="center" sx={{ color: 'error' }}>
                     <PriorityHighIcon />
                     <div style={{ fontSize: '14px' }}>{String(errors.formula)}</div>
                 </Grid>
             )}
             {formulaHasGetTodayFunc && (
-                <Grid container wrap="nowrap" alignItems="center" sx={{ color: '#FFAC2F' }}>
+                <Grid container wrap="nowrap" alignItems="center" sx={{ color: color.warning }}>
                     <PriorityHighIcon />
                     <div style={{ fontSize: '14px', whiteSpace: 'pre-wrap' }}>{i18next.t('wizard.rule.todayVariableInfo')}</div>
                 </Grid>

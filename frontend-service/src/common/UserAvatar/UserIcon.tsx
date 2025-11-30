@@ -1,4 +1,5 @@
 import { useMatomo } from '@datapunt/matomo-tracker-react';
+import { useTheme } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import React from 'react';
 import { IUser } from '../../interfaces/users';
@@ -26,10 +27,11 @@ const UserIcon: React.FC<UserIconProps> = ({
     addBorder = false,
     isError = false,
 }) => {
+    const theme = useTheme();
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const { trackEvent } = useMatomo();
 
-    const fontColor = !bgColor ? '#1E2775' : darkMode ? 'black' : 'white';
+    const fontColor = !bgColor ? theme.palette.primary.main : darkMode ? 'black' : 'white';
 
     return (
         <Avatar

@@ -184,10 +184,7 @@ const EditEntityDetails: React.FC<{
                                                                 }}
                                                             />
                                                             {externalErrors.files && (
-                                                                <p
-                                                                    id="error"
-                                                                    style={{ color: '#d32f2f', margin: 0, padding: 0, marginBottom: '12px' }}
-                                                                >
+                                                                <p id="error" style={{ color: 'error', margin: 0, padding: 0, marginBottom: '12px' }}>
                                                                     {i18next.t('errorCodes.FILES_TOO_BIG')}
                                                                 </p>
                                                             )}

@@ -50,7 +50,7 @@ const RjsfTextWidget = ({
     const inputType = (type || schema.type) === 'string' ? 'text' : `${type || schema.type}`;
 
     const isTextArea = containsHTMLTags(value);
-    let finalValue;
+    let finalValue: any;
 
     const isoDateRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/;
 

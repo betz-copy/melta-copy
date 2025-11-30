@@ -1392,7 +1392,13 @@ export const environment = {
         ],
     },
     emptyHtmlStringValues: ['<p><br/></p>', '<p><br></p>'] as string[],
-    errorColor: '#d32f2f',
+    color: {
+        error: '#d32f2f',
+        warning: '#FFAC2F',
+        enforcement: '#DD3500',
+        failed: '#A40000',
+        success: '#4FC318',
+    },
     systemManagement: {
         actions: {
             unusedPropertyErrorCodeTs: '6133',

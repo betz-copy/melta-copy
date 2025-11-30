@@ -1,5 +1,5 @@
 import { ArrowBackIos, ArrowForwardIos, History, Toc } from '@mui/icons-material';
-import { Box, Button, Divider, Grid, Step, StepConnector, Stepper, stepConnectorClasses, styled, Typography } from '@mui/material';
+import { Box, Button, Divider, Grid, Step, StepConnector, Stepper, stepConnectorClasses, styled, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
 import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, Status } from '../../../../interfaces/processes/processInstance';
@@ -54,22 +54,21 @@ const Steps: React.FC<IStepsProp> = ({
     defaultStepTemplate,
     setActiveStep,
 }) => {
-    const [currStepInstance, setCurrStepInstance] = useState(
+    const theme = useTheme();
+    const containerRef = useRef<HTMLDivElement | null>(null);
+
+    const [currStepInstance, setCurrStepInstance] = useState<IMongoStepInstancePopulated | undefined>(
         defaultStepTemplate ? processInstance.steps.find((step) => step.templateId === defaultStepTemplate._id) : processInstance.steps[0],
     );
 
-    const [currStepInstanceIndex, setCurrStepInstanceIndex] = useState(
+    const [currStepInstanceIndex, setCurrStepInstanceIndex] = useState<number>(
         defaultStepTemplate ? processInstance.steps.findIndex((step) => step.templateId === defaultStepTemplate._id) : 0,
     );
 
-    const [openActivityPopper, setOpenActivityPopper] = useState(false);
-    const [scrollPosition, setScrollPosition] = useState(0);
-    const [scrollLeftDisabled, setScrollLeftDisabled] = useState(false);
-    const [scrollRightDisabled, setScrollRightDisabled] = useState(false);
-
-    const darkMode = useDarkModeStore((state) => state.darkMode);
-
-    const containerRef = useRef<HTMLDivElement | null>(null);
+    const [openActivityPopper, setOpenActivityPopper] = useState<boolean>(false);
+    const [scrollPosition, setScrollPosition] = useState<number>(0);
+    const [scrollLeftDisabled, setScrollLeftDisabled] = useState<boolean>(false);
+    const [scrollRightDisabled, setScrollRightDisabled] = useState<boolean>(false);
 
     const updateScrollButtons = () => {
         if (containerRef.current) {
@@ -161,9 +160,7 @@ const Steps: React.FC<IStepsProp> = ({
                                     }}
                                     aria-label={i18next.t('wizard.processInstance.scrollForward')}
                                 >
-                                    <ArrowForwardIos
-                                        sx={{ color: darkMode ? '#9398c2' : '#1E2775', marginTop: '10px', width: '18px', height: '25px' }}
-                                    />
+                                    <ArrowForwardIos sx={{ color: theme.palette.primary.main, marginTop: '10px', width: '18px', height: '25px' }} />
                                 </button>
                             )}
                         </Grid>
@@ -208,7 +205,9 @@ const Steps: React.FC<IStepsProp> = ({
                                                         gap="10px"
                                                     >
                                                         <StepIcon
-                                                            iconColor={currStepInstance?._id === stepInstance._id ? '#1E2775' : '#9398C2'}
+                                                            iconColor={
+                                                                currStepInstance?._id === stepInstance._id ? theme.palette.primary.main : '#9398C2'
+                                                            }
                                                             step={stepInstance}
                                                             stepTemplate={processTemplate.steps[index]}
                                                             setOpen={() => {
@@ -222,11 +221,7 @@ const Steps: React.FC<IStepsProp> = ({
 
                                                         <Typography
                                                             color={
-                                                                currStepInstance?._id === stepInstance._id
-                                                                    ? darkMode
-                                                                        ? '#b7bef7'
-                                                                        : '#1E2775'
-                                                                    : '#9398C2'
+                                                                currStepInstance?._id === stepInstance._id ? theme.palette.primary.main : '#9398C2'
                                                             }
                                                             noWrap
                                                             sx={{ maxWidth: '70px', textOverflow: 'ellipsis' }}
@@ -251,9 +246,7 @@ const Steps: React.FC<IStepsProp> = ({
                                     onClick={() => handleScroll((-1 * stepperWidth) / 2)}
                                     style={{ cursor: !isStepEditMode ? 'pointer' : undefined }}
                                 >
-                                    <ArrowBackIos
-                                        sx={{ color: darkMode ? '#9398c2' : '#1E2775', marginTop: '10px', width: '18px', height: '25px' }}
-                                    />
+                                    <ArrowBackIos sx={{ color: theme.palette.primary.main, marginTop: '10px', width: '18px', height: '25px' }} />
                                 </button>
                             )}
                         </Grid>
@@ -277,7 +270,7 @@ const Steps: React.FC<IStepsProp> = ({
                                         if (!isStepEditMode) setActiveStep(0);
                                     }}
                                 >
-                                    <Toc sx={{ color: '#1E2775' }} />
+                                    <Toc sx={{ color: theme.palette.primary.main }} />
                                 </Box>
                             </Grid>
                             <Grid>

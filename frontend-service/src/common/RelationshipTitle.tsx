@@ -92,7 +92,7 @@ const RelationshipTitle: React.FC<{
             alignItems="center"
             flexWrap="nowrap"
             style={{ ...style, borderRadius: '10px', backgroundColor: darkMode ? '#212121' : '#FFF' }}
-            color={darkMode ? '#FFF' : '#000'}
+            color={darkMode ? 'white' : 'black'}
         >
             <Grid marginRight="20px">
                 {EntityTemplateTextComponentOverride ? (

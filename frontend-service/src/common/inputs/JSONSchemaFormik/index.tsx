@@ -218,13 +218,13 @@ const getComponent = (
             const { label, disabled, name, value, schema, onChange } = props;
             const [checked, setChecked] = useState(checkboxProps.isFieldChecked(name));
 
+            useEffect(() => {
+                checkboxProps.onCheckboxChange(name, checked);
+            }, [checked, name, checkboxProps.onCheckboxChange]);
+
             if (schema.format === 'comment') return <Component {...props} />;
 
             if (checked && schema.type === 'boolean' && (value === null || value === undefined)) onChange(Boolean(value));
-
-            useEffect(() => {
-                checkboxProps.onCheckboxChange(name, checked);
-            }, [checked, name]);
 
             return (
                 <InputAccordion label={label} disabled={disabled} checked={checked} setChecked={setChecked}>
@@ -292,7 +292,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
 
             innerDiv.classList.add(...classesToAdd);
         });
-    }, [values.template]);
+    }, [checkboxProps]);
 
     const rjsfExtraErrors = formikErrorsToRjsfExtraErrors(errors ?? {}, values.template);
     const rjsfExtraUniqueErrors = formikErrorsToRjsfExtraErrors(uniqueErrors ?? {}, values.template);

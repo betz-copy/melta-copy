@@ -72,13 +72,11 @@ export type IMutationProps = IMutationWithPayload & {
 };
 
 const ChildTemplateDialog: React.FC<{
-    mutationProps?: IMutationProps;
+    mutationProps: IMutationProps;
     open: boolean;
     handleClose: () => void;
-    entityTemplate: IMongoEntityTemplatePopulated | null;
+    entityTemplate: IMongoEntityTemplatePopulated;
 }> = ({ mutationProps, open, handleClose, entityTemplate }) => {
-    if (!entityTemplate || !mutationProps) return null;
-
     const { actionType, payload: childTemplate } = mutationProps;
 
     const queryClient = useQueryClient();

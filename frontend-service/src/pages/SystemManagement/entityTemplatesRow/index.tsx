@@ -201,7 +201,7 @@ const EntityTemplatesRow: React.FC = () => {
                 try {
                     const relationshipTemplates = await getAllRelationshipTemplatesRequest();
                     queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', mapTemplates(relationshipTemplates));
-                } catch (error) {
+                } catch (_error) {
                     toast.error(i18next.t('wizard.failedToUpdateSystemData'));
                 }
             },
@@ -472,12 +472,14 @@ const EntityTemplatesRow: React.FC = () => {
                     categoriesToShow={categoriesToShow}
                 />
             )}
-            <ChildTemplateDialog
-                open={addChildTemplateDialogState.isWizardOpen}
-                handleClose={() => setAddChildTemplateDialogState({ isWizardOpen: false, entityTemplate: null })}
-                entityTemplate={addChildTemplateDialogState.entityTemplate}
-                mutationProps={addChildTemplateDialogState.mutationProps}
-            />
+            {addChildTemplateDialogState.entityTemplate && addChildTemplateDialogState.mutationProps && (
+                <ChildTemplateDialog
+                    open={addChildTemplateDialogState.isWizardOpen}
+                    handleClose={() => setAddChildTemplateDialogState({ isWizardOpen: false, entityTemplate: null })}
+                    entityTemplate={addChildTemplateDialogState.entityTemplate}
+                    mutationProps={addChildTemplateDialogState.mutationProps}
+                />
+            )}
         </Grid>
     );
 };

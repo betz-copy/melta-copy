@@ -61,7 +61,7 @@ const TourWrapper: React.FC<{ children?: ReactNode }> = ({ children }) => {
                     ...base,
                     borderRadius: 10,
                     marginTop: 10,
-                    color: '#000000',
+                    color: 'black',
                 }),
                 close: (base) => ({ ...base, right: 8, left: 'auto', top: 8, width: '12px', height: '12px' }),
                 arrow: (base) => ({ ...base, height: '18px', width: '24px' }),

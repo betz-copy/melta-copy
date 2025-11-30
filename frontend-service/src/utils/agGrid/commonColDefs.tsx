@@ -129,7 +129,7 @@ const errorColDef = <Data extends IColDefData>(
 
     return (
         <Box display="flex" justifyContent="center" alignItems="center" gap={1} width="100%">
-            <Value hideValue={false} value={props.value ?? i18next.t('validation.required')} enumColor="#A40000" />
+            <Value hideValue={false} value={props.value ?? i18next.t('validation.required')} enumColor="error" />
             <Tooltip
                 title={message}
                 placement="top"
@@ -142,7 +142,7 @@ const errorColDef = <Data extends IColDefData>(
                                 backgroundColor: 'white',
                                 borderRadius: '10px',
                                 marginLeft: '5px',
-                                color: '#A40000',
+                                color: 'error',
                                 fontWeight: 400,
                                 boxShadow: '0px 2.05px 6.16px 0px #00000040',
                             },

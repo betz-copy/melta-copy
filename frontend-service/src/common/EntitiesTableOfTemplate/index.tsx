@@ -269,7 +269,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
     actionsColumnWidth?: number;
     childTemplatesOfParent?: IChildTemplatePopulated[];
-    externalId?: IExternalId
+    externalId?: IExternalId;
     scrollToId?: string;
     usePagination?: boolean;
 };
@@ -753,6 +753,7 @@ const EntitiesTableOfTemplate = forwardRef(
             resizeTableHeight: (newHeight: number) => setGridHeight(newHeight),
         }));
 
+        // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
         const rowModelProps = useMemo(
             () =>
                 getRowModelProps(
@@ -770,7 +771,20 @@ const EntitiesTableOfTemplate = forwardRef(
                     externalId,
                     usePagination,
                 ),
-            [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances, defaultFilter, childTemplatesOfParentIds, usePagination],
+            [
+                rowModelType,
+                saveStorageProps.pageType,
+                template,
+                clientSideUserEntity?.properties?._id,
+                externalId,
+                rowData,
+                pageRowCount,
+                quickFilterText,
+                hasInstances,
+                defaultFilter,
+                childTemplatesOfParentIds,
+                usePagination,
+            ],
         );
 
         const statusPanels = useMemo(() => {
@@ -788,7 +802,7 @@ const EntitiesTableOfTemplate = forwardRef(
                 });
 
             return panels;
-        }, [multipleSelect, quickFilterText, template]);
+        }, [multipleSelect, quickFilterText, setUpdatedTemplateIds, template]);
 
         const rowSelection = useMemo<RowSelectionOptions | 'single' | 'multiple' | undefined>(() => {
             if (onRowSelected) return 'single';

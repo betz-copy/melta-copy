@@ -93,10 +93,12 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
     const orderedItemsRef = useRef(orderedItems);
     orderedItemsRef.current = orderedItems;
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
     useEffect(() => {
         setFieldValue(propertiesType, orderedItems);
     }, []);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
     useEffect(() => {
         setOrderedItems(values[propertiesType]);
         orderedItemsRef.current = values[propertiesType];
@@ -438,68 +440,64 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         updateFormik();
     };
 
-    const moveGroup = useCallback(
-        (group: GroupProperty, toIndex: number, toGroupId: string | null = null) => {
-            if (toGroupId) {
-                console.warn('Groups cannot be moved into other groups.');
-                return;
-            }
+    // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
+    const moveGroup = useCallback((group: GroupProperty, toIndex: number, toGroupId: string | null = null) => {
+        if (toGroupId) {
+            console.warn('Groups cannot be moved into other groups.');
+            return;
+        }
 
-            const orderedItemsCopy = [...orderedItemsRef.current] as Values[PropertiesType];
-            const fromIndex = orderedItemsCopy.findIndex((el) => el.type === 'group' && el.id === group.id);
-            if (fromIndex === -1) return;
+        const orderedItemsCopy = [...orderedItemsRef.current] as Values[PropertiesType];
+        const fromIndex = orderedItemsCopy.findIndex((el) => el.type === 'group' && el.id === group.id);
+        if (fromIndex === -1) return;
 
-            const movedGroup = orderedItemsCopy.splice(fromIndex, 1)[0];
-            orderedItemsCopy.splice(toIndex, 0, movedGroup);
+        const movedGroup = orderedItemsCopy.splice(fromIndex, 1)[0];
+        orderedItemsCopy.splice(toIndex, 0, movedGroup);
 
-            setOrderedItems(orderedItemsCopy);
-            updateFormik();
-        },
-        [setOrderedItems, updateFormik],
-    );
+        setOrderedItems(orderedItemsCopy);
+        updateFormik();
+    }, []);
 
-    const moveField = useCallback(
-        (item: CommonFormInputProperties, toIndex: number, toGroupId: string | null) => {
-            const orderedItemsCopy = [...orderedItemsRef.current] as Values[PropertiesType];
-            let movedField: CommonFormInputProperties | null = null;
+    // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
+    const moveField = useCallback((item: CommonFormInputProperties, toIndex: number, toGroupId: string | null) => {
+        const orderedItemsCopy = [...orderedItemsRef.current] as Values[PropertiesType];
+        let movedField: CommonFormInputProperties | null = null;
 
-            if (item.fieldGroup) {
-                const fromGroupIndex = orderedItemsCopy.findIndex((el) => el.type === 'group' && el.id === item.fieldGroup?.id);
-                if (fromGroupIndex === -1) return;
+        if (item.fieldGroup) {
+            const fromGroupIndex = orderedItemsCopy.findIndex((el) => el.type === 'group' && el.id === item.fieldGroup?.id);
+            if (fromGroupIndex === -1) return;
 
-                const fromGroup = orderedItemsCopy[fromGroupIndex] as GroupProperty;
-                const fieldIndex = fromGroup.fields.findIndex((f) => f.id === item.id);
-                if (fieldIndex === -1) return;
+            const fromGroup = orderedItemsCopy[fromGroupIndex] as GroupProperty;
+            const fieldIndex = fromGroup.fields.findIndex((f) => f.id === item.id);
+            if (fieldIndex === -1) return;
 
-                movedField = fromGroup.fields.splice(fieldIndex, 1)[0];
-            } else {
-                const index = orderedItemsCopy.findIndex((el) => el.type === 'field' && el.data.id === item.id);
-                if (index === -1) return;
+            movedField = fromGroup.fields.splice(fieldIndex, 1)[0];
+        } else {
+            const index = orderedItemsCopy.findIndex((el) => el.type === 'field' && el.data.id === item.id);
+            if (index === -1) return;
 
-                movedField = (orderedItemsCopy.splice(index, 1)[0] as FieldProperty).data;
-            }
+            movedField = (orderedItemsCopy.splice(index, 1)[0] as FieldProperty).data;
+        }
 
-            if (toGroupId) {
-                const toGroupIndex = orderedItemsCopy.findIndex((el) => el.type === 'group' && el.id === toGroupId);
-                if (toGroupIndex === -1) return;
+        if (toGroupId) {
+            const toGroupIndex = orderedItemsCopy.findIndex((el) => el.type === 'group' && el.id === toGroupId);
+            if (toGroupIndex === -1) return;
 
-                const group = orderedItemsCopy[toGroupIndex] as GroupProperty;
-                const { name, displayName } = group;
+            const group = orderedItemsCopy[toGroupIndex] as GroupProperty;
+            const { name, displayName } = group;
 
-                group.fields.splice(toIndex, 0, {
-                    ...movedField,
-                    fieldGroup: { name, displayName, id: toGroupId },
-                });
-            } else {
-                const { fieldGroup, ...movedGroupData } = movedField;
-                orderedItemsCopy.splice(toIndex, 0, { type: 'field', data: movedGroupData });
-            }
+            group.fields.splice(toIndex, 0, {
+                ...movedField,
+                fieldGroup: { name, displayName, id: toGroupId },
+            });
+        } else {
+            const { fieldGroup: _f, ...movedGroupData } = movedField;
+            orderedItemsCopy.splice(toIndex, 0, { type: 'field', data: movedGroupData });
+        }
 
-            setOrderedItems(orderedItemsCopy);
-            updateFormik();
-        },
-        [setOrderedItems, updateFormik],
-    );
+        setOrderedItems(orderedItemsCopy);
+        updateFormik();
+    }, []);
 
     const [, drop] = useDrop(() => ({
         accept: [ItemTypes.FIELD, ItemTypes.GROUP],

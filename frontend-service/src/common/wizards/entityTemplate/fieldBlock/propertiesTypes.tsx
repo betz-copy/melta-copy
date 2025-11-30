@@ -380,7 +380,7 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
                             </Button>
                         </Grid>
                         {(errors?.[propertiesType]?.[index] as any)?.fields === i18next.t('validation.oneField') && (
-                            <div style={{ color: '#d32f2f' }}>{i18next.t('validation.oneField')}</div>
+                            <div style={{ color: 'error' }}>{i18next.t('validation.oneField')}</div>
                         )}
                     </AccordionDetails>
                 </FieldBlockAccordion>

@@ -4,10 +4,10 @@ import { FormikHelpers } from 'formik';
 import i18next from 'i18next';
 import _ from 'lodash';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IProperties } from '../../../interfaces/entityTemplates';
+import { IMongoUnit } from '../../../interfaces/units';
 import { IKartoffelUser } from '../../../interfaces/users';
 import { EntityWizardValues } from '../../dialogs/entity';
 import { kartoffelPersonalDataFields } from '../../wizards/entityTemplate/KartoffelUserField';
-import { IMongoUnit } from '../../../interfaces/units';
 
 const changeRelatedUserFields = (properties: IProperties['properties'], changedUserKey: string, user: IKartoffelUser | null) => {
     return Object.entries(properties).reduce((acc, [key, value]) => {

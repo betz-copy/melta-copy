@@ -34,7 +34,7 @@ export const CustomImage: React.FC<CustomImageProps> = ({ imageUrl, width, heigh
         : {
               style: {
                   ...style,
-                  backgroundColor: color || (darkMode ? '#FFFFFF' : '#000000'),
+                  backgroundColor: color || (darkMode ? 'white' : 'black'),
                   WebkitMaskImage: `url(${imgSrc})`,
                   WebkitMaskSize: 'contain',
               },

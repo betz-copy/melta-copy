@@ -55,6 +55,7 @@ const FilesInput: React.FC<FilesInputProps> = ({
         }
     };
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
     useEffect(() => {
         updateInputWidth();
         window.addEventListener('resize', updateInputWidth);
@@ -188,10 +189,16 @@ const FilesInput: React.FC<FilesInputProps> = ({
                                         width: '131px',
                                     }}
                                 >
-                                    <Typography fontSize="12px" color={theme.palette.mode === 'dark' ? '#1E2775' : undefined}>
+                                    <Typography fontSize="12px" color={theme.palette.mode === 'dark' ? theme.palette.primary.main : undefined}>
                                         {i18next.t('input.imagePicker.chooseFile')}
                                     </Typography>
-                                    <Upload sx={{ width: '24px', height: '24px', color: theme.palette.mode === 'dark' ? '#1E2775' : undefined }} />
+                                    <Upload
+                                        sx={{
+                                            width: '24px',
+                                            height: '24px',
+                                            color: theme.palette.mode === 'dark' ? theme.palette.primary.main : undefined,
+                                        }}
+                                    />
                                 </Button>
 
                                 {comment && (
@@ -206,7 +213,7 @@ const FilesInput: React.FC<FilesInputProps> = ({
 
                 {errorText && (
                     <Grid>
-                        <p id="error" style={{ color: '#d32f2f', margin: 0, padding: 0 }}>
+                        <p id="error" style={{ color: 'error', margin: 0, padding: 0 }}>
                             {errorText}
                         </p>
                     </Grid>

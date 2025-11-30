@@ -168,7 +168,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
         .filter(([_, value]) => value === undefined || value === null)
         .map(([key]) => template?.properties.properties[key].title);
 
-    const isDisabled = useMemo(() => disabled || !!emptyDependentFields.length, [disabled, dependentFields]);
+    const isDisabled = useMemo(() => disabled || !!emptyDependentFields.length, [disabled, emptyDependentFields]);
 
     const debouncedSearch = useCallback(
         debounce((value: string) => {
