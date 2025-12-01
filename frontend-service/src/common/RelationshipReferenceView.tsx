@@ -65,6 +65,8 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
         ),
     );
 
+    const templateToInternal = React.useMemo(() => template ?? adjustedChildTemplate, [template, adjustedChildTemplate]);
+
     if (typeof entity === 'string' || typeof entity === 'number')
         return (
             <Grid display="inline-block" overflow={'hidden'} textOverflow={'ellipsis'}>
@@ -91,9 +93,8 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
         );
 
     const relationshipObjectToField = (): string => {
-        if (relatedTemplate?.properties.properties[relatedTemplateField].format === 'unitField') {
+        if (relatedTemplate?.properties.properties[relatedTemplateField].format === 'unitField')
             return units.find((unit) => unit._id === entity.properties[relatedTemplateField])?.name ?? '';
-        }
 
         if (relatedTemplate?.properties.properties[relatedTemplateField].format === 'location') {
             return entity.properties[`${relatedTemplateField}_coordinateSystem`] === CoordinateSystem.UTM
@@ -171,13 +172,13 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
                 arrow
                 placement="top"
                 title={
-                    !relatedTemplate?.propertiesPreview.length ? (
+                    !templateToInternal || !relatedTemplate?.propertiesPreview.length ? (
                         <Typography color="#53566E">{i18next.t('templateEntitiesAutocomplete.noPreviewFields')}</Typography>
                     ) : (
                         <EntityPropertiesInternal
                             properties={entity.properties}
                             coloredFields={entity.coloredFields}
-                            entityTemplate={template ?? adjustedChildTemplate!}
+                            entityTemplate={templateToInternal}
                             showPreviewPropertiesOnly
                             mode="normal"
                             textWrap

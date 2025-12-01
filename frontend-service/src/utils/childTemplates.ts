@@ -67,7 +67,7 @@ export const isEntityFitsToChildTemplate = (
     for (const [key, prop] of Object.entries(template.properties.properties)) {
         const value = entity.properties[key];
 
-        if (prop.isFilterByCurrentUser && currentUserKartoffelId && value !== currentUserKartoffelId) return false;
+        if (prop.isFilterByCurrentUser && currentUserKartoffelId && JSON.parse(value)._id !== currentUserKartoffelId) return false;
 
         if (prop.isFilterByUserUnit && units && !isUserAdmin && !units.includes(value)) return false;
 
