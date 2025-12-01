@@ -13,7 +13,7 @@ const RjsfUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, o
 
     const serializeUser = (user) =>
         JSON.stringify({
-            _id: user?._id ?? user.id,
+            _id: user?._id ?? user?.id,
             fullName: user?.fullName,
             jobTitle: user?.jobTitle,
             hierarchy: user?.hierarchy,
