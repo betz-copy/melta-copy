@@ -20,9 +20,14 @@ import { UserDoesNotExistError } from './errors';
 import UsersModel from './model';
 
 class UsersManager {
-    static async getUserById(id: string, workspaceIds?: string[], withPermissions: boolean = true): Promise<IUser | Partial<IUser>> {
+    static async getUserById(
+        id: string,
+        workspaceIds?: string[],
+        withPermissions: boolean = true,
+        addInheritanceToUnits = true,
+    ): Promise<IUser | Partial<IUser>> {
         const baseUser = await UsersModel.findById(id).orFail(new UserDoesNotExistError(id)).lean().exec();
-        return withPermissions ? UsersManager.baseUserToUser(baseUser, workspaceIds, { addInheritanceToUnits: true }) : baseUser;
+        return withPermissions ? UsersManager.baseUserToUser(baseUser, workspaceIds, { addInheritanceToUnits }) : baseUser;
     }
 
     static async getUserByExternalId(id: string, workspaceIds?: string[]): Promise<IUser> {
@@ -221,6 +226,12 @@ class UsersManager {
             .exec();
     }
 
+    /**
+     * Populate the children of the userUnitIds according to the unit array
+     * @param units the full array of the units
+     * @param userUnitIds the array of unit ids the user has permission to
+     * @returns ids of the units the user has permission to and their children.
+     */
     static getUnitsWithInheritance(units: IMongoUnit[], userUnitIds: string[]) {
         const userUnits = new Set(userUnitIds);
         const unitsCopy = [...units];

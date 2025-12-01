@@ -21,7 +21,7 @@ class UnitsController {
     }
 
     static async getUnitHierarchy(req: Request, res: Response) {
-        res.json(await UnitsManager.getUnitHierarchy(req.params.workspaceId));
+        res.json(await UnitsManager.getUnitHierarchy(req.params.workspaceId, req.query.userId as unknown as string));
     }
 }
 

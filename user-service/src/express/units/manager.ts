@@ -1,6 +1,7 @@
 import { IGetUnits, IMongoUnit, IUnit, IUnitHierarchy } from '@microservices/shared';
 import mongoose, { FilterQuery } from 'mongoose';
 import config from '../../config';
+import UsersManager from '../users/manager';
 import { CyclicalTreeError, DisabledChildUnderEnabledParent, UnitDoesNotExistError } from './errors';
 import UnitsModel from './model';
 
@@ -126,9 +127,25 @@ class UnitsManager {
         return getChildren(0);
     }
 
-    static async getUnitHierarchy(workspaceId: IUnit['workspaceId']): Promise<IUnitHierarchy[]> {
+    /**
+     * Get the complete nested hierarchy of the user's units
+     * @param workspaceId workspaceId of the units to get
+     * @param userId userId to filter the units by.
+     * @returns the nested units the user has a permission to see
+     */
+    static async getUnitHierarchy(workspaceId: IUnit['workspaceId'], userId: string): Promise<IUnitHierarchy[]> {
+        const user = await UsersManager.getUserById(userId, [workspaceId], false, true);
+
         const units = await UnitsModel.aggregate<IUnitHierarchy>([
-            { $match: { workspaceId, parentId: null } },
+            {
+                $match: {
+                    workspaceId,
+                    // When user is root and has a unit assigned it won't get all of the units
+                    ...(!user.units?.[workspaceId]?.length
+                        ? { parentId: null }
+                        : { _id: { $in: user.units?.[workspaceId]?.map((unitId) => new mongoose.Types.ObjectId(unitId)) } }),
+                },
+            },
             {
                 $graphLookup: {
                     from: unitsCollectionName,

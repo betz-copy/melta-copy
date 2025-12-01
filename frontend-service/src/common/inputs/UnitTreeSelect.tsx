@@ -96,6 +96,8 @@ const UnitSelect = ({
         setExpandedIds(chips.flatMap(({ pathIds }) => pathIds));
     }, []);
 
+    // The reason this is NOT an autocomplete is because the search function needs to be implemented
+    // And it can't be select because you can't pass custom component to be in the pop over
     return (
         <>
             <TextField

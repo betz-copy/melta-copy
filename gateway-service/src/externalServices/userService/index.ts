@@ -157,8 +157,8 @@ class UserService {
         return data;
     }
 
-    static async getUnitHierarchy(workspaceId: string) {
-        const { data } = await UserService.userService.get<IUnitHierarchy[]>(`${unitsRoute}/${workspaceId}/hierarchy`);
+    static async getUnitHierarchy(workspaceId: string, userId: string) {
+        const { data } = await UserService.userService.get<IUnitHierarchy[]>(`${unitsRoute}/${workspaceId}/hierarchy`, { params: { userId } });
         return data;
     }
 }

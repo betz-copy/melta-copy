@@ -314,8 +314,8 @@ const MyPermissions: React.FC<{
                                         <Button
                                             type="submit"
                                             disabled={
-                                                (userHasNoPermissions(values.permissions[workspace._id]) &&
-                                                    isPermissionsEquals(initialValues.permissions, values.permissions)) ||
+                                                userHasNoPermissions(values.permissions[workspace._id]) &&
+                                                isPermissionsEquals(initialValues.permissions, values.permissions) &&
                                                 _.isEqual(initialValues.units, values.units)
                                             }
                                             variant="contained"
