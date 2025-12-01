@@ -134,12 +134,15 @@ const UnitSelect = ({
                                     gap: '0.5rem',
                                     ...(multiple
                                         ? {
+                                              width: '100%',
                                               flexWrap: 'wrap',
                                               maxHeight: '8rem',
                                               overflowY: 'auto',
                                               overflowX: 'hidden',
                                               direction: 'rtl',
                                               padding: '0.5rem',
+                                              justifyContent: 'flex-start',
+                                              flexDirection: 'row-reverse',
                                           }
                                         : {}),
                                 }}
