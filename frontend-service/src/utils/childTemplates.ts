@@ -71,7 +71,7 @@ export const isEntityFitsToChildTemplate = (
             try {
                 if (JSON.parse(value)?._id !== currentUserKartoffelId) return false;
             } catch (error) {
-                console.error('user type is not expected', { error });
+                console.error('user type is unexpected', { error });
             }
         }
         if (prop.isFilterByUserUnit && units && !isUserAdmin && !units.includes(value)) return false;
