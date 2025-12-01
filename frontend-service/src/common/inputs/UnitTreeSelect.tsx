@@ -117,7 +117,7 @@ const UnitSelect = ({
                 }}
                 onChange={(e) => {
                     setSearch(e.target.value);
-                    // onChange(undefined);
+                    if(!e.target.value) onChange(undefined);
                 }}
                 onMouseEnter={() => setHover(true)}
                 onMouseLeave={() => setHover(false)}
