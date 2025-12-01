@@ -349,6 +349,7 @@ export const getColumnDefs = <Data = EntityData>({
         if (propertyTemplate.format === 'unitField') {
             return unitColDef(
                 property,
+                valueGetter,
                 propertyTemplate,
                 units,
                 defaultColumnWidths[property],
