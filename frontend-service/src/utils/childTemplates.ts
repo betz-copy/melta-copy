@@ -67,8 +67,13 @@ export const isEntityFitsToChildTemplate = (
     for (const [key, prop] of Object.entries(template.properties.properties)) {
         const value = entity.properties[key];
 
-        if (prop.isFilterByCurrentUser && currentUserKartoffelId && JSON.parse(value)._id !== currentUserKartoffelId) return false;
-
+        if (prop.isFilterByCurrentUser && currentUserKartoffelId && prop.format === 'user') {
+            try {
+                if (JSON.parse(value)?._id !== currentUserKartoffelId) return false;
+            } catch (error) {
+                console.error('user type is not expected', { error });
+            }
+        }
         if (prop.isFilterByUserUnit && units && !isUserAdmin && !units.includes(value)) return false;
 
         if (prop.filters) {
