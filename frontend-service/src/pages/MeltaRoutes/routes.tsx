@@ -25,7 +25,7 @@ import {
     DashboardProtectedRoute,
     EntityProtectedRoute,
     PermissionsManagementProtectedRoute,
-    SystemManagementProtectedRoute
+    SystemManagementProtectedRoute,
 } from '../../utils/ProtectedRoutes';
 
 const GlobalSearch = lazy(() => import('../GlobalSearch'));
