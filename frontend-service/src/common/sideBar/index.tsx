@@ -48,14 +48,8 @@ const {
     notifications,
     searchPath,
     dashboard: { dashboardPath },
-    defaultSearchParams
+    searchParams
 } = environment;
-
-const defaultQueryString = new URLSearchParams({
-    [defaultSearchParams.semanticSearchKey]: defaultSearchParams.defaultSemanticSearchValue,
-    [defaultSearchParams.searchKey]: defaultSearchParams.defaultSearchValue,
-    [defaultSearchParams.viewModeKey]: defaultSearchParams.defaultViewMode,
-}).toString();
 
 const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const theme = useTheme();
@@ -215,7 +209,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             <GlobalSearchBar
                                 onSearch={(searchValue) => {
                                     handleChangeActiveButton(true, 'search');
-                                    navigate(`${searchPath}?search=${searchValue}&viewMode=templates-tables-view`);
+                                    navigate(`${searchPath}?${searchParams.searchKey}=${searchValue}&${searchParams.viewModeKey}=${searchParams.viewModeOptions.templatesTables}`);
                                 }}
                                 placeholder={i18next.t('pages.globalSearch')}
                                 size="small"
@@ -293,7 +287,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             ) && (
                                 <NavButton
                                     key={category._id}
-                                    to={`/category/${category._id}?${defaultQueryString}`}
+                                    to={`/category/${category._id}?${searchParams.semanticSearchKey}=false&${searchParams.searchKey}=&${searchParams.viewModeKey}=${searchParams.viewModeOptions.templatesTables}`}
                                     text={category.displayName}
                                     isDrawerOpen={isDrawerOpen}
                                     onChangeToActive={(isActive) => {
