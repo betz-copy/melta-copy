@@ -42,7 +42,7 @@ import {
     ISemanticSearchResult,
     ITemplateSearchBody,
     IUpdateEntityMetadata,
-    isWorkspaceAdmin,
+    isAdmin,
     logger,
     matchValueAgainstFilter,
     NotFoundError,
@@ -77,7 +77,6 @@ import RabbitManager from '../../utils/rabbit';
 import { createTextsFromEntitiesWithFiles, formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
 import { getRelatedTemplateIds } from '../../utils/templates';
 import RuleBreachesManager from '../ruleBreaches/manager';
-import UsersManager from '../users/manager';
 import WorkspaceService from '../workspaces/service';
 import { patchDocumentAsStream } from './documentExport';
 import { ExternalIdType, IExternalId } from './interface';
@@ -213,20 +212,26 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         externalId?: IExternalId,
     ) {
         const { entitiesWithFiles, filter: defaultFilter, ...body } = searchBody;
-        const [currentUser, units] = await Promise.all([UserService.getUserById(userId), UserService.getUnits({ workspaceId: this.workspaceId })]);
+        const currentUser = await UserService.getUserById(userId);
 
-        const childTemplates = await this.entityTemplateService.searchChildTemplates({ ids: childTemplateIds });
+        let mergedFilterChildren: ISearchFilter | undefined;
 
-        const childTemplatesFilters = childTemplates.map((childTemplate) =>
-            getDefaultFilterFromChildTemplate(
-                childTemplate,
-                currentUser.kartoffelId,
-                UsersManager.getUnitsWithInheritance(units, currentUser.units?.[this.workspaceId] ?? []),
-                isWorkspaceAdmin(currentUser?.permissions?.[this.workspaceId]),
-            ),
-        );
+        if (childTemplateIds?.length) {
+            const [childTemplates, workspaceHierarchyIds] = await Promise.all([
+                await this.entityTemplateService.searchChildTemplates({ ids: childTemplateIds }),
+                WorkspaceService.getWorkspaceHierarchyIds(this.workspaceId),
+            ]);
 
-        const mergedFilterChildren = getFilterModal(childTemplatesFilters, FilterLogicalOperator.OR);
+            const childTemplatesFilters = childTemplates.map((childTemplate) =>
+                getDefaultFilterFromChildTemplate(
+                    childTemplate,
+                    currentUser.kartoffelId,
+                    currentUser.units?.[this.workspaceId] ?? [],
+                    isAdmin(currentUser?.permissions, workspaceHierarchyIds),
+                ),
+            );
+            mergedFilterChildren = getFilterModal(childTemplatesFilters, FilterLogicalOperator.OR);
+        }
 
         let dashboardFilters: ISearchFilter | undefined;
         if (externalId) {
@@ -360,7 +365,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         if (headersOnly) return;
 
-        const units = await UserService.getUnits({ workspaceId: this.workspaceId });
+        const units = await UserService.getUnits({ workspaceIds: [this.workspaceId] });
         const unitsMap = new Map(units.map((unit) => [unit._id, unit.name]));
 
         if (insertEntities) {
@@ -1456,7 +1461,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async getChartOfTemplate(templateId: string, body: { chartsData: IChartBody[]; childTemplateId?: string }) {
-        const units = await UserService.getUnits({ workspaceId: this.workspaceId });
+        const units = await UserService.getUnits({ workspaceIds: [this.workspaceId] });
 
         return this.service.getChartsOfTemplate(templateId, body, units);
     }

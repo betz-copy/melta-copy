@@ -516,6 +516,7 @@ export default {
             rulesManagement: 'חוקים',
             processesManagement: 'תהליכים',
             unitsManagement: 'יחידות',
+            unitsOfUser: 'יחידות משויכות',
             instancesPermissions: 'הרשאות על קטגוריות',
             allCategories: 'הכל',
             chooseAll: 'סמן הכל',

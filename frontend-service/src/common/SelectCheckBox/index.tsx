@@ -270,7 +270,7 @@ const SelectCheckbox = <Option extends {}, Group = Option>({
                     getItemId={getOptionId}
                     getItemLabel={getOptionLabel}
                     filteredTreeItems={filteredTree()}
-                    allowMultiSelect
+                    multiSelect
                     treeItems={treeItems()}
                     isDraggable={!isDraggableDisabled}
                     onSelectItems={(ids) => {

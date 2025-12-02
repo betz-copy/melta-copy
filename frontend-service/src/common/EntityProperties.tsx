@@ -19,7 +19,7 @@ import { extractUtmLocation, locationConverterToString } from '../utils/map/conv
 import { getFixedNumber, getTextDirection } from '../utils/stringValues';
 import { ColoredEnumChip } from './ColoredEnumChip';
 import OpenPreview from './FilePreview/OpenPreview';
-import { CoordinateSystem, LocationData } from './inputs/JSONSchemaFormik/RjsfLocationWidget';
+import { CoordinateSystem, LocationData } from './inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
 import BlueTitle from './MeltaDesigns/BlueTitle';
 import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
 import RelationshipReferenceView from './RelationshipReferenceView';

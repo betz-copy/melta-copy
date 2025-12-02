@@ -3,10 +3,10 @@ import { WidgetProps } from '@rjsf/utils';
 import i18next from 'i18next';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import SignatureCanvas from 'react-signature-canvas';
-import { environment } from '../../../globals';
-import { getFilePreviewRequest } from '../../../services/previewService';
-import { useDarkModeStore } from '../../../stores/darkMode';
-import { darkTheme, lightTheme } from '../../../theme';
+import { environment } from '../../../../globals';
+import { getFilePreviewRequest } from '../../../../services/previewService';
+import { useDarkModeStore } from '../../../../stores/darkMode';
+import { darkTheme, lightTheme } from '../../../../theme';
 
 const { signaturePrefix } = environment;
 

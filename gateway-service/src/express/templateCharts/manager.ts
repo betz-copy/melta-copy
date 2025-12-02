@@ -16,7 +16,7 @@ import {
     IPieMetaData,
     ISearchFilter,
     ISubCompactPermissions,
-    isWorkspaceAdmin,
+    isAdmin,
 } from '@microservices/shared';
 import ChartService from '../../externalServices/dashboardService/chartService';
 import DashboardItemService from '../../externalServices/dashboardService/dashboardItemService';
@@ -25,7 +25,7 @@ import UserService from '../../externalServices/userService';
 import DefaultManagerProxy from '../../utils/express/manager';
 import { getMetaDataAxes } from '../../utils/templateCharts/getMetaDataAxes';
 import TemplatesManager from '../templates/manager';
-import UsersManager from '../users/manager';
+import WorkspaceService from '../workspaces/service';
 
 class ChartManager extends DefaultManagerProxy<ChartService> {
     private instanceService: InstancesService;
@@ -113,17 +113,20 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
     }
 
     async getFullChartFilters(chart: IMongoChart, userId: string): Promise<IMongoChart> {
-        const [currentUser, units] = await Promise.all([UserService.getUserById(userId), UserService.getUnits({ workspaceId: this.workspaceId })]);
+        const currentUser = await UserService.getUserById(userId);
 
         let childFilters: ISearchFilter | undefined;
         if (chart.childTemplateId) {
-            const childTemplate = await this.templateManager.getChildTemplateById(chart.childTemplateId);
+            const [childTemplate, workspaceHierarchyIds] = await Promise.all([
+                this.templateManager.getChildTemplateById(chart.childTemplateId),
+                WorkspaceService.getWorkspaceHierarchyIds(this.workspaceId),
+            ]);
 
             childFilters = getDefaultFilterFromChildTemplate(
                 childTemplate,
                 currentUser.kartoffelId,
-                UsersManager.getUnitsWithInheritance(units, currentUser.units?.[this.workspaceId] ?? []),
-                isWorkspaceAdmin(currentUser?.permissions?.[this.workspaceId]),
+                currentUser.units?.[this.workspaceId] ?? [],
+                isAdmin(currentUser?.permissions, workspaceHierarchyIds),
             );
         }
 
@@ -163,7 +166,7 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
             }),
         );
 
-        const units = await UserService.getUnits({ workspaceId: this.workspaceId });
+        const units = await UserService.getUnits({ workspaceIds: [this.workspaceId] });
 
         const generatedCharts = (await this.instanceService.getChartsOfTemplate(templateId, { chartsData, childTemplateId }, units)) as {
             _id: string;

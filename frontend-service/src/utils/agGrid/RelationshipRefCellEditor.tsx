@@ -43,12 +43,14 @@ const RelationshipRefCellEditor: React.FC<RelationshipRefCellEditorProps> = ({
         onValueChange(chosenEntity);
         setInputValue('');
     };
+    const noRelationPermission = !relatedTemplate && !childTemplatesOfRelatedTemplate.length;
 
     return (
         <FormControl style={{ width: '100%', height: '100%' }}>
             <TemplateEntitiesAutocomplete
                 template={childTemplatesOfRelatedTemplate.length ? childTemplatesOfRelatedTemplate[0]?.parentTemplate : relatedTemplate!}
                 showField={template.relationshipReference!.relatedTemplateField}
+                noRelationPermission={noRelationPermission}
                 value={value || null}
                 onChange={handleEntityChange}
                 onDisplayValueChange={handleEntityInputChange}

@@ -138,7 +138,8 @@ const CreateOrEditEntityDetails: React.FC<{
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
 
     const initialValues = useMemo(() => {
-        if (isEditMode) return getInitialValuesWithDefaults(convertIEntityToEntityWizardValues(payload!, entityTemplate, initialTemplateFileKeys), currentUser);
+        if (isEditMode)
+            return getInitialValuesWithDefaults(convertIEntityToEntityWizardValues(payload!, entityTemplate, initialTemplateFileKeys), currentUser);
 
         return getInitialValuesWithDefaults(
             initialCurrValues ?? {
