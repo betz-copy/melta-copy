@@ -3,15 +3,15 @@ import { persist } from 'zustand/middleware';
 import { IGetUnits } from '../interfaces/units';
 
 interface UnitsState {
-    filteredUnits: IGetUnits;
-    setFilteredUnits: (units: IGetUnits) => void;
+    enabledUnits: IGetUnits;
+    setEnabledUnits: (units: IGetUnits) => void;
 }
 
 export const useUnitStore = create(
     persist<UnitsState>(
         (set) => ({
-            filteredUnits: [],
-            setFilteredUnits: (units) => set({ filteredUnits: units.filter(({ disabled }) => !disabled) }),
+            enabledUnits: [],
+            setEnabledUnits: (units) => set({ enabledUnits: units.filter(({ disabled }) => !disabled) }),
         }),
         { name: 'units' },
     ),

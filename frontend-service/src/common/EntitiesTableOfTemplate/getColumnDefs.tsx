@@ -135,7 +135,7 @@ export const getColumnDefs = <Data = EntityData>({
                 !template,
                 entityId,
                 currentUser?.kartoffelId,
-                currentUser?.currentUnits,
+                currentUser?.usersUnitsWithInheritance,
                 isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
             ),
         );
@@ -349,6 +349,7 @@ export const getColumnDefs = <Data = EntityData>({
         if (propertyTemplate.format === 'unitField') {
             return unitColDef(
                 property,
+                valueGetter,
                 propertyTemplate,
                 units,
                 defaultColumnWidths[property],

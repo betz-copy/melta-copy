@@ -1,7 +1,7 @@
 import * as Cesium from 'cesium';
 import { Cartesian3 } from 'cesium';
 import proj4 from 'proj4';
-import { CoordinateSystem } from '../../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
+import { CoordinateSystem } from '../../common/inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
 import { environment } from '../../globals';
 import { stringToCoordinates } from '.';
 

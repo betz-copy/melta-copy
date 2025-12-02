@@ -6,7 +6,7 @@ export const getUnitsRequestSchema = joi.object({
     query: {
         name: joi.string(),
         parentId: mongoIdSchema,
-        workspaceId: mongoIdSchema.required(),
+        workspaceIds: joi.array().items(mongoIdSchema).min(1).required(),
         disabled: joi.boolean(),
     },
     body: {},
@@ -48,7 +48,9 @@ export const updateUnitRequestSchema = joi.object({
 
 // GET /api/units/:workspaceId/hierarchy
 export const getUnitHierarchyRequestSchema = joi.object({
-    query: {},
+    query: {
+        userId: mongoIdSchema.required(),
+    },
     body: {},
     params: {
         workspaceId: mongoIdSchema.required(),

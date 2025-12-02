@@ -70,8 +70,7 @@ class InstancesValidator extends DefaultController {
 
         const units: string[] = [];
         const relationshipRefs: Record<string, string[]> = {};
-        const users: string[] = [];
-        const multiUsers: string[] = [];
+        const users: Set<string> = new Set();
 
         Object.entries(properties).forEach(([key, value]) => {
             const prop = template.properties.properties[key];
@@ -81,10 +80,9 @@ class InstancesValidator extends DefaultController {
                     units.push(value);
                     break;
                 case 'user':
-                    if (value) users.push(JSON.parse(value)._id);
+                    if (value) users.add(JSON.parse(value)._id);
                     break;
                 case 'relationshipReference': {
-                    // biome-ignore lint/style/noNonNullAssertion: types are bad
                     const { relatedTemplateId } = prop.relationshipReference!;
                     if (!relationshipRefs[relatedTemplateId]) relationshipRefs[relatedTemplateId] = [];
                     relationshipRefs[relatedTemplateId].push(value);
@@ -93,14 +91,14 @@ class InstancesValidator extends DefaultController {
             }
 
             if (prop?.items?.format === 'user' && !!value) {
-                multiUsers.push(...value.map((userString) => JSON.parse(userString)._id));
+                value.map((userString) => users.add(JSON.parse(userString)._id));
             }
         });
 
         if (units.length) {
             const fullUnits = await UserService.getUnitsByIds(units);
 
-            if (fullUnits.length !== units.length) throw new ValidationError('some units are not existing');
+            if (fullUnits.length !== units.length) throw new ValidationError('Some units do not exist');
         }
 
         if (Object.entries(relationshipRefs).length) {
@@ -111,21 +109,17 @@ class InstancesValidator extends DefaultController {
                         limit: searchEntitiesMaxLimit,
                         showRelationships: false,
                         entityIdsToInclude: ids,
+                        filter: { $and: [{ _id: { $in: ids } }] },
                     });
 
-                    if (entities.count !== ids.length) throw new ValidationError('some relationship references are not existing');
+                    if (entities.count !== ids.length) throw new ValidationError('Some relationship references do not exist');
                 }),
             );
         }
 
-        if (users.length) {
-            const kartoffelUsers = await Kartoffel.getUsersByIds(users);
-            if (kartoffelUsers.length !== users.length) throw new ValidationError('some users are not existing');
-        }
-
-        if (multiUsers.length) {
-            const kartoffelUsers = await UserService.searchUserIds({ ids: multiUsers, limit: searchEntitiesMaxLimit });
-            if (kartoffelUsers.length !== multiUsers.length) throw new ValidationError('some users are not existing');
+        if (users.size) {
+            const kartoffelUsers = await Kartoffel.getUsersByIds([...users]);
+            if (kartoffelUsers.length !== users.size) throw new ValidationError('Some users do not exist');
         }
     }
 
