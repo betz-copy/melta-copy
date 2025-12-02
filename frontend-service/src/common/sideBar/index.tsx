@@ -48,7 +48,14 @@ const {
     notifications,
     searchPath,
     dashboard: { dashboardPath },
+    defaultSearchParams
 } = environment;
+
+const defaultQueryString = new URLSearchParams({
+    [defaultSearchParams.semanticSearchKey]: defaultSearchParams.defaultSemanticSearchValue,
+    [defaultSearchParams.searchKey]: defaultSearchParams.defaultSearchValue,
+    [defaultSearchParams.viewModeKey]: defaultSearchParams.defaultViewMode,
+}).toString();
 
 const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const theme = useTheme();
@@ -286,7 +293,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             ) && (
                                 <NavButton
                                     key={category._id}
-                                    to={`/category/${category._id}?semanticSearch=false&search=&viewMode=templates-tables-view`}
+                                    to={`/category/${category._id}?${defaultQueryString}`}
                                     text={category.displayName}
                                     isDrawerOpen={isDrawerOpen}
                                     onChangeToActive={(isActive) => {

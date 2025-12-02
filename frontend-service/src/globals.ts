@@ -41,6 +41,19 @@ export const environment = {
     defaultTitle: 'Melta',
     workspaceIdHeaderName: 'workspace-id',
     searchPath: '/search',
+    defaultSearchParams: {
+        viewModeKey: 'viewMode',
+        semanticSearchKey: 'semanticSearch',
+        searchKey: 'search',
+        viewModeOptions: {
+            templatesTables: 'templates-tables-view',
+            list: 'list-view',
+            gallery: 'gallery-view',
+        },
+        defaultViewMode: 'templates-tables-view',
+        defaultSemanticSearchValue: 'false',
+        defaultSearchValue: '',
+    },
     graphSettings: {
         nodeConnectionsCountRangesToNodeSize: {
             '0-2': 3,
