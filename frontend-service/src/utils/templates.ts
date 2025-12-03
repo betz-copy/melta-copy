@@ -1,7 +1,7 @@
 import { IMongoCategory } from '../interfaces/categories';
 import { IChildTemplateMap, IChildTemplatePopulated, IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
 import { IEntity, IEntityExpanded } from '../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { IEntityTemplateMap, IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../interfaces/relationshipTemplates';
 import { INestedRelationshipTemplates } from '../pages/Entity';
 
@@ -177,7 +177,7 @@ export const addDefaultFieldsToTemplate = <T extends IMongoEntityTemplatePopulat
     };
 };
 
-export const getFirstXPropsKeys = (numOfPropsToShow: number, entityTemplate: IMongoEntityTemplatePopulated): string[] => {
+export const getFirstXPropsKeys = (numOfPropsToShow: number, entityTemplate: IMongoEntityTemplatePopulated | IEntityTemplatePopulated): string[] => {
     return [
         ...entityTemplate.propertiesPreview,
         ...entityTemplate.propertiesOrder
@@ -193,7 +193,7 @@ export const getFirstXPropsKeys = (numOfPropsToShow: number, entityTemplate: IMo
 
 export const getFirstXFilledPropsKeys = (
     numOfPropsToShow: number,
-    entityTemplate: IMongoEntityTemplatePopulated,
+    entityTemplate: IMongoEntityTemplatePopulated | IEntityTemplatePopulated,
     entity: IEntity,
 ): string[] => {
     if (entityTemplate.propertiesPreview.length > 0) {

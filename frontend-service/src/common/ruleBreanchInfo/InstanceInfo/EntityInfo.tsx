@@ -6,6 +6,7 @@ import { IEntity } from '../../../interfaces/entities';
 import { IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { getEntityTemplateColor } from '../../../utils/colors';
+import { getFirstXFilledPropsKeys } from '../../../utils/templates';
 import { CustomIcon } from '../../CustomIcon';
 import { EntityPropertiesInternal } from '../../EntityProperties';
 import { EntityTemplateColor } from '../../EntityTemplateColor';
@@ -56,11 +57,14 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({ entity, entityTemplate, 
         </Grid>
     );
 
-    const entityPropertiesTooltip =
-        // eslint-disable-next-line no-nested-ternary
-        !entityTemplate || !entity ? (
-            ''
-        ) : !entityTemplate.propertiesPreview.length ? (
+    const entityPropertiesTooltip = (() => {
+        if (!entityTemplate || !entity) {
+            return '';
+        }
+
+        const fieldsToShow = getFirstXFilledPropsKeys(5, entityTemplate, entity);
+
+        return fieldsToShow.length === 0 ? (
             i18next.t('graph.noPreviewProperties')
         ) : (
             <EntityPropertiesInternal
@@ -74,13 +78,14 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({ entity, entityTemplate, 
                     width: '100%',
                 }}
                 innerStyle={{ width: '30%', color: 'red' }}
-                showPreviewPropertiesOnly
+                overridePropertiesToShow={fieldsToShow}
                 textWrap
                 mode="normal"
                 propertiesToHighlightColor="red"
                 propertiesToHighlight={failedProperties}
             />
         );
+    })();
 
     return (
         <Grid container onClick={() => setOpen((prev) => !prev)}>
