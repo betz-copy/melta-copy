@@ -63,11 +63,8 @@ const getRjsfDateOrDateTimeWidget =
 
         const MuiDatePicker = dateOrDateTime === 'date' ? DatePicker : DateTimePicker;
 
-        const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => {
-            const isEmpty = !newValue;
-            if (isEmpty) onChange(defaultValue);
-            onBlur(id, isEmpty ? defaultValue : newValue);
-        };
+        const _onBlur = () => {};
+
         const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, newValue);
 
         const onChangeDateWidget = (date: Date | null) => {
