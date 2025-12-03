@@ -3,7 +3,6 @@ import {
     addPropertyToRequest,
     CoordinateSystem,
     FilterLogicalOperator,
-    getFilterFromChildTemplate,
     IEntitySingleProperty,
     IEntityTemplate,
     IFilterGroup,
@@ -27,7 +26,6 @@ import { Request } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
 import FilterValidation from '../../error';
-import ChildTemplateManagerService from '../../externalServices/templates/childTemplateManager';
 import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import addDefaultFieldsToTemplate from '../../utils/addDefaultsFieldsToEntityTemplate';
@@ -102,14 +100,11 @@ export class EntityValidator extends DefaultController {
 
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
 
-    private childTemplateManagerService: ChildTemplateManagerService;
-
     constructor(workspaceId: string) {
         super(undefined);
 
         this.entityTemplateManagerService = new EntityTemplateManagerService(workspaceId);
         this.relationshipsTemplateManagerService = new RelationshipsTemplateManagerService(workspaceId);
-        this.childTemplateManagerService = new ChildTemplateManagerService(workspaceId);
     }
 
     private async getEntityTemplateByIdOrThrowValidationError(templateId: string) {
@@ -148,11 +143,6 @@ export class EntityValidator extends DefaultController {
         }
     }
 
-    async getChildFilters(childTemplateId: string): Promise<ISearchFilter | undefined> {
-        const childTemplate = await this.childTemplateManagerService.getChildTemplateById(childTemplateId);
-        return getFilterFromChildTemplate(childTemplate);
-    }
-
     validatePropertiesMatchFilters(properties: Record<string, any>, filter?: ISearchFilter) {
         const notValidKey = matchValueAgainstFilter(properties, filter);
         if (notValidKey)
@@ -173,16 +163,15 @@ export class EntityValidator extends DefaultController {
     }
 
     async validateEntityRequest(req: Request) {
-        const { templateId, properties, childTemplateId } = req.body;
+        const { templateId, properties, childTemplate } = req.body;
+        const { filter } = childTemplate;
 
         const entityTemplate = await this.getEntityTemplateByIdOrThrowValidationError(templateId);
 
         this.validateEntity(entityTemplate, properties);
 
-        if (childTemplateId) {
-            const filter = await this.getChildFilters(childTemplateId);
-            this.validatePropertiesMatchFilters(req.body.properties, filter);
-        }
+        if (childTemplate?.filter) this.validatePropertiesMatchFilters(req.body.properties, filter);
+
         addPropertyToRequest(req, 'entityTemplate', entityTemplate);
     }
 

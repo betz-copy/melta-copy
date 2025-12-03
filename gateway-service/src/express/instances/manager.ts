@@ -1,5 +1,4 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: properties need to be of type any */
-
 import { promises as fsp } from 'node:fs';
 import {
     ActionTypes,
@@ -8,8 +7,6 @@ import {
     EntityTemplateType,
     FilterLogicalOperator,
     getDashboardFilters,
-    getDefaultFilterFromChildTemplate,
-    getFilterFromChildTemplate,
     getFilterModal,
     IAction,
     IBrokenRule,
@@ -42,7 +39,6 @@ import {
     ISemanticSearchResult,
     ITemplateSearchBody,
     IUpdateEntityMetadata,
-    isAdmin,
     logger,
     matchValueAgainstFilter,
     NotFoundError,
@@ -80,6 +76,7 @@ import RuleBreachesManager from '../ruleBreaches/manager';
 import WorkspaceService from '../workspaces/service';
 import { patchDocumentAsStream } from './documentExport';
 import { ExternalIdType, IExternalId } from './interface';
+import InstancesUtils from './utils';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
 
@@ -102,6 +99,8 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     private chartService: ChartService;
 
+    private instanceUtils: InstancesUtils;
+
     constructor(workspaceId: string) {
         super(new InstancesService(workspaceId));
         this.workspaceId = workspaceId;
@@ -113,6 +112,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         this.previewService = new PreviewService(workspaceId);
         this.dashboardItemService = new DashboardItemService(workspaceId);
         this.chartService = new ChartService(workspaceId);
+        this.instanceUtils = new InstancesUtils(workspaceId);
     }
 
     async uploadInstanceFiles<TProps = Record<string, any>>(
@@ -212,23 +212,12 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         externalId?: IExternalId,
     ) {
         const { entitiesWithFiles, filter: defaultFilter, ...body } = searchBody;
-        const currentUser = await UserService.getUserById(userId);
 
         let mergedFilterChildren: ISearchFilter | undefined;
 
         if (childTemplateIds?.length) {
-            const [childTemplates, workspaceHierarchyIds] = await Promise.all([
-                await this.entityTemplateService.searchChildTemplates({ ids: childTemplateIds }),
-                WorkspaceService.getWorkspaceHierarchyIds(this.workspaceId),
-            ]);
-
-            const childTemplatesFilters = childTemplates.map((childTemplate) =>
-                getDefaultFilterFromChildTemplate(
-                    childTemplate,
-                    currentUser.kartoffelId,
-                    currentUser.units?.[this.workspaceId] ?? [],
-                    isAdmin(currentUser?.permissions, workspaceHierarchyIds),
-                ),
+            const childTemplatesFilters: (ISearchFilter | undefined)[] = await Promise.all(
+                childTemplateIds.map((childTemplateId) => this.instanceUtils.getChildFilters(childTemplateId, userId)),
             );
             mergedFilterChildren = getFilterModal(childTemplatesFilters, FilterLogicalOperator.OR);
         }
@@ -265,14 +254,10 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return { ...searchResult, entities: sortEntities(searchResult.entities, reRank, texts) };
     }
 
-    async getAllTemplateEntities(templateId: string, childTemplateId?: string) {
+    async getAllTemplateEntities(templateId: string, userId: string, childTemplateId?: string) {
         const { searchEntitiesChunkSize } = config.service;
 
-        let filter: ISearchFilter | undefined;
-        if (childTemplateId) {
-            const childTemplate = await this.entityTemplateService.getChildTemplateById(childTemplateId);
-            filter = getFilterFromChildTemplate(childTemplate);
-        }
+        const filter = childTemplateId ? await this.instanceUtils.getChildFilters(childTemplateId, userId) : undefined;
 
         const { count } = await this.service.searchEntitiesOfTemplateRequest(templateId, {
             skip: 0,
@@ -353,20 +338,25 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         const { relatedTemplatesMap } = await this.getRelatedTemplates(template, userId);
 
+        const units = await UserService.getUnits({ workspaceIds: [this.workspaceId] });
+        const unitsMap = new Map(units.map((unit) => [unit._id, unit.name]));
+
+        const currentUser = await UserService.getUserById(userId);
+        const userUnits = currentUser.units?.[this.workspaceId];
+
+        const relevantUnits = !userUnits?.length ? unitsMap : new Map([...unitsMap].filter(([unitId]) => userUnits.includes(unitId)));
         const worksheet = await createWorksheet(
             workbook,
             templateItem,
             relatedTemplatesMap,
             requiredConstraints,
+            relevantUnits,
             displayColumns,
             headersOnly || !!insertEntities,
         );
         const { searchEntitiesChunkSize } = config.service;
 
         if (headersOnly) return;
-
-        const units = await UserService.getUnits({ workspaceIds: [this.workspaceId] });
-        const unitsMap = new Map(units.map((unit) => [unit._id, unit.name]));
 
         if (insertEntities) {
             const { newEntities: entitiesToInsert, newDisplayColumns: columnDisplay } = this.fixInsertEntities(
@@ -379,7 +369,8 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             return;
         }
 
-        const filters = type === EntityTemplateType.Parent ? filter : combineFilters(getFilterFromChildTemplate(template), filter);
+        const filters =
+            type === EntityTemplateType.Parent ? filter : combineFilters(await this.instanceUtils.getChildFilters(template._id, userId), filter);
 
         const { count } = await this.service.searchEntitiesOfTemplateRequest(parentTemplate._id, {
             skip: 0,
@@ -400,6 +391,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 showRelationships: false,
                 sort: sort || [],
             });
+
             styleAWorksheet(
                 worksheet,
                 chunk.map((row) => row.entity.properties),
@@ -579,7 +571,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const failedEntities: IFailedEntity[] = [];
         const workspace = await WorkspaceService.getById(this.workspaceId);
 
-        const oldEntities = await this.getAllTemplateEntities(templateId, childTemplateId);
+        const oldEntities = await this.getAllTemplateEntities(templateId, userId, childTemplateId);
 
         const entitiesWithIgnoresRules = await readExcelFile(
             [file],
@@ -789,9 +781,19 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
     ) {
         const { templateId, properties, files: upserstedFiles } = await this.handlePreparationsBeforeCreateEntity(instanceData, files, serialNumbers);
 
+        await this.instanceUtils.validateEntityProperties(properties, templateId, userId, childTemplateId);
+
+        const childFilters = childTemplateId ? await this.instanceUtils.getChildFilters(childTemplateId, userId) : undefined;
+
         logger.info('createEntityInstance', { instanceData, files, ignoredRules, userId, serialNumbers, createAlert });
         const { createdEntity, actions, emails } = await this.service
-            .createEntityInstance({ properties, templateId }, ignoredRules, userId, undefined, childTemplateId)
+            .createEntityInstance(
+                { properties, templateId },
+                ignoredRules,
+                userId,
+                undefined,
+                childTemplateId ? { id: childTemplateId, filter: childFilters } : undefined,
+            )
             .catch((err) => this.handleBrokenRulesError(err));
 
         if (createAlert && ignoredRules.length) {
@@ -1028,8 +1030,16 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             properties: newInstanceProperties,
         };
 
+        const childFilters = childTemplateId ? await this.instanceUtils.getChildFilters(childTemplateId, userId) : undefined;
+
         const { createdEntity, actions } = await this.service
-            .createEntityInstance(newInstanceData, ignoredRules, userId, id, childTemplateId)
+            .createEntityInstance(
+                newInstanceData,
+                ignoredRules,
+                userId,
+                id,
+                childTemplateId ? { id: childTemplateId, filter: childFilters } : undefined,
+            )
             .catch((err) => this.handleBrokenRulesError(err));
 
         if (createAlert && ignoredRules.length) {
@@ -1095,6 +1105,9 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         isEditExcel: boolean = false,
     ) {
         const { props: uploadedFilesAndProperties, files: updatedFiles } = await this.uploadInstanceFiles(files, updatedInstanceData.properties);
+
+        await this.instanceUtils.validateEntityProperties(updatedInstanceData.properties, updatedInstanceData.templateId, userId, childTemplateId);
+
         const currentEntity = await this.service.getEntityInstanceById(id);
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
         if (!isEditExcel) {
@@ -1102,6 +1115,8 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             if (currentEntity.properties.disabled) throw new BadRequestError("can't update disabled entity");
         }
         this.checkSerialFieldWasUpdated(entityTemplate, updatedInstanceData.properties, currentEntity);
+
+        const childFilters = childTemplateId ? await this.instanceUtils.getChildFilters(childTemplateId, userId) : undefined;
 
         const { updatedEntity, actions, emails } = await this.service
             .updateEntityInstance(
@@ -1112,7 +1127,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 },
                 ignoredRules,
                 userId,
-                childTemplateId,
+                childTemplateId ? { id: childTemplateId, filter: childFilters } : undefined,
             )
             .catch((err) => this.handleBrokenRulesError(err));
         await this.deleteUnusedFiles(currentEntity, updatedInstanceData, files).catch((error) =>
@@ -1181,8 +1196,9 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return fileIdsToRemove;
     }
 
-    async deleteEntityInstances(deleteBody: IDeleteEntityBody) {
+    async deleteEntityInstances(deleteBody: IDeleteEntityBody, userId: string) {
         const { childTemplateId, templateId } = deleteBody;
+
         const template = childTemplateId
             ? await this.entityTemplateService.getChildTemplateById(childTemplateId)
             : await this.entityTemplateService.getEntityTemplateById(templateId);
@@ -1195,8 +1211,8 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             const disabledEntity = entities.find((entity) => entity.properties.disabled === true);
             if (disabledEntity) throw new BadRequestError('cannot delete, some entities are disabled');
             if (childTemplateId) {
-                const notFilterValid = entities.find((entity) =>
-                    matchValueAgainstFilter(entity.properties, getFilterFromChildTemplate(template as IMongoChildTemplatePopulated)),
+                const notFilterValid = entities.find(async (entity) =>
+                    matchValueAgainstFilter(entity.properties, await this.instanceUtils.getChildFilters(childTemplateId, userId)),
                 );
 
                 if (notFilterValid)
@@ -1460,10 +1476,23 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return this.service.searchEntitiesByLocationRequest({ ...reqBody, templates: locationFieldsMap } as ISearchEntitiesByLocationBody);
     }
 
-    async getChartOfTemplate(templateId: string, body: { chartsData: IChartBody[]; childTemplateId?: string }) {
+    async getChartOfTemplate(
+        templateId: string,
+        { chartsData, childTemplateId }: { chartsData: IChartBody[]; childTemplateId?: string },
+        userId: string,
+    ) {
         const units = await UserService.getUnits({ workspaceIds: [this.workspaceId] });
 
-        return this.service.getChartsOfTemplate(templateId, body, units);
+        const updatedChartsData = childTemplateId
+            ? await Promise.all(
+                  chartsData.map(async ({ filter, ...rest }) => ({
+                      ...rest,
+                      filter: combineFilters(await this.instanceUtils.getChildFilters(childTemplateId, userId), filter)!,
+                  })),
+              )
+            : chartsData;
+
+        return this.service.getChartsOfTemplate(templateId, { chartsData: updatedChartsData, childTemplateId }, units);
     }
 }
 

@@ -16,7 +16,6 @@ import {
     IPieMetaData,
     ISearchFilter,
     ISubCompactPermissions,
-    isAdmin,
 } from '@microservices/shared';
 import ChartService from '../../externalServices/dashboardService/chartService';
 import DashboardItemService from '../../externalServices/dashboardService/dashboardItemService';
@@ -122,12 +121,10 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
                 WorkspaceService.getWorkspaceHierarchyIds(this.workspaceId),
             ]);
 
-            childFilters = getDefaultFilterFromChildTemplate(
-                childTemplate,
-                currentUser.kartoffelId,
-                currentUser.units?.[this.workspaceId] ?? [],
-                isAdmin(currentUser?.permissions, workspaceHierarchyIds),
-            );
+            childFilters = getDefaultFilterFromChildTemplate(childTemplate, currentUser, {
+                id: this.workspaceId,
+                hierarchyIds: workspaceHierarchyIds,
+            });
         }
 
         const chartFilterObj = chart.filter ? JSON.parse(chart.filter) : undefined;
