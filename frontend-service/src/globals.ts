@@ -2,6 +2,8 @@ import i18next from 'i18next';
 import { NotificationType } from './interfaces/notifications';
 import { ILabelIcon } from './utils/graph/helperTypes';
 
+export const DATE_PICKER_VIEWS = ['year', 'month', 'day'] as const;
+
 export const environment = {
     api: {
         login: '/api/auth/login',

@@ -7,7 +7,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { he } from 'date-fns/locale';
 import i18next from 'i18next';
 import React from 'react';
-import { environment } from '../../globals';
+import { DATE_PICKER_VIEWS, environment } from '../../globals';
 
 const { date } = environment.formats;
 
@@ -45,7 +45,7 @@ const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
     >
         <DatePicker
             format={date}
-            views={['year', 'month', 'day']}
+            views={DATE_PICKER_VIEWS}
             enableAccessibleFieldDOMStructure={false}
             minDate={minDate ? new Date(minDate) : undefined}
             maxDate={maxDate ? new Date(maxDate) : undefined}

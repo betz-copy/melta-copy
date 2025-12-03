@@ -12,7 +12,7 @@ import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import i18next from 'i18next';
 import React, { JSX } from 'react';
-import { environment } from '../../../../globals';
+import { DATE_PICKER_VIEWS, environment } from '../../../../globals';
 
 const { date, dateTime } = environment.formats;
 
@@ -85,6 +85,7 @@ const getRjsfDateOrDateTimeWidget =
                 <MuiDatePicker
                     value={parseDefaultDate(value)}
                     enableAccessibleFieldDOMStructure={false}
+                    views={DATE_PICKER_VIEWS}
                     onChange={(val) => onChangeDateWidget(val)}
                     slots={{
                         textField: (params) => <TextField {...params} style={{ textAlign: 'right' }} inputformat={inputFormat} />,

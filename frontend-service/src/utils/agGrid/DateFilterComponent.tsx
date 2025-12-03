@@ -5,7 +5,7 @@ import { he } from 'date-fns/locale';
 import i18next from 'i18next';
 import React from 'react';
 import { CustomDateTimePickerToolbar } from '../../common/inputs/JSONSchemaFormik/Widgets/RjsfDatesWidgets';
-import { environment } from '../../globals';
+import { DATE_PICKER_VIEWS, environment } from '../../globals';
 import { useDarkModeStore } from '../../stores/darkMode';
 
 const { date: dateFormat } = environment.formats;
@@ -25,7 +25,7 @@ const DateFilterComponent: React.FC<{ date: Date; onDateChange: (newDate: Date |
                     value={date}
                     onChange={onDateChange}
                     format={dateFormat}
-                    views={['year', 'month', 'day']}
+                    views={DATE_PICKER_VIEWS}
                     enableAccessibleFieldDOMStructure={false}
                     label={i18next.t('wizard.date')}
                     slots={{
