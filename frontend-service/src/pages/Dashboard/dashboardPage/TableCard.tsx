@@ -6,8 +6,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { ResetFilterButton } from '../../../common/EntitiesPage/ResetFilterButton';
-import { getDefaultFilterFromTemplate } from '../../../common/EntitiesPage/TemplateTablesView';
-import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../../common/EntitiesTableOfTemplate';
+import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef, ExternalIdType } from '../../../common/EntitiesTableOfTemplate';
 import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
 import { TableButton } from '../../../common/TableButton';
 import { environment } from '../../../globals';
@@ -15,10 +14,8 @@ import { TableMetaData } from '../../../interfaces/dashboard';
 import { IEntity } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { exportEntitiesRequest } from '../../../services/entitiesService';
-import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { filterModelToFilterOfTemplate, getFilterModal } from '../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
-import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
 import { isChildTemplate } from '../../../utils/templates';
 import { getRelevantEntityTemplate } from '../DashboardItemDetails/Chart/BodyComponent';
 
@@ -48,7 +45,7 @@ export const CardTitle = ({ title, description }: { title: string; description?:
     );
 };
 
-const TableCard: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
+const TableCard: React.FC<{ metaData: TableMetaData & { _id: string } }> = ({ metaData }) => {
     const titleSectionHeight = 80;
 
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
@@ -58,21 +55,11 @@ const TableCard: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const template = getRelevantEntityTemplate(entityTemplates, metaData.templateId, metaData.childTemplateId);
 
-    const { kartoffelId } = useUserStore((state) => state.user);
-
     const [isFiltered, setIsFiltered] = useState(false);
     const memorizedFilter = useMemo(() => (metaData.filter ? JSON.parse(metaData.filter) : undefined), [metaData.filter]);
 
     const workspace = useWorkspaceStore((state) => state.workspace);
-    const currentUser = useUserStore((state) => state.user);
-    const isAdmin = isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]);
     const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
-
-    const childTemplateFilter = useMemo(
-        () => getDefaultFilterFromTemplate(template, !!metaData.childTemplateId, kartoffelId, currentUser.units, isAdmin),
-        [metaData.templateId, metaData.childTemplateId, kartoffelId, currentUser.units, isAdmin, template],
-    );
-    const allFilters = useMemo(() => getFilterModal(memorizedFilter, childTemplateFilter), [memorizedFilter, childTemplateFilter]);
 
     const resizeTable = () => {
         if (!containerRef.current || !entitiesTableRef.current) return;
@@ -158,10 +145,11 @@ const TableCard: React.FC<{ metaData: TableMetaData }> = ({ metaData }) => {
                         showNavigateToRowButton
                         actionsColumnWidth={125}
                         editable={false}
-                        defaultFilter={allFilters}
+                        defaultFilter={memorizedFilter}
                         columnsToShow={metaData.columns}
                         infiniteModeWithoutExpand
                         onFilter={() => setIsFiltered(entitiesTableRef.current?.isFiltered() ?? false)}
+                        externalId={{ id: metaData._id, type: ExternalIdType.dashboard }}
                     />
                 </Box>
             </Grid>

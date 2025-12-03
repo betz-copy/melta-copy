@@ -32,7 +32,7 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
     const setWorkspace = useWorkspaceStore((state) => state.setWorkspace);
     const currentUser = useUserStore((state) => state.user);
     const setUser = useUserStore((state) => state.setUser);
-    const setUnits = useUnitStore((state) => state.setFilteredUnits);
+    const setEnabledUnits = useUnitStore((state) => state.setEnabledUnits);
 
     const queryClient = useQueryClient();
 
@@ -85,33 +85,18 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
     // TODO move to all?
     const { data: units = [] } = useQuery({
         queryKey: 'getUnits',
-        queryFn: () => getUnits({ workspaceId: workspace!._id }),
+        queryFn: () => getUnits({ workspaceIds: [workspace!._id] }),
         enabled: Boolean(workspace?._id),
     });
 
     useEffect(() => {
         if (!units || !workspace) return;
 
-        setUnits(units);
+        setEnabledUnits(units);
 
-        const userUnits = new Set(Object.keys(currentUser.permissions[workspace._id]?.units?.ids ?? {}));
-        const unitsCopy = [...units];
-
-        for (const unitId of userUnits) {
-            // no walrus operator :(
-            while (true) {
-                const childIndex = unitsCopy.findIndex(({ parentId }) => parentId === unitId);
-
-                if (childIndex === -1) break;
-
-                userUnits.add(unitsCopy[childIndex]._id);
-                unitsCopy.splice(childIndex, 1);
-            }
-        }
-
-        const unitsWithInheritance = Array.from(userUnits);
-        if (!_.isEqual(currentUser.units, unitsWithInheritance)) setUser({ ...currentUser, units: unitsWithInheritance });
-    }, [units, setUnits, workspace, currentUser, setUser]);
+        if (!_.isEqual(currentUser.usersUnitsWithInheritance, currentUser.units?.[workspace._id]))
+            setUser({ ...currentUser, usersUnitsWithInheritance: currentUser.units?.[workspace._id] ?? [] });
+    }, [units, setEnabledUnits, workspace, currentUser, setUser]);
 
     useEffect(() => {
         if (workspace) {

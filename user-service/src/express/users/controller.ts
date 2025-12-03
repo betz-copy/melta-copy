@@ -11,9 +11,9 @@ class UsersController {
     }
 
     static async searchUserIds(req: Request, res: Response) {
-        const { search, permissions, workspaceIds, limit, step } = req.body;
+        const { search, permissions, workspaceIds, limit, step, ids } = req.body;
 
-        res.json(await UsersManager.searchUserIds(search, permissions, workspaceIds, limit, step));
+        res.json(await UsersManager.searchUserIds(search, permissions, workspaceIds, limit, step, ids));
     }
 
     static async searchUsers(req: Request, res: Response) {

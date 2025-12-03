@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { asNumber, getUiOptions, guessType, WidgetProps } from '@rjsf/utils';
 import React from 'react';
-import MultipleSelect from '../MultipleSelect';
+import MultipleSelect from '../../MultipleSelect';
 
 const nums = new Set(['number', 'integer']);
 

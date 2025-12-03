@@ -11,20 +11,13 @@ export const IInstancePermissionOrderedHierarchy = [
     InstancesSubclassesPermissions.fields,
 ] as const;
 
-// When a user has a permissions to a unit, he will have the "write" scope under the id (this does NOT relate to the unit scope outside ids)
-// However, he will really have read only read permission.
-export enum UnitSubclassesPermissions {
-    ids = 'ids',
-}
-export const IUnitPermissionOrderedHierarchy = [UnitSubclassesPermissions.ids] as const;
-
 export type IAdminPermission = IBasePermission<PermissionType.admin>;
 export type IRulesPermission = IBasePermission<PermissionType.rules>;
 export type IPermissionsPermission = IBasePermission<PermissionType.permissions>;
 export type IProcessesPermission = IBasePermission<PermissionType.processes>;
 export type ITemplatesPermission = IBasePermission<PermissionType.templates>;
 export type IInstancesPermission = IBasePermission<PermissionType.instances, typeof IInstancePermissionOrderedHierarchy>;
-export type IUnitsPermission = IBasePermission<PermissionType.units, typeof IUnitPermissionOrderedHierarchy>;
+export type IUnitsPermission = IBasePermission<PermissionType.units>;
 
 export type IPermission =
     | IAdminPermission

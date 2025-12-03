@@ -4,7 +4,11 @@ import UnitsManager from './manager';
 
 class UnitsController {
     static async getUnits(req: Request, res: Response) {
-        res.json(await UnitsManager.getUnits(req.query as unknown as IUnit));
+        res.json(await UnitsManager.getUnits(req.query as unknown as IUnit & { workspaceIds: string[] }));
+    }
+
+    static async getUnitsByIds(req: Request, res: Response) {
+        res.json(await UnitsManager.getUnitsByIds(req.body.ids));
     }
 
     static async createUser(req: Request, res: Response) {
@@ -17,7 +21,7 @@ class UnitsController {
     }
 
     static async getUnitHierarchy(req: Request, res: Response) {
-        res.json(await UnitsManager.getUnitHierarchy(req.params.workspaceId));
+        res.json(await UnitsManager.getUnitHierarchy(req.params.workspaceId, req.query.userId as unknown as string));
     }
 }
 

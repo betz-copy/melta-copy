@@ -9,6 +9,7 @@ const config = {
         templatesCollection: env.get('TEMPLATES_COLLECTION').default('entity-templates').required().asString(),
         categoriesCollection: env.get('CATEGORIES_COLLECTION').default('categories').required().asString(),
         configsCollection: env.get('CONFIGS_COLLECTION').default('configs').required().asString(),
+        unitsCollection: env.get('UNITS_COLLECTION').default('units').required().asString(),
     },
     neo: {
         uri: env.get('NEO_URI').default('bolt://localhost:7687').required().asString(),

@@ -236,7 +236,7 @@ export const readExcelFile = async (
     if (!identifier && isEditMode) throw new BadRequestError('there is no identifier in template', { template });
     let isFailed = false;
 
-    const units = await UserService.getUnits({ workspaceId, disabled: false });
+    const units = await UserService.getUnits({ workspaceIds: [workspaceId], disabled: false });
     const unitsMap = new Map(units.map((unit) => [unit.name, unit._id]));
 
     await Promise.all(

@@ -1,6 +1,6 @@
 import { WidgetProps } from '@rjsf/utils';
 import { useEffect, useState } from 'react';
-import { UserInput } from '../UserInput';
+import { UserInput } from '../../UserInput';
 
 const RjsfUserWidget = ({
     disabled,

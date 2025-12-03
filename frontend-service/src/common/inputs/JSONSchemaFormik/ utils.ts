@@ -7,7 +7,6 @@ import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IProperties } fro
 import { IKartoffelUser } from '../../../interfaces/users';
 import { EntityWizardValues } from '../../dialogs/entity';
 import { kartoffelPersonalDataFields } from '../../wizards/entityTemplate/KartoffelUserField';
-import { IMongoUnit } from '../../../interfaces/units';
 
 const changeRelatedUserFields = (properties: IProperties['properties'], changedUserKey: string, user: IKartoffelUser | null) => {
     return Object.entries(properties).reduce((acc, [key, value]) => {
@@ -41,7 +40,6 @@ const getFieldUiSchema = (
     toPrint: boolean,
     propertyKey: string,
     propertySchema: IEntitySingleProperty,
-    unitsOptions?: IMongoUnit[],
 ): UiSchema => {
     const defaultValue = values.template?.properties?.properties?.[propertyKey]?.defaultValue ?? undefined;
     const enumPropertiesColors = values.template?.enumPropertiesColors;
@@ -91,15 +89,8 @@ const getFieldUiSchema = (
         };
     if (propertySchema.format === 'unitField') {
         return {
-            'ui:widget': 'SelectWidget',
-            'ui:options': {
-                defaultValue,
-                enumOptions: unitsOptions?.map((option) => ({
-                    label: option.name,
-                    value: option._id,
-                })),
-                disabled: unitsOptions?.find((unit) => unit._id === values.properties?.[propertyKey])?.disabled,
-            },
+            'ui:widget': 'UnitSelectWidget',
+            'ui:options': { defaultValue },
         };
     }
     if (propertySchema.items?.enum || propertySchema?.enum) {
@@ -178,30 +169,20 @@ export const uiSchemaUtils = (
     isEditMode: boolean,
     toPrint: boolean,
     groupTitleColor: string,
-    unitsOptions?: IMongoUnit[],
 ): Record<string, UiSchema> => {
     const uiSchema: ReturnType<typeof uiSchemaUtils> = {};
 
     for (const [propertyKey, propertySchema] of Object.entries(schema.properties)) {
         // is property in group
         if (propertySchema.properties) {
-            if (!uiSchema[propertyKey]) uiSchema[propertyKey] = { 'ui:style': { color: groupTitleColor }, 'ui:classNames': 'fullWidth' };
+            if (!uiSchema[propertyKey]) uiSchema[propertyKey] = { 'ui:style': { color: groupTitleColor } };
 
             for (const [groupedPropertyKey, groupedPropertySchema] of Object.entries(propertySchema.properties)) {
-                const groupedUiSchema = getFieldUiSchema(
-                    schema,
-                    values,
-                    setValues,
-                    isEditMode,
-                    toPrint,
-                    groupedPropertyKey,
-                    groupedPropertySchema,
-                    unitsOptions,
-                );
+                const groupedUiSchema = getFieldUiSchema(schema, values, setValues, isEditMode, toPrint, groupedPropertyKey, groupedPropertySchema);
 
                 uiSchema[propertyKey][groupedPropertyKey] = groupedUiSchema;
             }
-        } else uiSchema[propertyKey] = getFieldUiSchema(schema, values, setValues, isEditMode, toPrint, propertyKey, propertySchema, unitsOptions);
+        } else uiSchema[propertyKey] = getFieldUiSchema(schema, values, setValues, isEditMode, toPrint, propertyKey, propertySchema);
     }
 
     return uiSchema;

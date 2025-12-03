@@ -6,10 +6,17 @@ export const getUnitsRequestSchema = joi.object({
     query: {
         name: joi.string(),
         parentId: mongoIdSchema,
-        workspaceId: mongoIdSchema.required(),
+        workspaceIds: joi.array().items(mongoIdSchema).min(1).required(),
         disabled: joi.boolean(),
     },
     body: {},
+    params: {},
+});
+
+// POST /api/units/ids
+export const getUnitsByIdsRequestSchema = joi.object({
+    query: {},
+    body: { ids: joi.array().items(mongoIdSchema.required()).required() },
     params: {},
 });
 
@@ -41,7 +48,9 @@ export const updateUnitRequestSchema = joi.object({
 
 // GET /api/units/:workspaceId/hierarchy
 export const getUnitHierarchyRequestSchema = joi.object({
-    query: {},
+    query: {
+        userId: mongoIdSchema.required(),
+    },
     body: {},
     params: {
         workspaceId: mongoIdSchema.required(),

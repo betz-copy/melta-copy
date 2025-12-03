@@ -50,7 +50,7 @@ class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async getIfValuefieldIsUsed(id: string, fieldValue: string, fieldName: string, type: string) {
+    async getIfValueFieldIsUsed(id: string, fieldValue: string, fieldName: string, type: string) {
         const { data } = await this.api.get<IEntity>(`${baseEntitiesRoute}/get-is-field-used/${id}`, {
             params: {
                 fieldValue,

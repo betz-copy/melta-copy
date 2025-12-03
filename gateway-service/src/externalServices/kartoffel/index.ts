@@ -30,6 +30,17 @@ class Kartoffel {
         return data;
     };
 
+    static getUsersByIds = async (ids: string[]) => {
+        const { data } = await this.kartoffel.get<IKartoffelUser[]>(``, {
+            params: {
+                ids: ids,
+                page: 1,
+                pageSize: maxPageSize,
+            },
+        });
+        return data;
+    };
+
     static getUserProfile = async (kartoffelId: string) => {
         const { identityCard, personalNumber } = await this.getUserById(kartoffelId);
         try {

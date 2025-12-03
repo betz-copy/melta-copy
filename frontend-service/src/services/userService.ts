@@ -5,6 +5,7 @@ import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubComp
 import { IMongoRole, IRole } from '../interfaces/roles';
 import { IGetUnits, IMongoUnit, IUnit, IUnitHierarchy } from '../interfaces/units';
 import {
+    IBaseUser,
     IExternalUser,
     IKartoffelUser,
     IMongoUser,
@@ -48,6 +49,11 @@ export const createUserRequest = async (
     units?: Record<string, string[]>,
 ) => {
     const { data } = await axios.post<IUser>(users, { kartoffelId, permissions, workspaceId, roleIds, units });
+    return data;
+};
+
+export const updateUserRequest = async (id: string, update: Partial<IBaseUser>) => {
+    const { data } = await axios.patch<IUser>(`${users}/${id}`, update);
     return data;
 };
 
@@ -157,7 +163,7 @@ export const getAllWorkspaceRolesRequest = async (workspaceIds: string[]) => {
     return data;
 };
 
-export const getUnits = async (params: Partial<IUnit> & Pick<IUnit, 'workspaceId'>) => {
+export const getUnits = async (params: Partial<Omit<IUnit, 'workspaceId'>> & { workspaceIds: string[] }) => {
     const { data } = await axios.get<IGetUnits>(`${units}`, { params });
     return data;
 };

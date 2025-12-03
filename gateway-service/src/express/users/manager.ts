@@ -113,7 +113,13 @@ class UsersManager {
         }
     }
 
-    static async createUser(kartoffelId: string, permissions: ICompactPermissions, workspaceId: string, roleIds?: string[]): Promise<IUser> {
+    static async createUser({
+        kartoffelId,
+        permissions,
+        roleIds,
+        units,
+        workspaceId,
+    }: Pick<IUser, 'kartoffelId' | 'permissions' | 'roleIds' | 'units'> & { workspaceId: string }): Promise<IUser> {
         const existingUser = await UserService.getUserByExternalId(kartoffelId).catch(() => {});
 
         if (existingUser) return UsersManager.updateUserRoleIds(existingUser._id, workspaceId, permissions, roleIds);
@@ -128,6 +134,7 @@ class UsersManager {
             kartoffelId,
             preferences,
             roleIds,
+            units,
         });
     }
 

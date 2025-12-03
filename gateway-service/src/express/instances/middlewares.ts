@@ -4,23 +4,30 @@ import {
     IAction,
     IBrokenRule,
     IChildTemplatePopulated,
+    IEntity,
     IExportEntitiesBody,
     IMongoEntityTemplatePopulated,
     IRelationship,
     IRule,
     PermissionScope,
     ServiceError,
+    ValidationError,
 } from '@microservices/shared';
 import { Request } from 'express';
 import lodashUniqby from 'lodash.uniqby';
+import config from '../../config';
 import InstancesService from '../../externalServices/instanceService';
+import Kartoffel from '../../externalServices/kartoffel';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import RelationshipsTemplateService from '../../externalServices/templates/relationshipsTemplateService';
+import UserService from '../../externalServices/userService';
 import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import { getWorkspaceId } from '../../utils/express';
 import DefaultController from '../../utils/express/controller';
 import { TemplatesManager } from '../templates/manager';
 import InstancesManager from './manager';
+
+const { searchEntitiesMaxLimit } = config.instanceService;
 
 class InstancesValidator extends DefaultController {
     private entityTemplateService: EntityTemplateService;
@@ -48,6 +55,72 @@ class InstancesValidator extends DefaultController {
             ? await this.entityTemplateService.getChildTemplateById(templateId)
             : await this.entityTemplateService.getEntityTemplateById(templateId);
         return template.category._id;
+    }
+
+    async validateEntityProperties(req: Request) {
+        const { properties, templateId, childTemplateId } = req.body as {
+            properties: IEntity['properties'];
+            templateId: string;
+            childTemplateId?: string;
+        };
+
+        const template = childTemplateId
+            ? await this.entityTemplateService.getChildTemplateById(childTemplateId)
+            : await this.entityTemplateService.getEntityTemplateById(templateId);
+
+        const units: string[] = [];
+        const relationshipRefs: Record<string, string[]> = {};
+        const users: Set<string> = new Set();
+
+        Object.entries(properties).forEach(([key, value]) => {
+            const prop = template.properties.properties[key];
+
+            switch (prop?.format) {
+                case 'unitField':
+                    units.push(value);
+                    break;
+                case 'user':
+                    if (value) users.add(JSON.parse(value)._id);
+                    break;
+                case 'relationshipReference': {
+                    const { relatedTemplateId } = prop.relationshipReference!;
+                    if (!relationshipRefs[relatedTemplateId]) relationshipRefs[relatedTemplateId] = [];
+                    relationshipRefs[relatedTemplateId].push(value);
+                    break;
+                }
+            }
+
+            if (prop?.items?.format === 'user' && !!value) {
+                value.map((userString) => users.add(JSON.parse(userString)._id));
+            }
+        });
+
+        if (units.length) {
+            const fullUnits = await UserService.getUnitsByIds(units);
+
+            if (fullUnits.length !== units.length) throw new ValidationError('Some units do not exist');
+        }
+
+        if (Object.entries(relationshipRefs).length) {
+            await Promise.all(
+                Object.entries(relationshipRefs).map(async ([templateId, ids]) => {
+                    const entities = await this.instancesService.searchEntitiesOfTemplateRequest(templateId, {
+                        skip: 0,
+                        limit: searchEntitiesMaxLimit,
+                        showRelationships: false,
+                        entityIdsToInclude: ids,
+                        filter: { $and: [{ _id: { $in: ids } }] },
+                    });
+
+                    if (entities.count !== ids.length) throw new ValidationError('Some relationship references do not exist');
+                }),
+            );
+        }
+
+        if (users.size) {
+            const kartoffelUsers = await Kartoffel.getUsersByIds([...users]);
+            if (kartoffelUsers.length !== users.size) throw new ValidationError('Some users do not exist');
+        }
     }
 
     private async getCategoryIdsFromTemplateIds(templateIds: string[], userId: string) {
@@ -80,9 +153,8 @@ class InstancesValidator extends DefaultController {
         const allowedEntityTemplateIds = [...allowedEntityTemplates.map(({ _id }) => _id), ...allowedChildTemplates.map(({ _id }) => _id)];
 
         const unauthorizedTemplates = templateIds.filter((templateId) => !allowedEntityTemplateIds.includes(templateId));
-        if (unauthorizedTemplates.length > 0) {
+        if (unauthorizedTemplates.length)
             throw new ForbiddenError('user not authorized', { metadata: `unauthorized templates ${JSON.stringify(unauthorizedTemplates)}` });
-        }
     }
 
     async getAllowedChildTemplatesForInstances(
@@ -110,7 +182,7 @@ class InstancesValidator extends DefaultController {
 
     async validateUserCanSearchEntitiesOfTemplate(req: Request) {
         const { templateId } = req.params;
-        await this.validateHasPermissionsToEntitiesInTemplates(req.user!, req.body.childTemplateId || [templateId]);
+        await this.validateHasPermissionsToEntitiesInTemplates(req.user!, req.body.childTemplateIds || [templateId]);
     }
 
     async validateUserCanExportEntities(req: Request) {

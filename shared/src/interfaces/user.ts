@@ -16,6 +16,7 @@ export interface IBaseUser {
     };
     kartoffelId: string;
     roleIds?: string[];
+    units?: Record<string, string[]>;
 }
 
 export interface IUser extends IBaseUser {
@@ -43,6 +44,7 @@ export interface IUserSearchBody {
     workspaceIds?: string[];
     limit: number;
     step?: number;
+    ids?: string[];
     filterModel?: Record<string, object>;
     sortModel?: object[];
 }
