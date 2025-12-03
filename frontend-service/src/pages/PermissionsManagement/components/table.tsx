@@ -167,7 +167,7 @@ const columnDefs = (
             // sort just for fun, same as comparator's sorting
             categoriesPermissionsPopulated.sort((a, b) => a.category._id.localeCompare(b.category._id));
 
-            return getChipsFromArray(categoriesPermissionsPopulated.map(({ _id, category }) => ({ key: _id, label: category.name })));
+            return getChipsFromArray(categoriesPermissionsPopulated.map(({ _id, category }) => ({ key: _id, label: category.displayName })));
         },
         minWidth: 500,
     },
