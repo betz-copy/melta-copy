@@ -39,6 +39,8 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
     const workspace = useWorkspaceStore((state) => state.workspace);
     const currentUser = useUserStore((state) => state.user);
     const currentUserKartoffelId = currentUser?.kartoffelId;
+    const { numOfPreviewFieldsToShow } = workspace.metadata;
+
 
     const { height, width } = workspace.metadata.iconSize;
     const queryClient = useQueryClient();
@@ -178,9 +180,9 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
             return <Typography color="#53566E">{i18next.t('templateEntitiesAutocomplete.noPreviewFields')}</Typography>;
         }
         
-        const fieldsToShow = getFirstXFilledPropsKeys(5, relatedTemplate, entity);
+        const fieldsToShow = getFirstXFilledPropsKeys(numOfPreviewFieldsToShow, relatedTemplate, entity);
         
-        return fieldsToShow.length === 0 ? (
+        return !fieldsToShow.length ? (
             <Typography color="#53566E">{i18next.t('templateEntitiesAutocomplete.noPreviewFields')}</Typography>
         ) : (
             <EntityPropertiesInternal

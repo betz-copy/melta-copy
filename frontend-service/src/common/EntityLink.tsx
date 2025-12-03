@@ -32,6 +32,8 @@ export const EntityLink: React.FC<EntityLinkProps> = ({
     const theme = useTheme();
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { headlineSubTitleFontSize } = workspace.metadata.mainFontSizes;
+    const { numOfPreviewFieldsToShow } = workspace.metadata;
+
 
     const linkText = entityTemplate ? entityTemplate.displayName : i18next.t('ruleBreachInfo.updateEntityActionInfo.unknownEntity');
     const darkMode = useDarkModeStore((state) => state.darkMode);
@@ -40,9 +42,9 @@ export const EntityLink: React.FC<EntityLinkProps> = ({
             return i18next.t('ruleBreachInfo.deletedEntity');
         }
 
-        const fieldsToShow = entityPropertiesToShowTooltipOverride ?? getFirstXFilledPropsKeys(5, entityTemplate, entity);
+        const fieldsToShow = entityPropertiesToShowTooltipOverride ?? getFirstXFilledPropsKeys(numOfPreviewFieldsToShow, entityTemplate, entity);
 
-        return fieldsToShow.length === 0 ? (
+        return !fieldsToShow.length ? (
             i18next.t('graph.noPreviewProperties')
         ) : (
             <Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>

@@ -177,7 +177,7 @@ export const addDefaultFieldsToTemplate = <T extends IMongoEntityTemplatePopulat
     };
 };
 
-export const getFirstXPropsKeys = (numOfPropsToShow: number, entityTemplate: IMongoEntityTemplatePopulated | IEntityTemplatePopulated): string[] => {
+export const getFirstXPropsKeys = (numOfPropsToShow: number, entityTemplate: IEntityTemplatePopulated): string[] => {
     return [
         ...entityTemplate.propertiesPreview,
         ...entityTemplate.propertiesOrder
@@ -193,16 +193,13 @@ export const getFirstXPropsKeys = (numOfPropsToShow: number, entityTemplate: IMo
 
 export const getFirstXFilledPropsKeys = (
     numOfPropsToShow: number,
-    entityTemplate: IMongoEntityTemplatePopulated | IEntityTemplatePopulated,
+    entityTemplate: IEntityTemplatePopulated,
     entity: IEntity,
 ): string[] => {
-    if (entityTemplate.propertiesPreview.length > 0) {
-        return entityTemplate.propertiesPreview;
-    }
-
+      if (entityTemplate.propertiesPreview.length) return entityTemplate.propertiesPreview;
     return getFirstXPropsKeys(numOfPropsToShow, entityTemplate).filter((field) => {
         const value = entity.properties[field];
-        return value !== undefined && value !== null && value !== '';
+        return value != null && value !== '';
     });
 };
 
