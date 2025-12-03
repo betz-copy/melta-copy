@@ -861,11 +861,11 @@ const EntitiesTableOfTemplate = forwardRef(
                         onRowSelected={
                             onRowSelected
                                 ? ({ data, node, event }) => {
-                                      if (!event || !node.isSelected() || !data) return;
+                                      if (!node.isSelected() || !data) return;
 
-                                      const colId = (event.target as HTMLElement)?.closest('[col-id]')?.getAttribute('col-id');
+                                      const colId = (event?.target as HTMLElement)?.closest('[col-id]')?.getAttribute('col-id');
 
-                                      if (!colId || colId.startsWith('actions')) return;
+                                      if (colId?.startsWith('actions')) return;
 
                                       onRowSelected(data);
                                   }
