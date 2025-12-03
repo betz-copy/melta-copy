@@ -136,10 +136,7 @@ export const GeneralDetailsFields = ({
                                 value={values.startDate}
                                 onChange={(newStartDate) => setFieldValue('startDate', newStartDate)}
                                 views={['year', 'month', 'day']}
-                                slots={{
-                                    textField: (params) => <TextField {...params} />,
-                                    openPickerIcon: viewMode ? () => null : undefined,
-                                }}
+                                slots={viewMode ? { openPickerIcon: () => null } : undefined}
                                 slotProps={{
                                     textField: {
                                         size: 'small',
@@ -176,10 +173,7 @@ export const GeneralDetailsFields = ({
                                 label={i18next.t('wizard.processInstance.processInstanceEndDate')}
                                 value={values.endDate}
                                 onChange={(newEndDate) => setFieldValue('endDate', newEndDate)}
-                                slots={{
-                                    textField: (params) => <TextField {...params} />,
-                                    openPickerIcon: viewMode ? () => null : undefined,
-                                }}
+                                slots={viewMode ? { openPickerIcon: () => null } : undefined}
                                 slotProps={{
                                     textField: {
                                         size: 'small',
