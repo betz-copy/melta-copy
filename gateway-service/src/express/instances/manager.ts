@@ -353,14 +353,9 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         const { relatedTemplatesMap } = await this.getRelatedTemplates(template, userId);
 
-        const worksheet = await createWorksheet(
-            workbook,
-            templateItem,
-            relatedTemplatesMap,
-            requiredConstraints,
-            displayColumns,
-            headersOnly || !!insertEntities,
-        );
+        const isLoadMode = headersOnly || !!insertEntities;
+
+        const worksheet = await createWorksheet(workbook, templateItem, relatedTemplatesMap, requiredConstraints, displayColumns, isLoadMode);
         const { searchEntitiesChunkSize } = config.service;
 
         if (headersOnly) return;
@@ -375,7 +370,17 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 displayColumns,
             );
 
-            styleAWorksheet(worksheet, entitiesToInsert, templateItem, workspace, unitsMap, columnDisplay, undefined, !!entitiesToInsert);
+            styleAWorksheet(
+                worksheet,
+                entitiesToInsert,
+                templateItem,
+                workspace,
+                unitsMap,
+                relatedTemplatesMap,
+                columnDisplay,
+                undefined,
+                !!entitiesToInsert,
+            );
             return;
         }
 
@@ -406,6 +411,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 templateItem,
                 workspace,
                 unitsMap,
+                relatedTemplatesMap,
                 displayColumns,
                 headersOnly,
                 undefined,

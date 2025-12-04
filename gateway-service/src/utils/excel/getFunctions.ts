@@ -225,10 +225,11 @@ export const readExcelFile = async (
     const entities: IEntityWithIgnoredRules[] = [];
     const columns = Object.fromEntries(
         Object.entries(template.properties.properties).filter(([propertyKey, propertyTemplate]) => {
+            if (isEditMode) return true;
             const showRelationshipRef = showRelationshipRefColumn(propertyKey, propertyTemplate, relatedTemplatesMap, requiredConstraints);
             if (!showRelationshipRef) return false;
 
-            return isEditMode || isIncludedColumn(propertyTemplate);
+            return isIncludedColumn(propertyTemplate);
         }),
     );
 
