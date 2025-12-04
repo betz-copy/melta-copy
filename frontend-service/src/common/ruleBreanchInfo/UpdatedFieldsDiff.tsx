@@ -18,6 +18,7 @@ const getEntityPropertyString = (
     oldValue: any,
     entityTemplates: IEntityTemplateMap,
     units: IGetUnits,
+    darkMode: boolean,
     items?: any,
 ) => {
     const { format } = propertyTemplate;
@@ -45,7 +46,7 @@ const getEntityPropertyString = (
     }
 
     if (format !== 'fileId' && !items) {
-        return formatToString(value, propertyTemplate, units);
+        return formatToString({ value, property: propertyTemplate, units, darkMode });
     }
 
     // single
@@ -79,12 +80,13 @@ const getEntityPropertiesString = (
     entityTemplates: IEntityTemplateMap,
     entityTemplate: IMongoEntityTemplatePopulated,
     units: IGetUnits,
+    darkMode: boolean,
     oldEntityProperties?: Record<string, any>,
 ) => {
     const fieldPropertiesStrings = Object.entries(entityTemplate?.properties?.properties || []).map(([propertyKey, propertyTemplate]) => {
         const oldValue = oldEntityProperties?.[propertyKey];
         const value = entityProperties[propertyKey];
-        const valueFormatted = getEntityPropertyString(value, propertyTemplate, oldValue, entityTemplates, units, propertyTemplate.items);
+        const valueFormatted = getEntityPropertyString(value, propertyTemplate, oldValue, entityTemplates, units, darkMode, propertyTemplate.items);
         return `${propertyTemplate.title}: ${valueFormatted}`;
     });
     return fieldPropertiesStrings.join('\n');
@@ -110,12 +112,12 @@ export const UpdatedFieldsDiff: React.FC<{
         <ReactDiffViewer
             oldValue={
                 oldProperties
-                    ? getEntityPropertiesString(oldProperties, entityTemplates, entityTemplate!, units)
+                    ? getEntityPropertiesString(oldProperties, entityTemplates, entityTemplate!, units, darkMode)
                     : i18next.t('ruleBreachInfo.updateEntityActionInfo.entityBeforeUnknown')
             }
             newValue={
                 entityTemplate
-                    ? getEntityPropertiesString(newProperties, entityTemplates, entityTemplate, units, oldProperties)
+                    ? getEntityPropertiesString(newProperties, entityTemplates, entityTemplate, units, darkMode, oldProperties)
                     : i18next.t('ruleBreachInfo.updateEntityActionInfo.entityAfterUnknown')
             }
             hideLineNumbers
