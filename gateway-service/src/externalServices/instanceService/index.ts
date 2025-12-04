@@ -18,6 +18,7 @@ import {
     ISearchBatchBody,
     ISearchEntitiesByLocationBody,
     ISearchEntitiesOfTemplateBody,
+    ISearchFilter,
     ISearchResult,
     ISemanticSearchResult,
     ITemplateSearchBody,
@@ -71,13 +72,19 @@ class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async createEntityInstance(entity: IEntity, ignoredRules: IBrokenRule[], userId: string, duplicatedFromId?: string, childTemplateId?: string) {
+    async createEntityInstance(
+        entity: IEntity,
+        ignoredRules: IBrokenRule[],
+        userId: string,
+        duplicatedFromId?: string,
+        childTemplate?: { id: string; filter?: ISearchFilter },
+    ) {
         const { data } = await this.api.post<{ createdEntity: IEntity; actions?: IAction[]; emails?: IRuleMail[] }>(`${baseEntitiesRoute}`, {
             ...entity,
             ignoredRules,
             userId,
             duplicatedFromId,
-            childTemplateId,
+            childTemplate,
         });
 
         return data;
@@ -88,14 +95,14 @@ class InstancesService extends DefaultExternalServiceApi {
         entity: IEntity,
         ignoredRules: IBrokenRule[],
         userId?: string,
-        childTemplateId?: string,
+        childTemplate?: { id: string; filter?: ISearchFilter },
         convertToRelationshipField = false,
     ) {
         const { data } = await this.api.put<{ updatedEntity: IEntity; actions?: IAction[]; emails?: IRuleMail[] }>(`${baseEntitiesRoute}/${id}`, {
             ...entity,
             ignoredRules,
             userId,
-            childTemplateId,
+            childTemplate,
             convertToRelationshipField,
         });
 
