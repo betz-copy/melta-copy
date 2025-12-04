@@ -16,7 +16,6 @@ export interface TreeProps<T extends Record<string, any>> extends Omit<RichTreeV
     selectAll?: boolean;
     onSelectItems?: (itemIds: string | string[]) => any;
     isDraggable?: boolean;
-    allowMultiSelect?: boolean;
     allowDraggingBetweenParents?: boolean;
     preSelectedItemsIds?: string[];
     preExpandedItemIds?: string[];
@@ -40,17 +39,22 @@ export const flattenTree = <T extends {}>(
     treeItems: TreeViewBaseItem<T>[],
     getItemId: (item: T) => string,
     shouldCountParents: boolean,
-    flattenedNodes: Omit<TreeViewBaseItem<T>, 'children'>[] = [],
-): Omit<TreeViewBaseItem<T>, 'children'>[] => {
+    flattenedNodes: (Omit<TreeViewBaseItem<T>, 'children'> & { path: string })[] = [],
+    parentPath = '',
+): (Omit<TreeViewBaseItem<T>, 'children'> & { path: string })[] => {
     treeItems.forEach((treeItem) => {
         const { children, ...rest } = treeItem;
+        const currentId = getItemId(rest as T);
+        const path = parentPath ? `${parentPath}/${currentId}` : currentId;
 
-        if (children) {
-            flattenTree(children, getItemId, shouldCountParents, flattenedNodes);
+        if (children && children.length > 0) {
+            flattenTree(children, getItemId, shouldCountParents, flattenedNodes, path);
 
-            if (shouldCountParents) flattenedNodes.push(rest);
+            if (shouldCountParents) {
+                flattenedNodes.push({ ...rest, path });
+            }
         } else {
-            flattenedNodes.push(rest);
+            flattenedNodes.push({ ...rest, path });
         }
     });
 
@@ -66,7 +70,6 @@ const Tree = <T extends Record<string, any>>({
     preExpandedItemIds,
     allowDraggingBetweenParents = true,
     isSelectable = true,
-    allowMultiSelect = true,
     isDraggable = false,
     dragAllowNewRoot = true,
     additionalOptions,
@@ -79,6 +82,7 @@ const Tree = <T extends Record<string, any>>({
     onClick,
     onKeyUp,
     selectionPropagation = { descendants: true, parents: true }, // In order to auto select children
+    multiSelect = true,
     ...restOfProps
 }: TreeProps<T>): React.ReactElement => {
     const [expandedItemsIds, setExpandedItemsIds] = useState<string[]>(preExpandedItemIds ?? []);
@@ -103,7 +107,7 @@ const Tree = <T extends Record<string, any>>({
     );
 
     const flattenTreeIds = useMemo(
-        () => flattenTree(treeItems, getItemId, !selectionPropagation.parents).map((node) => getItemId(node as T)),
+        () => flattenTree(treeItems, getItemId, !selectionPropagation.parents).map((node) => getItemId(node as unknown as T)),
         [getItemId, treeItems, selectionPropagation],
     );
 
@@ -136,7 +140,6 @@ const Tree = <T extends Record<string, any>>({
             <ThemeProvider theme={{ direction: 'rtl' }}>
                 <RichTreeViewPro
                     checkboxSelection={isSelectable}
-                    multiSelect
                     items={filteredTreeItems}
                     getItemId={getItemId}
                     getItemLabel={getItemLabel}
@@ -162,6 +165,7 @@ const Tree = <T extends Record<string, any>>({
                     }}
                     onItemPositionChange={onDragEnd}
                     selectionPropagation={selectionPropagation}
+                    multiSelect={multiSelect}
                     {...restOfProps}
                 />
             </ThemeProvider>

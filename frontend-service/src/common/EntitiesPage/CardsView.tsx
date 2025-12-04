@@ -89,7 +89,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                                     template,
                                     true,
                                     currentUserKartoffelId,
-                                    currentUser.units,
+                                    currentUser.usersUnitsWithInheritance,
                                     isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
                                 );
 

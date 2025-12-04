@@ -6,7 +6,7 @@ import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
-import { CustomDateTimePickerToolbar } from '../../common/inputs/JSONSchemaFormik/RjsfDatesWidgets';
+import { CustomDateTimePickerToolbar } from '../../common/inputs/JSONSchemaFormik/Widgets/RjsfDatesWidgets';
 import { environment } from '../../globals';
 
 const { dateTime, date: dateFormat } = environment.formats;

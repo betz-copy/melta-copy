@@ -15,7 +15,10 @@ import hexToARGB from './colors';
 import excelConfig from './excelConfig';
 import { isIncludedColumn, isIncludedEditColumn } from './getFunctions';
 
-const { dateTime, date: dateFormat } = config.formats;
+const {
+    formats: { dateTime, date: dateFormat },
+    excel: { or, and },
+} = config;
 
 interface IExcelStyle {
     columnHeader: {
@@ -70,18 +73,20 @@ const createWorkbook = async (fileName: string) => {
     };
 };
 
-const TypesToHebrew = (propertyTemplate: IEntitySingleProperty) => {
+const TypesToHebrew = (propertyTemplate: IEntitySingleProperty, unitsMap: Map<string, string>) => {
     const { propertyType } = excelConfig;
     const type = propertyType[propertyTemplate.format ?? propertyTemplate.type];
 
+    if (propertyTemplate.format === 'unitField') return `${propertyType.unitField}: ${[...unitsMap.values()].join(or)}`;
+
     if (type === propertyType.string) {
-        if (propertyTemplate.enum) return `${propertyType.enum}: ${propertyTemplate.enum.join('/ ')}`;
+        if (propertyTemplate.enum) return `${propertyType.enum}: ${propertyTemplate.enum.join(or)}`;
         if (propertyTemplate.pattern) return `${propertyType.regex}`;
     }
     if (type === propertyType.array && propertyTemplate.items) {
         if (propertyTemplate.items.format === 'user') return propertyType.users;
         if (propertyTemplate.items.format === 'fileId') return propertyType.files;
-        return `${propertyType.multiEnum}: ${propertyTemplate.items.enum?.join(', ')}`;
+        return `${propertyType.multiEnum}: ${propertyTemplate.items.enum?.join(and)}`;
     }
     return type;
 };
@@ -148,6 +153,7 @@ const createWorksheet = async (
     templateItem: TemplateItem,
     relatedTemplatesMap: Record<string, IMongoEntityTemplatePopulated>,
     requiredConstraints: string[],
+    unitsMap: Map<string, string>,
     displayColumns?: string[],
     headersOnly?: boolean,
 ) => {
@@ -181,9 +187,9 @@ const createWorksheet = async (
         cell.font = excelStyle.columnHeader.font;
         cell.alignment = excelStyle.columnHeader.alignment;
 
-        const type =
-            externalColumns.find(({ header }) => header === cell.value) ??
-            TypesToHebrew(Object.values(template.properties.properties).find((propertyTemplate) => propertyTemplate.title === cell.value)!);
+        const prop = Object.values(template.properties.properties).find(({ title }) => title === cell.value)!;
+
+        const type = externalColumns.find(({ header }) => header === cell.value) ?? TypesToHebrew(prop, unitsMap);
 
         cell.note = type;
         cell.fill = {
@@ -218,9 +224,9 @@ const userArrayCell = (cell: Excel.Cell, row: Record<string, any>, key: string, 
     const currentValue = row[key];
     cell.value = insertEntities
         ? Array.isArray(currentValue)
-            ? currentValue.join(', ')
+            ? currentValue.join(and)
             : currentValue
-        : currentValue.map((stringUser) => JSON.parse(stringUser).fullName).join(', ');
+        : currentValue.map((stringUser) => JSON.parse(stringUser).fullName).join(and);
 };
 
 const filesCell = (cell: Excel.Cell, isFileArray: boolean, rowIndex: number, value: string, workspaceId: string) => {
@@ -360,7 +366,7 @@ const styleAWorksheet = (
                                 };
                         }
                         // Check if value is multiple list
-                        if (value.type === 'array' && value.items?.type === 'string' && value.items.enum) cell.value = row[key].join(', ');
+                        if (value.type === 'array' && value.items?.type === 'string' && value.items.enum) cell.value = row[key].join(and);
                     }
                 }
             }

@@ -42,6 +42,7 @@ import { IRelationship } from '../../interfaces/relationships';
 import { ActionTypes, IAction, IActionPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
 import { IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
 import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
+import { IGetUnits } from '../../interfaces/units';
 import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { searchEntitiesOfTemplateClientSideRequest } from '../../services/clientSideService';
 import {
@@ -69,11 +70,20 @@ import { ResizeBox } from '../EntitiesPage/ResizeBox';
 import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
 import { ErrorToast } from '../ErrorToast';
 import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
-import { IGetUnits } from '../../interfaces/units';
 
 const { errorCodes } = environment;
 const { cacheBlockSize, maxConcurrentDatasourceRequests, actionPrefix, actionsWidth, rowCountInfiniteModeWithoutExpand } = environment.agGrid;
 const { columnWidths, columnsOrder, visibleColumns } = environment.agGrid.localStorage;
+
+export enum ExternalIdType {
+    chart = 'chart',
+    dashboard = 'dashboard',
+}
+
+export interface IExternalId {
+    id: string;
+    type: ExternalIdType;
+}
 
 export const defaultFilterModel = {
     disabled: {
@@ -111,6 +121,7 @@ export const getDatasource = <Data extends EntityData>(
     pageType?: string,
     clientSideUserEntityId?: string,
     childTemplatesOfParentIds?: string[],
+    externalId?: IExternalId,
 ): IServerSideDatasource => {
     const parentTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;
     const childTemplateIds = isChildTemplate(template) ? (childTemplatesOfParentIds ?? [template._id]) : [];
@@ -139,16 +150,16 @@ export const getDatasource = <Data extends EntityData>(
                               defaultFilter,
                           ),
                       )
-                    : searchEntitiesOfTemplateRequest(
-                          parentTemplateId,
-                          agGridToSearchEntitiesOfTemplateRequest(
+                    : searchEntitiesOfTemplateRequest(parentTemplateId, {
+                          ...agGridToSearchEntitiesOfTemplateRequest(
                               { ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest,
                               template,
                               // tableCount, // comment out  waiting for Itay
                               defaultFilter,
                           ),
                           childTemplateIds,
-                      ),
+                          externalId,
+                      }),
             );
 
             if (err || !data) {
@@ -184,6 +195,7 @@ export const getRowModelProps = <Data extends EntityData>(
     pageType?: string,
     clientSideUserEntityId?: string,
     childTemplatesOfParentIds?: string[],
+    externalId?: IExternalId,
     usePagination?: boolean,
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
     if (rowModelType === 'clientSide')
@@ -206,6 +218,7 @@ export const getRowModelProps = <Data extends EntityData>(
             pageType,
             clientSideUserEntityId,
             childTemplatesOfParentIds,
+            externalId,
         ),
         cacheBlockSize: rowModelType === 'serverSide' ? cacheBlockSize : undefined,
         pagination: rowModelType === 'serverSide',
@@ -260,6 +273,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
     actionsColumnWidth?: number;
     childTemplatesOfParent?: IChildTemplatePopulated[];
+    externalId?: IExternalId;
     scrollToId?: string;
     usePagination?: boolean;
 };
@@ -312,6 +326,7 @@ const EntitiesTableOfTemplate = forwardRef(
             setUpdatedTemplateIds,
             actionsColumnWidth,
             childTemplatesOfParent,
+            externalId,
             scrollToId,
             usePagination = true,
         }: EntitiesTableOfTemplateProps<Data>,
@@ -436,7 +451,7 @@ const EntitiesTableOfTemplate = forwardRef(
             return sortBy(
                 colState.filter((s) => Boolean(s.sort)),
                 (c) => c.sortIndex,
-            ).map((s) => ({ colId: s.colId, sort: s.sort! }))!;
+            ).map((s) => ({ colId: s.colId, sort: s.sort }));
         };
 
         const columnDefProps: IGetColumnDefsOptions<Data> = {
@@ -517,7 +532,7 @@ const EntitiesTableOfTemplate = forwardRef(
         const handleColumnVisible = (params: ColumnVisibleEvent<Data>) => {
             if (!saveStorageProps.shouldSaveVisibleColumns) return;
             if (params?.column?.getColId() && params.column.getColId() === 'disabled') {
-                const { disabled, ...rest } = params.api.getFilterModel();
+                const { disabled: _disabled, ...rest } = params.api.getFilterModel();
                 const filterModel = params.column.isVisible() ? rest : { ...rest, ...defaultFilterModel };
                 params.api.setFilterModel(filterModel);
             }
@@ -715,7 +730,12 @@ const EntitiesTableOfTemplate = forwardRef(
                 return gridRef.current!.api.getFilterModel();
             },
             getSortModel() {
-                return getSortModel();
+                return getSortModel()
+                    .filter((s) => s.sort)
+                    .map((s) => ({
+                        colId: s.colId,
+                        sort: s.sort as 'asc' | 'desc',
+                    }));
             },
             scrollIntoView() {
                 if (!tableRef.current) return;
@@ -752,6 +772,7 @@ const EntitiesTableOfTemplate = forwardRef(
                     saveStorageProps.pageType,
                     clientSideUserEntity?.properties?._id,
                     childTemplatesOfParentIds,
+                    externalId,
                     usePagination,
                 ),
             [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances, defaultFilter, childTemplatesOfParentIds, usePagination],
@@ -839,8 +860,14 @@ const EntitiesTableOfTemplate = forwardRef(
                         suppressAggFuncInHeader
                         onRowSelected={
                             onRowSelected
-                                ? ({ data, node }) => {
-                                      if (node.isSelected() && data) onRowSelected(data);
+                                ? ({ data, node, event }) => {
+                                      if (!node.isSelected() || !data) return;
+
+                                      const colId = (event?.target as HTMLElement)?.closest('[col-id]')?.getAttribute('col-id');
+
+                                      if (colId?.startsWith('actions')) return;
+
+                                      onRowSelected(data);
                                   }
                                 : undefined
                         }

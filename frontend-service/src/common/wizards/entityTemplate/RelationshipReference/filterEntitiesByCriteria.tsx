@@ -112,19 +112,21 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                         const fieldProperties: FieldOption[] = values.properties
                             .filter((item) => {
                                 const type = item.type === 'field' ? item.data.type : item.type;
+
                                 return (
                                     getFilterDateType(getPropertyType(type), type) ===
                                         getFilterDateType(selectedProperty.type, selectedProperty.format) && !notIncludedFormats.includes(type)
                                 );
                             })
-                            .map((item) => {
+                            .flatMap((item) => {
                                 if (item.type === 'field') {
                                     const { name, title } = item.data;
                                     return { option: name, label: title };
-                                } else {
-                                    const { name, displayName: title } = item;
-                                    return { option: name, label: title };
                                 }
+                                return item.fields.map(({ name, title }) => ({
+                                    option: name,
+                                    label: title,
+                                }));
                             });
 
                         const getFilterType = (): IAGGridFilter['filterType'] => {

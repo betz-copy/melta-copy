@@ -6,24 +6,13 @@ import {
 } from '../interfaces/childTemplate';
 import { IFilterGroup, IFilterOfTemplate, ISearchFilter } from '../interfaces/entity';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplate';
+import { IUser } from '../interfaces/user';
+import { isAdmin } from './permissions';
 
 const isChildTemplate = (
     template: IMongoEntityTemplatePopulated | IMongoChildTemplateWithConstraintsPopulated | IChildTemplatePopulated,
 ): template is IMongoChildTemplateWithConstraintsPopulated => {
     return 'parentTemplate' in template && Boolean(template.parentTemplate);
-};
-
-const getFilterFromChildTemplate = (childTemplate: IChildTemplatePopulated | IChildTemplate): ISearchFilter | undefined => {
-    const filterClauses: (IFilterOfTemplate | IFilterGroup)[] = [];
-
-    for (const [_key, prop] of Object.entries(childTemplate.properties.properties)) {
-        if (prop.filters) {
-            const parsed = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
-            if (parsed) filterClauses.push(parsed);
-        }
-    }
-
-    return filterClauses.length > 0 ? { $and: filterClauses } : undefined;
 };
 
 const parseFilterObject = (filters: any): any | null => {
@@ -96,4 +85,29 @@ const childTemplateKeys: (keyof IChildTemplate)[] = [
     'filterByUnitUserField',
 ];
 
-export { dePopulateChildProperties, getChildPropertiesFiltered, getFilterFromChildTemplate, childTemplateKeys, isChildTemplate };
+const getDefaultFilterFromChildTemplate = (
+    template: IChildTemplatePopulated,
+    currentUser: IUser,
+    workspace: { id: string; hierarchyIds: string[] },
+): ISearchFilter | undefined => {
+    const filterClauses: (IFilterOfTemplate | IFilterGroup)[] = [];
+    const isUserAdmin = isAdmin(currentUser?.permissions, workspace.hierarchyIds);
+
+    Object.entries(template.properties.properties).forEach(([key, prop]) => {
+        if (template.isFilterByCurrentUser && template.filterByCurrentUserField === key)
+            filterClauses.push({ [key]: { $eq: currentUser.kartoffelId } });
+
+        const units = currentUser.units?.[workspace.id];
+        if (template.isFilterByUserUnit && units && !isUserAdmin && template.filterByUnitUserField === key)
+            filterClauses.push({ [key]: { $in: units } });
+
+        if (prop.filters) {
+            const parsed = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
+            if (parsed) filterClauses.push(parsed);
+        }
+    });
+
+    return filterClauses.length ? { $and: filterClauses } : undefined;
+};
+
+export { dePopulateChildProperties, getChildPropertiesFiltered, childTemplateKeys, isChildTemplate, getDefaultFilterFromChildTemplate };

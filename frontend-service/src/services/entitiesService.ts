@@ -3,8 +3,9 @@ import { mapValues } from 'lodash';
 import axios from '../axios';
 import { EntityWizardValues } from '../common/dialogs/entity';
 import { IUpdateMultipleEntitiesResponse } from '../common/EntitiesPage/MultiSelectStatusBar';
+import { IExternalId } from '../common/EntitiesTableOfTemplate';
 import urlToFile from '../common/fileConversions';
-import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
+import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
 import { environment } from '../globals';
 import { IAxisField } from '../interfaces/charts';
 import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
@@ -165,7 +166,7 @@ export const getExpandedEntityByIdRequest = async (
     const { data } = await axios.post<IEntityExpanded>(`${entities}/expanded/${entityId}`, {
         ...options,
         expandedParams,
-        filters: combineFilters(filters['filter'],childTemplateFilters ),
+        filters: combineFilters(filters['filter'], childTemplateFilters),
     });
     return data;
 };
@@ -500,8 +501,11 @@ export const deleteEntityRequest = async (deleteBody: IDeleteEntityBody) => {
     return data;
 };
 
-export const searchEntitiesOfTemplateRequest = async (templateId: string, searchBody: ISearchEntitiesOfTemplateBody, childTemplateId?: string[]) => {
-    const { data } = await axios.post<ISearchResult>(`${entities}/search/template/${templateId}`, { ...searchBody, childTemplateId });
+export const searchEntitiesOfTemplateRequest = async (
+    templateId: string,
+    searchBody: ISearchEntitiesOfTemplateBody & { childTemplateIds?: string[]; externalId?: IExternalId },
+) => {
+    const { data } = await axios.post<ISearchResult>(`${entities}/search/template/${templateId}`, searchBody);
     return data;
 };
 

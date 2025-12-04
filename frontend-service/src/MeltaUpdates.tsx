@@ -3,7 +3,6 @@ import { Box, Button, Dialog, DialogActions, DialogContent, Grid, Typography, us
 import i18next from 'i18next';
 import React from 'react';
 import Confetti from 'react-confetti';
-import ReactDOM from 'react-dom';
 import MeltaTooltip from './common/MeltaDesigns/MeltaTooltip';
 import { useDarkModeStore } from './stores/darkMode';
 
@@ -29,24 +28,29 @@ const MeltaUpdates: React.FC<MeltaUpdatesProps> = ({ open, handleClose, meltaUpd
         <>
             {open && <Confetti />}
 
-            {open &&
-                ReactDOM.createPortal(
-                    <Box
-                        component="img"
-                        src="/icons/melta-updates.svg"
-                        sx={{
-                            position: 'fixed',
-                            top: 'calc(50% - 210px)',
-                            right: 'calc(50% + 86px)',
-                            width: 170,
-                            zIndex: 2000,
-                            pointerEvents: 'none',
-                        }}
-                    />,
-                    document.body,
-                )}
-
-            <Dialog open={open} onClose={handleClose}>
+            <Dialog
+                open={open}
+                onClose={handleClose}
+                slotProps={{
+                    paper: {
+                        sx: {
+                            overflow: 'visible',
+                        },
+                    },
+                }}
+            >
+                <Box
+                    component="img"
+                    src="/icons/melta-updates.svg"
+                    sx={{
+                        position: 'absolute',
+                        width: 170,
+                        zIndex: 2000,
+                        pointerEvents: 'none',
+                        top: '-24px',
+                        left: '-17px',
+                    }}
+                />
                 <DialogContent
                     sx={{
                         minWidth: '480px',

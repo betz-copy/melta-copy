@@ -148,6 +148,11 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return lodashUniqby([...bySource, ...byDestination], '_id');
     }
 
+    async getAllowedRelationshipTemplatesIds(entityTemplateIds: string[]): Promise<string[]> {
+        const allowedRelationshipTemplates = await this.getAllowedRelationshipTemplates(entityTemplateIds);
+        return allowedRelationshipTemplates.map(({ _id }) => _id);
+    }
+
     async getAllowedTemplatesAndRules(entityTemplateIds: string[], relationshipTemplates: IMongoRelationshipTemplate[], userId: string) {
         const allowedEntityTemplatesIdsByOneRelationship = this.getAllEntityTemplateThatAreOneRelationshipAwayFromUsersPermissions(
             relationshipTemplates,
@@ -356,15 +361,15 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const updatedPermissions = permissionsOfUserId.admin
             ? permissionsOfUserId
             : {
-                ...permissionsOfUserId,
-                instances: {
-                    ...permissionsOfUserId.instances,
-                    categories: {
-                        ...permissionsOfUserId.instances?.categories,
-                        [category._id]: { scope: PermissionScope.write, entityTemplates: {} },
-                    },
-                },
-            };
+                  ...permissionsOfUserId,
+                  instances: {
+                      ...permissionsOfUserId.instances,
+                      categories: {
+                          ...permissionsOfUserId.instances?.categories,
+                          [category._id]: { scope: PermissionScope.write, entityTemplates: {} },
+                      },
+                  },
+              };
 
         await UsersManager.syncUserPermissions(userId, RelatedPermission.User, {
             [this.workspaceId]: updatedPermissions,
@@ -407,7 +412,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         await UsersManager.deletePermissionsFromMetadata(
             { workspaceId: this.workspaceId, type: PermissionType.instances },
             { instances: { categories: { [id]: null } } },
-        ).catch(() => { });
+        ).catch(() => {});
     }
 
     async updateCategory(id: string, updatedData: Partial<ICategory> & { file?: string }, file?: UploadedFile) {
@@ -1074,8 +1079,9 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & {
             file?: string;
         },
+        userId: string,
     ) {
-        const entities = await this.instanceManager.getAllTemplateEntities(templateId);
+        const entities = await this.instanceManager.getAllTemplateEntities(templateId, userId);
 
         const usersIds = new Set<string>();
         entities.forEach((entity) => {
@@ -1102,7 +1108,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
                 if (userId && userKey) {
                     const kartoffelUser = kartoffelUsersMapById[userId] ? kartoffelUsersMapById[userId][0] : undefined;
-                    if (kartoffelUser && kartoffelUser[expandedUserFieldValue.expandedUserField?.kartoffelField || '']) {
+                    if (kartoffelUser?.[expandedUserFieldValue.expandedUserField?.kartoffelField || '']) {
                         wasEntityChange = true;
                         entityToUpdate.properties[expandedUserFieldKey] =
                             kartoffelUser[expandedUserFieldValue.expandedUserField?.kartoffelField || ''].toString();
@@ -1242,9 +1248,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         await this.deletePropertyOfEntityTemplate(id, count, removedProperties, currTemplate);
 
-        if (newExpandedUserFields.length)
-            await this.updateInstancesWithUserFields(id, newExpandedUserFields, updatedTemplateData);
-
+        if (newExpandedUserFields.length) await this.updateInstancesWithUserFields(id, newExpandedUserFields, updatedTemplateData, userId);
 
         try {
             if (propertiesKeysToPluralize.length > 0) await this.instancesService.convertFieldsToPlural(id, propertiesKeysToPluralize);
@@ -1323,6 +1327,10 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const parentWithConstraints = this.populateTemplateConstraints(parentTemplate, currRequired, currUnique);
 
         return this.populateTemplateConstraints({ ...updatedChild, parentTemplate: parentWithConstraints }, requiredConstraints, uniqueConstraints);
+    }
+
+    async getChildTemplateById(id: string) {
+        return this.entityTemplateService.getChildTemplateById(id);
     }
 
     private checkValidAmountOfArchiveProperties(updatedTemplateProperties: Record<string, IEntitySingleProperty>) {
@@ -1409,7 +1417,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         if (!templateWithoutProperties.properties.properties[values.name].items)
             templateWithoutProperties.properties.properties[values.name].enum = templateEnumFieldValues;
         const { items } = templateWithoutProperties.properties.properties[values.name];
-        if (items && items.enum) {
+        if (items?.enum) {
             items.enum = templateEnumFieldValues;
         }
         try {
@@ -1507,7 +1515,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     }
 
     private async checkFieldValueUsage(id: string, fieldValue: string, fieldName: string, fieldType: string): Promise<void> {
-        const data = await this.instancesService.getIfValuefieldIsUsed(id, fieldValue, fieldName, fieldType);
+        const data = await this.instancesService.getIfValueFieldIsUsed(id, fieldValue, fieldName, fieldType);
         const cantDeleteFieldValue = Boolean(data);
         if (cantDeleteFieldValue) throw new BadRequestError('cant remove used values');
     }
