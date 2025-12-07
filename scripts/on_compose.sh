@@ -22,7 +22,7 @@ if [ "$MODE" == "nodemon" ]; then
         --profile common \
         --profile nodemon \
         "$@"
-elif [ "$MODE" == "normal" ]; then 
+elif [ "$MODE" == "start" ]; then 
     # Normal mode: Include only base and development config files
     $DOCKER_COMPOSE_CMD \
         -f docker-compose.yml \

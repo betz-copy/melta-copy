@@ -12,8 +12,8 @@ if [ "$MODE" == "nodemon" ]; then
 
 else
     # normal mode: Start services, then restart Nginx.
-    bash "$(dirname "$0")/on_compose.sh" normal up -d --build "$@"
+    bash "$(dirname "$0")/on_compose.sh" start up -d --build "$@"
     
     # Ensure Nginx is restarted to load services
-    bash "$(dirname "$0")/on_compose.sh" normal restart nginx
+    bash "$(dirname "$0")/on_compose.sh" start restart nginx
 fi
