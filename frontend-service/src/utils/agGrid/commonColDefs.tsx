@@ -60,26 +60,25 @@ const hasErrors = (data: any): data is IFailedEntity =>
 const isPropertyInvalid = <Data extends IColDefData>(props: ICellRendererParams<Data, any | undefined>, property: string, ignoreType = false) => {
     if (!ignoreType || !hasErrors(props.data)) return undefined;
 
-    return props.data.errors
-        .filter((error) => !isEmpty(error.metadata))
-        .find((error) => {
-            switch (error.type) {
-                case ActionErrors.required:
-                    return (error.metadata as IRequiredConstraint).property.split('.').filter(Boolean)[0] === property;
-                case ActionErrors.unique:
-                    return (error.metadata as IUniqueConstraint).properties.some(
-                        (errorProperty) => errorProperty.split('.').filter(Boolean)[0] === property,
-                    );
-                case ActionErrors.validation:
-                    return (error.metadata as IValidationError)?.path.split('/').filter(Boolean)[0] === property;
-                case ActionErrors.notFound: {
-                    return (error.metadata as INotFoundError).property === property;
-                }
-                default:
-                    break;
+    return props.data.errors.find((error) => {
+        if (!isEmpty(error.metadata)) return false;
+        switch (error.type) {
+            case ActionErrors.required:
+                return (error.metadata as IRequiredConstraint).property.split('.').filter(Boolean)[0] === property;
+            case ActionErrors.unique:
+                return (error.metadata as IUniqueConstraint).properties.some(
+                    (errorProperty) => errorProperty.split('.').filter(Boolean)[0] === property,
+                );
+            case ActionErrors.validation:
+                return (error.metadata as IValidationError)?.path.split('/').filter(Boolean)[0] === property;
+            case ActionErrors.notFound: {
+                return (error.metadata as INotFoundError).property === property;
             }
-            return undefined;
-        });
+            default:
+                break;
+        }
+        return undefined;
+    });
 };
 
 const errorColDef = <Data extends IColDefData>(
