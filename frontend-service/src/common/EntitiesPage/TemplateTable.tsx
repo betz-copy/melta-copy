@@ -195,9 +195,12 @@ const TemplateTable = forwardRef<
                 const relatedTemplateId = property.relationshipReference?.relatedTemplateId;
                 const relatedTemplate = entityTemplates.get(relatedTemplateId!);
 
-                if (!relatedTemplate) return `${hebrewPrefix}.doesntHavePermissionToRelatedTemplate`;
+                if (!relatedTemplate) {
+                    if (isRequiredProperty) return `${hebrewPrefix}.doesntHavePermissionToRelatedTemplate`;
+                    else continue;
+                }
 
-                const hasIdentifier = Object.values(relatedTemplate.properties?.properties ?? {}).some((prop) => !!prop.identifier);
+                const hasIdentifier = Object.values(relatedTemplate?.properties?.properties ?? {}).some((prop) => !!prop.identifier);
 
                 if (!hasIdentifier && isRequiredProperty) return `${hebrewPrefix}.requiredRelationshipRef`;
             }

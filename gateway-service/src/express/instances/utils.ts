@@ -47,7 +47,7 @@ class InstancesUtils extends DefaultController {
                 case 'relationshipReference': {
                     const { relatedTemplateId } = prop.relationshipReference!;
                     if (!relationshipRefs[relatedTemplateId]) relationshipRefs[relatedTemplateId] = [];
-                    relationshipRefs[relatedTemplateId].push(value);
+                    if (value) relationshipRefs[relatedTemplateId].push(value);
                     break;
                 }
             }

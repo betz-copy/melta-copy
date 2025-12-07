@@ -157,7 +157,10 @@ export const showRelationshipRefColumn = (
 
     const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId;
     const relatedTemplate = relatedTemplatesMap[relatedTemplateId!];
-    const identifierField = Object.entries(relatedTemplate!.properties.properties).find(([_key, value]) => value.identifier)?.[0];
+
+    if (!relatedTemplate) return false;
+
+    const identifierField = Object.entries(relatedTemplate?.properties.properties).find(([_key, value]) => value.identifier)?.[0];
     const isRequiredProperty = requiredConstraints?.includes(propertyKey);
 
     return !!(identifierField || isRequiredProperty);
