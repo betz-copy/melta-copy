@@ -6,12 +6,13 @@ import i18next from 'i18next';
 import { CustomIcon } from '../../common/CustomIcon';
 import { Hive as HiveIcon } from '@mui/icons-material';
 import { ICategoryMap } from '../../interfaces/categories';
-import { ConnectionsTable, INestedRelationshipTemplates } from '.';
+import { INestedRelationshipTemplates } from '.';
 import { useQueryClient } from 'react-query';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { IEntityExpanded } from '../../interfaces/entities';
 import { IChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { ConnectionsTable } from './ConnectionsTable';
 interface EntityConnectionsProps {
     currentEntityTemplate: IMongoEntityTemplatePopulated;
     templateIds: string[];

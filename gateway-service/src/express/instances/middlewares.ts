@@ -72,6 +72,7 @@ class InstancesValidator extends DefaultController {
         const relationshipRefs: Record<string, string[]> = {};
         const users: string[] = [];
         const multiUsers: string[] = [];
+        let isTwinTemplateInTransfer: boolean = false;
 
         Object.entries(properties).forEach(([key, value]) => {
             const prop = template.properties.properties[key];
@@ -84,11 +85,16 @@ class InstancesValidator extends DefaultController {
                     if (value) users.push(JSON.parse(value)._id);
                     break;
                 case 'relationshipReference': {
-                    // biome-ignore lint/style/noNonNullAssertion: types are bad
-                    const { relatedTemplateId } = prop.relationshipReference!;
-                    if (!relationshipRefs[relatedTemplateId]) relationshipRefs[relatedTemplateId] = [];
-                    relationshipRefs[relatedTemplateId].push(value);
-                    break;
+                    if (value !== '$twin') {
+                        // biome-ignore lint/style/noNonNullAssertion: types are bad
+                        const { relatedTemplateId } = prop.relationshipReference!;
+                        if (!relationshipRefs[relatedTemplateId]) relationshipRefs[relatedTemplateId] = [];
+                        relationshipRefs[relatedTemplateId].push(value);
+                        break;
+                    } else {
+                        isTwinTemplateInTransfer = true;
+                        break;
+                    }
                 }
             }
 
@@ -100,7 +106,7 @@ class InstancesValidator extends DefaultController {
         if (units.length) {
             const fullUnits = await UserService.getUnitsByIds(units);
 
-            if (fullUnits.length !== units.length) throw new ValidationError('some units are not existing');
+            if (fullUnits.length !== units.length -(isTwinTemplateInTransfer ? 1 :0)) throw new ValidationError('some units are not existing');
         }
 
         if (Object.entries(relationshipRefs).length) {

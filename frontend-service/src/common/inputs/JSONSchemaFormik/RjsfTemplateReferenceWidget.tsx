@@ -95,7 +95,6 @@ const RjsfTemplateReferenceWidget = ({
             isTwinTransfer={Boolean(shouldLinkWallets && fieldName === template.walletTransfer.to)}
             currentEntity={(values as EntityWizardValues).properties}
             helperText={required && noRelationPermission ? i18next.t('templateEntitiesAutocomplete.noWritePermissions') : undefined}
-
         />
     );
 };
