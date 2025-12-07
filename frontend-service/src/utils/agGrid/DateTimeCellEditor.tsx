@@ -7,9 +7,10 @@ import { he } from 'date-fns/locale';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { CustomDateTimePickerToolbar } from '../../common/inputs/JSONSchemaFormik/Widgets/RjsfDatesWidgets';
-import { DATE_PICKER_VIEWS, environment } from '../../globals';
+import { environment } from '../../globals';
 
 const { dateTime, date: dateFormat } = environment.formats;
+const { datePickerViews } = environment;
 
 interface DateTimeCellEditorProps {
     value: string | Date | null;
@@ -58,7 +59,7 @@ const DateTimeCellEditor: React.FC<DateTimeCellEditorProps> = ({ value, onValueC
                         onChange={handleDateChange}
                         format={dateFormat}
                         enableAccessibleFieldDOMStructure={false}
-                        views={DATE_PICKER_VIEWS}
+                        views={datePickerViews}
                         slots={{ toolbar: CustomDateTimePickerToolbar, textField: (params) => <TextField {...params} /> }}
                         slotProps={{
                             actionBar: { actions: ['clear', 'cancel', 'accept'] },
