@@ -10,9 +10,11 @@ import {
     IFailedEntity,
     IFailedEntityError,
     IMongoEntityTemplatePopulated,
+    IValidationError,
     IWorkspace,
     ServiceError,
     UploadedFile,
+    ValidationError,
 } from '@microservices/shared';
 import { AxiosError } from 'axios';
 import { StatusCodes } from 'http-status-codes';
@@ -67,13 +69,24 @@ export const classifyEntityErrors = (
             properties,
             errors: fixedErrors,
         });
+        return;
     }
 
-    if (error instanceof ServiceError && error.code === StatusCodes.NOT_FOUND)
+    if (error instanceof ServiceError && error.code === StatusCodes.NOT_FOUND) {
         failedEntities.push({
             properties,
             errors: [{ type: ActionErrors.notFound, metadata: error.metadata as IExcelNotFoundError }],
         });
+        return;
+    }
+
+    if (error instanceof ValidationError) {
+        failedEntities.push({
+            properties,
+            errors: [{ type: ActionErrors.validation, metadata: error.metadata as IValidationError }],
+        });
+        return;
+    }
 
     if (error instanceof AxiosError) {
         if (!error.response) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'no error. response in axiosError', error);
@@ -117,10 +130,13 @@ export const classifyEntityErrors = (
                 default:
                     break;
             }
+            return;
         }
 
-        if (data.type === errorCodes.templateValidationError || data.type === 'FilterValidationError')
+        if (data.type === errorCodes.templateValidationError || data.type === 'FilterValidationError') {
             getValidationErrorEntities(error as AxiosError, failedEntities, originalEntity);
+            return;
+        }
     } else if ((error as IBrokenRulesError).metadata?.errorCode === errorCodes.ruleBlock) {
         allBrokenRulesEntities.push({
             brokenRules: error.metadata.brokenRules,
@@ -143,5 +159,12 @@ export const classifyEntityErrors = (
                 },
             ],
         });
+
+        return;
     }
+
+    failedEntities.push({
+        properties,
+        errors: [{ type: ActionErrors.validation, metadata: error.metadata }],
+    });
 };

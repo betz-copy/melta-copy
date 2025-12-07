@@ -12,6 +12,7 @@ import {
 import { PriorityHigh } from '@mui/icons-material';
 import { Box, Grid, Tooltip, tooltipClasses } from '@mui/material';
 import i18next from 'i18next';
+import { isEmpty } from 'lodash';
 import { EntityWizardValues } from '../../common/dialogs/entity';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
@@ -59,24 +60,26 @@ const hasErrors = (data: any): data is IFailedEntity =>
 const isPropertyInvalid = <Data extends IColDefData>(props: ICellRendererParams<Data, any | undefined>, property: string, ignoreType = false) => {
     if (!ignoreType || !hasErrors(props.data)) return undefined;
 
-    return props.data.errors.find((error) => {
-        switch (error.type) {
-            case ActionErrors.required:
-                return (error.metadata as IRequiredConstraint).property.split('.').filter(Boolean)[0] === property;
-            case ActionErrors.unique:
-                return (error.metadata as IUniqueConstraint).properties.some(
-                    (errorProperty) => errorProperty.split('.').filter(Boolean)[0] === property,
-                );
-            case ActionErrors.validation:
-                return (error.metadata as IValidationError).path.split('/').filter(Boolean)[0] === property;
-            case ActionErrors.notFound: {
-                return (error.metadata as INotFoundError).property === property;
+    return props.data.errors
+        .filter((error) => !isEmpty(error.metadata))
+        .find((error) => {
+            switch (error.type) {
+                case ActionErrors.required:
+                    return (error.metadata as IRequiredConstraint).property.split('.').filter(Boolean)[0] === property;
+                case ActionErrors.unique:
+                    return (error.metadata as IUniqueConstraint).properties.some(
+                        (errorProperty) => errorProperty.split('.').filter(Boolean)[0] === property,
+                    );
+                case ActionErrors.validation:
+                    return (error.metadata as IValidationError)?.path.split('/').filter(Boolean)[0] === property;
+                case ActionErrors.notFound: {
+                    return (error.metadata as INotFoundError).property === property;
+                }
+                default:
+                    break;
             }
-            default:
-                break;
-        }
-        return undefined;
-    });
+            return undefined;
+        });
 };
 
 const errorColDef = <Data extends IColDefData>(
