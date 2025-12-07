@@ -27,6 +27,7 @@ import {
 } from '../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
+import { IRelationshipTemplate } from '../interfaces/relationshipTemplates';
 import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
 import { combineFilters } from '../utils/filters';
@@ -150,20 +151,21 @@ export const editManyEntitiesByExcelRequest = async (
     return data;
 };
 
-export const getExpandedEntityByIdRequest = async (
+export const getExpandedEntityByIdRequest = async <T extends boolean>(
     entityId: string,
     expandedParams: Record<string, { minLevel?: number; maxLevel: number }>,
     options?: {
         disabled?: boolean;
         templateIds: string[];
         childTemplateId?: string;
+        isOnlyTemplateIds: T;
     },
     filterRecord: IGraphFilterBodyBatch = {},
     childTemplateFilters?: ISearchFilter,
-) => {
+): Promise<T extends true ? IRelationshipTemplate[] : IEntityExpanded> => {
     const filters = filterModelToFilterOfGraph(filterRecord);
 
-    const { data } = await axios.post<IEntityExpanded>(`${entities}/expanded/${entityId}`, {
+    const { data } = await axios.post<T extends true ? IRelationshipTemplate[] : IEntityExpanded>(`${entities}/expanded/${entityId}`, {
         ...options,
         expandedParams,
         filters: combineFilters(filters['filter'], childTemplateFilters),

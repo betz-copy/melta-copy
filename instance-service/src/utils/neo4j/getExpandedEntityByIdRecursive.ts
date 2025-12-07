@@ -1,11 +1,23 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-await-in-loop */
-import { IEntityExpanded, IMongoEntityTemplate } from '@microservices/shared';
+import { IMongoEntityTemplate, ISearchBatchBody } from '@microservices/shared';
 import { IGetExpandedEntityBody } from '../../express/entities/interface';
-import Neo4jClient from '.';
-import { normalizeReturnedRelAndEntities } from './lib';
 import { templatesFilterToNeoQuery } from './searchBodyToNeoQuery';
 
+const fixFilters = (
+    filters: IGetExpandedEntityBody['filters'],
+    templateIds: IGetExpandedEntityBody['templateIds'],
+): ISearchBatchBody['templates'] => {
+    return templateIds.reduce(
+        (acc, templateId) => ({
+            ...acc,
+            [templateId]: filters?.[templateId] ?? {},
+        }),
+        {},
+    );
+};
+
+// TODO: Docs
 export const expandEntityToNeoQuery = async (
     filters: IGetExpandedEntityBody['filters'],
     entityId: string,
@@ -13,83 +25,51 @@ export const expandEntityToNeoQuery = async (
     expandedParams: IGetExpandedEntityBody['expandedParams'],
     entityTemplatesMap: Map<string, IMongoEntityTemplate>,
     mainId: string,
+    disabled: boolean | null,
+    isOnlyTemplateIds?: boolean,
 ) => {
-    const templateIdsWithFilter = Object.keys(filters);
-    const emptyFilters = templateIds?.filter((templateId) => !templateIdsWithFilter.includes(templateId));
-    const mappedRecords: IGetExpandedEntityBody['filters'] = emptyFilters?.reduce((acc: any, currentId) => {
-        // eslint-disable-next-line no-param-reassign
-        acc[currentId] = {};
-        return acc;
-    }, {});
-    const fullFilters = { ...mappedRecords, ...filters };
+    const fullFilters = fixFilters(filters, templateIds);
     const filterQuery = templatesFilterToNeoQuery(fullFilters, entityTemplatesMap);
+
     const filterCypherQuery = Object.keys(filters).length
-        ? `WHERE apoc.meta.cypher.type(node) = "RELATIONSHIP" OR ${filterQuery.cypherQuery} OR node._id ='${mainId}' `
+        ? `WHERE apoc.meta.cypher.type(node) = "RELATIONSHIP" 
+           OR ${filterQuery.cypherQuery} 
+           OR node._id = '${mainId}'`
         : '';
 
+    // TODO: move into fixFilters
+    const disabledFilter = typeof disabled === 'boolean' ? `AND ALL(n IN nodes(path)[1..] WHERE n.disabled = $disabled)` : '';
+
+    const returnBlock = isOnlyTemplateIds
+        ? `
+            WITH path,
+                 relationships(path) AS rels
+            WITH rels, [r IN rels | type(r)] AS relationshipIds, length(path) AS pathLength
+            RETURN relationshipIds
+          `
+        : `
+            RETURN elementsOfPath
+          `;
+
     return {
-        cypherQuery: `MATCH (p {_id:'${entityId}'})
-                        CALL apoc.path.expandConfig(p, {
-                       labelFilter: '${templateIds.join('|')}',
-                       minLevel: ${expandedParams[entityId].minLevel || 0},
-                       maxLevel: ${expandedParams[entityId].maxLevel || 1}
-                    })
-                    YIELD path
-                    with apoc.path.elements(path) as elementsOfPath
-                    with *, [node in elementsOfPath ${filterCypherQuery} | node] as filteredElementsOfPath
-                    where size(filteredElementsOfPath) = size(elementsOfPath)
-                    RETURN elementsOfPath`,
-        parameters: { ...filterQuery.parameters },
+        cypherQuery: `
+             MATCH (p {_id:'${entityId}'})
+            CALL apoc.path.spanningTree(p, {
+                labelFilter: '${templateIds.join('|')}',
+                minLevel: ${expandedParams[entityId].minLevel || 0},
+                maxLevel: ${expandedParams[entityId].maxLevel || 1}
+            })
+            YIELD path
+            WITH apoc.path.elements(path) AS elementsOfPath, path
+            WITH elementsOfPath, path,
+                 [node IN elementsOfPath ${filterCypherQuery} | node] AS filteredElementsOfPath
+            WHERE size(filteredElementsOfPath) = size(elementsOfPath)
+            ${disabledFilter}
+            ${returnBlock}
+        `,
+        parameters: {
+            ...filterQuery.parameters,
+            ...(typeof disabled === 'boolean' ? { disabled } : {}),
+        },
     };
-};
-
-export const getExpandedFilteredGraphRecursively = async (
-    neo4jClient: Neo4jClient,
-    disabled: IGetExpandedEntityBody['disabled'],
-    initialExpandedEntity: IEntityExpanded,
-    searchBody: IGetExpandedEntityBody['filters'],
-    templateIds: IGetExpandedEntityBody['templateIds'],
-    expandedParams: IGetExpandedEntityBody['expandedParams'],
-    entityTemplatesMap: Map<string, IMongoEntityTemplate>,
-): Promise<IEntityExpanded> => {
-    const initialExpandedEntityId = initialExpandedEntity.entity.properties._id;
-    const existingConnectionIds = new Set<string>(initialExpandedEntity.connections.map((connection) => connection.relationship.properties._id));
-    const expanded = new Set<string>([initialExpandedEntityId]);
-
-    const connections = [...initialExpandedEntity.connections];
-
-    const entityIdsToExpand: string[] = initialExpandedEntity.connections
-        .map(({ sourceEntity, destinationEntity }) => {
-            const otherEntity = initialExpandedEntityId === sourceEntity.properties._id ? destinationEntity : sourceEntity;
-            return otherEntity.properties._id;
-        })
-        .filter((otherEntityId) => expandedParams[otherEntityId]?.maxLevel && !expanded.has(otherEntityId));
-
-    for (const entityIdToExpand of entityIdsToExpand) {
-        const searchCypherQuery = await expandEntityToNeoQuery(
-            searchBody,
-            entityIdToExpand,
-            templateIds,
-            expandedParams,
-            entityTemplatesMap,
-            initialExpandedEntityId,
-        );
-        const currFilteredExpandedEntity = await neo4jClient.readTransaction(
-            searchCypherQuery.cypherQuery,
-            normalizeReturnedRelAndEntities(disabled),
-            searchCypherQuery.parameters,
-        );
-        if (currFilteredExpandedEntity) {
-            currFilteredExpandedEntity.connections.forEach((newConnection) => {
-                if (!existingConnectionIds.has(newConnection.relationship.properties._id)) connections.push(newConnection);
-            });
-            expanded.add(entityIdToExpand);
-            currFilteredExpandedEntity.connections.forEach(({ sourceEntity, destinationEntity }) => {
-                const otherEntity = entityIdToExpand === sourceEntity.properties._id ? destinationEntity : sourceEntity;
-                const otherEntityId = otherEntity.properties._id;
-                if (expandedParams[otherEntityId]?.maxLevel && !expanded.has(otherEntityId)) entityIdsToExpand.push(otherEntityId);
-            });
-        }
-    }
-    return { entity: initialExpandedEntity.entity, connections };
 };

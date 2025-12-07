@@ -24,6 +24,7 @@ import {
     IEntityWithDirectRelationships,
     IGetUnits,
     IMongoEntityTemplate,
+    IMongoRelationshipTemplate,
     IMongoRule,
     IMultipleSelect,
     IRelationship,
@@ -67,11 +68,12 @@ import { executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/exe
 import isBodyFunctionHasContent from '../../utils/actions/isBodyFunctionHasContent';
 import filteredMap from '../../utils/filteredMap';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
-import { expandEntityToNeoQuery, getExpandedFilteredGraphRecursively } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
+import { expandEntityToNeoQuery } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
 import {
     generateDefaultProperties,
     getNeo4jDateTime,
     getNeo4jLocation,
+    isTemplateOnly,
     normalizeChartResponse,
     normalizeFields,
     normalizeGetDbConstraints,
@@ -1088,48 +1090,54 @@ class EntityManager extends DefaultManagerNeo4j {
         return this.neo4jClient.readTransaction(`MATCH (e) WHERE e._id IN $ids RETURN e`, normalizeReturnedEntity('multipleResponses'), { ids });
     }
 
-    async getExpandedEntityById(id: string, disabled: boolean | null, templateIds: string[], numOfConnections: number) {
+    // TODO: Delete?
+    async getExpandedEntityById(id: string, _disabled: boolean | null, templateIds: string[], numOfConnections: number) {
         await this.neo4jClient.readTransaction(
             `MATCH (p {_id:'${id}'})
-             CALL apoc.path.expandConfig(p, {
+             CALL apoc.path.spanningTree(p, {
                 labelFilter: '${templateIds.join('|')}',
                 minLevel: 0,
                 maxLevel: ${numOfConnections}
              })
              YIELD path
              RETURN apoc.path.elements(path)`,
-            normalizeReturnedRelAndEntities(disabled),
+            normalizeReturnedRelAndEntities(),
         );
     }
 
-    async getExpandedGraphById(id: string, reqBody: IGetExpandedEntityBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>, userId: string) {
-        const { disabled, templateIds, expandedParams, filters } = reqBody;
+    async getExpandedGraphById(
+        id: string,
+        reqBody: IGetExpandedEntityBody,
+        entityTemplatesMap: Map<string, IMongoEntityTemplate>,
+        relationShipMap: Map<string, IMongoRelationshipTemplate>,
+        userId: string,
+    ) {
+        const { disabled, templateIds, expandedParams, filters, isOnlyTemplateIds } = reqBody;
         const fixSearchBody = filters ?? {};
 
         const childTemplates = await this.childTemplateManagerService.searchChildTemplates();
         const templateIdsWithChildren = Array.from(new Set([...templateIds, ...childTemplates.map(({ parentTemplate: { _id } }) => _id)]));
 
-        const initialCypherQuery = await expandEntityToNeoQuery(fixSearchBody, id, templateIdsWithChildren, expandedParams, entityTemplatesMap, id);
+        const initialCypherQuery = await expandEntityToNeoQuery(
+            fixSearchBody,
+            id,
+            templateIdsWithChildren,
+            expandedParams,
+            entityTemplatesMap,
+            id,
+            disabled,
+            isOnlyTemplateIds,
+        );
 
         const initialExpandedEntity = await this.neo4jClient.readTransaction(
             initialCypherQuery.cypherQuery,
-            normalizeReturnedRelAndEntities(disabled),
+            isOnlyTemplateIds ? isTemplateOnly(relationShipMap) : normalizeReturnedRelAndEntities(),
             initialCypherQuery.parameters,
         );
 
         if (!initialExpandedEntity) throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
 
         if (JSON.stringify(expandedParams) === '{}') return initialExpandedEntity;
-
-        const filterRes = await getExpandedFilteredGraphRecursively(
-            this.neo4jClient,
-            disabled || null,
-            initialExpandedEntity,
-            fixSearchBody,
-            templateIdsWithChildren,
-            expandedParams,
-            entityTemplatesMap,
-        );
 
         await this.activityLogProducer.createActivityLog({
             action: ActionsLog.VIEW_ENTITY,
@@ -1139,7 +1147,7 @@ class EntityManager extends DefaultManagerNeo4j {
             userId,
         });
 
-        return filterRes;
+        return initialExpandedEntity;
     }
 
     async deleteRelationshipReferenceInTransaction({
@@ -1781,7 +1789,7 @@ class EntityManager extends DefaultManagerNeo4j {
             const actions = await this.buildActionsArray(IEntityCrudAction.onUpdateEntity, entityProperties, template, userId, unPopulatedEntity);
 
             const bulkManager = new BulkActionManager(this.workspaceId);
-            const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
+            const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId); //
             const updatedEntity = await this.getEntityById(results.instances[0].properties._id);
             const fixedActions = this.fixActions(actions, results.instances);
 

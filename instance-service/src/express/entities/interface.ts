@@ -5,6 +5,7 @@ export interface IGetExpandedEntityBody {
     templateIds: string[];
     expandedParams: Record<string, { minLevel?: number; maxLevel: number }>;
     filters: { [templateId: string]: { filter?: ISearchFilter; showRelationships: boolean } };
+    isOnlyTemplateIds?: boolean;
 }
 
 export const isRelationshipReference = (object: any): object is IEntity => {

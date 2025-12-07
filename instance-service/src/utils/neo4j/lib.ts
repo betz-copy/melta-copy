@@ -3,6 +3,7 @@ import {
     IEntity,
     IEntityExpanded,
     IEntityWithDirectRelationships,
+    IMongoRelationshipTemplate,
     IRelationship,
     SplitBy,
     ValidationError,
@@ -248,15 +249,8 @@ export const normalizeReturnedDeletedRelationship = (result: QueryResult) => {
     };
 };
 
-const doesPathContainDisabledNode = (path: (Node | Relationship)[], disabled: boolean) => {
-    return path.slice(1).some((pathPart) => {
-        const isNode = 'labels' in pathPart;
-        return isNode && !pathPart.properties.disabled === disabled;
-    });
-};
-
 export const normalizeReturnedRelAndEntities =
-    (disabled: boolean | null) =>
+    () =>
     (result: QueryResult): IEntityExpanded | null => {
         if (!result.records.length) return null;
 
@@ -264,18 +258,10 @@ export const normalizeReturnedRelAndEntities =
 
         if (!entity) return null;
 
-        const validConnections = result.records.slice(1).filter((record) => {
-            const path = record.get(0) as (Node | Relationship)[];
-
-            if (typeof disabled === 'boolean') return !doesPathContainDisabledNode(path, disabled);
-
-            return true;
-        });
-
-        const connections = validConnections.map((record) => {
+        const connections = result.records.slice(1).map((record) => {
             const [firstEntity, relationship, secondEntity] = record.get(0).slice(-3) as [Node, Relationship, Node];
             const [sourceEntity, destinationEntity] =
-                relationship.start === firstEntity.identity ? [firstEntity, secondEntity] : [secondEntity, firstEntity];
+                firstEntity.identity === relationship.start ? [firstEntity, secondEntity] : [secondEntity, firstEntity];
 
             return {
                 sourceEntity: nodeToEntity(sourceEntity),
@@ -291,6 +277,20 @@ export const normalizeReturnedRelAndEntities =
             entity: nodeToEntity(entity),
             connections,
         };
+    };
+
+export const isTemplateOnly =
+    (relationShipsMap: Map<string, IMongoRelationshipTemplate>) =>
+    (result: QueryResult): any => {
+        if (!result.records.length) return null;
+
+        const connections = result.records.flatMap((key) => {
+            const relationshipId = key.get('relationshipIds')[0];
+
+            return (!relationshipId || relationShipsMap.get(relationshipId)) ?? [];
+        });
+
+        return connections;
     };
 
 const formatUndirectedRelationship = (relationship: Relationship, node1: Node, node2: Node): IRelationship => {

@@ -401,7 +401,6 @@ export const templatesFilterToNeoQuery = (
     entityTemplatesMap: Map<string, IMongoEntityTemplate>,
 ): CypherQueryWithParameters => {
     const filterParamsVariableName = 'filterParams';
-
     const templatesFiltersQueries: CypherQueryWithParameters[] = Object.entries(templatesFilter).map(([templateId, { filter }]) => {
         if (!filter) {
             return { cypherQuery: `node:\`${templateId}\``, parameters: {} };

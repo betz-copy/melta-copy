@@ -8,7 +8,7 @@ import { useQuery, useQueryClient } from 'react-query';
 import TreeItem from '../../../../common/Tree/TreeItem';
 import { IConnection, IEntityExpanded } from '../../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
-import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
+import { IRelationshipTemplate, IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { getExpandedEntityByIdRequest } from '../../../../services/entitiesService';
 import { useUserStore } from '../../../../stores/user';
 import { findAncestryTree, mergeAncestryTree, sortTemplatesChildrenToParents, updateChildrenToParent } from '../../../../utils/expandedRelationships';
@@ -67,13 +67,13 @@ const RelationshipSelection: React.FC<{
     const [expansionDepth, setExpansionDepth] = useState<number>(1);
 
     const templateIds = [...entityTemplates.keys()];
-    const { refetch: getExpandedData } = useQuery<IEntityExpanded>({
+    const { refetch: getExpandedData } = useQuery<IRelationshipTemplate[]>({
         queryKey: ['getExpandedEntity', expandedEntity.entity.properties._id, { templateIds }, expansionDepth],
         queryFn: () =>
             getExpandedEntityByIdRequest(
                 expandedEntity.entity.properties._id,
                 { [expandedEntity.entity.properties._id]: { maxLevel: expansionDepth + 1 } },
-                { disabled: false, templateIds: allowedEntityTemplatesIds },
+                { disabled: false, templateIds: allowedEntityTemplatesIds, isOnlyTemplateIds: true },
             ),
         enabled: false,
     });

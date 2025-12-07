@@ -470,7 +470,10 @@ export class EntityValidator extends DefaultController {
         if (entityTemplates.length < templateIds.length)
             throw new ValidationError(`some of the templates in search doesn't exist. found only [${entityTemplates.map(({ _id }) => _id)}]`);
 
+        const relationShips = await this.relationshipsTemplateManagerService.searchRelationshipTemplates();
+
         const entityTemplatesMap = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
+        const relationShipsMap = new Map(relationShips.map((relationship) => [relationship._id, relationship]));
 
         const entityTemplatesForValidationMap: Map<string, IMongoEntityTemplate> = new Map(
             entityTemplates.map((entityTemplate) => [entityTemplate._id, addDefaultFieldsToTemplate(entityTemplate)]),
@@ -481,6 +484,7 @@ export class EntityValidator extends DefaultController {
             }
         });
         addPropertyToRequest(req, 'entityTemplatesMap', entityTemplatesMap);
+        addPropertyToRequest(req, 'relationShipsMap', relationShipsMap);
     }
 }
 

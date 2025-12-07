@@ -1,4 +1,10 @@
-import { fetchPropertyFromRequest, IDeleteEntityBody, IMongoEntityTemplate, RequestWithQuery } from '@microservices/shared';
+import {
+    fetchPropertyFromRequest,
+    IDeleteEntityBody,
+    IMongoEntityTemplate,
+    IMongoRelationshipTemplate,
+    RequestWithQuery,
+} from '@microservices/shared';
 import { Request, Response } from 'express';
 import DefaultController from '../../utils/express/controller';
 import EntityManager from './manager';
@@ -58,7 +64,8 @@ class EntityController extends DefaultController<EntityManager> {
 
     async getExpandedGraphById(req: Request, res: Response) {
         const entityTemplatesMap = fetchPropertyFromRequest<Map<string, IMongoEntityTemplate>>(req, 'entityTemplatesMap');
-        res.json(await this.manager.getExpandedGraphById(req.params.id, req.body, entityTemplatesMap, req.body.userId));
+        const relationshipMap = fetchPropertyFromRequest<Map<string, IMongoRelationshipTemplate>>(req, 'relationShipsMap');
+        res.json(await this.manager.getExpandedGraphById(req.params.id, req.body, entityTemplatesMap, relationshipMap, req.body.userId));
     }
 
     async deleteEntityInstances(req: Request, res: Response) {
