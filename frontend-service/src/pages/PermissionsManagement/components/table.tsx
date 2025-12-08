@@ -40,7 +40,7 @@ const getChipsFromArray = (chips: { key: string; label: string }[]) => (
     </ScrollContainer>
 );
 
-const defaultColDef: ColDef<PermissionData> = {
+export const defaultColDef: ColDef<PermissionData> = {
     editable: false,
     sortable: false,
     flex: 1,
