@@ -1654,9 +1654,13 @@ class EntityManager extends DefaultManagerNeo4j {
         const propertiesToUpdate = { ...entityProperties, ...defaultValues };
 
         const entity = await this.getEntityByIdInTransaction(id, transaction);
+        const unPopulatedOldEntity = this.relationshipReferenceObjectToId(entity, entityTemplate);
+        const unPopulatedNewEntity = this.relationshipReferenceObjectToId({ ...entity, properties: propertiesToUpdate }, entityTemplate);
+
         if (entity.properties.disabled) throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
 
-        const updatedProperties = this.getKeysOfUpdatedProperties(entity.properties, { ...propertiesToUpdate }, entityTemplate);
+        const updatedProperties = this.getKeysOfUpdatedProperties(unPopulatedOldEntity.properties, unPopulatedNewEntity.properties, entityTemplate);
+
         const updatedColoredFields = indicatorRules ? this.getColoredFields(indicatorRules.map(({ rule }) => rule)) : undefined;
 
         const { fixedProperties } = await this.handleRelationshipReferenceFieldsChanges(
@@ -1767,7 +1771,8 @@ class EntityManager extends DefaultManagerNeo4j {
         convertToRelationshipField = false,
     ) {
         const entity = await this.getEntityById(id);
-        const unPopulatedEntity = this.relationshipReferenceObjectToId(entity, entityTemplate);
+        const unPopulatedOldEntity = this.relationshipReferenceObjectToId(entity, entityTemplate);
+        const unPopulatedNewEntity = this.relationshipReferenceObjectToId({ ...entity, properties: entityProperties }, entityTemplate);
 
         if (entity.properties.disabled) throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
 
@@ -1778,7 +1783,7 @@ class EntityManager extends DefaultManagerNeo4j {
         }
 
         if (template.actions && isBodyFunctionHasContent(template.actions, IEntityCrudAction.onUpdateEntity)) {
-            const actions = await this.buildActionsArray(IEntityCrudAction.onUpdateEntity, entityProperties, template, userId, unPopulatedEntity);
+            const actions = await this.buildActionsArray(IEntityCrudAction.onUpdateEntity, entityProperties, template, userId, unPopulatedOldEntity);
 
             const bulkManager = new BulkActionManager(this.workspaceId);
             const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
@@ -1790,7 +1795,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
         return this.neo4jClient
             .performComplexTransaction('writeTransaction', async (transaction) => {
-                const updatedProperties = this.getKeysOfUpdatedProperties(entity.properties, { ...entityProperties }, template);
+                const updatedProperties = this.getKeysOfUpdatedProperties(unPopulatedOldEntity.properties, unPopulatedNewEntity.properties, template);
                 const ruleFailuresBeforeAction = await this.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
 
                 const { updatedEntity, activityLogsToCreate } = await this.updateEntityByIdInnerTransaction(
