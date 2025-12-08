@@ -61,7 +61,7 @@ const isPropertyInvalid = <Data extends IColDefData>(props: ICellRendererParams<
     if (!ignoreType || !hasErrors(props.data)) return undefined;
 
     return props.data.errors.find((error) => {
-        if (!isEmpty(error.metadata)) return false;
+        if (isEmpty(error.metadata)) return false;
         switch (error.type) {
             case ActionErrors.required:
                 return (error.metadata as IRequiredConstraint).property.split('.').filter(Boolean)[0] === property;
