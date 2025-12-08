@@ -920,15 +920,22 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 const convertedProperties = mapValues(sourceWallet.properties, (property, key) =>
                     this.convertEntities(sourceWalletTemplate, key, property),
                 );
+                const accountBalanceKey = Object.entries(sourceWalletTemplate.properties.properties).find(
+                    ([_key, value]) => value?.accountBalance === true,
+                )?.[0];
+                console.log({ convertedProperties, accountBalanceKey });
 
                 newDestWalletData = {
                     ...sourceWallet,
                     templateId: template.properties.properties[template.walletTransfer.to].relationshipReference?.relatedTemplateId ?? '',
-                    properties: { ...omit(convertedProperties, ['_id', 'createdAt', 'updatedAt']) },
+                    properties: {
+                        ...omit(convertedProperties, ['_id', 'createdAt', 'updatedAt', accountBalanceKey ?? '']),
+                        ...(accountBalanceKey && { [accountBalanceKey]: 0 }),
+                    },
                 };
             }
         }
-
+        console.dir({ properties, newDestWalletData }, { depth: null });
         const { createdEntity, actions, emails } = await this.service
             .createEntityInstance({ properties, templateId }, ignoredRules, userId, undefined, childTemplateId, newDestWalletData)
             .catch((err) => this.handleBrokenRulesError(err));
@@ -1158,7 +1165,6 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         if (duplicateFileProperties) {
             duplicatedFileProperties = await this.duplicateFileProperties(fileProperties, currentEntity);
         }
-
 
         const { props: propertiesWithFiles } = await this.uploadInstanceFiles(files, {
             ...instanceData.properties,
