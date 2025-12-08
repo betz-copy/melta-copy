@@ -10,9 +10,9 @@ class EntityController extends DefaultController<EntityManager> {
 
     async createEntity(req: Request, res: Response) {
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
-        const { properties, ignoredRules, userId, duplicatedFromId, childTemplateId , newDestWalletData} = req.body;
+        const { properties, ignoredRules, userId, duplicatedFromId, childTemplate, newDestWalletData } = req.body;
 
-        res.json(await this.manager.createEntity(properties, entityTemplate, ignoredRules, userId, duplicatedFromId, childTemplateId, newDestWalletData));
+        res.json(await this.manager.createEntity(properties, entityTemplate, ignoredRules, userId, duplicatedFromId, childTemplate?.id, newDestWalletData));
     }
 
     async searchEntitiesOfTemplate(req: Request, res: Response) {
@@ -77,7 +77,7 @@ class EntityController extends DefaultController<EntityManager> {
 
     async updateEntityById(req: Request, res: Response) {
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
-        const { properties, ignoredRules, userId, childTemplateId, convertToRelationshipField } = req.body;
+        const { properties, ignoredRules, userId, childTemplate, convertToRelationshipField } = req.body;
 
         res.json(
             await this.manager.updateEntityById(
@@ -86,7 +86,7 @@ class EntityController extends DefaultController<EntityManager> {
                 entityTemplate,
                 ignoredRules,
                 userId,
-                childTemplateId,
+                childTemplate?.id,
                 convertToRelationshipField,
             ),
         );

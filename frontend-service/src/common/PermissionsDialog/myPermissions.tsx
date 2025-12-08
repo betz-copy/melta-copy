@@ -4,13 +4,12 @@ import i18next from 'i18next';
 import _ from 'lodash';
 import _cloneDeep from 'lodash.clonedeep';
 import _debounce from 'lodash.debounce';
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
 import { IChildTemplateMap } from '../../interfaces/childTemplates';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import { IGetUnits } from '../../interfaces/units';
 import { IUser, PermissionData, RelatedPermission } from '../../interfaces/users';
 import { deletePermissions } from '../../pages/PermissionsManagement/components/deleteDialog';
 import {
@@ -21,12 +20,11 @@ import {
     updateUserRoleIdsRequest,
 } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
-import { useUnitStore } from '../../stores/unit';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { createDialogCategories, isPermissionsEquals, userHasNoPermissions } from '../../utils/permissions/permissionOfUserDialog';
 import RoleAutocomplete from '../inputs/RoleAutocomplete';
-import UnitAutocomplete from '../inputs/UnitAutocomplete';
+import UnitSelect from '../inputs/UnitTreeSelect';
 import UserAutocomplete from '../inputs/UserAutocomplete';
 import BlueTitle from '../MeltaDesigns/BlueTitle';
 import ManagePermissions from './managePermissions';
@@ -45,7 +43,7 @@ export const defaultEmptyUser = {
     units: {},
     permissions: {},
     displayName: '',
-    currentUnits: [],
+    usersUnitsWithInheritance: [],
 } as IUser;
 
 export const getDefaultEmptyUser = (workspaceId: string) => ({
@@ -64,7 +62,7 @@ export const getDefaultEmptyUser = (workspaceId: string) => ({
     units: {
         [workspaceId]: [],
     },
-    currentUnits: [],
+    usersUnitsWithInheritance: [],
 });
 
 const MyPermissions: React.FC<{
@@ -84,9 +82,6 @@ const MyPermissions: React.FC<{
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
-    const units = queryClient.getQueryData<IGetUnits>('getUnits')!;
-    const filteredUnits = useUnitStore((state) => state.filteredUnits);
-    const unitOptions = useMemo(() => (mode === 'view' ? units : filteredUnits), [mode, units, filteredUnits]);
 
     const { mutateAsync: createUser } = useMutation(
         (formUser: IUser) => createUserRequest(formUser.kartoffelId, formUser.permissions, workspace._id, formUser.roleIds, formUser.units),
@@ -290,27 +285,14 @@ const MyPermissions: React.FC<{
                             )}
 
                             <Box sx={{ bgcolor: darkMode ? '#242424' : 'white', marginBottom: '15px', marginTop: '5px' }}>
-                                <UnitAutocomplete
-                                    value={
-                                        values.units?.[workspace._id]?.flatMap((unitId) => unitOptions.find(({ _id }) => _id === unitId) ?? []) ?? []
-                                    }
-                                    options={unitOptions}
-                                    onChange={(_e, chosenUnits, reason) => {
-                                        if (reason === 'clear') {
-                                            setFieldValue('units', {
-                                                ...values.units,
-                                                [workspace._id]: [],
-                                            });
-                                            return;
-                                        }
-                                        setFieldValue('units', { ...values.units, [workspace._id]: chosenUnits.map(({ _id }) => _id) });
+                                <UnitSelect
+                                    label={i18next.t('unitAutocomplete.label')}
+                                    disabled={mode === 'view'}
+                                    value={values.units?.[workspace._id] ?? []}
+                                    onChange={(chosenUnits) => {
+                                        setFieldValue(`units.${workspace._id}`, !Array.isArray(chosenUnits) ? [chosenUnits] : chosenUnits);
                                     }}
-                                    onBlur={handleBlur}
-                                    readOnly={mode === 'view'}
-                                    isError={Boolean(touched.roleIds && errors.roleIds)}
-                                    helperText={touched.roleIds ? errors.roleIds : ''}
-                                    enableClear={mode !== 'view'}
-                                    isLoading={isLoading}
+                                    multiple
                                 />
                             </Box>
 

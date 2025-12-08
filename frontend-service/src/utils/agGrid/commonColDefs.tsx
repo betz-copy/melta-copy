@@ -16,7 +16,6 @@ import { EntityWizardValues } from '../../common/dialogs/entity';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 import UserAvatar, { IUserAvatarProps } from '../../common/UserAvatar';
-import { environment } from '../../globals';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import {
     EntityData,
@@ -847,6 +846,7 @@ const getUnitField = (units: IGetUnits, unitId: string, property: keyof IGetUnit
 
 export const unitColDef = <Data extends IColDefData>(
     field: string,
+    valueGetter,
     value: Partial<IEntitySingleProperty>,
     units: IGetUnits,
     hardcodedWidth: number | undefined,
@@ -869,16 +869,14 @@ export const unitColDef = <Data extends IColDefData>(
 
     return {
         field,
-        valueGetter: ({ data }) => {
-            const value = data.properties[field];
-            return environment.objectIdRegex.test(value) ? getUnitField(units, value, 'name') : value;
-        },
+        valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
             const error = isPropertyInvalid(props, field, ignoreType);
             if (error) return errorColDef(props, error, value);
 
-            return <Value hideValue={hideValue} color={getColor(props, field)} value={props.value?.toString() ?? ''} searchValue={searchValue} />;
+            return <Value hideValue={hideValue} color={getColor(props, field)} value={props.valueFormatted ?? ''} searchValue={searchValue} />;
         },
+        valueFormatter: ({ value }) => getUnitField(units, value, 'name'),
         headerName: value.title,
         filter: 'agSetColumnFilter',
         filterParams,
@@ -886,7 +884,7 @@ export const unitColDef = <Data extends IColDefData>(
         flex: isLastColumn ? 1 : 0,
         hide: hideColumn,
         tooltipValueGetter: (params) => {
-            const path = getUnitField(units, params.data.properties[field], 'path');
+            const path = getUnitField(units, params.data?.properties?.[field], 'path');
             return path ? `${path}/` : '';
         },
         editable: false,

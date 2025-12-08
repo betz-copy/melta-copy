@@ -7,7 +7,6 @@ import {
     ICompactNullablePermissions,
     ICompactPermissions,
     IExternalUser,
-    IMongoUnit,
     IPermission,
     IRole,
     ISubCompactPermissions,
@@ -114,7 +113,13 @@ class UsersManager {
         }
     }
 
-    static async createUser(kartoffelId: string, permissions: ICompactPermissions, workspaceId: string, roleIds?: string[]): Promise<IUser> {
+    static async createUser({
+        kartoffelId,
+        permissions,
+        roleIds,
+        units,
+        workspaceId,
+    }: Pick<IUser, 'kartoffelId' | 'permissions' | 'roleIds' | 'units'> & { workspaceId: string }): Promise<IUser> {
         const existingUser = await UserService.getUserByExternalId(kartoffelId).catch(() => {});
 
         if (existingUser) return UsersManager.updateUserRoleIds(existingUser._id, workspaceId, permissions, roleIds);
@@ -129,6 +134,7 @@ class UsersManager {
             kartoffelId,
             preferences,
             roleIds,
+            units,
         });
     }
 
@@ -299,25 +305,6 @@ class UsersManager {
 
     static async getAllWorkspaceRoles(workspaceIds: string[]): Promise<IRole[]> {
         return UserService.getAllWorkspaceRoles(workspaceIds);
-    }
-
-    static getUnitsWithInheritance(units: IMongoUnit[], unitIds: string[]) {
-        const userUnits = new Set(unitIds);
-        const unitsCopy = [...units];
-
-        for (const unitId of userUnits) {
-            // no walrus operator :(
-            while (true) {
-                const childIndex = unitsCopy.findIndex(({ parentId }) => parentId === unitId);
-
-                if (childIndex === -1) break;
-
-                userUnits.add(unitsCopy[childIndex]._id);
-                unitsCopy.splice(childIndex, 1);
-            }
-        }
-
-        return Array.from(userUnits);
     }
 }
 

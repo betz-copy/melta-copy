@@ -6,8 +6,6 @@ import {
     ActionsLog,
     ActionTypes,
     BadRequestError,
-    combineFilters,
-    getFilterFromChildTemplate,
     IAction,
     IActivityLog,
     IBrokenRule,
@@ -1571,13 +1569,53 @@ class EntityManager extends DefaultManagerNeo4j {
         convertToRelationshipField = false,
     ): Promise<{ fixedProperties: Record<string, any>; createdRelationships: IRelationship[]; deletedRelationships: IRelationship[] }> {
         const entityId = entity.properties._id;
-        const fixedProperties: Record<string, any> = JSON.parse(JSON.stringify(entityProperties));
+        const fixedProperties: Record<string, any> = structuredClone(entityProperties);
         const entityPropertiesList = Object.keys(entityProperties);
         const createdRelationships: IRelationship[] = [];
         const deletedRelationships: IRelationship[] = [];
 
-        await Promise.all(
-            entityPropertiesList.map(async (entityProperty) => {
+        await Promise.all([
+            ...updatedProperties.map(async (updatedProperty) => {
+                const property = entityTemplate.properties.properties[updatedProperty];
+
+                if (property?.format !== 'relationshipReference') return;
+
+                if (entity.properties[updatedProperty]) {
+                    const relatedEntityId = entity.properties[updatedProperty].properties._id;
+                    const deletedRelationship = await this.deleteRelationshipReferenceInTransaction({
+                        relationshipReference: property.relationshipReference!,
+                        relatedEntityId,
+                        originalEntityId: entityId,
+                        transaction,
+                    });
+
+                    deletedRelationships.push(deletedRelationship);
+                }
+
+                const relatedEntityId =
+                    (typeof entityProperties[updatedProperty] === 'string'
+                        ? entityProperties[updatedProperty]
+                        : entityProperties[updatedProperty]?.properties?._id) ?? undefined;
+
+                if (relatedEntityId) {
+                    const { relatedEntity, fixedField } = await this.fixRelationshipReferenceField(relatedEntityId, transaction);
+
+                    fixedProperties[updatedProperty] = fixedField;
+
+                    if (!convertToRelationshipField) {
+                        const { createdRelationship } = await this.createRelationshipReference(
+                            property.relationshipReference!,
+                            relatedEntity,
+                            entityId,
+                            transaction,
+                            userId,
+                        );
+
+                        createdRelationships.push(createdRelationship);
+                    }
+                }
+            }),
+            ...entityPropertiesList.map(async (entityProperty) => {
                 const property = entityTemplate.properties.properties[entityProperty];
 
                 if (property?.format !== 'relationshipReference') return;
@@ -1594,37 +1632,8 @@ class EntityManager extends DefaultManagerNeo4j {
                     }
                     return;
                 }
-
-                if (entity.properties[entityProperty]) {
-                    const deletedRelationship = await this.deleteRelationshipReferenceInTransaction({
-                        relationshipReference: property.relationshipReference!,
-                        relatedEntityId,
-                        originalEntityId: entityId,
-                        transaction,
-                    });
-
-                    deletedRelationships.push(deletedRelationship);
-                }
-
-                if (relatedEntityId) {
-                    const { relatedEntity, fixedField } = await this.fixRelationshipReferenceField(relatedEntityId, transaction);
-
-                    fixedProperties[entityProperty] = fixedField;
-
-                    if (!convertToRelationshipField) {
-                        const { createdRelationship } = await this.createRelationshipReference(
-                            property.relationshipReference!,
-                            relatedEntity,
-                            entityId,
-                            transaction,
-                            userId,
-                        );
-
-                        createdRelationships.push(createdRelationship);
-                    }
-                }
             }),
-        );
+        ]);
         return { fixedProperties, createdRelationships, deletedRelationships };
     }
 
@@ -2367,21 +2376,14 @@ class EntityManager extends DefaultManagerNeo4j {
         return filterDependentRulesViaAggregation(rules, relationshipTemplateId);
     }
 
-    async getChartByTemplate(
-        templateId: string,
-        { chartsData, childTemplateId, units }: { chartsData: IChartBody[]; childTemplateId?: string; units: IGetUnits },
-    ) {
-        const childTemplate = childTemplateId ? await this.childTemplateManagerService.getChildTemplateById(childTemplateId) : undefined;
-
+    async getChartByTemplate(templateId: string, { chartsData, units }: { chartsData: IChartBody[]; units: IGetUnits }) {
         const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
 
         const entityTemplatesMap = new Map([[entityTemplate._id, entityTemplate]]);
         const specialProperties = handleChartPropertiesTemplate(entityTemplate);
 
         const chartPromises = chartsData.map(async ({ filter, xAxis, yAxis, _id }) => {
-            const filters = childTemplateId ? combineFilters(getFilterFromChildTemplate(childTemplate!), filter) : filter;
-
-            const templatesFilter = { [entityTemplate._id]: { filter: filters, showRelationships: false } };
+            const templatesFilter = { [entityTemplate._id]: { filter, showRelationships: false } };
 
             const { cypherQuery: filterQuery, parameters } = templatesFilterToNeoQuery(templatesFilter, entityTemplatesMap);
             const query = buildChartAggregationQuery(xAxis, yAxis, specialProperties, entityTemplate, filterQuery);

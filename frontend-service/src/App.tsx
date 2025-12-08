@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useLocation } from 'wouter';
+import { useLocation, useSearchParams } from 'wouter';
 import { LoadingAnimation } from './common/LoadingAnimation';
 import './css/index.css';
 import './css/loading.css';
@@ -29,6 +29,7 @@ const App: React.FC = () => {
     const [isClientSide, setIsClientSide] = useState(false);
 
     const [location, navigate] = useLocation();
+    const [searchParams] = useSearchParams();
 
     const matomoInstance = useMatomoInstance();
 
@@ -107,8 +108,13 @@ const App: React.FC = () => {
                 if (workspaceIds.length === 1) {
                     const workspace = await getById(workspaceIds[0]);
                     const path = `${workspace.path}/${workspace.name}${workspace.type}`;
+                    const searchParamsArray = [...searchParams.entries()];
+                    const normalizedSearchParams = searchParamsArray.length
+                        ? `?${searchParamsArray.map(([key, value]) => `${key}=${value}`).join('&')}`
+                        : '';
+
                     if (workspace.name !== '' && workspace.path !== '/')
-                        navigate(`${path}${location.length <= path.length ? '' : location.replace(path, '')}`);
+                        navigate(`${path}${location.length <= path.length ? '' : location.replace(path, '')}${normalizedSearchParams}`);
                 }
             } catch {
                 setIsErrorMyUser(true);

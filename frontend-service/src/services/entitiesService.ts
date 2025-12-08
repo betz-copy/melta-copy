@@ -5,7 +5,7 @@ import { EntityWizardValues } from '../common/dialogs/entity';
 import { IUpdateMultipleEntitiesResponse } from '../common/EntitiesPage/MultiSelectStatusBar';
 import { IExternalId } from '../common/EntitiesTableOfTemplate';
 import urlToFile from '../common/fileConversions';
-import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
+import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
 import { environment } from '../globals';
 import { IAxisField } from '../interfaces/charts';
 import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';

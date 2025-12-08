@@ -1,6 +1,6 @@
 import { WidgetProps } from '@rjsf/utils';
 import 'react-quill-new/dist/quill.snow.css';
-import TextArea from '../TextArea';
+import TextArea from '../../TextArea';
 
 const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options, placeholder, rawErrors }: WidgetProps) => {
     const { toPrint, defaultValue } = options;

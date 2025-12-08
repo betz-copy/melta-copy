@@ -1,5 +1,5 @@
 import { QueryClient } from 'react-query';
-import { CoordinateSystem } from '../../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
+import { CoordinateSystem } from '../../common/inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 
 const generateFromString = ({ format, relationshipReference, enum: typeEnum }: IEntitySingleProperty, queryClient: QueryClient) => {

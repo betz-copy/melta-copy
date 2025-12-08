@@ -1,5 +1,5 @@
 import { ExpandMore, InfoOutlined } from '@mui/icons-material';
-import { Autocomplete, AutocompleteInputChangeReason, AutocompleteProps, Grid, TextField, Typography } from '@mui/material';
+import { Autocomplete, AutocompleteInputChangeReason, AutocompleteProps, TextField, Typography } from '@mui/material';
 import i18next from 'i18next';
 import _debounce from 'lodash.debounce';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -8,7 +8,8 @@ import { toast } from 'react-toastify';
 import { environment } from '../../globals';
 import { IChildTemplateMap, IChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { AndFilter, IEntity, ISearchEntitiesOfTemplateBody, ISearchFilter } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IGetUnits } from '../../interfaces/units';
 import { IWorkspace } from '../../interfaces/workspaces';
 import { searchEntitiesOfTemplateClientSideRequest } from '../../services/clientSideService';
 import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
@@ -22,7 +23,7 @@ import { getDefaultFilterFromTemplate } from '../EntitiesPage/TemplateTablesView
 import { EntityPropertiesInternal } from '../EntityProperties';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import RelationshipReferenceView from '../RelationshipReferenceView';
-import { CoordinateSystem } from './JSONSchemaFormik/RjsfLocationWidget';
+import { CoordinateSystem } from './JSONSchemaFormik/Widgets/RjsfLocationWidget';
 
 const { fieldFilterPrefix } = environment;
 
@@ -40,7 +41,7 @@ export const getChildTemplatesFilter = (
                 childTemplate,
                 true,
                 currentUserKartoffelId,
-                currentUser?.currentUnits,
+                currentUser?.usersUnitsWithInheritance,
                 isWorkspaceAdmin(currentUser?.permissions?.[workspace._id] ?? {}),
             ),
         )
@@ -106,8 +107,11 @@ const TemplateEntitiesAutocomplete: React.FC<{
     const [allEntities, setAllEntities] = useState<IEntity[]>([]);
     const queryClient = useQueryClient();
 
+    const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
     const childTemplatesOfRelatedTemplate = Array.from(childTemplates.values()).filter((child) => child.parentTemplate._id === template?._id);
+
+    const units = queryClient.getQueryData<IGetUnits>('getUnits')!;
 
     const { metadata } = useWorkspaceStore((state) => state.workspace);
 
@@ -248,17 +252,21 @@ const TemplateEntitiesAutocomplete: React.FC<{
         .slice(0, metadata.numOfRelationshipFieldsToShow - 1)
         .forEach((prop) => displayKeys.push(prop));
 
-    const convertPropertyToString = (property: any): string | undefined => {
-        if (typeof property === 'object') {
-            if (property.location) {
-                return property.coordinateSystem === CoordinateSystem.UTM
-                    ? locationConverterToString(property.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
-                    : property.location;
+    const convertPropertyToString = (value: any, property: IEntitySingleProperty | undefined): string | undefined => {
+        if (property?.format === 'unitField') {
+            return units.find((unit) => unit._id === value)?.name ?? '';
+        }
+
+        if (typeof value === 'object') {
+            if (value.location) {
+                return value.coordinateSystem === CoordinateSystem.UTM
+                    ? locationConverterToString(value.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
+                    : value.location;
             }
 
-            if (Array.isArray(property)) {
+            if (Array.isArray(value)) {
                 try {
-                    const parsedArray = property.map((prop) => {
+                    const parsedArray = value.map((prop) => {
                         if (prop?.fullName) return prop.fullName;
 
                         const parsed = JSON.parse(prop);
@@ -269,23 +277,23 @@ const TemplateEntitiesAutocomplete: React.FC<{
                     });
                     return parsedArray.join(', ');
                 } catch {
-                    return property.join(', ');
+                    return value.join(', ');
                 }
             }
 
-            if (property.fullName && property.mail && property.hierarchy && property.id && property.jobTitle) {
-                return property.fullName;
+            if (value.fullName && value.mail && value.hierarchy && value.id && value.jobTitle) {
+                return value.fullName;
             }
 
-            return property.toString();
+            return value.toString();
         }
 
         try {
-            const parsedUser = JSON.parse(property);
+            const parsedUser = JSON.parse(value);
 
             return typeof parsedUser === 'object' ? parsedUser.fullName : parsedUser;
         } catch {
-            return property;
+            return value;
         }
     };
 
@@ -293,6 +301,10 @@ const TemplateEntitiesAutocomplete: React.FC<{
         templateId: template?._id ?? '',
         properties: { _id: '$twin', createdAt: new Date().toString(), updatedAt: new Date().toString(), disabled: false },
     };
+    const getTemplate = (option: IEntity) => {
+        return templates.get(option.templateId) || childTemplates.get(option.childTemplateId ?? '');
+    };
+
     return (
         <Autocomplete
             value={value}
@@ -306,8 +318,11 @@ const TemplateEntitiesAutocomplete: React.FC<{
             loading={isLoading || isFetchingNextPage}
             loadingText={i18next.t('templateEntitiesAutocomplete.loading')}
             noOptionsText={i18next.t(`templateEntitiesAutocomplete.no${noRelationPermission ? 'WritePermissions' : 'Options'}`)}
-            getOptionLabel={(option) => convertPropertyToString(option.properties[showField]) || option.properties._id.toString()}
             getOptionDisabled={(option) => !!(accountBalanceKey && isSourceTransferKey && (option.properties?.[accountBalanceKey] || 0) <= 0)}
+            getOptionLabel={(option) =>
+                convertPropertyToString(option.properties[showField], getTemplate(option)?.properties.properties?.[showField]) ||
+                option.properties._id.toString()
+            }
             isOptionEqualToValue={(option, currValue) => option.properties._id === currValue.properties._id}
             filterOptions={(options) => options}
             popupIcon={<ExpandMore />}
@@ -348,9 +363,11 @@ const TemplateEntitiesAutocomplete: React.FC<{
                 );
             }}
             renderOption={(props, option) => {
+                const template = getTemplate(option);
+
                 const displayOptionValues = displayKeys.map((key) => {
                     const property = option.properties[key];
-                    return convertPropertyToString(property);
+                    return convertPropertyToString(property, template?.properties.properties?.[key]);
                 });
 
                 return (

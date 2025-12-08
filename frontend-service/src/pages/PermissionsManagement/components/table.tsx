@@ -5,23 +5,40 @@ import { Chip, Grid, IconButton } from '@mui/material';
 import i18next from 'i18next';
 import React, { ForwardedRef, forwardRef, useMemo } from 'react';
 import ScrollContainer from 'react-indiana-drag-scroll';
+import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import AgGridTable from '../../../common/agGridTable';
+import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { environment } from '../../../globals';
 import { IMongoCategory } from '../../../interfaces/categories';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { ICompact, IInstancesPermission } from '../../../interfaces/permissions/permissions';
 import { IRole } from '../../../interfaces/roles';
+import { IGetUnits } from '../../../interfaces/units';
 import { IUser, PermissionData, RelatedPermission } from '../../../interfaces/users';
 import { IWorkspace } from '../../../interfaces/workspaces';
 import { searchRolesRequest, searchUsersRequest } from '../../../services/userService';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { translatedEnumColDef } from '../../../utils/agGrid/commonColDefs';
 import { trycatch } from '../../../utils/trycatch';
-import AgGridTable from '../../../common/agGridTable';
 
 const { infiniteScrollPageCount } = environment.permission;
 
 const scopesTranslation = i18next.t('permissions.scopes', { returnObjects: true }) as Record<string, string>;
+
+const getChipsFromArray = (chips: { key: string; label: string }[]) => (
+    <ScrollContainer horizontal vertical={false}>
+        <Grid container spacing={1} wrap="nowrap">
+            {chips.map(({ key, label }) => (
+                <Grid key={key}>
+                    <MeltaTooltip title={label}>
+                        <Chip label={label} />
+                    </MeltaTooltip>
+                </Grid>
+            ))}
+        </Grid>
+    </ScrollContainer>
+);
 
 export const defaultColDef: ColDef<PermissionData> = {
     editable: false,
@@ -44,6 +61,7 @@ const columnDefs = (
     categories: IMongoCategory[],
     onDeletePermissions: (permissions: PermissionData) => any,
     onEditPermissions: (permissions: PermissionData) => any,
+    units: IGetUnits,
 ): ColDef[] => [
     {
         field: permissionType === RelatedPermission.User ? 'displayName' : 'name',
@@ -98,6 +116,17 @@ const columnDefs = (
         valuesMap: scopesTranslation,
     }),
     {
+        field: 'unitsOfUser',
+        valueGetter: (params) => params.data?.units?.[workspaceId] ?? [],
+        headerName: i18next.t('permissions.permissionsOfUserDialog.unitsOfUser'),
+        cellRenderer: (props: ICellRendererParams<PermissionData, string[]>) => {
+            const { value } = props;
+            const unitNames = value?.map((unitId) => units.find(({ _id }) => _id === unitId)?.name ?? '') ?? [];
+            return getChipsFromArray(unitNames.map((value) => ({ label: value, key: value })));
+        },
+        minWidth: 200,
+    },
+    {
         field: 'categoriesPermissions',
         headerName: i18next.t('permissions.permissionsOfUserDialog.instancesPermissions'),
         valueGetter: (params) => params.data?.permissions[workspaceId].instances?.categories,
@@ -137,17 +166,7 @@ const columnDefs = (
             // sort just for fun, same as comparator's sorting
             categoriesPermissionsPopulated.sort((a, b) => a.category._id.localeCompare(b.category._id));
 
-            return (
-                <ScrollContainer horizontal vertical={false}>
-                    <Grid container spacing={1} wrap="nowrap">
-                        {categoriesPermissionsPopulated.map(({ _id, category }) => (
-                            <Grid key={_id}>
-                                <Chip label={category.displayName} />
-                            </Grid>
-                        ))}
-                    </Grid>
-                </ScrollContainer>
-            );
+            return getChipsFromArray(categoriesPermissionsPopulated.map(({ _id, category }) => ({ key: _id, label: category.displayName })));
         },
         minWidth: 500,
     },
@@ -266,6 +285,8 @@ const PermissionsTable = forwardRef<PermissionsTableRef<PermissionData>, Permiss
         ref: ForwardedRef<PermissionsTableRef<PermissionData>>,
     ) => {
         const workspace = useWorkspaceStore((state) => state.workspace);
+        const queryClient = useQueryClient();
+        const units = queryClient.getQueryData<IGetUnits>('getUnits')!;
 
         const datasourceOnFail = (error: unknown) => {
             console.error('failed loading all users:', error);
@@ -283,7 +304,7 @@ const PermissionsTable = forwardRef<PermissionsTableRef<PermissionData>, Permiss
                 getRowId={getRowId}
                 quickFilterText={quickFilterText}
                 rowModelProps={rowModelProps}
-                columnDefs={columnDefs(workspace._id, permissionType, categories, onDeletePermissions, onEditPermissions)}
+                columnDefs={columnDefs(workspace._id, permissionType, categories, onDeletePermissions, onEditPermissions, units)}
                 ref={ref}
             />
         );

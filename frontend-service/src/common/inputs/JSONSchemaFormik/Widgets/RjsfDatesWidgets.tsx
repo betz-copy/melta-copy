@@ -12,7 +12,7 @@ import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import i18next from 'i18next';
 import React, { JSX } from 'react';
-import { environment } from '../../../globals';
+import { environment } from '../../../../globals';
 
 const { date, dateTime } = environment.formats;
 
