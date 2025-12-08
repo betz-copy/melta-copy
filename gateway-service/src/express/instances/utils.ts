@@ -23,12 +23,10 @@ class InstancesUtils extends DefaultController {
         this.instancesService = new InstancesService(workspaceId);
     }
 
-    async validateEntityProperties(properties: IEntity['properties'], templateId: string, userId: string, childTemplateId?: string) {
+    async validateEntityProperties(properties: IEntity['properties'], templateId: string, childTemplateId?: string) {
         const template = childTemplateId
             ? await this.entityTemplateService.getChildTemplateById(childTemplateId)
             : await this.entityTemplateService.getEntityTemplateById(templateId);
-
-        const currentUser = await UserService.getUserById(userId);
 
         const units: string[] = [];
         const relationshipRefs: Record<string, string[]> = {};
@@ -61,13 +59,6 @@ class InstancesUtils extends DefaultController {
             const fullUnits = await UserService.getUnitsByIds(units);
 
             if (fullUnits.length !== units.length) throw new ValidationError('Some units do not exist');
-
-            const userUnits = currentUser.units?.[this.workspaceId];
-
-            if (userUnits) {
-                const inaccessibleUnits = fullUnits.filter((fullUnit) => !userUnits.includes(fullUnit._id));
-                if (inaccessibleUnits) throw new ValidationError('User has no permission for some units');
-            }
         }
 
         if (Object.entries(relationshipRefs).length) {

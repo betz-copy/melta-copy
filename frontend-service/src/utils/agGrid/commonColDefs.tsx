@@ -12,6 +12,7 @@ import {
 import { PriorityHigh } from '@mui/icons-material';
 import { Box, Grid, Tooltip, tooltipClasses } from '@mui/material';
 import i18next from 'i18next';
+import { isEmpty } from 'lodash';
 import { EntityWizardValues } from '../../common/dialogs/entity';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
@@ -60,6 +61,7 @@ const isPropertyInvalid = <Data extends IColDefData>(props: ICellRendererParams<
     if (!ignoreType || !hasErrors(props.data)) return undefined;
 
     return props.data.errors.find((error) => {
+        if (isEmpty(error.metadata)) return false;
         switch (error.type) {
             case ActionErrors.required:
                 return (error.metadata as IRequiredConstraint).property.split('.').filter(Boolean)[0] === property;
@@ -68,7 +70,7 @@ const isPropertyInvalid = <Data extends IColDefData>(props: ICellRendererParams<
                     (errorProperty) => errorProperty.split('.').filter(Boolean)[0] === property,
                 );
             case ActionErrors.validation:
-                return (error.metadata as IValidationError).path.split('/').filter(Boolean)[0] === property;
+                return (error.metadata as IValidationError)?.path.split('/').filter(Boolean)[0] === property;
             case ActionErrors.notFound: {
                 return (error.metadata as INotFoundError).property === property;
             }

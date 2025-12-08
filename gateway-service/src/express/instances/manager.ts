@@ -653,7 +653,18 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const succeededEntities: IEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
         const results: IEntity[] = [];
-        const expandedEntities = await this.service.getEntitiesWithDirectRelationships(entitiesToUpdate, updatedInstanceData.templateId);
+        let filter: ISearchEntitiesOfTemplateBody['filter'];
+
+        if (entitiesToUpdate.selectAll && childTemplateId && (entitiesToUpdate as IMultipleSelect<true>).filter) {
+            const childFilters = await this.instanceUtils.getChildFilters(childTemplateId, userId);
+            filter = getFilterModal([childFilters, (entitiesToUpdate as IMultipleSelect<true>).filter]);
+        }
+
+        const expandedEntities = await this.service.getEntitiesWithDirectRelationships(
+            { ...entitiesToUpdate, filter },
+            updatedInstanceData.templateId,
+        );
+
         const template = await this.entityTemplateService.getEntityTemplateById(updatedInstanceData.templateId);
 
         const handleUpdateEntity = async ({ entity }: IEntityWithDirectRelationships) => {
@@ -781,7 +792,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
     ) {
         const { templateId, properties, files: upserstedFiles } = await this.handlePreparationsBeforeCreateEntity(instanceData, files, serialNumbers);
 
-        await this.instanceUtils.validateEntityProperties(properties, templateId, userId, childTemplateId);
+        await this.instanceUtils.validateEntityProperties(properties, templateId, childTemplateId);
 
         const childFilters = childTemplateId ? await this.instanceUtils.getChildFilters(childTemplateId, userId) : undefined;
 
@@ -1106,7 +1117,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
     ) {
         const { props: uploadedFilesAndProperties, files: updatedFiles } = await this.uploadInstanceFiles(files, updatedInstanceData.properties);
 
-        await this.instanceUtils.validateEntityProperties(updatedInstanceData.properties, updatedInstanceData.templateId, userId, childTemplateId);
+        await this.instanceUtils.validateEntityProperties(updatedInstanceData.properties, updatedInstanceData.templateId, childTemplateId);
 
         const currentEntity = await this.service.getEntityInstanceById(id);
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
