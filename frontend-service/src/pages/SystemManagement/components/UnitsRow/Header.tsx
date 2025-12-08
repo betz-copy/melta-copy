@@ -5,7 +5,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { Grid, IconButton, Tooltip } from '@mui/material';
 import i18next from 'i18next';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import SearchInput from '../../../../common/inputs/SearchInput';
 import { flattenTree } from '../../../../common/Tree';
 import { IMongoUnit, IUnitHierarchy } from '../../../../interfaces/units';
@@ -24,68 +24,15 @@ interface HeaderProps {
             unit: Partial<IMongoUnit> | IMongoUnit | null;
         }>
     >;
+
+    isShowDisabled: boolean;
+    setIsShowDisabled: React.Dispatch<React.SetStateAction<boolean>>;
+
+    onSearch: (value: string) => void;
 }
 
-const filterNodes = (
-    node: IUnitHierarchy,
-    filterObject: Record<string, { value: any; mode: 'includes' | 'equals' }>,
-    flattenedTree: IUnitHierarchy[] = [],
-): { node: IUnitHierarchy; flattenTree: IUnitHierarchy[] } | null => {
-    const matches = Object.entries(filterObject).every(([prop, rule]) => {
-        const val = node[prop as keyof IUnitHierarchy];
-        if (rule.value == null) return true;
-        return rule.mode === 'includes' ? val?.toString().toLowerCase().includes(String(rule.value).toLowerCase()) : val === rule.value;
-    });
-
-    const children = node.children?.flatMap((child) => filterNodes(child, filterObject, flattenedTree)?.node ?? []);
-
-    if (!matches && !children.length) return null;
-    if (filterObject.disabled && node.disabled && !matches && !children.length) return null;
-
-    const newNode = { ...node, children };
-    flattenedTree.push(newNode);
-
-    return { node: newNode, flattenTree: flattenedTree };
-};
-
-const Header = ({ setFilteredUnits, hierarchy, setWizardDialogState, setExpandedIds, expandedIds }: HeaderProps) => {
-    const [isShowDisabled, setIsShowDisabled] = useState<boolean>(false);
-    const [search, setSearch] = useState<string>();
-
+const Header = ({ setWizardDialogState, setExpandedIds, expandedIds, onSearch, isShowDisabled, setIsShowDisabled, hierarchy }: HeaderProps) => {
     const flattenedTree = useMemo(() => flattenTree(hierarchy, ({ _id }) => _id, true), [hierarchy]);
-
-    const filterUnitsOnSearchAndDisabled = useCallback(() => {
-        const filteredUnits = hierarchy.flatMap(
-            (singleHierarchy) =>
-                filterNodes(singleHierarchy, {
-                    name: { value: search, mode: 'includes' },
-                    ...(isShowDisabled ? {} : { disabled: { value: false, mode: 'equals' } }),
-                }) ?? [],
-        );
-
-        setFilteredUnits(filteredUnits.flatMap((unit) => unit?.node ?? []));
-
-        return filteredUnits;
-    }, [hierarchy, isShowDisabled, search, setFilteredUnits]);
-
-    useEffect(() => {
-        const filteredUnits = filterUnitsOnSearchAndDisabled();
-
-        if (search?.trim()) {
-            setExpandedIds(filteredUnits.flatMap((singleHierarchy) => singleHierarchy?.flattenTree.map(({ _id }) => _id) ?? []));
-        }
-    }, [search, setExpandedIds, filterUnitsOnSearchAndDisabled]);
-
-    const onSearch = useCallback(
-        _debounce((value: string) => {
-            if (!value.trim()) {
-                filterUnitsOnSearchAndDisabled();
-                setExpandedIds([]);
-            }
-            setSearch(value);
-        }, 500),
-        [],
-    );
 
     return (
         <Grid

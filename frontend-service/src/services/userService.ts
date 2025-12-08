@@ -163,7 +163,7 @@ export const getAllWorkspaceRolesRequest = async (workspaceIds: string[]) => {
     return data;
 };
 
-export const getUnits = async (params: Partial<IUnit> & Pick<IUnit, 'workspaceId'>) => {
+export const getUnits = async (params: Partial<Omit<IUnit, 'workspaceId'>> & { workspaceIds: string[] }) => {
     const { data } = await axios.get<IGetUnits>(`${units}`, { params });
     return data;
 };

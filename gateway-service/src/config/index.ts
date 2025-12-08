@@ -283,6 +283,8 @@ const config = {
     excel: {
         multipleFilesName: env.get('MULTIPLE_FILES_NAME').default('attachmentZip').asString(),
         columnWidth: env.get('COLUMN_WIDTH').default(20).asIntPositive(),
+        or: env.get('OR_MULTI_ENUM').default('/ ').asString(),
+        and: env.get('AND_ENUM').default(', ').asString(),
     },
     loadExcel: {
         maxValidationRow: env.get('MAX_VALIDATION_ROW').default(100).asIntPositive(),

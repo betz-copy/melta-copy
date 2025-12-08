@@ -1,17 +1,19 @@
-import { Box, Grid, Tab, Typography, useTheme } from '@mui/material';
-import { RelationshipIcon } from './RelationshipIcon';
-import { TabContext, TabList, TabPanel } from '@mui/lab';
-import React, { useEffect, useMemo, useState } from 'react';
-import i18next from 'i18next';
-import { CustomIcon } from '../../common/CustomIcon';
 import { Hive as HiveIcon } from '@mui/icons-material';
-import { ICategoryMap } from '../../interfaces/categories';
-import { ConnectionsTable, INestedRelationshipTemplates } from '.';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
+import { Box, Grid, Tab, Typography, useTheme } from '@mui/material';
+import i18next from 'i18next';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
+import { CustomIcon } from '../../common/CustomIcon';
+import { ICategoryMap } from '../../interfaces/categories';
+import { IChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { IEntityExpanded } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
-import { IEntityExpanded } from '../../interfaces/entities';
-import { IChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { INestedRelationshipTemplates } from '.';
+import { ConnectionsTable } from './ConnectionsTable';
+import { RelationshipIcon } from './RelationshipIcon';
+
 interface EntityConnectionsProps {
     currentEntityTemplate: IMongoEntityTemplatePopulated;
     templateIds: string[];
@@ -23,7 +25,6 @@ interface EntityConnectionsProps {
     };
     connectionsTemplates?: INestedRelationshipTemplates[];
     groupChildTemplate: Record<string, IChildTemplatePopulated[]>;
-
 }
 
 export const EntityConnections: React.FC<EntityConnectionsProps> = ({
@@ -36,7 +37,6 @@ export const EntityConnections: React.FC<EntityConnectionsProps> = ({
 }) => {
     const theme = useTheme();
     const queryClient = useQueryClient();
-
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -69,12 +69,12 @@ export const EntityConnections: React.FC<EntityConnectionsProps> = ({
 
                     if (expandedEntity.entity.properties._id === destinationEntity.properties._id)
                         return (
-                            (entityTemplates.get(sourceEntity.templateId) ?? groupChildTemplate[sourceEntity.templateId][0])!.category._id ===
+                            (entityTemplates.get(sourceEntity.templateId) ?? groupChildTemplate[sourceEntity.templateId]?.[0])?.category._id ===
                             category._id
                         );
 
                     return (
-                        (entityTemplates.get(destinationEntity.templateId) ?? groupChildTemplate[destinationEntity.templateId][0])?.category._id ===
+                        (entityTemplates.get(destinationEntity.templateId) ?? groupChildTemplate[destinationEntity.templateId]?.[0])?.category._id ===
                         category._id
                     );
                 }).length,
@@ -85,11 +85,10 @@ export const EntityConnections: React.FC<EntityConnectionsProps> = ({
     }, [connectionsTemplates, expandedEntity]);
 
     useEffect(() => {
-        if (categoriesWithConnectionsTemplates && categoriesWithConnectionsTemplates.length > 0 && selectedTabId === null) {
+        if (categoriesWithConnectionsTemplates?.length && selectedTabId === null) {
             setSelectedTabId(categoriesWithConnectionsTemplates[0].category._id);
         }
     }, [categoriesWithConnectionsTemplates, selectedTabId]);
-
     return (
         <>
             {categoriesWithConnectionsTemplates && categoriesWithConnectionsTemplates.length > 0 && (

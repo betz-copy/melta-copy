@@ -1,6 +1,6 @@
 import { Grid, Typography } from '@mui/material';
 import { WidgetProps } from '@rjsf/utils';
-import { renderHTML } from '../../../utils/HtmlTagsStringValue';
+import { renderHTML } from '../../../../utils/HtmlTagsStringValue';
 
 const RjsfCommentWidget = ({ options, schema }: WidgetProps) => {
     const { comment, color } = schema;

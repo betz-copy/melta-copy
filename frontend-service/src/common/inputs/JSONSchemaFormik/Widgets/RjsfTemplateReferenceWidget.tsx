@@ -3,11 +3,11 @@ import { useFormikContext } from 'formik';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { IChildTemplateMap } from '../../../interfaces/childTemplates';
-import { IEntity } from '../../../interfaces/entities';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { EntityWizardValues } from '../../dialogs/entity';
-import TemplateEntitiesAutocomplete from '../TemplateEntitiesAutocomplete';
+import { IChildTemplateMap } from '../../../../interfaces/childTemplates';
+import { IEntity } from '../../../../interfaces/entities';
+import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import { EntityWizardValues } from '../../../dialogs/entity';
+import TemplateEntitiesAutocomplete from '../../TemplateEntitiesAutocomplete';
 
 const RjsfTemplateReferenceWidget = ({
     id,

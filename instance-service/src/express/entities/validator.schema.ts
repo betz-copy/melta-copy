@@ -97,7 +97,7 @@ export const createEntityRequestSchema = Joi.object({
         ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
         userId: Joi.string().required(),
         duplicatedFromId: Joi.string().optional(),
-        childTemplateId: Joi.string().optional(),
+        childTemplate: Joi.object({ id: Joi.string().required(), filter: searchFilterSchema.optional() }).optional(),
     },
     query: {},
     params: {},
@@ -386,7 +386,7 @@ export const updateEntityByIdRequestSchema = Joi.object({
         userId: Joi.string(),
         convertToRelationshipField: Joi.boolean().default(false),
         updateOnlyGivenProps: Joi.boolean().default(false),
-        childTemplateId: Joi.string().optional(),
+        childTemplate: Joi.object({ id: Joi.string().required(), filter: searchFilterSchema.optional() }).optional(),
     },
     query: {},
     params: {

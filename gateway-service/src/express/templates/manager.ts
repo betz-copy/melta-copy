@@ -1079,8 +1079,9 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & {
             file?: string;
         },
+        userId: string,
     ) {
-        const entities = await this.instanceManager.getAllTemplateEntities(templateId);
+        const entities = await this.instanceManager.getAllTemplateEntities(templateId, userId);
 
         const usersIds = new Set<string>();
         entities.forEach((entity) => {
@@ -1107,7 +1108,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
                 if (userId && userKey) {
                     const kartoffelUser = kartoffelUsersMapById[userId] ? kartoffelUsersMapById[userId][0] : undefined;
-                    if (kartoffelUser && kartoffelUser[expandedUserFieldValue.expandedUserField?.kartoffelField || '']) {
+                    if (kartoffelUser?.[expandedUserFieldValue.expandedUserField?.kartoffelField || '']) {
                         wasEntityChange = true;
                         entityToUpdate.properties[expandedUserFieldKey] =
                             kartoffelUser[expandedUserFieldValue.expandedUserField?.kartoffelField || ''].toString();
@@ -1247,7 +1248,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         await this.deletePropertyOfEntityTemplate(id, count, removedProperties, currTemplate);
 
-        if (newExpandedUserFields.length) await this.updateInstancesWithUserFields(id, newExpandedUserFields, updatedTemplateData);
+        if (newExpandedUserFields.length) await this.updateInstancesWithUserFields(id, newExpandedUserFields, updatedTemplateData, userId);
 
         try {
             if (propertiesKeysToPluralize.length > 0) await this.instancesService.convertFieldsToPlural(id, propertiesKeysToPluralize);
@@ -1416,7 +1417,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         if (!templateWithoutProperties.properties.properties[values.name].items)
             templateWithoutProperties.properties.properties[values.name].enum = templateEnumFieldValues;
         const { items } = templateWithoutProperties.properties.properties[values.name];
-        if (items && items.enum) {
+        if (items?.enum) {
             items.enum = templateEnumFieldValues;
         }
         try {
