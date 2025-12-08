@@ -1,6 +1,5 @@
 import { Autocomplete, TextField } from '@mui/material';
 import { getIn } from 'formik';
-import React from 'react';
 
 interface WalletAutocompleteProps<T> {
     label: string;
