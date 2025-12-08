@@ -64,8 +64,8 @@ class EntityController extends DefaultController<EntityManager> {
 
     async getExpandedGraphById(req: Request, res: Response) {
         const entityTemplatesMap = fetchPropertyFromRequest<Map<string, IMongoEntityTemplate>>(req, 'entityTemplatesMap');
-        const relationshipMap = fetchPropertyFromRequest<Map<string, IMongoRelationshipTemplate>>(req, 'relationShipsMap');
-        res.json(await this.manager.getExpandedGraphById(req.params.id, req.body, entityTemplatesMap, relationshipMap, req.body.userId));
+        const relationShipsMap = fetchPropertyFromRequest<Map<string, IMongoRelationshipTemplate>>(req, 'relationShipsMap');
+        res.json(await this.manager.getExpandedGraphById(req.params.id, req.body, entityTemplatesMap, relationShipsMap, req.body.userId));
     }
 
     async deleteEntityInstances(req: Request, res: Response) {

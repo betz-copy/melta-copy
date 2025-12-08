@@ -20,7 +20,8 @@ import { IFile } from '../../interfaces/preview';
 import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 import { IMongoStepTemplatePopulated } from '../../interfaces/processes/stepTemplate';
-import RelationshipSelection, { EntityConnectionsProps } from '../../pages/Entity/components/print/RelationshipSelection';
+import NewRelationShipSelection from '../../pages/Entity/components/print/NewRelationshipSelection';
+import { EntityConnectionsProps } from '../../pages/Entity/components/print/RelationshipSelection';
 import { getFile } from '../../utils/getFileType';
 import MultipleSelect from '../inputs/MultipleSelect';
 import BlueTitle from '../MeltaDesigns/BlueTitle';
@@ -73,7 +74,6 @@ const getFilesFromTemplate = (
         return [];
     });
 };
-
 const PrintOptionsDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
@@ -169,7 +169,8 @@ const PrintOptionsDialog: React.FC<{
                     </Grid>
                     <Grid>
                         {type === PrintType.Entity && !!printItem.entityConnections.connectionsTemplates.length && (
-                            <RelationshipSelection expandedEntity={instance} entityConnections={printItem.entityConnections} />
+                            // <RelationshipSelection expandedEntity={instance} entityConnections={printItem.entityConnections} />
+                            <NewRelationShipSelection expandedEntity={instance} />
                         )}
                     </Grid>
                     <Grid marginTop={2}>

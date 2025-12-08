@@ -45,7 +45,7 @@ export const expandEntityToNeoQuery = async (
             WITH path,
                  relationships(path) AS rels
             WITH rels, [r IN rels | type(r)] AS relationshipIds, length(path) AS pathLength
-            RETURN relationshipIds
+            RETURN DISTINCT relationshipIds
           `
         : `
             RETURN elementsOfPath

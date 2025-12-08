@@ -1,4 +1,4 @@
-import { IEntity, ISearchFilter } from '@microservices/shared';
+import { IEntity, IMongoEntityTemplate, IMongoRelationshipTemplate, ISearchFilter } from '@microservices/shared';
 
 export interface IGetExpandedEntityBody {
     disabled: boolean | null;
@@ -7,6 +7,21 @@ export interface IGetExpandedEntityBody {
     filters: { [templateId: string]: { filter?: ISearchFilter; showRelationships: boolean } };
     isOnlyTemplateIds?: boolean;
 }
+
+type ICommonTreeNode = IMongoRelationshipTemplate & {
+    _id: string;
+    parentId: string;
+    depth: number;
+    destinationEntity: IMongoEntityTemplate;
+    sourceEntity: IMongoEntityTemplate;
+    children: ITreeNode[];
+};
+
+export type ITreeNode = ICommonTreeNode & {
+    children: ITreeNode[];
+};
+
+export type ITreeNodeMap = Map<string, { _id: string; children: ITreeNodeMap }>;
 
 export const isRelationshipReference = (object: any): object is IEntity => {
     return (

@@ -1,4 +1,5 @@
 /* eslint-disable no-param-reassign */
+
 import { mapValues } from 'lodash';
 import axios from '../axios';
 import { EntityWizardValues } from '../common/dialogs/entity';
@@ -27,7 +28,7 @@ import {
 } from '../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
-import { IRelationshipTemplate } from '../interfaces/relationshipTemplates';
+import { ITreeNode } from '../interfaces/printingTemplates';
 import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
 import { combineFilters } from '../utils/filters';
@@ -162,10 +163,10 @@ export const getExpandedEntityByIdRequest = async <T extends boolean>(
     },
     filterRecord: IGraphFilterBodyBatch = {},
     childTemplateFilters?: ISearchFilter,
-): Promise<T extends true ? IRelationshipTemplate[] : IEntityExpanded> => {
+): Promise<T extends true ? ITreeNode[] : IEntityExpanded> => {
     const filters = filterModelToFilterOfGraph(filterRecord);
 
-    const { data } = await axios.post<T extends true ? IRelationshipTemplate[] : IEntityExpanded>(`${entities}/expanded/${entityId}`, {
+    const { data } = await axios.post<T extends true ? ITreeNode[] : IEntityExpanded>(`${entities}/expanded/${entityId}`, {
         ...options,
         expandedParams,
         filters: combineFilters(filters['filter'], childTemplateFilters),

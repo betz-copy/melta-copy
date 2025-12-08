@@ -1109,7 +1109,7 @@ class EntityManager extends DefaultManagerNeo4j {
         id: string,
         reqBody: IGetExpandedEntityBody,
         entityTemplatesMap: Map<string, IMongoEntityTemplate>,
-        relationShipMap: Map<string, IMongoRelationshipTemplate>,
+        relationShipsMap: Map<string, IMongoRelationshipTemplate>,
         userId: string,
     ) {
         const { disabled, templateIds, expandedParams, filters, isOnlyTemplateIds } = reqBody;
@@ -1131,7 +1131,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
         const initialExpandedEntity = await this.neo4jClient.readTransaction(
             initialCypherQuery.cypherQuery,
-            isOnlyTemplateIds ? isTemplateOnly(relationShipMap) : normalizeReturnedRelAndEntities(),
+            isOnlyTemplateIds ? isTemplateOnly(entityTemplatesMap, relationShipsMap) : normalizeReturnedRelAndEntities(),
             initialCypherQuery.parameters,
         );
 

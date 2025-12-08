@@ -3,12 +3,14 @@ import {
     IEntity,
     IEntityExpanded,
     IEntityWithDirectRelationships,
+    IMongoEntityTemplate,
     IMongoRelationshipTemplate,
     IRelationship,
     SplitBy,
     ValidationError,
 } from '@microservices/shared';
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
+import { ITreeNode, ITreeNodeMap } from 'instance-service/src/express/entities/interface';
 import neo4j, { Node as Neo4jNode, Relationship as Neo4jRelationship, QueryResult, Transaction } from 'neo4j-driver';
 import { v4 as uuidv4 } from 'uuid';
 import config from '../../config';
@@ -279,18 +281,58 @@ export const normalizeReturnedRelAndEntities =
         };
     };
 
+// TODO: clean function
+const buildTree = (
+    paths: string[][],
+    entityTemplatesMap: Map<string, IMongoEntityTemplate>,
+    relationShipsMap: Map<string, IMongoRelationshipTemplate>,
+): ITreeNode[] => {
+    const roots: ITreeNodeMap = new Map();
+
+    const insert = (map: ITreeNodeMap, [head, ...tail]: string[]) => {
+        if (!head) return;
+
+        if (!map.has(head)) {
+            map.set(head, { _id: head, children: new Map() });
+        }
+
+        insert(map.get(head)!.children, tail);
+    };
+
+    for (const path of paths) insert(roots, path);
+
+    const finalize = (map: ITreeNodeMap, depth = 0, parentId = ''): ITreeNode[] =>
+        [...map.values()].flatMap((n) => {
+            const relationshipFromMongo = relationShipsMap.get(n._id);
+
+            if (!relationshipFromMongo) return [];
+
+            const sourceEntity = entityTemplatesMap.get(relationshipFromMongo.sourceEntityId);
+            const destinationEntity = entityTemplatesMap.get(relationshipFromMongo.destinationEntityId);
+
+            if (!sourceEntity || !destinationEntity) return [];
+
+            return {
+                ...relationshipFromMongo,
+                sourceEntity,
+                destinationEntity,
+                depth,
+                parentId,
+                children: finalize(n.children, depth + 1, n._id),
+            };
+        });
+
+    return finalize(roots);
+};
+
 export const isTemplateOnly =
-    (relationShipsMap: Map<string, IMongoRelationshipTemplate>) =>
+    (entityTemplatesMap: Map<string, IMongoEntityTemplate>, relationShipsMap: Map<string, IMongoRelationshipTemplate>) =>
     (result: QueryResult): any => {
         if (!result.records.length) return null;
 
-        const connections = result.records.flatMap((key) => {
-            const relationshipId = key.get('relationshipIds')[0];
+        const relationships: string[][] = result.records.map((key) => key.get('relationshipIds'));
 
-            return (!relationshipId || relationShipsMap.get(relationshipId)) ?? [];
-        });
-
-        return connections;
+        return buildTree(relationships, entityTemplatesMap, relationShipsMap);
     };
 
 const formatUndirectedRelationship = (relationship: Relationship, node1: Node, node2: Node): IRelationship => {

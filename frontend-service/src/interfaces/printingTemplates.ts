@@ -1,3 +1,6 @@
+import { IMongoEntityTemplate } from './entityTemplates';
+import { IMongoRelationshipTemplate } from './relationshipTemplates';
+
 export interface IPrintSection {
     categoryId: string;
     entityTemplateId: string;
@@ -17,5 +20,18 @@ export interface IMongoPrintingTemplate extends IPrintingTemplate {
     createdAt: Date;
     updatedAt: Date;
 }
+
+type ICommonTreeNode = IMongoRelationshipTemplate & {
+    _id: string;
+    parentId: string;
+    depth: number;
+    destinationEntity: IMongoEntityTemplate;
+    sourceEntity: IMongoEntityTemplate;
+    children: ITreeNode[];
+};
+
+export type ITreeNode = ICommonTreeNode & {
+    children: ITreeNode[];
+};
 
 export type IPrintingTemplateMap = Map<string, IMongoPrintingTemplate>;
