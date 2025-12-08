@@ -152,14 +152,14 @@ export const editManyEntitiesByExcelRequest = async (
     return data;
 };
 
-export const getExpandedEntityByIdRequest = async <T extends boolean>(
+export const getExpandedEntityByIdRequest = async <T extends boolean = false>(
     entityId: string,
     expandedParams: Record<string, { minLevel?: number; maxLevel: number }>,
     options?: {
         disabled?: boolean;
         templateIds: string[];
         childTemplateId?: string;
-        isOnlyTemplateIds: T;
+        isOnlyTemplateIds?: T;
     },
     filterRecord: IGraphFilterBodyBatch = {},
     childTemplateFilters?: ISearchFilter,

@@ -1,11 +1,21 @@
+import { Dispatch, SetStateAction } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import Tree from '../../../../common/Tree';
-import { IEntityExpanded } from '../../../../interfaces/entities';
+import { IConnection, IEntityExpanded } from '../../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { ITreeNode } from '../../../../interfaces/printingTemplates';
 import { getExpandedEntityByIdRequest } from '../../../../services/entitiesService';
 import { useUserStore } from '../../../../stores/user';
 import { getAllAllowedEntities } from '../../../../utils/permissions/templatePermissions';
+import { INestedRelationshipTemplates } from '../..';
+
+export type EntityConnectionsProps = {
+    connectionsTemplates: INestedRelationshipTemplates[];
+    setConnectionsTemplates: Dispatch<SetStateAction<INestedRelationshipTemplates[]>>;
+    setConnectionsInstances: Dispatch<SetStateAction<IConnection[]>>;
+    selectedConnections: INestedRelationshipTemplates[];
+    setSelectedConnections: Dispatch<SetStateAction<INestedRelationshipTemplates[]>>;
+};
 
 const NewRelationShipSelection: React.FC<{
     expandedEntity: IEntityExpanded;
