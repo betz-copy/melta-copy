@@ -116,11 +116,10 @@ const errorColDef = <Data extends IColDefData>(
                     propertyName: relatedIdentifier,
                 });
             } else if (errorMetadata.type === NotFoundErrorTypes.userNotFound) {
-                const { attemptedIds, type } = error.metadata as IUsersNotFoundError;
-                if (type === NotFoundErrorTypes.userNotFound)
-                    message = i18next.t(`wizard.entity.loadEntities.${attemptedIds.length > 1 ? 'usersNotFound' : 'userNotFound'}`, {
-                        attemptedIds: attemptedIds.join(','),
-                    });
+                const { attemptedIds } = errorMetadata as IUsersNotFoundError;
+                message = i18next.t(`wizard.entity.loadEntities.${attemptedIds.length > 1 ? 'usersNotFound' : 'userNotFound'}`, {
+                    attemptedIds: attemptedIds.join(','),
+                });
             }
             break;
         }
@@ -875,8 +874,9 @@ export const unitColDef = <Data extends IColDefData>(
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
             const error = isPropertyInvalid(props, field, ignoreType);
             if (error) return errorColDef(props, error, value);
+            const cellValue = props.valueFormatted !== '' ? props.valueFormatted : props.value;
 
-            return <Value hideValue={hideValue} color={getColor(props, field)} value={props.valueFormatted ?? ''} searchValue={searchValue} />;
+            return <Value hideValue={hideValue} color={getColor(props, field)} value={cellValue ?? ''} searchValue={searchValue} />;
         },
         valueFormatter: ({ value }) => getUnitField(units, value, 'name'),
         headerName: value.title,

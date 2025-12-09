@@ -48,6 +48,7 @@ import {
 } from '@microservices/shared';
 import axios from 'axios';
 import { stream } from 'exceljs';
+import { unflattenUnitHierarchy } from 'gateway-service/src/utils/units';
 import { keyBy, mapValues, omit } from 'lodash';
 import { menash } from 'menashmq';
 import pMap from 'p-map';
@@ -498,8 +499,10 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const failedEntities: IFailedEntity[] = [];
 
         if (files && !entities) {
+            const units = (await unflattenUnitHierarchy(this.workspaceId, userId)).map((unit) => unit._id);
+
             const workspace = await WorkspaceService.getById(this.workspaceId);
-            entities = await getAllEntitiesFromExcel(files, template, failedEntities, workspace, relatedTemplatesMap);
+            entities = await getAllEntitiesFromExcel(files, template, failedEntities, workspace, relatedTemplatesMap, units);
         }
 
         const serialStarters = getSerialStarters(template);
@@ -567,6 +570,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
     async getChangedEntitiesFromExcel(templateId: string, file: UploadedFile, userId: string, childTemplateId?: string) {
         const { metaData: template, type } = await this.handleTemplate(templateId, childTemplateId);
         const { relatedTemplatesMap } = await this.getRelatedTemplates(template, userId);
+        const units = (await unflattenUnitHierarchy(this.workspaceId, userId)).map((unit) => unit._id);
 
         const failedEntities: IFailedEntity[] = [];
         const workspace = await WorkspaceService.getById(this.workspaceId);
@@ -580,6 +584,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             relatedTemplatesMap,
             this.workspaceId,
             workspace.metadata?.excel?.entitiesFileLimit,
+            units,
             oldEntities,
         );
 
@@ -792,7 +797,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
     ) {
         const { templateId, properties, files: upserstedFiles } = await this.handlePreparationsBeforeCreateEntity(instanceData, files, serialNumbers);
 
-        await this.instanceUtils.validateEntityProperties(properties, templateId, childTemplateId);
+        await this.instanceUtils.validateEntityProperties(properties, templateId, userId, childTemplateId);
 
         const childFilters = childTemplateId ? await this.instanceUtils.getChildFilters(childTemplateId, userId) : undefined;
 
@@ -1117,7 +1122,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
     ) {
         const { props: uploadedFilesAndProperties, files: updatedFiles } = await this.uploadInstanceFiles(files, updatedInstanceData.properties);
 
-        await this.instanceUtils.validateEntityProperties(updatedInstanceData.properties, updatedInstanceData.templateId, childTemplateId);
+        await this.instanceUtils.validateEntityProperties(updatedInstanceData.properties, updatedInstanceData.templateId, userId, childTemplateId);
 
         const currentEntity = await this.service.getEntityInstanceById(id);
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
