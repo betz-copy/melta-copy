@@ -27,6 +27,7 @@ import { useMeltaPlusStore } from '../../stores/meltaPlus';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { sideBarTransition } from '../../theme';
+import { buildUrl } from '../../utils/buildUrl';
 import { CustomIcon, CustomImage } from '../CustomIcon';
 import { GlobalSearchBar } from '../EntitiesPage/Headline';
 import IconButtonWithPopover from '../IconButtonWithPopover';
@@ -209,7 +210,12 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             <GlobalSearchBar
                                 onSearch={(searchValue) => {
                                     handleChangeActiveButton(true, searchKey);
-                                    navigate(`${searchPath}?${searchKey}=${searchValue}&${viewModeKey}=${viewModeOptions.templatesTables}`);
+                                            navigate(
+                                                buildUrl(searchPath, {
+                                                    [searchKey]: searchValue,
+                                                    [viewModeKey]: viewModeOptions.templatesTables,
+                                                })
+                                            );
                                 }}
                                 placeholder={i18next.t('pages.globalSearch')}
                                 size="small"
@@ -287,7 +293,11 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             ) && (
                                 <NavButton
                                     key={category._id}
-                                    to={`/category/${category._id}?${semanticSearchKey}=false&${searchKey}=&${viewModeKey}=${viewModeOptions.templatesTables}`}
+                                    to={buildUrl(`/category/${category._id}`, {
+                                        [semanticSearchKey]: false,
+                                        [searchKey]: "",
+                                        [viewModeKey]: viewModeOptions.templatesTables,
+                                    })}
                                     text={category.displayName}
                                     isDrawerOpen={isDrawerOpen}
                                     onChangeToActive={(isActive) => {
