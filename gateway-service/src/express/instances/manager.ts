@@ -48,7 +48,6 @@ import {
 } from '@microservices/shared';
 import axios from 'axios';
 import { stream } from 'exceljs';
-import { unflattenUnitHierarchy } from 'gateway-service/src/utils/units';
 import { keyBy, mapValues, omit } from 'lodash';
 import { menash } from 'menashmq';
 import pMap from 'p-map';
@@ -73,6 +72,7 @@ import { objectFilter } from '../../utils/object';
 import RabbitManager from '../../utils/rabbit';
 import { createTextsFromEntitiesWithFiles, formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
 import { getRelatedTemplateIds } from '../../utils/templates';
+import { unflattenUnitHierarchy } from '../../utils/units';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import WorkspaceService from '../workspaces/service';
 import { patchDocumentAsStream } from './documentExport';
