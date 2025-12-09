@@ -48,7 +48,7 @@ const {
     notifications,
     searchPath,
     dashboard: { dashboardPath },
-    searchParams
+    searchParams: {viewModeKey, searchKey, semanticSearchKey, viewModeOptions},
 } = environment;
 
 const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
@@ -208,8 +208,8 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         {isDrawerOpen ? (
                             <GlobalSearchBar
                                 onSearch={(searchValue) => {
-                                    handleChangeActiveButton(true, searchParams.searchKey);
-                                    navigate(`${searchPath}?${searchParams.searchKey}=${searchValue}&${searchParams.viewModeKey}=${searchParams.viewModeOptions.templatesTables}`);
+                                    handleChangeActiveButton(true, searchKey);
+                                    navigate(`${searchPath}?${searchKey}=${searchValue}&${viewModeKey}=${viewModeOptions.templatesTables}`);
                                 }}
                                 placeholder={i18next.t('pages.globalSearch')}
                                 size="small"
@@ -287,7 +287,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             ) && (
                                 <NavButton
                                     key={category._id}
-                                    to={`/category/${category._id}?${searchParams.semanticSearchKey}=false&${searchParams.searchKey}=&${searchParams.viewModeKey}=${searchParams.viewModeOptions.templatesTables}`}
+                                    to={`/category/${category._id}?${semanticSearchKey}=false&${searchKey}=&${viewModeKey}=${viewModeOptions.templatesTables}`}
                                     text={category.displayName}
                                     isDrawerOpen={isDrawerOpen}
                                     onChangeToActive={(isActive) => {
