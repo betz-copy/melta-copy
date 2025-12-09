@@ -12,6 +12,7 @@ import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 interface Props{
     categoryId:string;
 }
+
 const Category: React.FC<Props> = ({ categoryId }) => {
     const queryClient = useQueryClient();
 
