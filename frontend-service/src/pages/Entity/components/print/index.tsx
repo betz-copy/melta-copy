@@ -38,7 +38,7 @@ const Print: React.FC<{
     const [shouldPrint, setShouldPrint] = useState<boolean>(false);
 
     const { data, refetch, isLoading } = useQuery({
-        queryKey: ['getExpandedEntityPrint', expandedEntity.entity.properties._id],
+        queryKey: ['getExpandedEntityPrint', expandedEntity.entity.properties._id, selectedRelationShipIds.join(',')],
         queryFn: () => {
             const templateIds: Set<string> = new Set();
             const relIds: Set<string> = new Set();
@@ -84,11 +84,15 @@ const Print: React.FC<{
     } as UseReactToPrintOptions);
 
     useEffect(() => {
-        if (data && shouldPrint && !isLoading) {
+        if (shouldPrint) refetch();
+    }, [shouldPrint, refetch]);
+
+    useEffect(() => {
+        if (data && !isLoading) {
             handlePrint();
             setShouldPrint(false);
         }
-    }, [data, shouldPrint, isLoading, handlePrint]);
+    }, [data, isLoading, handlePrint]);
 
     const getPageMargins = '@page { margin: 15px 10px 15px 10px !important; }';
 
@@ -140,10 +144,7 @@ const Print: React.FC<{
                     setSelectedFiles={setSelectedFiles}
                     filesLoadingStatus={filesLoadingStatus}
                     setFilesLoadingStatus={setFilesLoadingStatus}
-                    onClick={async () => {
-                        setShouldPrint(true);
-                        refetch();
-                    }}
+                    onClick={() => setShouldPrint(true)}
                     title={title}
                     setTitle={setTitle}
                     setSelectedRelationShipIds={setSelectedRelationShipIds}
