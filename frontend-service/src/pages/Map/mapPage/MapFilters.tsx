@@ -27,6 +27,7 @@ type Props = {
         value: { autoSearch: string; listFields: Record<string, IFilterOfField['$in']>; dirty: boolean };
         set: React.Dispatch<React.SetStateAction<{ autoSearch: string; listFields: Record<string, IFilterOfField['$in']>; dirty: boolean }>>;
     };
+    hasShapeResults: boolean;
     sourceTemplate?: IMongoEntityTemplatePopulated;
     isSearchShape?: boolean;
     applyFilterWithShapeSearch: (autoSearch: string, listFields: Record<string, IFilterOfField['$in']>) => void;
@@ -38,11 +39,12 @@ const MapFilters = ({
     moveToEntityLocations,
     entityTemplateMap,
     clearAutocompleteSearch,
-    sourceTemplate,
     filters: {
         value: { autoSearch, listFields, dirty },
         set: setFilters,
     },
+    hasShapeResults,
+    sourceTemplate,
     isSearchShape,
     applyFilterWithShapeSearch,
     setCameraFocus,
@@ -214,7 +216,7 @@ const MapFilters = ({
                                     key={`${field.name}-${index}`}
                                     multiple
                                     options={field.enum ?? field.items?.enum ?? []}
-                                    disabled={autoSearch.length < minSearchLength}
+                                    disabled={autoSearch.length < minSearchLength && !hasShapeResults}
                                     onChange={(_e, newValue) => {
                                         setFilters((prev) => {
                                             const newListFields = { ...prev.listFields };
