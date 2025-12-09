@@ -22,7 +22,7 @@ export type IRelationShipTreeNode = IMongoRelationshipTemplate & {
 
 export type ITreeNodeMap = Map<string, { _id: string; children: ITreeNodeMap }>;
 
-export type IEntityTreeNode = IEntity & { children: IEntityTreeNode[] };
+export type IEntityTreeNode = IEntity & { children: (IEntityTreeNode & { relationshipId: string })[] };
 
 export const isRelationshipReference = (object: any): object is IEntity => {
     return (

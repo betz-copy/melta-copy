@@ -5,75 +5,18 @@ import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import BlueTitle from '../../../../common/MeltaDesigns/BlueTitle';
 import { FileToPrint } from '../../../../common/print/FileToPrint';
-import { IConnection, IEntity } from '../../../../interfaces/entities';
+import { IEntity } from '../../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IFile } from '../../../../interfaces/preview';
-import { INestedRelationshipTemplates } from '../..';
+import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { EntityComponentToPrint, RelationshipPrintTitle } from './EntityComponentToPrint';
 
-export type IEntityTreeNode = IEntity & { children: IEntityTreeNode[] };
-
-// For other component - should remove before cr
-export const renderConnectionTree = (
-    entity: IEntity,
-    connectionsTemplates: INestedRelationshipTemplates[],
-    connectionsInstances: IConnection[],
-    options: {
-        showEntityDates: boolean;
-        showDisabled: boolean;
-    },
-): JSX.Element[] => {
-    const queryClient = useQueryClient();
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-
-    return connectionsTemplates.flatMap(({ relationshipTemplate, isExpandedEntityRelationshipSource, children }) => {
-        const entityType = isExpandedEntityRelationshipSource ? 'sourceEntity' : 'destinationEntity';
-
-        const connectedEntities: Map<string, IEntity> = new Map();
-
-        for (const connection of connectionsInstances) {
-            if (connection.relationship.templateId === relationshipTemplate._id && connection[entityType].properties._id === entity.properties._id) {
-                const connectedEntity =
-                    connection.sourceEntity.properties._id === entity.properties._id ? connection.destinationEntity : connection.sourceEntity;
-
-                if (options.showDisabled || !connectedEntity.properties.disabled)
-                    connectedEntities.set(connectedEntity.properties._id, connectedEntity);
-            }
-        }
-
-        if (!connectedEntities.size) return [];
-
-        return (
-            <div key={relationshipTemplate._id}>
-                <RelationshipPrintTitle
-                    relationshipTemplate={relationshipTemplate}
-                    isExpandedEntityRelationshipSource={isExpandedEntityRelationshipSource}
-                    sxOverride={{ marginTop: '2rem', marginBottom: '0.5rem' }}
-                />
-
-                {[...connectedEntities.values()].map((connectedEntity) => (
-                    <div key={connectedEntity.properties._id} style={{ marginBottom: '0.5rem' }}>
-                        <EntityComponentToPrint
-                            entityTemplate={entityTemplates.get(connectedEntity.templateId)!}
-                            entity={connectedEntity}
-                            options={options}
-                            showPreviewPropertiesOnly
-                            expandedRelationships={{
-                                instances: connectionsInstances,
-                                templates: children,
-                            }}
-                        />
-                    </div>
-                ))}
-            </div>
-        );
-    });
-};
-
+export type IEntityTreeNode = IEntity & { children: (IEntityTreeNode & { relationshipId: string })[] };
 // Render children hierarchically
 export const renderChildrenTree = (
     entity: IEntityTreeNode,
     entityTemplates: IEntityTemplateMap,
+    relationships: IRelationshipTemplateMap,
     options: {
         showEntityDates: boolean;
         showDisabled: boolean;
@@ -82,40 +25,35 @@ export const renderChildrenTree = (
 ): JSX.Element[] => {
     if (!entity.children || entity.children.length === 0) return [];
 
-    // Group children by templateId
-    const childrenByTemplate = entity.children.reduce(
-        (acc, child) => {
-            if (options.showDisabled || !child.properties.disabled) {
-                if (!acc[child.templateId]) {
-                    acc[child.templateId] = [];
-                }
-                acc[child.templateId].push(child);
-            }
-            return acc;
-        },
-        {} as Record<string, IEntityTreeNode[]>,
-    );
+    return entity.children
+        .filter((child) => options.showDisabled || !child.properties.disabled)
+        .map((child) => {
+            const template = entityTemplates.get(child.templateId);
+            const relationship = relationships.get(child.relationshipId);
+            if (!template || !relationship) return null;
 
-    return Object.entries(childrenByTemplate).flatMap(([templateId, children]) => {
-        const template = entityTemplates.get(templateId);
-        if (!template) return [];
-
-        return (
-            <div key={`${templateId}-${depth}`} style={{ marginLeft: depth > 0 ? '1rem' : '0' }}>
-                <Typography variant="h6" color="primary" fontWeight="600" sx={{ marginTop: '1rem', marginBottom: '0.5rem' }}>
-                    {template.displayName}
-                </Typography>
-
-                {children.map((child) => (
-                    <div key={child.properties._id} style={{ marginBottom: '0.5rem' }}>
-                        <EntityComponentToPrint entityTemplate={template} entity={child} options={options} showPreviewPropertiesOnly />
-                        {/* Recursively render nested children */}
-                        {renderChildrenTree(child, entityTemplates, options, depth + 1)}
-                    </div>
-                ))}
-            </div>
-        );
-    });
+            return (
+                <div key={child.properties._id} style={{ marginBottom: '0.5rem' }}>
+                    <RelationshipPrintTitle
+                        relationshipTemplate={{
+                            ...relationship,
+                            sourceEntity: entityTemplates.get(relationship.sourceEntityId)!,
+                            destinationEntity: entityTemplates.get(relationship.destinationEntityId)!,
+                        }}
+                        isExpandedEntityRelationshipSource={true}
+                        sxOverride={{ marginTop: depth === 0 ? '2rem' : '1rem', marginBottom: '0.5rem' }}
+                    />
+                    <EntityComponentToPrint
+                        entityTemplate={template}
+                        entity={child}
+                        options={options}
+                        showPreviewPropertiesOnly
+                        hierarchicalChildren={child.children}
+                    />
+                </div>
+            );
+        })
+        .filter(Boolean) as JSX.Element[];
 };
 
 const ComponentToPrint = React.forwardRef<
@@ -141,8 +79,6 @@ const ComponentToPrint = React.forwardRef<
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const populatedEntityTemplate = entityTemplates.get(entityTemplate._id)!;
 
-    const hasChildren = entity.children && entity.children.length > 0;
-
     return (
         <Box ref={ref} margin="20px" style={{ direction: 'rtl', color: '#000' }}>
             <Grid style={{ pageBreakInside: 'avoid' }}>
@@ -162,16 +98,8 @@ const ComponentToPrint = React.forwardRef<
                     </Box>
                     {<Box>{new Date().toLocaleDateString('en-uk')}</Box>}
                 </Box>
-                <EntityComponentToPrint entityTemplate={populatedEntityTemplate} entity={entity} options={options} />
+                <EntityComponentToPrint entityTemplate={entityTemplate} entity={entity} options={options} hierarchicalChildren={entity.children} />
             </Grid>
-
-            {/* Render hierarchical children */}
-            {hasChildren && (
-                <>
-                    <BlueTitle title={i18next.t('entityPage.relationshipTitle')} component="h4" variant="h4" style={{ marginTop: '2rem' }} />
-                    {renderChildrenTree(entity, entityTemplates, options)}
-                </>
-            )}
 
             {options.showEntityFiles && filesToPrint.length > 0 && (
                 <>

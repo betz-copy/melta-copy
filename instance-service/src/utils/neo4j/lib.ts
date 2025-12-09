@@ -290,7 +290,7 @@ export const normalizeTree =
         if (!rootNode) return null;
 
         const modifiedRoot = nodeToEntity(rootNode);
-        const relationshipMap = new Map<string, Array<{ child: IEntity; relationshipId: string }>>();
+        const relationshipMap = new Map<string, Array<{ child: IEntity; uniqueRelationShipId: string; relationshipId: string }>>();
 
         result.records.forEach((record) => {
             const elements = record.get('elementsOfPath');
@@ -311,20 +311,22 @@ export const normalizeTree =
 
                 // Avoid duplicates
                 const existing = relationshipMap.get(sourceId)!;
-                if (!existing.some((item) => item.relationshipId === relId)) {
+                if (!existing.some((item) => item.uniqueRelationShipId === relId)) {
                     existing.push({
                         child: nodeToEntity(destNode),
-                        relationshipId: relId,
+                        uniqueRelationShipId: relId,
+                        relationshipId: rel.type,
                     });
                 }
             }
         });
 
-        console.log();
-
         const buildTree = (node: IEntity): IEntityTreeNode => {
             const children = relationshipMap.get(node.properties._id) || [];
-            return { ...node, children: children.map(({ child }) => buildTree(child)) };
+            return {
+                ...node,
+                children: children.map(({ child, relationshipId }) => ({ ...buildTree(child), relationshipId })),
+            };
         };
 
         return buildTree(modifiedRoot);

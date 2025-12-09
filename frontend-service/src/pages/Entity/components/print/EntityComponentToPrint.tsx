@@ -1,15 +1,15 @@
 import { Box, SxProps, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
+import { useQueryClient } from 'react-query';
 import { EntityPropertiesInternal } from '../../../../common/EntityProperties';
 import BlueTitle from '../../../../common/MeltaDesigns/BlueTitle';
-import { IConnection, IEntity } from '../../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplatePopulated } from '../../../../interfaces/relationshipTemplates';
-import { INestedRelationshipTemplates } from '../..';
+import { IEntity } from '../../../../interfaces/entities';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { EntityDates } from '../EntityDates';
 import { EntityDisableCheckbox } from '../EntityDisableCheckbox';
-import { renderConnectionTree } from './ComponentToPrint';
+import { IEntityTreeNode, renderChildrenTree } from './ComponentToPrint';
 
 interface RelationshipPrintTitleProps {
     relationshipTemplate: IMongoRelationshipTemplatePopulated;
@@ -58,9 +58,12 @@ const EntityComponentToPrint: React.FC<{
         showDisabled: boolean;
     };
     showPreviewPropertiesOnly?: boolean;
-    expandedRelationships?: { instances: IConnection[]; templates: INestedRelationshipTemplates[] };
-}> = ({ entityTemplate, entity, options, showPreviewPropertiesOnly, expandedRelationships }) => {
+    hierarchicalChildren?: IEntityTreeNode[];
+}> = ({ entityTemplate, entity, options, showPreviewPropertiesOnly, hierarchicalChildren }) => {
     const theme = useTheme();
+    const queryClient = useQueryClient();
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const relationships = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
 
     return (
         <Box border={`2px solid ${theme.palette.primary.main}`} borderRadius="20px" padding="1rem">
@@ -80,23 +83,13 @@ const EntityComponentToPrint: React.FC<{
             <EntityDisableCheckbox isEntityDisabled={entity.properties.disabled} />
             {options.showEntityDates && <EntityDates createdAt={entity.properties.createdAt} updatedAt={entity.properties.updatedAt} toPrint />}
 
-            {expandedRelationships &&
-                expandedRelationships.instances.some((_outerInstance) =>
-                    expandedRelationships.templates.some((expandedTemplate) => {
-                        const expandedRelationship = expandedRelationships.instances.find(
-                            (innerInstance) =>
-                                (expandedTemplate.relationshipTemplate._id === innerInstance.relationship.templateId &&
-                                    entity.properties._id === innerInstance.sourceEntity.properties._id) ||
-                                entity.properties._id === innerInstance.destinationEntity.properties._id,
-                        );
-                        return expandedRelationship !== undefined;
-                    }),
-                ) && (
-                    <div>
-                        <BlueTitle title={i18next.t('entityPage.print.relationships')} component="p" variant="h6" style={{ marginTop: '5px' }} />
-                        {renderConnectionTree(entity, expandedRelationships.templates, expandedRelationships.instances, options)}
-                    </div>
-                )}
+            {/* Render hierarchical children if provided */}
+            {hierarchicalChildren?.length && (
+                <div>
+                    <BlueTitle title={i18next.t('entityPage.print.relationships')} component="p" variant="h6" style={{ marginTop: '5px' }} />
+                    {renderChildrenTree(entity as IEntityTreeNode, entityTemplates, relationships, options, 1)}
+                </div>
+            )}
         </Box>
     );
 };

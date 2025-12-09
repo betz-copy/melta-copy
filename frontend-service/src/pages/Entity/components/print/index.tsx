@@ -24,7 +24,6 @@ const Print: React.FC<{
 
     const [openModal, setOpenModal] = useState<boolean>(false);
 
-    // TODO: files
     const [files, setFiles] = useState<IFile[]>([]);
     const [selectedFiles, setSelectedFiles] = useState<IFile[]>(files);
     const [filesLoadingStatus, setFilesLoadingStatus] = useState<Record<string, boolean>>({});
@@ -57,7 +56,7 @@ const Print: React.FC<{
             return getExpandedEntityByIdRequest(
                 expandedEntity.entity.properties._id,
                 { [expandedEntity.entity.properties._id]: { maxLevel: 4 } },
-                { disabled: false, templateIds: [...templateIds.values()], relationshipIds: [...relIds.values()], toTree: true }, // TODO: disabled
+                { disabled: false, templateIds: [...templateIds.values()], relationshipIds: [...relIds.values()], toTree: true }, // TODO: fix disabled query in backend
             );
         },
         enabled: false,
