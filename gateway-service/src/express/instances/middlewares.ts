@@ -84,7 +84,8 @@ class InstancesValidator extends DefaultController {
         if (unauthorizedTemplates.length)
             throw new ForbiddenError('user not authorized', { metadata: `unauthorized templates ${JSON.stringify(unauthorizedTemplates)}` });
 
-        return keyBy([...allowedEntityTemplates, ...allowedChildTemplates], '_id');
+        const templates = [...allowedEntityTemplates, ...allowedChildTemplates].filter(({ _id }) => templateIds.includes(_id));
+        return keyBy(templates, '_id');
     }
 
     async getAllowedChildTemplatesForInstances(
@@ -133,6 +134,7 @@ class InstancesValidator extends DefaultController {
             if (property.format === 'relationshipReference') {
                 const relatedTemplateId = property.relationshipReference?.relatedTemplateId;
                 if (!relatedTemplateId) return;
+
                 if (requiredConstraints.includes(key)) relatedTemplateIds.push(relatedTemplateId);
             }
         });

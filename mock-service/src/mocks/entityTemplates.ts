@@ -188,7 +188,7 @@ const entityTemplates: IEntityTemplateMock[] = [
                     type: 'string',
                     title: 'מספר טיסה',
                 },
-                Flighttype: {
+                FlightType: {
                     type: 'string',
                     title: 'סוג טיסה',
                     enum: ['ביזנס', 'עסקים', 'תיירים'],
@@ -221,7 +221,7 @@ const entityTemplates: IEntityTemplateMock[] = [
             },
             hide: ['FlightPlatform'],
         },
-        propertiesOrder: ['FlightNum', 'Flighttype', 'FlightPlatform', 'FlightDepart', 'FlightDest', 'FlightDepTime', 'FlightArrTime'],
+        propertiesOrder: ['FlightNum', 'FlightType', 'FlightPlatform', 'FlightDepart', 'FlightDest', 'FlightDepTime', 'FlightArrTime'],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: ['FlightNum', 'FlightDepart', 'FlightDest'],
         disabled: false,
@@ -346,7 +346,7 @@ const entityTemplates: IEntityTemplateMock[] = [
                     type: 'string',
                     title: 'חברה',
                 },
-                expirtaionDate: {
+                expirationDate: {
                     type: 'string',
                     title: 'תאריך פג תוקף',
                     format: 'date',
@@ -358,9 +358,9 @@ const entityTemplates: IEntityTemplateMock[] = [
             },
             hide: ['company'],
         },
-        propertiesOrder: ['name', 'company', 'expirtaionDate', 'monthlyAmount'],
+        propertiesOrder: ['name', 'company', 'expirationDate', 'monthlyAmount'],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
-        propertiesPreview: ['name', 'expirtaionDate'],
+        propertiesPreview: ['name', 'expirationDate'],
         disabled: false,
     },
     {
@@ -393,7 +393,7 @@ const entityTemplates: IEntityTemplateMock[] = [
         name: 'phone',
         displayName: 'טלפון',
         category: {
-            name: 'communcation',
+            name: 'communication',
         },
         properties: {
             type: 'object',
@@ -422,7 +422,7 @@ const entityTemplates: IEntityTemplateMock[] = [
         name: 'sim',
         displayName: 'סים',
         category: {
-            name: 'communcation',
+            name: 'communication',
         },
         properties: {
             type: 'object',

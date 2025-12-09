@@ -214,8 +214,7 @@ const TemplateTable = forwardRef<
         return Object.values(properties).some((property) => property.identifier);
     };
 
-    const ExcelDisabledTooltip = getLoadExcelDisabledReason();
-    const isLoadExcelDisabled = !!ExcelDisabledTooltip;
+    const isLoadExcelDisabled = !!getLoadExcelDisabledReason();
     const isEditExcelDisabled = !userHasWritePermissions || !checkIfEditExcelIsDisabled() || template.disabled;
     const editExcelTooltip = isEditExcelDisabled
         ? i18next.t(!userHasWritePermissions ? 'permissions.dontHaveWritePermissionsToTemplate' : 'wizard.entity.loadEntities.tableCantEditExcel')
@@ -355,7 +354,7 @@ const TemplateTable = forwardRef<
                             disabled={isLoadExcelDisabled}
                             initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
                             onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
-                            popoverText={ExcelDisabledTooltip ? i18next.t(ExcelDisabledTooltip) : undefined}
+                            popoverText={getLoadExcelDisabledReason() ? i18next.t(getLoadExcelDisabledReason()!) : undefined}
                         >
                             <Upload
                                 fontSize="small"

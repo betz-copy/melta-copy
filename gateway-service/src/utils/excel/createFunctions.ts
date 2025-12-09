@@ -95,12 +95,12 @@ const TypesToHebrew = (
         return `${propertyType.multiEnum}: ${propertyTemplate.items.enum?.join(and)}`;
     }
 
-    if (type === propertyType.relationshipReference) {
+    if (type === propertyType.relationshipReference && isLoadMode) {
         if (propertyTemplate.relationshipReference?.relatedTemplateId) {
             const relatedTemplate = relatedTemplatesMap[propertyTemplate.relationshipReference.relatedTemplateId];
             const identifierFieldTitle = Object.values(relatedTemplate.properties.properties).find((value) => value.identifier)?.title;
 
-            return isLoadMode ? `${type} ${relatedTemplate?.displayName} ${identifierFieldTitle ? `- ${identifierFieldTitle}` : ''}` : '';
+            return `${type} ${relatedTemplate?.displayName} ${identifierFieldTitle ? `- ${identifierFieldTitle}` : ''}`;
         }
     }
     return type;
@@ -225,9 +225,7 @@ const createWorksheet = async (
     return worksheet;
 };
 
-export const getFileName = (fileId: string) => {
-    return fileId.slice(config.storageService.fileIdLength);
-};
+export const getFileName = (fileId: string) => fileId.slice(config.storageService.fileIdLength);
 
 const relationshipRefCell = (
     cell: Excel.Cell,
