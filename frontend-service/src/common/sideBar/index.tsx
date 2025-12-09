@@ -208,7 +208,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         {isDrawerOpen ? (
                             <GlobalSearchBar
                                 onSearch={(searchValue) => {
-                                    handleChangeActiveButton(true, 'search');
+                                    handleChangeActiveButton(true, searchParams.searchKey);
                                     navigate(`${searchPath}?${searchParams.searchKey}=${searchValue}&${searchParams.viewModeKey}=${searchParams.viewModeOptions.templatesTables}`);
                                 }}
                                 placeholder={i18next.t('pages.globalSearch')}
