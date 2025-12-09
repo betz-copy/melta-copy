@@ -13,7 +13,7 @@ import { EntityComponentToPrint, RelationshipPrintTitle } from './EntityComponen
 
 export type IEntityTreeNode = IEntity & { children: IEntityTreeNode[] };
 
-// For other component
+// For other component - should remove before cr
 export const renderConnectionTree = (
     entity: IEntity,
     connectionsTemplates: INestedRelationshipTemplates[],
@@ -139,6 +139,7 @@ const ComponentToPrint = React.forwardRef<
     if (!entity) return <></>;
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const populatedEntityTemplate = entityTemplates.get(entityTemplate._id)!;
 
     const hasChildren = entity.children && entity.children.length > 0;
 
@@ -148,7 +149,7 @@ const ComponentToPrint = React.forwardRef<
                 <Box paddingBottom="0.4rem" display="flex" justifyContent="space-between" alignItems="center">
                     <Box display="flex" alignItems="center">
                         <Typography component="h4" variant="h4" color="primary" fontWeight="800">
-                            {entityTemplate.category.displayName}
+                            {populatedEntityTemplate.category.displayName}
                         </Typography>
 
                         <Typography variant="h4" fontSize="30px" color="#d3d8df" marginLeft="5px" marginRight="5px">
@@ -156,12 +157,12 @@ const ComponentToPrint = React.forwardRef<
                         </Typography>
 
                         <Typography paddingBottom="2px" variant="h4" fontSize="28px" color="primary">
-                            {entityTemplate.displayName}
+                            {populatedEntityTemplate.displayName}
                         </Typography>
                     </Box>
                     {<Box>{new Date().toLocaleDateString('en-uk')}</Box>}
                 </Box>
-                <EntityComponentToPrint entityTemplate={entityTemplate} entity={entity} options={options} />
+                <EntityComponentToPrint entityTemplate={populatedEntityTemplate} entity={entity} options={options} />
             </Grid>
 
             {/* Render hierarchical children */}
