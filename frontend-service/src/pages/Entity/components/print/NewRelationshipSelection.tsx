@@ -43,11 +43,18 @@ const NewRelationShipSelection: React.FC<{
     return relationShips ? (
         <Tree
             treeItems={relationShips}
-            getItemId={({ _id, parentId, depth }) => `${_id}${parentId}${depth}`}
+            getItemId={({ mongoAndRelId, depth }) => `${mongoAndRelId}&${depth}`}
             getItemLabel={({ sourceEntity, destinationEntity, displayName }) =>
                 `${displayName} (${sourceEntity.displayName} > ${destinationEntity.displayName})`
             }
             removeDivider
+            onSelectItems={(itemIds) => {
+                (itemIds as string[]).map((itemId) => {
+                    const [mongoId, relId, depth] = itemId.split('&');
+                    console.log({ mongoId, relId, depth });
+                });
+            }}
+            selectionPropagation={{ descendants: true, parents: false }}
         />
     ) : (
         <></>

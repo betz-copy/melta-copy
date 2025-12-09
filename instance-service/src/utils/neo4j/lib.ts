@@ -303,7 +303,7 @@ const buildTree = (
 
     const finalize = (map: ITreeNodeMap, depth = 0, parentId = ''): ITreeNode[] =>
         [...map.values()].flatMap((n) => {
-            const relationshipFromMongo = relationShipsMap.get(n._id);
+            const relationshipFromMongo = relationShipsMap.get(n._id.split('&')[0]);
 
             if (!relationshipFromMongo) return [];
 
@@ -314,6 +314,7 @@ const buildTree = (
 
             return {
                 ...relationshipFromMongo,
+                mongoAndRelId: n._id,
                 sourceEntity,
                 destinationEntity,
                 depth,
