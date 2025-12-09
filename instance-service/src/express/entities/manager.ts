@@ -84,6 +84,7 @@ import {
     normalizeReturnedRelAndEntities,
     normalizeSearchByLocationResponse,
     normalizeSearchWithRelationships,
+    normalizeTree,
     runInTransactionAndNormalize,
 } from '../../utils/neo4j/lib';
 import closePolygon from '../../utils/neo4j/location';
@@ -1112,7 +1113,7 @@ class EntityManager extends DefaultManagerNeo4j {
         relationShipsMap: Map<string, IMongoRelationshipTemplate>,
         userId: string,
     ) {
-        const { disabled, templateIds, expandedParams, filters, isOnlyTemplateIds } = reqBody;
+        const { disabled, templateIds, expandedParams, filters, isOnlyTemplateIds, relationshipIds, toTree } = reqBody;
         const fixSearchBody = filters ?? {};
 
         const childTemplates = await this.childTemplateManagerService.searchChildTemplates();
@@ -1122,6 +1123,7 @@ class EntityManager extends DefaultManagerNeo4j {
             fixSearchBody,
             id,
             templateIdsWithChildren,
+            relationshipIds,
             expandedParams,
             entityTemplatesMap,
             id,
@@ -1131,7 +1133,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
         const initialExpandedEntity = await this.neo4jClient.readTransaction(
             initialCypherQuery.cypherQuery,
-            isOnlyTemplateIds ? isTemplateOnly(entityTemplatesMap, relationShipsMap) : normalizeReturnedRelAndEntities(),
+            isOnlyTemplateIds ? isTemplateOnly(entityTemplatesMap, relationShipsMap) : toTree ? normalizeTree() : normalizeReturnedRelAndEntities(),
             initialCypherQuery.parameters,
         );
 

@@ -20,7 +20,7 @@ import { IFile } from '../../interfaces/preview';
 import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 import { IMongoStepTemplatePopulated } from '../../interfaces/processes/stepTemplate';
-import NewRelationShipSelection, { EntityConnectionsProps } from '../../pages/Entity/components/print/NewRelationshipSelection';
+import NewRelationShipSelection from '../../pages/Entity/components/print/NewRelationshipSelection';
 import { getFile } from '../../utils/getFileType';
 import MultipleSelect from '../inputs/MultipleSelect';
 import BlueTitle from '../MeltaDesigns/BlueTitle';
@@ -41,7 +41,6 @@ interface IEntityPrint {
     type: PrintType.Entity;
     template: IMongoEntityTemplatePopulated;
     instance: IEntityExpanded;
-    entityConnections: EntityConnectionsProps;
     options: {
         disabled: IOption;
         entityDates: IOption;
@@ -86,6 +85,9 @@ const PrintOptionsDialog: React.FC<{
     onClick: React.MouseEventHandler<HTMLButtonElement>;
     title: string | undefined;
     setTitle: React.Dispatch<React.SetStateAction<string | undefined>>;
+
+    selectedRelationShipIds: string[];
+    setSelectedRelationShipIds: React.Dispatch<React.SetStateAction<string[]>>;
 }> = ({
     open,
     handleClose,
@@ -99,6 +101,7 @@ const PrintOptionsDialog: React.FC<{
     onClick,
     title,
     setTitle,
+    setSelectedRelationShipIds,
 }) => {
     const theme = useTheme();
     const [isLoading, setIsLoading] = useState(false);
@@ -167,9 +170,9 @@ const PrintOptionsDialog: React.FC<{
                         />
                     </Grid>
                     <Grid>
-                        {type === PrintType.Entity && !!printItem.entityConnections.connectionsTemplates.length && (
+                        {type === PrintType.Entity && (
                             // <RelationshipSelection expandedEntity={instance} entityConnections={printItem.entityConnections} />
-                            <NewRelationShipSelection expandedEntity={instance} />
+                            <NewRelationShipSelection expandedEntity={instance} setSelectedRelationShipIds={setSelectedRelationShipIds} />
                         )}
                     </Grid>
                     <Grid marginTop={2}>

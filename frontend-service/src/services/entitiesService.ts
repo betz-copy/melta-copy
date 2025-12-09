@@ -157,9 +157,11 @@ export const getExpandedEntityByIdRequest = async <T extends boolean = false>(
     expandedParams: Record<string, { minLevel?: number; maxLevel: number }>,
     options?: {
         disabled?: boolean;
+        relationshipIds?: string[];
         templateIds: string[];
         childTemplateId?: string;
         isOnlyTemplateIds?: T;
+        toTree?: boolean;
     },
     filterRecord: IGraphFilterBodyBatch = {},
     childTemplateFilters?: ISearchFilter,

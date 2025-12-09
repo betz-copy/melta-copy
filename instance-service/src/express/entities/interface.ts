@@ -6,23 +6,23 @@ export interface IGetExpandedEntityBody {
     expandedParams: Record<string, { minLevel?: number; maxLevel: number }>;
     filters: { [templateId: string]: { filter?: ISearchFilter; showRelationships: boolean } };
     isOnlyTemplateIds?: boolean;
+    relationshipIds?: string[];
+    toTree?: boolean;
 }
 
-type ICommonTreeNode = IMongoRelationshipTemplate & {
+export type IRelationShipTreeNode = IMongoRelationshipTemplate & {
     _id: string;
     parentId: string;
     depth: number;
     destinationEntity: IMongoEntityTemplate;
     sourceEntity: IMongoEntityTemplate;
-    children: ITreeNode[];
+    children: IRelationShipTreeNode[];
     mongoAndRelId: string; // Concatenation of mongo relationship _id and "&" and neo generated id (for unique ui id)
 };
 
-export type ITreeNode = ICommonTreeNode & {
-    children: ITreeNode[];
-};
-
 export type ITreeNodeMap = Map<string, { _id: string; children: ITreeNodeMap }>;
+
+export type IEntityTreeNode = IEntity & { children: IEntityTreeNode[] };
 
 export const isRelationshipReference = (object: any): object is IEntity => {
     return (

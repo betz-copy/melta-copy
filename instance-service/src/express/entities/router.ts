@@ -83,6 +83,7 @@ entityRouter.get('/get-is-field-used/:id', ValidateRequest(getIfValueFieldIsUsed
 
 entityRouter.post('/rules/dependant', ValidateRequest(getDependentRulesRequestSchema), entityController.getDependentRules);
 
+// TODO: separate isOnlyTemplateIds into a different route
 entityRouter.post(
     '/expanded/:id',
     ValidateRequest(getExpandedGraphByIdRequestSchema),

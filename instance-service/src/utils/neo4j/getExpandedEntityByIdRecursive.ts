@@ -22,6 +22,7 @@ export const expandEntityToNeoQuery = async (
     filters: IGetExpandedEntityBody['filters'],
     entityId: string,
     templateIds: IGetExpandedEntityBody['templateIds'],
+    relationshipIds: IGetExpandedEntityBody['relationshipIds'],
     expandedParams: IGetExpandedEntityBody['expandedParams'],
     entityTemplatesMap: Map<string, IMongoEntityTemplate>,
     mainId: string,
@@ -58,6 +59,7 @@ export const expandEntityToNeoQuery = async (
                 labelFilter: '${templateIds.join('|')}',
                 minLevel: ${expandedParams[entityId].minLevel || 0},
                 maxLevel: ${expandedParams[entityId].maxLevel || 1}
+                ${relationshipIds?.length ? `, relationshipFilter: '${relationshipIds.join('|')}'` : ''}
             })
             YIELD path
             WITH apoc.path.elements(path) AS elementsOfPath, path

@@ -10,7 +10,7 @@ import {
     ValidationError,
 } from '@microservices/shared';
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
-import { ITreeNode, ITreeNodeMap } from 'instance-service/src/express/entities/interface';
+import { IEntityTreeNode, IRelationShipTreeNode, ITreeNodeMap } from 'instance-service/src/express/entities/interface';
 import neo4j, { Node as Neo4jNode, Relationship as Neo4jRelationship, QueryResult, Transaction } from 'neo4j-driver';
 import { v4 as uuidv4 } from 'uuid';
 import config from '../../config';
@@ -281,12 +281,61 @@ export const normalizeReturnedRelAndEntities =
         };
     };
 
+export const normalizeTree =
+    () =>
+    (result: QueryResult): IEntityTreeNode | null => {
+        if (!result.records.length) return null;
+
+        const rootNode = result.records[0].get('elementsOfPath')[0];
+        if (!rootNode) return null;
+
+        const modifiedRoot = nodeToEntity(rootNode);
+        const relationshipMap = new Map<string, Array<{ child: IEntity; relationshipId: string }>>();
+
+        result.records.forEach((record) => {
+            const elements = record.get('elementsOfPath');
+            // Elements alternate: [node, rel, node, rel, node, ...]
+            for (let i = 0; i < elements.length - 1; i += 2) {
+                const sourceNode = elements[i];
+                const rel = elements[i + 1];
+                const destNode = elements[i + 2];
+
+                if (!sourceNode || !rel || !destNode) continue;
+
+                const sourceId = sourceNode.properties._id;
+                const relId = rel.properties._id;
+
+                if (!relationshipMap.has(sourceId)) {
+                    relationshipMap.set(sourceId, []);
+                }
+
+                // Avoid duplicates
+                const existing = relationshipMap.get(sourceId)!;
+                if (!existing.some((item) => item.relationshipId === relId)) {
+                    existing.push({
+                        child: nodeToEntity(destNode),
+                        relationshipId: relId,
+                    });
+                }
+            }
+        });
+
+        console.log();
+
+        const buildTree = (node: IEntity): IEntityTreeNode => {
+            const children = relationshipMap.get(node.properties._id) || [];
+            return { ...node, children: children.map(({ child }) => buildTree(child)) };
+        };
+
+        return buildTree(modifiedRoot);
+    };
+
 // TODO: clean function
-const buildTree = (
+const buildRelationshipTree = (
     paths: string[][],
     entityTemplatesMap: Map<string, IMongoEntityTemplate>,
     relationShipsMap: Map<string, IMongoRelationshipTemplate>,
-): ITreeNode[] => {
+): IRelationShipTreeNode[] => {
     const roots: ITreeNodeMap = new Map();
 
     const insert = (map: ITreeNodeMap, [head, ...tail]: string[]) => {
@@ -303,7 +352,7 @@ const buildTree = (
 
     for (const path of paths) insert(roots, path);
 
-    const finalize = (map: ITreeNodeMap, depth = 0, parentId = ''): ITreeNode[] =>
+    const finalize = (map: ITreeNodeMap, depth = 0, parentId = ''): IRelationShipTreeNode[] =>
         [...map.values()].flatMap((n) => {
             const relationshipFromMongo = relationShipsMap.get(n._id.split('&')[0]);
 
@@ -335,7 +384,7 @@ export const isTemplateOnly =
 
         const relationships: string[][] = result.records.map((key) => key.get('relationshipIds'));
 
-        return buildTree(relationships, entityTemplatesMap, relationShipsMap);
+        return buildRelationshipTree(relationships, entityTemplatesMap, relationShipsMap);
     };
 
 const formatUndirectedRelationship = (relationship: Relationship, node1: Node, node2: Node): IRelationship => {

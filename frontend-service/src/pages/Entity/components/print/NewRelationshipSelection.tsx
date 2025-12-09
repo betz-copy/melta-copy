@@ -19,7 +19,8 @@ export type EntityConnectionsProps = {
 
 const NewRelationShipSelection: React.FC<{
     expandedEntity: IEntityExpanded;
-}> = ({ expandedEntity }) => {
+    setSelectedRelationShipIds: React.Dispatch<React.SetStateAction<string[]>>;
+}> = ({ expandedEntity, setSelectedRelationShipIds }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
@@ -30,6 +31,7 @@ const NewRelationShipSelection: React.FC<{
 
     const templateIds = [...entityTemplates.keys()];
 
+    // TODO: isLoading
     const { data: relationShips } = useQuery<ITreeNode[]>({
         queryKey: ['getExpandedEntity', expandedEntity.entity.properties._id, { templateIds }],
         queryFn: () =>
@@ -43,16 +45,15 @@ const NewRelationShipSelection: React.FC<{
     return relationShips ? (
         <Tree
             treeItems={relationShips}
-            getItemId={({ mongoAndRelId, depth }) => `${mongoAndRelId}&${depth}`}
+            getItemId={({ mongoAndRelId, depth, sourceEntityId, destinationEntityId }) =>
+                `${mongoAndRelId}&${depth}&${sourceEntityId}&${destinationEntityId}`
+            }
             getItemLabel={({ sourceEntity, destinationEntity, displayName }) =>
                 `${displayName} (${sourceEntity.displayName} > ${destinationEntity.displayName})`
             }
             removeDivider
             onSelectItems={(itemIds) => {
-                (itemIds as string[]).map((itemId) => {
-                    const [mongoId, relId, depth] = itemId.split('&');
-                    console.log({ mongoId, relId, depth });
-                });
+                setSelectedRelationShipIds(itemIds as string[]);
             }}
             selectionPropagation={{ descendants: true, parents: false }}
         />

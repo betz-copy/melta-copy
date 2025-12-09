@@ -5,13 +5,15 @@ import React, { useEffect, useRef, useState } from 'react';
 import { UseReactToPrintOptions, useReactToPrint } from 'react-to-print';
 import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
 import PrintOptionsDialog, { PrintType } from '../../../../common/print/PrintOptionsDialog';
-import { IConnection, IEntityExpanded } from '../../../../interfaces/entities';
+import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IFile } from '../../../../interfaces/preview';
 import { lightTheme } from '../../../../theme';
 import { INestedRelationshipTemplates } from '../..';
 import { ComponentToPrint } from './ComponentToPrint';
 import './print.css';
+import { useQuery } from 'react-query';
+import { getExpandedEntityByIdRequest } from '../../../../services/entitiesService';
 
 const Print: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -22,13 +24,10 @@ const Print: React.FC<{
 
     const [openModal, setOpenModal] = useState<boolean>(false);
 
+    // TODO: files
     const [files, setFiles] = useState<IFile[]>([]);
     const [selectedFiles, setSelectedFiles] = useState<IFile[]>(files);
     const [filesLoadingStatus, setFilesLoadingStatus] = useState<Record<string, boolean>>({});
-
-    const [selectedConnections, setSelectedConnections] = useState<INestedRelationshipTemplates[]>([]);
-    const [connectionsTemplates, setConnectionsTemplates] = useState<INestedRelationshipTemplates[]>(connections);
-    const [connectionsInstances, setConnectionsInstances] = useState<IConnection[]>([]);
 
     const [title, setTitle] = useState<string | undefined>(undefined);
 
@@ -36,17 +35,41 @@ const Print: React.FC<{
     const [showEntityDates, setShowEntityDates] = useState<boolean>(true);
     const [showPreviewPropertiesOnly, setShowPreviewPropertiesOnly] = useState<boolean>(false);
 
-    useEffect(() => {
-        setConnectionsTemplates(connections);
-    }, [connections]);
+    const [selectedRelationShipIds, setSelectedRelationShipIds] = useState<string[]>([]);
+    const [shouldPrint, setShouldPrint] = useState<boolean>(false);
+
+    const { data, refetch, isLoading } = useQuery({
+        queryKey: ['getExpandedEntityPrint', expandedEntity.entity.properties._id],
+        queryFn: () => {
+            const templateIds: Set<string> = new Set();
+            const relIds: Set<string> = new Set();
+            let maxDepth: number = 0;
+
+            selectedRelationShipIds.map((selected) => {
+                const [relMongoId, _rel, depth, source, dest] = selected.split('&');
+                templateIds.add(source);
+                templateIds.add(dest);
+                relIds.add(relMongoId);
+
+                if (+depth > maxDepth) maxDepth = +depth;
+            });
+
+            return getExpandedEntityByIdRequest(
+                expandedEntity.entity.properties._id,
+                { [expandedEntity.entity.properties._id]: { maxLevel: 4 } },
+                { disabled: false, templateIds: [...templateIds.values()], relationshipIds: [...relIds.values()], toTree: true }, // TODO: disabled
+            );
+        },
+        enabled: false,
+    });
 
     const handleClose = () => {
-        setSelectedConnections([]);
+        setSelectedRelationShipIds([]);
         setOpenModal(false);
     };
 
     const handleOpen = async () => {
-        setSelectedConnections([]);
+        setSelectedRelationShipIds([]);
         setOpenModal(true);
     };
 
@@ -55,6 +78,13 @@ const Print: React.FC<{
         documentTitle: `${entityTemplate.category.displayName}-${entityTemplate.displayName}-${new Date().toLocaleDateString('en-uk')}`,
         bodyClass: 'print-body',
     } as UseReactToPrintOptions);
+
+    useEffect(() => {
+        if (data && shouldPrint && !isLoading) {
+            handlePrint();
+            setShouldPrint(false);
+        }
+    }, [data, shouldPrint, isLoading, handlePrint]);
 
     const getPageMargins = '@page { margin: 15px 10px 15px 10px !important; }';
 
@@ -82,9 +112,7 @@ const Print: React.FC<{
                     <ComponentToPrint
                         ref={componentRef}
                         entityTemplate={entityTemplate}
-                        expandedEntity={expandedEntity}
-                        connectionsTemplates={selectedConnections}
-                        connectionsInstances={connectionsInstances}
+                        entity={data as any} // TODO: remove any
                         filesToPrint={selectedFiles}
                         setSelectedFiles={setSelectedFiles}
                         setFilesLoadingStatus={setFilesLoadingStatus}
@@ -99,13 +127,6 @@ const Print: React.FC<{
                         type: PrintType.Entity,
                         instance: expandedEntity,
                         template: entityTemplate,
-                        entityConnections: {
-                            connectionsTemplates,
-                            setConnectionsTemplates,
-                            setConnectionsInstances,
-                            selectedConnections,
-                            setSelectedConnections,
-                        },
                         options,
                     }}
                     handleClose={handleClose}
@@ -115,9 +136,14 @@ const Print: React.FC<{
                     setSelectedFiles={setSelectedFiles}
                     filesLoadingStatus={filesLoadingStatus}
                     setFilesLoadingStatus={setFilesLoadingStatus}
-                    onClick={handlePrint}
+                    onClick={async () => {
+                        setShouldPrint(true);
+                        refetch();
+                    }}
                     title={title}
                     setTitle={setTitle}
+                    setSelectedRelationShipIds={setSelectedRelationShipIds}
+                    selectedRelationShipIds={selectedRelationShipIds}
                 />
             )}
         </>
