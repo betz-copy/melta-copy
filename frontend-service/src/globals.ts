@@ -47,8 +47,7 @@ export const environment = {
         searchKey: 'search',
         viewModeOptions: {
             templatesTables: 'templates-tables-view',
-            list: 'list-view',
-            gallery: 'gallery-view',
+            card: 'cards-view',
         },
     },
     graphSettings: {
