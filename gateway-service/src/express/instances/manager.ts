@@ -72,6 +72,7 @@ import { objectFilter } from '../../utils/object';
 import RabbitManager from '../../utils/rabbit';
 import { createTextsFromEntitiesWithFiles, formatEntitiesBulkSearch, sortEntities } from '../../utils/semantic';
 import { getRelatedTemplateIds } from '../../utils/templates';
+import { unflattenUnitHierarchy } from '../../utils/units';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import WorkspaceService from '../workspaces/service';
 import { patchDocumentAsStream } from './documentExport';
@@ -498,8 +499,10 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const failedEntities: IFailedEntity[] = [];
 
         if (files && !entities) {
+            const units = (await unflattenUnitHierarchy(this.workspaceId, userId)).map((unit) => unit._id);
+
             const workspace = await WorkspaceService.getById(this.workspaceId);
-            entities = await getAllEntitiesFromExcel(files, template, failedEntities, workspace, relatedTemplatesMap);
+            entities = await getAllEntitiesFromExcel(files, template, failedEntities, workspace, relatedTemplatesMap, units);
         }
 
         const serialStarters = getSerialStarters(template);
@@ -567,6 +570,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
     async getChangedEntitiesFromExcel(templateId: string, file: UploadedFile, userId: string, childTemplateId?: string) {
         const { metaData: template, type } = await this.handleTemplate(templateId, childTemplateId);
         const { relatedTemplatesMap } = await this.getRelatedTemplates(template, userId);
+        const units = (await unflattenUnitHierarchy(this.workspaceId, userId)).map((unit) => unit._id);
 
         const failedEntities: IFailedEntity[] = [];
         const workspace = await WorkspaceService.getById(this.workspaceId);
@@ -580,6 +584,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             relatedTemplatesMap,
             this.workspaceId,
             workspace.metadata?.excel?.entitiesFileLimit,
+            units,
             oldEntities,
         );
 
@@ -653,7 +658,18 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const succeededEntities: IEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
         const results: IEntity[] = [];
-        const expandedEntities = await this.service.getEntitiesWithDirectRelationships(entitiesToUpdate, updatedInstanceData.templateId);
+        let filter: ISearchEntitiesOfTemplateBody['filter'];
+
+        if (entitiesToUpdate.selectAll && childTemplateId && (entitiesToUpdate as IMultipleSelect<true>).filter) {
+            const childFilters = await this.instanceUtils.getChildFilters(childTemplateId, userId);
+            filter = getFilterModal([childFilters, (entitiesToUpdate as IMultipleSelect<true>).filter]);
+        }
+
+        const expandedEntities = await this.service.getEntitiesWithDirectRelationships(
+            { ...entitiesToUpdate, filter },
+            updatedInstanceData.templateId,
+        );
+
         const template = await this.entityTemplateService.getEntityTemplateById(updatedInstanceData.templateId);
 
         const handleUpdateEntity = async ({ entity }: IEntityWithDirectRelationships) => {

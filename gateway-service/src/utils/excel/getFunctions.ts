@@ -84,8 +84,7 @@ const formatExcel = (
                 }
 
                 const unitId = unitsMap.get(normalizedValue as string);
-                if (!unitId) throw new BadRequestError(invalidUnit, { name: value });
-                return unitId;
+                return unitId ?? normalizedValue;
             }
             if (format === 'relationshipReference') {
                 const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId;
@@ -216,9 +215,11 @@ export const readExcelFile = async (
     relatedTemplatesMap: Record<string, IMongoEntityTemplatePopulated>,
     workspaceId: string,
     entitiesFileLimit = config.loadExcel.entitiesFileLimit,
+    userUnits?: string[],
     oldEntities: IEntityWithDirectRelationships[] = [],
 ) => {
     const isEditMode = oldEntities.length > 0;
+    const isChild = isChildTemplate(template);
 
     const entities: IEntityWithIgnoredRules[] = [];
     const columns = Object.fromEntries(
@@ -230,7 +231,8 @@ export const readExcelFile = async (
     let isFailed = false;
 
     const units = await UserService.getUnits({ workspaceIds: [workspaceId], disabled: false });
-    const unitsMap = new Map(units.map((unit) => [unit.name, unit._id]));
+    const filteredUnits = isChild && userUnits ? units.filter((unit) => userUnits.includes(unit._id)) : units;
+    const unitsMap = new Map(filteredUnits.map((unit) => [unit.name, unit._id]));
 
     await Promise.all(
         files.map(async (file) => {
@@ -281,7 +283,7 @@ export const readExcelFile = async (
                     if (updatedEntity) entities.push({ ...updatedEntity, ignoredRules: [] });
                 } else {
                     entities.push({
-                        templateId: isChildTemplate(template) ? template.parentTemplate._id : template._id,
+                        templateId: isChild ? template.parentTemplate._id : template._id,
                         properties: rowData,
                         ignoredRules: [],
                     });
