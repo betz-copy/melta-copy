@@ -20,7 +20,7 @@ import { IFile } from '../../interfaces/preview';
 import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 import { IMongoStepTemplatePopulated } from '../../interfaces/processes/stepTemplate';
-import NewRelationShipSelection from '../../pages/Entity/components/print/NewRelationshipSelection';
+import NewRelationShipSelection from '../../pages/Entity/components/print/RelationshipSelection';
 import { getFile } from '../../utils/getFileType';
 import MultipleSelect from '../inputs/MultipleSelect';
 import BlueTitle from '../MeltaDesigns/BlueTitle';

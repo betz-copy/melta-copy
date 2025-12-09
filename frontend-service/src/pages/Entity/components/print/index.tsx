@@ -19,7 +19,7 @@ const Print: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
     expandedEntity: IEntityExpanded;
     connections: INestedRelationshipTemplates[];
-}> = ({ entityTemplate, expandedEntity, connections }) => {
+}> = ({ entityTemplate, expandedEntity }) => {
     const componentRef = useRef(null);
 
     const [openModal, setOpenModal] = useState<boolean>(false);
@@ -44,7 +44,7 @@ const Print: React.FC<{
             const relIds: Set<string> = new Set();
             let maxDepth: number = 0;
 
-            selectedRelationShipIds.map((selected) => {
+            selectedRelationShipIds.forEach((selected) => {
                 const [relMongoId, _rel, depth, source, dest] = selected.split('&');
                 templateIds.add(source);
                 templateIds.add(dest);
@@ -55,8 +55,13 @@ const Print: React.FC<{
 
             return getExpandedEntityByIdRequest(
                 expandedEntity.entity.properties._id,
-                { [expandedEntity.entity.properties._id]: { maxLevel: 4 } },
-                { disabled: false, templateIds: [...templateIds.values()], relationshipIds: [...relIds.values()], toTree: true }, // TODO: fix disabled query in backend
+                { [expandedEntity.entity.properties._id]: { maxLevel: 4 } }, // TODO: maxDepth seems to be breaking it
+                {
+                    disabled: false,
+                    templateIds: [...templateIds.values()],
+                    relationshipIds: [...relIds.values()],
+                    toTree: true,
+                },
             );
         },
         enabled: false,

@@ -1,6 +1,6 @@
 import { Box, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import React, { JSX } from 'react';
+import React from 'react';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import BlueTitle from '../../../../common/MeltaDesigns/BlueTitle';
@@ -8,53 +8,9 @@ import { FileToPrint } from '../../../../common/print/FileToPrint';
 import { IEntity } from '../../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IFile } from '../../../../interfaces/preview';
-import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
-import { EntityComponentToPrint, RelationshipPrintTitle } from './EntityComponentToPrint';
+import { EntityComponentToPrint } from './EntityComponentToPrint';
 
 export type IEntityTreeNode = IEntity & { children: (IEntityTreeNode & { relationshipId: string })[] };
-// Render children hierarchically
-export const renderChildrenTree = (
-    entity: IEntityTreeNode,
-    entityTemplates: IEntityTemplateMap,
-    relationships: IRelationshipTemplateMap,
-    options: {
-        showEntityDates: boolean;
-        showDisabled: boolean;
-    },
-    depth: number = 0,
-): JSX.Element[] => {
-    if (!entity.children || entity.children.length === 0) return [];
-
-    return entity.children
-        .filter((child) => options.showDisabled || !child.properties.disabled)
-        .map((child) => {
-            const template = entityTemplates.get(child.templateId);
-            const relationship = relationships.get(child.relationshipId);
-            if (!template || !relationship) return null;
-
-            return (
-                <div key={child.properties._id} style={{ marginBottom: '0.5rem' }}>
-                    <RelationshipPrintTitle
-                        relationshipTemplate={{
-                            ...relationship,
-                            sourceEntity: entityTemplates.get(relationship.sourceEntityId)!,
-                            destinationEntity: entityTemplates.get(relationship.destinationEntityId)!,
-                        }}
-                        isExpandedEntityRelationshipSource={true}
-                        sxOverride={{ marginTop: depth === 0 ? '2rem' : '1rem', marginBottom: '0.5rem' }}
-                    />
-                    <EntityComponentToPrint
-                        entityTemplate={template}
-                        entity={child}
-                        options={options}
-                        showPreviewPropertiesOnly
-                        hierarchicalChildren={child.children}
-                    />
-                </div>
-            );
-        })
-        .filter(Boolean) as JSX.Element[];
-};
 
 const ComponentToPrint = React.forwardRef<
     HTMLDivElement,

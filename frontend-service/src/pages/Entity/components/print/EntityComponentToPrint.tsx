@@ -1,6 +1,6 @@
 import { Box, SxProps, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import React from 'react';
+import React, { JSX } from 'react';
 import { useQueryClient } from 'react-query';
 import { EntityPropertiesInternal } from '../../../../common/EntityProperties';
 import BlueTitle from '../../../../common/MeltaDesigns/BlueTitle';
@@ -9,7 +9,7 @@ import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../i
 import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { EntityDates } from '../EntityDates';
 import { EntityDisableCheckbox } from '../EntityDisableCheckbox';
-import { IEntityTreeNode, renderChildrenTree } from './ComponentToPrint';
+import { IEntityTreeNode } from './ComponentToPrint';
 
 interface RelationshipPrintTitleProps {
     relationshipTemplate: IMongoRelationshipTemplatePopulated;
@@ -18,6 +18,50 @@ interface RelationshipPrintTitleProps {
     index?: number;
     sxOverride?: SxProps;
 }
+
+// Render children hierarchically
+export const renderChildrenTree = (
+    entity: IEntityTreeNode,
+    entityTemplates: IEntityTemplateMap,
+    relationships: IRelationshipTemplateMap,
+    options: {
+        showEntityDates: boolean;
+        showDisabled: boolean;
+    },
+    depth: number = 0,
+): JSX.Element[] => {
+    if (!entity.children || entity.children.length === 0) return [];
+
+    return entity.children
+        .filter((child) => options.showDisabled || !child.properties.disabled)
+        .map((child) => {
+            const template = entityTemplates.get(child.templateId);
+            const relationship = relationships.get(child.relationshipId);
+            if (!template || !relationship) return null;
+
+            return (
+                <div key={child.properties._id} style={{ marginBottom: '0.5rem' }}>
+                    <RelationshipPrintTitle
+                        relationshipTemplate={{
+                            ...relationship,
+                            sourceEntity: entityTemplates.get(relationship.sourceEntityId)!,
+                            destinationEntity: entityTemplates.get(relationship.destinationEntityId)!,
+                        }}
+                        isExpandedEntityRelationshipSource={true}
+                        sxOverride={{ marginTop: depth === 0 ? '2rem' : '1rem', marginBottom: '0.5rem' }}
+                    />
+                    <EntityComponentToPrint
+                        entityTemplate={template}
+                        entity={child}
+                        options={options}
+                        showPreviewPropertiesOnly
+                        hierarchicalChildren={child.children}
+                    />
+                </div>
+            );
+        })
+        .filter(Boolean) as JSX.Element[];
+};
 
 export const RelationshipPrintTitle: React.FC<RelationshipPrintTitleProps> = ({
     relationshipTemplate,
