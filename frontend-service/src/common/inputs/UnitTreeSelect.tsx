@@ -119,7 +119,7 @@ const UnitSelect = ({
                 }}
                 onChange={(e) => {
                     setSearch(e.target.value);
-                    if(!e.target.value) onChange(undefined);
+                    if (!e.target.value) onChange(undefined);
                 }}
                 onMouseEnter={() => setHover(true)}
                 onMouseLeave={() => setHover(false)}
@@ -127,20 +127,15 @@ const UnitSelect = ({
                 slotProps={{
                     input: {
                         autoComplete: 'off',
-                        startAdornment: value ? (
+                        startAdornment: value?.length ? (
                             <Box
                                 sx={{
                                     display: 'flex',
-                                    justifyContent: 'center',
                                     alignItems: 'center',
-                                    gap: '0.5rem',
+                                    gap: '0.25rem',
                                     ...(multiple
                                         ? {
-                                              width: '100%',
-                                              flexWrap: 'wrap',
                                               maxHeight: '8rem',
-                                              overflowY: 'auto',
-                                              overflowX: 'hidden',
                                               direction: 'rtl',
                                               padding: '0.5rem',
                                               justifyContent: 'flex-start',

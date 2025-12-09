@@ -6,8 +6,6 @@ import {
     ActionsLog,
     ActionTypes,
     BadRequestError,
-    combineFilters,
-    getFilterFromChildTemplate,
     IAction,
     IActivityLog,
     IBrokenRule,
@@ -2328,21 +2326,14 @@ class EntityManager extends DefaultManagerNeo4j {
         return filterDependentRulesViaAggregation(rules, relationshipTemplateId);
     }
 
-    async getChartByTemplate(
-        templateId: string,
-        { chartsData, childTemplateId, units }: { chartsData: IChartBody[]; childTemplateId?: string; units: IGetUnits },
-    ) {
-        const childTemplate = childTemplateId ? await this.childTemplateManagerService.getChildTemplateById(childTemplateId) : undefined;
-
+    async getChartByTemplate(templateId: string, { chartsData, units }: { chartsData: IChartBody[]; units: IGetUnits }) {
         const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
 
         const entityTemplatesMap = new Map([[entityTemplate._id, entityTemplate]]);
         const specialProperties = handleChartPropertiesTemplate(entityTemplate);
 
         const chartPromises = chartsData.map(async ({ filter, xAxis, yAxis, _id }) => {
-            const filters = childTemplateId ? combineFilters(getFilterFromChildTemplate(childTemplate!), filter) : filter;
-
-            const templatesFilter = { [entityTemplate._id]: { filter: filters, showRelationships: false } };
+            const templatesFilter = { [entityTemplate._id]: { filter, showRelationships: false } };
 
             const { cypherQuery: filterQuery, parameters } = templatesFilterToNeoQuery(templatesFilter, entityTemplatesMap);
             const query = buildChartAggregationQuery(xAxis, yAxis, specialProperties, entityTemplate, filterQuery);
