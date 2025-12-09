@@ -292,11 +292,13 @@ const buildTree = (
     const insert = (map: ITreeNodeMap, [head, ...tail]: string[]) => {
         if (!head) return;
 
-        if (!map.has(head)) {
-            map.set(head, { _id: head, children: new Map() });
+        const id = head.split('&')[0];
+
+        if (!map.has(id)) {
+            map.set(id, { _id: head, children: new Map() });
         }
 
-        insert(map.get(head)!.children, tail);
+        insert(map.get(id)!.children, tail);
     };
 
     for (const path of paths) insert(roots, path);
