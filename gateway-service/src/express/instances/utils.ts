@@ -4,7 +4,7 @@ import Kartoffel from '../../externalServices/kartoffel';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import UserService from '../../externalServices/userService';
 import DefaultController from '../../utils/express/controller';
-import { unflattenUnitHierarchy } from '../..//utils/units';
+import { unflattenUnitHierarchy } from '../../utils/units';
 import WorkspaceService from '../workspaces/service';
 
 class InstancesUtils extends DefaultController {
