@@ -49,12 +49,7 @@ import { booleanPointInPolygon, featureCollection, intersect, point as turfPoint
 import { startOfToday, startOfYesterday } from 'date-fns';
 import { flatten, unflatten } from 'flatley';
 import { StatusCodes } from 'http-status-codes';
-import differenceWith from 'lodash.differencewith';
-import groupBy from 'lodash.groupby';
-import isEqual from 'lodash.isequal';
-import mapValues from 'lodash.mapvalues';
-import _partition from 'lodash.partition';
-import pickBy from 'lodash.pickby';
+import { cloneDeep, differenceWith, groupBy, isEqual, mapValues, partition, pickBy } from 'lodash';
 import { Neo4jError, Transaction } from 'neo4j-driver';
 import pLimit from 'p-limit';
 import config from '../../config';
@@ -744,7 +739,7 @@ class EntityManager extends DefaultManagerNeo4j {
                 );
                 const ruleFailuresAfterAction = await this.runRulesOnEntity(transaction, createdEntity);
 
-                const [indicatorRules, rulesToThrowError]: [IRuleFailure[], IRuleFailure[]] = _partition(
+                const [indicatorRules, rulesToThrowError]: [IRuleFailure[], IRuleFailure[]] = partition(
                     ruleFailuresAfterAction,
                     (rule) => rule.rule.actionOnFail === ActionOnFail.INDICATOR,
                 );
@@ -1750,7 +1745,7 @@ class EntityManager extends DefaultManagerNeo4j {
     }
 
     relationshipReferenceObjectToId(entityProperties: IEntity['properties'], entityTemplate: IMongoEntityTemplate) {
-        const entityAfterManipulations = JSON.parse(JSON.stringify(entityProperties));
+        const entityAfterManipulations = cloneDeep(entityProperties);
 
         Object.entries(entityTemplate.properties.properties).forEach(([name, value]) => {
             if (name in entityProperties) {
@@ -1816,7 +1811,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
                 const ruleFailuresAfterAction = await this.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
 
-                const [indicatorRules, rulesToThrowError]: [IRuleFailure[], IRuleFailure[]] = _partition(
+                const [indicatorRules, rulesToThrowError]: [IRuleFailure[], IRuleFailure[]] = partition(
                     ruleFailuresAfterAction,
                     ({ rule: { actionOnFail } }) => actionOnFail === ActionOnFail.INDICATOR,
                 );
