@@ -615,7 +615,10 @@ class EntityManager extends DefaultManagerNeo4j {
                 } else {
                     const currentEntity = await this.getEntityById(entityId);
                     const currentEntityTemplate = entitiesTemplatesByIds.get(currentEntity.templateId)!;
-                    const currentNotPopulated = this.relationshipReferenceObjectToId(currentEntity, currentEntityTemplate);
+                    const currentNotPopulated = {
+                        ...currentEntity,
+                        properties: this.relationshipReferenceObjectToId(currentEntity, currentEntityTemplate),
+                    };
 
                     updatedFields = this.getUpdatedProperties(currentNotPopulated.properties, allProperties, currentEntityTemplate);
                     before = currentEntity.properties;
@@ -1475,6 +1478,9 @@ class EntityManager extends DefaultManagerNeo4j {
         newEntityProperties: Record<string, any>,
         entityTemplate: IMongoEntityTemplate,
     ) {
+        const unPopulatedOldProperties = this.relationshipReferenceObjectToId(oldEntityProperties, entityTemplate);
+        const unPopulatedNewProperties = this.relationshipReferenceObjectToId(newEntityProperties, entityTemplate);
+
         const propertiesWithGeneratedProperties: Record<string, IEntitySingleProperty> = {
             ...entityTemplate.properties.properties,
             disabled: { title: `doesn'tMatter`, type: 'boolean' },
@@ -1484,7 +1490,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
         const templateUpdatedProperties = pickBy(
             propertiesWithGeneratedProperties,
-            (_propertyTemplate, key) => !isEqual(newEntityProperties[key], oldEntityProperties[key]),
+            (_propertyTemplate, key) => !isEqual(unPopulatedNewProperties[key], unPopulatedOldProperties[key]),
         );
 
         return Object.keys(templateUpdatedProperties);
@@ -1654,12 +1660,10 @@ class EntityManager extends DefaultManagerNeo4j {
         const propertiesToUpdate = { ...entityProperties, ...defaultValues };
 
         const entity = await this.getEntityByIdInTransaction(id, transaction);
-        const unPopulatedOldEntity = this.relationshipReferenceObjectToId(entity, entityTemplate);
-        const unPopulatedNewEntity = this.relationshipReferenceObjectToId({ ...entity, properties: propertiesToUpdate }, entityTemplate);
 
         if (entity.properties.disabled) throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
 
-        const updatedProperties = this.getKeysOfUpdatedProperties(unPopulatedOldEntity.properties, unPopulatedNewEntity.properties, entityTemplate);
+        const updatedProperties = this.getKeysOfUpdatedProperties(entity.properties, propertiesToUpdate, entityTemplate);
 
         const updatedColoredFields = indicatorRules ? this.getColoredFields(indicatorRules.map(({ rule }) => rule)) : undefined;
 
@@ -1745,12 +1749,12 @@ class EntityManager extends DefaultManagerNeo4j {
         return { updatedEntity, activityLogsToCreate };
     }
 
-    relationshipReferenceObjectToId(entity: IEntity, entityTemplate: IMongoEntityTemplate) {
-        const entityAfterManipulations = JSON.parse(JSON.stringify(entity.properties));
+    relationshipReferenceObjectToId(entityProperties: IEntity['properties'], entityTemplate: IMongoEntityTemplate) {
+        const entityAfterManipulations = JSON.parse(JSON.stringify(entityProperties));
 
         Object.entries(entityTemplate.properties.properties).forEach(([name, value]) => {
-            if (name in entity.properties) {
-                const propertyValue = entity.properties[name];
+            if (name in entityProperties) {
+                const propertyValue = entityProperties[name];
 
                 if (value.format === 'relationshipReference' && typeof propertyValue !== 'string') {
                     entityAfterManipulations[name] = (propertyValue as IEntity).properties._id;
@@ -1758,7 +1762,7 @@ class EntityManager extends DefaultManagerNeo4j {
             }
         });
 
-        return { ...entity, properties: entityAfterManipulations } as IEntity;
+        return entityAfterManipulations as IEntity['properties'];
     }
 
     async updateEntityById(
@@ -1771,8 +1775,7 @@ class EntityManager extends DefaultManagerNeo4j {
         convertToRelationshipField = false,
     ) {
         const entity = await this.getEntityById(id);
-        const unPopulatedOldEntity = this.relationshipReferenceObjectToId(entity, entityTemplate);
-        const unPopulatedNewEntity = this.relationshipReferenceObjectToId({ ...entity, properties: entityProperties }, entityTemplate);
+        const unPopulatedOldEntityProperties = this.relationshipReferenceObjectToId(entity, entityTemplate);
 
         if (entity.properties.disabled) throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
 
@@ -1783,7 +1786,10 @@ class EntityManager extends DefaultManagerNeo4j {
         }
 
         if (template.actions && isBodyFunctionHasContent(template.actions, IEntityCrudAction.onUpdateEntity)) {
-            const actions = await this.buildActionsArray(IEntityCrudAction.onUpdateEntity, entityProperties, template, userId, unPopulatedOldEntity);
+            const actions = await this.buildActionsArray(IEntityCrudAction.onUpdateEntity, entityProperties, template, userId, {
+                ...entity,
+                properties: unPopulatedOldEntityProperties,
+            });
 
             const bulkManager = new BulkActionManager(this.workspaceId);
             const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
@@ -1795,7 +1801,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
         return this.neo4jClient
             .performComplexTransaction('writeTransaction', async (transaction) => {
-                const updatedProperties = this.getKeysOfUpdatedProperties(unPopulatedOldEntity.properties, unPopulatedNewEntity.properties, template);
+                const updatedProperties = this.getKeysOfUpdatedProperties(entity.properties, entityProperties, template);
                 const ruleFailuresBeforeAction = await this.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
 
                 const { updatedEntity, activityLogsToCreate } = await this.updateEntityByIdInnerTransaction(
