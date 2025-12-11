@@ -98,7 +98,7 @@ const ChartsPage: React.FC = () => {
                 <Grid container justifyContent="center" marginTop="2rem">
                     <CircularProgress />
                 </Grid>
-            ) : charts?.length === 0 ? (
+            ) : !charts?.length ? (
                 <Grid container justifyContent="center" marginTop="2rem">
                     {i18next.t('charts.noChartsFound')}
                 </Grid>
