@@ -1,5 +1,5 @@
-import { ExpandMore, InfoOutlined } from '@mui/icons-material';
-import { Autocomplete, AutocompleteInputChangeReason, AutocompleteProps, TextField, Typography } from '@mui/material';
+import { Add, ExpandMore, InfoOutlined } from '@mui/icons-material';
+import { Autocomplete, AutocompleteInputChangeReason, AutocompleteProps, Box, TextField, Typography } from '@mui/material';
 import i18next from 'i18next';
 import _debounce from 'lodash.debounce';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -328,6 +328,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
             popupIcon={<ExpandMore />}
             renderInput={(params) => {
                 const relProperty = value?.properties[showField];
+                const isTwinWallet = value?.properties._id === '$twin';
 
                 return (
                     <TextField
@@ -343,19 +344,29 @@ const TemplateEntitiesAutocomplete: React.FC<{
                                 : helperText
                         }
                         label={String(label)}
+                        sx={{
+                            opacity: isTwinWallet ? 0.6 : 1,
+                            pointerEvents: 'auto',
+                            '& .MuiInputBase-root.Mui-readOnly': {
+                                backgroundColor: '#F3F5F9',
+                            },
+                            '& .MuiInputLabel-root.Mui-readOnly': {
+                                color: '#BBBED8',
+                            },
+                        }}
                         slotProps={{
                             input: {
                                 ...params.InputProps,
-                                readOnly,
+                                readOnly: isTwinWallet || readOnly,
                                 endAdornment: readOnly ? undefined : params.InputProps.endAdornment,
                                 startAdornment: relProperty ? (
                                     <RelationshipReferenceView entity={value} relatedTemplateId={value.templateId} relatedTemplateField={showField} />
-                                ) : value?.properties._id === '$twin' ? (
-                                    <Typography>יצירת חדש - שכפול מהמקור</Typography>
+                                ) : isTwinWallet ? (
+                                    <Typography>{i18next.t('templateEntitiesAutocomplete.newDestWalletTwinEntity')}</Typography>
                                 ) : undefined,
                                 inputProps: {
                                     ...params.inputProps,
-                                    style: relProperty ? { display: 'none' } : {},
+                                    style: relProperty || isTwinWallet ? { display: 'none' } : {},
                                 },
                             },
                         }}
@@ -377,17 +388,22 @@ const TemplateEntitiesAutocomplete: React.FC<{
                         style={{ display: 'flex', alignItems: 'center', gap: '8px', whiteSpace: 'nowrap' }}
                     >
                         {option.properties['_id'] === '$twin' ? (
-                            <Typography
-                                color="#53566E"
-                                fontSize="14px"
-                                style={{
-                                    textOverflow: 'ellipsis',
-                                    overflow: 'hidden',
-                                    maxWidth: 100,
-                                }}
-                            >
-                                ישות משכופלת
-                            </Typography>
+                            <Box display="flex" alignItems="center" width="100%">
+                                <Add color="primary" />
+                                <Typography
+                                    color="#293271"
+                                    fontSize="14px"
+                                    sx={{
+                                        textOverflow: 'ellipsis',
+                                        overflow: 'hidden',
+                                        whiteSpace: 'nowrap',
+                                        maxWidth: '100%',
+                                        marginLeft: '14px',
+                                    }}
+                                >
+                                    {i18next.t('templateEntitiesAutocomplete.newDestWalletTwinEntity')}
+                                </Typography>
+                            </Box>
                         ) : (
                             <>
                                 {displayOptionValues.map((displayOptionValue, index) => (

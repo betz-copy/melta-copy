@@ -45,9 +45,12 @@ class InstancesUtils extends DefaultController {
                     if (value) users.add(JSON.parse(value)._id);
                     break;
                 case 'relationshipReference': {
-                    const { relatedTemplateId } = prop.relationshipReference!;
-                    if (!relationshipRefs[relatedTemplateId]) relationshipRefs[relatedTemplateId] = [];
-                    relationshipRefs[relatedTemplateId].push(value);
+                    if (value !== '$twin') {
+                        const { relatedTemplateId } = prop.relationshipReference!;
+                        if (!relationshipRefs[relatedTemplateId]) relationshipRefs[relatedTemplateId] = [];
+                        relationshipRefs[relatedTemplateId].push(value);
+                        break;
+                    }
                     break;
                 }
             }
@@ -69,7 +72,6 @@ class InstancesUtils extends DefaultController {
                 if (inaccessibleUnits) throw new ValidationError('User has no permission for some units');
             }
         }
-
         if (Object.entries(relationshipRefs).length) {
             await Promise.all(
                 Object.entries(relationshipRefs).map(async ([templateId, ids]) => {

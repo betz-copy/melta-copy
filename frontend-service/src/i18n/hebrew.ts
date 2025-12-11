@@ -429,6 +429,7 @@ export default {
         failedToSearchEntities: 'נכשל בחיפוש ישויות',
         dependentFieldRequired: 'יש למלא את השדה התלוי "{{field}}" תחילה',
         dependentFieldsRequired: 'יש למלא את השדות התלויים "{{field}}" תחילה',
+        newDestWalletTwinEntity: 'יצירת חדש - שכפול מהמקור',
     },
     userAutocomplete: {
         label: 'משתמש',
