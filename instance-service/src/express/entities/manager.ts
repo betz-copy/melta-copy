@@ -313,7 +313,6 @@ class EntityManager extends DefaultManagerNeo4j {
                         if (entityTemplate.walletTransfer && name === entityTemplate.walletTransfer.to && newDestinationWallet) {
                             const { properties, templateId } = newDestinationWallet;
                             const { updatedAt, createdAt, disabled, _id } = properties;
-                            console.log({ 1: fixedProperties[name], 2: properties });
 
                             fixedProperties[name] = { ...fixedProperties[name], updatedAt, createdAt, disabled, _id };
                             relatedEntitiesByIds[properties._id] = {
@@ -325,17 +324,6 @@ class EntityManager extends DefaultManagerNeo4j {
                     }
                 }
             }),
-        );
-        console.dir(
-            {
-                fixedProperties,
-                relatedEntitiesByIds,
-                important: {
-                    ...generateDefaultProperties(),
-                    ...(await addStringFieldsAndNormalizeSpecialStringValues(fixedProperties, entityTemplate, this.entityTemplateManagerService)),
-                },
-            },
-            { depth: Infinity },
         );
 
         const createdEntity = await runInTransactionAndNormalize(
@@ -349,7 +337,6 @@ class EntityManager extends DefaultManagerNeo4j {
                 },
             },
         );
-        console.dir({ createdEntity }, { depth: Infinity });
 
         await Promise.all(
             Object.entries(entityTemplate.properties.properties).map(async ([name, property]) => {
@@ -366,8 +353,6 @@ class EntityManager extends DefaultManagerNeo4j {
                 }
             }),
         );
-
-        console.log('2');
 
         const allActivityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
 
