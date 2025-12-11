@@ -11,6 +11,10 @@ class UnitsController {
         res.json(await UnitsManager.getUnitsByIds(req.body.ids));
     }
 
+    static async getUnitById(req: Request, res: Response) {
+        res.json(await UnitsManager.getUnit(req.params.unitId));
+    }
+
     static async createUser(req: Request, res: Response) {
         res.json(await UnitsManager.createUnit(req.body));
     }
