@@ -209,8 +209,6 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                     return [{ ...property }];
                 });
 
-                console.log({ errors });
-
                 return (
                     <Form style={{ height: '100%', paddingTop: '10px' }}>
                         <Grid container flexDirection="column" justifyContent="space-between" width="100%" height="100%" minHeight="320px">

@@ -18,7 +18,7 @@ export type EntityConnectionsProps = {
     setSelectedConnections: Dispatch<SetStateAction<INestedRelationshipTemplates[]>>;
 };
 
-const NewRelationShipSelection: React.FC<{
+const RelationshipSelection: React.FC<{
     expandedEntity: IEntityExpanded;
     setSelectedRelationShipIds: React.Dispatch<React.SetStateAction<string[]>>;
 }> = ({ expandedEntity, setSelectedRelationShipIds }) => {
@@ -63,4 +63,4 @@ const NewRelationShipSelection: React.FC<{
     );
 };
 
-export default NewRelationShipSelection;
+export default RelationshipSelection;

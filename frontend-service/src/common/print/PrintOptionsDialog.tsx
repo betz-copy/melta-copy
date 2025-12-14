@@ -20,7 +20,7 @@ import { IFile } from '../../interfaces/preview';
 import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 import { IMongoStepTemplatePopulated } from '../../interfaces/processes/stepTemplate';
-import NewRelationShipSelection from '../../pages/Entity/components/print/RelationshipSelection';
+import RelationshipSelection from '../../pages/Entity/components/print/RelationshipSelection';
 import { getFile } from '../../utils/getFileType';
 import MultipleSelect from '../inputs/MultipleSelect';
 import BlueTitle from '../MeltaDesigns/BlueTitle';
@@ -86,8 +86,7 @@ const PrintOptionsDialog: React.FC<{
     title: string | undefined;
     setTitle: React.Dispatch<React.SetStateAction<string | undefined>>;
 
-    selectedRelationShipIds: string[];
-    setSelectedRelationShipIds: React.Dispatch<React.SetStateAction<string[]>>;
+    setSelectedRelationShipIds?: React.Dispatch<React.SetStateAction<string[]>>;
 }> = ({
     open,
     handleClose,
@@ -170,9 +169,8 @@ const PrintOptionsDialog: React.FC<{
                         />
                     </Grid>
                     <Grid>
-                        {type === PrintType.Entity && (
-                            // <RelationshipSelection expandedEntity={instance} entityConnections={printItem.entityConnections} />
-                            <NewRelationShipSelection expandedEntity={instance} setSelectedRelationShipIds={setSelectedRelationShipIds} />
+                        {type === PrintType.Entity && setSelectedRelationShipIds && (
+                            <RelationshipSelection expandedEntity={instance} setSelectedRelationShipIds={setSelectedRelationShipIds} />
                         )}
                     </Grid>
                     <Grid marginTop={2}>
