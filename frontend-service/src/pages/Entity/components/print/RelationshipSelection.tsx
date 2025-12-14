@@ -1,3 +1,4 @@
+import { CircularProgress } from '@mui/material';
 import { Dispatch, SetStateAction } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import Tree from '../../../../common/Tree';
@@ -31,8 +32,7 @@ const NewRelationShipSelection: React.FC<{
 
     const templateIds = [...entityTemplates.keys()];
 
-    // TODO: isLoading
-    const { data: relationShips } = useQuery<ITreeNode[]>({
+    const { data: relationShips, isLoading } = useQuery<ITreeNode[]>({
         queryKey: ['getExpandedEntity', expandedEntity.entity.properties._id, { templateIds }],
         queryFn: () =>
             getExpandedEntityByIdRequest(
@@ -41,6 +41,7 @@ const NewRelationShipSelection: React.FC<{
                 { disabled: false, templateIds: allowedEntityTemplatesIds, isOnlyTemplateIds: true },
             ),
     });
+    if (isLoading) return <CircularProgress size={20} />;
 
     return relationShips ? (
         <Tree

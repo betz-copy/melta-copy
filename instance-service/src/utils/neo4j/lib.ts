@@ -294,7 +294,6 @@ export const normalizeTree =
 
         result.records.forEach((record) => {
             const elements = record.get('elementsOfPath');
-            // Elements alternate: [node, rel, node, rel, node, ...]
             for (let i = 0; i < elements.length - 1; i += 2) {
                 const sourceNode = elements[i];
                 const rel = elements[i + 1];
@@ -321,11 +320,27 @@ export const normalizeTree =
             }
         });
 
-        const buildTree = (node: IEntity): IEntityTreeNode => {
+        const buildTree = (node: IEntity, visitedTemplatesIds: Set<string> = new Set()): IEntityTreeNode => {
+            const templateId = String(node.templateId);
+            const hasSeenTemplate = visitedTemplatesIds.has(templateId);
+
+            const nextVisited = new Set(visitedTemplatesIds);
+            nextVisited.add(templateId);
+
             const children = relationshipMap.get(node.properties._id) || [];
+
+            if (hasSeenTemplate)
+                return {
+                    ...node,
+                    children: [],
+                };
+
             return {
                 ...node,
-                children: children.map(({ child, relationshipId }) => ({ ...buildTree(child), relationshipId })),
+                children: children.map(({ child, relationshipId }) => ({
+                    ...buildTree(child, nextVisited),
+                    relationshipId,
+                })),
             };
         };
 
@@ -340,30 +355,45 @@ const buildRelationshipTree = (
 ): IRelationShipTreeNode[] => {
     const roots: ITreeNodeMap = new Map();
 
-    const insert = (map: ITreeNodeMap, [head, ...tail]: string[]) => {
+    const insert = (map: ITreeNodeMap, [head, ...tail]: string[], prevId?: string) => {
         if (!head) return;
 
         const id = head.split('&')[0];
 
+        if (id === prevId) return;
         if (!map.has(id)) {
             map.set(id, { _id: head, children: new Map() });
         }
 
-        insert(map.get(id)!.children, tail);
+        insert(map.get(id)!.children, tail, id);
     };
 
     for (const path of paths) insert(roots, path);
 
-    const finalize = (map: ITreeNodeMap, depth = 0, parentId = ''): IRelationShipTreeNode[] =>
+    const finalize = (
+        map: ITreeNodeMap,
+        depth = 0,
+        parentId = '',
+        ancestorEntityIds: Set<string> = new Set(),
+        remainingCycleLevels = 1,
+    ): IRelationShipTreeNode[] =>
         [...map.values()].flatMap((n) => {
             const relationshipFromMongo = relationShipsMap.get(n._id.split('&')[0]);
-
             if (!relationshipFromMongo) return [];
 
             const sourceEntity = entityTemplatesMap.get(relationshipFromMongo.sourceEntityId);
             const destinationEntity = entityTemplatesMap.get(relationshipFromMongo.destinationEntityId);
-
             if (!sourceEntity || !destinationEntity) return [];
+
+            const hasCycleByEntity = ancestorEntityIds.has(sourceEntity._id) || ancestorEntityIds.has(destinationEntity._id);
+
+            const nextAncestorIds = new Set(ancestorEntityIds);
+            nextAncestorIds.add(sourceEntity._id);
+            nextAncestorIds.add(destinationEntity._id);
+
+            const shouldCutHere = hasCycleByEntity && remainingCycleLevels <= 0;
+
+            const nextRemainingCycleLevels = hasCycleByEntity ? remainingCycleLevels - 1 : remainingCycleLevels;
 
             return {
                 ...relationshipFromMongo,
@@ -372,7 +402,7 @@ const buildRelationshipTree = (
                 destinationEntity,
                 depth,
                 parentId,
-                children: finalize(n.children, depth + 1, n._id),
+                children: shouldCutHere ? [] : finalize(n.children, depth + 1, n._id, nextAncestorIds, nextRemainingCycleLevels),
             };
         });
 

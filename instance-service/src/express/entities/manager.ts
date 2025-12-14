@@ -1114,6 +1114,7 @@ class EntityManager extends DefaultManagerNeo4j {
         userId: string,
     ) {
         const { disabled, templateIds, expandedParams, filters, isOnlyTemplateIds, relationshipIds, toTree } = reqBody;
+        
         const fixSearchBody = filters ?? {};
 
         const childTemplates = await this.childTemplateManagerService.searchChildTemplates();
@@ -1130,7 +1131,7 @@ class EntityManager extends DefaultManagerNeo4j {
             disabled,
             isOnlyTemplateIds,
         );
-
+        
         const initialExpandedEntity = await this.neo4jClient.readTransaction(
             initialCypherQuery.cypherQuery,
             isOnlyTemplateIds ? isTemplateOnly(entityTemplatesMap, relationShipsMap) : toTree ? normalizeTree() : normalizeReturnedRelAndEntities(),

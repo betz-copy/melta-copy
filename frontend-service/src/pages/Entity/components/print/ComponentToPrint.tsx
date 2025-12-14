@@ -29,7 +29,6 @@ const ComponentToPrint = React.forwardRef<
     }
 >(({ entityTemplate, entity, options, filesToPrint = [], setSelectedFiles, setFilesLoadingStatus }, ref) => {
     const queryClient = useQueryClient();
-
     if (!entity) return <></>;
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;

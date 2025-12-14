@@ -52,10 +52,9 @@ const Print: React.FC<{
 
                 if (+depth > maxDepth) maxDepth = +depth;
             });
-
             return getExpandedEntityByIdRequest(
                 expandedEntity.entity.properties._id,
-                { [expandedEntity.entity.properties._id]: { maxLevel: 4 } }, // TODO: maxDepth seems to be breaking it
+                { [expandedEntity.entity.properties._id]: { maxLevel: maxDepth + 1 } }, // TODO: maxDepth seems to be breaking it
                 {
                     disabled: false,
                     templateIds: [...templateIds.values()],
@@ -68,7 +67,6 @@ const Print: React.FC<{
     });
 
     const handleClose = () => {
-        setSelectedRelationShipIds([]);
         setOpenModal(false);
     };
 
