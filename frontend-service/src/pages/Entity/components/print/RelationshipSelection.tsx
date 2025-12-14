@@ -38,7 +38,7 @@ const NewRelationShipSelection: React.FC<{
             getTreeForPrintById(
                 expandedEntity.entity.properties._id,
                 { [expandedEntity.entity.properties._id]: { maxLevel: 4 } }, // TODO: put in config
-                { disabled: false, templateIds: allowedEntityTemplatesIds, isOnlyTemplateIds: true },
+                { templateIds: allowedEntityTemplatesIds, isOnlyTemplateIds: true },
             ),
     });
     if (isLoading) return <CircularProgress size={20} />;

@@ -1142,7 +1142,7 @@ class EntityManager extends DefaultManagerNeo4j {
         userId: string,
         print?: T,
     ) {
-        const { disabled, templateIds, expandedParams, filters, relationshipIds } = reqBody;
+        const { isShowDisabled, templateIds, expandedParams, filters, relationshipIds } = reqBody;
 
         const fixSearchBody = filters ?? {};
 
@@ -1157,7 +1157,7 @@ class EntityManager extends DefaultManagerNeo4j {
             expandedParams,
             entityTemplatesMap,
             id,
-            disabled,
+            isShowDisabled,
         );
 
         const initialExpandedEntity = (await this.neo4jClient.readTransaction<IEntityTreeNode | IEntityExpanded | null>(

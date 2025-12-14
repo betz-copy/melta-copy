@@ -157,7 +157,7 @@ export const getExpandedEntityByIdRequest = async (
     entityId: string,
     expandedParams: Record<string, { minLevel?: number; maxLevel: number }>,
     options?: {
-        disabled?: boolean;
+        isShowDisabled?: boolean;
         templateIds: string[];
         childTemplateId?: string;
     },
@@ -178,7 +178,7 @@ export const getTreeForPrintById = async <T extends boolean = false>(
     entityId: string,
     expandedParams: Record<string, { minLevel?: number; maxLevel: number }>,
     options?: {
-        disabled?: boolean;
+        isShowDisabled?: boolean;
         relationshipIds?: string[];
         templateIds: string[];
         childTemplateId?: string;

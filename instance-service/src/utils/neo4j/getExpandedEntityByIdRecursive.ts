@@ -53,7 +53,7 @@ export const expandEntityToNeoQuery = (
     expandedParams: IGetExpandedEntityBody['expandedParams'],
     entityTemplatesMap: Map<string, IMongoEntityTemplate>,
     mainId: string,
-    disabled: boolean | null,
+    isShowDisabled: boolean | null,
 ) => {
     const fullFilters = fixFilters(filters, templateIds);
     const filterQuery = templatesFilterToNeoQuery(fullFilters, entityTemplatesMap);
@@ -65,7 +65,7 @@ export const expandEntityToNeoQuery = (
         : '';
 
     // TODO: move into fixFilters
-    const disabledFilter = typeof disabled === 'boolean' ? `AND ALL(n IN nodes(path)[1..] WHERE n.disabled = $disabled)` : '';
+    const disabledFilter = isShowDisabled ? '' : `AND ALL(n IN nodes(path)[1..] WHERE n.disabled = false)`;
 
     return {
         cypherQuery: `
@@ -86,7 +86,6 @@ export const expandEntityToNeoQuery = (
         `,
         parameters: {
             ...filterQuery.parameters,
-            ...(typeof disabled === 'boolean' ? { disabled } : {}),
         },
     };
 };

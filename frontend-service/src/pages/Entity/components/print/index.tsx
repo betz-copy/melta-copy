@@ -30,7 +30,7 @@ const Print: React.FC<{
 
     const [title, setTitle] = useState<string | undefined>(undefined);
 
-    const [showDisabled, setShowDisabled] = useState<boolean>(true);
+    const [isShowDisabled, setIsShowDisabled] = useState<boolean>(true);
     const [showEntityDates, setShowEntityDates] = useState<boolean>(true);
     const [showPreviewPropertiesOnly, setShowPreviewPropertiesOnly] = useState<boolean>(false);
 
@@ -56,7 +56,7 @@ const Print: React.FC<{
                 expandedEntity.entity.properties._id,
                 { [expandedEntity.entity.properties._id]: { maxLevel: maxDepth + 1 } },
                 {
-                    disabled: false, // TODO
+                    isShowDisabled,
                     templateIds: [...templateIds.values()],
                     relationshipIds: [...relIds.values()],
                 },
@@ -94,7 +94,7 @@ const Print: React.FC<{
     const getPageMargins = '@page { margin: 15px 10px 15px 10px !important; }';
 
     const options = {
-        disabled: { show: showDisabled, set: setShowDisabled, label: 'entityPage.print.showDisabled' },
+        disabled: { show: isShowDisabled, set: setIsShowDisabled, label: 'entityPage.print.showDisabled' },
         previewPropertiesOnly: {
             show: showPreviewPropertiesOnly,
             set: setShowPreviewPropertiesOnly,
@@ -121,7 +121,12 @@ const Print: React.FC<{
                         filesToPrint={selectedFiles}
                         setSelectedFiles={setSelectedFiles}
                         setFilesLoadingStatus={setFilesLoadingStatus}
-                        options={{ showDisabled, showEntityDates, showEntityFiles: !!selectedFiles.length, showPreviewPropertiesOnly }}
+                        options={{
+                            showDisabled: isShowDisabled,
+                            showEntityDates,
+                            showEntityFiles: !!selectedFiles.length,
+                            showPreviewPropertiesOnly,
+                        }}
                     />
                 </ThemeProvider>
             </div>

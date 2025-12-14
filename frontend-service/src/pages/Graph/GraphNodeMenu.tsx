@@ -52,7 +52,7 @@ const GraphNodeMenu: React.FC<{
                     [node.id]: { maxLevel: node.numberOfConnectionsExpanded + 1 },
                 },
                 {
-                    disabled: false,
+                    isShowDisabled: true,
                     templateIds: filteredEntityTemplates.map((entityTemplate) => entityTemplate._id),
                     childTemplateId,
                 },
