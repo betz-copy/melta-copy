@@ -17,8 +17,35 @@ const fixFilters = (
     );
 };
 
+export const getOnlyTemplateIdsTree = (
+    entityId: string,
+    templateIds: IGetExpandedEntityBody['templateIds'],
+    relationshipIds: IGetExpandedEntityBody['relationshipIds'],
+    expandedParams: IGetExpandedEntityBody['expandedParams'],
+) => {
+    return {
+        cypherQuery: `
+             MATCH (p {_id:'${entityId}'})
+            CALL apoc.path.spanningTree(p, {
+                labelFilter: '${templateIds.join('|')}',
+                minLevel: ${expandedParams[entityId].minLevel || 0},
+                maxLevel: ${expandedParams[entityId].maxLevel || 1}
+                ${relationshipIds?.length ? `, relationshipFilter: '${relationshipIds.join('|')}'` : ''}
+            })
+            YIELD path
+            WITH apoc.path.elements(path) AS elementsOfPath, path
+
+            WITH path,
+                 relationships(path) AS rels
+            WITH rels, [r IN rels | type(r) + "&" + r._id] AS relationshipIds, length(path) AS pathLength
+            RETURN DISTINCT relationshipIds
+        `,
+        parameters: {},
+    };
+};
+
 // TODO: Docs
-export const expandEntityToNeoQuery = async (
+export const expandEntityToNeoQuery = (
     filters: IGetExpandedEntityBody['filters'],
     entityId: string,
     templateIds: IGetExpandedEntityBody['templateIds'],
@@ -27,7 +54,6 @@ export const expandEntityToNeoQuery = async (
     entityTemplatesMap: Map<string, IMongoEntityTemplate>,
     mainId: string,
     disabled: boolean | null,
-    isOnlyTemplateIds?: boolean,
 ) => {
     const fullFilters = fixFilters(filters, templateIds);
     const filterQuery = templatesFilterToNeoQuery(fullFilters, entityTemplatesMap);
@@ -40,17 +66,6 @@ export const expandEntityToNeoQuery = async (
 
     // TODO: move into fixFilters
     const disabledFilter = typeof disabled === 'boolean' ? `AND ALL(n IN nodes(path)[1..] WHERE n.disabled = $disabled)` : '';
-
-    const returnBlock = isOnlyTemplateIds
-        ? `
-            WITH path,
-                 relationships(path) AS rels
-            WITH rels, [r IN rels | type(r) + "&" + r._id] AS relationshipIds, length(path) AS pathLength
-            RETURN DISTINCT relationshipIds
-          `
-        : `
-            RETURN elementsOfPath
-          `;
 
     return {
         cypherQuery: `
@@ -67,7 +82,7 @@ export const expandEntityToNeoQuery = async (
                  [node IN elementsOfPath ${filterCypherQuery} | node] AS filteredElementsOfPath
             WHERE size(filteredElementsOfPath) = size(elementsOfPath)
             ${disabledFilter}
-            ${returnBlock}
+            RETURN elementsOfPath
         `,
         parameters: {
             ...filterQuery.parameters,

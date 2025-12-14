@@ -140,6 +140,13 @@ InstancesRouter.post(
 );
 
 InstancesRouter.post(
+    '/entities/print/:id',
+    InstancesValidatorMiddleware.validateUserCanReadEntityInstance,
+    InstancesValidatorMiddleware.validateUserCanGetExpandedEntity,
+    InstanceManagerProxy,
+);
+
+InstancesRouter.post(
     '/entities',
     busboyMiddleware,
     ValidateRequest(createEntityInstanceSchema),

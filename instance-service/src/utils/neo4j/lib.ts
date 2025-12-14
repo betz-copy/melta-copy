@@ -304,9 +304,7 @@ export const normalizeTree =
                 const sourceId = sourceNode.properties._id;
                 const relId = rel.properties._id;
 
-                if (!relationshipMap.has(sourceId)) {
-                    relationshipMap.set(sourceId, []);
-                }
+                if (!relationshipMap.has(sourceId)) relationshipMap.set(sourceId, []);
 
                 // Avoid duplicates
                 const existing = relationshipMap.get(sourceId)!;
@@ -409,7 +407,7 @@ const buildRelationshipTree = (
     return finalize(roots);
 };
 
-export const isTemplateOnly =
+export const buildTemplateTree =
     (entityTemplatesMap: Map<string, IMongoEntityTemplate>, relationShipsMap: Map<string, IMongoRelationshipTemplate>) =>
     (result: QueryResult): any => {
         if (!result.records.length) return null;

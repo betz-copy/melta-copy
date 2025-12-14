@@ -5,7 +5,7 @@ import Tree from '../../../../common/Tree';
 import { IConnection, IEntityExpanded } from '../../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { ITreeNode } from '../../../../interfaces/printingTemplates';
-import { getExpandedEntityByIdRequest } from '../../../../services/entitiesService';
+import { getTreeForPrintById } from '../../../../services/entitiesService';
 import { useUserStore } from '../../../../stores/user';
 import { getAllAllowedEntities } from '../../../../utils/permissions/templatePermissions';
 import { INestedRelationshipTemplates } from '../..';
@@ -33,9 +33,9 @@ const NewRelationShipSelection: React.FC<{
     const templateIds = [...entityTemplates.keys()];
 
     const { data: relationShips, isLoading } = useQuery<ITreeNode[]>({
-        queryKey: ['getExpandedEntity', expandedEntity.entity.properties._id, { templateIds }],
+        queryKey: ['getExpandedEntityPrint', expandedEntity.entity.properties._id, { templateIds }],
         queryFn: () =>
-            getExpandedEntityByIdRequest(
+            getTreeForPrintById(
                 expandedEntity.entity.properties._id,
                 { [expandedEntity.entity.properties._id]: { maxLevel: 4 } }, // TODO: put in config
                 { disabled: false, templateIds: allowedEntityTemplatesIds, isOnlyTemplateIds: true },

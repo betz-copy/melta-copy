@@ -5,9 +5,11 @@ export interface IGetExpandedEntityBody {
     templateIds: string[];
     expandedParams: Record<string, { minLevel?: number; maxLevel: number }>;
     filters: { [templateId: string]: { filter?: ISearchFilter; showRelationships: boolean } };
+
+    // Only on print route
     isOnlyTemplateIds?: boolean;
     relationshipIds?: string[];
-    toTree?: boolean;
+    print?: boolean;
 }
 
 export type IRelationShipTreeNode = IMongoRelationshipTemplate & {

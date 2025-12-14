@@ -13,7 +13,7 @@ import { INestedRelationshipTemplates } from '../..';
 import { ComponentToPrint } from './ComponentToPrint';
 import './print.css';
 import { useQuery } from 'react-query';
-import { getExpandedEntityByIdRequest } from '../../../../services/entitiesService';
+import { getTreeForPrintById } from '../../../../services/entitiesService';
 
 const Print: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -52,14 +52,13 @@ const Print: React.FC<{
 
                 if (+depth > maxDepth) maxDepth = +depth;
             });
-            return getExpandedEntityByIdRequest(
+            return getTreeForPrintById(
                 expandedEntity.entity.properties._id,
-                { [expandedEntity.entity.properties._id]: { maxLevel: maxDepth + 1 } }, // TODO: maxDepth seems to be breaking it
+                { [expandedEntity.entity.properties._id]: { maxLevel: maxDepth + 1 } },
                 {
-                    disabled: false,
+                    disabled: false, // TODO
                     templateIds: [...templateIds.values()],
                     relationshipIds: [...relIds.values()],
-                    toTree: true,
                 },
             );
         },
@@ -118,7 +117,7 @@ const Print: React.FC<{
                     <ComponentToPrint
                         ref={componentRef}
                         entityTemplate={entityTemplate}
-                        entity={data as any} // TODO: remove any
+                        entity={data}
                         filesToPrint={selectedFiles}
                         setSelectedFiles={setSelectedFiles}
                         setFilesLoadingStatus={setFilesLoadingStatus}

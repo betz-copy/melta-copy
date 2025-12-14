@@ -30,6 +30,7 @@ import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
 import { ITreeNode } from '../interfaces/printingTemplates';
 import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
+import { IEntityTreeNode } from '../pages/Entity/components/print/ComponentToPrint';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
 import { combineFilters } from '../utils/filters';
 import { locationConverterToString } from '../utils/map/convert';
@@ -152,7 +153,28 @@ export const editManyEntitiesByExcelRequest = async (
     return data;
 };
 
-export const getExpandedEntityByIdRequest = async <T extends boolean = false>(
+export const getExpandedEntityByIdRequest = async (
+    entityId: string,
+    expandedParams: Record<string, { minLevel?: number; maxLevel: number }>,
+    options?: {
+        disabled?: boolean;
+        templateIds: string[];
+        childTemplateId?: string;
+    },
+    filterRecord: IGraphFilterBodyBatch = {},
+    childTemplateFilters?: ISearchFilter,
+): Promise<IEntityExpanded> => {
+    const filters = filterModelToFilterOfGraph(filterRecord);
+
+    const { data } = await axios.post<IEntityExpanded>(`${entities}/expanded/${entityId}`, {
+        ...options,
+        expandedParams,
+        filters: combineFilters(filters['filter'], childTemplateFilters),
+    });
+    return data;
+};
+
+export const getTreeForPrintById = async <T extends boolean = false>(
     entityId: string,
     expandedParams: Record<string, { minLevel?: number; maxLevel: number }>,
     options?: {
@@ -161,15 +183,15 @@ export const getExpandedEntityByIdRequest = async <T extends boolean = false>(
         templateIds: string[];
         childTemplateId?: string;
         isOnlyTemplateIds?: T;
-        toTree?: boolean;
     },
     filterRecord: IGraphFilterBodyBatch = {},
     childTemplateFilters?: ISearchFilter,
-): Promise<T extends true ? ITreeNode[] : IEntityExpanded> => {
+): Promise<T extends true ? ITreeNode[] : IEntityTreeNode> => {
     const filters = filterModelToFilterOfGraph(filterRecord);
 
-    const { data } = await axios.post<T extends true ? ITreeNode[] : IEntityExpanded>(`${entities}/expanded/${entityId}`, {
+    const { data } = await axios.post<T extends true ? ITreeNode[] : IEntityTreeNode>(`${entities}/print/${entityId}`, {
         ...options,
+        ...(!options?.isOnlyTemplateIds && { print: true }),
         expandedParams,
         filters: combineFilters(filters['filter'], childTemplateFilters),
     });

@@ -16,7 +16,7 @@ const ComponentToPrint = React.forwardRef<
     HTMLDivElement,
     {
         entityTemplate: IMongoEntityTemplatePopulated;
-        entity: IEntityTreeNode;
+        entity?: IEntityTreeNode;
         filesToPrint?: IFile[];
         setSelectedFiles?: React.Dispatch<React.SetStateAction<IFile[]>>;
         setFilesLoadingStatus?: React.Dispatch<React.SetStateAction<{}>>;

@@ -104,13 +104,45 @@ export const createEntityRequestSchema = Joi.object({
 });
 
 /**
+ * POST /api/instances/entities/print/:id
+ */
+export const getPrintByIdRequestSchema = Joi.object({
+    query: {},
+    body: {
+        disabled: Joi.boolean().default(null),
+        relationshipIds: Joi.array().items(Joi.string()),
+        templateIds: Joi.array().items(Joi.string()).required(),
+        expandedParams: Joi.object()
+            .pattern(
+                Joi.string(),
+                Joi.object({
+                    minLevel: Joi.number().integer().min(1).max(Joi.ref('maxLevel')).optional(),
+                    maxLevel: Joi.number().integer().min(1).required(),
+                }),
+            )
+            .default({}),
+        filters: Joi.object()
+            .pattern(Joi.string(), {
+                filter: searchFilterSchema,
+            })
+            .default({}),
+        userId: Joi.string().required(),
+        childTemplateId: Joi.string(),
+        isOnlyTemplateIds: Joi.boolean().default(false),
+        print: Joi.boolean(),
+    },
+    params: {
+        id: Joi.string().required(),
+    },
+});
+
+/**
  * POST /api/instances/entities/expanded/:id
  */
 export const getExpandedGraphByIdRequestSchema = Joi.object({
     query: {},
     body: {
         disabled: Joi.boolean().default(null),
-        relationshipIds: Joi.array().items(Joi.string()),
         templateIds: Joi.array().items(Joi.string()).required(),
         numberOfConnections: Joi.number().default(0),
         expandedParams: Joi.object()
@@ -129,8 +161,6 @@ export const getExpandedGraphByIdRequestSchema = Joi.object({
             .default({}),
         userId: Joi.string().required(),
         childTemplateId: Joi.string(),
-        isOnlyTemplateIds: Joi.boolean().default(false),
-        toTree: Joi.boolean().default(false),
     },
     params: {
         id: Joi.string().required(),
