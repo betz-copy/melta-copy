@@ -21,18 +21,17 @@ export interface IMongoPrintingTemplate extends IPrintingTemplate {
     updatedAt: Date;
 }
 
-type ICommonTreeNode = IMongoRelationshipTemplate & {
+type IRelationShipPrintTreeNode = IMongoRelationshipTemplate & {
     _id: string;
-    parentId: string;
     depth: number;
     destinationEntity: IMongoEntityTemplate;
     sourceEntity: IMongoEntityTemplate;
-    children: ITreeNode[];
+    children: IRelationShipSelectionTree[];
     neoRelIds: string[]; // The relationship ids of the instances (in neo) of each relationship type (that is the mongo id)
 };
 
-export type ITreeNode = ICommonTreeNode & {
-    children: ITreeNode[];
+export type IRelationShipSelectionTree = IRelationShipPrintTreeNode & {
+    children: IRelationShipSelectionTree[];
 };
 
 export type IPrintingTemplateMap = Map<string, IMongoPrintingTemplate>;

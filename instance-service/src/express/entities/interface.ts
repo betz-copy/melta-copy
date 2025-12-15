@@ -11,7 +11,6 @@ export interface IGetExpandedEntityBody {
 
 export type IRelationShipTreeNode = IMongoRelationshipTemplate & {
     _id: string;
-    parentId: string;
     depth: number;
     destinationEntity: IMongoEntityTemplate;
     sourceEntity: IMongoEntityTemplate;

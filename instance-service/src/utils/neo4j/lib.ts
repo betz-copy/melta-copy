@@ -371,81 +371,77 @@ export const normalizeTree =
         return buildTree(String(rootEntity.properties._id), new Set<string>());
     };
 
-// TODO: clean function
-const buildRelationshipTree = (
-    paths: string[][],
-    entityTemplatesMap: Map<string, IMongoEntityTemplate>,
-    relationShipsMap: Map<string, IMongoRelationshipTemplate>,
-): IRelationShipTreeNode[] => {
-    const roots: ITreeNodeMap = new Map();
-
-    const insert = (map: ITreeNodeMap, [head, ...tail]: string[]) => {
-        if (!head) return;
-
-        const [type, id] = head.split('&');
-        const existsInMap = map.get(type);
-        if (!existsInMap) {
-            map.set(type, {
-                _id: head,
-                children: new Map(),
-                neoRelIds: new Set([id]),
-            });
-        } else {
-            map.set(type, {
-                ...existsInMap,
-                neoRelIds: new Set([...existsInMap.neoRelIds, id]),
-            });
-        }
-
-        insert(map.get(type)!.children, tail);
-    };
-
-    for (const path of paths) insert(roots, path);
-
-    const finalize = (
-        map: ITreeNodeMap,
-        depth = 0,
-        parentId = '',
-        ancestorEntityIds: Set<string> = new Set(),
-        remainingCycleLevels = 1,
-    ): IRelationShipTreeNode[] =>
-        [...map.values()].flatMap((n) => {
-            const relationshipFromMongo = relationShipsMap.get(n._id.split('&')[0]);
-            if (!relationshipFromMongo) return [];
-
-            const sourceEntity = entityTemplatesMap.get(relationshipFromMongo.sourceEntityId);
-            const destinationEntity = entityTemplatesMap.get(relationshipFromMongo.destinationEntityId);
-            if (!sourceEntity || !destinationEntity) return [];
-
-            const hasCycleByEntity = ancestorEntityIds.has(sourceEntity._id) || ancestorEntityIds.has(destinationEntity._id);
-
-            const nextAncestorIds = new Set(ancestorEntityIds);
-            nextAncestorIds.add(sourceEntity._id);
-            nextAncestorIds.add(destinationEntity._id);
-
-            const shouldCutHere = hasCycleByEntity && remainingCycleLevels <= 0;
-
-            const nextRemainingCycleLevels = hasCycleByEntity ? remainingCycleLevels - 1 : remainingCycleLevels;
-            return {
-                ...relationshipFromMongo,
-                neoRelIds: [...n.neoRelIds.values()],
-                sourceEntity,
-                destinationEntity,
-                depth,
-                parentId,
-                children: shouldCutHere ? [] : finalize(n.children, depth + 1, n._id, nextAncestorIds, nextRemainingCycleLevels),
-            };
-        });
-
-    return finalize(roots);
-};
-
 export const buildTemplateTree =
     (entityTemplatesMap: Map<string, IMongoEntityTemplate>, relationShipsMap: Map<string, IMongoRelationshipTemplate>) =>
     (result: QueryResult): any => {
         if (!result.records.length) return null;
 
         const relationships: string[][] = result.records.map((key) => key.get('relationshipIds'));
+
+        // TODO: clean function
+        const buildRelationshipTree = (
+            paths: string[][],
+            entityTemplatesMap: Map<string, IMongoEntityTemplate>,
+            relationShipsMap: Map<string, IMongoRelationshipTemplate>,
+        ): IRelationShipTreeNode[] => {
+            const roots: ITreeNodeMap = new Map();
+
+            const insert = (map: ITreeNodeMap, [head, ...tail]: string[]) => {
+                if (!head) return;
+
+                const [type, id] = head.split('&');
+                const existsInMap = map.get(type);
+
+                if (!existsInMap) {
+                    map.set(type, {
+                        _id: head,
+                        children: new Map(),
+                        neoRelIds: new Set([id]),
+                    });
+                } else {
+                    map.set(type, {
+                        ...existsInMap,
+                        neoRelIds: new Set([...existsInMap.neoRelIds, id]),
+                    });
+                }
+
+                insert(map.get(type)!.children, tail);
+            };
+
+            for (const path of paths) insert(roots, path);
+
+            const buildTree = (map: ITreeNodeMap, depth = 0, seenTemplates = new Set<string>()): IRelationShipTreeNode[] =>
+                [...map.values()].flatMap((n) => {
+                    const relationshipFromMongo = relationShipsMap.get(n._id.split('&')[0]);
+                    if (!relationshipFromMongo) return [];
+
+                    const sourceEntityTemplate = entityTemplatesMap.get(relationshipFromMongo.sourceEntityId);
+                    const destinationEntityTemplate = entityTemplatesMap.get(relationshipFromMongo.destinationEntityId);
+
+                    if (!sourceEntityTemplate || !destinationEntityTemplate) return [];
+
+                    const indexOfSourceSeen = [...seenTemplates.values()].findIndex((seen) => seen === sourceEntityTemplate._id);
+                    const indexOfDestSeen = [...seenTemplates.values()].findIndex((seen) => seen === destinationEntityTemplate._id);
+
+                    seenTemplates = new Set(seenTemplates).add(sourceEntityTemplate._id);
+                    seenTemplates = new Set(seenTemplates).add(destinationEntityTemplate._id);
+
+                    return {
+                        ...relationshipFromMongo,
+                        neoRelIds: [...n.neoRelIds.values()],
+                        sourceEntity: sourceEntityTemplate,
+                        destinationEntity: destinationEntityTemplate,
+                        depth,
+                        children:
+                            (indexOfSourceSeen !== -1 && indexOfSourceSeen > seenTemplates.size - 2) ||
+                            (indexOfDestSeen > seenTemplates.size - 2 && indexOfDestSeen !== -1)
+                                ? []
+                                : buildTree(n.children, depth + 1, seenTemplates),
+                    };
+                });
+
+            return buildTree(roots);
+        };
 
         return buildRelationshipTree(relationships, entityTemplatesMap, relationShipsMap);
     };

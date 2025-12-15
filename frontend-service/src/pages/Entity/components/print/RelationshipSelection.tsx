@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from 'react-query';
 import Tree from '../../../../common/Tree';
 import { IConnection, IEntityExpanded } from '../../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
-import { ITreeNode } from '../../../../interfaces/printingTemplates';
+import { IRelationShipSelectionTree } from '../../../../interfaces/printingTemplates';
 import { getRelationshipSelectTreeForPrint } from '../../../../services/entitiesService';
 import { useUserStore } from '../../../../stores/user';
 import { getAllAllowedEntities } from '../../../../utils/permissions/templatePermissions';
@@ -32,7 +32,7 @@ const RelationshipSelection: React.FC<{
 
     const templateIds = [...entityTemplates.keys()];
 
-    const { data: relationShips, isLoading } = useQuery<ITreeNode[]>({
+    const { data: relationShips, isLoading } = useQuery<IRelationShipSelectionTree[]>({
         queryKey: ['getRelationshipSelectTreeForPrint', expandedEntity.entity.properties._id, { templateIds }],
         queryFn: () =>
             getRelationshipSelectTreeForPrint(

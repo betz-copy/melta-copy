@@ -28,7 +28,7 @@ import {
 } from '../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
-import { ITreeNode } from '../interfaces/printingTemplates';
+import { IRelationShipSelectionTree } from '../interfaces/printingTemplates';
 import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { IEntityTreeNode } from '../pages/Entity/components/print/ComponentToPrint';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
@@ -194,7 +194,7 @@ export const getRelationshipSelectTreeForPrint = async (
     },
     filterRecord: IGraphFilterBodyBatch = {},
     childTemplateFilters?: ISearchFilter,
-): Promise<ITreeNode[]> => {
+): Promise<IRelationShipSelectionTree[]> => {
     const filters = filterModelToFilterOfGraph(filterRecord);
 
     const { data } = await axios.post(`${entities}/printTemplates/${entityId}`, {
