@@ -1,5 +1,6 @@
 import {
     ActionErrors,
+    BadRequestError,
     IEntity,
     IEntityExpanded,
     IEntityWithDirectRelationships,
@@ -281,68 +282,93 @@ export const normalizeReturnedRelAndEntities =
         };
     };
 
+// TODO: clean function
 export const normalizeTree =
-    () =>
+    (rootElementId: string) =>
     (result: QueryResult): IEntityTreeNode | null => {
-        if (!result.records.length) return null;
+        const records = result.records;
+        if (!records?.length) return null;
 
-        const rootNode = result.records[0].get('elementsOfPath')[0];
-        if (!rootNode) return null;
+        const nodeMap = new Map<string, IEntity>();
 
-        const modifiedRoot = nodeToEntity(rootNode);
-        const relationshipMap = new Map<string, Array<{ child: IEntity; uniqueRelationShipId: string; relationshipId: string }>>();
+        const ensureEntity = (node: Node): IEntity => {
+            const id = String(node.properties._id);
+            const existing = nodeMap.get(id);
 
-        result.records.forEach((record) => {
-            const elements = record.get('elementsOfPath');
-            for (let i = 0; i < elements.length - 1; i += 2) {
-                const sourceNode = elements[i];
-                const rel = elements[i + 1];
-                const destNode = elements[i + 2];
+            if (existing) return existing;
 
-                if (!sourceNode || !rel || !destNode) continue;
+            const entity = nodeToEntity(node);
+            nodeMap.set(id, entity);
+            return entity;
+        };
 
-                const sourceId = sourceNode.properties._id;
-                const relId = rel.properties._id;
+        const adj = new Map<string, { toId: string; relationshipId: string; uniqueRelationShipId: string }[]>();
+        const edgeSeen = new Set<string>();
 
-                if (!relationshipMap.has(sourceId)) relationshipMap.set(sourceId, []);
+        const addEdge = (fromId: string, toId: string, relationshipId: string, uniqueRelationShipId: string) => {
+            const key = `${fromId}|${toId}|${uniqueRelationShipId}`;
+            if (edgeSeen.has(key)) return;
+            edgeSeen.add(key);
 
-                // Avoid duplicates
-                const existing = relationshipMap.get(sourceId)!;
-                if (!existing.some((item) => item.uniqueRelationShipId === relId)) {
-                    existing.push({
-                        child: nodeToEntity(destNode),
-                        uniqueRelationShipId: relId,
-                        relationshipId: rel.type,
-                    });
-                }
-            }
-        });
+            const list = adj.get(fromId);
+            if (list) list.push({ toId, relationshipId, uniqueRelationShipId });
+            else adj.set(fromId, [{ toId, relationshipId, uniqueRelationShipId }]);
+        };
 
-        const buildTree = (node: IEntity, visitedTemplatesIds: Set<string> = new Set()): IEntityTreeNode => {
+        for (const record of records) {
+            const node1 = record.get('node1');
+            const node2 = record.get('node2');
+            const rel = record.get('rel');
+            if (!node1 || !node2 || !rel) continue;
+
+            const entity1 = ensureEntity(node1);
+            const entity2 = ensureEntity(node2);
+
+            const id1 = String(entity1.properties._id);
+            const id2 = String(entity2.properties._id);
+            const uniqueRelationShipId = String(rel.properties._id);
+            const relationshipId = String(rel.type);
+
+            addEdge(id1, id2, relationshipId, uniqueRelationShipId);
+            addEdge(id2, id1, relationshipId, uniqueRelationShipId);
+        }
+
+        const rootEntity = nodeMap.get(rootElementId);
+
+        if (!rootEntity) throw new BadRequestError(`RootId was not found in ${rootElementId} entities`);
+
+        const usedNodeIds = new Set<string>();
+
+        const buildTree = (nodeId: string, pathTemplateIds: Set<string>): IEntityTreeNode => {
+            const node = nodeMap.get(nodeId)!;
             const templateId = String(node.templateId);
-            const hasSeenTemplate = visitedTemplatesIds.has(templateId);
 
-            const nextVisited = new Set(visitedTemplatesIds);
-            nextVisited.add(templateId);
+            if (usedNodeIds.has(nodeId)) return { ...node, children: [] };
 
-            const children = relationshipMap.get(node.properties._id) || [];
+            if (pathTemplateIds.has(templateId)) {
+                usedNodeIds.add(nodeId);
+                return { ...node, children: [] };
+            }
 
-            if (hasSeenTemplate)
-                return {
-                    ...node,
-                    children: [],
-                };
+            usedNodeIds.add(nodeId);
+
+            const nextPath = new Set(pathTemplateIds);
+            nextPath.add(templateId);
+
+            const edges = adj.get(nodeId) ?? [];
 
             return {
                 ...node,
-                children: children.map(({ child, relationshipId }) => ({
-                    ...buildTree(child, nextVisited),
-                    relationshipId,
-                })),
+                children: edges
+                    .filter((e) => !usedNodeIds.has(e.toId))
+                    .map(({ toId, relationshipId }) => ({
+                        ...buildTree(toId, nextPath),
+                        relationshipId,
+                    })),
             };
         };
 
-        return buildTree(modifiedRoot);
+        return buildTree(String(rootEntity.properties._id), new Set<string>());
     };
 
 // TODO: clean function
@@ -353,17 +379,25 @@ const buildRelationshipTree = (
 ): IRelationShipTreeNode[] => {
     const roots: ITreeNodeMap = new Map();
 
-    const insert = (map: ITreeNodeMap, [head, ...tail]: string[], prevId?: string) => {
+    const insert = (map: ITreeNodeMap, [head, ...tail]: string[]) => {
         if (!head) return;
 
-        const id = head.split('&')[0];
-
-        if (id === prevId) return;
-        if (!map.has(id)) {
-            map.set(id, { _id: head, children: new Map() });
+        const [type, id] = head.split('&');
+        const existsInMap = map.get(type);
+        if (!existsInMap) {
+            map.set(type, {
+                _id: head,
+                children: new Map(),
+                neoRelIds: new Set([id]),
+            });
+        } else {
+            map.set(type, {
+                ...existsInMap,
+                neoRelIds: new Set([...existsInMap.neoRelIds, id]),
+            });
         }
 
-        insert(map.get(id)!.children, tail, id);
+        insert(map.get(type)!.children, tail);
     };
 
     for (const path of paths) insert(roots, path);
@@ -392,10 +426,9 @@ const buildRelationshipTree = (
             const shouldCutHere = hasCycleByEntity && remainingCycleLevels <= 0;
 
             const nextRemainingCycleLevels = hasCycleByEntity ? remainingCycleLevels - 1 : remainingCycleLevels;
-
             return {
                 ...relationshipFromMongo,
-                mongoAndRelId: n._id,
+                neoRelIds: [...n.neoRelIds.values()],
                 sourceEntity,
                 destinationEntity,
                 depth,

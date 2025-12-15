@@ -5,7 +5,7 @@ import Tree from '../../../../common/Tree';
 import { IConnection, IEntityExpanded } from '../../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { ITreeNode } from '../../../../interfaces/printingTemplates';
-import { getTreeForPrintById } from '../../../../services/entitiesService';
+import { getRelationshipSelectTreeForPrint } from '../../../../services/entitiesService';
 import { useUserStore } from '../../../../stores/user';
 import { getAllAllowedEntities } from '../../../../utils/permissions/templatePermissions';
 import { INestedRelationshipTemplates } from '../..';
@@ -33,12 +33,12 @@ const RelationshipSelection: React.FC<{
     const templateIds = [...entityTemplates.keys()];
 
     const { data: relationShips, isLoading } = useQuery<ITreeNode[]>({
-        queryKey: ['getExpandedEntityPrint', expandedEntity.entity.properties._id, { templateIds }],
+        queryKey: ['getRelationshipSelectTreeForPrint', expandedEntity.entity.properties._id, { templateIds }],
         queryFn: () =>
-            getTreeForPrintById(
+            getRelationshipSelectTreeForPrint(
                 expandedEntity.entity.properties._id,
                 { [expandedEntity.entity.properties._id]: { maxLevel: 4 } }, // TODO: put in config
-                { templateIds: allowedEntityTemplatesIds, isOnlyTemplateIds: true },
+                { templateIds: allowedEntityTemplatesIds },
             ),
     });
     if (isLoading) return <CircularProgress size={20} />;
@@ -46,16 +46,13 @@ const RelationshipSelection: React.FC<{
     return relationShips ? (
         <Tree
             treeItems={relationShips}
-            getItemId={({ mongoAndRelId, depth, sourceEntityId, destinationEntityId }) =>
-                `${mongoAndRelId}&${depth}&${sourceEntityId}&${destinationEntityId}`
-            }
+            getItemId={({ neoRelIds }) => neoRelIds.join(',')}
             getItemLabel={({ sourceEntity, destinationEntity, displayName }) =>
                 `${displayName} (${sourceEntity.displayName} > ${destinationEntity.displayName})`
             }
             removeDivider
-            onSelectItems={(itemIds) => {
-                setSelectedRelationShipIds(itemIds as string[]);
-            }}
+            onSelectItems={(itemIds) => setSelectedRelationShipIds([...new Set((itemIds as string[]).flatMap((id) => id.split(',')))])}
+            selectionPropagation={{ descendants: true, parents: false }}
             // TODO: selects like eve wants
         />
     ) : (

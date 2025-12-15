@@ -28,7 +28,7 @@ type ICommonTreeNode = IMongoRelationshipTemplate & {
     destinationEntity: IMongoEntityTemplate;
     sourceEntity: IMongoEntityTemplate;
     children: ITreeNode[];
-    mongoAndRelId: string; // Concatenation of mongo relationship _id and "&" and neo generated id (for unique ui id)
+    neoRelIds: string[]; // The relationship ids of the instances (in neo) of each relationship type (that is the mongo id)
 };
 
 export type ITreeNode = ICommonTreeNode & {

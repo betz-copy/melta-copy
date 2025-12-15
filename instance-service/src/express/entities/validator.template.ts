@@ -485,8 +485,7 @@ export class EntityValidator extends DefaultController {
 
     async validatePrintBody(req: Request) {
         const searchBody: IGetExpandedEntityBody['filters'] = req.body.filters;
-        const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({}); // TODO: revert or keep?
-
+        const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({});
         const relationShips = await this.relationshipsTemplateManagerService.searchRelationshipTemplates();
 
         const entityTemplatesMap = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));

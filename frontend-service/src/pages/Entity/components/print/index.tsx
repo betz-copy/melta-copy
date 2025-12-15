@@ -13,7 +13,7 @@ import { INestedRelationshipTemplates } from '../..';
 import { ComponentToPrint } from './ComponentToPrint';
 import './print.css';
 import { useQuery } from 'react-query';
-import { getTreeForPrintById } from '../../../../services/entitiesService';
+import { getEntitiesTreeForPrint } from '../../../../services/entitiesService';
 
 const Print: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -38,30 +38,8 @@ const Print: React.FC<{
     const [shouldPrint, setShouldPrint] = useState<boolean>(false);
 
     const { data, refetch, isLoading } = useQuery({
-        queryKey: ['getExpandedEntityPrint', expandedEntity.entity.properties._id, selectedRelationShipIds.join(',')],
-        queryFn: () => {
-            const templateIds: Set<string> = new Set();
-            const relIds: Set<string> = new Set();
-            let maxDepth: number = 0;
-
-            selectedRelationShipIds.forEach((selected) => {
-                const [relMongoId, _rel, depth, source, dest] = selected.split('&');
-                templateIds.add(source);
-                templateIds.add(dest);
-                relIds.add(relMongoId);
-
-                if (+depth > maxDepth) maxDepth = +depth;
-            });
-            return getTreeForPrintById(
-                expandedEntity.entity.properties._id,
-                { [expandedEntity.entity.properties._id]: { maxLevel: maxDepth + 1 } },
-                {
-                    isShowDisabled,
-                    templateIds: [...templateIds.values()],
-                    relationshipIds: [...relIds.values()],
-                },
-            );
-        },
+        queryKey: ['getEntitiesTreeForPrint', selectedRelationShipIds.join(',')],
+        queryFn: () => getEntitiesTreeForPrint(expandedEntity.entity.properties._id, selectedRelationShipIds),
         enabled: false,
     });
 
@@ -150,7 +128,6 @@ const Print: React.FC<{
                     title={title}
                     setTitle={setTitle}
                     setSelectedRelationShipIds={setSelectedRelationShipIds}
-                    selectedRelationShipIds={selectedRelationShipIds}
                 />
             )}
         </>

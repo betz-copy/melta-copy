@@ -6,10 +6,7 @@ export interface IGetExpandedEntityBody {
     expandedParams: Record<string, { minLevel?: number; maxLevel: number }>;
     filters: { [templateId: string]: { filter?: ISearchFilter; showRelationships: boolean } };
 
-    // Only on print route
-    isOnlyTemplateIds?: boolean;
     relationshipIds?: string[];
-    print?: boolean;
 }
 
 export type IRelationShipTreeNode = IMongoRelationshipTemplate & {
@@ -19,10 +16,9 @@ export type IRelationShipTreeNode = IMongoRelationshipTemplate & {
     destinationEntity: IMongoEntityTemplate;
     sourceEntity: IMongoEntityTemplate;
     children: IRelationShipTreeNode[];
-    mongoAndRelId: string; // Concatenation of mongo relationship _id and "&" and neo generated id (for unique ui id)
 };
 
-export type ITreeNodeMap = Map<string, { _id: string; children: ITreeNodeMap }>;
+export type ITreeNodeMap = Map<string, { _id: string; children: ITreeNodeMap; neoRelIds: Set<string> }>;
 
 export type IEntityTreeNode = IEntity & { children: (IEntityTreeNode & { relationshipId: string })[] };
 

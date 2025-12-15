@@ -19,7 +19,8 @@ import {
     getEntityByIdRequestSchema,
     getExpandedGraphByIdRequestSchema,
     getIfValueFieldIsUsedRequestSchema,
-    getPrintByIdRequestSchema,
+    getPrintEntitiesByIdRequestSchema,
+    getPrintTemplatesByIdRequestSchema,
     getSelectedEntitiesRequestSchema,
     runRulesWithTodayFuncRequestSchema,
     searchEntitiesBatchRequestSchema,
@@ -85,14 +86,15 @@ entityRouter.get('/get-is-field-used/:id', ValidateRequest(getIfValueFieldIsUsed
 entityRouter.post('/rules/dependant', ValidateRequest(getDependentRulesRequestSchema), entityController.getDependentRules);
 
 entityRouter.post(
-    '/print/:id',
-    ValidateRequest(getPrintByIdRequestSchema),
+    '/printTemplates/:id',
+    ValidateRequest(getPrintTemplatesByIdRequestSchema),
     entityValidatorController.validatePrintBody,
-    entityController.getExpandedGraphById,
+    entityController.printTemplates,
 );
 
+entityRouter.post('/printEntities/:id', ValidateRequest(getPrintEntitiesByIdRequestSchema), entityController.printEntities);
+
 // Graph (TODO: merge with print)
-// This is the same as print with isOnlyTemplateIds false and toTree false
 entityRouter.post(
     '/expanded/:id',
     ValidateRequest(getExpandedGraphByIdRequestSchema),

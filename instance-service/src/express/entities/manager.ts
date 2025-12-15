@@ -19,7 +19,6 @@ import {
     IDeleteRelationshipReference,
     IDuplicateEntityMetadata,
     IEntity,
-    IEntityExpanded,
     IEntitySingleProperty,
     IEntityTemplate,
     IEntityWithDirectRelationships,
@@ -69,7 +68,7 @@ import { executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/exe
 import isBodyFunctionHasContent from '../../utils/actions/isBodyFunctionHasContent';
 import filteredMap from '../../utils/filteredMap';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
-import { expandEntityToNeoQuery, getOnlyTemplateIdsTree } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
+import { expandEntityToNeoQuery, getEntitiesForPrintByRelIds, getOnlyTemplateIdsTree } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
 import {
     buildTemplateTree,
     generateDefaultProperties,
@@ -102,7 +101,6 @@ import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRul
 import {
     EntitiesIdsRulesReasonsMap,
     IEntityCrudAction,
-    IEntityTreeNode,
     IExecutionOutput,
     IGetExpandedEntityBody,
     IRelationShipTreeNode,
@@ -1135,13 +1133,13 @@ class EntityManager extends DefaultManagerNeo4j {
         return initialExpandedEntity;
     }
 
-    async getExpandedGraphById<T extends boolean>(
-        id: string,
-        reqBody: IGetExpandedEntityBody,
-        entityTemplatesMap: Map<string, IMongoEntityTemplate>,
-        userId: string,
-        print?: T,
-    ) {
+    async printEntities(rootId: string, relationshipIds: string[]) {
+        const initialCypherQuery = getEntitiesForPrintByRelIds(relationshipIds);
+
+        return this.neo4jClient.readTransaction(initialCypherQuery.cypherQuery, normalizeTree(rootId), initialCypherQuery.parameters);
+    }
+
+    async getExpandedGraphById(id: string, reqBody: IGetExpandedEntityBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>, userId: string) {
         const { isShowDisabled, templateIds, expandedParams, filters, relationshipIds } = reqBody;
 
         const fixSearchBody = filters ?? {};
@@ -1160,11 +1158,11 @@ class EntityManager extends DefaultManagerNeo4j {
             isShowDisabled,
         );
 
-        const initialExpandedEntity = (await this.neo4jClient.readTransaction<IEntityTreeNode | IEntityExpanded | null>(
+        const initialExpandedEntity = await this.neo4jClient.readTransaction(
             initialCypherQuery.cypherQuery,
-            print ? normalizeTree() : normalizeReturnedRelAndEntities(),
+            normalizeReturnedRelAndEntities(),
             initialCypherQuery.parameters,
-        )) as T extends true ? IEntityTreeNode | null : IEntityExpanded | null;
+        );
 
         if (!initialExpandedEntity) throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
 

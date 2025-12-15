@@ -174,7 +174,16 @@ export const getExpandedEntityByIdRequest = async (
     return data;
 };
 
-export const getTreeForPrintById = async <T extends boolean = false>(
+// Actual tree with entities for print
+export const getEntitiesTreeForPrint = async (id: string, relationshipIds: string[]) => {
+    const { data } = await axios.post<IEntityTreeNode>(`${entities}/printEntities/${id}`, {
+        relationshipIds,
+    });
+    return data;
+};
+
+// Only templateIds for select tree of what to print
+export const getRelationshipSelectTreeForPrint = async (
     entityId: string,
     expandedParams: Record<string, { minLevel?: number; maxLevel: number }>,
     options?: {
@@ -182,16 +191,14 @@ export const getTreeForPrintById = async <T extends boolean = false>(
         relationshipIds?: string[];
         templateIds: string[];
         childTemplateId?: string;
-        isOnlyTemplateIds?: T;
     },
     filterRecord: IGraphFilterBodyBatch = {},
     childTemplateFilters?: ISearchFilter,
-): Promise<T extends true ? ITreeNode[] : IEntityTreeNode> => {
+): Promise<ITreeNode[]> => {
     const filters = filterModelToFilterOfGraph(filterRecord);
 
-    const { data } = await axios.post<T extends true ? ITreeNode[] : IEntityTreeNode>(`${entities}/print/${entityId}`, {
+    const { data } = await axios.post(`${entities}/printTemplates/${entityId}`, {
         ...options,
-        ...(!options?.isOnlyTemplateIds && { print: true }),
         expandedParams,
         filters: combineFilters(filters['filter'], childTemplateFilters),
     });

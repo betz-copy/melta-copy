@@ -104,9 +104,23 @@ export const createEntityRequestSchema = Joi.object({
 });
 
 /**
- * POST /api/instances/entities/print/:id
+ * POST /api/instances/entities/printTemplates/:id
+ * getPrintTemplatesByIdRequestSchema
  */
-export const getPrintByIdRequestSchema = Joi.object({
+export const getPrintEntitiesByIdRequestSchema = Joi.object({
+    query: {},
+    body: {
+        relationshipIds: Joi.array().items(Joi.string()).min(1).required(),
+    },
+    params: {
+        id: Joi.string().required(),
+    },
+});
+
+/**
+ * POST /api/instances/entities/printEntities/:id
+ */
+export const getPrintTemplatesByIdRequestSchema = Joi.object({
     query: {},
     body: {
         isShowDisabled: Joi.boolean().default(true),
@@ -128,8 +142,6 @@ export const getPrintByIdRequestSchema = Joi.object({
             .default({}),
         userId: Joi.string().required(),
         childTemplateId: Joi.string(),
-        isOnlyTemplateIds: Joi.boolean().default(false),
-        print: Joi.boolean(),
     },
     params: {
         id: Joi.string().required(),

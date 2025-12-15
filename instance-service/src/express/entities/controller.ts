@@ -64,14 +64,23 @@ class EntityController extends DefaultController<EntityManager> {
 
     async getExpandedGraphById(req: Request, res: Response) {
         const entityTemplatesMap = fetchPropertyFromRequest<Map<string, IMongoEntityTemplate>>(req, 'entityTemplatesMap');
-        const relationShipsMap = fetchPropertyFromRequest<Map<string, IMongoRelationshipTemplate>>(req, 'relationShipsMap');
-        const { isOnlyTemplateIds, print, userId, ...body } = req.body;
+        const { userId, ...body } = req.body;
 
-        if (isOnlyTemplateIds) {
-            res.json(await this.manager.getNestedRelationshipTemplatesForPrint(req.params.id, body, entityTemplatesMap, relationShipsMap, userId));
-        } else {
-            res.json(await this.manager.getExpandedGraphById(req.params.id, body, entityTemplatesMap, userId, print));
-        }
+        res.json(await this.manager.getExpandedGraphById(req.params.id, body, entityTemplatesMap, userId));
+    }
+
+    async printTemplates(req: Request, res: Response) {
+        const entityTemplatesMap = fetchPropertyFromRequest<Map<string, IMongoEntityTemplate>>(req, 'entityTemplatesMap');
+        const relationShipsMap = fetchPropertyFromRequest<Map<string, IMongoRelationshipTemplate>>(req, 'relationShipsMap');
+        const { userId, ...body } = req.body;
+
+        res.json(await this.manager.getNestedRelationshipTemplatesForPrint(req.params.id, body, entityTemplatesMap, relationShipsMap, userId));
+    }
+
+    async printEntities(req: Request, res: Response) {
+        const { relationshipIds } = req.body;
+
+        res.json(await this.manager.printEntities(req.params.id, relationshipIds));
     }
 
     async deleteEntityInstances(req: Request, res: Response) {

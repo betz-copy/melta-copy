@@ -44,6 +44,17 @@ export const getOnlyTemplateIdsTree = (
     };
 };
 
+export const getEntitiesForPrintByRelIds = (relationshipIds: string[]) => {
+    return {
+        cypherQuery: `
+            MATCH (node1)-[rel]-(node2)
+            WHERE rel._id IN $relationshipIds
+            RETURN node1, rel, node2
+        `,
+        parameters: { relationshipIds },
+    };
+};
+
 // TODO: Docs
 export const expandEntityToNeoQuery = (
     filters: IGetExpandedEntityBody['filters'],
