@@ -1,4 +1,6 @@
-import { CloseOutlined, PrintOutlined } from '@mui/icons-material';
+import CloseOutlined from '@mui/icons-material/CloseOutlined';
+import DownloadIcon from '@mui/icons-material/Download';
+
 import {
     Button,
     CircularProgress,
@@ -229,11 +231,11 @@ const PrintOptionsDialog: React.FC<{
                             handleClose();
                             onClick(ev);
                         }}
-                        endIcon={<PrintOutlined />}
+                        endIcon={<DownloadIcon />}
                         disabled={isLoading}
                         sx={{ borderRadius: '7px', fontWeight: 400 }}
                     >
-                        {i18next.t('entityPage.print.continue')}
+                        {`${i18next.t('entityPage.print.continue')}-pdf`}
                         {isLoading && <CircularProgress size={20} />}
                     </Button>
                 </Grid>

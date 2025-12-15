@@ -1,5 +1,5 @@
 import { PrintOutlined } from '@mui/icons-material';
-import { Button, ThemeProvider } from '@mui/material';
+import { Backdrop, Button, CircularProgress, ThemeProvider } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
 import { UseReactToPrintOptions, useReactToPrint } from 'react-to-print';
@@ -12,8 +12,33 @@ import { lightTheme } from '../../../../theme';
 import { INestedRelationshipTemplates } from '../..';
 import { ComponentToPrint } from './ComponentToPrint';
 import './print.css';
+import html2pdf from 'html2pdf.js';
 import { useQuery } from 'react-query';
 import { getEntitiesTreeForPrint } from '../../../../services/entitiesService';
+
+export async function generateAndSavePDF(printIframe: HTMLIFrameElement, filename?: string) {
+    const iframeDoc = printIframe.contentDocument;
+    if (!iframeDoc) return;
+
+    const content = iframeDoc.body;
+
+    const options = {
+        margin: 10,
+        filename: `${filename || document}.pdf`,
+        image: { type: 'jpeg' as const, quality: 0.98 },
+        html2canvas: {
+            scale: 2,
+            useCORS: true,
+        },
+        jsPDF: {
+            unit: 'mm',
+            format: 'a4',
+            orientation: 'portrait' as const,
+        },
+    };
+
+    await html2pdf().set(options).from(content).save();
+}
 
 const Print: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -36,8 +61,9 @@ const Print: React.FC<{
 
     const [selectedRelationShipIds, setSelectedRelationShipIds] = useState<string[]>([]);
     const [shouldPrint, setShouldPrint] = useState<boolean>(false);
+    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
-    const { data, refetch, isLoading } = useQuery({
+    const { data, refetch, isFetching } = useQuery({
         queryKey: ['getEntitiesTreeForPrint', selectedRelationShipIds.join(',')],
         queryFn: () => getEntitiesTreeForPrint(expandedEntity.entity.properties._id, selectedRelationShipIds),
         enabled: false,
@@ -52,10 +78,21 @@ const Print: React.FC<{
         setOpenModal(true);
     };
 
+    const documentTitle = `${entityTemplate.category.displayName}-${entityTemplate.displayName}-${new Date().toLocaleDateString('en-uk')}`;
+
     const handlePrint = useReactToPrint({
         contentRef: componentRef,
-        documentTitle: `${entityTemplate.category.displayName}-${entityTemplate.displayName}-${new Date().toLocaleDateString('en-uk')}`,
+        documentTitle,
         bodyClass: 'print-body',
+        print: async (iframe) => {
+            try {
+                setIsGeneratingPdf(true);
+                await generateAndSavePDF(iframe, documentTitle);
+            } finally {
+                setIsGeneratingPdf(false);
+            }
+        },
+        removeAfterPrint: true,
     } as UseReactToPrintOptions);
 
     useEffect(() => {
@@ -63,11 +100,11 @@ const Print: React.FC<{
     }, [shouldPrint, refetch]);
 
     useEffect(() => {
-        if (data && !isLoading) {
+        if (shouldPrint && data && !isFetching) {
             handlePrint();
             setShouldPrint(false);
         }
-    }, [data, isLoading, handlePrint]);
+    }, [shouldPrint, data, isFetching, handlePrint]);
 
     const getPageMargins = '@page { margin: 15px 10px 15px 10px !important; }';
 
@@ -130,6 +167,9 @@ const Print: React.FC<{
                     setSelectedRelationShipIds={setSelectedRelationShipIds}
                 />
             )}
+            <Backdrop open={isGeneratingPdf} sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+                <CircularProgress color="inherit" />
+            </Backdrop>
         </>
     );
 };

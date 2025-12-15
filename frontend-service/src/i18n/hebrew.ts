@@ -238,7 +238,7 @@ export default {
         },
         print: {
             header: 'הדפס ישות',
-            continue: 'הדפסה',
+            continue: 'ייצוא ל',
             showDisabled: 'הצגת יישויות מושבתות',
             showEntityDates: 'הצגת תאריך יצירה ועדכון יישות',
             showOnlyPreviewProperties: 'הדפסת תצוגה מצומצמת',
