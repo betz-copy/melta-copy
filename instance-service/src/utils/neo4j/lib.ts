@@ -410,7 +410,7 @@ export const buildTemplateTree =
 
             for (const path of paths) insert(roots, path);
 
-            const buildTree = (map: ITreeNodeMap, depth = 0): IRelationShipTreeNode[] =>
+            const buildTree = (map: ITreeNodeMap, depth = 0, pathEntities = new Set<string>()): IRelationShipTreeNode[] =>
                 [...map.values()].flatMap((n) => {
                     const relationshipFromMongo = relationShipsMap.get(n._id.split('&')[0]);
                     if (!relationshipFromMongo) return [];
@@ -420,43 +420,32 @@ export const buildTemplateTree =
 
                     if (!sourceEntityTemplate || !destinationEntityTemplate) return [];
 
+                    const sourceId = sourceEntityTemplate._id;
+                    const destinationId = destinationEntityTemplate._id;
+
+                    const newPathEntities = new Set(pathEntities);
+                    newPathEntities.add(sourceId);
+
+                    let children: IRelationShipTreeNode[] = [];
+                    if (!pathEntities.has(destinationId)) {
+                        newPathEntities.add(destinationId);
+                        children = buildTree(n.children, depth + 1, newPathEntities);
+                    }
+
                     return {
                         ...relationshipFromMongo,
                         neoRelIds: [...n.neoRelIds.values()],
                         sourceEntity: sourceEntityTemplate,
                         destinationEntity: destinationEntityTemplate,
                         depth,
-                        children: buildTree(n.children, depth + 1),
+                        children,
                     };
                 });
 
             return buildTree(roots);
         };
 
-        const removeFromTree = (tree: IRelationShipTreeNode[], pathEntities = new Set<string>()): IRelationShipTreeNode[] => {
-            return tree
-                .map((node) => {
-                    const sourceId = node.sourceEntity._id;
-                    const destinationId = node.destinationEntity._id;
-
-                    const newPathEntities = new Set(pathEntities);
-                    newPathEntities.add(sourceId);
-
-                    let filteredChildren: IRelationShipTreeNode[] = [];
-
-                    if (!pathEntities.has(destinationId)) {
-                        newPathEntities.add(destinationId);
-                        filteredChildren = removeFromTree(node.children, newPathEntities);
-                    }
-
-                    return { ...node, children: filteredChildren };
-                })
-                .filter((node): node is IRelationShipTreeNode => node !== null);
-        };
-
-        const tree = buildRelationshipTree(relationships, entityTemplatesMap, relationShipsMap);
-        console.dir(tree, { depth: null });
-        return removeFromTree(tree);
+        return buildRelationshipTree(relationships, entityTemplatesMap, relationShipsMap);
     };
 
 const formatUndirectedRelationship = (relationship: Relationship, node1: Node, node2: Node): IRelationship => {
