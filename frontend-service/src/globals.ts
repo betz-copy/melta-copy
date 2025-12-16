@@ -130,7 +130,7 @@ export const environment = {
     activityLog: {
         infiniteScrollPageCount: 10,
     },
-    datePickerViews: ['year', 'month', 'day'] as const,
+    datePickerViews: ['year', 'month', 'day'],
     processInstances: {
         infiniteScrollPageCount: 10,
     },
