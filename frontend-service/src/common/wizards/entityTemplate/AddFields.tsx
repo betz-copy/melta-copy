@@ -1,3 +1,10 @@
+import {
+    basicFilterOperationTypes,
+    filterTypes,
+    numberFilterOperationTypes,
+    relativeDateFilters,
+    textFilterOperationTypes,
+} from '@microservices/shared';
 import { Grid } from '@mui/material';
 import { AxiosError } from 'axios';
 import { isValid } from 'date-fns';
@@ -22,8 +29,6 @@ import { getFieldData } from './fieldBlock/propertiesTypes';
 import { EntityTemplateWizardValues } from './index';
 
 const {
-    relativeDateFilters,
-    filterOptions,
     dateRegex,
     dateTimeRegex,
     map: { mapSearchPropertiesLimit },
@@ -59,15 +64,19 @@ export const attachmentPropertiesBaseSchema = Yup.object({
 });
 
 const agGridTextFilterSchema = Yup.object({
-    filterType: Yup.string().oneOf(['text']).required(i18next.t('validation.required')),
-    type: Yup.string().oneOf(filterOptions.text).required(i18next.t('validation.required')),
+    filterType: Yup.string().oneOf([filterTypes.text]).required(i18next.t('validation.required')),
+    type: Yup.string()
+        .oneOf([...Object.values(basicFilterOperationTypes), ...Object.values(textFilterOperationTypes)])
+        .required(i18next.t('validation.required')),
     filter: Yup.mixed().required(i18next.t('validation.required')),
 });
 
 const agGridNumberFilterSchema = (parentFilterType: FilterType = FilterType.value) =>
     Yup.object({
-        filterType: Yup.string().oneOf(['number']).strict(true).required(i18next.t('validation.required')),
-        type: Yup.string().oneOf(filterOptions.number).required(i18next.t('validation.required')),
+        filterType: Yup.string().oneOf([filterTypes.number]).strict(true).required(i18next.t('validation.required')),
+        type: Yup.string()
+            .oneOf([...Object.values(basicFilterOperationTypes), ...Object.values(numberFilterOperationTypes)])
+            .required(i18next.t('validation.required')),
         filter: Yup.mixed()
             .test('number-validation', i18next.t('validation.invalidNumberField'), (value) => {
                 if (value === undefined || value === null) return false;
@@ -94,7 +103,7 @@ const agGridNumberFilterSchema = (parentFilterType: FilterType = FilterType.valu
 
 const validateRelativeDate = (value?: string) => {
     if (!value) return false;
-    return relativeDateFilters.includes(value);
+    return Object.values(relativeDateFilters).includes(value as relativeDateFilters);
 };
 
 const validateExactDate = (value?: string) => {
@@ -104,14 +113,16 @@ const validateExactDate = (value?: string) => {
 
 const agGridDateFilterSchema = (parentFilterType: FilterType = FilterType.value) =>
     Yup.object({
-        filterType: Yup.string().oneOf(['date']).required(i18next.t('validation.required')),
-        type: Yup.string().oneOf(filterOptions.date).required(i18next.t('validation.required')),
+        filterType: Yup.string().oneOf([filterTypes.date]).required(i18next.t('validation.required')),
+        type: Yup.string()
+            .oneOf([...Object.values(basicFilterOperationTypes), ...Object.values(numberFilterOperationTypes), ...Object.values(relativeDateFilters)])
+            .required(i18next.t('validation.required')),
         dateFrom:
             parentFilterType === FilterType.field
                 ? Yup.string().required(i18next.t('validation.required'))
                 : Yup.string()
                       .when('type', {
-                          is: (type: string) => relativeDateFilters.includes(type),
+                          is: (type: string) => Object.values(relativeDateFilters).includes(type as relativeDateFilters),
                           then: (schema) => schema.test('valid-relative-date', i18next.t('validation.invalidRelativeDate'), validateRelativeDate),
                           otherwise: (schema) =>
                               schema.test('valid-date-format', 'must be YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss.sssZ', validateExactDate),
@@ -125,7 +136,7 @@ const agGridDateFilterSchema = (parentFilterType: FilterType = FilterType.value)
     });
 
 const agGridSetFilterSchema = Yup.object({
-    filterType: Yup.string().oneOf(['set']).required(i18next.t('validation.required')),
+    filterType: Yup.string().oneOf([filterTypes.set]).required(i18next.t('validation.required')),
     values: Yup.array().of(Yup.string().nullable()).min(1, i18next.t('validation.atLeastOne')).required(i18next.t('validation.required')),
 });
 
@@ -308,6 +319,7 @@ export const FieldBlockWrapper = ({
             searchEntitiesOfTemplateRequest((values as EntityTemplateWizardValues & { _id: string })._id, {
                 skip: 0,
                 limit: 1,
+                showRelationships: false,
             }),
         {
             enabled: isEditMode,

@@ -1,9 +1,10 @@
+import { DashboardItemType } from '@microservices/shared';
 import { Grid } from '@mui/material';
 import { Form, Formik, FormikHelpers, FormikProps } from 'formik';
 import React, { JSX } from 'react';
 import { isSchema } from 'yup';
 import { StepComponentHelpers } from '../../../common/wizards';
-import { DashboardItemForm, DashboardItemType, TabStepComponent, ViewMode } from '../../../interfaces/dashboard';
+import { DashboardItemForm, TabStepComponent, ViewMode } from '../../../interfaces/dashboard';
 import DashboardItemDetailsHeader from './DashboardItemDetailsHeader';
 import DashboardItemDetailsSideBar from './DashboardItemDetailsSideBar';
 

@@ -1,8 +1,9 @@
+import { DashboardItemType } from '@microservices/shared';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Grid, Tab, useTheme } from '@mui/material';
 import { FormikProps } from 'formik';
 import React from 'react';
-import { ChartForm, DashboardItemForm, DashboardItemType, TabStepComponent, ViewMode } from '../../../interfaces/dashboard';
+import { ChartForm, DashboardItemForm, TabStepComponent, ViewMode } from '../../../interfaces/dashboard';
 import { markTouched } from '../../../utils/charts/markTouchedRecursive';
 
 interface DashboardItemDetailsSideBarProps<T extends DashboardItemForm> {

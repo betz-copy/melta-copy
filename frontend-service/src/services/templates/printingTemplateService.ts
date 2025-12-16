@@ -1,6 +1,6 @@
+import { IMongoPrintingTemplate, IPrintingTemplate } from '@microservices/shared';
 import axios from '../../axios';
 import { environment } from '../../globals';
-import { IMongoPrintingTemplate, IPrintingTemplate } from '../../interfaces/printingTemplates';
 
 const { printingTemplates } = environment.api;
 

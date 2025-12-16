@@ -1,20 +1,27 @@
-import axios from '../axios';
-import { environment } from '../globals';
-import { NotificationType } from '../interfaces/notifications';
-import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '../interfaces/permissions/permissions';
-import { IMongoRole, IRole } from '../interfaces/roles';
-import { IGetUnits, IMongoUnit, IUnit, IUnitHierarchy } from '../interfaces/units';
 import {
     IBaseUser,
+    ICompactNullablePermissions,
+    ICompactPermissions,
     IExternalUser,
+    IGetUnits,
     IKartoffelUser,
+    IMongoRole,
+    IMongoUnit,
     IMongoUser,
+    IPermission,
+    IRole,
+    ISubCompactPermissions,
+    IUnit,
+    IUnitHierarchy,
     IUser,
     IUserPopulated,
     IUserPreferences,
     IUserSearchBody,
+    NotificationType,
     RelatedPermission,
-} from '../interfaces/users';
+} from '@microservices/shared';
+import axios from '../axios';
+import { environment } from '../globals';
 import { RecursiveNullable } from '../utils/types';
 
 const {

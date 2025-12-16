@@ -1,3 +1,4 @@
+import { Cartesian3 } from 'cesium';
 import proj4 from 'proj4';
 import config from '../config';
 import { SplitBy } from '../types';
@@ -27,11 +28,6 @@ export type UTM = {
     hemi: Hemisphere; // Hemisphere (North or South)
     east: number; // Easting (6-digit)
     north: number; // Northing (7-digit)
-};
-
-export type Cartesian3 = {
-    x: number;
-    y: number;
 };
 
 export enum MapItemType {

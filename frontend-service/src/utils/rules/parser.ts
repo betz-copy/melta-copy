@@ -1,10 +1,17 @@
+import {
+    IAggregationGroup,
+    IArgument,
+    IConstant,
+    IEquation,
+    IFormula,
+    IGroup,
+    IOperatorBool,
+    IPropertyOfVariable,
+    IRegularFunction,
+    IVariable,
+} from '@microservices/shared';
 import { JsonGroup, JsonItem, JsonRule, JsonRuleGroupExt, RuleProperties } from '@react-awesome-query-builder/mui';
 import { environment } from '../../globals';
-import { IFormula } from '../../interfaces/rules/formula';
-import { IArgument, IConstant, IPropertyOfVariable, IVariable } from '../../interfaces/rules/formula/argument';
-import { IEquation, IOperatorBool } from '../../interfaces/rules/formula/equation';
-import { IRegularFunction } from '../../interfaces/rules/formula/function';
-import { IAggregationGroup, IGroup } from '../../interfaces/rules/formula/group';
 import { FunctionObject, ValueType } from './interfaces';
 
 const { formulaGetTodayVarName } = environment;

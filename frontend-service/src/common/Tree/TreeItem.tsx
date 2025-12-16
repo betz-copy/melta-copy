@@ -157,7 +157,8 @@ const TreeItem = React.forwardRef(function CustomTreeItem<T extends Record<strin
                                 </TreeItemIconContainer>
                             ))}
 
-                        {checkBoxProps.visible && (
+                        {/* // TODO CHECK IF WORKS */}
+                        {checkBoxProps.ref && (
                             <Box onClick={(e) => e.stopPropagation()}>
                                 <MeltaCheckbox {...checkBoxProps} sxChecked={{ width: '18px', height: '18px' }} />
                             </Box>
@@ -170,7 +171,7 @@ const TreeItem = React.forwardRef(function CustomTreeItem<T extends Record<strin
                         <TreeItemDragAndDropOverlay {...getDragAndDropOverlayProps()} />
                     </div>
 
-                    {additionalOptions?.map((option) => option(node))}
+                    {additionalOptions && <>{additionalOptions.map((option) => option(node))}</>}
                 </TreeItemContent>
 
                 {children && <TreeItemGroupTransition {...getGroupTransitionProps()} sx={styles?.treeNodeGroupTransition} />}

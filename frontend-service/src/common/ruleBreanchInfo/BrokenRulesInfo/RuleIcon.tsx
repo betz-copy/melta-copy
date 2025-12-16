@@ -1,8 +1,8 @@
+import { ActionOnFail, IMongoRule } from '@microservices/shared';
 import { Gavel as GavelIcon } from '@mui/icons-material';
 import { Icon } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import { ActionOnFail, IMongoRule } from '../../../interfaces/rules';
 import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
 
 interface RuleIconProps {

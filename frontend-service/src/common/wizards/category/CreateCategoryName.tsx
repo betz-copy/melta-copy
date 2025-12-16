@@ -1,9 +1,9 @@
+import { IMongoCategory } from '@microservices/shared';
 import { Grid, TextField } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import * as Yup from 'yup';
-import { IMongoCategory } from '../../../interfaces/categories';
 import { variableNameValidation } from '../../../utils/validation';
 import { StepComponentProps } from '../index';
 import { CategoryWizardValues } from './index';

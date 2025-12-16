@@ -1,3 +1,4 @@
+import { INotificationGroupCountDetails, INotificationPopulated, NotificationType } from '@microservices/shared';
 import { CalendarToday, FilterList, FilterListOff, MarkChatUnreadOutlined, SmsOutlined } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 import { CircularProgress, Grid, IconButton, Tab, Tabs, Typography, useTheme } from '@mui/material';
@@ -6,7 +7,6 @@ import React, { CSSProperties, useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
-import { INotificationGroupCountDetails, INotificationPopulated, NotificationType } from '../../../interfaces/notifications';
 import { IGetMyNotificationsRequestQuery } from '../../../services/notificationService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import IconButtonWithPopover from '../../IconButtonWithPopover';

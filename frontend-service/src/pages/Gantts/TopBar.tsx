@@ -1,3 +1,4 @@
+import { IGantt, PermissionScope } from '@microservices/shared';
 import {
     Category as AddGroupByIcon,
     CalendarMonth as CalendarModeIcon,
@@ -19,8 +20,6 @@ import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
 import { Swap } from '../../common/Swap';
 import { TopBarGrid } from '../../common/TopBar';
 import { environment } from '../../globals';
-import { IBasicGantt } from '../../interfaces/gantts';
-import { PermissionScope } from '../../interfaces/permissions';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
@@ -32,7 +31,7 @@ const {
 
 interface IGanttTopBar {
     title: string;
-    formik: FormikProps<IBasicGantt>;
+    formik: FormikProps<IGantt>;
     onEdit: () => void;
     onDelete: () => void;
     onAddGroupBy: () => void;

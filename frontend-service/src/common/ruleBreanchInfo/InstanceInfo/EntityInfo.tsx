@@ -1,9 +1,8 @@
+import { IEntity, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { AppRegistration as AppRegistrationIcon, ExpandLess as ExpandLessIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { Collapse, Divider, Grid, Paper, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { useState } from 'react';
-import { IEntity } from '../../../interfaces/entities';
-import { IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { CustomIcon } from '../../CustomIcon';
@@ -12,7 +11,7 @@ import { EntityTemplateColor } from '../../EntityTemplateColor';
 
 interface EntityInfoProps {
     entity: IEntity | null;
-    entityTemplate: IEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
     failedProperties: string[];
 }
 

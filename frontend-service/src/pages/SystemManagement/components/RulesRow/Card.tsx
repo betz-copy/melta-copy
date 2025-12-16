@@ -1,3 +1,4 @@
+import { ActionOnFail, IMongoEntityTemplateWithConstraintsPopulated, IMongoRule, PermissionScope } from '@microservices/shared';
 import { Brush, WarningAmberRounded, WarningRounded } from '@mui/icons-material';
 import { Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
@@ -5,9 +6,6 @@ import React, { useState } from 'react';
 import { UseMutateAsyncFunction } from 'react-query';
 import { EntityTemplateColor } from '../../../../common/EntityTemplateColor';
 import { MinimizedColorPicker } from '../../../../common/inputs/MinimizedColorPicker';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { PermissionScope } from '../../../../interfaces/permissions';
-import { ActionOnFail, IMongoRule } from '../../../../interfaces/rules';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import { useUserStore } from '../../../../stores/user';
 import { useWorkspaceStore } from '../../../../stores/workspace';
@@ -54,7 +52,7 @@ const showProperty = (key: string, value: string, darkMode: boolean, isColor?: b
 
 const RuleCard: React.FC<{
     rule: IMongoRule;
-    entityTemplates: IMongoEntityTemplatePopulated[];
+    entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[];
     setRuleWizardDialogState: React.Dispatch<
         React.SetStateAction<{
             isWizardOpen: boolean;

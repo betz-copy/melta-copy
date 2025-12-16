@@ -5,12 +5,13 @@ import {
     IAgGridRequest,
     IAgGridSort,
     numberFilterOperationTypes,
+    relativeDateFilters,
     textFilterOperationTypes,
 } from '@microservices/shared';
 import { RuleBreachSearchFilterTypeError } from '../../express/error';
 
 const translateAgGridFilter = (
-    type: basicFilterOperationTypes | numberFilterOperationTypes | textFilterOperationTypes,
+    type: basicFilterOperationTypes | numberFilterOperationTypes | textFilterOperationTypes | relativeDateFilters,
     filterValue: any,
     other?: any,
 ) => {
@@ -43,6 +44,14 @@ const translateAgGridFilter = (
             return { $regex: new RegExp(`^${filterValue}`, 'i') };
         case textFilterOperationTypes.endsWith:
             return { $regex: new RegExp(`${filterValue}$`, 'i') };
+
+        // Relative date filters - frontend should resolve these to actual dates before sending
+        case relativeDateFilters.thisWeek:
+        case relativeDateFilters.thisMonth:
+        case relativeDateFilters.thisYear:
+        case relativeDateFilters.untilToday:
+        case relativeDateFilters.fromToday:
+            throw new RuleBreachSearchFilterTypeError(`Relative date filter '${type}' should be resolved to date range before backend processing`);
 
         default:
             throw new RuleBreachSearchFilterTypeError(type);

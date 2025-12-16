@@ -1,10 +1,9 @@
+import { IEntityTemplateMap, IRelationshipTemplateMap } from '@microservices/shared';
 import { ImportExport as RelatedIcon } from '@mui/icons-material';
 import { Grid, Typography } from '@mui/material';
 import React, { CSSProperties, Fragment, useMemo } from 'react';
 import { useQueryClient } from 'react-query';
 import { environment } from '../../../globals';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { IScheduleComponentData } from '../../../interfaces/syncfusion';
 import { filteredMap } from '../../../utils/filteredMap';
 import { getConnectedEntityTemplatesDetails } from '../../../utils/gantts';

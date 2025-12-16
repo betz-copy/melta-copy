@@ -1,3 +1,4 @@
+import { ActionOnFail, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { Autocomplete, Divider, FormControl, FormControlLabel, FormHelperText, Grid, Radio, RadioGroup, TextField } from '@mui/material';
 import { getIn } from 'formik';
 import Handlebars from 'handlebars';
@@ -7,8 +8,6 @@ import React from 'react';
 import { useQueryClient } from 'react-query';
 import * as Yup from 'yup';
 import { environment } from '../../../globals';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { ActionOnFail } from '../../../interfaces/rules';
 import { useUserStore } from '../../../stores/user';
 import { getAllWritePermissionEntityTemplates } from '../../../utils/permissions/templatePermissions';
 import { StepComponentProps } from '../index';
@@ -102,7 +101,7 @@ const createRuleSchema = Yup.object({
     });
 });
 
-const hasUserFields = (entityTemplate: IMongoEntityTemplatePopulated | null) => {
+const hasUserFields = (entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | null) => {
     if (!entityTemplate) return false;
 
     return Object.values(entityTemplate.properties.properties).some((value) => value.format === 'user' || value.items?.format === 'user');

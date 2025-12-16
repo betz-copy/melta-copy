@@ -1,9 +1,8 @@
+import { PermissionData, PermissionScope } from '@microservices/shared';
 import { Box, CheckboxProps, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
-import { PermissionScope } from '../../interfaces/permissions';
-import { PermissionData } from '../../interfaces/users';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { entityTemplatePermissionDialog } from '../../utils/permissions/permissionOfUserDialog';
 import SearchInput from '../inputs/SearchInput';

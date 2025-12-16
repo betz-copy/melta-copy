@@ -8,15 +8,12 @@ import { defaultMetadata, useWorkspaceStore } from '../../stores/workspace';
 import '../../css/index.css';
 import createCache from '@emotion/cache';
 import { CacheProvider } from '@emotion/react';
+import { ICategoryMap, IChildTemplateMap, IEntityTemplateMap, IRelationshipTemplateMap } from '@microservices/shared';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { prefixer } from 'stylis';
 import rtlPlugin from 'stylis-plugin-rtl';
 import { LoadingAnimation } from '../../common/LoadingAnimation';
-import { ICategoryMap } from '../../interfaces/categories';
-import { IChildTemplateMapPopulated } from '../../interfaces/childTemplates';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { mapTemplates } from '../../utils/templates';
 import ErrorPage from '../ErrorPage';
 import ClientSidePageInner from './ClientSidePageInner';
@@ -60,7 +57,7 @@ const ClientSidePage: React.FC = () => {
             onSuccess: ({ categories, entityTemplates, relationshipTemplates, childTemplates }) => {
                 queryClient.setQueryData<ICategoryMap>('getClientSideCategories', mapTemplates(categories));
                 queryClient.setQueryData<IEntityTemplateMap>('getClientSideEntityTemplates', mapTemplates(entityTemplates));
-                queryClient.setQueryData<IChildTemplateMapPopulated>('getClientSideChildTemplates', mapTemplates(childTemplates));
+                queryClient.setQueryData<IChildTemplateMap>('getClientSideChildTemplates', mapTemplates(childTemplates));
                 queryClient.setQueryData<IRelationshipTemplateMap>('getClientSideRelationshipTemplates', mapTemplates(relationshipTemplates));
 
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', mapTemplates(entityTemplates));

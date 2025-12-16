@@ -1,3 +1,4 @@
+import { IEntity, IEntityTemplateMap } from '@microservices/shared';
 /** biome-ignore-all lint/correctness/useExhaustiveDependencies: useEffects dependencies */
 import * as Cesium from 'cesium';
 import i18next from 'i18next';
@@ -5,8 +6,6 @@ import React, { useEffect, useRef } from 'react';
 import { createRoot, Root } from 'react-dom/client';
 import { CesiumComponentRef } from 'resium';
 import { EntityPropertiesInternal } from '../../../common/EntityProperties';
-import { IEntity } from '../../../interfaces/entities';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { IPolygonSearchResult } from '../../../interfaces/location';
 
 interface EntityTooltipProps {

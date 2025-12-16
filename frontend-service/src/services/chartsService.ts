@@ -1,7 +1,7 @@
+import { ChartsAndGenerator, IChartPermission, IMongoChart, MongoBaseFields } from '@microservices/shared';
 import axios from '../axios';
 import { environment } from '../globals';
-import { ChartsAndGenerator, IMongoChart, IPermission } from '../interfaces/charts';
-import { ChartToBackend, MongoBaseFields } from '../interfaces/dashboard';
+import { ChartToBackend } from '../interfaces/dashboard';
 
 const { charts } = environment.api;
 
@@ -13,7 +13,7 @@ export const createChart = async (newChart: ChartToBackend, toDashboard: boolean
 export const editChart = async (chartId: string, updatedChart: ChartToBackend & Partial<MongoBaseFields>, prevChildTemplateId?: string) => {
     const { usedInDashboard, _id, createdAt, updatedAt, childTemplateId, ...restChart } = updatedChart;
 
-    const deleteReferenceDashboardItems = usedInDashboard && updatedChart.permission === IPermission.Private;
+    const deleteReferenceDashboardItems = usedInDashboard && updatedChart.permission === IChartPermission.Private;
 
     const { data } = await axios.put<IMongoChart>(
         `${charts}/${chartId}`,

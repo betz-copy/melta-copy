@@ -1,10 +1,10 @@
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { Box, Typography, useTheme } from '@mui/material';
 import React from 'react';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../../stores/darkMode';
 
 const DuplicateTopBar: React.FC<{
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
 }> = ({ entityTemplate }) => {
     const theme = useTheme();
     const darkMode = useDarkModeStore((state) => state.darkMode);

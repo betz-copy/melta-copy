@@ -1,3 +1,4 @@
+import { SplitBy } from '@microservices/shared';
 import { Map } from '@mui/icons-material';
 import { Autocomplete, Box, Dialog, Grid, InputAdornment, TextField } from '@mui/material';
 import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
@@ -6,7 +7,6 @@ import { Cartesian3 } from 'cesium';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { environment } from '../../../globals';
-import { SplitBy } from '../../../interfaces/entities';
 import LocationField from '../../../pages/Map/LocationField';
 import { stringToCoordinates } from '../../../utils/map';
 import { extractUtmLocation, isValidUTM, isValidWGS84, locationConverterToString } from '../../../utils/map/convert';

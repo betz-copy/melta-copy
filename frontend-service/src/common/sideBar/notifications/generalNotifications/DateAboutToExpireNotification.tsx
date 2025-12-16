@@ -1,10 +1,9 @@
+import { IDateAboutToExpireMetadataPopulated, IEntityTemplateMap, NotificationType } from '@microservices/shared';
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import { environment } from '../../../../globals';
-import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
-import { IDateAboutToExpireMetadataPopulated, NotificationType } from '../../../../interfaces/notifications';
 import { EntityLink } from '../../../EntityLink';
 import { NotificationColor } from '../../../notificationColor';
 

@@ -1,3 +1,4 @@
+import { IChildTemplateWithConstraintsPopulated, IEntity, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
 import { Card, CardContent, Grid, useTheme } from '@mui/material';
 import i18next from 'i18next';
@@ -8,8 +9,6 @@ import { EntityProperties } from '../../../common/EntityProperties';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
-import { IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
-import { IEntity } from '../../../interfaces/entities';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { getEntityTemplateColor } from '../../../utils/colors';
@@ -17,7 +16,7 @@ import { EntityDates } from '../../Entity/components/EntityDates';
 
 interface IUserInfoCardProps {
     currentUserFromClientSide: IEntity;
-    usersInfoChildTemplate: IMongoChildTemplatePopulated;
+    usersInfoChildTemplate: IChildTemplateWithConstraintsPopulated;
     overridePropertiesToShow?: string[];
     displayTitle?: boolean;
 }
@@ -32,7 +31,7 @@ const UserInfoCard: React.FC<IUserInfoCardProps> = ({
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
 
-    const usersInfoTemplate = usersInfoChildTemplate.parentTemplate;
+    const usersInfoTemplate = usersInfoChildTemplate.parentTemplate as unknown as IMongoEntityTemplateWithConstraintsPopulated;
     const entityTemplateColor = getEntityTemplateColor(usersInfoTemplate);
     const { height, width } = workspace!.metadata!.iconSize!;
 

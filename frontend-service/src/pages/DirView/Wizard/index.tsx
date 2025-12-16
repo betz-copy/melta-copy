@@ -1,3 +1,4 @@
+import { FileDetails, IWorkspace, WorkspaceTypes } from '@microservices/shared';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React from 'react';
@@ -6,8 +7,6 @@ import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { StepType, Wizard, WizardBaseType } from '../../../common/wizards/index';
-import fileDetails from '../../../interfaces/fileDetails';
-import { IWorkspace, WorkspaceTypes } from '../../../interfaces/workspaces';
 import { createOne, updateOne } from '../../../services/workspacesService';
 import { getFileName } from '../../../utils/getFileName';
 // import { ChooseColors, chooseColorsSchema } from './ChooseColors';
@@ -15,8 +14,8 @@ import { ChooseDetails, chooseDetailsSchema } from './ChooseDetails';
 import { ChooseIcons } from './ChooseIcons';
 
 export interface WorkspaceWizardValues extends Omit<IWorkspace, '_id' | 'path' | 'iconFileId' | 'logoFileId'> {
-    icon?: fileDetails;
-    logo?: fileDetails;
+    icon?: FileDetails;
+    logo?: FileDetails;
 }
 
 const steps: StepType<WorkspaceWizardValues>[] = [

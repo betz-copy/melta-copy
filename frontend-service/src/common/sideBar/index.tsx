@@ -1,4 +1,5 @@
 import { useMatomo } from '@datapunt/matomo-tracker-react';
+import { ICategoryMap, INotificationCountGroups, PermissionScope, RelatedPermission } from '@microservices/shared';
 import {
     CalendarMonth as CalendarIcon,
     MeetingRoom as ExitIcon,
@@ -16,10 +17,6 @@ import React, { useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
 import { environment } from '../../globals';
-import { ICategoryMap } from '../../interfaces/categories';
-import { INotificationCountGroups } from '../../interfaces/notifications';
-import { PermissionScope } from '../../interfaces/permissions';
-import { RelatedPermission } from '../../interfaces/users';
 import { searchIFrames } from '../../services/iFramesService';
 import { getMyNotificationGroupCountRequest, getMyNotificationsRequest, manyNotificationSeenRequest } from '../../services/notificationService';
 import { useDarkModeStore } from '../../stores/darkMode';

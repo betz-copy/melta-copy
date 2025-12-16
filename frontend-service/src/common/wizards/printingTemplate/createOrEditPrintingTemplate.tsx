@@ -1,3 +1,4 @@
+import { ICategoryMap, IEntityTemplateMap, IMongoPrintingTemplate, IPrintingTemplateMap } from '@microservices/shared';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -8,9 +9,6 @@ import React, { useMemo } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
-import { ICategoryMap } from '../../../interfaces/categories';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { IMongoPrintingTemplate, IPrintingTemplateMap } from '../../../interfaces/printingTemplates';
 import { createPrintingTemplateRequest, updatePrintingTemplateRequest } from '../../../services/templates/printingTemplateService';
 import BlueTitle from '../../MeltaDesigns/BlueTitle';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';

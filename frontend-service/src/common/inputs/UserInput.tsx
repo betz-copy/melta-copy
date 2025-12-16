@@ -1,5 +1,5 @@
+import { IKartoffelUser, IKartoffelUserStringFields, IUser } from '@microservices/shared';
 import React from 'react';
-import { IKartoffelUser, IKartoffelUserStringFields, IUser } from '../../interfaces/users';
 import UserAutocomplete, { IUserAutocomplete } from './UserAutocomplete';
 
 interface UserInputProps extends Omit<IUserAutocomplete, 'mode' | 'onChange'> {

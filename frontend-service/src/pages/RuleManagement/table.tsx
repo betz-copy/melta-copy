@@ -7,10 +7,14 @@ import React, { forwardRef, memo, useImperativeHandle, useMemo, useRef } from 'r
 import { toast } from 'react-toastify';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import '../../css/table.css';
-import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
-import { BreachType, IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
-import { IRuleBreachAlertPopulated } from '../../interfaces/ruleBreaches/ruleBreachAlert';
-import { IRuleBreachRequestPopulated, RuleBreachRequestStatus } from '../../interfaces/ruleBreaches/ruleBreachRequest';
+import {
+    ActionTypes,
+    BreachType,
+    IRuleBreachAlertPopulated,
+    IRuleBreachPopulated,
+    IRuleBreachRequestPopulated,
+    RuleBreachRequestStatus,
+} from '@microservices/shared';
 import { getRuleBreachAlertsRequest, getRuleBreachRequestsRequest } from '../../services/ruleBreachesService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useWorkspaceStore } from '../../stores/workspace';

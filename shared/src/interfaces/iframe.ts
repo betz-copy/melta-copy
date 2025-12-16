@@ -4,6 +4,7 @@ export interface IFrame {
     categoryIds: string[];
     iconFileId: string | null;
     placeInSideBar?: boolean;
+    usedInDashboard?: boolean;
 }
 
 export interface IMongoIframe extends IFrame {
@@ -14,7 +15,7 @@ export interface IMongoIframe extends IFrame {
 
 export interface ISearchIFramesBody {
     search?: string;
-    limit: number;
-    skip: number;
+    limit?: number;
+    skip?: number;
     ids?: string[];
 }

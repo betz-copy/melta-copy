@@ -1,4 +1,6 @@
 /* eslint-disable react/no-unstable-nested-components */
+
+import { DashboardItemType } from '@microservices/shared';
 import { CircularProgress } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -11,7 +13,7 @@ import { IFrameWizardValues, updateIFramesOrderOnLocalStorage } from '../../../.
 import { createIFrameDetailsSchema } from '../../../../common/wizards/iFrame/CreateIFrameDetails';
 import { SettingIFramesPermissions, settingIFramesPermissionsSchema } from '../../../../common/wizards/iFrame/SettingPermissions';
 import { environment } from '../../../../globals';
-import { DashboardItemType, TabStepComponent, ViewMode } from '../../../../interfaces/dashboard';
+import { TabStepComponent, ViewMode } from '../../../../interfaces/dashboard';
 import { deleteDashboardItem } from '../../../../services/dashboardService';
 import { createIFrame, getIFrameById, updateIFrame } from '../../../../services/iFramesService';
 import { dashboardInitialValues } from '../../../../utils/dashboard/formik';

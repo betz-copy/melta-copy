@@ -1,10 +1,10 @@
+import { PermissionScope } from '@microservices/shared';
 import { Delete as DeleteIcon, DeleteForever as DeleteOff, DragHandle as DragHandleIcon } from '@mui/icons-material';
 import { Box, Card, CardContent, FormControlLabel, Grid, IconButton, MenuItem, TextField } from '@mui/material';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
 import React, { memo } from 'react';
-import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
 import MeltaSwitch from '../../MeltaDesigns/MeltaSwitch';
 import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';

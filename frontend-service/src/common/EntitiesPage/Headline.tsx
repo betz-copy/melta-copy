@@ -1,6 +1,12 @@
 import { GridApi } from '@ag-grid-community/core';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
 import {
+    IEntity,
+    IMongoCategory,
+    IMongoChildTemplateWithConstraintsPopulated,
+    IMongoEntityTemplateWithConstraintsPopulated,
+} from '@microservices/shared';
+import {
     Add as AddIcon,
     AutoAwesome,
     AutoAwesomeOutlined,
@@ -13,10 +19,6 @@ import { BaseTextFieldProps, Box, CircularProgress, Grid, IconButton, ToggleButt
 import i18next from 'i18next';
 import { debounce } from 'lodash';
 import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
-import { IMongoCategory } from '../../interfaces/categories';
-import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { IEntity } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { convertToBool } from '../../utils/convertStringToBool';
@@ -159,7 +161,7 @@ export const GlobalSearchBar: React.FC<{
     );
 };
 
-type EntitiesPageHeadlineProps<T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated> = {
+type EntitiesPageHeadlineProps<T extends IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated> = {
     searchInput?: string;
     setSearchInput?: (newSearchInput: string) => void;
     onSearch: (value: string) => void;
@@ -186,7 +188,7 @@ type EntitiesPageHeadlineProps<T extends IMongoEntityTemplatePopulated | IMongoC
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
-const EntitiesPageHeadline = <T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated>({
+const EntitiesPageHeadline = <T extends IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated>({
     searchInput,
     setSearchInput,
     onSearch,

@@ -1,6 +1,11 @@
+import {
+    IEntitySingleProperty,
+    IEntityTemplateMap,
+    IFullMongoEntityTemplate,
+    IMongoEntityTemplateWithConstraintsPopulated,
+} from '@microservices/shared';
 import { QueryClient } from 'react-query';
 import { CoordinateSystem } from '../../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 
 const generateFromString = ({ format, relationshipReference, enum: typeEnum }: IEntitySingleProperty, queryClient: QueryClient) => {
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -76,7 +81,7 @@ const generateInterfacesForRelatedTemplates = (template: Record<string, IEntityS
                 const { relatedTemplateId = '' } = propertyValues.relationshipReference || {};
 
                 if (!relationshipReferenceIds.has(relatedTemplateId)) {
-                    const relatedTemplate: IMongoEntityTemplatePopulated = entityTemplates.get(relatedTemplateId)!;
+                    const relatedTemplate: IMongoEntityTemplateWithConstraintsPopulated = entityTemplates.get(relatedTemplateId)!;
 
                     relationshipReferenceIds.add(relatedTemplateId);
                     interfaces.push(generateInterface(relatedTemplate.properties.properties, relatedTemplate.name, queryClient));
@@ -99,7 +104,7 @@ export const generateInterfaceWithRelationships = (
     template: Record<string, IEntitySingleProperty>,
     interfaceName: string,
     queryClient: QueryClient,
-    parentTemplate?: IMongoEntityTemplatePopulated,
+    parentTemplate?: IFullMongoEntityTemplate,
 ): string => {
     const baseTemplate = parentTemplate?.properties.properties ?? template;
     const baseName = parentTemplate?.name ?? interfaceName;

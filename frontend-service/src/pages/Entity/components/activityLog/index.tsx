@@ -1,14 +1,13 @@
+import { IEntityExpanded, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { History } from '@mui/icons-material';
 import { Button, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
 import PopperSidebar from '../../../../common/PopperSidebar';
-import { IEntityExpanded } from '../../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { ActivitiesContent } from './ActivitiesContent';
 
-const ActivityLog: React.FC<{ expandedEntity?: IEntityExpanded; entityTemplate: IMongoEntityTemplatePopulated }> = ({
+const ActivityLog: React.FC<{ expandedEntity?: IEntityExpanded; entityTemplate: IMongoEntityTemplateWithConstraintsPopulated }> = ({
     expandedEntity,
     entityTemplate,
 }) => {

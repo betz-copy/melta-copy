@@ -1,3 +1,4 @@
+import { IEntityTemplateMap, IUniqueConstraintOfTemplate } from '@microservices/shared';
 import {
     Add as AddIcon,
     AddLocationAlt,
@@ -16,8 +17,6 @@ import isEqual from 'lodash.isequal';
 import React, { memo, SetStateAction } from 'react';
 import { useQueryClient } from 'react-query';
 import { environment } from '../../../globals';
-import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { arrayTypes } from '../../../services/templates/entityTemplatesService';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';

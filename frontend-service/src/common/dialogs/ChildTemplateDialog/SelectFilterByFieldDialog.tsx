@@ -1,7 +1,7 @@
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { FilterMode } from '.';
 
 interface SelectUserFieldDialogProps {
@@ -10,7 +10,7 @@ interface SelectUserFieldDialogProps {
     selectedField: string | null;
     onClose: () => void;
     onSubmit: (field: string) => void;
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
     title?: string;
     content?: string;
     label?: string;

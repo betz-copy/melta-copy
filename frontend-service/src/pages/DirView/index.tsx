@@ -1,9 +1,9 @@
+import { IWorkspace } from '@microservices/shared';
 import { Box, Grid } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useQueries } from 'react-query';
 import { environment } from '../../globals';
-import { IWorkspace } from '../../interfaces/workspaces';
 import { MainBox } from '../../Main.styled';
 import { getDir, getFile } from '../../services/workspacesService';
 import { defaultMetadata, useWorkspaceStore } from '../../stores/workspace';

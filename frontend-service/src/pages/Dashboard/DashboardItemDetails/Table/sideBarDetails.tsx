@@ -1,3 +1,4 @@
+import { DashboardItemType, IChildTemplateMap, IEntityTemplateMap } from '@microservices/shared';
 import { Divider, Grid } from '@mui/material';
 import i18next from 'i18next';
 import React, { useState } from 'react';
@@ -6,9 +7,7 @@ import { InfoTypography } from '../../../../common/InfoTypography';
 import { FormikAutoComplete } from '../../../../common/inputs/FormikAutoComplete';
 import { ViewModeTextField } from '../../../../common/inputs/ViewModeTextField';
 import { StepComponentProps } from '../../../../common/wizards';
-import { IChildTemplateMap } from '../../../../interfaces/childTemplates';
-import { DashboardItemType, TableForm, ViewMode } from '../../../../interfaces/dashboard';
-import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import { TableForm, ViewMode } from '../../../../interfaces/dashboard';
 import { dashboardInitialValues, getTemplateProperties } from '../../../../utils/dashboard/formik';
 import { ChangeTemplate } from '../../Dialogs';
 

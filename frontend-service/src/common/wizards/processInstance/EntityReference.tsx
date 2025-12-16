@@ -1,3 +1,9 @@
+import {
+    IEntityTemplateMap,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    IReferencedEntityForProcess,
+    PermissionScope,
+} from '@microservices/shared';
 import { Add, Close } from '@mui/icons-material';
 import {
     Autocomplete,
@@ -19,9 +25,6 @@ import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { PermissionScope } from '../../../interfaces/permissions';
-import { IReferencedEntityForProcess } from '../../../interfaces/processes/processInstance';
 import EntityCard from '../../../pages/GlobalSearch/components/entityCard';
 import { useUserStore } from '../../../stores/user';
 import TemplateTableSelect from '../../inputs/TemplateTableSelect';
@@ -73,7 +76,7 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
 
     const currentUser = useUserStore((state) => state.user);
 
-    const activeEntityTemplatesFiltered: IMongoEntityTemplatePopulated[] = useMemo(() => {
+    const activeEntityTemplatesFiltered: IMongoEntityTemplateWithConstraintsPopulated[] = useMemo(() => {
         return Array.from(entityTemplates.values())
             .filter((entity) => currentUser.currentWorkspacePermissions.instances?.categories[entity.category._id]?.scope === PermissionScope.write)
             .filter((entity) => !entity.disabled);
@@ -152,7 +155,7 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
                             <Autocomplete
                                 id="entityTemplate"
                                 options={activeEntityTemplatesFiltered}
-                                onChange={(_e, value: IMongoEntityTemplatePopulated | null) => {
+                                onChange={(_e, value: IMongoEntityTemplateWithConstraintsPopulated | null) => {
                                     setFieldValue(`entityReferences.${field}.entityTemplate`, value);
                                     setFieldValue(`entityReferences.${field}.userHavePermission`, true);
                                 }}

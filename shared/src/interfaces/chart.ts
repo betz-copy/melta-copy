@@ -60,6 +60,7 @@ export interface IChart {
     templateId: string;
     childTemplateId?: string;
     createdBy: string;
+    usedInDashboard?: boolean;
 }
 
 export interface IMongoChart extends IChart {
@@ -83,7 +84,7 @@ export enum OptionsType {
     AggregationAndAllProperties = 'aggregationAndAllProperties',
 }
 
-type GeneratorChart = { x: any; y: number }[];
+export type GeneratorChart = { x: any; y: number }[];
 
 export interface ChartsAndGenerator extends IMongoChart {
     chart: GeneratorChart;

@@ -1,12 +1,11 @@
+import { IGraphFilterBody, IGraphFilterBodyBatch, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 /* eslint-disable react/no-array-index-key */
 import { Box } from '@mui/material';
 import React from 'react';
-import { IGraphFilterBody, IGraphFilterBodyBatch } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { GraphFilter } from './GraphFilter';
 
 interface GraphFilterBatchProps {
-    templateOptions: IMongoEntityTemplatePopulated[];
+    templateOptions: IMongoEntityTemplateWithConstraintsPopulated[];
     graphEntityTemplateIds: string[];
     setFilterRecord: (value: IGraphFilterBody, filterKey: number) => void;
     onRemoveFilter: (filterKey: number) => void;
@@ -16,7 +15,7 @@ interface GraphFilterBatchProps {
     onFilter?: () => void;
     entityFilter?: boolean;
     readonly?: boolean;
-    selectedEntityTemplate?: IMongoEntityTemplatePopulated | null;
+    selectedEntityTemplate?: IMongoEntityTemplateWithConstraintsPopulated | null;
 }
 
 const GraphFilterBatch: React.FC<GraphFilterBatchProps> = React.memo(

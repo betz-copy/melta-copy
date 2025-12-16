@@ -1,3 +1,11 @@
+import {
+    IAggregation,
+    IAggregationType,
+    IAxisField,
+    IEntityTemplateMap,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    OptionsType,
+} from '@microservices/shared';
 import { Grid, Typography } from '@mui/material';
 import { FormikProps, getIn } from 'formik';
 import i18next from 'i18next';
@@ -6,16 +14,16 @@ import React from 'react';
 import { useQueryClient } from 'react-query';
 import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
 import { ViewModeTextField } from '../../../common/inputs/ViewModeTextField';
-import { IAggregation, IAggregationType, isAggregation, OptionsType } from '../../../interfaces/charts';
 import { ChartForm } from '../../../interfaces/dashboard';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { filteredMap } from '../../../utils/filteredMap';
+
+export const isAggregation = (field: IAxisField): field is IAggregation => typeof field !== 'string';
 
 interface AxisInputProps {
     formik: FormikProps<ChartForm>;
     formikField: string;
     label: string;
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
     optionsType: OptionsType;
     readonly?: boolean;
     titleFormikField?: string;

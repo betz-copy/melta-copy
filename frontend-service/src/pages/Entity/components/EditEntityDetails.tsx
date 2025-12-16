@@ -1,3 +1,14 @@
+import {
+    ActionTypes,
+    IAction,
+    IActionPopulated,
+    IBrokenRule,
+    IEntity,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    IRuleBreach,
+    IRuleBreachPopulated,
+    IUniqueConstraint,
+} from '@microservices/shared';
 import { Clear as ClearIcon, Done as DoneIcon } from '@mui/icons-material';
 import { Button, Card, CardContent, CircularProgress, Divider, Grid, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
@@ -15,11 +26,7 @@ import { InstanceSingleFileInput } from '../../../common/inputs/InstanceFilesInp
 import { ajvValidate, JSONSchemaFormik } from '../../../common/inputs/JSONSchemaFormik';
 import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
 import { environment } from '../../../globals';
-import { IEntity, IUniqueConstraint } from '../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IErrorResponse } from '../../../interfaces/error';
-import { ActionTypes, IAction, IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
-import { IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { updateEntityRequestForMultiple } from '../../../services/entitiesService';
 import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
@@ -27,7 +34,7 @@ import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDi
 const { errorCodes } = environment;
 
 const EditEntityDetails: React.FC<{
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
     entity: IEntity;
     onSuccessUpdate: (data: IEntity) => void;
     onCancelUpdate: () => void;
@@ -118,7 +125,7 @@ const EditEntityDetails: React.FC<{
     return (
         <Formik
             initialValues={getInitialValuesWithDefaults({
-                properties: fieldProperties,
+                properties: { ...fieldProperties, disabled: false },
                 attachmentsProperties: fileProperties,
                 template: entityTemplate,
             })}

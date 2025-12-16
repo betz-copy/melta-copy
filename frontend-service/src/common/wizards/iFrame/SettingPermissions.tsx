@@ -1,10 +1,10 @@
+import { ICategoryMap } from '@microservices/shared';
 import { Hive } from '@mui/icons-material';
 import { Card, CardContent, Divider, FormControlLabel, FormGroup, Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import * as Yup from 'yup';
-import { ICategoryMap } from '../../../interfaces/categories';
 import { ViewMode } from '../../../interfaces/dashboard';
 import { useUserStore } from '../../../stores/user';
 import { CustomIcon } from '../../CustomIcon';

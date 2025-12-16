@@ -1,7 +1,7 @@
 import { Autocomplete, AutocompleteProps, TextField } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import { IRole } from '../../interfaces/roles';
+import { IRole } from '@microservices/shared';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 
 export interface IRoleAutocomplete {

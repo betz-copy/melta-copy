@@ -1,6 +1,6 @@
+import { ChartsAndGenerator, IChartType } from '@microservices/shared';
 import { Box } from '@mui/material';
 import React from 'react';
-import { ChartsAndGenerator, IChartType } from '../../../interfaces/charts';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';
 import { GripVertical } from '../../../utils/icons/fontAwesome';

@@ -24,6 +24,7 @@ export enum ActionsLog {
     CREATE_RELATIONSHIP = 'CREATE_RELATIONSHIP',
     DUPLICATE_ENTITY = 'DUPLICATE_ENTITY',
     UPDATE_ENTITY = 'UPDATE_ENTITY',
+    UPDATE_FIELDS = 'UPDATE_FIELDS',
 }
 
 export interface IMongoBaseActivityLog extends IBaseActivityLog {
@@ -50,7 +51,7 @@ interface IDuplicateEntityMetadata extends IBaseActivityLog {
 }
 
 interface IUpdateEntityMetadata extends IBaseActivityLog {
-    action: ActionsLog.UPDATE_ENTITY | ActionsLog.UPDATE_PROCESS;
+    action: ActionsLog.UPDATE_ENTITY | ActionsLog.UPDATE_PROCESS | ActionsLog.UPDATE_FIELDS;
     metadata: { updatedFields: IUpdatedFields[] };
 }
 

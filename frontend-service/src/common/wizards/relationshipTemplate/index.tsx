@@ -1,10 +1,9 @@
+import { IMongoEntityTemplateWithConstraintsPopulated, IRelationshipTemplateMap } from '@microservices/shared';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import {
     createRelationshipTemplateRequest,
     relationshipTemplateFormToRelationshipTemplateObject,
@@ -20,8 +19,8 @@ export interface RelationshipTemplateWizardValues {
     updatedAt?: string;
     name: string;
     displayName: string;
-    sourceEntity: IMongoEntityTemplatePopulated;
-    destinationEntity: IMongoEntityTemplatePopulated;
+    sourceEntity: IMongoEntityTemplateWithConstraintsPopulated;
+    destinationEntity: IMongoEntityTemplateWithConstraintsPopulated;
 }
 
 export const defaultInitialValues: RelationshipTemplateWizardValues = {
@@ -37,24 +36,48 @@ export const defaultInitialValues: RelationshipTemplateWizardValues = {
             required: [],
             hide: [],
         },
-        category: { _id: '', displayName: '', name: '', color: '', templatesOrder: [] },
+        category: {
+            _id: '',
+            displayName: '',
+            name: '',
+            color: '',
+            templatesOrder: [],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            iconFileId: null,
+        },
         propertiesOrder: [],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: [],
         uniqueConstraints: [],
         disabled: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        iconFileId: null,
     },
     destinationEntity: {
         _id: '',
         displayName: '',
         name: '',
         properties: { type: 'object', properties: {}, required: [], hide: [] },
-        category: { _id: '', displayName: '', name: '', color: '', templatesOrder: [] },
+        category: {
+            _id: '',
+            displayName: '',
+            name: '',
+            color: '',
+            templatesOrder: [],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            iconFileId: null,
+        },
         propertiesOrder: [],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: [],
         uniqueConstraints: [],
         disabled: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        iconFileId: null,
     },
 };
 
@@ -78,9 +101,9 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
         (relationshipTemplateForm: RelationshipTemplateWizardValues) => {
             const { _id, createdAt, updatedAt, ...restOfRelationshipTemplateForm } = relationshipTemplateForm;
             const relationshipTemplateBody = relationshipTemplateFormToRelationshipTemplateObject(restOfRelationshipTemplateForm);
-            const { isProperty, ...updatedRelationshipTemplate } = relationshipTemplateBody;
+            // TODO: check if we need to set iProperty as false
             if (isEditMode) {
-                return updateRelationshipTemplateRequest(_id!, updatedRelationshipTemplate);
+                return updateRelationshipTemplateRequest(_id!, relationshipTemplateBody);
             }
             return createRelationshipTemplateRequest(relationshipTemplateBody);
         },

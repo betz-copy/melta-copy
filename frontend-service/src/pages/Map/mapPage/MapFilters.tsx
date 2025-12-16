@@ -1,3 +1,10 @@
+import {
+    FilterLogicalOperator,
+    IEntity,
+    IEntityTemplateMap,
+    IFilterOfField,
+    IMongoEntityTemplateWithConstraintsPopulated,
+} from '@microservices/shared';
 /** biome-ignore-all lint/correctness/useExhaustiveDependencies: useEffect dependencies */
 import { FilterList } from '@mui/icons-material';
 import { Autocomplete, Box, Button, Divider, Grid, TextField, Typography, useTheme } from '@mui/material';
@@ -10,8 +17,6 @@ import { ColoredEnumChip } from '../../../common/ColoredEnumChip';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import SearchInput from '../../../common/inputs/SearchInput';
 import { environment } from '../../../globals';
-import { FilterLogicalOperator, IEntity, IFilterOfField } from '../../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { CameraFocusType } from '../../../interfaces/location';
 import { getEntitiesWithDirectConnections } from '../../../services/entitiesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
@@ -27,7 +32,7 @@ type Props = {
         value: { autoSearch: string; listFields: Record<string, IFilterOfField['$in']>; dirty: boolean };
         set: React.Dispatch<React.SetStateAction<{ autoSearch: string; listFields: Record<string, IFilterOfField['$in']>; dirty: boolean }>>;
     };
-    sourceTemplate?: IMongoEntityTemplatePopulated;
+    sourceTemplate?: IMongoEntityTemplateWithConstraintsPopulated;
     isSearchShape?: boolean;
     applyFilterWithShapeSearch: (autoSearch: string, listFields: Record<string, IFilterOfField['$in']>) => void;
     setCameraFocus: (value: React.SetStateAction<CameraFocusType | null>) => void;
@@ -75,7 +80,7 @@ const MapFilters = ({
                       }
                     : undefined;
 
-            return [templateId, filter ? { filter } : {}] as const;
+            return [templateId, { filter, showRelationships: false }];
         }),
     );
 

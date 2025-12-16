@@ -1,3 +1,4 @@
+import { ICategoryMap, IEntityTemplateMap, IMongoRelationshipTemplate, IRelationshipTemplateMap } from '@microservices/shared';
 import { Hive as HiveIcon } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, CircularProgress, Grid, Tab, Typography, useTheme } from '@mui/material';
@@ -7,9 +8,6 @@ import { useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
 import { CustomIcon } from '../../../common/CustomIcon';
 import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
-import { ICategoryMap } from '../../../interfaces/categories';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplate, IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { getClientSideExpandedEntityByIdRequest } from '../../../services/clientSideService';
 import { populateRelationshipTemplate } from '../../../utils/templates';
 import { INestedRelationshipTemplates } from '../../Entity';

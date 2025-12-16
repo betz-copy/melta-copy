@@ -1,10 +1,9 @@
+import { FileDetails, IUser } from '@microservices/shared';
 import { Payment } from '@mui/icons-material';
 import { Avatar, Box, Grid, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { environment } from '../../globals';
-import fileDetails from '../../interfaces/fileDetails';
-import { IUser } from '../../interfaces/users';
 import { getKartoffelUserProfileRequest } from '../../services/userService';
 import { allProfileAvatars } from '../../utils/icons';
 import { getNameInitials } from '../../utils/userProfile';
@@ -14,7 +13,7 @@ type InputSelectType = 'chooseFile' | 'chooseAvatar' | 'kartoffelProfile';
 
 export interface UserProfilePickerProps {
     user: IUser;
-    onPick: (profileImage?: fileDetails | string) => void;
+    onPick: (profileImage?: FileDetails | string) => void;
     onDelete: () => void;
     imageName?: string;
     defaultInputType?: InputSelectType;
@@ -34,7 +33,7 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({
     setIsDefaultProfile,
 }) => {
     const [inputType, setInputType] = useState(defaultInputType);
-    const [fileInputValue, setFileInputValue] = useState<fileDetails | undefined>(
+    const [fileInputValue, setFileInputValue] = useState<FileDetails | undefined>(
         imageName ? { file: { name: imageName }, name: imageName } : undefined,
     );
     const [selectedIcon, setSelectedIcon] = useState<string | undefined>(user.preferences.profilePath ?? undefined);
@@ -158,7 +157,7 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({
                         }}
                         onDeleteFile={(event: React.MouseEvent<HTMLButtonElement>) => {
                             event.stopPropagation();
-                            setFileInputValue({} as fileDetails);
+                            setFileInputValue({} as FileDetails);
                             onDelete();
                         }}
                         file={fileInputValue?.file}

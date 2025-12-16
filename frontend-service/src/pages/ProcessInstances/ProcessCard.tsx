@@ -1,3 +1,12 @@
+import {
+    IMongoProcessInstanceReviewerPopulated,
+    IMongoStepInstancePopulated,
+    IMongoStepTemplatePopulated,
+    IProcessTemplateMap,
+    Status,
+    StatusColors,
+    StatusColorsNames,
+} from '@microservices/shared';
 import { Archive, Delete, Edit, ScatterPlotOutlined as HiveIcon, MoreVertSharp, Unarchive } from '@mui/icons-material';
 import {
     Box,
@@ -30,10 +39,6 @@ import ProcessInstanceWizard from '../../common/wizards/processInstance';
 import CreateOrEditProcess from '../../common/wizards/processInstance/CreateOrEditProcessDialog';
 import { ProcessDetailsValues } from '../../common/wizards/processInstance/ProcessDetails';
 import { getFontColor } from '../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
-import { IMongoProcessInstancePopulated, Status, StatusColors, StatusColorsNames } from '../../interfaces/processes/processInstance';
-import { IProcessTemplateMap } from '../../interfaces/processes/processTemplate';
-import { IMongoStepInstancePopulated } from '../../interfaces/processes/stepInstance';
-import { IMongoStepTemplatePopulated } from '../../interfaces/processes/stepTemplate';
 import { archiveProcessRequest, deleteProcessRequest, updateProcessRequest } from '../../services/processesService';
 import { Print } from './print';
 
@@ -179,7 +184,7 @@ const StepIconComponent = (
 );
 
 const ProcessCard: React.FC<{
-    processInstance: IMongoProcessInstancePopulated;
+    processInstance: IMongoProcessInstanceReviewerPopulated;
     onChangedProcessDialogClose: (string) => void;
     isEditMode: boolean;
     isLoading?: boolean;
@@ -199,7 +204,7 @@ const ProcessCard: React.FC<{
     };
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [deleteDialogState, setDeleteDialogState] = useState<boolean>(false);
-    const [currProcessInstance, setCurrProcessInstance] = useState<IMongoProcessInstancePopulated>(processInstance);
+    const [currProcessInstance, setCurrProcessInstance] = useState<IMongoProcessInstanceReviewerPopulated>(processInstance);
     const [isProcessChanged, setIsProcessChanged] = useState<boolean>(false);
     const [isEditModeProcess, setIsEditMode] = useState<boolean>(false);
 
@@ -244,11 +249,11 @@ const ProcessCard: React.FC<{
         },
     );
     const { mutateAsync: archiveProcessMutate, isLoading: isLodingArchiveProcess } = useMutation(
-        (process: IMongoProcessInstancePopulated) => {
+        (process: IMongoProcessInstanceReviewerPopulated) => {
             return archiveProcessRequest(process._id, !process.archived);
         },
         {
-            onError: (error: AxiosError, process: IMongoProcessInstancePopulated) => {
+            onError: (error: AxiosError, process: IMongoProcessInstanceReviewerPopulated) => {
                 if (process.archived) {
                     console.error('failed to send process to archive. error:', error);
                     toast.success(i18next.t('processInstancesPage.failedToSendProcessToArchive'));
@@ -257,7 +262,7 @@ const ProcessCard: React.FC<{
                     toast.success(i18next.t('processInstancesPage.failedToRemoveProcessFromArchive'));
                 }
             },
-            onSuccess: (process: IMongoProcessInstancePopulated) => {
+            onSuccess: (process: IMongoProcessInstanceReviewerPopulated) => {
                 if (process.archived) toast.success(i18next.t('processInstancesPage.processSendToArchiveSuccessfully'));
                 else toast.success(i18next.t('processInstancesPage.processRemoveFromArchiveSuccessfully'));
             },

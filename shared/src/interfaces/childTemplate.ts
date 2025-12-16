@@ -105,20 +105,15 @@ export interface IChildTemplateWithConstraints extends IChildTemplate {
     properties: IChildTemplate['properties'] & { required: string[] };
 }
 
-export interface IMongoChildTemplateWithConstraints extends IChildTemplatePopulated {
-    uniqueConstraints: IUniqueConstraintOfTemplate[];
-    properties: IChildTemplatePopulated['properties'] & { required: string[] };
-}
-
 export interface IChildTemplateWithConstraintsPopulated extends Omit<IChildTemplatePopulated, 'parentTemplate'> {
     uniqueConstraints: IUniqueConstraintOfTemplate[];
     properties: IChildTemplatePopulated['properties'] & { required: string[] };
     parentTemplate: IMongoEntityTemplateWithConstraints;
 }
 
-export interface IMongoChildTemplateWithConstraintsPopulated extends IChildTemplatePopulated {
+export interface IMongoChildTemplateWithConstraintsPopulated extends IMongoChildTemplatePopulated {
     uniqueConstraints: IUniqueConstraintOfTemplate[];
     properties: IChildTemplatePopulated['properties'] & { required: string[] };
 }
 
-export type IChildTemplateWithConstraintsMap = Map<string, IMongoChildTemplateWithConstraintsPopulated>;
+export type IChildTemplateMap = Map<string, IMongoChildTemplateWithConstraintsPopulated>;

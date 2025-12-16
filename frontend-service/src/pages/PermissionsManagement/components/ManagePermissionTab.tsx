@@ -6,9 +6,7 @@ import { useQueryClient } from 'react-query';
 import SearchInput from '../../../common/inputs/SearchInput';
 import PermissionsDialog from '../../../common/PermissionsDialog';
 import '../../../css/pages.css';
-import { ICategoryMap } from '../../../interfaces/categories';
-import { IRole } from '../../../interfaces/roles';
-import { IUser, IUserPopulated, PermissionData, RelatedPermission } from '../../../interfaces/users';
+import { ICategoryMap, IRole, IUser, IUserPopulated, PermissionData, RelatedPermission } from '@microservices/shared';
 import DeletePermissionsDialog from './deleteDialog';
 import PermissionsTable, { PermissionsTableRef } from './table';
 

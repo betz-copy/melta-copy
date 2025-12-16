@@ -1,7 +1,7 @@
+import { IMongoCategory } from '@microservices/shared';
 import axios from '../../axios';
 import { CategoryWizardValues } from '../../common/wizards/category';
 import { environment } from '../../globals';
-import { IMongoCategory } from '../../interfaces/categories';
 import { getFileName } from '../../utils/getFileName';
 
 const { categories } = environment.api;

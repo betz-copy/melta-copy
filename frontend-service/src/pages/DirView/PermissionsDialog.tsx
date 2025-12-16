@@ -1,3 +1,4 @@
+import { IMongoUser, IUser, PermissionScope } from '@microservices/shared';
 import {
     Box,
     Button,
@@ -18,8 +19,6 @@ import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import UserAutocomplete from '../../common/inputs/UserAutocomplete';
 import BlueTitle from '../../common/MeltaDesigns/BlueTitle';
-import { PermissionScope } from '../../interfaces/permissions';
-import { IMongoUser, IUser } from '../../interfaces/users';
 import { createUserRequest, searchUsersByPermissions } from '../../services/userService';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';

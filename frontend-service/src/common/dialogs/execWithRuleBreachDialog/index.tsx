@@ -1,10 +1,8 @@
+import { ActionOnFail, ActionTypes, IActionMetadataPopulated, IActionPopulated, IRuleBreachPopulated, IRuleMap } from '@microservices/shared';
 import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
-import { ActionTypes, IActionMetadataPopulated, IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
-import { IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
-import { ActionOnFail, IRuleMap } from '../../../interfaces/rules';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
 import RuleBreachInfo from '../../ruleBreanchInfo/RuleBreachInfo';

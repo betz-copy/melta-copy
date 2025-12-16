@@ -1,3 +1,12 @@
+import {
+    IAggregation,
+    IChartType,
+    IColumnOrLineMetaData,
+    IEntityTemplateMap,
+    IMongoChart,
+    INUmberMetaData,
+    IPieMetaData,
+} from '@microservices/shared';
 import { InfoOutlined } from '@mui/icons-material';
 import { Autocomplete, Grid, TextField, Typography } from '@mui/material';
 import { FormikProps } from 'formik';
@@ -7,9 +16,7 @@ import { useQuery, useQueryClient } from 'react-query';
 import { getFilterFieldReadonly } from '../../../../common/inputs/FilterInputs/ReadonlyFilterInput';
 import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
 import { FilterModelToFilterRecord } from '../../../../common/wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
-import { IChartType, IColumnOrLineMetaData, IMongoChart, INumberMetaData, IPieMetaData } from '../../../../interfaces/charts';
 import { ChartForm } from '../../../../interfaces/dashboard';
-import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { getChartsByUserId } from '../../../../services/chartsService';
 import { initialValues } from '../../../../utils/charts/getChartAxes';
 
@@ -44,10 +51,11 @@ const renderMetaDtaChartByType = (option: IMongoChart) => {
             );
         }
         case IChartType.Number: {
-            const numberData = option.metaData as INumberMetaData;
+            const numberData = option.metaData as INUmberMetaData;
+            const { type } = numberData.accumulator as IAggregation;
             return (
                 <Grid>
-                    {i18next.t('charts.accumulateAccordingTo')} : {numberData.accumulator.type}
+                    {i18next.t('charts.accumulateAccordingTo')} : {type}
                 </Grid>
             );
         }

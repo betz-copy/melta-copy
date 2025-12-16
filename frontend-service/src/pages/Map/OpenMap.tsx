@@ -1,9 +1,7 @@
+import { IEntity, IMongoChildTemplateWithConstraintsPopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { LocationOn } from '@mui/icons-material';
 import { Dialog, Grid, IconButton, Typography } from '@mui/material';
 import React, { useState } from 'react';
-import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { IEntity } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { HighlightText } from '../../utils/HighlightText';
 import LocationPreview from './LocationPreview';
@@ -11,7 +9,7 @@ import LocationPreview from './LocationPreview';
 const OpenMap: React.FC<{
     field: string;
     entityProperties: IEntity['properties'];
-    entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated;
     showText?: boolean;
     searchValue?: string;
     disableOpenMap?: boolean;

@@ -1,12 +1,12 @@
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { Typography } from '@mui/material';
 import React, { CSSProperties } from 'react';
 import { environment } from '../../../globals';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
 const { ganttSettings } = environment;
 
 interface IFieldsDisplayProps {
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
     fieldsToShow: string[];
     color: CSSProperties['color'];
     fontSize?: CSSProperties['fontSize'];

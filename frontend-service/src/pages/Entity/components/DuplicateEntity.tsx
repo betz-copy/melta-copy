@@ -1,3 +1,14 @@
+import {
+    ActionTypes,
+    IAction,
+    IActionPopulated,
+    IEntity,
+    IEntityExpanded,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    IRuleBreach,
+    IRuleBreachPopulated,
+    IUniqueConstraint,
+} from '@microservices/shared';
 import { Clear as ClearIcon, Done as DoneIcon } from '@mui/icons-material';
 import { Box, Button, Card, CardContent, CircularProgress, Divider, Grid, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
@@ -16,11 +27,7 @@ import { InstanceSingleFileInput } from '../../../common/inputs/InstanceFilesInp
 import { ajvValidate, JSONSchemaFormik } from '../../../common/inputs/JSONSchemaFormik';
 import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
 import { environment } from '../../../globals';
-import { IEntity, IEntityExpanded, IUniqueConstraint } from '../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IErrorResponse } from '../../../interfaces/error';
-import { ActionTypes, IAction, IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
-import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { duplicateEntityRequest } from '../../../services/entitiesService';
 import { useSearchParams } from '../../../utils/hooks/useSearchParams';
 import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
@@ -36,7 +43,7 @@ const DuplicateEntity: React.FC<{}> = () => {
         entityTemplate,
         expandedEntity: { entity },
     } = state as {
-        entityTemplate: IMongoEntityTemplatePopulated;
+        entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
         expandedEntity: IEntityExpanded;
     };
 
@@ -132,7 +139,7 @@ const DuplicateEntity: React.FC<{}> = () => {
     return (
         <Formik
             initialValues={getInitialValuesWithDefaults({
-                properties: fieldProperties,
+                properties: { ...fieldProperties, disabled: false },
                 attachmentsProperties: fileProperties,
                 template: entityTemplate,
             })}

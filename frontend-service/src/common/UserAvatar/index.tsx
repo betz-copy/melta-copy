@@ -1,7 +1,7 @@
+import { IUser } from '@microservices/shared';
 import { Box, Chip, ChipProps, Grid, TooltipProps, Typography } from '@mui/material';
 import React from 'react';
 import { useQueries } from 'react-query';
-import { IUser } from '../../interfaces/users';
 import { getKartoffelUserProfileRequest, getUserProfileRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';

@@ -1,17 +1,22 @@
+import {
+    ByCurrentDefaultValue,
+    basicFilterOperationTypes,
+    IAgGridDateFilter,
+    IAgGridNumberFilter,
+    IAgGridTextFilter,
+    IGraphFilterBody,
+    IKartoffelUserStringFields,
+} from '@microservices/shared';
 import { FormControlLabel, Grid } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
-import { ByCurrentDefaultValue } from '../../../interfaces/childTemplates';
-import { IGraphFilterBody } from '../../../interfaces/entities';
-import { IKartoffelUserStringFields } from '../../../interfaces/users';
-import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import { UserInput } from '../UserInput';
 
 interface UserFilterProps {
-    filterField: IAGGridTextFilter | undefined;
+    filterField: IAgGridTextFilter | undefined;
     handleFilterTypeChange: (
-        newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGridNumberFilter['type'],
+        newTypeFilter: IAgGridDateFilter['type'] | IAgGridTextFilter['type'] | IAgGridNumberFilter['type'],
         condition?: boolean,
     ) => void;
     handleFilterFieldChange: (value: IGraphFilterBody['filterField'], condition?: boolean) => void;
@@ -29,7 +34,8 @@ const UserFilterInput: React.FC<UserFilterProps> = ({ filterField, handleFilterT
     });
 
     useEffect(() => {
-        if (forceEqualsType && filterField && filterField.type !== 'equals') handleFilterTypeChange('equals');
+        if (forceEqualsType && filterField && filterField.type !== basicFilterOperationTypes.equals)
+            handleFilterTypeChange(basicFilterOperationTypes.equals);
     }, [forceEqualsType, filterField]);
 
     return (
@@ -55,7 +61,7 @@ const UserFilterInput: React.FC<UserFilterProps> = ({ filterField, handleFilterT
                                       mail: user.mail,
                                   })
                                 : undefined,
-                        } as IAGGridTextFilter)
+                        } as IAgGridTextFilter)
                     }
                     isError={false}
                     disabled={byCurrentUserDefaultValue}
@@ -69,8 +75,8 @@ const UserFilterInput: React.FC<UserFilterProps> = ({ filterField, handleFilterT
                             checked={byCurrentUserDefaultValue}
                             onChange={(e) => {
                                 if (e.target.checked)
-                                    handleFilterFieldChange({ ...filterField, filter: ByCurrentDefaultValue.byCurrentUser } as IAGGridTextFilter);
-                                else handleFilterFieldChange({ ...filterField, filter: undefined } as IAGGridTextFilter);
+                                    handleFilterFieldChange({ ...filterField, filter: ByCurrentDefaultValue.byCurrentUser } as IAgGridTextFilter);
+                                else handleFilterFieldChange({ ...filterField, filter: undefined } as IAgGridTextFilter);
 
                                 setCurrentUser(undefined);
                             }}

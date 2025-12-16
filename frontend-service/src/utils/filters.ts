@@ -1,4 +1,4 @@
-import { ISearchEntitiesOfTemplateBody, ISearchFilter } from '../interfaces/entities';
+import { ISearchEntitiesOfTemplateBody, ISearchFilter } from '@microservices/shared';
 
 const evaluateOperator = (operator: string, actual: any, expected: any): boolean => {
     switch (operator) {

@@ -1,15 +1,18 @@
+import {
+    IChildTemplateMap,
+    IEntity,
+    IExportEntitiesBody,
+    IMongoCategory,
+    IMongoChildTemplateWithConstraintsPopulated,
+    IMongoEntityTemplateWithConstraintsPopulated,
+} from '@microservices/shared';
 import { Box, Grid } from '@mui/material';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
-import _debounce from 'lodash.debounce';
 import mapValues from 'lodash.mapvalues';
 import React, { useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IMongoCategory } from '../../interfaces/categories';
-import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { IEntity, IExportEntitiesBody } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { exportEntitiesRequest } from '../../services/entitiesService';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { convertToBool } from '../../utils/convertStringToBool';
@@ -21,7 +24,7 @@ import CardsView, { CardsViewRef } from './CardsView';
 import { EntitiesPageHeadline } from './Headline';
 import TemplateTablesView, { TemplateTablesViewRef } from './TemplateTablesView';
 
-type EntitiesPageProps<T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated> = {
+type EntitiesPageProps<T extends IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated> = {
     templates: T[];
     setTemplates?: React.Dispatch<React.SetStateAction<T[]>>;
     templatesToShowCheckbox: T[];
@@ -33,7 +36,7 @@ type EntitiesPageProps<T extends IMongoEntityTemplatePopulated | IMongoChildTemp
     pageTitle: string;
 };
 
-const EntitiesPage = <T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated>({
+const EntitiesPage = <T extends IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated>({
     templates,
     setTemplates,
     categories,

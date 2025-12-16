@@ -1,11 +1,11 @@
+import { GeneratorChart } from '@microservices/shared';
 import { Box, Typography, useTheme } from '@mui/material';
 import React from 'react';
-import { GeneratedChart } from '../../../interfaces/charts';
 import { ChartForm } from '../../../interfaces/dashboard';
 import { CardTitle } from '../../Dashboard/dashboardPage/TableCard';
 
 export const NumberChartGenerator: React.FC<{
-    data: GeneratedChart | undefined;
+    data: GeneratorChart | undefined;
     chartDetails: Omit<ChartForm, 'filter'>;
     enableResize?: boolean;
 }> = ({ data, chartDetails: { name, description }, enableResize = false }) => {

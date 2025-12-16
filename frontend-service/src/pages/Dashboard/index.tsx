@@ -1,3 +1,4 @@
+import { DashboardItemType, MongoDashboardItemPopulated } from '@microservices/shared';
 import { CircularProgress, Grid } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -9,7 +10,6 @@ import { ErrorToast } from '../../common/ErrorToast';
 import { LocalStorageGridLayout } from '../../common/GridLayout/gridLayoutSavedInLs';
 import { LayoutItem } from '../../common/GridLayout/interface';
 import { environment } from '../../globals';
-import { DashboardItemType, MongoDashboardItemPopulated } from '../../interfaces/dashboard';
 import { deleteDashboardItem, getDashboardItems } from '../../services/dashboardService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useWorkspaceStore } from '../../stores/workspace';

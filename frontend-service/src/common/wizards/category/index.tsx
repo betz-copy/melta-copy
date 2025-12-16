@@ -1,12 +1,11 @@
+import { FileDetails, ICategory, ICategoryMap } from '@microservices/shared';
 /* eslint-disable react/no-unstable-nested-components */
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { ICategory, ICategoryMap } from '../../../interfaces/categories';
 import { ConfigTypes, IMongoCategoryOrderConfig } from '../../../interfaces/config';
-import fileDetails from '../../../interfaces/fileDetails';
 import { createCategoryRequest, updateCategoryRequest } from '../../../services/templates/categoriesService';
 import { getConfigByTypeRequest } from '../../../services/templates/configService';
 import { useUserStore } from '../../../stores/user';
@@ -19,7 +18,7 @@ import { ChooseIcon } from './ChooseIcon';
 import { CreateCategoryName, useCreateCategoryNameSchema } from './CreateCategoryName';
 
 export interface CategoryWizardValues extends Omit<ICategory, 'iconFileId'> {
-    icon?: fileDetails;
+    icon?: FileDetails;
 }
 
 const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({

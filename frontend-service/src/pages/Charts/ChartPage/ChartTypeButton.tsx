@@ -1,7 +1,7 @@
+import { IChartType } from '@microservices/shared';
 import { useTheme } from '@mui/material';
 import React from 'react';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
-import { IChartType } from '../../../interfaces/charts';
 
 const ChartTypeButton: React.FC<{
     icon: React.ElementType;

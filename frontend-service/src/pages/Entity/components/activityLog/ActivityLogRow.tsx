@@ -1,10 +1,8 @@
+import { IMongoEntityTemplateWithConstraintsPopulated, IMongoStepTemplatePopulated, IProcessDetails } from '@microservices/shared';
 import { Grid, Skeleton, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useQuery } from 'react-query';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { IProcessDetails } from '../../../../interfaces/processes/processTemplate';
-import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { IActivityLog } from '../../../../services/activityLogService';
 import { getUserByIdRequest } from '../../../../services/userService';
 import { useDarkModeStore } from '../../../../stores/darkMode';
@@ -13,7 +11,7 @@ import ActionText from './ActionText';
 
 const ActivityLogRow: React.FC<{
     log: IActivityLog;
-    entityTemplate: IMongoEntityTemplatePopulated | IProcessDetails | IMongoStepTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | IProcessDetails | IMongoStepTemplatePopulated;
 }> = ({ log, entityTemplate }) => {
     const { data: user, isLoading } = useQuery(['getUserById', log.userId], () => getUserByIdRequest(log.userId));
 

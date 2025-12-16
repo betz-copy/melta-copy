@@ -1,4 +1,13 @@
 import { IServerSideSelectionState, IStatusPanelParams } from '@ag-grid-community/core';
+import {
+    ActionTypes,
+    IBrokenRule,
+    ICreateEntityMetadata,
+    IDeleteEntityBody,
+    IMongoChildTemplateWithConstraintsPopulated,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    IMultipleSelect,
+} from '@microservices/shared';
 import { Delete, Edit } from '@mui/icons-material';
 import { Box, CircularProgress, Grid, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
@@ -6,12 +15,7 @@ import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { IDeleteEntityBody, IMultipleSelect } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IBrokenRuleEntity, IFailedEntity } from '../../interfaces/excel';
-import { ActionTypes, ICreateEntityMetadata } from '../../interfaces/ruleBreaches/actionMetadata';
-import { IBrokenRule } from '../../interfaces/ruleBreaches/ruleBreach';
 import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { deleteEntityRequest, updateMultipleEntitiesRequest } from '../../services/entitiesService';
@@ -33,7 +37,7 @@ import { StatusEntitiesTables } from '../wizards/excel/excelSteps/StatusEntities
 import { DeleteEntitiesDialog } from './DeleteEntitiesDialog';
 
 interface MultiSelectStatusBarProps extends IStatusPanelParams {
-    template: IMongoEntityTemplatePopulated | IChildTemplatePopulated;
+    template: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated;
     quickFilterText: string;
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
 }
@@ -216,7 +220,12 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                 );
             },
             validate: (values) => {
-                const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(values.template.properties, selectedFields);
+                const templatePropertiesWithRequired = {
+                    ...values.template.properties,
+                    required: (values.template.properties as { required?: string[] }).required ?? [],
+                };
+
+                const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(templatePropertiesWithRequired, selectedFields);
                 const filteredProperties = pickOnlyGivenFields(nonAttachmentsSchema, selectedFields);
                 const propertiesErrors = ajvValidate({ ...nonAttachmentsSchema, properties: filteredProperties }, values.properties);
 

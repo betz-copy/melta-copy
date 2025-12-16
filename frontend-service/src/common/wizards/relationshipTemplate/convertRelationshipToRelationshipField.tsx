@@ -1,14 +1,18 @@
+import {
+    IEntitySingleProperty,
+    IEntityTemplateMap,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    IMongoRelationshipTemplate,
+    IRelationshipReference,
+} from '@microservices/shared';
 import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, TextField } from '@mui/material';
 import { Form, Formik } from 'formik';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import * as Yup from 'yup';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemplates';
 import { variableNameValidation } from '../../../utils/validation';
 import BlueTitle from '../../MeltaDesigns/BlueTitle';
-import { IRelationshipReference } from '../entityTemplate/commonInterfaces';
 import RelationshipReferenceField from '../entityTemplate/RelationshipReference/RelationshipReferenceField';
 
 interface IConvertToRelationship {
@@ -23,8 +27,8 @@ const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleC
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const destEntity: IMongoEntityTemplatePopulated = entityTemplates.get(relationshipTemplate?.destinationEntityId!)!;
-    const srcEntity: IMongoEntityTemplatePopulated = entityTemplates.get(relationshipTemplate?.sourceEntityId!)!;
+    const destEntity: IMongoEntityTemplateWithConstraintsPopulated = entityTemplates.get(relationshipTemplate?.destinationEntityId!)!;
+    const srcEntity: IMongoEntityTemplateWithConstraintsPopulated = entityTemplates.get(relationshipTemplate?.sourceEntityId!)!;
     const [relatedTemplateId, setRelatedTemplateId] = useState<string>('');
     const newSourceEntity = relatedTemplateId === destEntity?._id ? srcEntity : destEntity;
     const fieldNamesExisting = newSourceEntity?.propertiesOrder;

@@ -9,6 +9,12 @@ export interface IRelationshipReference {
     filters?: ISearchFilter | string;
 }
 
+export interface FieldGroupData {
+    name: string;
+    displayName: string;
+    id: string;
+}
+
 export interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';
@@ -24,7 +30,10 @@ export interface IEntitySingleProperty {
         | 'signature'
         | 'comment'
         | 'kartoffelUserField'
-        | 'unitField';
+        | 'unitField'
+        | 'serialNumber'
+        | 'enum'
+        | 'pattern';
     enum?: string[];
     readOnly?: true;
     identifier?: true;
@@ -55,6 +64,13 @@ export interface IEntitySingleProperty {
     hideFromDetailsPage?: boolean;
     filters?: any;
     defaultValue?: any;
+    isFilterByCurrentUser?: boolean;
+    isFilterByUserUnit?: boolean;
+    isProfileImage?: boolean;
+    display?: boolean;
+    fieldGroup?: FieldGroupData;
+    uniqueCheckbox?: boolean;
+    properties?: Record<string, IEntitySingleProperty>; // For groups inside of entity
 }
 export interface IProperties {
     type: 'object';
@@ -117,8 +133,6 @@ export interface ISearchEntityTemplatesBody extends ISearchBody {
     categoryIds?: string[];
 }
 
-export type IEntityTemplateMap = Map<string, IMongoEntityTemplatePopulated>;
-
 export interface IEntityTemplateWithConstraints extends IEntityTemplate {
     uniqueConstraints: IUniqueConstraintOfTemplate[];
     properties: IEntityTemplate['properties'] & { required: string[] };
@@ -146,4 +160,4 @@ export interface IUpdateOrDeleteEnumFieldReqData {
     optionColors?: Record<string, string>;
 }
 
-export type IEntityTemplateWithConstraintsMap = Map<string, IMongoEntityTemplateWithConstraintsPopulated>;
+export type IEntityTemplateMap = Map<string, IMongoEntityTemplateWithConstraintsPopulated>;

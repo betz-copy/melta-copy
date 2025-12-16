@@ -1,11 +1,9 @@
+import { ICategoryMap, IChildTemplateMap, IEntityTemplateMap } from '@microservices/shared';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
 import EntitiesPage from '../../common/EntitiesPage';
 import { TablePageType } from '../../common/EntitiesTableOfTemplate';
-import { ICategoryMap } from '../../interfaces/categories';
-import { IChildTemplateMap } from '../../interfaces/childTemplates';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { useUserStore } from '../../stores/user';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import StartPageSearch from './components/StartPageSearch';

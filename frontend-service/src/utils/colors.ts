@@ -1,9 +1,7 @@
+import { IMongoEntityTemplateWithConstraintsPopulated, IMongoRelationshipTemplate } from '@microservices/shared';
 import randomColor from 'randomcolor';
-import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
-import { IEntityTemplatePopulated } from '../interfaces/entityTemplates';
-import { IMongoRelationshipTemplate } from '../interfaces/relationshipTemplates';
 
-export const getEntityTemplateColor = (entityTemplate: IEntityTemplatePopulated | IMongoChildTemplatePopulated, categoryColor?: string) => {
+export const getEntityTemplateColor = (entityTemplate: IMongoEntityTemplateWithConstraintsPopulated, categoryColor?: string) => {
     return randomColor({
         hue: categoryColor ?? entityTemplate.category.color,
         seed: entityTemplate.name,

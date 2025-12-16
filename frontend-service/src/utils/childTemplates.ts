@@ -1,10 +1,16 @@
+import {
+    IChildTemplate,
+    IChildTemplateMap,
+    IEntity,
+    IEntitySingleProperty,
+    IKartoffelUser,
+    IMongoChildTemplatePopulated,
+    IMongoChildTemplateWithConstraintsPopulated,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    matchValueAgainstFilter,
+} from '@microservices/shared';
 import { isUserHasWritePermissions } from '../common/EntitiesPage/TemplateTable';
-import { IChildTemplate, IChildTemplateMap, IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
-import { IEntity } from '../interfaces/entities';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
-import { IKartoffelUser } from '../interfaces/users';
 import { UserState } from '../stores/user';
-import { matchValueAgainstFilter } from './filters';
 
 const parseFilterObject = (filters: any): any | null => {
     if (typeof filters === 'string') {
@@ -55,7 +61,7 @@ export const getChildrenWithWritePermission = (
     );
 
 export const isEntityFitsToChildTemplate = (
-    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+    template: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
     isChildTemplate: boolean,
     entity: IEntity | string,
     currentUserKartoffelId?: string,

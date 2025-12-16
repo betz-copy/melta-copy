@@ -1,10 +1,10 @@
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { CircularProgress, Grid, Typography, useTheme } from '@mui/material';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { environment } from '../../../../globals';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { EntitiesWizardValues, ExcelStepStatus, IEditReadExcel, IExcelSteps } from '../../../../interfaces/excel';
 import { useWorkspaceStore } from '../../../../stores/workspace';
 import { useReadExcel } from '../../../../utils/hooks/useReadExcel';
@@ -18,7 +18,7 @@ const {
 
 export const UploadExcel: React.FC<{
     formikProps: FormikProps<EntitiesWizardValues>;
-    template: IMongoEntityTemplatePopulated;
+    template: IMongoEntityTemplateWithConstraintsPopulated;
     stepsData: IExcelSteps;
     setStepsData: React.Dispatch<React.SetStateAction<IExcelSteps>>;
     onUploadExcel?: (file: Record<string, File>) => Promise<IEditReadExcel>;

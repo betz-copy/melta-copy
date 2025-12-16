@@ -1,11 +1,20 @@
-import { IMongoCategory } from '../interfaces/categories';
-import { IChildTemplateMap, IChildTemplatePopulated, IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
-import { IEntityExpanded } from '../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
-import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../interfaces/relationshipTemplates';
+import {
+    IChildTemplateMap,
+    IEntityExpanded,
+    IEntityTemplateMap,
+    IMongoCategory,
+    IMongoChildTemplateWithConstraintsPopulated,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    IMongoRelationshipTemplate,
+    IMongoRelationshipTemplatePopulated,
+    IRelationshipTemplateMap,
+} from '@microservices/shared';
 import { INestedRelationshipTemplates } from '../pages/Entity';
 
-export const templatesCompareFunc = (templateA: IMongoEntityTemplatePopulated, templateB: IMongoEntityTemplatePopulated) => {
+export const templatesCompareFunc = (
+    templateA: IMongoEntityTemplateWithConstraintsPopulated,
+    templateB: IMongoEntityTemplateWithConstraintsPopulated,
+) => {
     if (templateA.category._id !== templateB.category._id) {
         return templateA.category.displayName.localeCompare(templateB.category.displayName);
     }
@@ -15,7 +24,7 @@ export const templatesCompareFunc = (templateA: IMongoEntityTemplatePopulated, t
 export const populateRelationshipTemplate = (
     { sourceEntityId, destinationEntityId, ...restOfRelationshipTemplate }: IMongoRelationshipTemplate,
     entityTemplates: IEntityTemplateMap,
-    groupChildTemplate?: Record<string, IChildTemplatePopulated[]>,
+    groupChildTemplate?: Record<string, IMongoChildTemplateWithConstraintsPopulated[]>,
 ): IMongoRelationshipTemplatePopulated => {
     return {
         sourceEntity: entityTemplates.get(sourceEntityId) ?? getFakeParentByChildren(sourceEntityId, groupChildTemplate)!,
@@ -27,8 +36,8 @@ export const populateRelationshipTemplate = (
 export const groupChildTemplatesByParent = (
     childTemplates: IChildTemplateMap,
     entityTemplates: IEntityTemplateMap,
-): Record<string, IChildTemplatePopulated[]> => {
-    const grouped: Record<string, IChildTemplatePopulated[]> = {};
+): Record<string, IMongoChildTemplateWithConstraintsPopulated[]> => {
+    const grouped: Record<string, IMongoChildTemplateWithConstraintsPopulated[]> = {};
 
     for (const childTemplate of childTemplates.values()) {
         const parentId = childTemplate.parentTemplate._id.toString();
@@ -43,7 +52,7 @@ export const groupChildTemplatesByParent = (
     return grouped;
 };
 
-const getFakeParentByChildren = (id: string, groupChildTemplate?: Record<string, IChildTemplatePopulated[]>) => {
+const getFakeParentByChildren = (id: string, groupChildTemplate?: Record<string, IMongoChildTemplateWithConstraintsPopulated[]>) => {
     const relevantGroup = groupChildTemplate?.[id] ?? [];
 
     const relevantProperties = {};
@@ -73,17 +82,17 @@ const getFakeParentByChildren = (id: string, groupChildTemplate?: Record<string,
         propertiesOrder,
         _id: id,
         displayName: relevantGroup[0].parentTemplate.displayName,
-    };
+    } as IMongoChildTemplateWithConstraintsPopulated;
 };
 
 export const getFullRelationshipTemplates = (
     relationshipTemplates: IRelationshipTemplateMap,
     entityTemplates: IEntityTemplateMap,
-    parentEntityTemplate: IMongoEntityTemplatePopulated,
+    parentEntityTemplate: IMongoEntityTemplateWithConstraintsPopulated,
     depth: number,
     parentRelationshipTemplate?: IMongoRelationshipTemplatePopulated,
     expandedEntity?: IEntityExpanded,
-    groupChildTemplate?: Record<string, IChildTemplatePopulated[]>,
+    groupChildTemplate?: Record<string, IMongoChildTemplateWithConstraintsPopulated[]>,
     filterOnlyThoseWithInstances = false,
 ): INestedRelationshipTemplates[] => {
     const result: INestedRelationshipTemplates[] = [];
@@ -130,7 +139,7 @@ export const getOppositeEntityTemplate = (entityTemplateId: string, relationship
 };
 
 export const isRelationshipConnectedToEntityTemplate = (
-    entityTemplate: IMongoEntityTemplatePopulated,
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated,
     relationshipTemplate: IMongoRelationshipTemplatePopulated,
 ) => {
     const { sourceEntity, destinationEntity } = relationshipTemplate;
@@ -161,7 +170,9 @@ export const mapCategories = (categories: IMongoCategory[], order: string[]): Ma
     return map;
 };
 
-export const addDefaultFieldsToTemplate = <T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated>(entityTemplate: T): T => {
+export const addDefaultFieldsToTemplate = <T extends IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated>(
+    entityTemplate: T,
+): T => {
     return {
         ...entityTemplate,
         properties: {
@@ -177,7 +188,7 @@ export const addDefaultFieldsToTemplate = <T extends IMongoEntityTemplatePopulat
     };
 };
 
-export const getFirstXPropsKeys = (numOfPropsToShow: number, entityTemplate: IMongoEntityTemplatePopulated): string[] => {
+export const getFirstXPropsKeys = (numOfPropsToShow: number, entityTemplate: IMongoEntityTemplateWithConstraintsPopulated): string[] => {
     return [
         ...entityTemplate.propertiesPreview,
         ...entityTemplate.propertiesOrder
@@ -192,7 +203,7 @@ export const getFirstXPropsKeys = (numOfPropsToShow: number, entityTemplate: IMo
 };
 
 export const isChildTemplate = (
-    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated | undefined | null,
-): template is IMongoChildTemplatePopulated => {
+    template: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated | undefined | null,
+): template is IMongoChildTemplateWithConstraintsPopulated => {
     return typeof template === 'object' && template !== null && 'parentTemplate' in template && Boolean(template.parentTemplate);
 };

@@ -1,12 +1,16 @@
+import {
+    IChildTemplateMap,
+    IEntity,
+    IEntityExpanded,
+    IEntityTemplateMap,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    IMongoRelationshipTemplate,
+    IRelationshipTemplateMap,
+} from '@microservices/shared';
 /* eslint-disable no-param-reassign */
 import uniqBy from 'lodash.uniqby';
 import { GraphData, LinkObject, NodeObject } from 'react-force-graph-2d';
-
 import { environment } from '../../globals';
-import { IChildTemplateMap } from '../../interfaces/childTemplates';
-import { IEntity, IEntityExpanded } from '../../interfaces/entities';
-import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplate, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { apiUrlToImageSource } from '../../services/storageService';
 import { drawText, getRectangleDimensionsByString, traceRectangle } from '../canvas';
 import { getEntityTemplateColor, getRelationshipTemplateColor } from '../colors';
@@ -76,7 +80,7 @@ export const getGraphDataWithNodeSizes = (graphData: GraphData) => {
 
 const iconLoadCache: Map<string, Promise<HTMLImageElement>> = new Map();
 
-export const entityToNode = async (entity: IEntity, entityTemplate: IEntityTemplatePopulated): Promise<NodeObject> => {
+export const entityToNode = async (entity: IEntity, entityTemplate: IMongoEntityTemplateWithConstraintsPopulated): Promise<NodeObject> => {
     let icon: HTMLImageElement | undefined;
 
     if (entityTemplate.iconFileId) {

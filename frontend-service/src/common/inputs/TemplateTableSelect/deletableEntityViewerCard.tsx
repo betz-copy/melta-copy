@@ -1,10 +1,8 @@
+import { IChildTemplateMap, IEntityTemplateMap, IEntityWithChildTemplate } from '@microservices/shared';
 import { AppRegistration as AppRegistrationIcon, Clear as ClearIcon } from '@mui/icons-material';
 import { Card, CardContent, CardHeader, IconButton } from '@mui/material';
 import React from 'react';
 import { useQueryClient } from 'react-query';
-import { IChildTemplateMap } from '../../../interfaces/childTemplates';
-import { IEntity } from '../../../interfaces/entities';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
@@ -13,7 +11,10 @@ import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions
 import { CustomIcon } from '../../CustomIcon';
 import { EntityPropertiesInternal } from '../../EntityProperties';
 
-const DeletableEntityViewerCard: React.FC<{ entity: IEntity; onDelete: () => void; childTemplateId?: string }> = ({ entity, onDelete }) => {
+const DeletableEntityViewerCard: React.FC<{ entity: IEntityWithChildTemplate; onDelete: () => void; childTemplateId?: string }> = ({
+    entity,
+    onDelete,
+}) => {
     const queryClient = useQueryClient();
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
@@ -33,7 +34,7 @@ const DeletableEntityViewerCard: React.FC<{ entity: IEntity; onDelete: () => voi
                   !entityTemplates.get(entity.templateId),
                   entity.properties._id,
                   currentUserKartoffelId,
-                  currentUser?.currentUnits,
+                  currentUser?.units?.[workspace._id] || [],
                   isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
               ),
           );

@@ -1,3 +1,12 @@
+import {
+    ICategoryMap,
+    IChildTemplateMap,
+    IEntityTemplateMap,
+    IPrintingTemplateMap,
+    IProcessTemplateMap,
+    IRelationshipTemplateMap,
+    IRuleMap,
+} from '@microservices/shared';
 import { Box } from '@mui/material';
 import i18next from 'i18next';
 import _ from 'lodash';
@@ -5,14 +14,7 @@ import React, { useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { LoadingAnimation } from '../../common/LoadingAnimation';
-import { ICategoryMap } from '../../interfaces/categories';
-import { IChildTemplateMap } from '../../interfaces/childTemplates';
 import { IMongoCategoryOrderConfig } from '../../interfaces/config';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import { IPrintingTemplateMap } from '../../interfaces/printingTemplates';
-import { IProcessTemplateMap } from '../../interfaces/processes/processTemplate';
-import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
-import { IRuleMap } from '../../interfaces/rules';
 import { GetAllTemplatesType, getAllTemplates } from '../../services/templates/getAllTemplates';
 import { getUnits } from '../../services/userService';
 import { getFile } from '../../services/workspacesService';
@@ -110,7 +112,8 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
         }
 
         const unitsWithInheritance = Array.from(userUnits);
-        if (!_.isEqual(currentUser.currentUnits, unitsWithInheritance)) setUser({ ...currentUser, currentUnits: unitsWithInheritance });
+        if (!_.isEqual(currentUser.units?.[workspace._id], unitsWithInheritance))
+            setUser({ ...currentUser, units: { ...currentUser.units, [workspace._id]: unitsWithInheritance } });
     }, [units, setUnits, workspace, currentUser, setUser]);
 
     useEffect(() => {

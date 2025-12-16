@@ -1,12 +1,20 @@
+import {
+    IEntityTemplateMap,
+    IEntityWithDirectConnections,
+    IFilterOfTemplate,
+    IGantt,
+    IGanttGroupBy,
+    IGanttItem,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    IRelationshipTemplateMap,
+    ISearchBatchBody,
+} from '@microservices/shared';
 /* eslint-disable consistent-return */
 import i18next from 'i18next';
 import cloneDeep from 'lodash.clonedeep';
 import * as Yup from 'yup';
 import { environment } from '../globals';
-import { IEntityWithDirectConnections, IFilterOfTemplate, ISearchBatchBody } from '../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
-import { IBasicGantt, IConnectedEntityTemplateDetails, IGantt, IGanttGroupBy, IGanttHeatmapBox, IGanttItem } from '../interfaces/gantts';
-import { IRelationshipTemplateMap } from '../interfaces/relationshipTemplates';
+import { IConnectedEntityTemplateDetails, IGanttHeatmapBox } from '../interfaces/gantts';
 import { IScheduleComponentData, IScheduleComponentResourceData } from '../interfaces/syncfusion';
 import { getEntitiesWithDirectConnections } from '../services/entitiesService';
 import { getEntityTemplateColor } from './colors';
@@ -15,7 +23,7 @@ import { filteredMap } from './filteredMap';
 
 const { groupByEntitiesChunkSize } = environment.ganttSettings;
 
-export const getFormattedDateAccordingToField = (date: Date, dateField: string, entityTemplate: IMongoEntityTemplatePopulated) => {
+export const getFormattedDateAccordingToField = (date: Date, dateField: string, entityTemplate: IMongoEntityTemplateWithConstraintsPopulated) => {
     switch (entityTemplate.properties.properties[dateField].format) {
         case 'date':
             return date.toISOString().split('T')[0];
@@ -87,7 +95,7 @@ export const getEntitiesSearchBody = (
     };
 };
 
-const isAllDay = (entityTemplate: IMongoEntityTemplatePopulated, ganttItems: IGanttItem) => {
+const isAllDay = (entityTemplate: IMongoEntityTemplateWithConstraintsPopulated, ganttItems: IGanttItem) => {
     return (
         entityTemplate.properties.properties[ganttItems.entityTemplate.startDateField].format === 'date' ||
         entityTemplate.properties.properties[ganttItems.entityTemplate.endDateField].format === 'date'
@@ -159,9 +167,11 @@ export const getScheduleComponentEntityTemplateResourceData = (
 export const getScheduleComponentGroupByEntityResourceData = async (groupBy: IGanttGroupBy): Promise<IScheduleComponentResourceData[]> => {
     const { entities } = await getEntitiesWithDirectConnections({
         limit: groupByEntitiesChunkSize,
+        skip: 0,
         templates: {
             [groupBy.entityTemplateId]: {
                 filter: { $and: { disabled: { $eq: false } } },
+                showRelationships: false,
             },
         },
     });
@@ -209,7 +219,7 @@ export const getConnectedEntityTemplatesDetails = (
 
 export const getGanttItemEditDetails = (
     relationshipTemplates: IRelationshipTemplateMap,
-    entityTemplate?: IMongoEntityTemplatePopulated,
+    entityTemplate?: IMongoEntityTemplateWithConstraintsPopulated,
     groupBy?: IGanttGroupBy,
 ) => {
     if (!entityTemplate) return {};
@@ -255,8 +265,8 @@ export const getRelationshipString = (
     return `${relationShip.displayName} (${sourceEntityTemplate.displayName} > ${destinationEntityTemplate.displayName})`;
 };
 
-export const formikInitialGanttData = (gantt: IGantt): IBasicGantt => {
-    const items = gantt.items.map<IBasicGantt['items'][number]>((item) => ({ ...cloneDeep(item) }));
+export const formikInitialGanttData = (gantt: IGantt): IGantt => {
+    const items = gantt.items.map<IGantt['items'][number]>((item) => ({ ...cloneDeep(item) }));
 
     return { name: gantt.name, items, groupBy: gantt.groupBy };
 };

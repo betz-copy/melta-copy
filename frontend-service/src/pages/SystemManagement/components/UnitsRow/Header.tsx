@@ -1,4 +1,5 @@
 import { _debounce } from '@ag-grid-community/core';
+import { IMongoUnit, IUnitHierarchy } from '@microservices/shared';
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -8,7 +9,6 @@ import i18next from 'i18next';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import SearchInput from '../../../../common/inputs/SearchInput';
 import { flattenTree } from '../../../../common/Tree';
-import { IMongoUnit, IUnitHierarchy } from '../../../../interfaces/units';
 import { CreateButton } from '../CreateButton';
 
 interface HeaderProps {

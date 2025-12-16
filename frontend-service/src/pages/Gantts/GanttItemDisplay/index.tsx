@@ -1,12 +1,10 @@
+import { IEntityTemplateMap, IGantt, IGanttItem, IRelationshipTemplateMap } from '@microservices/shared';
 import { Grid } from '@mui/material';
 import { FormikProps } from 'formik';
 import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { environment } from '../../../globals';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { IBasicGantt, IGanttItem } from '../../../interfaces/gantts';
-import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { getConnectedEntityTemplatesDetails } from '../../../utils/gantts';
 import { ConnectionIcon } from './ConnectionIcon.styled';
 import { EntityTemplateDisplay } from './EntityTemplateDisplay';
@@ -17,7 +15,7 @@ const { separators } = environment.ganttSettings;
 interface IGanttItemDisplayProps {
     item: IGanttItem;
     index: number;
-    formik: FormikProps<IBasicGantt>;
+    formik: FormikProps<IGantt>;
     expanded?: boolean;
     edit?: boolean;
 }

@@ -1,3 +1,4 @@
+import { MapItemType } from '@microservices/shared';
 import { Close, DeleteTwoTone, PentagonTwoTone, PlaceTwoTone } from '@mui/icons-material';
 import { ToggleButton, ToggleButtonGroup, useTheme } from '@mui/material';
 import * as Cesium from 'cesium';
@@ -21,7 +22,6 @@ import {
 import { convertWGS94ToECEF, isValidWGS84 } from '../../utils/map/convert';
 import { BaseLayers } from './BaseLayers';
 import { MeltaCoordinate, MeltaPolygon } from './LocationEntities';
-import { MapItemType } from '../../interfaces/location';
 
 type Props = {
     defaultLocation?: string;
@@ -48,7 +48,9 @@ const LocationField = ({ defaultLocation, field, updateValue, handleCloseDialog 
 
         if (initialCoordinates?.type === MapItemType.Coordinate) {
             const { value } = initialCoordinates;
-            setMarkerPosition(isValidWGS84(value as Cartesian3) ? (convertWGS94ToECEF(value) as Cartesian3) : ({ ...value } as Cartesian3));
+            setMarkerPosition(
+                isValidWGS84(value as Cartesian3) ? (convertWGS94ToECEF(value as Cartesian3) as Cartesian3) : ({ ...value } as Cartesian3),
+            );
         }
 
         if (initialCoordinates?.type === MapItemType.Polygon) {

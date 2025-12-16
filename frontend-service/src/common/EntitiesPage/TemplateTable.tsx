@@ -1,6 +1,16 @@
 import { FilterModel } from '@ag-grid-community/core';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
 import {
+    ActionTypes,
+    IEntity,
+    IEntityTemplateMap,
+    IEntityTemplatePopulated,
+    IKartoffelUser,
+    IMongoChildTemplateWithConstraintsPopulated,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    PermissionScope,
+} from '@microservices/shared';
+import {
     AddCircle,
     BarChart,
     CloseFullscreenRounded,
@@ -21,12 +31,6 @@ import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import { environment } from '../../globals';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../interfaces/CreateOrEditEntityDialog';
-import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { IEntity } from '../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { PermissionScope } from '../../interfaces/permissions';
-import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
-import { IKartoffelUser } from '../../interfaces/users';
 import { exportEntitiesRequest } from '../../services/entitiesService';
 import { useClientSideUserStore } from '../../stores/clientSideUser';
 import { useDraftIdStore, useDraftsStore } from '../../stores/drafts';
@@ -58,7 +62,7 @@ export type TemplateTableRef = EntitiesTableOfTemplateRef<IEntity>;
 export const isUserHasWritePermissions = (
     currentClientSideUser: IKartoffelUser | IEntity,
     currentUser: UserState['user'],
-    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+    template: IEntityTemplatePopulated | IMongoChildTemplateWithConstraintsPopulated,
 ) =>
     !!Object.keys(currentClientSideUser).length ||
     checkUserTemplatePermission(currentUser.currentWorkspacePermissions, template.category._id, template._id, PermissionScope.write);
@@ -66,7 +70,7 @@ export const isUserHasWritePermissions = (
 const TemplateTable = forwardRef<
     EntitiesTableOfTemplateRef<IEntity>,
     {
-        template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
+        template: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated;
         quickFilterText: string;
         page: TablePageType;
         setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;

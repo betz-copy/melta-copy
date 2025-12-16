@@ -1,7 +1,5 @@
+import { ActionTypes, IAction, IActionPopulated, IEntity, IRuleBreach, IRuleBreachPopulated } from '@microservices/shared';
 import { EntityWizardValues } from '../common/dialogs/entity';
-import { IEntity } from './entities';
-import { ActionTypes, IAction, IActionPopulated } from './ruleBreaches/actionMetadata';
-import { IRuleBreach, IRuleBreachPopulated } from './ruleBreaches/ruleBreach';
 
 export type ICreateOrUpdateWithRuleBreachDialogState = {
     isOpen: boolean;

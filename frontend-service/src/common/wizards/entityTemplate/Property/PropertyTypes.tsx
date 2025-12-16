@@ -1,3 +1,4 @@
+import { IEntityTemplateMap } from '@microservices/shared';
 import {
     Alarm as CustomAlertIcon,
     Update as DailyAlertIcon,
@@ -28,7 +29,6 @@ import i18next from 'i18next';
 import React, { SetStateAction, useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../../services/templates/entityTemplatesService';
 import { AreYouSureDialog } from '../../../dialogs/AreYouSureDialog';
 import { MinimizedColorPicker } from '../../../inputs/MinimizedColorPicker';

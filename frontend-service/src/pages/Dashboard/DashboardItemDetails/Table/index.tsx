@@ -1,3 +1,4 @@
+import { DashboardItemType, IEntityTemplateMap } from '@microservices/shared';
 /* eslint-disable react/no-unstable-nested-components */
 import { CircularProgress } from '@mui/material';
 import { AxiosError } from 'axios';
@@ -9,8 +10,7 @@ import { useLocation, useParams } from 'wouter';
 import { ErrorToast } from '../../../../common/ErrorToast';
 import { FilterModelToFilterRecord } from '../../../../common/wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
 import { environment } from '../../../../globals';
-import { DashboardItemType, TableForm, TabStepComponent, ViewMode } from '../../../../interfaces/dashboard';
-import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import { TableForm, TabStepComponent, ViewMode } from '../../../../interfaces/dashboard';
 import { createDashboardItem, deleteDashboardItem, editDashboardItem, getDashboardItemById } from '../../../../services/dashboardService';
 import { parseFilters } from '../../../../services/templates/entityTemplatesService';
 import { dashboardInitialValues, tableDetailsSchema, tableFilterDetailsSchema, tableMetaDataToBackend } from '../../../../utils/dashboard/formik';

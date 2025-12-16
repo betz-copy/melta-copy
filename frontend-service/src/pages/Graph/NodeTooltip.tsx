@@ -1,10 +1,10 @@
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { Divider, Grid } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { NodeObject } from 'react-force-graph-2d';
 import { EntityPropertiesInternal } from '../../common/EntityProperties';
 import { environment } from '../../globals';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { LocalStorage } from '../../utils/localStorage';
 import { NodeLabelIconsDescription } from './NodeLabelIconsDescription';
 
@@ -12,7 +12,7 @@ const { graphSettings } = environment;
 
 interface NodeTooltipProps {
     node: NodeObject;
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
     darkMode: boolean;
     entityTemplates: IEntityTemplateMap;
 }

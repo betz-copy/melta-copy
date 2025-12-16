@@ -1,3 +1,4 @@
+import { IUser, IUserPopulated } from '@microservices/shared';
 import { Button, Grid } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -6,7 +7,6 @@ import React, { useEffect, useState } from 'react';
 import { useMutation, useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
-import { IUser, IUserPopulated } from '../../../interfaces/users';
 import { getUserRolePerWorkspaceRequest, updateUserPreferencesMetadataRequest } from '../../../services/userService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';

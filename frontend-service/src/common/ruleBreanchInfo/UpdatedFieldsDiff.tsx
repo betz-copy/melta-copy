@@ -1,12 +1,16 @@
+import {
+    IEntitySingleProperty,
+    IEntityTemplateMap,
+    IGetUnits,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    IUpdateEntityMetadataPopulated,
+} from '@microservices/shared';
 import { Typography } from '@mui/material';
 import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import React from 'react';
 import ReactDiffViewer from 'react-diff-viewer';
 import { useQueryClient } from 'react-query';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IUpdateEntityMetadataPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
-import { IGetUnits } from '../../interfaces/units';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { getFileName } from '../../utils/getFileName';
 import { containsHTMLTags } from '../../utils/HtmlTagsStringValue';
@@ -77,7 +81,7 @@ const getEntityPropertyString = (
 const getEntityPropertiesString = (
     entityProperties: Record<string, any>,
     entityTemplates: IEntityTemplateMap,
-    entityTemplate: IMongoEntityTemplatePopulated,
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated,
     units: IGetUnits,
     oldEntityProperties?: Record<string, any>,
 ) => {
@@ -92,7 +96,7 @@ const getEntityPropertiesString = (
 
 export const UpdatedFieldsDiff: React.FC<{
     actionMetadata: IUpdateEntityMetadataPopulated;
-    entityTemplate: IMongoEntityTemplatePopulated | null;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | null;
 }> = ({ actionMetadata, entityTemplate }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;

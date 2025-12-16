@@ -1,3 +1,4 @@
+import { IMongoProcessTemplateReviewerPopulated, IProcessTemplateMap, Status } from '@microservices/shared';
 import { FilterList, Search } from '@mui/icons-material';
 import { Box, FormControl, FormControlLabel, Grid, IconButton, Paper, Radio, RadioGroup, useTheme } from '@mui/material';
 import i18next from 'i18next';
@@ -8,8 +9,6 @@ import DateRange from '../../common/inputs/DateRange';
 import SearchInput from '../../common/inputs/SearchInput';
 import BlueTitle from '../../common/MeltaDesigns/BlueTitle';
 import MeltaCheckbox from '../../common/MeltaDesigns/MeltaCheckbox';
-import { Status } from '../../interfaces/processes/processInstance';
-import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../interfaces/processes/processTemplate';
 import ProcessInstancesHeadline from './Headline';
 import ProcessesList from './ProcessesList';
 import ProcessTemplatesSelectCheckbox from './ProcessTemplatesCheckbox';
@@ -19,7 +18,7 @@ const ProcessInstancesPage: React.FC = () => {
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
     const processTemplates = Array.from(processTemplatesMap.values());
 
-    const [templatesToShowCheckbox, setTemplatesToShowCheckbox] = useState<IMongoProcessTemplatePopulated[]>(processTemplates);
+    const [templatesToShowCheckbox, setTemplatesToShowCheckbox] = useState<IMongoProcessTemplateReviewerPopulated[]>(processTemplates);
 
     const [searchInput, setSearchInput] = useState('');
     const [startDateInput, setStartDateInput] = useState<Date | null>(null);

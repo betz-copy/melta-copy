@@ -1,3 +1,4 @@
+import { IChart, IGraphFilterBodyBatch, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { Close as CancelIcon, Delete, Edit as EditIcon, Check as SaveIcon } from '@mui/icons-material';
 import { Box, CircularProgress, Grid, useTheme } from '@mui/material';
 import { FormikProps } from 'formik';
@@ -7,9 +8,6 @@ import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
 import { TopBarGrid } from '../../../common/TopBar';
-import { IChart } from '../../../interfaces/charts';
-import { IGraphFilterBodyBatch } from '../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
@@ -22,7 +20,7 @@ interface IChartTopBar {
     isLoading: boolean;
     setReadOnly: React.Dispatch<React.SetStateAction<boolean>>;
     formik: FormikProps<IChart>;
-    template: IMongoEntityTemplatePopulated;
+    template: IMongoEntityTemplateWithConstraintsPopulated;
     filterRecord: IGraphFilterBodyBatch;
     setFilterRecord: React.Dispatch<React.SetStateAction<IGraphFilterBodyBatch>>;
     setFilters: React.Dispatch<React.SetStateAction<number[]>>;

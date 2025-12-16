@@ -1,3 +1,13 @@
+import {
+    ActionOnFail,
+    ActionTypes,
+    IDeleteRelationshipMetadata,
+    IDeleteRelationshipMetadataPopulated,
+    IEntityExpanded,
+    IRuleBreach,
+    IRuleBreachPopulated,
+    IRuleMap,
+} from '@microservices/shared';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
@@ -7,11 +17,7 @@ import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
 import ExecWithRuleBreachDialog from '../../common/dialogs/execWithRuleBreachDialog';
 import { ErrorToast } from '../../common/ErrorToast';
 import { environment } from '../../globals';
-import { IEntityExpanded } from '../../interfaces/entities';
 import { IErrorResponse } from '../../interfaces/error';
-import { ActionTypes, IDeleteRelationshipMetadata, IDeleteRelationshipMetadataPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
-import { IRuleBreach, IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
-import { ActionOnFail, IRuleMap } from '../../interfaces/rules';
 import { deleteRelationshipRequest } from '../../services/relationshipsService';
 import { createRuleBreachRequestRequest } from '../../services/ruleBreachesService';
 

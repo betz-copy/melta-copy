@@ -1,7 +1,7 @@
 import { useMatomo } from '@datapunt/matomo-tracker-react';
+import { IUser } from '@microservices/shared';
 import Avatar from '@mui/material/Avatar';
 import React from 'react';
-import { IUser } from '../../interfaces/users';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { getNameInitials } from '../../utils/userProfile';
 

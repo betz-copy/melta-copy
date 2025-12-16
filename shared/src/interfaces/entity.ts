@@ -13,6 +13,10 @@ export interface IEntity {
     coloredFields?: Record<string, string>;
 }
 
+export interface IEntityWithChildTemplate extends IEntity {
+    childTemplateId?: string;
+}
+
 export type IConnection = {
     relationship: Pick<IRelationship, 'templateId' | 'properties'>;
     sourceEntity: IEntity;
@@ -238,7 +242,7 @@ export interface ISearchEntitiesByLocationTemplatesBody {
 export interface ISearchEntitiesByLocationBody {
     textSearch?: string;
     templates: ISearchEntitiesByLocationTemplatesBody;
-    circle: Circle;
+    circle?: Circle;
     polygon?: Polygon;
 }
 
@@ -311,4 +315,4 @@ export type IMultipleSelect<T extends boolean = boolean> = {
 
 export type IDeleteEntityBody<T extends boolean = boolean> = IDeleteEntityBodyBase & IMultipleSelect<T>;
 
-export type EntityData = IEntity | IFailedEntity;
+export type EntityData = IEntity | IFailedEntity | IConnection;

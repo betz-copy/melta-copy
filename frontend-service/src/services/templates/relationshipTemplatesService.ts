@@ -1,13 +1,15 @@
-import axios from '../../axios';
-import { defaultInitialValues, RelationshipTemplateWizardValues } from '../../common/wizards/relationshipTemplate';
-import { environment } from '../../globals';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import {
     IConvertToRelationshipField,
+    IEntityTemplateMap,
+    IMongoEntityTemplatePopulated,
+    IMongoEntityTemplateWithConstraintsPopulated,
     IMongoRelationshipTemplate,
     IRelationshipTemplate,
     ISearchRelationshipTemplatesBody,
-} from '../../interfaces/relationshipTemplates';
+} from '@microservices/shared';
+import axios from '../../axios';
+import { defaultInitialValues, RelationshipTemplateWizardValues } from '../../common/wizards/relationshipTemplate';
+import { environment } from '../../globals';
 
 const { relationshipTemplates } = environment.api;
 
@@ -20,12 +22,13 @@ const relationshipTemplateObjectToRelationshipTemplateForm = (
 
     return {
         sourceEntity: entityTemplates.get(sourceEntityId)
-            ? (entityTemplates.get(sourceEntityId) as IMongoEntityTemplatePopulated)
-            : (defaultInitialValues.sourceEntity as IMongoEntityTemplatePopulated),
+            ? (entityTemplates.get(sourceEntityId) as IMongoEntityTemplateWithConstraintsPopulated)
+            : (defaultInitialValues.sourceEntity as IMongoEntityTemplateWithConstraintsPopulated),
         destinationEntity: entityTemplates.get(destinationEntityId)
-            ? (entityTemplates.get(destinationEntityId) as IMongoEntityTemplatePopulated)
-            : (defaultInitialValues.destinationEntity as IMongoEntityTemplatePopulated),
-        ...restOfEntityTemplate,
+            ? (entityTemplates.get(destinationEntityId) as IMongoEntityTemplateWithConstraintsPopulated)
+            : (defaultInitialValues.destinationEntity as IMongoEntityTemplateWithConstraintsPopulated),
+        name: restOfEntityTemplate.name,
+        displayName: restOfEntityTemplate.displayName,
     };
 };
 
@@ -34,6 +37,8 @@ const relationshipTemplateFormToRelationshipTemplateObject = (
 ): IRelationshipTemplate | IMongoRelationshipTemplate => {
     const { sourceEntity, destinationEntity, ...restOfRelationshipWizardValues } = relationshipTemplateWizardValues;
     return {
+        // TODO: Check if true
+        isProperty: false,
         ...restOfRelationshipWizardValues,
         sourceEntityId: sourceEntity._id,
         destinationEntityId: destinationEntity._id,

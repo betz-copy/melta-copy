@@ -1,8 +1,8 @@
+import { IUser } from '@microservices/shared';
 import { ChevronLeft, ExpandMore } from '@mui/icons-material';
 import { Button, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { useState } from 'react';
-import { IUser } from '../../../../interfaces/users';
 import { useWorkspaceStore } from '../../../../stores/workspace';
 
 interface StepReviewersProps {

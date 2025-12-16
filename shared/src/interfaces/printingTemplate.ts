@@ -17,3 +17,5 @@ export interface IMongoPrintingTemplate extends IPrintingTemplate {
     createdAt: Date;
     updatedAt: Date;
 }
+
+export type IPrintingTemplateMap = Map<string, IMongoPrintingTemplate>;

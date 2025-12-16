@@ -1,3 +1,4 @@
+import { IEntity, IEntityTemplateMap, IFilterOfField, ISearchEntitiesByLocationBody } from '@microservices/shared';
 /** biome-ignore-all lint/correctness/useExhaustiveDependencies: useEffects dependencies */
 import { CircleTwoTone as CircleIcon, Close, StraightenTwoTone as DistanceIcon, PentagonTwoTone as PolygonIcon } from '@mui/icons-material';
 import { Grid, ToggleButton, ToggleButtonGroup, useTheme } from '@mui/material';
@@ -14,8 +15,6 @@ import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { EntitiesTable } from '../../../common/wizards/excel/excelSteps/EntitiesTable';
 import { environment } from '../../../globals';
-import { IEntity, IFilterOfField, ISearchEntitiesByLocationBody } from '../../../interfaces/entities';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { CameraFocusType, ICoordinateSearchResult, IPolygonSearchResult, LatLng, ShapeType } from '../../../interfaces/location';
 import { BackendConfigState } from '../../../services/backendConfigService';
 import { getEntitiesByLocation } from '../../../services/entitiesService';

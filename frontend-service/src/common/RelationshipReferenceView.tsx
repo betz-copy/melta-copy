@@ -1,12 +1,10 @@
+import { IChildTemplateMap, IEntity, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
 import { Grid, Typography, tooltipClasses, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties } from 'react';
 import { useQueryClient } from 'react-query';
 import { Link } from 'wouter';
-import { IChildTemplateMap } from '../interfaces/childTemplates';
-import { IEntity } from '../interfaces/entities';
-import { IEntityTemplateMap } from '../interfaces/entityTemplates';
 import { useUserStore } from '../stores/user';
 import { useWorkspaceStore } from '../stores/workspace';
 import { isEntityFitsToChildTemplate } from '../utils/childTemplates';
@@ -49,7 +47,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
 
     const template = entityTemplates.get(relatedTemplateId);
     const relatedTemplate = template ?? childTemplatesOfRelatedTemplate[0]?.parentTemplate;
-    const entityTemplateColor = relatedTemplate ? getEntityTemplateColor(relatedTemplate) : undefined;
+    const entityTemplateColor = relatedTemplate ? getEntityTemplateColor(relatedTemplate as IMongoEntityTemplateWithConstraintsPopulated) : undefined;
 
     const adjustedChildTemplate = childTemplatesOfRelatedTemplate.find((child) =>
         isEntityFitsToChildTemplate(
@@ -57,7 +55,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
             !template,
             entity,
             currentUserKartoffelId,
-            currentUser.currentUnits,
+            currentUser?.units?.[workspace._id],
             isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
         ),
     );

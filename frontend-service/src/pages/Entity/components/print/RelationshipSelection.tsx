@@ -1,3 +1,4 @@
+import { IConnection, IEntityExpanded, IEntityTemplateMap, IRelationshipTemplateMap } from '@microservices/shared';
 /* eslint-disable react/no-unstable-nested-components */
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
 import { Grid, Typography } from '@mui/material';
@@ -6,9 +7,6 @@ import i18next from 'i18next';
 import React, { Dispatch, SetStateAction, useCallback, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import TreeItem from '../../../../common/Tree/TreeItem';
-import { IConnection, IEntityExpanded } from '../../../../interfaces/entities';
-import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
-import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { getExpandedEntityByIdRequest } from '../../../../services/entitiesService';
 import { useUserStore } from '../../../../stores/user';
 import { findAncestryTree, mergeAncestryTree, sortTemplatesChildrenToParents, updateChildrenToParent } from '../../../../utils/expandedRelationships';

@@ -1,9 +1,9 @@
+import { IMongoPrintingTemplate } from '@microservices/shared';
 import { ChevronLeft, ExpandMore } from '@mui/icons-material';
 import { Button, Divider, Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { IMongoPrintingTemplate } from '../../../interfaces/printingTemplates';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';

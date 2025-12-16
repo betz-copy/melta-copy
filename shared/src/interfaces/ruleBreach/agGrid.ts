@@ -1,4 +1,5 @@
 import { ISubCompactPermissions } from '../permission';
+import { IUser } from '../user';
 
 export enum basicFilterOperationTypes {
     equals = 'equals',
@@ -20,6 +21,14 @@ export enum textFilterOperationTypes {
     endsWith = 'endsWith',
 }
 
+export enum relativeDateFilters {
+    thisWeek = 'thisWeek',
+    thisMonth = 'thisMonth',
+    thisYear = 'thisYear',
+    untilToday = 'untilToday',
+    fromToday = 'fromToday',
+}
+
 export enum filterTypes {
     text = 'text',
     number = 'number',
@@ -28,28 +37,28 @@ export enum filterTypes {
 }
 
 export interface IAgGridTextFilter {
-    filterType: 'text';
+    filterType: filterTypes.text;
     type: basicFilterOperationTypes | textFilterOperationTypes;
     filter?: string;
 }
 
 export interface IAgGridNumberFilter {
-    filterType: 'number';
+    filterType: filterTypes.number;
     type: basicFilterOperationTypes | numberFilterOperationTypes;
-    filter?: number;
+    filter?: number | string;
     filterTo?: number; // only inRange type
 }
 
 export interface IAgGridDateFilter {
-    filterType: 'date';
-    type: basicFilterOperationTypes | numberFilterOperationTypes;
+    filterType: filterTypes.date;
+    type: basicFilterOperationTypes | numberFilterOperationTypes | relativeDateFilters;
     dateFrom: string | null;
     dateTo: string | null; // only inRange type
 }
 
 export interface IAgGridSetFilter {
-    filterType: 'set';
-    values: (string | null)[];
+    filterType: filterTypes.set;
+    values: (string | IUser | null)[];
 }
 
 export type IAgGridFilterModel = IAgGridTextFilter | IAgGridNumberFilter | IAgGridDateFilter | IAgGridSetFilter;

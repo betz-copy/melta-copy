@@ -113,11 +113,16 @@ const IconPicker: React.FC<IconPickerProps> = ({ width, height, iconsPerPage, se
                 sx={{ direction: 'rtl' }}
             >
                 <Grid container justifyContent="center">
-                    {displayedIcons.slice(displayIndex, displayIndex + iconsPerPage).map(([name, icon]) => (
-                        <IconButton key={name} value={name} onClick={handleIconClick}>
-                            {React.createElement(icon, { style: { color: color || darkMode ? 'white' : 'black', fontSize: '1.55rem' } })}
-                        </IconButton>
-                    ))}
+                    {displayedIcons.slice(displayIndex, displayIndex + iconsPerPage).map(([name, icon]) => {
+                        const IconComponent = icon as React.ComponentType<{ style?: React.CSSProperties }>;
+                        const resolvedColor = color ?? (darkMode ? 'white' : 'black');
+
+                        return (
+                            <IconButton key={name} value={name} onClick={handleIconClick}>
+                                <IconComponent style={{ color: resolvedColor, fontSize: '1.55rem' }} />
+                            </IconButton>
+                        );
+                    })}
                 </Grid>
             </Box>
             <Pagination count={pageCount} page={page} onChange={(_event, newPage) => setPage(newPage)} />

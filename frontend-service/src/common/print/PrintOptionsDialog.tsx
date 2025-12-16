@@ -1,3 +1,12 @@
+import {
+    IEntity,
+    IEntityExpanded,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    IMongoProcessInstanceReviewerPopulated,
+    IMongoProcessTemplateReviewerPopulated,
+    IMongoStepTemplatePopulated,
+    InstanceProperties,
+} from '@microservices/shared';
 import { CloseOutlined, PrintOutlined } from '@mui/icons-material';
 import {
     Button,
@@ -14,12 +23,7 @@ import {
 } from '@mui/material';
 import i18next from 'i18next';
 import React, { useCallback, useEffect, useState } from 'react';
-import { IEntity, IEntityExpanded } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IFile } from '../../interfaces/preview';
-import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
-import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
-import { IMongoStepTemplatePopulated } from '../../interfaces/processes/stepTemplate';
 import RelationshipSelection, { EntityConnectionsProps } from '../../pages/Entity/components/print/RelationshipSelection';
 import { getFile } from '../../utils/getFileType';
 import MultipleSelect from '../inputs/MultipleSelect';
@@ -39,7 +43,7 @@ export enum PrintType {
 }
 interface IEntityPrint {
     type: PrintType.Entity;
-    template: IMongoEntityTemplatePopulated;
+    template: IMongoEntityTemplateWithConstraintsPopulated;
     instance: IEntityExpanded;
     entityConnections: EntityConnectionsProps;
     options: {
@@ -51,8 +55,8 @@ interface IEntityPrint {
 
 interface IProcessPrint {
     type: PrintType.Process;
-    template: IMongoProcessTemplatePopulated;
-    instance: IMongoProcessInstancePopulated;
+    template: IMongoProcessTemplateReviewerPopulated;
+    instance: IMongoProcessInstanceReviewerPopulated;
     options: { processSummary: IOption };
 }
 
@@ -60,7 +64,7 @@ type PrintItem = IEntityPrint | IProcessPrint;
 
 const getFilesFromTemplate = (
     instanceProps: IEntity['properties'] | InstanceProperties,
-    templateProps: IMongoEntityTemplatePopulated | IMongoProcessTemplatePopulated['details'] | IMongoStepTemplatePopulated,
+    templateProps: IMongoEntityTemplateWithConstraintsPopulated | IMongoProcessTemplateReviewerPopulated['details'] | IMongoStepTemplatePopulated,
 ): IFile[] => {
     return Object.keys(templateProps.properties.properties).flatMap((propertyKey) => {
         const propertySchema = templateProps.properties.properties[propertyKey];

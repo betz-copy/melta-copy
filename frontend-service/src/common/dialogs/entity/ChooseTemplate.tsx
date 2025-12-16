@@ -1,3 +1,12 @@
+import {
+    IChildTemplateMap,
+    IChildTemplatePopulated,
+    IEntityTemplateMap,
+    IEntityTemplatePopulated,
+    IMongoChildTemplateWithConstraintsPopulated,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    PermissionScope,
+} from '@microservices/shared';
 import { Autocomplete, TextField } from '@mui/material';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
@@ -5,9 +14,6 @@ import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
 import * as Yup from 'yup';
-import { IChildTemplateMap, IChildTemplatePopulated, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { PermissionScope } from '../../../interfaces/permissions';
 import { useClientSideUserStore } from '../../../stores/clientSideUser';
 import { useUserStore } from '../../../stores/user';
 import { getChildrenWithWritePermission } from '../../../utils/childTemplates';
@@ -36,7 +42,9 @@ const ChooseTemplate: React.FC<{
     parentId?: string;
     chooseMode?: IChooseTemplateMode;
     entityId?: string;
-    getInitialProperties?: (newTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => Record<string, any>;
+    getInitialProperties?: (
+        newTemplate: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
+    ) => Record<string, any>;
 }> = ({ values, touched, errors, setFieldValue, chooseMode, parentId, getInitialProperties }) => {
     const { categoryId } = useParams<{ categoryId?: string }>();
     const queryClient = useQueryClient();
@@ -53,7 +61,7 @@ const ChooseTemplate: React.FC<{
     const isAuthorized = (templateId: string, categoryId: string) =>
         checkUserTemplatePermission(currentUser.currentWorkspacePermissions, categoryId, templateId, PermissionScope.write);
 
-    let entityTemplatesFiltered: IMongoEntityTemplatePopulated[] | IChildTemplatePopulated[] = [];
+    let entityTemplatesFiltered: (IEntityTemplatePopulated | IChildTemplatePopulated)[] = [];
 
     if (chooseMode === IChooseTemplateMode.OnlyChildren && parentId)
         entityTemplatesFiltered = getChildrenWithWritePermission(childTemplates, parentId, currentUser, currentClientSideUser);
@@ -80,7 +88,9 @@ const ChooseTemplate: React.FC<{
             id="template"
             options={activeEntityTemplatesFiltered}
             onChange={(_e, value) => {
-                const newTemplate = value || emptyEntityTemplate;
+                const newTemplate = (value || emptyEntityTemplate) as
+                    | IMongoEntityTemplateWithConstraintsPopulated
+                    | IMongoChildTemplateWithConstraintsPopulated;
 
                 const baseProps = getInitialValuesWithDefaults(
                     {

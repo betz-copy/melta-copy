@@ -1,15 +1,24 @@
+import {
+    ICountSearchResult,
+    IEntity,
+    IEntityExpanded,
+    IMongoCategory,
+    IMongoChildTemplateWithConstraintsPopulated,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    IMongoRelationshipTemplate,
+    INotificationCountGroups,
+    INotificationGroupCountDetails,
+    INotificationPopulated,
+    IRuleBreach,
+    ISearchEntitiesOfTemplateBody,
+    ISearchResult,
+    NotificationType,
+} from '@microservices/shared';
 import { mapValues } from 'lodash';
 import axios from '../axios';
 import { EntityWizardValues } from '../common/dialogs/entity';
 import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
 import { environment } from '../globals';
-import { IMongoCategory } from '../interfaces/categories';
-import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
-import { ICountSearchResult, IEntity, IEntityExpanded, ISearchEntitiesOfTemplateBody, ISearchResult } from '../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
-import { INotificationCountGroups, INotificationGroupCountDetails, INotificationPopulated, NotificationType } from '../interfaces/notifications';
-import { IMongoRelationshipTemplate } from '../interfaces/relationshipTemplates';
-import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { locationConverterToString } from '../utils/map/convert';
 import { isChildTemplate } from '../utils/templates';
 import { IGetMyNotificationsRequestQuery } from './notificationService';
@@ -18,9 +27,9 @@ const { clientSideRoutes, getAllClientSideTemplates: getAllClientSideTemplatesRo
 
 export type GetAllClientSideTemplatesType = {
     categories: IMongoCategory[];
-    entityTemplates: IMongoEntityTemplatePopulated[];
+    entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[];
     relationshipTemplates: IMongoRelationshipTemplate[];
-    childTemplates: IMongoChildTemplatePopulated[];
+    childTemplates: IMongoChildTemplateWithConstraintsPopulated[];
 };
 
 const getAllClientSideTemplates = async (usersInfoChildTemplateId: string) => {
@@ -76,7 +85,7 @@ const getClientSideExpandedEntityByIdRequest = async (
 
 const createEntityClientSideRequest = async (
     entity: EntityWizardValues,
-    childTemplate: IMongoChildTemplatePopulated,
+    childTemplate: IMongoChildTemplateWithConstraintsPopulated,
     ignoredRules?: IRuleBreach['brokenRules'],
     clientSideUserEntity?: IEntity,
 ) => {

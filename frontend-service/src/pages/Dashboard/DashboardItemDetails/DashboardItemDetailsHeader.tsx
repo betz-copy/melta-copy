@@ -1,3 +1,4 @@
+import { DashboardItemType, IMongoChart } from '@microservices/shared';
 import { Check, Close, Edit } from '@mui/icons-material';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import { FormikProps } from 'formik';
@@ -7,8 +8,7 @@ import React, { useState } from 'react';
 import { useLocation } from 'wouter';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
-import { IMongoChart } from '../../../interfaces/charts';
-import { DashboardItemForm, DashboardItemType, ViewMode } from '../../../interfaces/dashboard';
+import { DashboardItemForm, ViewMode } from '../../../interfaces/dashboard';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';
 import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';

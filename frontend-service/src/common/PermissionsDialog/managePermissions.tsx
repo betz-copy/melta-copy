@@ -1,11 +1,8 @@
+import { ICategoryMap, IMetadata, IWorkspace, PermissionData, PermissionScope } from '@microservices/shared';
 import { Box } from '@mui/material';
 import { FormikProps } from 'formik';
 import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';
-import { ICategoryMap } from '../../interfaces/categories';
-import { PermissionScope } from '../../interfaces/permissions';
-import { PermissionData } from '../../interfaces/users';
-import { IMetadata, IWorkspace } from '../../interfaces/workspaces';
 import {
     checkUserCategoryPermission,
     getChangedCategoryPermissions,

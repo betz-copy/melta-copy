@@ -1,3 +1,10 @@
+import {
+    ActionsLog,
+    IEntityExpanded,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    IMongoStepTemplatePopulated,
+    IProcessDetails,
+} from '@microservices/shared';
 import { Grid, InputAdornment, Paper, TextField } from '@mui/material';
 import i18next from 'i18next';
 import React, { useState } from 'react';
@@ -6,28 +13,11 @@ import { InfiniteScroll } from '../../../../common/InfiniteScroll';
 import DateRange from '../../../../common/inputs/DateRange';
 import MultipleSelect from '../../../../common/inputs/MultipleSelect';
 import { environment } from '../../../../globals';
-import { IEntityExpanded } from '../../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { IProcessDetails } from '../../../../interfaces/processes/processTemplate';
-import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { getActivityLogRequest, IActivityLog } from '../../../../services/activityLogService';
 import { FilterButton } from '../../../SystemManagement/components/FilterButton';
 import ActivityLogRow from './ActivityLogRow';
 
 const { infiniteScrollPageCount } = environment.activityLog;
-
-const ACTIVITY_TYPES = [
-    'DELETE_RELATIONSHIP',
-    'CREATE_RELATIONSHIP',
-    'UPDATE_ENTITY',
-    'CREATE_ENTITY',
-    'UPDATE_PROCESS',
-    'CREATE_PROCESS',
-    'DUPLICATE_ENTITY',
-    'DISABLE_ENTITY',
-    'ACTIVATE_ENTITY',
-    'UPDATE_PROCESS_STEP',
-];
 
 const getNextPageParam = (lastPage: IActivityLog[], allPages: IActivityLog[][]) => {
     const nextPage = allPages.length * infiniteScrollPageCount;
@@ -36,7 +26,7 @@ const getNextPageParam = (lastPage: IActivityLog[], allPages: IActivityLog[][]) 
 
 const ActivitiesContent: React.FC<{
     expandedEntity?: IEntityExpanded;
-    entityTemplate: IMongoEntityTemplatePopulated | IProcessDetails | IMongoStepTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | IProcessDetails | IMongoStepTemplatePopulated;
     activityEntityId?: string;
 }> = ({ expandedEntity, entityTemplate, activityEntityId }) => {
     const entityId = expandedEntity?.entity.properties._id || activityEntityId || '';
@@ -47,14 +37,14 @@ const ActivitiesContent: React.FC<{
     const [activitiesFilterValue, setActivitiesFilterValue] = useState<string[] | null>([]);
 
     const items = [
-        { label: i18next.t('entityPage.activityLog.titles.deleteRelationship'), value: 'DELETE_RELATIONSHIP' },
-        { label: i18next.t('entityPage.activityLog.titles.createRelationship'), value: 'CREATE_RELATIONSHIP' },
-        { label: i18next.t('entityPage.activityLog.titles.updateFields'), value: 'UPDATE_FIELDS' },
-        { label: i18next.t('entityPage.activityLog.titles.createEntity'), value: 'CREATE_ENTITY' },
-        { label: i18next.t('entityPage.activityLog.titles.createProcess'), value: 'CREATE_PROCESS' },
-        { label: i18next.t('entityPage.activityLog.titles.duplicateEntity'), value: 'DUPLICATE_ENTITY' },
-        { label: i18next.t('entityPage.activityLog.titles.disableEntity'), value: 'DISABLE_ENTITY' },
-        { label: i18next.t('entityPage.activityLog.titles.enableEntity'), value: 'ACTIVATE_ENTITY' },
+        { label: i18next.t('entityPage.activityLog.titles.deleteRelationship'), value: ActionsLog.DELETE_RELATIONSHIP },
+        { label: i18next.t('entityPage.activityLog.titles.createRelationship'), value: ActionsLog.CREATE_RELATIONSHIP },
+        { label: i18next.t('entityPage.activityLog.titles.updateFields'), value: ActionsLog.UPDATE_FIELDS },
+        { label: i18next.t('entityPage.activityLog.titles.createEntity'), value: ActionsLog.CREATE_ENTITY },
+        { label: i18next.t('entityPage.activityLog.titles.createProcess'), value: ActionsLog.CREATE_PROCESS },
+        { label: i18next.t('entityPage.activityLog.titles.duplicateEntity'), value: ActionsLog.DUPLICATE_ENTITY },
+        { label: i18next.t('entityPage.activityLog.titles.disableEntity'), value: ActionsLog.DISABLE_ENTITY },
+        { label: i18next.t('entityPage.activityLog.titles.enableEntity'), value: ActionsLog.ACTIVATE_ENTITY },
     ];
 
     let selectedValue: (typeof items)[number] | (typeof items)[number][] | null;
@@ -162,7 +152,7 @@ const ActivitiesContent: React.FC<{
                         infiniteScrollPageCount,
                         pageParam,
                         entityTemplate.properties.properties,
-                        activitiesFilterValue && activitiesFilterValue.length ? activitiesFilterValue : ACTIVITY_TYPES,
+                        activitiesFilterValue && activitiesFilterValue.length ? activitiesFilterValue : Object.values(ActionsLog),
                         searchInput.trim(),
                         startDateInput || undefined,
                         endDateInput || undefined,

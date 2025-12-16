@@ -1,14 +1,14 @@
+import { IGantt } from '@microservices/shared';
 import { Divider, Grid } from '@mui/material';
 import { FormikProps } from 'formik';
 import React from 'react';
-import { IBasicGantt } from '../../../interfaces/gantts';
 import { GanttItemDisplay } from '../GanttItemDisplay';
 import { GroupByDisplay } from './GroupByDisplay';
 
 interface IGanttItemsDisplayProps {
-    gantt: IBasicGantt;
+    gantt: IGantt;
     open: boolean;
-    formik: FormikProps<IBasicGantt>;
+    formik: FormikProps<IGantt>;
     edit?: boolean;
     containerRef?: React.RefObject<HTMLDivElement | null>;
 }

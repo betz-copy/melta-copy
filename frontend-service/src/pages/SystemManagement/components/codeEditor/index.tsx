@@ -1,4 +1,12 @@
-/* eslint-disable react-hooks/rules-of-hooks */
+import {
+    EntityTemplateType,
+    IChildTemplateMap,
+    IEntityTemplateMap,
+    IMongoCategory,
+    IMongoChildTemplateWithConstraintsPopulated,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    TemplateItem,
+} from '@microservices/shared';
 import { CloseOutlined, ContentCopy, Done } from '@mui/icons-material';
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
@@ -12,9 +20,6 @@ import { AreYouSureDialog } from '../../../../common/dialogs/AreYouSureDialog';
 import { ErrorToast } from '../../../../common/ErrorToast';
 import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
 import { environment } from '../../../../globals';
-import { IMongoCategory } from '../../../../interfaces/categories';
-import { EntityTemplateType, IChildTemplateMap, TemplateItem } from '../../../../interfaces/childTemplates';
-import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { updateActionToEntity } from '../../../../services/templates/entityTemplatesService';
 import { getChildPropertiesFiltered } from '../../../../utils/childTemplates';
 import { generateBasicFunctions } from '../../../../utils/templateActions/generateFunctions';
@@ -82,11 +87,11 @@ const CodeEditorDialog: React.FC<{
             const { actions } = data;
             if (type === EntityTemplateType.Parent)
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>
-                    entityTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions }),
+                    entityTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions } as IMongoEntityTemplateWithConstraintsPopulated),
                 );
             else
                 queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) =>
-                    childTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions }),
+                    childTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions } as IMongoChildTemplateWithConstraintsPopulated),
                 );
 
             queryClient.invalidateQueries(['searchEntityTemplates', searchText, categoriesToShow]);

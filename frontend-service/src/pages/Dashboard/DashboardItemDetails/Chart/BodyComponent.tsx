@@ -1,12 +1,11 @@
+import { IChildTemplateMap, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import { StepComponentProps } from '../../../../common/wizards';
 import { EntitiesTable } from '../../../../common/wizards/excel/excelSteps/EntitiesTable';
-import { IChildTemplateMap, IChildTemplatePopulated } from '../../../../interfaces/childTemplates';
 import { ChartForm } from '../../../../interfaces/dashboard';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { useDebouncedFilter } from '../../../../utils/dashboard/useDebouncedFilter';
 import { ChartGenerator } from '../../../Charts/chartGenerator.tsx';
 
@@ -14,7 +13,7 @@ export const getRelevantEntityTemplate = (
     entityTemplates: IEntityTemplateMap,
     templateId: string,
     childTemplateId?: string,
-): IChildTemplatePopulated | IMongoEntityTemplatePopulated => {
+): IMongoEntityTemplateWithConstraintsPopulated => {
     const queryClient = useQueryClient();
     const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 

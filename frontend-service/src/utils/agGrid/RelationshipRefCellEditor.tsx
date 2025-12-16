@@ -1,11 +1,9 @@
+import { IChildTemplateMap, IEntity, IEntitySingleProperty, IEntityTemplateMap } from '@microservices/shared';
 import { FormControl } from '@mui/material';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { EntityWizardValues } from '../../common/dialogs/entity';
 import TemplateEntitiesAutocomplete from '../../common/inputs/TemplateEntitiesAutocomplete';
-import { IChildTemplateMap } from '../../interfaces/childTemplates';
-import { IEntity } from '../../interfaces/entities';
-import { IEntitySingleProperty, IEntityTemplateMap } from '../../interfaces/entityTemplates';
 
 interface RelationshipRefCellEditorProps {
     value?: IEntity | null;
@@ -36,6 +34,8 @@ const RelationshipRefCellEditor: React.FC<RelationshipRefCellEditorProps> = ({
     const childTemplatesOfRelatedTemplate = Array.from(childTemplates.values()).filter((child) => child.parentTemplate._id === relatedTemplateId);
 
     const relatedTemplate = entityTemplates.get(relatedTemplateId);
+    const relatedTemplateFromMap = entityTemplates.get(childTemplatesOfRelatedTemplate[0]?.parentTemplate._id);
+    const templateForAutocomplete = childTemplatesOfRelatedTemplate.length ? relatedTemplateFromMap : relatedTemplate;
 
     const handleEntityInputChange = (_event: React.SyntheticEvent, newDisplayValue: string) => setInputValue(newDisplayValue);
 
@@ -48,7 +48,7 @@ const RelationshipRefCellEditor: React.FC<RelationshipRefCellEditorProps> = ({
     return (
         <FormControl style={{ width: '100%', height: '100%' }}>
             <TemplateEntitiesAutocomplete
-                template={childTemplatesOfRelatedTemplate.length ? childTemplatesOfRelatedTemplate[0]?.parentTemplate : relatedTemplate!}
+                template={templateForAutocomplete}
                 showField={template.relationshipReference!.relatedTemplateField}
                 noRelationPermission={noRelationPermission}
                 value={value || null}

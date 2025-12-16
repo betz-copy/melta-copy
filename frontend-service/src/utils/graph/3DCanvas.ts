@@ -1,8 +1,8 @@
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 /* eslint-disable no-param-reassign */
 import { ForceGraphMethods as ForceGraphMethods3D, NodeObject } from 'react-force-graph-3d';
 import * as THREE from 'three';
 import { environment } from '../../globals';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { drawLabel, drawNodeIcon, getIconSize, getLabelDimensions, updateNodeLabelIcons } from '.';
 import { ILabelIcon } from './helperTypes';
 
@@ -72,7 +72,12 @@ export const create3DNodeIcon = (node: NodeObject, color: string) => {
     return detailsSprite;
 };
 
-export const create3DNodeDetails = (node: NodeObject, entityTemplate: IMongoEntityTemplatePopulated, isOriginalNode: boolean, darkMode: boolean) => {
+export const create3DNodeDetails = (
+    node: NodeObject,
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated,
+    isOriginalNode: boolean,
+    darkMode: boolean,
+) => {
     const nodeRadius = getNodeRadius(node);
 
     updateNodeLabelIcons(node, isOriginalNode);

@@ -1,3 +1,4 @@
+import { IWorkspace } from '@microservices/shared';
 import { Check, DriveFileMove, Edit, FolderOff, MoreVert } from '@mui/icons-material';
 import { Box, IconButton, ListItemIcon, Menu, MenuItem } from '@mui/material';
 import { AxiosError } from 'axios';
@@ -7,7 +8,6 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import { ErrorToast } from '../../../common/ErrorToast';
-import { IWorkspace } from '../../../interfaces/workspaces';
 import { updateOne } from '../../../services/workspacesService';
 import { WorkspaceWizardValues, workspaceObjectToWorkspaceForm } from '../Wizard';
 

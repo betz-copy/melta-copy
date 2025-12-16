@@ -1,10 +1,10 @@
+import { IMongoIframe } from '@microservices/shared';
 import { Grid } from '@mui/material';
 import React, { useRef } from 'react';
 import Iframe from 'react-iframe';
-import { IMongoIFrame } from '../../../interfaces/iFrames';
 import { CardTitle } from './TableCard';
 
-const IFrameCard: React.FC<{ metaData: IMongoIFrame }> = ({ metaData }) => {
+const IFrameCard: React.FC<{ metaData: IMongoIframe }> = ({ metaData }) => {
     const containerRef = useRef<HTMLDivElement>(null);
 
     return (

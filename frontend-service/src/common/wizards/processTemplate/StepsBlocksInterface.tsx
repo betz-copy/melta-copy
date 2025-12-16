@@ -1,6 +1,5 @@
+import { FileDetails, IUser } from '@microservices/shared';
 import { FormikErrors, FormikTouched } from 'formik';
-import fileDetails from '../../../interfaces/fileDetails';
-import { IUser } from '../../../interfaces/users';
 import { ProcessTemplateWizardValues } from '.';
 
 export interface StepsGenericBlockProps {
@@ -8,7 +7,7 @@ export interface StepsGenericBlockProps {
     propIndex: number;
     errors: FormikErrors<ProcessTemplateWizardValues>;
     touched?: FormikTouched<ProcessTemplateWizardValues>;
-    setFieldValue: (field: string, value: string | IUser | null | fileDetails | undefined | boolean, shouldValidate?: boolean) => void;
+    setFieldValue: (field: string, value: string | IUser | null | FileDetails | undefined | boolean, shouldValidate?: boolean) => void;
     title?: string;
     isEditMode: boolean;
     areThereAnyInstances: boolean;

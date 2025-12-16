@@ -1,14 +1,10 @@
+import { DashboardItemType, IChildTemplateMap, IEntityTemplateMap, ISubCompactPermissions, PermissionScope } from '@microservices/shared';
 import { CircularProgress } from '@mui/material';
 import { AxiosError } from 'axios';
 import { StatusCodes } from 'http-status-codes';
 import React, { isValidElement, ReactNode } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { Redirect, useLocation, useParams, useSearchParams } from 'wouter';
-import { IChildTemplateMap } from '../interfaces/childTemplates';
-import { DashboardItemType } from '../interfaces/dashboard';
-import { IEntityTemplateMap } from '../interfaces/entityTemplates';
-import { PermissionScope } from '../interfaces/permissions';
-import { ISubCompactPermissions } from '../interfaces/permissions/permissions';
 import { getExpandedEntityByIdRequest } from '../services/entitiesService';
 
 export const protectedRoute = (children: React.ReactNode, isAllowed: boolean) => {

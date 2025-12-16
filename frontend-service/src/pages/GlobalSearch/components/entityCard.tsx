@@ -1,3 +1,4 @@
+import { ActionTypes, IEntity, IMongoEntityTemplateWithConstraintsPopulated, PermissionScope } from '@microservices/shared';
 import { AppRegistration as AppRegistrationIcon, AutoAwesome, KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import { Box, Card, CardContent, CardHeader, Dialog, Divider, Grid, IconButton, styled, Typography } from '@mui/material';
 import i18next from 'i18next';
@@ -15,11 +16,7 @@ import { ImageWithDisable } from '../../../common/ImageWithDisable';
 import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
-import { IEntity } from '../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { PermissionScope } from '../../../interfaces/permissions';
 import { FileExtensions, IFile } from '../../../interfaces/preview';
-import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { getEntityTemplateColor } from '../../../utils/colors';
@@ -44,7 +41,7 @@ export const StyledCard = styled(Card)(({ theme }) => ({
 
 interface EntityCardProps {
     entity: IEntity;
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
     expandCard?: boolean;
     enableEdit?: boolean;
     customActionButton?: {
@@ -294,7 +291,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                     }}
                                     size="large"
                                 >
-                                    {customActionButton.icon}
+                                    <>{customActionButton.icon}</>
                                 </IconButton>
                             ))}
                     </Grid>

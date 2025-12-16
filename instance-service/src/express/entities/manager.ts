@@ -523,7 +523,12 @@ class EntityManager extends DefaultManagerNeo4j {
                 const actionHandlers: Record<
                     Exclude<
                         ActionTypes,
-                        ActionTypes.UpdateStatus | ActionTypes.CreateRelationship | ActionTypes.DeleteRelationship | ActionTypes.CronjobRun
+                        | ActionTypes.UpdateStatus
+                        | ActionTypes.CreateRelationship
+                        | ActionTypes.DeleteRelationship
+                        | ActionTypes.UpdateMultipleEntities
+                        | ActionTypes.CreateClientSideEntity
+                        | ActionTypes.CronjobRun
                     >,
                     () => Promise<IEntity | undefined>
                 > = {

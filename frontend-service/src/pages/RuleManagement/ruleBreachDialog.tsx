@@ -1,3 +1,4 @@
+import { BreachType, IRuleBreachAlertPopulated, IRuleBreachRequestPopulated, PermissionScope, RuleBreachRequestStatus } from '@microservices/shared';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import {
@@ -23,10 +24,6 @@ import { ActionInfo } from '../../common/ruleBreanchInfo/ActionInfo';
 import { BrokenRulesInfo } from '../../common/ruleBreanchInfo/BrokenRulesInfo';
 import { environment } from '../../globals';
 import { IErrorResponse } from '../../interfaces/error';
-import { PermissionScope } from '../../interfaces/permissions';
-import { BreachType } from '../../interfaces/ruleBreaches/ruleBreach';
-import { IRuleBreachAlertPopulated } from '../../interfaces/ruleBreaches/ruleBreachAlert';
-import { IRuleBreachRequestPopulated, RuleBreachRequestStatus } from '../../interfaces/ruleBreaches/ruleBreachRequest';
 import { approveRuleBreachRequestRequest, cancelRuleBreachRequestRequest, denyRuleBreachRequestRequest } from '../../services/ruleBreachesService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';

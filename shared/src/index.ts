@@ -29,6 +29,7 @@ export * from './interfaces/workspace';
 export * from './interfaces/workspace';
 export * from './interfaces/workspaceConfigs';
 export * from './types';
+export * from './types';
 export * from './utils/childTemplate';
 export * from './utils/dashboard';
 export * from './utils/express';

@@ -1,3 +1,4 @@
+import { ICompactPermissions, IMongoUser, RelatedPermission } from '@microservices/shared';
 import { Delete } from '@mui/icons-material';
 import { Divider, Grid, IconButton, Paper, Typography } from '@mui/material';
 import i18next from 'i18next';
@@ -6,8 +7,6 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
 import UserAvatar from '../../common/UserAvatar';
-import { ICompactPermissions } from '../../interfaces/permissions/permissions';
-import { IMongoUser, RelatedPermission } from '../../interfaces/users';
 import { syncPermissionsRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { getDateWithoutTime } from '../../utils/date';

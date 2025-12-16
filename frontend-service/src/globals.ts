@@ -1,5 +1,5 @@
+import { NotificationType } from '@microservices/shared';
 import i18next from 'i18next';
-import { NotificationType } from './interfaces/notifications';
 import { ILabelIcon } from './utils/graph/helperTypes';
 
 export const environment = {
@@ -282,27 +282,6 @@ export const environment = {
         },
         unitFieldSplitDepth: 2,
     },
-    filterOptions: {
-        string: ['contains', 'notContains', 'equals', 'notEqual', 'startsWith', 'endsWith'],
-        text: ['contains', 'notContains', 'equals', 'notEqual', 'startsWith', 'endsWith'],
-        number: ['equals', 'notEqual', 'greaterThan', 'greaterThanOrEqual', 'lessThan', 'lessThanOrEqual'],
-        date: [
-            'equals',
-            'notEqual',
-            'greaterThan',
-            'greaterThanOrEqual',
-            'lessThan',
-            'lessThanOrEqual',
-            'inRange',
-            'thisWeek',
-            'thisMonth',
-            'thisYear',
-            'untilToday',
-            'fromToday',
-        ],
-        field: ['equals', 'notEqual'],
-    },
-    relativeDateFilters: ['thisWeek', 'thisMonth', 'thisYear', 'untilToday', 'fromToday'] as readonly string[],
     accessTokenName: 'rabaz-access-token',
     brokenRulesFakeEntityIdPrefix: '$',
     minimumSupportedChromeVersion: 85,

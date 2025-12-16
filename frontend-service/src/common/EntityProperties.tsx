@@ -1,3 +1,4 @@
+import { IEntity, IEntitySingleProperty, IEntityTemplateMap, IGetUnits, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
 import { Box, Divider, Grid, IconButton, Typography } from '@mui/material';
 import type { Property } from 'csstype';
@@ -7,9 +8,6 @@ import React, { CSSProperties, JSX, useState } from 'react';
 import { pdfjs } from 'react-pdf';
 import { useQueryClient } from 'react-query';
 import { environment } from '../globals';
-import { IEntity } from '../interfaces/entities';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
-import { IGetUnits } from '../interfaces/units';
 import { useDarkModeStore } from '../stores/darkMode';
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
 import OverflowWrapper from '../utils/agGrid/OverflowWrapper';
@@ -205,8 +203,8 @@ export const formatToString = (
     return value;
 };
 
-type Template = Pick<IMongoEntityTemplatePopulated, 'properties' | 'propertiesOrder' | 'enumPropertiesColors' | 'fieldGroups'> &
-    Partial<Pick<IMongoEntityTemplatePopulated, 'propertiesPreview'>>;
+type Template = Pick<IMongoEntityTemplateWithConstraintsPopulated, 'properties' | 'propertiesOrder' | 'enumPropertiesColors' | 'fieldGroups'> &
+    Partial<Pick<IMongoEntityTemplateWithConstraintsPopulated, 'propertiesPreview'>>;
 interface IEntityPropertiesProps {
     entityTemplate: Template;
     properties: IEntity['properties'];
@@ -297,7 +295,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                 const propertyValue = comment ?? properties[propertyKey];
                 const hideField = entityTemplate.properties.hide.includes(propertyKey);
                 const containsHtmlTags = containsHTMLTags(propertyValue);
-                let relatedEntityAllowed: IMongoEntityTemplatePopulated | undefined;
+                let relatedEntityAllowed: IMongoEntityTemplateWithConstraintsPopulated | undefined;
                 if (format === 'relationshipReference') {
                     const relatedTemplateId = relationshipReference?.relatedTemplateId!;
                     relatedEntityAllowed = entityTemplates?.get(relatedTemplateId);

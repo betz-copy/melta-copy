@@ -1,12 +1,11 @@
+import { IEntityTemplateMap, IRelationshipReference, ISearchFilter, IUniqueConstraintOfTemplate } from '@microservices/shared';
 import { Box, FormControlLabel } from '@mui/material';
 import i18next from 'i18next';
 import React, { SetStateAction } from 'react';
 import { useQueryClient } from 'react-query';
-import { ISearchFilter, IUniqueConstraintOfTemplate } from '../../../../interfaces/entities';
-import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { MinimizedColorPicker } from '../../../inputs/MinimizedColorPicker';
 import MeltaSwitch from '../../../MeltaDesigns/MeltaSwitch';
-import { CommonFormInputProperties, IRelationshipReference } from '../commonInterfaces';
+import { CommonFormInputProperties } from '../commonInterfaces';
 
 export interface SwitchesProps {
     value: CommonFormInputProperties;

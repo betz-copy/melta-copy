@@ -31,6 +31,8 @@ export interface IUpdateEntityMetadata {
     updatedFields: Record<string, any>;
 }
 
+export interface IUpdateMultipleEntitiesMetadata extends Array<IUpdateEntityMetadata> {}
+
 export interface IUpdateEntityStatusMetadata {
     entityId: string;
     disabled: boolean;
@@ -67,6 +69,8 @@ export interface ICreateOrDuplicateEntityMetadataPopulated {
     properties: Record<string, any>;
 }
 
+export interface IUpdateMultipleEntitiesMetadataPopulated extends Array<IUpdateEntityMetadataPopulated> {}
+
 export interface ICronjobRunMetadataPopulated {
     entity: IEntity | null;
 }
@@ -78,6 +82,7 @@ export type IActionMetadata =
     | IDuplicateEntityMetadata
     | IUpdateEntityMetadata
     | IUpdateEntityStatusMetadata
+    | IUpdateMultipleEntitiesMetadata
     | ICronjobRunMetadata;
 
 export type IActionMetadataPopulated =
@@ -87,6 +92,7 @@ export type IActionMetadataPopulated =
     | IDuplicateEntityMetadataPopulated
     | IUpdateEntityMetadataPopulated
     | IUpdateEntityStatusMetadataPopulated
+    | IUpdateMultipleEntitiesMetadataPopulated
     | ICronjobRunMetadataPopulated;
 
 export enum ActionTypes {
@@ -96,6 +102,8 @@ export enum ActionTypes {
     DuplicateEntity = 'duplicate-entity',
     UpdateEntity = 'update-entity',
     UpdateStatus = 'update-status',
+    UpdateMultipleEntities = 'update-multiple-entities',
+    CreateClientSideEntity = 'create-client-side-entity',
     CronjobRun = 'cronjob-run',
 }
 

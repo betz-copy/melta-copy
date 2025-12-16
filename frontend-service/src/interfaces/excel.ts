@@ -1,12 +1,24 @@
-import { IMongoChildTemplatePopulated } from './childTemplates';
-import { IEntity, IEntityWithIgnoredRules, IRequiredConstraint, IUniqueConstraint, IUsersNotFoundError } from './entities';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from './entityTemplates';
-import { ActionErrors, ActionTypes, IAction, IActionMetadataPopulated, ICreateEntityMetadata } from './ruleBreaches/actionMetadata';
-import { IBrokenRule, IBrokenRulePopulated } from './ruleBreaches/ruleBreach';
+import {
+    ActionErrors,
+    ActionTypes,
+    IAction,
+    IActionMetadataPopulated,
+    IBrokenRule,
+    IBrokenRulePopulated,
+    ICreateEntityMetadata,
+    IEntity,
+    IEntitySingleProperty,
+    IEntityWithIgnoredRules,
+    IMongoChildTemplateWithConstraintsPopulated,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    IRequiredConstraint,
+    IUniqueConstraint,
+    IUsersNotFoundError,
+} from '@microservices/shared';
 
 export interface EntitiesWizardValues {
     files?: File[];
-    template?: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
+    template?: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated;
 }
 
 export type IValidationError = {

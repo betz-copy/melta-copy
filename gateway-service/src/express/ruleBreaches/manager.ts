@@ -4,6 +4,7 @@ import {
     BadRequestError,
     basicFilterOperationTypes,
     ForbiddenError,
+    filterTypes,
     IAction,
     IActionMetadataPopulated,
     IAgGridRequest,
@@ -845,7 +846,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         const updatedAgGridRequest: IAgGridRequest = { ...agGridRequest };
 
         updatedAgGridRequest.filterModel.originUserId = {
-            filterType: 'text',
+            filterType: filterTypes.text,
             type: basicFilterOperationTypes.equals,
             filter: user.id,
         };

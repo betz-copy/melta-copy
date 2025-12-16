@@ -1,9 +1,9 @@
+import { ICategoryMap } from '@microservices/shared';
 import { Autocomplete, TextField } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import * as Yup from 'yup';
-import { ICategoryMap } from '../../../interfaces/categories';
 import { useUserStore } from '../../../stores/user';
 import { allowedCategories } from '../../../utils/permissions/templatePermissions';
 import { StepComponentProps } from '../index';

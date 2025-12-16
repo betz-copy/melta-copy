@@ -1,4 +1,4 @@
-import { IMongoChart } from './chart';
+import { ChartsAndGenerator } from './chart';
 import { IMongoIframe } from './iframe';
 
 export enum DashboardItemType {
@@ -40,7 +40,7 @@ export type DashboardItem = TableItem | ChartItem | IframeItem;
 
 export interface ChartItemPopulated {
     type: DashboardItemType.Chart;
-    metaData: IMongoChart;
+    metaData: ChartsAndGenerator;
 }
 
 interface IframeItemPopulated {

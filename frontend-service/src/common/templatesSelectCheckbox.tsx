@@ -1,12 +1,10 @@
+import { IMongoCategory, IMongoChildTemplateWithConstraintsPopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import i18next from 'i18next';
 import React, { Dispatch } from 'react';
-import { IMongoCategory } from '../interfaces/categories';
-import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
-import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { groupTemplatesByCategory } from '../utils/hooks/useTreeUtils';
 import { SelectCheckbox } from './SelectCheckBox';
 
-type TemplatesSelectCheckboxProps<T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated> = {
+type TemplatesSelectCheckboxProps<T extends IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated> = {
     title: string;
     templates: T[];
     selectedTemplates: T[];
@@ -19,7 +17,7 @@ type TemplatesSelectCheckboxProps<T extends IMongoEntityTemplatePopulated | IMon
     overrideSx?: object;
 };
 
-const TemplatesSelectCheckbox = <T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated>({
+const TemplatesSelectCheckbox = <T extends IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated>({
     title,
     templates,
     selectedTemplates,

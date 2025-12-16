@@ -1,3 +1,4 @@
+import { IConnection, IEntity, IEntityExpanded, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { Box, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { JSX } from 'react';
@@ -5,8 +6,6 @@ import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import BlueTitle from '../../../../common/MeltaDesigns/BlueTitle';
 import { FileToPrint } from '../../../../common/print/FileToPrint';
-import { IConnection, IEntity, IEntityExpanded } from '../../../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IFile } from '../../../../interfaces/preview';
 import { INestedRelationshipTemplates } from '../..';
 import { EntityComponentToPrint, RelationshipPrintTitle } from './EntityComponentToPrint';
@@ -70,7 +69,7 @@ export const renderConnectionTree = (
 const ComponentToPrint = React.forwardRef<
     HTMLDivElement,
     {
-        entityTemplate: IMongoEntityTemplatePopulated;
+        entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
         expandedEntity: IEntityExpanded;
         connectionsTemplates: INestedRelationshipTemplates[];
         connectionsInstances: IConnection[];

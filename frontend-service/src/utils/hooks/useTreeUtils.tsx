@@ -1,13 +1,12 @@
+import { IMongoCategory, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { TreeViewBaseItem } from '@mui/x-tree-view-pro';
-import { IMongoCategory } from '../../interfaces/categories';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 
 export const groupTemplatesByCategory = (
     categories: IMongoCategory[],
-    templates: IMongoEntityTemplatePopulated[],
-    getItemId: (item: IMongoCategory | IMongoEntityTemplatePopulated) => string,
-): TreeViewBaseItem<IMongoCategory | IMongoEntityTemplatePopulated>[] => {
-    const templatesByCategory: Record<string, IMongoEntityTemplatePopulated[]> = {};
+    templates: IMongoEntityTemplateWithConstraintsPopulated[],
+    getItemId: (item: IMongoCategory | IMongoEntityTemplateWithConstraintsPopulated) => string,
+): TreeViewBaseItem<IMongoCategory | IMongoEntityTemplateWithConstraintsPopulated>[] => {
+    const templatesByCategory: Record<string, IMongoEntityTemplateWithConstraintsPopulated[]> = {};
 
     templates.forEach((template) => {
         const categoryId = getItemId(template.category);

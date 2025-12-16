@@ -1,11 +1,9 @@
+import { IEntity, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import * as Cesium from 'cesium';
 import { Cartesian3 } from 'cesium';
 import { useEffect, useRef } from 'react';
 import { useQueryClient } from 'react-query';
 import { CesiumComponentRef, Viewer } from 'resium';
-import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { IEntity } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { useEntitiesWithLocationFields } from '../../utils/hooks/useLocation';
 import { jerusalemCoordinates } from '../../utils/map';
@@ -15,7 +13,7 @@ import { MeltaCoordinate, MeltaPolygon } from './LocationEntities';
 
 type Props = {
     entityProperties: IEntity['properties'];
-    entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
 };
 
 const LocationPreview = ({ entityProperties, entityTemplate }: Props) => {

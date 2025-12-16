@@ -1,3 +1,4 @@
+import { IChildTemplateMap, IEntityExpanded, IGraphFilterBodyBatch, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 /* eslint-disable no-param-reassign */
 import { MenuItem, Menu as MuiMenu } from '@mui/material';
 import i18next from 'i18next';
@@ -5,16 +6,13 @@ import React from 'react';
 import { GraphData, NodeObject } from 'react-force-graph-2d';
 import { useQuery, useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
-import { IChildTemplateMap } from '../../interfaces/childTemplates';
-import { IEntityExpanded, IGraphFilterBodyBatch } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { highlightNode } from '../../utils/graph';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 
 const GraphNodeMenu: React.FC<{
     graphData: GraphData;
-    filteredEntityTemplates: IMongoEntityTemplatePopulated[];
+    filteredEntityTemplates: IMongoEntityTemplateWithConstraintsPopulated[];
     node: NodeObject;
     location: { top: number; left: number };
     onCloseMenu: () => void;

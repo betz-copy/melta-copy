@@ -1,3 +1,4 @@
+import { WorkspaceTypes } from '@microservices/shared';
 import { Grid, TextField } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
@@ -5,7 +6,6 @@ import { useLocation } from 'wouter';
 import * as Yup from 'yup';
 import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
 import { StepComponentProps } from '../../../common/wizards/index';
-import { WorkspaceTypes } from '../../../interfaces/workspaces';
 import { workspaceNameValidation } from '../../../utils/validation';
 import { WorkspaceWizardValues } from './index';
 

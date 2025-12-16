@@ -1,3 +1,4 @@
+import { IChildTemplateMap, IEntityTemplateMap, IRole, PermissionData, RelatedPermission } from '@microservices/shared';
 import { Box, Button, CircularProgress, DialogActions, DialogContent, DialogTitle, Grid, TextField } from '@mui/material';
 import { Form, Formik, FormikProps } from 'formik';
 import i18next from 'i18next';
@@ -7,10 +8,6 @@ import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
-import { IChildTemplateMap } from '../../interfaces/childTemplates';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import { IRole } from '../../interfaces/roles';
-import { PermissionData, RelatedPermission } from '../../interfaces/users';
 import { createRoleRequest, getAllWorkspaceRolesRequest, syncPermissionsRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';

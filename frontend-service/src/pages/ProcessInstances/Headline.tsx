@@ -1,24 +1,24 @@
+import { IMongoProcessTemplateReviewerPopulated } from '@microservices/shared';
 import { Add as AddIcon } from '@mui/icons-material';
 import { Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { Dispatch, SetStateAction } from 'react';
 import BlueTitle from '../../common/MeltaDesigns/BlueTitle';
 import { TopBarGrid } from '../../common/TopBar';
-import { PermissionScope } from '../../interfaces/permissions';
-import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { AddProcessButton } from './AddProcessButton';
 import './ProcessesList.css';
+import { PermissionScope } from '@microservices/shared';
 
 const ProcessInstancesHeadline: React.FC<{
     onSearch: (value: string) => void;
     onSetStartDate: (newStartDateInput: Date | null) => void;
     onSetEndDate: (newEndDateInput: Date | null) => void;
     templatesSelectCheckboxProps: {
-        templates: IMongoProcessTemplatePopulated[];
-        templatesToShow: IMongoProcessTemplatePopulated[];
-        setTemplatesToShow: Dispatch<SetStateAction<IMongoProcessTemplatePopulated[]>>;
+        templates: IMongoProcessTemplateReviewerPopulated[];
+        templatesToShow: IMongoProcessTemplateReviewerPopulated[];
+        setTemplatesToShow: Dispatch<SetStateAction<IMongoProcessTemplateReviewerPopulated[]>>;
     };
     startDateInput: Date | null;
     endDateInput: Date | null;

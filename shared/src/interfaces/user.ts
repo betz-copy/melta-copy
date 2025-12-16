@@ -1,7 +1,7 @@
-import fileDetails from '../types';
+import { FileDetails } from '../types';
 import { NotificationType } from './notification';
 import { ICompactPermissions, ISubCompactPermissions } from './permission';
-import { IBaseRole } from './role';
+import { IRole } from './role';
 
 export interface IBaseUser {
     _id: string;
@@ -25,7 +25,7 @@ export interface IUser extends IBaseUser {
 }
 
 export interface IUserPopulated extends Omit<IUser, 'roleIds'> {
-    roles?: IBaseRole[];
+    roles?: IRole[];
 }
 
 export enum RelatedPermission {
@@ -50,7 +50,7 @@ export interface IUserSearchBody {
 }
 
 export type IUserPreferences = Pick<IBaseUser, 'preferences'>['preferences'] & {
-    icon?: fileDetails;
+    icon?: FileDetails;
     kartoffelProfile?: boolean;
 };
 

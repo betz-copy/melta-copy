@@ -1,15 +1,19 @@
+import {
+    IMongoProcessInstanceReviewerPopulated,
+    IMongoProcessTemplateReviewerPopulated,
+    IProcessDetails,
+    IProcessTemplateMap,
+} from '@microservices/shared';
 import { useFormik, yupToFormErrors } from 'formik';
 import i18next from 'i18next';
 import { useMemo } from 'react';
 import * as Yup from 'yup';
-import { ProcessDetailsValues } from '.';
-import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
-import { IMongoProcessTemplatePopulated, IProcessDetails, IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
 import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { splitSpacialProperties } from '../../../../utils/processWizard/formik';
 import { getStepsObjectPopulated } from '../../../../utils/processWizard/steps';
 import { trycatch } from '../../../../utils/trycatch';
 import { ajvValidate } from '../../../inputs/JSONSchemaFormik';
+import { ProcessDetailsValues } from '.';
 
 const validationSchema = Yup.object().shape({
     name: Yup.string().nullable().required(i18next.t('validation.required')),
@@ -19,8 +23,8 @@ const validationSchema = Yup.object().shape({
     steps: Yup.object().nullable().required('This field is required'),
 });
 
-export const initDetailsValues = (template: IMongoProcessTemplatePopulated): Object => {
-    const details = {};
+export const initDetailsValues = (template: IMongoProcessTemplateReviewerPopulated): Record<string, unknown> => {
+    const details: Record<string, unknown> = {};
     Object.keys(template.details.properties.properties).forEach((field) => {
         details[field] = undefined;
     });
@@ -28,7 +32,7 @@ export const initDetailsValues = (template: IMongoProcessTemplatePopulated): Obj
 };
 
 export const getInitialDetailsValues = (
-    processInstance: IMongoProcessInstancePopulated | undefined,
+    processInstance: IMongoProcessInstanceReviewerPopulated | undefined,
     processTemplatesMap: IProcessTemplateMap,
 ): ProcessDetailsValues => {
     if (processInstance) {
@@ -78,9 +82,9 @@ export const getValidationErrors = async (values) => {
 };
 
 export const useProcessDetailsFormik = (
-    processInstance: IMongoProcessInstancePopulated | undefined,
+    processInstance: IMongoProcessInstanceReviewerPopulated | undefined,
     processTemplatesMap: IProcessTemplateMap,
-    mutateAsync: (data: ProcessDetailsValues) => Promise<any>,
+    mutateAsync: (data: ProcessDetailsValues) => Promise<IMongoProcessInstanceReviewerPopulated>,
 ) => {
     const initialValues = useMemo(() => getInitialDetailsValues(processInstance, processTemplatesMap), [processInstance, processTemplatesMap]);
     const formik = useFormik<ProcessDetailsValues>({

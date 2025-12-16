@@ -9,6 +9,29 @@ import {
     ValueGetterFunc,
     ValueGetterParams,
 } from '@ag-grid-community/core';
+import {
+    ActionErrors,
+    EntityData,
+    IEntity,
+    IEntitySingleProperty,
+    IEntityTemplateMap,
+    IExcelNotFoundError,
+    IGetUnits,
+    IMongoChildTemplateWithConstraintsPopulated,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    IMongoUnit,
+    IRelationshipRefNotFoundError,
+    IRequiredConstraint,
+    IRuleBreachPopulated,
+    IRuleBreachRequestPopulated,
+    ISearchFilter,
+    ISemanticSearchResult,
+    IUniqueConstraint,
+    IUser,
+    IUsersNotFoundError,
+    NotFoundErrorTypes,
+    PermissionData,
+} from '@microservices/shared';
 import { PriorityHigh } from '@mui/icons-material';
 import { Box, Grid, Tooltip, tooltipClasses } from '@mui/material';
 import i18next from 'i18next';
@@ -17,26 +40,7 @@ import OpenPreview from '../../common/FilePreview/OpenPreview';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 import UserAvatar, { IUserAvatarProps } from '../../common/UserAvatar';
 import { environment } from '../../globals';
-import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import {
-    EntityData,
-    IEntity,
-    INotFoundError,
-    IRelationshipRefNotFoundError,
-    IRequiredConstraint,
-    ISearchFilter,
-    IUniqueConstraint,
-    IUsersNotFoundError,
-    NotFoundErrorTypes,
-} from '../../interfaces/entities';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IError, IFailedEntity, IValidationError } from '../../interfaces/excel';
-import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
-import { IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
-import { IRuleBreachRequestPopulated } from '../../interfaces/ruleBreaches/ruleBreachRequest';
-import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
-import { IGetUnits, IMongoUnit } from '../../interfaces/units';
-import { IUser, PermissionData } from '../../interfaces/users';
 import OpenMap from '../../pages/Map/OpenMap';
 import { getDateWithoutTime, getLongDate } from '../date';
 import { getFileName } from '../getFileName';
@@ -71,7 +75,7 @@ const isPropertyInvalid = <Data extends IColDefData>(props: ICellRendererParams<
             case ActionErrors.validation:
                 return (error.metadata as IValidationError).path.split('/').filter(Boolean)[0] === property;
             case ActionErrors.notFound: {
-                return (error.metadata as INotFoundError).property === property;
+                return (error.metadata as IExcelNotFoundError).property === property;
             }
             default:
                 break;
@@ -107,7 +111,7 @@ const errorColDef = <Data extends IColDefData>(
             break;
         }
         case ActionErrors.notFound: {
-            const errorMetadata: INotFoundError = error.metadata as INotFoundError;
+            const errorMetadata: IExcelNotFoundError = error.metadata as IExcelNotFoundError;
             if (errorMetadata.type === NotFoundErrorTypes.relationshipRefNotFound) {
                 const { relatedTemplateId, relatedIdentifier } = errorMetadata as IRelationshipRefNotFoundError;
                 message = i18next.t('wizard.entity.loadEntities.relatedEntityNotFound', {
@@ -303,7 +307,7 @@ export const locationColDef = <Data extends EntityData>(
     valueGetter: ValueGetterFunc<Data>,
     entityGetter: ValueGetterFunc<any, any>,
     value: Partial<IEntitySingleProperty>,
-    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+    template: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
     hardcodedWidth: number | undefined,
     isLastColumn: boolean,
     hideColumn = false,
@@ -630,7 +634,7 @@ export const userArrayColDef = <Data extends IEntity>(
             if (error) {
                 const errorValue = Array.isArray(props.value) ? props.value.join(', ') : props.value;
 
-                return errorColDef({ ...props, value: errorValue }, error, { ...value, format: 'users' });
+                return errorColDef({ ...props, value: errorValue }, error, { ...value, format: 'user' });
             }
 
             if (!props.value) return '';

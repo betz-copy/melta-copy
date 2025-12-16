@@ -1,24 +1,21 @@
+import { IChildTemplateMap, IEntity, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated, PermissionScope } from '@microservices/shared';
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import { IEntity } from '../../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { PermissionScope } from '../../../interfaces/permissions';
+import { useQueryClient } from 'react-query';
 import { useUserStore } from '../../../stores/user';
 import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
 import { AddIconWithText } from '../../AddIconWithText';
+import { IChooseTemplateMode } from '../../dialogs/entity/ChooseTemplate';
 import { AddEntityButton } from '../../EntitiesPage/Buttons/AddEntity';
 import IconButtonWithPopover from '../../IconButtonWithPopover';
-import { useQueryClient } from 'react-query';
-import { IChildTemplateMap } from '../../../interfaces/childTemplates';
-import { IChooseTemplateMode } from '../../dialogs/entity/ChooseTemplate';
 
 const DashedSelectBox: React.FC<{
     text: string;
     checkUsersPermissions: PermissionScope;
     onClick: React.MouseEventHandler<HTMLDivElement>;
     error?: boolean;
-    entityTemplate?: IMongoEntityTemplatePopulated;
+    entityTemplate?: IMongoEntityTemplateWithConstraintsPopulated;
     minHeight: React.CSSProperties['minHeight'];
     onSuccessCreate: (entity: IEntity) => void;
     addNewEntityLabel?: string;
@@ -34,7 +31,7 @@ const DashedSelectBox: React.FC<{
     const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 
     const isChildTemplate = entityTemplate ? !entityTemplates.get(entityTemplate._id) : false;
-    const childTemplatesOfParent = childTemplates.values().filter(({ parentTemplate: { _id } }) => entityTemplate?._id === _id);
+    const childTemplatesOfParent = childTemplates.values().filter(({ parentTemplate }) => entityTemplate?._id === parentTemplate._id);
 
     const userHasPermissions = !entityTemplate
         ? undefined

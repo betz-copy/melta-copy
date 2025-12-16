@@ -1,8 +1,10 @@
 import { Box, Grid } from '@mui/material';
 import React from 'react';
-import { IUser } from '../../interfaces/users';
 import CreateUserCard from '../wizards/processTemplate/ApproverCard';
 import UserAutocomplete, { IUserAutocomplete } from './UserAutocomplete';
+import {
+    IUser
+} from '@microservices/shared';
 
 interface UserArrayInputProps extends IUserAutocomplete {
     currentUsers: string[] | IUser[];

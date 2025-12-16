@@ -1,4 +1,6 @@
 /* eslint-disable react/no-array-index-key */
+
+import { IMongoIframe } from '@microservices/shared';
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
@@ -7,7 +9,6 @@ import { toast } from 'react-toastify';
 import { InfiniteScroll } from '../../common/InfiniteScroll';
 import { IFrameWizard } from '../../common/wizards/iFrame';
 import { environment } from '../../globals';
-import { IMongoIFrame } from '../../interfaces/iFrames';
 import { iFrameObjectToIFrameForm, searchIFrames } from '../../services/iFramesService';
 import { LocalStorage } from '../../utils/localStorage';
 import IFramePage from './IFramePage';
@@ -21,7 +22,7 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
 
     const [iFrameWizardDialogState, setIFrameWizardDialogState] = useState<{
         isWizardOpen: boolean;
-        iFrame: IMongoIFrame | null;
+        iFrame: IMongoIframe | null;
     }>({
         isWizardOpen: false,
         iFrame: null,
@@ -33,7 +34,7 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
 
     const localStorageKey = 'iFramesOrder';
     const queryKey = ['allIFrames', searchInput, iFramesOrder];
-    const allIFrames = queryClient.getQueryData<IMongoIFrame[]>('allIFrames');
+    const allIFrames = queryClient.getQueryData<IMongoIframe[]>('allIFrames');
     const screenWidth = window.innerWidth;
     const sideBarWidthPrec = (screenWidth - sideBarWidth) / screenWidth;
 
@@ -84,7 +85,7 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
                 }}
             >
                 {iFramesOrder && (
-                    <InfiniteScroll<IMongoIFrame>
+                    <InfiniteScroll<IMongoIframe>
                         queryKey={queryKey}
                         queryFunction={async ({ pageParam }) => {
                             const index = pageParam ?? 0;
@@ -94,6 +95,8 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
                                 return searchIFrames({
                                     search: searchInput,
                                     ids: currentOrder.map((iFrameId) => iFrameId),
+                                    limit: infiniteScrollPageCount,
+                                    skip: index * infiniteScrollPageCount,
                                 });
                             }
 

@@ -1,6 +1,4 @@
-import { IMongoCategory } from '../../interfaces/categories';
-import { PermissionScope } from '../../interfaces/permissions';
-import { ICompact, IInstancesPermission, ISubCompactPermissions } from '../../interfaces/permissions/permissions';
+import { ICompact, IInstancesPermission, IMongoCategory, ISubCompactPermissions, PermissionScope } from '@microservices/shared';
 import { childTemplatePermissionDialog, entityTemplatePermissionDialog } from './permissionOfUserDialog';
 
 export const checkUserCategoryPermission = (

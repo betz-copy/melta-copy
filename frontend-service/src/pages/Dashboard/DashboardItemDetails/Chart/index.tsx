@@ -1,3 +1,4 @@
+import { DashboardItemType, IChildTemplateMap, IEntityTemplateMap, IMongoChart, IChartPermission as IPermission } from '@microservices/shared';
 /* eslint-disable react/no-unstable-nested-components */
 import { CircularProgress } from '@mui/material';
 import { AxiosError } from 'axios';
@@ -11,10 +12,7 @@ import { ErrorToast } from '../../../../common/ErrorToast';
 import { filtersSchema } from '../../../../common/wizards/entityTemplate/AddFields';
 import { FilterModelToFilterRecord } from '../../../../common/wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
 import { environment } from '../../../../globals';
-import { IMongoChart, IPermission } from '../../../../interfaces/charts';
-import { IChildTemplateMap } from '../../../../interfaces/childTemplates';
-import { ChartForm, DashboardItemType, TabStepComponent, ViewMode } from '../../../../interfaces/dashboard';
-import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import { ChartForm, TabStepComponent, ViewMode } from '../../../../interfaces/dashboard';
 import { createChart, deleteChart, editChart, getChartById } from '../../../../services/chartsService';
 import { createDashboardItem, deleteDashboardItem } from '../../../../services/dashboardService';
 import { parseFilters } from '../../../../services/templates/entityTemplatesService';

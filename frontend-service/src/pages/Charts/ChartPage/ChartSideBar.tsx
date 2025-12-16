@@ -1,3 +1,4 @@
+import { DashboardItemType, IChildTemplateMap, IEntityTemplateMap, IChartPermission as IPermission } from '@microservices/shared';
 import { Group as AllUsers, PermIdentity as PersonalIcon } from '@mui/icons-material';
 import {
     Box,
@@ -21,10 +22,7 @@ import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
 import { ViewModeTextField } from '../../../common/inputs/ViewModeTextField';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { StepComponentProps } from '../../../common/wizards';
-import { IChart, IPermission } from '../../../interfaces/charts';
-import { IChildTemplateMap } from '../../../interfaces/childTemplates';
-import { ChartForm, DashboardItemType, ViewMode } from '../../../interfaces/dashboard';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { ChartForm, ViewMode } from '../../../interfaces/dashboard';
 import { useUserStore } from '../../../stores/user';
 import { initialValues } from '../../../utils/charts/getChartAxes';
 import { dashboardInitialValues } from '../../../utils/dashboard/formik';
@@ -36,7 +34,7 @@ import { ChartTypesEdit } from './ChartTypesEdit';
 
 const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: boolean; viewMode: ViewMode }> = (props) => {
     const { isDashboardPage, viewMode } = props;
-    const { values, setValues, errors, touched, handleChange, setFieldValue } = props as FormikProps<IChart & { _id?: string }>;
+    const { values, setValues, errors, touched, handleChange, setFieldValue } = props as FormikProps<ChartForm>;
 
     const currentUser = useUserStore();
     const theme = useTheme();
@@ -101,9 +99,10 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                                     name="actionOnFail"
                                     onChange={(_e, newValue) => {
                                         setChartMode(newValue as 'new' | 'exist');
+                                        const { filter, ...restInitialValues } = initialValues;
                                         setValues((prevValues) => ({
                                             ...prevValues,
-                                            ...initialValues,
+                                            ...restInitialValues,
                                             templateId: prevValues.templateId,
                                         }));
                                     }}

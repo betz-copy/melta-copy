@@ -1,3 +1,4 @@
+import { ICategoryMap, IEntityTemplateMap, IMongoCategory, PermissionScope } from '@microservices/shared';
 import { AddCircle, Edit, Hive as HiveIcon } from '@mui/icons-material';
 import { Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { AxiosError } from 'axios';
@@ -13,10 +14,7 @@ import { ErrorToast } from '../../../common/ErrorToast';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { CategoryWizard } from '../../../common/wizards/category';
-import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { IMongoCategoryOrderConfig } from '../../../interfaces/config';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { PermissionScope } from '../../../interfaces/permissions';
 import { categoryObjectToCategoryForm, deleteCategoryRequest } from '../../../services/templates/categoriesService';
 import { updateConfigCategoryOrderRequest } from '../../../services/templates/configService';
 import { useUserStore } from '../../../stores/user';

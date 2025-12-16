@@ -1,3 +1,4 @@
+import { ChartsAndGenerator, DashboardItemType, IChildTemplateMap, IEntityTemplateMap } from '@microservices/shared';
 import { CircularProgress, Grid } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -9,10 +10,6 @@ import { ErrorToast } from '../../common/ErrorToast';
 import { LocalStorageGridLayout } from '../../common/GridLayout/gridLayoutSavedInLs';
 import { LayoutItem } from '../../common/GridLayout/interface';
 import { environment } from '../../globals';
-import { ChartsAndGenerator } from '../../interfaces/charts';
-import { IChildTemplateMap } from '../../interfaces/childTemplates';
-import { DashboardItemType } from '../../interfaces/dashboard';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { deleteChart, getChartByTemplateId } from '../../services/chartsService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { generateLayoutDetails } from '../../utils/charts/defaultChartSizes';

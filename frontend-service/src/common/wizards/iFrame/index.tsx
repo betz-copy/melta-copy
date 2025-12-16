@@ -1,10 +1,9 @@
+import { FileDetails, IFrame, IMongoIframe } from '@microservices/shared';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React from 'react';
 import { QueryClient, useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import fileDetails from '../../../interfaces/fileDetails';
-import { IFrame, IMongoIFrame } from '../../../interfaces/iFrames';
 import { createIFrame, updateIFrame } from '../../../services/iFramesService';
 import { ErrorToast } from '../../ErrorToast';
 import { StepType, Wizard, WizardBaseType } from '../index';
@@ -13,7 +12,7 @@ import { CreateIFrameDetails, createIFrameDetailsSchema } from './CreateIFrameDe
 import { SettingIFramesPermissions, settingIFramesPermissionsSchema } from './SettingPermissions';
 
 export interface IFrameWizardValues extends Omit<IFrame, 'iconFileId'> {
-    icon?: fileDetails;
+    icon?: FileDetails;
 }
 export type IFrameWizardBaseType = WizardBaseType<IFrameWizardValues> & {
     setIFramesOrder: (value: { name: string; id: string }[]) => void;
@@ -35,7 +34,7 @@ const steps: StepType<IFrameWizardValues>[] = [
         component: (props) => <ChooseIFrameIcon {...props} />,
     },
 ];
-export const updateIFramesOrderOnLocalStorage = (data: IMongoIFrame, queryClient: QueryClient) => {
+export const updateIFramesOrderOnLocalStorage = (data: IMongoIframe, queryClient: QueryClient) => {
     const iFramesOrder = localStorage.getItem('iFramesOrder');
 
     if (iFramesOrder) {
@@ -49,7 +48,7 @@ export const updateIFramesOrderOnLocalStorage = (data: IMongoIFrame, queryClient
         }
     } else localStorage.setItem('iFramesOrder', JSON.stringify([data._id]));
 
-    queryClient.setQueryData<IMongoIFrame[]>('allIFrames', (oldData) => {
+    queryClient.setQueryData<IMongoIframe[]>('allIFrames', (oldData) => {
         if (!oldData) {
             return [data];
         }
@@ -78,7 +77,7 @@ const IFrameWizard: React.FC<IFrameWizardBaseType> = ({
         (iFrame: IFrameWizardValues) =>
             isEditMode ? updateIFrame((initialValues as IFrameWizardValues & { _id: string })._id, iFrame) : createIFrame(iFrame),
         {
-            onSuccess: async (data: IMongoIFrame) => {
+            onSuccess: async (data: IMongoIframe) => {
                 queryClient.setQueryData(['getIFrame', data._id], data);
 
                 updateIFramesOrderOnLocalStorage(data, queryClient);

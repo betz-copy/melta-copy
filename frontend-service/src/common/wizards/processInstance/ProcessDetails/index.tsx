@@ -1,9 +1,13 @@
+import {
+    IMongoProcessInstanceReviewerPopulated,
+    IMongoProcessTemplateReviewerPopulated,
+    IReferencedEntityForProcess,
+    StepsObjectPopulated,
+} from '@microservices/shared';
 import { FormikProps } from 'formik';
-import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, StepsObjectPopulated } from '../../../../interfaces/processes/processInstance';
-import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
 
 export interface ProcessDetailsValues {
-    template: IMongoProcessTemplatePopulated | null;
+    template: IMongoProcessTemplateReviewerPopulated | null;
     name: string;
     startDate: Date | null;
     endDate: Date | null;
@@ -21,7 +25,7 @@ interface IStepProps {
 export interface IDetailsStepProp extends IStepProps {
     detailsFormikData: FormikProps<ProcessDetailsValues>;
     isEditMode?: boolean;
-    processInstance: IMongoProcessInstancePopulated | undefined;
+    processInstance: IMongoProcessInstanceReviewerPopulated | undefined;
     toPrint?: boolean;
     setContentDisplay?: (val: 'SUMMARY' | 'REVIEWERS') => void;
     contentDisplay?: 'SUMMARY' | 'REVIEWERS';

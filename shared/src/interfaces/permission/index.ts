@@ -1,3 +1,6 @@
+import { IRole } from '../role';
+import { IUser } from '../user';
+
 export enum PermissionScope {
     read = 'read',
     write = 'write',
@@ -30,5 +33,7 @@ export interface IBasePermission<
     type: T;
     metadata: IPermissionMetadata<H, D>;
 }
+
+export type PermissionData = IUser | IRole;
 
 export * from './permissions';

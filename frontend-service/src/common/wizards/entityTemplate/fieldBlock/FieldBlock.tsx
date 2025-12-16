@@ -1,3 +1,4 @@
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { DragHandle as DragHandleIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { AccordionDetails, AccordionSummary, Box, Button, Grid, Typography } from '@mui/material';
 import { FormikErrors, FormikTouched } from 'formik';
@@ -7,7 +8,6 @@ import React, { SetStateAction, useCallback, useEffect, useRef, useState } from 
 import { DndProvider, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { v4 as uuid } from 'uuid';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { AreYouSureDialog } from '../../../dialogs/AreYouSureDialog';
 import { PropertiesTypes } from '../AddFields';
 import { CommonFormInputProperties, FieldProperty, GroupProperty, PropertyItem } from '../commonInterfaces';
@@ -651,7 +651,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                                         ?.title
                                 }
                                 ${i18next.t('systemManagement.continueWarningOnDeleteField')} ${
-                                    (initialValues as unknown as IMongoEntityTemplatePopulated)?.displayName
+                                    (initialValues as unknown as IMongoEntityTemplateWithConstraintsPopulated)?.displayName
                                 }`}
                 onYes={() => (onDeleteSure ? onDeleteSure(setShowAreUSureDialogForRemoveProperty) : onSimpleDeleteSure())}
             />

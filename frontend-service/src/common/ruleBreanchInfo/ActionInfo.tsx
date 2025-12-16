@@ -1,12 +1,5 @@
-import { Box, Grid, Typography, useTheme } from '@mui/material';
-import i18next from 'i18next';
-import React, { CSSProperties, ReactNode } from 'react';
-import { useQueryClient } from 'react-query';
-import { environment } from '../../globals';
-import { IEntity } from '../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import {
+    ActionOnFail,
     ActionTypes,
     IActionMetadataPopulated,
     IActionPopulated,
@@ -15,12 +8,22 @@ import {
     ICronjobRunMetadataPopulated,
     IDeleteRelationshipMetadataPopulated,
     IDuplicateEntityMetadataPopulated,
+    IEntity,
+    IEntityForBrokenRules,
+    IEntityTemplateMap,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    IMongoRelationshipTemplatePopulated,
+    IMongoRule,
+    IRelationshipTemplateMap,
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadataPopulated,
-} from '../../interfaces/ruleBreaches/actionMetadata';
-import { IEntityForBrokenRules } from '../../interfaces/ruleBreaches/ruleBreach';
-import { ActionOnFail, IMongoRule } from '../../interfaces/rules';
-import { IUser } from '../../interfaces/users';
+    IUser,
+} from '@microservices/shared';
+import { Box, Grid, Typography, useTheme } from '@mui/material';
+import i18next from 'i18next';
+import React, { CSSProperties, ReactNode } from 'react';
+import { useQueryClient } from 'react-query';
+import { environment } from '../../globals';
 import { useUserStore } from '../../stores/user';
 import { getAllAllowedEntities, getAllAllowedRelationships } from '../../utils/permissions/templatePermissions';
 import { populateRelationshipTemplate } from '../../utils/templates';
@@ -31,7 +34,7 @@ import { UpdatedFieldsDiff } from './UpdatedFieldsDiff';
 
 interface EntityInfoProps {
     entity: IEntity | string | null;
-    entityTemplate: IMongoEntityTemplatePopulated | null;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | null;
     actions: IActionPopulated[];
     entityPropertiesToShowTooltipOverride?: string[];
     entityPropertiesToHighlightTooltip?: string[];
@@ -137,7 +140,7 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({
 export const EntityForBrokenRules: React.FC<{
     ruleTemplate: IMongoRule;
     entity: IEntityForBrokenRules;
-    entityTemplate: IMongoEntityTemplatePopulated | null;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | null;
     actions: IActionPopulated[];
     entityPropertiesToShowTooltipOverride?: string[];
     entityPropertiesToHighlightTooltip?: string[];
@@ -205,7 +208,10 @@ const CreateOrDeleteRelActionInfo: React.FC<{
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const allowedEntityTemplates: IMongoEntityTemplatePopulated[] = getAllAllowedEntities(Array.from(entityTemplates.values()), currentUser);
+    const allowedEntityTemplates: IMongoEntityTemplateWithConstraintsPopulated[] = getAllAllowedEntities(
+        Array.from(entityTemplates.values()),
+        currentUser,
+    );
     const allowedEntityTemplatesIds: string[] = allowedEntityTemplates.map((entity) => entity._id);
     const allowedRelationships = getAllAllowedRelationships(Array.from(relationshipTemplates.values()), allowedEntityTemplatesIds);
 

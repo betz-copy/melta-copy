@@ -1,9 +1,9 @@
+import { IEntityTemplateMap } from '@microservices/shared';
 import { Autocomplete, Box, TextField } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import * as Yup from 'yup';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { getRelationshipInstancesCountByTemplateIdRequest } from '../../../services/entitiesService';
 import { useUserStore } from '../../../stores/user';
 import { getAllWritePermissionEntityTemplates } from '../../../utils/permissions/templatePermissions';

@@ -1,8 +1,6 @@
+import { ActionsLog, IEntitySingleProperty, IProcessSingleProperty, Status } from '@microservices/shared';
 import axios from '../axios';
 import { environment } from '../globals';
-import { IEntitySingleProperty } from '../interfaces/entityTemplates';
-import { Status } from '../interfaces/processes/processInstance';
-import { IProcessSingleProperty } from '../interfaces/processes/processTemplate';
 
 const { activityLog } = environment.api;
 
@@ -14,27 +12,27 @@ interface IBaseActivityLog {
 }
 
 interface IEmptyMetadata extends IBaseActivityLog {
-    action: 'CREATE_ENTITY' | 'DISABLE_ENTITY' | 'ACTIVATE_ENTITY' | 'VIEW_ENTITY' | 'CREATE_PROCESS';
+    action: ActionsLog.CREATE_ENTITY | ActionsLog.DISABLE_ENTITY | ActionsLog.ACTIVATE_ENTITY | ActionsLog.VIEW_ENTITY | ActionsLog.CREATE_PROCESS;
     metadata: {};
 }
 
 interface IRelationshipMetadata extends IBaseActivityLog {
-    action: 'DELETE_RELATIONSHIP' | 'CREATE_RELATIONSHIP';
+    action: ActionsLog.DELETE_RELATIONSHIP | ActionsLog.CREATE_RELATIONSHIP;
     metadata: { relationshipId: string; relationshipTemplateId: string; entityId: string };
 }
 
 interface IDuplicateEntityMetadata extends IBaseActivityLog {
-    action: 'DUPLICATE_ENTITY';
+    action: ActionsLog.DUPLICATE_ENTITY;
     metadata: { entityIdDuplicatedFrom: string };
 }
 
 interface IUpdateEntityMetadata extends IBaseActivityLog {
-    action: 'UPDATE_ENTITY' | 'UPDATE_PROCESS';
+    action: ActionsLog.UPDATE_ENTITY | ActionsLog.UPDATE_PROCESS;
     metadata: { updatedFields: [{ fieldName: string; oldValue: any; newValue: any }] };
 }
 
 export interface IUpdateProcessStepMetadata extends IBaseActivityLog {
-    action: 'UPDATE_PROCESS_STEP';
+    action: ActionsLog.UPDATE_PROCESS_STEP;
     metadata: { updatedFields?: [{ fieldName: string; oldValue: any; newValue: any }]; comments?: string; status?: Status };
 }
 
@@ -51,9 +49,9 @@ const getActivityLogRequest = async (
     endDateRange?: Date,
 ) => {
     let actionsToFilter = actions;
-    if (actions?.includes('UPDATE_FIELDS')) {
-        actionsToFilter = actions.filter((action) => action !== 'UPDATE_FIELDS');
-        actionsToFilter.push(...['UPDATE_ENTITY', 'UPDATE_PROCESS', 'UPDATE_PROCESS_STEP']);
+    if (actions?.includes(ActionsLog.UPDATE_FIELDS)) {
+        actionsToFilter = actions.filter((action) => action !== ActionsLog.UPDATE_FIELDS);
+        actionsToFilter.push(...[ActionsLog.UPDATE_ENTITY, ActionsLog.UPDATE_PROCESS, ActionsLog.UPDATE_PROCESS_STEP]);
     }
 
     const params: Partial<{

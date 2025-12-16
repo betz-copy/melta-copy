@@ -41,7 +41,7 @@ const addDetailsFieldsSchema = Yup.object({
 export const useAreThereProcessInstancesByTemplateId = (templateId: string, enabled: boolean) => {
     const { data: areThereInstancesByTemplateIdResponse } = useQuery(
         ['areThereInstancesByTemplateId', templateId],
-        () => searchProcessesRequest({ templateIds: [templateId] }),
+        () => searchProcessesRequest({ templateIds: [templateId], limit: 1, skip: 0 }),
         {
             enabled,
             initialData: [],

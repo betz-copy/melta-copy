@@ -1,19 +1,9 @@
+import { IEntity } from '@microservices/shared';
 import { Cartesian3 } from 'cesium';
-import { IEntity } from './entities';
 
 export type LatLng = {
     latitude: number;
     longitude: number;
-};
-
-export enum MapItemType {
-    Polygon = 'polygon',
-    Coordinate = 'coordinate',
-}
-
-export type CoordinatesResult = {
-    type: MapItemType;
-    value: Cartesian3 | Cartesian3[];
 };
 
 export enum ShapeType {

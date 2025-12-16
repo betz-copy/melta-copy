@@ -1,6 +1,6 @@
+import { IUser } from '@microservices/shared';
 import { Grid, IconButton } from '@mui/material';
 import React from 'react';
-import { IUser } from '../../interfaces/users';
 import UserAvatar from '../UserAvatar';
 
 interface ProfileButtonProps {

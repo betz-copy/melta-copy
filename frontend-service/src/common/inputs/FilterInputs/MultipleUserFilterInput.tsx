@@ -1,11 +1,10 @@
+import { IAgGridSetFilter, IUser } from '@microservices/shared';
 import React from 'react';
-import { IUser } from '../../../interfaces/users';
 import { useDarkModeStore } from '../../../stores/darkMode';
-import { IAGGridSetFilter } from '../../../utils/agGrid/interfaces';
 import { UserArrayInput } from '../UserArrayInput';
 
 interface MultipleUserFilterInputProps {
-    filterField: IAGGridSetFilter | undefined;
+    filterField: IAgGridSetFilter | undefined;
     inputValue: string;
     setInputValue: React.Dispatch<React.SetStateAction<string>>;
     handleCheckboxChange: (option: (string | IUser)[], checked: boolean) => void;

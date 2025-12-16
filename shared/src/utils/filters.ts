@@ -1,4 +1,5 @@
-import { FilterLogicalOperator, IFilterGroup, ISearchEntitiesOfTemplateBody, ISearchFilter } from '../interfaces/entity';
+import { FilterLogicalOperator, IFilterGroup, IFilterOfField, ISearchEntitiesOfTemplateBody, ISearchFilter } from '../interfaces/entity';
+import { basicFilterOperationTypes, numberFilterOperationTypes, textFilterOperationTypes } from '../interfaces/ruleBreach/agGrid';
 
 const evaluateOperator = (op: string, actual: any, expected: any): boolean => {
     switch (op) {
@@ -89,4 +90,17 @@ const getFilterModal = (
     return filterLogicalOperator === FilterLogicalOperator.AND ? { [FilterLogicalOperator.AND]: filters } : { [FilterLogicalOperator.OR]: filters };
 };
 
-export { combineFilters, evaluateOperator, matchValueAgainstFilter, getFilterModal };
+const filterFieldToValue: Record<keyof IFilterOfField, string> = {
+    $eq: basicFilterOperationTypes.equals,
+    $ne: basicFilterOperationTypes.notEqual,
+    $gt: numberFilterOperationTypes.greaterThan,
+    $gte: numberFilterOperationTypes.greaterThanOrEqual,
+    $lt: numberFilterOperationTypes.lessThan,
+    $lte: numberFilterOperationTypes.lessThanOrEqual,
+    $in: numberFilterOperationTypes.inRange,
+    $not: 'not',
+    $rgx: textFilterOperationTypes.contains,
+    $eqi: basicFilterOperationTypes.equals,
+};
+
+export { combineFilters, evaluateOperator, matchValueAgainstFilter, getFilterModal, filterFieldToValue };

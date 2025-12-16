@@ -1,9 +1,9 @@
+import { FileDetails } from '@microservices/shared';
 import React from 'react';
-import fileDetails from '../../../interfaces/fileDetails';
 import { ImagePicker } from '../../inputs/ImagePicker';
 
 export const ChooseStepsIcon: React.FC<{
-    icon: fileDetails | undefined;
+    icon: FileDetails | undefined;
     index: number;
     setFieldValue: (field: string, value: any, shouldValidate?: boolean) => void;
 }> = ({ icon, index, setFieldValue }) => (

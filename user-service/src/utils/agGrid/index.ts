@@ -7,12 +7,13 @@ import {
     IAgGridFilterModel,
     IAgGridSort,
     numberFilterOperationTypes,
+    relativeDateFilters,
     ServiceError,
     textFilterOperationTypes,
 } from '@microservices/shared';
 
 const translateAgGridFilter = (
-    type: basicFilterOperationTypes | numberFilterOperationTypes | textFilterOperationTypes,
+    type: basicFilterOperationTypes | numberFilterOperationTypes | textFilterOperationTypes | relativeDateFilters,
     filterValue: any,
     other?: any,
 ) => {
@@ -46,6 +47,14 @@ const translateAgGridFilter = (
         case textFilterOperationTypes.endsWith:
             return { $regex: new RegExp(`${filterValue}$`, 'i') };
 
+        // Relative date filters - frontend should resolve these to actual dates before sending
+        case relativeDateFilters.thisWeek:
+        case relativeDateFilters.thisMonth:
+        case relativeDateFilters.thisYear:
+        case relativeDateFilters.untilToday:
+        case relativeDateFilters.fromToday:
+            throw new ServiceError(400, `Relative date filter '${type}' should be resolved to date range before backend processing`);
+
         default:
             throw new ServiceError(404, `A filter of type '${type}' does not exist`);
     }
@@ -65,7 +74,7 @@ export const translateAgGridFilterModel = (filterModel: Record<string, IAgGridFi
                     acc[field] = translateAgGridFilter(filter.type, filter.dateFrom, filter.dateTo);
                     break;
                 case filterTypes.set:
-                    acc[field] = { $in: filter.values };
+                    acc[field] = { $in: filter.values.map((value) => (typeof value === 'object' ? (value?._id ?? null) : value)) };
                     break;
             }
             return acc;

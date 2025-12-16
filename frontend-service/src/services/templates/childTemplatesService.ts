@@ -1,6 +1,6 @@
+import { IChildTemplate, IMongoChildTemplate, IMongoChildTemplateWithConstraintsPopulated } from '@microservices/shared';
 import axios from '../../axios';
 import { environment } from '../../globals';
-import { IChildTemplate, IMongoChildTemplate, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 
 const { childTemplates } = environment.api;
 
@@ -15,7 +15,7 @@ const updateChildTemplate = async (id: string, childTemplate: IChildTemplate) =>
 };
 
 const getAllChildTemplates = async () => {
-    const { data } = await axios.get<IMongoChildTemplatePopulated[]>(childTemplates);
+    const { data } = await axios.get<IMongoChildTemplateWithConstraintsPopulated[]>(childTemplates);
     return data;
 };
 
@@ -25,7 +25,7 @@ const deleteChildTemplate = async (id: string) => {
 };
 
 const updateChildTemplateStatusRequest = async (childTemplateId: string, disabledStatus: boolean) => {
-    const { data } = await axios.patch<IMongoChildTemplatePopulated>(`${childTemplates}/${childTemplateId}/status`, {
+    const { data } = await axios.patch<IMongoChildTemplateWithConstraintsPopulated>(`${childTemplates}/${childTemplateId}/status`, {
         disabled: disabledStatus,
     });
     return data;

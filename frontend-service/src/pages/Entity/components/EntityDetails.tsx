@@ -1,4 +1,14 @@
 import {
+    IDeleteEntityBody,
+    IEntity,
+    IEntityExpanded,
+    IEntityTemplateMap,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    IRuleBreach,
+    IRuleBreachPopulated,
+    PermissionScope,
+} from '@microservices/shared';
+import {
     Archive,
     Delete as DeleteIcon,
     DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
@@ -21,11 +31,7 @@ import { EntityProperties } from '../../../common/EntityProperties';
 import { ErrorToast } from '../../../common/ErrorToast';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { ImageWithDisable } from '../../../common/ImageWithDisable';
-import { IDeleteEntityBody, IEntity, IEntityExpanded } from '../../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IErrorResponse } from '../../../interfaces/error';
-import { PermissionScope } from '../../../interfaces/permissions';
-import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { deleteEntityRequest, updateEntityStatusRequest } from '../../../services/entitiesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';
@@ -38,7 +44,7 @@ import { EntityDisableCheckbox } from './EntityDisableCheckbox';
 import TooltipMenuButton from './TooltipMenuButton';
 import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
 
-const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
+const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstraintsPopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
     expandedEntity,
 }) => {
@@ -85,7 +91,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     };
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const currentEntityTemplate = entityTemplates.get(expandedEntity?.entity.templateId);
+    const currentEntityTemplate = entityTemplates.get(expandedEntity?.entity.templateId) as IMongoEntityTemplateWithConstraintsPopulated;
     const templateIds = Array.from(entityTemplates.keys());
 
     const isChildEntityTemplate = isChildTemplate(entityTemplate);
@@ -336,7 +342,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                             {entityTemplate.documentTemplatesIds?.length ? (
                                 <Grid>
                                     <ExportFormats
-                                        properties={expandedEntity.entity.properties}
+                                        properties={{ ...expandedEntity.entity.properties, disabled: isEntityDisabled }}
                                         documentTemplateIds={entityTemplate.documentTemplatesIds}
                                         disabled={isEntityDisabled}
                                         justifyContent="flex-end"
