@@ -2,8 +2,7 @@ import { AppRegistration as AppRegistrationIcon, ExpandLess as ExpandLessIcon, E
 import { Collapse, Divider, Grid, Paper, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { useState } from 'react';
-import {
-     IEntity } from '../../../interfaces/entities';
+import { IEntity } from '../../../interfaces/entities';
 import { IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { getEntityTemplateColor } from '../../../utils/colors';
@@ -11,8 +10,6 @@ import { getFirstXFilledPropsKeys } from '../../../utils/templates';
 import { CustomIcon } from '../../CustomIcon';
 import { EntityPropertiesInternal } from '../../EntityProperties';
 import { EntityTemplateColor } from '../../EntityTemplateColor';
-
-
 
 interface EntityInfoProps {
     entity: IEntity | null;
@@ -25,8 +22,10 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({ entity, entityTemplate, 
 
     const theme = useTheme();
     const workspace = useWorkspaceStore((state) => state.workspace);
-    const { headlineSubTitleFontSize } = workspace.metadata.mainFontSizes;
-    const { numOfPreviewFieldsToShow } = workspace.metadata;
+    const {
+        numOfPreviewFieldsToShow,
+        mainFontSizes: { headlineSubTitleFontSize },
+    } = workspace.metadata;
 
     if (!entity) return <Grid />;
 

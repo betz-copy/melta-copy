@@ -31,9 +31,10 @@ export const EntityLink: React.FC<EntityLinkProps> = ({
 }) => {
     const theme = useTheme();
     const workspace = useWorkspaceStore((state) => state.workspace);
-    const { headlineSubTitleFontSize } = workspace.metadata.mainFontSizes;
-    const { numOfPreviewFieldsToShow } = workspace.metadata;
-
+    const {
+        numOfPreviewFieldsToShow,
+        mainFontSizes: { headlineSubTitleFontSize },
+    } = workspace.metadata;
 
     const linkText = entityTemplate ? entityTemplate.displayName : i18next.t('ruleBreachInfo.updateEntityActionInfo.unknownEntity');
     const darkMode = useDarkModeStore((state) => state.darkMode);

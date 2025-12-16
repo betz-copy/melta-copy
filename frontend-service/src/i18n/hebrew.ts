@@ -1815,6 +1815,7 @@ export default {
             sourceFieldForColor: 'עמוד מפה-צבע תוצאות חיפוש עפ”י שדה (מקור)',
         },
         numOfRelationshipFieldsToShow: 'מספר שדות לתצוגת שדה שיוך ליישות',
+        numOfPreviewFieldsToShow: 'מספר שדות לתצוגה מקדימה'
     },
     childTemplate: {
         createTitle: 'יצירת תבנית בן',

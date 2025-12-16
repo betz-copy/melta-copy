@@ -180,7 +180,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
             return <Typography color="#53566E">{i18next.t('templateEntitiesAutocomplete.noPreviewFields')}</Typography>;
         }
         
-        const fieldsToShow = getFirstXFilledPropsKeys(numOfPreviewFieldsToShow, relatedTemplate, entity);
+        const fieldsToShow = getFirstXFilledPropsKeys(numOfPreviewFieldsToShow, templateToInternal, entity);
         
         return !fieldsToShow.length ? (
             <Typography color="#53566E">{i18next.t('templateEntitiesAutocomplete.noPreviewFields')}</Typography>
