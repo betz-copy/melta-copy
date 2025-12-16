@@ -31,14 +31,14 @@ import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
 
-const { warning } = environment.color;
+const { warning, enforcement } = environment.color;
 
 const getRuleIcon = (rule: IMongoRule) => {
     switch (rule.actionOnFail) {
         case ActionOnFail.WARNING:
             return <WarningAmberRounded sx={{ color: warning }} />;
         case ActionOnFail.ENFORCEMENT:
-            return <WarningRounded sx={{ color: 'error' }} />;
+            return <WarningRounded sx={{ color: enforcement }} />;
         case ActionOnFail.INDICATOR: {
             const icons = [
                 rule.mail?.display && <Email key="email" sx={{ color: '#166BD4' }} />,

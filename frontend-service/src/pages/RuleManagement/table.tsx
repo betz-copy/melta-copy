@@ -147,9 +147,7 @@ const getColumnDefs = (
         ),
     ];
 
-    if (breachType === 'request') {
-        return [...commonRuleBreachColumns, ...requestColDef, actionColDef];
-    }
+    if (breachType === 'request') return [...commonRuleBreachColumns, ...requestColDef, actionColDef];
 
     return [...commonRuleBreachColumns, actionColDef];
 };
