@@ -136,7 +136,7 @@ const Print: React.FC<{
                 </Button>
             </MeltaTooltip>
 
-            <div style={{ position: 'absolute', top: 0, left: '-9999px', width: '210mm' }}>
+            <div style={{ position: 'absolute', top: 0, left: '-9999px' }}>
                 <style>{getPageMargins}</style>
                 <ThemeProvider theme={lightTheme}>
                     <ComponentToPrint
@@ -151,7 +151,9 @@ const Print: React.FC<{
                             showEntityDates,
                             showEntityFiles: !!selectedFiles.length,
                             showPreviewPropertiesOnly,
+                            addEntityCheckbox: true,
                         }}
+                        printTitle={title}
                     />
                 </ThemeProvider>
             </div>

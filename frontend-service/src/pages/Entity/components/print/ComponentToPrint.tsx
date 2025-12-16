@@ -1,12 +1,11 @@
-import { Box, Grid, Typography } from '@mui/material';
+import { Box, Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import BlueTitle from '../../../../common/MeltaDesigns/BlueTitle';
 import { FileToPrint } from '../../../../common/print/FileToPrint';
 import { IEntity } from '../../../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IFile } from '../../../../interfaces/preview';
 import { EntityComponentToPrint } from './EntityComponentToPrint';
 
@@ -25,34 +24,22 @@ const ComponentToPrint = React.forwardRef<
             showEntityDates: boolean;
             showEntityFiles: boolean;
             showPreviewPropertiesOnly: boolean;
+            addEntityCheckbox?: boolean;
         };
+        printTitle?: string;
     }
->(({ entityTemplate, entity, options, filesToPrint = [], setSelectedFiles, setFilesLoadingStatus }, ref) => {
-    const queryClient = useQueryClient();
-    if (!entity) return <></>;
+>(({ entityTemplate, entity, options, filesToPrint = [], setSelectedFiles, setFilesLoadingStatus, printTitle }, ref) => {
+    const theme = useTheme();
 
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const populatedEntityTemplate = entityTemplates.get(entityTemplate._id)!;
+    if (!entity) return <></>;
 
     return (
         <Box ref={ref} margin="20px" style={{ direction: 'rtl', color: '#000' }}>
             <Grid style={{ pageBreakInside: 'avoid' }}>
-                <Box paddingBottom="0.4rem" display="flex" justifyContent="space-between" alignItems="center">
-                    <Box display="flex" alignItems="center">
-                        <Typography component="h4" variant="h4" color="primary" fontWeight="800">
-                            {populatedEntityTemplate.category.displayName}
-                        </Typography>
+                <Typography color={theme.palette.primary.main} fontWeight={700} fontSize={'20px'} marginBottom={'2rem'}>
+                    {printTitle}
+                </Typography>
 
-                        <Typography variant="h4" fontSize="30px" color="#d3d8df" marginLeft="5px" marginRight="5px">
-                            /
-                        </Typography>
-
-                        <Typography paddingBottom="2px" variant="h4" fontSize="28px" color="primary">
-                            {populatedEntityTemplate.displayName}
-                        </Typography>
-                    </Box>
-                    {<Box>{new Date().toLocaleDateString('en-uk')}</Box>}
-                </Box>
                 <EntityComponentToPrint entityTemplate={entityTemplate} entity={entity} options={options} hierarchicalChildren={entity.children} />
             </Grid>
 

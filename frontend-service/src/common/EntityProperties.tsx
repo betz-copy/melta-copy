@@ -391,9 +391,11 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                                     <MeltaTooltip disableHoverListener={textWrap} placement="bottom" title={title}>
                                         <Typography
                                             style={{
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: textWrap ? undefined : 'nowrap',
-                                                overflow: 'hidden',
+                                                ...(!isPrintingMode && {
+                                                    textOverflow: 'ellipsis',
+                                                    whiteSpace: textWrap ? undefined : 'nowrap',
+                                                    overflow: 'hidden',
+                                                }),
                                                 textAlign: 'right',
                                             }}
                                             fontSize="14px"
@@ -425,9 +427,11 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                                         fontSize="14px"
                                         color={color ?? propertyValueColor}
                                         style={{
-                                            textOverflow: 'ellipsis',
-                                            whiteSpace: textWrap ? undefined : 'nowrap',
-                                            overflowX: 'hidden',
+                                            ...(!isPrintingMode && {
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: textWrap ? undefined : 'nowrap',
+                                                overflowX: 'hidden',
+                                            }),
                                             paddingLeft: '1rem',
                                             maxHeight: isPrintingMode ? undefined : '350px',
                                             direction: type === 'number' ? 'ltr' : textDirection,
