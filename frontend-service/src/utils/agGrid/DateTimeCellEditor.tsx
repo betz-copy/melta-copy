@@ -9,8 +9,10 @@ import React, { useEffect, useState } from 'react';
 import { CustomDateTimePickerToolbar } from '../../common/inputs/JSONSchemaFormik/Widgets/RjsfDatesWidgets';
 import { environment } from '../../globals';
 
-const { dateTime, date: dateFormat } = environment.formats;
-const { datePickerViews } = environment;
+const {
+    formats: { dateTime, date: dateFormat },
+    datePickerViews,
+} = environment;
 
 interface DateTimeCellEditorProps {
     value: string | Date | null;

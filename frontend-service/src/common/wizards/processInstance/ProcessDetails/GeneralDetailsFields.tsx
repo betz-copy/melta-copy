@@ -8,8 +8,10 @@ import { environment } from '../../../../globals';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import BlueTitle from '../../../MeltaDesigns/BlueTitle';
 
-const { date } = environment.formats;
-const { datePickerViews } = environment;
+const {
+    formats: { date },
+    datePickerViews,
+} = environment;
 
 export const GeneralDetailsFields = ({
     processTemplatesMap,

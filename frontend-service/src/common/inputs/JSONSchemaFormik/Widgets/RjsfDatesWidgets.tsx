@@ -14,8 +14,10 @@ import i18next from 'i18next';
 import React, { JSX } from 'react';
 import { environment } from '../../../../globals';
 
-const { date, dateTime } = environment.formats;
-const { datePickerViews } = environment;
+const {
+    formats: { date, dateTime },
+    datePickerViews,
+} = environment;
 
 export const CustomDateTimePickerToolbar = styled(DateTimePickerToolbar)({
     [`& .${dateTimePickerToolbarClasses.timeContainer}`]: {

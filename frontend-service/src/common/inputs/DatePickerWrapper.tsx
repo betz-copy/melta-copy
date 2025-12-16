@@ -9,8 +9,10 @@ import i18next from 'i18next';
 import React from 'react';
 import { environment } from '../../globals';
 
-const { date } = environment.formats;
-const { datePickerViews } = environment;
+const {
+    formats: { date },
+    datePickerViews,
+} = environment;
 
 interface DatePickerWrapperProps {
     label?: string;
