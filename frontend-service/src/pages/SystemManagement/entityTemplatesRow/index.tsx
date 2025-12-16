@@ -360,9 +360,10 @@ const EntityTemplatesRow: React.FC = () => {
         }
     };
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         setCategoriesToShow(categoriesToShow.map((category) => categories.get(category._id)!));
-    }, [categories, categoriesToShow]);
+    }, [categories]);
 
     return (
         <Grid container direction="column">

@@ -202,18 +202,15 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
 
             await Promise.all(
                 Object.values(deletedEntityTemplate.properties.properties).map(async (property) => {
-                    if (property.relationshipReference) {
+                    if (property.relationshipReference)
                         await this.relationshipTemplateManager.deleteTemplateById(property.relationshipReference.relationshipTemplateId!, session);
-                    }
                 }),
             );
 
             const category: IMongoCategory = await this.categoryManager.getCategoryById(deletedEntityTemplate.category);
             const index: number = category.templatesOrder.indexOf(id);
 
-            if (index !== -1) {
-                category.templatesOrder.splice(index, 1);
-            }
+            if (index !== -1) category.templatesOrder.splice(index, 1);
 
             await this.categoryManager.updateCategory(category._id, { templatesOrder: category.templatesOrder });
         });

@@ -75,7 +75,19 @@ const getUserAvatar = (
     );
 };
 
-export const formatToString = ( { value, property, units, key, preview, color, options = {}, hideProps = [], entityTemplate, properties, darkMode }: {
+export const formatToString = ({
+    value,
+    property,
+    units,
+    key,
+    preview,
+    color,
+    options = {},
+    hideProps = [],
+    entityTemplate,
+    properties,
+    darkMode,
+}: {
     value: any;
     property: IEntitySingleProperty;
     units: IGetUnits;
@@ -88,7 +100,6 @@ export const formatToString = ( { value, property, units, key, preview, color, o
     properties?: IEntityPropertiesProps['properties'];
     darkMode: boolean;
 }) => {
-
     const { format, type: valueType, title, expandedUserField } = property;
     const { keyEnumColors, isPrintingMode, pureString } = options;
 

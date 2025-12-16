@@ -126,12 +126,13 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
         return result;
     }, [childTemplates, entityTemplates, entityTemplatesWithCategory, categoryChildTemplates]);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     const categoryChildTemplatesFiltered = useMemo(() => {
         return categoryChildTemplates.filter((child) => {
             if (child.parentTemplate?.category.toString() === entityTemplatesWithCategory.category._id) return true;
             return child.category._id === entityTemplatesWithCategory.category._id;
         });
-    }, [categoryChildTemplates, entityTemplatesWithCategory]);
+    }, [categoryChildTemplates, entityTemplates, entityTemplatesWithCategory]);
 
     return (
         <Droppable

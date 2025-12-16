@@ -723,9 +723,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         await this.throwIfEntityHasRelationships(entityTemplateToDelete);
         await this.throwIfEntityTemplateHasInstances(id);
 
-        if (entityTemplateToDelete.iconFileId) {
-            await this.storageService.deleteFile(entityTemplateToDelete.iconFileId);
-        }
+        if (entityTemplateToDelete.iconFileId) await this.storageService.deleteFile(entityTemplateToDelete.iconFileId);
 
         await this.instancesService.updateConstraintsOfTemplate(id, { requiredConstraints: [], uniqueConstraints: [] });
 

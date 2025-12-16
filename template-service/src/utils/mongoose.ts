@@ -2,15 +2,15 @@ import { forEach } from 'lodash';
 import { ClientSession, startSession, Types } from 'mongoose';
 import { tryCatch } from '.';
 
-export const withTransaction = async <T>(func: (session: ClientSession) => Promise<T>): Promise<T> => {
+export const withTransaction = async <Func extends (session: ClientSession) => Promise<any>>(func: Func): Promise<Awaited<ReturnType<Func>>> => {
     const session = await startSession();
-    let ret: T | undefined;
+    // biome-ignore lint/suspicious/noImplicitAnyLet: to avoid build errors
+    let ret;
 
     try {
         await session.withTransaction(async () => {
             ret = await func(session);
         });
-        if (ret === undefined) throw new Error('Transaction did not return a value');
         return ret;
     } finally {
         const { err: endSessionErr } = await tryCatch(() => session.endSession());

@@ -586,7 +586,6 @@ const appendEntityTemplateFormData = (
 
     formData.append('displayName', entityTemplate.displayName);
     formData.append('name', entityTemplate.name);
-    formData.append('disabled', String(entityTemplate.disabled));
     formData.append('category', entityTemplate.category);
     formData.append('properties', JSON.stringify(entityTemplate.properties));
     formData.append('propertiesOrder', JSON.stringify(entityTemplate.propertiesOrder));

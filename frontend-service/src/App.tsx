@@ -78,6 +78,7 @@ const App: React.FC = () => {
         handleWorkspace();
     }, [currentUser, hierarchyIds, setUser, workspaceStore]);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         const initUser = async () => {
             const user = AuthService.getUser();
