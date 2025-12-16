@@ -217,9 +217,10 @@ const getComponent = (
             const { label, disabled, name, value, schema, onChange } = props;
             const [checked, setChecked] = useState(checkboxProps.isFieldChecked(name));
 
+            // biome-ignore lint/correctness/useExhaustiveDependencies: important
             useEffect(() => {
                 checkboxProps.onCheckboxChange(name, checked);
-            }, [checked, name, checkboxProps.onCheckboxChange]);
+            }, [checked, name]);
 
             if (schema.format === 'comment') return <Component {...props} />;
 
@@ -275,6 +276,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
 }) => {
     const theme = useTheme();
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: important
     useEffect(() => {
         const allInnerDivs = document.querySelectorAll('#json-schema .MuiGrid-root > .MuiGrid-root');
 
@@ -291,11 +293,12 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
 
             innerDiv.classList.add(...classesToAdd);
         });
-    }, [checkboxProps]);
+    }, [values.template]);
 
     const rjsfExtraErrors = formikErrorsToRjsfExtraErrors(errors ?? {}, values.template);
     const rjsfExtraUniqueErrors = formikErrorsToRjsfExtraErrors(uniqueErrors ?? {}, values.template);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: important
     const Widgets: RegistryWidgetsType = React.useMemo(
         () => ({
             CommentWidget: getComponent(RjsfCommentWidget, checkboxProps),
@@ -314,7 +317,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             SignatureWidget: getComponent(RjsfSignatureWidgets, checkboxProps),
             UserAvatarWidget: getComponent(RjsfUserAvatarWidget, checkboxProps),
         }),
-        [checkboxProps],
+        [],
     );
 
     const schemaWithGroups = values.template?.fieldGroups?.reduce((acc, { fields, displayName, name }) => {

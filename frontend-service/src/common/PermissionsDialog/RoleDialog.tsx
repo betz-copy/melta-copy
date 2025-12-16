@@ -182,7 +182,7 @@ const RoleDialog: React.FC<{
                             />
                         </DialogContent>
 
-                        <DialogActions sx={{ direction: 'rtl', marginRight: '1rem', marginBottom: '0.5rem' }}>
+                        <DialogActions sx={{ marginRight: '1rem', marginBottom: '0.5rem' }}>
                             <Grid container justifyContent="space-between">
                                 <Grid>
                                     {mode !== 'view' && (

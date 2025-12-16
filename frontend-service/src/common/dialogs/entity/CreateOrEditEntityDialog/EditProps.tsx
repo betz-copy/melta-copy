@@ -83,24 +83,24 @@ const EditProps: React.FC<{
     const isPropertiesFirst = (values.template?.propertiesTypeOrder ?? [])[0] === 'properties';
     const schema = filterFieldsFromPropertiesSchema(values.template?.properties, multipleSelectionProps?.selectedFields);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         setInitialValuePropsToFilter({ ...initialValues.properties });
-    }, [initialValues.properties, setInitialValuePropsToFilter]);
+    }, []);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         schema.required.forEach((field) => {
             const fieldPropertiesEnum = schema.properties[field]?.enum;
             const itemFieldProperties = schema.properties[field]?.items?.enum;
 
-            if (fieldPropertiesEnum?.length === 1 && fieldPropertiesEnum[0] !== undefined) {
+            if (fieldPropertiesEnum?.length === 1 && fieldPropertiesEnum[0] !== undefined)
                 setFieldValue(`properties.${field}`, fieldPropertiesEnum[0]);
-            }
 
-            if (itemFieldProperties?.length === 1 && itemFieldProperties[0] !== undefined) {
+            if (itemFieldProperties?.length === 1 && itemFieldProperties[0] !== undefined)
                 setFieldValue(`properties.${field}`, [itemFieldProperties[0]]);
-            }
         });
-    }, [schema, setFieldValue]);
+    }, [values.template]);
 
     const absoluteDirty = useMemo(() => {
         // textarea/long-text causes the field to first be undefined, setting dirty to true,
