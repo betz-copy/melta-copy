@@ -12,11 +12,11 @@ import {
 import { PriorityHigh } from '@mui/icons-material';
 import { Box, Grid, Tooltip, tooltipClasses } from '@mui/material';
 import i18next from 'i18next';
+import { isEmpty } from 'lodash';
 import { EntityWizardValues } from '../../common/dialogs/entity';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 import UserAvatar, { IUserAvatarProps } from '../../common/UserAvatar';
-import { environment } from '../../globals';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import {
     EntityData,
@@ -62,6 +62,7 @@ const isPropertyInvalid = <Data extends IColDefData>(props: ICellRendererParams<
     if (!ignoreType || !hasErrors(props.data)) return undefined;
 
     return props.data.errors.find((error) => {
+        if (isEmpty(error.metadata)) return false;
         switch (error.type) {
             case ActionErrors.required:
                 return (error.metadata as IRequiredConstraint).property.split('.').filter(Boolean)[0] === property;
@@ -70,7 +71,7 @@ const isPropertyInvalid = <Data extends IColDefData>(props: ICellRendererParams<
                     (errorProperty) => errorProperty.split('.').filter(Boolean)[0] === property,
                 );
             case ActionErrors.validation:
-                return (error.metadata as IValidationError).path.split('/').filter(Boolean)[0] === property;
+                return (error.metadata as IValidationError)?.path.split('/').filter(Boolean)[0] === property;
             case ActionErrors.notFound: {
                 return (error.metadata as INotFoundError).property === property;
             }
@@ -116,11 +117,10 @@ const errorColDef = <Data extends IColDefData>(
                     propertyName: relatedIdentifier,
                 });
             } else if (errorMetadata.type === NotFoundErrorTypes.userNotFound) {
-                const { attemptedIds, type } = error.metadata as IUsersNotFoundError;
-                if (type === NotFoundErrorTypes.userNotFound)
-                    message = i18next.t(`wizard.entity.loadEntities.${attemptedIds.length > 1 ? 'usersNotFound' : 'userNotFound'}`, {
-                        attemptedIds: attemptedIds.join(','),
-                    });
+                const { attemptedIds } = errorMetadata as IUsersNotFoundError;
+                message = i18next.t(`wizard.entity.loadEntities.${attemptedIds.length > 1 ? 'usersNotFound' : 'userNotFound'}`, {
+                    attemptedIds: attemptedIds.join(','),
+                });
             }
             break;
         }
@@ -848,6 +848,7 @@ const getUnitField = (units: IGetUnits, unitId: string, property: keyof IGetUnit
 
 export const unitColDef = <Data extends IColDefData>(
     field: string,
+    valueGetter,
     value: Partial<IEntitySingleProperty>,
     units: IGetUnits,
     hardcodedWidth: number | undefined,
@@ -870,16 +871,15 @@ export const unitColDef = <Data extends IColDefData>(
 
     return {
         field,
-        valueGetter: ({ data }) => {
-            const value = data.properties[field];
-            return environment.objectIdRegex.test(value) ? getUnitField(units, value, 'name') : value;
-        },
+        valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
             const error = isPropertyInvalid(props, field, ignoreType);
             if (error) return errorColDef(props, error, value);
+            const cellValue = props.valueFormatted !== '' ? props.valueFormatted : props.value;
 
-            return <Value hideValue={hideValue} color={getColor(props, field)} value={props.value?.toString() ?? ''} searchValue={searchValue} />;
+            return <Value hideValue={hideValue} color={getColor(props, field)} value={cellValue ?? ''} searchValue={searchValue} />;
         },
+        valueFormatter: ({ value }) => getUnitField(units, value, 'name'),
         headerName: value.title,
         filter: 'agSetColumnFilter',
         filterParams,
@@ -887,7 +887,7 @@ export const unitColDef = <Data extends IColDefData>(
         flex: isLastColumn ? 1 : 0,
         hide: hideColumn,
         tooltipValueGetter: (params) => {
-            const path = getUnitField(units, params.data.properties[field], 'path');
+            const path = getUnitField(units, params.data?.properties?.[field], 'path');
             return path ? `${path}/` : '';
         },
         editable: false,

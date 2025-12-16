@@ -88,9 +88,10 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
 
     const theme = useTheme();
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         containerWrapperRef.current?.focus();
-    }, []);
+    }, [isEditableCategory]);
 
     const { mutateAsync } = useMutation(
         (categoryName: string) =>

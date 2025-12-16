@@ -1,5 +1,5 @@
-import { ISubCompactPermissions } from '../interfaces/permission';
+import { ICompactPermissions } from '../interfaces/permission';
 
-const isWorkspaceAdmin = (permissions: ISubCompactPermissions) => Boolean(permissions?.admin) || false;
+const isAdmin = (permissions: ICompactPermissions, workspaceIds: string[]) => workspaceIds.some((workspaceId) => permissions?.[workspaceId]?.admin);
 
-export { isWorkspaceAdmin };
+export { isAdmin };

@@ -1,7 +1,7 @@
 import { asNumber, getUiOptions, guessType, WidgetProps } from '@rjsf/utils';
 import React from 'react';
-import { PropertyType } from '../../../interfaces/entityTemplates';
-import MultipleSelect from '../MultipleSelect';
+import { PropertyType } from '../../../../interfaces/entityTemplates';
+import MultipleSelect from '../../MultipleSelect';
 
 const nums = new Set(['number', 'integer']);
 

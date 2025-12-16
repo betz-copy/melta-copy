@@ -392,11 +392,7 @@ const buildBasePropertySchema = (property: EntityTemplateFormInputProperties, qu
     };
 };
 
-const shouldSkipProperty = ({ type, comment, deleted }: EntityTemplateFormInputProperties) => {
-    if (deleted) return true;
-    if (type === 'comment' && !comment) return true;
-    return false;
-};
+const shouldSkipProperty = ({ type, comment, deleted }: EntityTemplateFormInputProperties) => deleted || (type === 'comment' && !comment);
 
 const applyEditModeIndicator = (
     schema: IEntityTemplate['properties']['properties'],

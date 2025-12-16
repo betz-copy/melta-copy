@@ -110,8 +110,8 @@ const setCategoryAndTemplateOrder = async (dbList) => {
                         type: 'categoryOrder',
                         order: categoryIds,
                     });
-                } catch (_error) {
-                    console.log(`Failed to create categoryOrder at workspace ${db.databaseName}`);
+                } catch (error) {
+                    console.error(`Failed to create categoryOrder at workspace ${db.databaseName}`, { error });
                 }
 
                 await Promise.all(

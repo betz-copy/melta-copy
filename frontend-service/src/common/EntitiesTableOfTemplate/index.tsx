@@ -869,8 +869,14 @@ const EntitiesTableOfTemplate = forwardRef(
                         suppressAggFuncInHeader
                         onRowSelected={
                             onRowSelected
-                                ? ({ data, node }) => {
-                                      if (node.isSelected() && data) onRowSelected(data);
+                                ? ({ data, node, event }) => {
+                                      if (!node.isSelected() || !data) return;
+
+                                      const colId = (event?.target as HTMLElement)?.closest('[col-id]')?.getAttribute('col-id');
+
+                                      if (colId?.startsWith('actions')) return;
+
+                                      onRowSelected(data);
                                   }
                                 : undefined
                         }

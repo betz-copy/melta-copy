@@ -201,7 +201,8 @@ const EntityTemplatesRow: React.FC = () => {
                 try {
                     const relationshipTemplates = await getAllRelationshipTemplatesRequest();
                     queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', mapTemplates(relationshipTemplates));
-                } catch (_error) {
+                } catch (error) {
+                    console.error('Failed to update relationship templates after entity template deletion:', error);
                     toast.error(i18next.t('wizard.failedToUpdateSystemData'));
                 }
             },

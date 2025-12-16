@@ -39,10 +39,12 @@ const createFileObject = (filesLimit: number, files?: File[]): Record<string, Fi
         toast.error(i18next.t('wizard.entity.loadEntities.limitNumberFiles') + filesLimit);
         return undefined;
     }
+
     const filesMap: Record<string, File> = {};
     for (const file of validFiles) {
         filesMap[file.name] = file;
     }
+
     return filesMap;
 };
 
@@ -80,9 +82,8 @@ export const useReadExcel = () => {
                         const fileData: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
                         const newEntities = importDataToGrid(fileData, template);
-                        if ((newEntities?.length || 0) > entitiesFileLimit) {
-                            reject(new Error(file.name));
-                        } else {
+                        if ((newEntities?.length || 0) > entitiesFileLimit) reject(new Error(file.name));
+                        else {
                             newEntities?.forEach((newEntity) => entities.push(newEntity));
                             resolve();
                         }
@@ -97,7 +98,7 @@ export const useReadExcel = () => {
 
         try {
             await Promise.all(fileReadPromises);
-            if (entities.length === 0) {
+            if (!entities.length) {
                 toast.warn(i18next.t('wizard.entity.loadEntities.emptyExcel'));
                 return;
             }

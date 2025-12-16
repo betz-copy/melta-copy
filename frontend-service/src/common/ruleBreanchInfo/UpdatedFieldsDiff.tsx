@@ -18,8 +18,8 @@ const getEntityPropertyString = (
     oldValue: any,
     entityTemplates: IEntityTemplateMap,
     units: IGetUnits,
+    darkMode: boolean,
     items?: any,
-    darkMode?: boolean,
 ) => {
     const { format } = propertyTemplate;
 
@@ -40,7 +40,7 @@ const getEntityPropertyString = (
         return displayValue;
     }
 
-    if (format !== 'fileId' && !items) return formatToString(value, propertyTemplate, units, darkMode);
+    if (format !== 'fileId' && !items) return formatToString({ value, property: propertyTemplate, units, darkMode });
 
     // single
     if (format === 'fileId') {
@@ -73,13 +73,13 @@ const getEntityPropertiesString = (
     entityTemplates: IEntityTemplateMap,
     entityTemplate: IMongoEntityTemplatePopulated,
     units: IGetUnits,
-    darkMode?: boolean,
+    darkMode: boolean,
     oldEntityProperties?: Record<string, any>,
 ) => {
     const fieldPropertiesStrings = Object.entries(entityTemplate?.properties?.properties || []).map(([propertyKey, propertyTemplate]) => {
         const oldValue = oldEntityProperties?.[propertyKey];
         const value = entityProperties[propertyKey];
-        const valueFormatted = getEntityPropertyString(value, propertyTemplate, oldValue, entityTemplates, units, propertyTemplate.items, darkMode);
+        const valueFormatted = getEntityPropertyString(value, propertyTemplate, oldValue, entityTemplates, units, darkMode, propertyTemplate.items);
         return `${propertyTemplate.title}: ${valueFormatted}`;
     });
     return fieldPropertiesStrings.join('\n');

@@ -48,7 +48,7 @@ const Chart: React.FC = () => {
     });
 
     const { isLoading, mutateAsync } = useMutation({
-        mutationFn: async (chartData: ChartForm & { _id?: string }) => {
+        mutationFn: async ({ _id, ...chartData }: ChartForm & { _id?: string }) => {
             const baseChart = {
                 ...chartData,
                 createdBy: currentUser._id,
@@ -60,10 +60,10 @@ const Chart: React.FC = () => {
             }
 
             // Add existing chart to dashboard
-            if (chartData._id)
+            if (_id)
                 return createDashboardItem({
                     type: DashboardItemType.Chart,
-                    metaData: chartData._id,
+                    metaData: _id,
                 });
 
             return createChart(baseChart, isDashboardPage);

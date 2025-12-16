@@ -12,6 +12,7 @@ export const userHasNoPermissions = (permissions: ISubCompactPermissions) => {
         permissions?.templates?.scope !== PermissionScope.write &&
         permissions?.processes?.scope !== PermissionScope.write &&
         permissions?.rules?.scope !== PermissionScope.write &&
+        permissions?.units?.scope !== PermissionScope.write &&
         Object.keys(permissions?.instances?.categories ?? {}).length === 0
     );
 };

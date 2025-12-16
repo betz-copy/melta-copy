@@ -41,9 +41,7 @@ class UsersController {
     }
 
     static async createUser(req: Request, res: Response) {
-        const { kartoffelId, permissions, workspaceId, roleIds } = req.body;
-
-        res.json(await UsersManager.createUser(kartoffelId, permissions, workspaceId, roleIds));
+        res.json(await UsersManager.createUser(req.body));
     }
 
     static async updateUserPreferencesMetadata(req: Request, res: Response) {

@@ -3,7 +3,7 @@ import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
-import { CoordinateSystem, LocationData } from '../../../../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
+import { CoordinateSystem, LocationData } from '../../../../common/inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
 import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
 import { NotificationColor } from '../../../../common/notificationColor';
 import RelationshipReferenceView from '../../../../common/RelationshipReferenceView';

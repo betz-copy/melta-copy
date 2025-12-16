@@ -180,12 +180,12 @@ const Entity: React.FC = () => {
 
                     if (expandedEntity.entity.properties._id === destinationEntity.properties._id)
                         return (
-                            (entityTemplates.get(sourceEntity.templateId) ?? groupChildTemplate[sourceEntity.templateId][0])?.category._id ===
+                            (entityTemplates.get(sourceEntity.templateId) ?? groupChildTemplate[sourceEntity.templateId]?.[0])?.category._id ===
                             category._id
                         );
 
                     return (
-                        (entityTemplates.get(destinationEntity.templateId) ?? groupChildTemplate[destinationEntity.templateId][0])?.category._id ===
+                        (entityTemplates.get(destinationEntity.templateId) ?? groupChildTemplate[destinationEntity.templateId]?.[0])?.category._id ===
                         category._id
                     );
                 }).length,

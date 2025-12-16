@@ -12,7 +12,7 @@ import { exportEntityToDocumentRequest } from '../../../services/entitiesService
 import { getLongDate } from '../../../utils/date';
 import { getFileName } from '../../../utils/getFileName';
 import { locationConverterToString } from '../../../utils/map/convert';
-import { CoordinateSystem } from '../../inputs/JSONSchemaFormik/RjsfLocationWidget';
+import { CoordinateSystem } from '../../inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
 import { EntityWizardValues } from '.';
 
 export const ExportFormats: React.FC<{

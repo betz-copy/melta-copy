@@ -21,9 +21,9 @@ export interface IPureFieldsDisplayProps {
 }
 
 export const PureFieldsDisplay: React.FC<IPureFieldsDisplayProps> = ({ fields, entity, entityTemplate, textStyle, underlineColor, expanded }) => {
-    const darkMode = useDarkModeStore((state) => state.darkMode);
     const queryClient = useQueryClient();
     const units = queryClient.getQueryData<IGetUnits>('getUnits')!;
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return (
         <>
@@ -52,18 +52,18 @@ export const PureFieldsDisplay: React.FC<IPureFieldsDisplayProps> = ({ fields, e
                                         ...textStyle,
                                     }}
                                 >
-                                    {`${expanded ? `${fieldName}:` : ''} ${formatToString(
-                                        entity.properties[field],
+                                    {`${expanded ? `${fieldName}:` : ''} ${formatToString({
+                                        value: entity.properties[field],
                                         property,
                                         units,
-                                        darkMode,
-                                        field,
-                                        undefined,
-                                        undefined,
-                                        {
+                                        key: field,
+                                        preview: undefined,
+                                        color: undefined,
+                                        options: {
                                             pureString: true,
                                         },
-                                    )}`}
+                                        darkMode,
+                                    })}`}
                                 </Typography>
                             </MeltaTooltip>
                         </Grid>

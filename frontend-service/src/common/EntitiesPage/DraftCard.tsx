@@ -1,7 +1,7 @@
 import { Delete as DeleteIcon, Edit as EditIcon, MoreVertOutlined as OptionsIcon, Restore } from '@mui/icons-material';
 import { Box, Card, Grid, IconButton, Menu, Typography } from '@mui/material';
 import i18next from 'i18next';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import '../../css/draft.css';
 import { useDraftsStore } from '../../stores/drafts';
@@ -23,12 +23,16 @@ export const DraftCard: React.FC<{ draft: Draft; openEditDialog: () => void }> =
 
     const { _createdAt, _disabled, _id, _updatedAt, ...displayProperties } = draft.properties;
 
-    const draftPropertiesToDisplayOnHover =
-        Object.values(displayProperties ?? [])
-            .filter(Boolean)
-            .map((displayProperty) => displayProperty.toString().replace(replaceHtmlTagsRegex, '').substring(0, 50))
-            .join(' / ')
-            .substring(0, 750) || i18next.t('draftSaveDialog.emptyDraft');
+    const draftPropertiesToDisplayOnHover = useMemo(
+        () =>
+            Object.values(displayProperties ?? [])
+                .filter(Boolean)
+                .map((displayProperty) => displayProperty.toString().replace(replaceHtmlTagsRegex, '').substring(0, 50))
+                .join(' / ')
+                .substring(0, 750) || i18next.t('draftSaveDialog.emptyDraft'),
+        // biome-ignore lint/correctness/useExhaustiveDependencies: lol
+        [displayProperties],
+    );
 
     const deleteDraft = useDraftsStore((state) => state.deleteDraft);
 

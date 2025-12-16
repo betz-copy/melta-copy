@@ -4,9 +4,9 @@ import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import { format, parseISO } from 'date-fns';
 import React from 'react';
-import { environment } from '../../../globals';
-import { containsHTMLTags, convertToPlainText } from '../../../utils/HtmlTagsStringValue';
-import { getFixedNumber, getTextDirection } from '../../../utils/stringValues';
+import { environment } from '../../../../globals';
+import { containsHTMLTags, convertToPlainText } from '../../../../utils/HtmlTagsStringValue';
+import { getFixedNumber, getTextDirection } from '../../../../utils/stringValues';
 
 const RjsfTextWidget = ({
     id,

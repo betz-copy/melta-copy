@@ -2,11 +2,6 @@ import { Close, ExpandMore } from '@mui/icons-material';
 import { Autocomplete, Grid, MenuItem, TextField, TextFieldProps } from '@mui/material';
 import { RJSFSchema } from '@rjsf/utils';
 import React from 'react';
-import { useQueryClient } from 'react-query';
-import { IMongoUnit } from '../../interfaces/units';
-import { IUser } from '../../interfaces/users';
-import { useUnitStore } from '../../stores/unit';
-import { useUserStore } from '../../stores/user';
 import OverflowWrapper from '../../utils/agGrid/OverflowWrapper';
 import { ColoredEnumChip } from '../ColoredEnumChip';
 import MeltaCheckbox from '../MeltaDesigns/MeltaCheckbox';
@@ -40,7 +35,6 @@ const MultipleSelect: React.FC<{
 }> = ({
     id,
     items,
-    schema,
     selectedValue,
     onChange,
     onBlur,
@@ -58,19 +52,6 @@ const MultipleSelect: React.FC<{
     placeholder,
     required,
 }) => {
-    const currentUser = useUserStore<IUser>((state) => state.user);
-
-    const filteredUnits = useUnitStore((state) => state.filteredUnits);
-
-    const queryClient = useQueryClient();
-    const units = queryClient.getQueryData<IMongoUnit[]>('getUnits');
-
-    if (schema?.format === 'unitField') {
-        items = (disabled ? units : filteredUnits)?.map((unit) => ({ label: unit.name, value: unit._id })) ?? [];
-
-        if (!currentUser.isRoot) items = items.filter((unit) => currentUser.currentUnits.includes(unit.value));
-    }
-
     return (
         <Autocomplete<ISelectOption, boolean, false, false>
             id={id}

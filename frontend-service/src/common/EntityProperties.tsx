@@ -25,7 +25,7 @@ import { extractUtmLocation, locationConverterToString } from '../utils/map/conv
 import { getFixedNumber, getTextDirection } from '../utils/stringValues';
 import { ColoredEnumChip } from './ColoredEnumChip';
 import OpenPreview from './FilePreview/OpenPreview';
-import { CoordinateSystem, LocationData } from './inputs/JSONSchemaFormik/RjsfLocationWidget';
+import { CoordinateSystem, LocationData } from './inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
 import BlueTitle from './MeltaDesigns/BlueTitle';
 import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
 import RelationshipReferenceView from './RelationshipReferenceView';
@@ -75,19 +75,20 @@ const getUserAvatar = (
     );
 };
 
-export const formatToString = (
-    value: any,
-    property: IEntitySingleProperty,
-    units: IGetUnits,
-    darkMode?: boolean,
-    key?: string,
-    preview?: boolean,
-    color?: string,
-    options: FormatOptions = {},
-    hideProps: string[] = [],
-    entityTemplate?: Template,
-    properties?: IEntityPropertiesProps['properties'],
-) => {
+export const formatToString = ( { value, property, units, key, preview, color, options = {}, hideProps = [], entityTemplate, properties, darkMode }: {
+    value: any;
+    property: IEntitySingleProperty;
+    units: IGetUnits;
+    key?: string;
+    preview?: boolean;
+    color?: string;
+    options?: FormatOptions;
+    hideProps?: string[];
+    entityTemplate?: Template;
+    properties?: IEntityPropertiesProps['properties'];
+    darkMode: boolean;
+}) => {
+
     const { format, type: valueType, title, expandedUserField } = property;
     const { keyEnumColors, isPrintingMode, pureString } = options;
 
@@ -306,23 +307,23 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                     relatedEntityAllowed = entityTemplates?.get(relatedTemplateId);
                 }
 
-                const stringFormatValue = formatToString(
-                    propertyValue,
-                    propertySchema,
+                const stringFormatValue = formatToString({
+                    value: propertyValue,
+                    property: propertySchema,
                     units,
-                    darkMode,
-                    propertyKey,
+                    key: propertyKey,
                     preview,
-                    coloredFields?.[propertyKey],
-                    {
+                    color: coloredFields?.[propertyKey],
+                    options: {
                         keyEnumColors: (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
                         isPrintingMode,
                         pureString,
                     },
-                    entityTemplate.properties.hide,
+                    hideProps: entityTemplate.properties.hide,
                     entityTemplate,
                     properties,
-                );
+                    darkMode: !!darkMode,
+                });
 
                 if (stringFormatValue === null || stringFormatValue === undefined) return undefined;
 

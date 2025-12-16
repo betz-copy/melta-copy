@@ -8,27 +8,26 @@ import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import { pickBy } from 'lodash';
 import React, { memo, useEffect, useState } from 'react';
-import { useQueryClient } from 'react-query';
 import { environment } from '../../../globals';
 import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { matchValueAgainstFilter } from '../../../utils/filters';
 import { uiSchemaUtils } from './ utils';
 import './form.css';
-import { IGetUnits } from '../../../interfaces/units';
 import InputAccordion from './InputAccordion';
-import RjsfCheckboxWidget from './RjsfCheckboxWidget';
-import RjsfCommentWidget from './RjsfCommentWidget';
-import { RjsfDateTimeWidget, RjsfDateWidget } from './RjsfDatesWidgets';
-import RjsfLocationWidget, { validateLocation } from './RjsfLocationWidget';
-import RjsfSelectWidget from './RjsfSelectWidget';
-import RjsfSignatureWidgets from './RjsfSignatureWidgets';
-import RjsfTextWidget from './RjsfStringWidget';
-import RjsfTemplateReferenceWidget from './RjsfTemplateReferenceWidget';
-import RjsfTextAreaWidget from './RjsfTextAreaWidget';
-import RjsfUserArrayWidget from './RjsfUserArrayWidget';
-import RjsfUserAvatarWidget from './RjsfUserAvarWidget';
-import RjsfUserWidget from './RjsfUserWidget';
+import RjsfCheckboxWidget from './Widgets/RjsfCheckboxWidget';
+import RjsfCommentWidget from './Widgets/RjsfCommentWidget';
+import { RjsfDateTimeWidget, RjsfDateWidget } from './Widgets/RjsfDatesWidgets';
+import RjsfLocationWidget, { validateLocation } from './Widgets/RjsfLocationWidget';
+import RjsfSelectWidget from './Widgets/RjsfSelectWidget';
+import RjsfSignatureWidgets from './Widgets/RjsfSignatureWidgets';
+import RjsfTextWidget from './Widgets/RjsfStringWidget';
+import RjsfTemplateReferenceWidget from './Widgets/RjsfTemplateReferenceWidget';
+import RjsfTextAreaWidget from './Widgets/RjsfTextAreaWidget';
+import RjsfUnitSelectWidget from './Widgets/RjsfUnitSelectWidget';
+import RjsfUserArrayWidget from './Widgets/RjsfUserArrayWidget';
+import RjsfUserAvatarWidget from './Widgets/RjsfUserAvarWidget';
+import RjsfUserWidget from './Widgets/RjsfUserWidget';
 
 const { dateRegex } = environment;
 
@@ -301,6 +300,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
         () => ({
             CommentWidget: getComponent(RjsfCommentWidget, checkboxProps),
             SelectWidget: getComponent(RjsfSelectWidget, checkboxProps),
+            UnitSelectWidget: getComponent(RjsfUnitSelectWidget, checkboxProps),
             DateWidget: getComponent(RjsfDateWidget, checkboxProps),
             DateTimeWidget: getComponent(RjsfDateTimeWidget, checkboxProps),
             TextWidget: getComponent(RjsfTextWidget, checkboxProps),
@@ -342,14 +342,11 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
 
     schema.properties = { ...schema.properties, ...(schemaWithGroups ?? {}) };
 
-    const queryClient = useQueryClient();
-    const units = queryClient.getQueryData<IGetUnits>('getUnits');
-
     return (
         <JSONSchemaForm
             id="json-schema"
             schema={schema}
-            uiSchema={uiSchemaUtils(schema, values, setValues, isEditMode, toPrint, theme.palette.primary.main, units)}
+            uiSchema={uiSchemaUtils(schema, values, setValues, isEditMode, toPrint, theme.palette.primary.main)}
             onChange={({ formData }) => {
                 Object.entries(formData as Record<string, IEntitySingleProperty>).forEach(([key, value]) => {
                     if (JSON.stringify(value) === JSON.stringify([undefined]) || JSON.stringify(value) === JSON.stringify([null]))

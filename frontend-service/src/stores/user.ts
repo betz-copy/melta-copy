@@ -50,7 +50,7 @@ export const useUserStore = create<UserState>((set) => ({
         permissions: {},
         units: {},
         currentWorkspacePermissions: {},
-        currentUnits: [],
+        usersUnitsWithInheritance: [],
     },
     setUser: (user) => set({ user }),
 }));

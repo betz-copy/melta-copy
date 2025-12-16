@@ -5,12 +5,15 @@ import { Chip, Grid, IconButton } from '@mui/material';
 import i18next from 'i18next';
 import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
 import ScrollContainer from 'react-indiana-drag-scroll';
+import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { environment } from '../../../globals';
 import { IMongoCategory } from '../../../interfaces/categories';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { ICompact, IInstancesPermission } from '../../../interfaces/permissions/permissions';
 import { IRole } from '../../../interfaces/roles';
+import { IGetUnits } from '../../../interfaces/units';
 import { IUser, PermissionData, RelatedPermission } from '../../../interfaces/users';
 import { IWorkspace } from '../../../interfaces/workspaces';
 import { searchRolesRequest, searchUsersRequest } from '../../../services/userService';
@@ -18,11 +21,25 @@ import { useDarkModeStore } from '../../../stores/darkMode';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { agGridLocaleText } from '../../../utils/agGrid/agGridLocaleText';
 import { translatedEnumColDef } from '../../../utils/agGrid/commonColDefs';
-import { tryCatch } from '../../../utils/trycatch';
+import { tryCatch } from '../../../utils/tryCatch';
 
 const { infiniteScrollPageCount } = environment.permission;
 
 const scopesTranslation = i18next.t('permissions.scopes', { returnObjects: true }) as Record<string, string>;
+
+const getChipsFromArray = (chips: { key: string; label: string }[]) => (
+    <ScrollContainer horizontal vertical={false}>
+        <Grid container spacing={1} wrap="nowrap">
+            {chips.map(({ key, label }) => (
+                <Grid key={key}>
+                    <MeltaTooltip title={label}>
+                        <Chip label={label} />
+                    </MeltaTooltip>
+                </Grid>
+            ))}
+        </Grid>
+    </ScrollContainer>
+);
 
 const defaultColDef: ColDef<PermissionData> = {
     editable: false,
@@ -45,6 +62,7 @@ const columnDefs = (
     categories: IMongoCategory[],
     onDeletePermissions: (permissions: PermissionData) => void,
     onEditPermissions: (permissions: PermissionData) => void,
+    units: IGetUnits,
 ): ColDef[] => [
     {
         field: permissionType === RelatedPermission.User ? 'displayName' : 'name',
@@ -99,6 +117,17 @@ const columnDefs = (
         valuesMap: scopesTranslation,
     }),
     {
+        field: 'unitsOfUser',
+        valueGetter: (params) => params.data?.units?.[workspaceId] ?? [],
+        headerName: i18next.t('permissions.permissionsOfUserDialog.unitsOfUser'),
+        cellRenderer: (props: ICellRendererParams<PermissionData, string[]>) => {
+            const { value } = props;
+            const unitNames = value?.map((unitId) => units.find(({ _id }) => _id === unitId)?.name ?? '') ?? [];
+            return getChipsFromArray(unitNames.map((value) => ({ label: value, key: value })));
+        },
+        minWidth: 200,
+    },
+    {
         field: 'categoriesPermissions',
         headerName: i18next.t('permissions.permissionsOfUserDialog.instancesPermissions'),
         valueGetter: (params) => params.data?.permissions[workspaceId].instances?.categories,
@@ -138,17 +167,7 @@ const columnDefs = (
             // sort just for fun, same as comparator's sorting
             categoriesPermissionsPopulated.sort((a, b) => a.category._id.localeCompare(b.category._id));
 
-            return (
-                <ScrollContainer horizontal vertical={false}>
-                    <Grid container spacing={1} wrap="nowrap">
-                        {categoriesPermissionsPopulated.map(({ _id, category }) => (
-                            <Grid key={_id}>
-                                <Chip label={category.displayName} />
-                            </Grid>
-                        ))}
-                    </Grid>
-                </ScrollContainer>
-            );
+            return getChipsFromArray(categoriesPermissionsPopulated.map(({ _id, category }) => ({ key: _id, label: category.displayName })));
         },
         minWidth: 500,
     },
@@ -269,6 +288,10 @@ const PermissionsTable = forwardRef<PermissionsTableRef<PermissionData>, Permiss
         const darkMode = useDarkModeStore((state) => state.darkMode);
         const workspace = useWorkspaceStore((state) => state.workspace);
         const gridRef = useRef<AgGridReact<PermissionData>>(null);
+
+        const queryClient = useQueryClient();
+        const units = queryClient.getQueryData<IGetUnits>('getUnits')!;
+
         const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
 
         useImperativeHandle(ref, () => ({
@@ -308,7 +331,7 @@ const PermissionsTable = forwardRef<PermissionsTableRef<PermissionData>, Permiss
                     borderRadius: '70px',
                 }}
                 defaultColDef={defaultColDef}
-                columnDefs={columnDefs(workspace._id, permissionType, categories, onDeletePermissions, onEditPermissions)}
+                columnDefs={columnDefs(workspace._id, permissionType, categories, onDeletePermissions, onEditPermissions, units)}
                 getRowId={({ data }) => getRowId(data)}
                 {...rowModelProps}
                 paginationAutoPageSize

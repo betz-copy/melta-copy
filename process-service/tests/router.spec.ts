@@ -34,9 +34,9 @@ const removeAllCollections = async () => {
 };
 
 const prepareProcessTemplateToUpdate = (processTemplate: IMongoProcessTemplatePopulated) => {
-    const { _id, ...cleanTemplateProcess } = JSON.parse(JSON.stringify(processTemplate));
+    const { _id, createdAt: _processCreatedAt, updatedAt: _processUpdatedAt, ...cleanTemplateProcess } = JSON.parse(JSON.stringify(processTemplate));
     const cleanSteps = cleanTemplateProcess.steps.map((step) => {
-        const { ...cleanStep } = step;
+        const { createdAt: _c, updatedAt: _u, ...cleanStep } = step;
         return cleanStep;
     });
     return { ...cleanTemplateProcess, steps: cleanSteps };
@@ -75,7 +75,7 @@ const prepareDataForUpdateProcessInstance = (
 };
 const errPropertiesType = (instanceProperties: Record<string, any>): Record<string, any> => {
     return Object.entries(instanceProperties).reduce((acc, [key, value]) => {
-        let newValue: any;
+        let newValue: string | number | boolean;
 
         if (typeof value === 'number') newValue = String(value);
         else if (typeof value === 'string') newValue = Boolean(value);

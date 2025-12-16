@@ -1078,8 +1078,9 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & {
             file?: string;
         },
+        userId: string,
     ) {
-        const entities = await this.instanceManager.getAllTemplateEntities(templateId);
+        const entities = await this.instanceManager.getAllTemplateEntities(templateId, userId);
 
         const usersIds = new Set<string>();
         entities.forEach((entity) => {
@@ -1246,7 +1247,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         await this.deletePropertyOfEntityTemplate(id, count, removedProperties, currTemplate);
 
-        if (newExpandedUserFields.length) await this.updateInstancesWithUserFields(id, newExpandedUserFields, updatedTemplateData);
+        if (newExpandedUserFields.length) await this.updateInstancesWithUserFields(id, newExpandedUserFields, updatedTemplateData, userId);
 
         try {
             if (propertiesKeysToPluralize.length > 0) await this.instancesService.convertFieldsToPlural(id, propertiesKeysToPluralize);
