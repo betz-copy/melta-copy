@@ -22,13 +22,23 @@ export async function generateAndSavePDF(printIframe: HTMLIFrameElement, filenam
 
     const content = iframeDoc.body;
 
+    // Wait for content to fully generate
+    await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => resolve());
+        });
+    });
+
     const options = {
         margin: 10,
-        filename: `${filename || document}.pdf`,
+        filename: `${filename || 'document'}.pdf`,
         image: { type: 'jpeg' as const, quality: 0.98 },
         html2canvas: {
-            scale: 2,
+            scale: 0.85, // Controls quality
             useCORS: true,
+            logging: true,
+            windowWidth: 1920,
+            windowHeight: 1080,
         },
         jsPDF: {
             unit: 'mm',
@@ -126,7 +136,7 @@ const Print: React.FC<{
                 </Button>
             </MeltaTooltip>
 
-            <div style={{ display: 'none' }}>
+            <div style={{ position: 'absolute', top: 0, left: '-9999px', width: '210mm' }}>
                 <style>{getPageMargins}</style>
                 <ThemeProvider theme={lightTheme}>
                     <ComponentToPrint
