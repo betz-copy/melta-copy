@@ -58,7 +58,7 @@ import { IAGGridRequest } from '../../utils/agGrid/interfaces';
 import useDeepCompareMemo from '../../utils/hooks/useDeepCompareMemo';
 import { LocalStorage } from '../../utils/localStorage';
 import { isChildTemplate } from '../../utils/templates';
-import { tryCatch } from '../../utils/trycatch';
+import { tryCatch } from '../../utils/tryCatch';
 import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
 import { EntityWizardValues } from '../dialogs/entity';
 import { MultiSelectStatusBar } from '../EntitiesPage/MultiSelectStatusBar';

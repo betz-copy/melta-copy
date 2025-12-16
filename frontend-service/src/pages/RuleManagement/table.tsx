@@ -18,7 +18,7 @@ import { useWorkspaceStore } from '../../stores/workspace';
 import { agGridLocaleText } from '../../utils/agGrid/agGridLocaleText';
 import { dateColDef, enumArrayColDef, translatedEnumColDef } from '../../utils/agGrid/commonColDefs';
 import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
-import { tryCatch } from '../../utils/trycatch';
+import { tryCatch } from '../../utils/tryCatch';
 
 const getDatasource = (breachType: BreachType, onFail: ((err: unknown) => void) | undefined): IServerSideDatasource => {
     return {

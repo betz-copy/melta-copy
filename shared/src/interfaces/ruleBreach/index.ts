@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-object-type */
 import { IEntityWithIgnoredRules, IExcelNotFoundError, IRequiredConstraint, IUniqueConstraint, IValidationError } from '../entity';
 import { IUser } from '../user';
 import { ActionErrors, ActionTypes, IActionMetadataPopulated, ICreateEntityMetadata } from './actionMetadata';

@@ -7,7 +7,7 @@ import { IMongoProcessTemplatePopulated, IProcessDetails, IProcessTemplateMap } 
 import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { splitSpacialProperties } from '../../../../utils/processWizard/formik';
 import { getStepsObjectPopulated } from '../../../../utils/processWizard/steps';
-import { tryCatch } from '../../../../utils/trycatch';
+import { tryCatch } from '../../../../utils/tryCatch';
 import { ajvValidate } from '../../../inputs/JSONSchemaFormik';
 import { ProcessDetailsValues } from '.';
 

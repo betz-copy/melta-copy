@@ -16,7 +16,7 @@ import { ICreateRelationshipMetadataPopulated } from '../../../interfaces/ruleBr
 import { IBrokenRule, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { createRelationshipRequest } from '../../../services/relationshipsService';
 import { useDarkModeStore } from '../../../stores/darkMode';
-import { tryCatch } from '../../../utils/trycatch';
+import { tryCatch } from '../../../utils/tryCatch';
 import { ErrorToast } from '../../ErrorToast';
 import RelationshipTemplateAutocomplete from '../../inputs/RelationshipTemplateAutocomplete';
 import TemplateTableSelect from '../../inputs/TemplateTableSelect';
