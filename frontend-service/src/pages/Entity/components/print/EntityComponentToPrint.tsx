@@ -1,3 +1,4 @@
+import ShortcutIcon from '@mui/icons-material/Shortcut';
 import { Grid, Typography } from '@mui/material';
 import React, { JSX } from 'react';
 import { useQueryClient } from 'react-query';
@@ -68,7 +69,15 @@ const relationshipRow = (
             {depth !== 0 ? (
                 <>
                     <Grid display={'flex'} flexDirection={'row'} gap={'10px'}>
-                        {depth > 1 && <img src="/icons/newLine-icon.svg" alt="" />}
+                        {depth > 1 && (
+                            <ShortcutIcon
+                                sx={{
+                                    fontSize: 16,
+                                    color: '#9398C2',
+                                    transform: 'rotate(180deg)',
+                                }}
+                            />
+                        )}
                         {addEntityCheckbox && <Grid width="20px" height="20px" borderRadius="6px" border="1px solid black"></Grid>}
                     </Grid>
 
@@ -131,7 +140,6 @@ const relationshipRow = (
                             width: '100%',
                             display: 'flex',
                             flexDirection: 'row',
-                            flexWrap: 'nowrap',
                         }}
                     />
                 </Grid>

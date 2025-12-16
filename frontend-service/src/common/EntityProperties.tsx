@@ -336,7 +336,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                 const propertyTitleColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#9398C2', {});
 
                 let innerContent: string | JSX.Element | undefined;
-                if (hideFieldsToDisplay.includes(propertyKey)) innerContent = <>••••••••</>;
+                if (hideFieldsToDisplay.includes(propertyKey) && !isPrintingMode) innerContent = <>••••••••</>;
                 else if (containsHtmlTags)
                     innerContent = viewFirstLineOfLongText
                         ? `${getFirstLine(stringFormatValue)}${getNumLines(stringFormatValue) > 1 ? '...' : ''}`
@@ -411,7 +411,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                                 container
                                 flexDirection="row"
                                 alignItems={textWrap ? 'flex-start' : 'center'}
-                                flexWrap="nowrap"
+                                flexWrap={isPrintingMode ? 'wrap' : 'nowrap'}
                                 style={{
                                     direction: 'rtl',
                                     textAlign: 'right',
@@ -427,11 +427,17 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                                         fontSize="14px"
                                         color={color ?? propertyValueColor}
                                         style={{
-                                            ...(!isPrintingMode && {
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: textWrap ? undefined : 'nowrap',
-                                                overflowX: 'hidden',
-                                            }),
+                                            // When printing a long word, go to next line
+                                            ...(isPrintingMode
+                                                ? {
+                                                      overflowWrap: 'anywhere',
+                                                      wordBreak: 'break-word',
+                                                  }
+                                                : {
+                                                      textOverflow: 'ellipsis',
+                                                      whiteSpace: textWrap ? undefined : 'nowrap',
+                                                      overflowX: 'hidden',
+                                                  }),
                                             paddingLeft: '1rem',
                                             maxHeight: isPrintingMode ? undefined : '350px',
                                             direction: type === 'number' ? 'ltr' : textDirection,
@@ -441,7 +447,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                                     </Typography>
                                 </MeltaTooltip>
                                 <Grid>
-                                    {hideField && (
+                                    {hideField && !isPrintingMode && (
                                         <IconButton
                                             onClick={(event) => {
                                                 event.stopPropagation();
