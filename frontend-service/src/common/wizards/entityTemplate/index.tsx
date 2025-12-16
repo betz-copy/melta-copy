@@ -7,7 +7,13 @@ import { environment } from '../../../globals';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { IConstraint, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
-import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import {
+    IEntityTemplateMap,
+    IEntityTemplatePopulated,
+    PropertyExternalWizardType,
+    PropertyFormat,
+    PropertyType,
+} from '../../../interfaces/entityTemplates';
 import { IErrorResponse } from '../../../interfaces/error';
 import fileDetails from '../../../interfaces/fileDetails';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
@@ -29,10 +35,12 @@ import { UploadExportFormats } from './UploadExportFormats';
 
 const { errorCodes } = environment;
 
+type PropertyWizardType = keyof typeof PropertyType | keyof typeof PropertyFormat | keyof typeof PropertyExternalWizardType;
+
 export interface EntityTemplateFormInputProperties {
     name: string;
     title: string;
-    type: string;
+    type: PropertyWizardType;
     id: string;
     options: string[];
     pattern: string;

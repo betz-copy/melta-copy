@@ -24,6 +24,15 @@ export enum PropertyFormat {
     unitField = 'unitField',
 }
 
+export enum PropertyExternalWizardType {
+    users = 'users',
+    serialNumber = 'serialNumber',
+    enum = 'enum',
+    pattern = 'pattern',
+    multipleFiles = 'multipleFiles',
+    enumArray = 'enumArray',
+}
+
 export interface IEntitySingleProperty {
     title: string;
     type: PropertyType;

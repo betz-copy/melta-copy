@@ -15,6 +15,7 @@ import {
     IEntityTemplateMap,
     IMongoEntityTemplatePopulated,
     ISearchEntityTemplateQuery,
+    PropertyExternalWizardType,
     PropertyFormat,
     PropertyType,
 } from '../../interfaces/entityTemplates';
@@ -25,17 +26,12 @@ const { entityTemplates } = environment.api;
 export const PropertyWizardType = {
     ...PropertyType,
     ...PropertyFormat,
-    users: 'users',
-    serialNumber: 'serialNumber',
-    enum: 'enum',
-    pattern: 'pattern',
-    multipleFiles: 'multipleFiles',
-    enumArray: 'enumArray',
+    ...PropertyExternalWizardType,
 };
 
 export const basePropertyTypes = [PropertyType.string, PropertyType.number, PropertyType.boolean];
 export const stringFormats = Object.values(PropertyFormat);
-export const arrayTypes = ['multipleFiles', 'enumArray', 'users'];
+export const arrayTypes = [PropertyExternalWizardType.multipleFiles, PropertyExternalWizardType.enumArray, PropertyExternalWizardType.users];
 
 export const parseFilters = (filters: any) => (typeof filters === 'string' ? JSON.parse(filters) : filters);
 type ExtractedProps<T> = {
@@ -413,7 +409,7 @@ const collectEnumColors = (
     property: EntityTemplateFormInputProperties,
     enumPropertiesColors: IEntityTemplate['enumPropertiesColors'] | undefined,
 ) => {
-    if (!['enum', 'enumArray'].includes(property.type)) return enumPropertiesColors;
+    if (![PropertyExternalWizardType.enum, PropertyExternalWizardType.enumArray].includes(property.type as PropertyExternalWizardType)) return enumPropertiesColors;
 
     Object.entries(property.optionColors).forEach(([option, enumColor]) => {
         if (!enumColor) return;
