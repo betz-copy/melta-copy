@@ -74,7 +74,7 @@ const relationshipRow = (
                                 sx={{
                                     fontSize: 16,
                                     color: '#9398C2',
-                                    transform: 'rotate(180deg)',
+                                    transform: 'rotate(90deg)',
                                 }}
                             />
                         )}

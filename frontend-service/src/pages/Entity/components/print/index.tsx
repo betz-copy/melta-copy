@@ -14,6 +14,7 @@ import { ComponentToPrint } from './ComponentToPrint';
 import './print.css';
 import html2pdf from 'html2pdf.js';
 import { useQuery } from 'react-query';
+import { toast } from 'react-toastify';
 import { getEntitiesTreeForPrint } from '../../../../services/entitiesService';
 
 export async function generateAndSavePDF(printIframe: HTMLIFrameElement, filename?: string) {
@@ -173,7 +174,10 @@ const Print: React.FC<{
                     setSelectedFiles={setSelectedFiles}
                     filesLoadingStatus={filesLoadingStatus}
                     setFilesLoadingStatus={setFilesLoadingStatus}
-                    onClick={() => setShouldPrint(true)}
+                    onClick={() => {
+                        //TODO text
+                        selectedRelationShipIds.length > 0 ? (setShouldPrint(true), setIsGeneratingPdf(true)) : toast.warning('&&&&&&&&&');
+                    }}
                     title={title}
                     setTitle={setTitle}
                     setSelectedRelationShipIds={setSelectedRelationShipIds}
