@@ -357,15 +357,13 @@ const formatCellValue = (
     if (property.format === 'user') rawValue = insertEntities ? rawValue : JSON.parse(rawValue as string)?.fullName;
 
     if (property.format === 'location') {
-        if (property.format === 'location') {
-            if (typeof rawValue === 'string' && rawValue.includes('{')) {
-                const location = typeof rawValue === 'string' ? JSON.parse(rawValue) : rawValue;
+        if (typeof rawValue === 'string' && rawValue.includes('{')) {
+            const location = typeof rawValue === 'string' ? JSON.parse(rawValue) : rawValue;
 
-                rawValue =
-                    location.coordinateSystem === CoordinateSystem.UTM
-                        ? locationConverterToString(location.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
-                        : location.location;
-            }
+            rawValue =
+                location.coordinateSystem === CoordinateSystem.UTM
+                    ? locationConverterToString(location.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
+                    : location.location;
         }
     }
 

@@ -197,12 +197,10 @@ const TemplateTable = forwardRef<
 
                 if (!relatedTemplate) {
                     if (isRequiredProperty) return `${hebrewPrefix}.doesntHavePermissionToRelatedTemplate`;
-                    else continue;
+                } else {
+                    const hasIdentifier = Object.values(relatedTemplate.properties?.properties ?? {}).some((prop) => Boolean(prop.identifier));
+                    if (!hasIdentifier && isRequiredProperty) return `${hebrewPrefix}.requiredRelationshipRef`;
                 }
-
-                const hasIdentifier = Object.values(relatedTemplate?.properties?.properties ?? {}).some((prop) => !!prop.identifier);
-
-                if (!hasIdentifier && isRequiredProperty) return `${hebrewPrefix}.requiredRelationshipRef`;
             }
         }
 
@@ -214,6 +212,7 @@ const TemplateTable = forwardRef<
         return Object.values(properties).some((property) => property.identifier);
     };
 
+    const loadExcelDisabledReason = getLoadExcelDisabledReason();
     const isLoadExcelDisabled = !!getLoadExcelDisabledReason();
     const isEditExcelDisabled = !userHasWritePermissions || !checkIfEditExcelIsDisabled() || template.disabled;
     const editExcelTooltip = isEditExcelDisabled
@@ -299,9 +298,7 @@ const TemplateTable = forwardRef<
                             iconButtonWithPopoverProps={{
                                 popoverText: i18next.t('entitiesTableOfTemplate.downloadOneTable'),
                                 iconButtonProps: {
-                                    onClick: () => {
-                                        handleDownloadClick();
-                                    },
+                                    onClick: () => handleDownloadClick(),
                                 },
                             }}
                             icon={isExportingTableToExcelFile ? <CircularProgress size="24px" /> : <Download fontSize="small" />}
@@ -354,7 +351,7 @@ const TemplateTable = forwardRef<
                             disabled={isLoadExcelDisabled}
                             initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
                             onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
-                            popoverText={getLoadExcelDisabledReason() ? i18next.t(getLoadExcelDisabledReason()!) : undefined}
+                            popoverText={loadExcelDisabledReason ? i18next.t(loadExcelDisabledReason) : undefined}
                         >
                             <Upload
                                 fontSize="small"

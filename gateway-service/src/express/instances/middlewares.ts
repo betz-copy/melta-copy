@@ -84,7 +84,8 @@ class InstancesValidator extends DefaultController {
         if (unauthorizedTemplates.length)
             throw new ForbiddenError('user not authorized', { metadata: `unauthorized templates ${JSON.stringify(unauthorizedTemplates)}` });
 
-        const templates = [...allowedEntityTemplates, ...allowedChildTemplates].filter(({ _id }) => templateIds.includes(_id));
+        const templateIdSet = new Set(templateIds);
+        const templates = [...allowedEntityTemplates, ...allowedChildTemplates].filter(({ _id }) => templateIdSet.has(_id));
         return keyBy(templates, '_id');
     }
 
