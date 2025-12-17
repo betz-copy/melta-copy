@@ -216,9 +216,9 @@ export const readExcelFile = async (
     relatedTemplatesMap: Record<string, IMongoEntityTemplatePopulated>,
     workspaceId: string,
     entitiesFileLimit = config.loadExcel.entitiesFileLimit,
-    userUnits?: string[],
     oldEntities: IEntityWithDirectRelationships[] = [],
     requiredConstraints: string[] = [],
+    userUnits?: string[],
 ) => {
     const isEditMode = oldEntities.length > 0;
     const isChild = isChildTemplate(template);

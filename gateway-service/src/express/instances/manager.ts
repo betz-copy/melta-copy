@@ -602,9 +602,9 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             relatedTemplatesMap,
             this.workspaceId,
             workspace.metadata?.excel?.entitiesFileLimit,
-            units,
             oldEntities,
             requiredConstraints,
+            units,
         );
 
         const entities = entitiesWithIgnoresRules.map(({ properties }) => ({
