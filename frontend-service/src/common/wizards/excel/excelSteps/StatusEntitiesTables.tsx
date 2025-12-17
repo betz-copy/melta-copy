@@ -27,6 +27,7 @@ export const StatusEntitiesTables: React.FC<{
                 defaultExpanded={false}
                 icon={<Check sx={{ color: '#4FC318' }} />}
                 title={`${tablesData.succeededEntities.length} ${i18next.t('wizard.entity.loadEntities.succeededEntities')}`}
+                ignoreType={false}
             />
             <EntitiesTable
                 rowData={(tablesData.brokenRulesEntities as IEntity[]) || []}
