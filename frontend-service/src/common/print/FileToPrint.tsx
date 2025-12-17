@@ -41,7 +41,7 @@ const FileToPrint: React.FC<{
                         alignItems: 'center',
                     }}
                 >
-                    <img src={data} alt={file.name} style={{ maxWidth: '100%', maxHeight: '100%' }} />
+                    {data && <img src={data} alt={file.name} style={{ maxWidth: '100%', maxHeight: '100%' }} />}
                 </Box>
             ) : (
                 <Document file={data} onLoadSuccess={onLoadSuccess} onLoadError={() => null}>
