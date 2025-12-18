@@ -9,7 +9,7 @@ import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemp
 import { IFile } from '../../../../interfaces/preview';
 import { EntityComponentToPrint } from './EntityComponentToPrint';
 
-export type IEntityTreeNode = IEntity & { children: (IEntityTreeNode & { relationshipId: string })[] };
+export type IEntityTreeNode = IEntity & { relationshipId: string; children: IEntityTreeNode[] };
 
 const ComponentToPrint = React.forwardRef<
     HTMLDivElement,
