@@ -11,7 +11,7 @@ import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces
 import { IGetUnits } from '../interfaces/units';
 import { useDarkModeStore } from '../stores/darkMode';
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
-import { formatToString, getUserAvatar } from '../utils/entityProperties';
+import { formatToString, getPropertyColor, getUserAvatar } from '../utils/entityProperties';
 import { HighlightText } from '../utils/HighlightText';
 import { containsHTMLTags, getFirstLine, getNumLines, renderHTML } from '../utils/HtmlTagsStringValue';
 import { getFixedNumber, getTextDirection } from '../utils/stringValues';
@@ -49,22 +49,6 @@ export interface IEntityPropertiesProps {
     preview?: boolean;
 }
 
-export const getPropertyColor = (
-    propertyKey: string,
-    propertiesToHighlight: string[] | undefined,
-    highlightColor: Property.Color | undefined,
-    mode: 'normal' | 'white',
-    normalColor: Property.Color,
-    coloredFields?: IEntity['coloredFields'],
-) => {
-    if (coloredFields?.[propertyKey]) return coloredFields?.[propertyKey];
-    if (propertiesToHighlight?.includes(propertyKey)) {
-        return highlightColor;
-    }
-
-    return mode === 'white' ? 'white' : normalColor;
-};
-
 type PropertiesDetailsProps = {
     propertiesOrderedToShow: string[];
     properties: IEntity['properties'];
@@ -83,6 +67,8 @@ type PropertiesDetailsProps = {
     darkMode?: boolean;
     preview?: boolean;
 };
+
+const excludedFormats = ['text-area', 'fileId', 'relationshipReference', 'user', 'location', 'signature', 'comment'];
 
 const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
     propertiesOrderedToShow,
@@ -177,8 +163,6 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                     getNumLines(stringFormatValue) > 1 &&
                     stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
 
-                const excludedFormats = ['text-area', 'fileId', 'relationshipReference', 'user', 'location', 'signature', 'comment'];
-
                 const textDirection =
                     format && !excludedFormats.includes(format)
                         ? getTextDirection(propertyValue, {
@@ -186,6 +170,49 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                               serialCurrent,
                           })
                         : 'rtl';
+
+                const titleTypography = (
+                    <Typography
+                        style={{
+                            ...(!isPrintingMode && {
+                                textOverflow: 'ellipsis',
+                                whiteSpace: textWrap ? undefined : 'nowrap',
+                                overflow: 'hidden',
+                            }),
+                            textAlign: 'right',
+                        }}
+                        fontSize="14px"
+                        color={propertyTitleColor}
+                        fontWeight={mode === 'white' ? '800' : ''}
+                    >
+                        {title}:
+                    </Typography>
+                );
+
+                const valueTypography = (
+                    <Typography
+                        fontSize="14px"
+                        color={color ?? propertyValueColor}
+                        style={{
+                            // When printing a long word, go to next line
+                            ...(isPrintingMode
+                                ? {
+                                      overflowWrap: 'anywhere',
+                                      wordBreak: 'break-word',
+                                  }
+                                : {
+                                      textOverflow: 'ellipsis',
+                                      whiteSpace: textWrap ? undefined : 'nowrap',
+                                      overflowX: 'hidden',
+                                  }),
+                            paddingLeft: '1rem',
+                            maxHeight: isPrintingMode ? undefined : '350px',
+                            direction: type === 'number' ? 'ltr' : textDirection,
+                        }}
+                    >
+                        <HighlightText text={innerContent} searchedText={searchedText} isLink />
+                    </Typography>
+                );
 
                 return (
                     <Grid
@@ -206,23 +233,13 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                                         width: overrideStyleInLongText ? '10%' : '30%',
                                     }}
                                 >
-                                    <MeltaTooltip disableHoverListener={textWrap} placement="bottom" title={title}>
-                                        <Typography
-                                            style={{
-                                                ...(!isPrintingMode && {
-                                                    textOverflow: 'ellipsis',
-                                                    whiteSpace: textWrap ? undefined : 'nowrap',
-                                                    overflow: 'hidden',
-                                                }),
-                                                textAlign: 'right',
-                                            }}
-                                            fontSize="14px"
-                                            color={propertyTitleColor}
-                                            fontWeight={mode === 'white' ? '800' : ''}
-                                        >
-                                            {title}:
-                                        </Typography>
-                                    </MeltaTooltip>
+                                    {isPrintingMode ? (
+                                        titleTypography
+                                    ) : (
+                                        <MeltaTooltip disableHoverListener={textWrap} placement="bottom" title={title}>
+                                            {titleTypography}
+                                        </MeltaTooltip>
+                                    )}
                                 </Grid>
                             )}
                             <Grid
@@ -236,36 +253,19 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                                     width: comment ? '100%' : overrideStyleInLongText ? '90%' : '70%',
                                 }}
                             >
-                                <MeltaTooltip
-                                    disableHoverListener={format === 'relationshipReference' ? true : textWrap}
-                                    placement="bottom"
-                                    title={<Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>{titleContent}</Grid>}
-                                >
-                                    <Typography
-                                        fontSize="14px"
-                                        color={color ?? propertyValueColor}
-                                        style={{
-                                            // When printing a long word, go to next line
-                                            ...(isPrintingMode
-                                                ? {
-                                                      overflowWrap: 'anywhere',
-                                                      wordBreak: 'break-word',
-                                                  }
-                                                : {
-                                                      textOverflow: 'ellipsis',
-                                                      whiteSpace: textWrap ? undefined : 'nowrap',
-                                                      overflowX: 'hidden',
-                                                  }),
-                                            paddingLeft: '1rem',
-                                            maxHeight: isPrintingMode ? undefined : '350px',
-                                            direction: type === 'number' ? 'ltr' : textDirection,
-                                        }}
+                                {isPrintingMode ? (
+                                    valueTypography
+                                ) : (
+                                    <MeltaTooltip
+                                        disableHoverListener={format === 'relationshipReference' ? true : textWrap}
+                                        placement="bottom"
+                                        title={<Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>{titleContent}</Grid>}
                                     >
-                                        <HighlightText text={innerContent} searchedText={searchedText} isLink />
-                                    </Typography>
-                                </MeltaTooltip>
-                                <Grid>
-                                    {hideField && !isPrintingMode && (
+                                        {valueTypography}
+                                    </MeltaTooltip>
+                                )}
+                                {hideField && !isPrintingMode && (
+                                    <Grid>
                                         <IconButton
                                             onClick={(event) => {
                                                 event.stopPropagation();
@@ -279,8 +279,8 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                                         >
                                             {hideFieldsToDisplay.includes(propertyKey) ? <VisibilityOffIcon /> : <VisibilityIcon />}
                                         </IconButton>
-                                    )}
-                                </Grid>
+                                    </Grid>
+                                )}
                             </Grid>
                         </Grid>
                     </Grid>
