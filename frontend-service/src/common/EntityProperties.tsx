@@ -1,214 +1,31 @@
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
 import { Box, Divider, Grid, IconButton, Typography } from '@mui/material';
 import type { Property } from 'csstype';
-import i18next from 'i18next';
 import _ from 'lodash';
 import React, { CSSProperties, JSX, useState } from 'react';
 import { pdfjs } from 'react-pdf';
 import { useQueryClient } from 'react-query';
 import { environment } from '../globals';
 import { IEntity } from '../interfaces/entities';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IGetUnits } from '../interfaces/units';
 import { useDarkModeStore } from '../stores/darkMode';
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
-import OverflowWrapper from '../utils/agGrid/OverflowWrapper';
+import { formatToString, getUserAvatar } from '../utils/entityProperties';
 import { HighlightText } from '../utils/HighlightText';
 import { containsHTMLTags, getFirstLine, getNumLines, renderHTML } from '../utils/HtmlTagsStringValue';
-import { extractUtmLocation, locationConverterToString } from '../utils/map/convert';
 import { getFixedNumber, getTextDirection } from '../utils/stringValues';
-import { ColoredEnumChip } from './ColoredEnumChip';
-import OpenPreview from './FilePreview/OpenPreview';
-import { CoordinateSystem, LocationData } from './inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
 import BlueTitle from './MeltaDesigns/BlueTitle';
 import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
-import RelationshipReferenceView from './RelationshipReferenceView';
-import UserAvatar from './UserAvatar';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
-function formatDateToDDMMYYYY(dateString: string): string {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return '-';
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-}
-
-interface FormatOptions {
-    keyEnumColors?: Record<string, string>;
-    isPrintingMode?: boolean;
-    pureString?: boolean;
-}
-
-const getUserAvatar = (
-    entityTemplate: Template,
-    imageKey: string,
-    properties: IEntityPropertiesProps['properties'],
-    iconProps: { size: number; border: number },
-) => {
-    const relatedUserField = entityTemplate?.properties?.properties?.[imageKey]?.expandedUserField?.relatedUserField;
-    const user = relatedUserField && properties?.[relatedUserField] ? JSON.parse(properties?.[relatedUserField]) : undefined;
-
-    return (
-        user && (
-            <div style={{ marginLeft: '3rem' }}>
-                <UserAvatar
-                    user={user}
-                    shouldRenderChip={false}
-                    tooltip={{ displayUserImage: false }}
-                    shouldGetKartoffelImage
-                    userIcon={{ size: iconProps.size, overrideSx: { border: `${iconProps.border}px solid #FF006B`, boxShadow: '0px' } }}
-                />
-            </div>
-        )
-    );
-};
-
-export const formatToString = (data: {
-    value: any;
-    property: IEntitySingleProperty;
-    units: IGetUnits;
-    key?: string;
-    preview?: boolean;
-    color?: string;
-    options?: FormatOptions;
-    hideProps?: string[];
-    entityTemplate?: Template;
-    properties?: IEntityPropertiesProps['properties'];
-    darkMode: boolean;
-}) => {
-    const { value, property, units, key, preview, color, options = {}, hideProps = [], entityTemplate, properties, darkMode } = data;
-
-    const { format, type: valueType, title, expandedUserField } = property;
-    const { keyEnumColors, isPrintingMode, pureString } = options;
-
-    // If displaying an image from a kartoffel user
-    if (format === 'kartoffelUserField' && expandedUserField?.kartoffelField === 'image' && entityTemplate && properties && key)
-        return getUserAvatar(entityTemplate, key, properties, { size: 32, border: 1 });
-
-    if (value === null || value === undefined) return '-';
-
-    if (
-        format === 'kartoffelUserField' &&
-        expandedUserField?.kartoffelField &&
-        ['birthDate', 'dischargeDay', 'enlistmentDay'].includes(expandedUserField.kartoffelField) &&
-        value
-    ) {
-        return formatDateToDDMMYYYY(value);
-    }
-
-    if (valueType === 'number') {
-        return value >= 0 ? value : `${(value * -1).toString()}-`;
-    }
-    if (valueType === 'boolean') return value ? i18next.t('booleanOptions.yes') : i18next.t('booleanOptions.no');
-    if (valueType === 'string') {
-        if (format === 'date') return new Date(value).toLocaleDateString('en-uk');
-        if (format === 'comment') return property.hideFromDetailsPage || (key && hideProps.includes(key)) ? undefined : property.comment;
-        if (format === 'date-time') return new Date(value).toLocaleString('en-uk');
-        if (format === 'fileId' || format === 'signature') {
-            return (
-                <OpenPreview
-                    fileId={value}
-                    download={isPrintingMode}
-                    defaultFileName={format === 'signature' ? `${title}.${environment.fileExtensions.defaultImage}` : undefined}
-                    disabled={preview}
-                    color={color}
-                />
-            );
-        }
-        if (format === 'relationshipReference') {
-            return pureString ? (
-                value.properties[property.relationshipReference!.relatedTemplateField!]
-            ) : (
-                <RelationshipReferenceView
-                    entity={value}
-                    relatedTemplateId={property.relationshipReference!.relatedTemplateId}
-                    relatedTemplateField={property.relationshipReference!.relatedTemplateField}
-                    color={color}
-                />
-            );
-        }
-        if (format === 'user') {
-            const userObject = typeof value === 'string' ? JSON.parse(value) : value;
-            return (
-                <Grid container gap={1}>
-                    <UserAvatar
-                        user={userObject}
-                        chip={{ sx: { background: darkMode ? '#1E1F2B' : '#EBEFFA', color: color ?? (darkMode ? '#D3D6E0' : '#53566E') } }}
-                    />
-                </Grid>
-            );
-        }
-        if (format === 'unitField') {
-            return units.find(({ _id }) => _id === value)?.name;
-        }
-    }
-    if (format === 'location') {
-        const convertLocation = (value: LocationData) =>
-            value.coordinateSystem === CoordinateSystem.UTM && !extractUtmLocation(value.location)
-                ? locationConverterToString(value.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
-                : value.location;
-
-        if (typeof value === 'string') {
-            if (value.includes('location')) return convertLocation(JSON.parse(value));
-            else return value;
-        }
-        return convertLocation(value);
-    }
-    if (keyEnumColors?.[value] && valueType === 'string')
-        return pureString ? value : <ColoredEnumChip label={value} enumColor={keyEnumColors[value] || 'default'} color={color} />;
-
-    if (valueType === 'array') {
-        if (property.items?.format === 'fileId') return value.map((val: string) => <OpenPreview fileId={val} key={val} color={color} />);
-
-        if (property.items?.format === 'user') {
-            return (
-                <Grid container>
-                    <OverflowWrapper
-                        items={value.map((val) => JSON.parse(val))}
-                        getItemKey={(item: any) => item._id}
-                        renderItem={(item) => (
-                            <Grid>
-                                <UserAvatar
-                                    key={item.id}
-                                    user={item}
-                                    tooltip={{ title: `${item.fullName} - ${item.hierarchy}` }}
-                                    chip={{
-                                        sx: { background: darkMode ? '#1E1F2B' : '#EBEFFA', color: color ?? (darkMode ? '#D3D6E0' : '#53566E') },
-                                    }}
-                                />
-                            </Grid>
-                        )}
-                        propertyToDisplayInTooltip="fullName"
-                        minVisibleItems={1}
-                    />
-                </Grid>
-            );
-        }
-
-        return pureString
-            ? value.join(', ')
-            : value.map((val: string) => (
-                  <ColoredEnumChip
-                      key={val}
-                      label={val}
-                      enumColor={keyEnumColors?.[val] || 'default'}
-                      style={{ margin: '5px 0px 0px 5px' }}
-                      color={color}
-                  />
-              ));
-    }
-    return value;
-};
-
 type Template = Pick<IMongoEntityTemplatePopulated, 'properties' | 'propertiesOrder' | 'enumPropertiesColors' | 'fieldGroups'> &
     Partial<Pick<IMongoEntityTemplatePopulated, 'propertiesPreview'>>;
-interface IEntityPropertiesProps {
+
+export interface IEntityPropertiesProps {
     entityTemplate: Template;
     properties: IEntity['properties'];
     coloredFields?: IEntity['coloredFields'];
@@ -286,6 +103,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
     preview,
 }) => {
     const queryClient = useQueryClient();
+
     const units = queryClient.getQueryData<IGetUnits>('getUnits')!;
 
     const [hideFieldsToDisplay, setHideFieldsToDisplay] = useState(entityTemplate.properties.hide);
