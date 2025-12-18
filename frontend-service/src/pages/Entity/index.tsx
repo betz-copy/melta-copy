@@ -3,7 +3,7 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, CircularProgress, Grid, Tab, useTheme } from '@mui/material';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useParams, useSearchParams } from 'wouter';
 import { getChildTemplatesFilter } from '../../common/inputs/TemplateEntitiesAutocomplete';
@@ -24,7 +24,7 @@ import { EntityDetails } from './components/EntityDetails';
 import { EntityTopBar } from './components/TopBar';
 import { EntityConnections } from './entityConnections';
 import { RelationshipIcon } from './RelationshipIcon';
-import { WalletTransfers } from './walletTransfers';
+import { WalletTransferData, WalletTransfers, WalletTransferTableRef } from './walletTransfers';
 
 export const getButtonState = (
     isEntityDisabled: boolean,
@@ -90,6 +90,8 @@ const Entity: React.FC = () => {
     const templateIds = Array.from(entityTemplates.keys());
 
     const groupChildTemplate = groupChildTemplatesByParent(childTemplates, entityTemplates);
+
+    const walletTransferTableRef = useRef<WalletTransferTableRef<WalletTransferData>>(null);
 
     const filters: any =
         Object.entries(groupChildTemplate).length > 0
@@ -195,6 +197,8 @@ const Entity: React.FC = () => {
                                 sx={{
                                     display: 'flex',
                                     justifyContent: 'flex-end',
+                                    height: '35px',
+                                    alignItems: 'center',
                                 }}
                             >
                                 <TabList
@@ -203,15 +207,29 @@ const Entity: React.FC = () => {
                                         indicator: { style: { display: 'none' } },
                                     }}
                                     sx={{
+                                        paddingTop: 4,
                                         '& .MuiTab-root': {
                                             minWidth: 'auto',
-                                            p: 1,
+                                            minHeight: 'auto',
+                                            width: '35px',
+                                            height: '35px',
+                                            padding: 0,
+                                            borderRadius: 2,
+                                            marginRight: 0.1,
+                                            '&:last-of-type': {
+                                                marginRight: 0,
+                                            },
                                         },
-                                        mb: 0,
+                                        '& .MuiTab-root.Mui-selected': {
+                                            backgroundColor: '#CCCFE5',
+                                        },
                                     }}
                                 >
-                                    <Tab icon={<RelationshipIcon />} value="walletTransfers" />
-                                    <Tab icon={<AccountBalanceWallet sx={{ color: theme.palette.primary.main }} />} value="connectionsByCategories" />
+                                    <Tab icon={<RelationshipIcon size={18} />} value="walletTransfers" />
+                                    <Tab
+                                        icon={<AccountBalanceWallet sx={{ fontSize: 18, color: theme.palette.primary.main }} />}
+                                        value="connectionsByCategories"
+                                    />
                                 </TabList>
                             </Box>
                             <TabPanel value="walletTransfers" sx={{ p: 0 }}>
@@ -230,6 +248,7 @@ const Entity: React.FC = () => {
                                     templateId={currentEntityTemplate._id}
                                     expandedEntity={expandedEntity}
                                     getButtonStateByRelatedTemplate={getButtonStateByRelatedTemplate}
+                                    walletTransferTableRef={walletTransferTableRef}
                                 />
                             </TabPanel>
                         </TabContext>

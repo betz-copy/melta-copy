@@ -508,7 +508,8 @@ const TemplateTable = forwardRef<
 
                                 setUpdatedEntities?.(
                                     Object.values(entity.properties).filter(
-                                        (property): property is IEntity => typeof property === 'object' && 'templateId' in property && 'properties' in property,
+                                        (property): property is IEntity =>
+                                            typeof property === 'object' && 'templateId' in property && 'properties' in property,
                                     ),
                                 );
                             }

@@ -1,25 +1,26 @@
+import { ColDef } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
+import { AccountBalanceWalletOutlined, ArrowBack as ArrowBackIcon, ArrowForward as ArrowForwardIcon } from '@mui/icons-material';
+import { Avatar, Box, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import React, { ForwardedRef, memo, useMemo, useRef } from 'react';
-import { INestedRelationshipTemplates } from '.';
+import React, { ForwardedRef, memo, useMemo } from 'react';
+import { useQueryClient } from 'react-query';
+import { Link } from 'wouter';
 import AgGridTable from '../../common/agGridTable';
+import IconButtonWithPopover from '../../common/IconButtonWithPopover';
+import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 import { environment } from '../../globals';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { defaultColDef } from '../PermissionsManagement/components/table';
-import { Avatar, Box, Grid, Typography } from '@mui/material';
-import { Link } from 'wouter';
-import IconButtonWithPopover from '../../common/IconButtonWithPopover';
-import { isChildTemplate } from '../../utils/templates';
-import { useQueryClient } from 'react-query';
 import { useUserStore } from '../../stores/user';
-import { ArrowForward as ArrowForwardIcon, ArrowBack as ArrowBackIcon, AccountBalanceWalletOutlined } from '@mui/icons-material';
 import { Value } from '../../utils/agGrid/Value';
-import RelationshipReferenceView from '../../common/RelationshipReferenceView';
+import { isChildTemplate } from '../../utils/templates';
+import { defaultColDef } from '../PermissionsManagement/components/table';
+import { INestedRelationshipTemplates } from '.';
 
 const { infiniteScrollPageCount } = environment.permission;
 
-interface WalletTransferData {
+export interface WalletTransferData {
     template: IMongoEntityTemplatePopulated;
     entity: IEntity;
     direction: string;
@@ -36,7 +37,6 @@ interface IWalletTransfers {
     };
 }
 
-
 export type WalletTransferTableRef<WalletTransferData> = {
     refreshServerSide: () => void;
     updateRowDataClientSide: (data: WalletTransferData) => void;
@@ -47,6 +47,7 @@ export const WalletTransfers: React.FC<IWalletTransfers> = ({
     connectionsTemplates,
     expandedEntity,
     getButtonStateByRelatedTemplate,
+    walletTransferTableRef,
 }: {
     templateId: string;
     expandedEntity: IEntityExpanded;
@@ -56,10 +57,10 @@ export const WalletTransfers: React.FC<IWalletTransfers> = ({
         disabledButtonText: string;
         hasPermissionToRelatedTemplate: boolean;
     };
+    walletTransferTableRef: ForwardedRef<WalletTransferTableRef<WalletTransferData>>;
 }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const walletTransferTableRef = useRef<WalletTransferTableRef<WalletTransferData>>(null);
 
     const currentUser = useUserStore((state) => state.user);
     const isAdmin = Boolean(currentUser.currentWorkspacePermissions?.admin) || false;
@@ -111,7 +112,7 @@ export const WalletTransfers: React.FC<IWalletTransfers> = ({
         .sort((a, b) => b._sortKey - a._sortKey)
         .map(({ _sortKey, ...rest }) => rest);
 
-    function calculateBalancesFromCurrent(transfers: WalletTransferData[], currentBalance: number) {
+    const calculateBalancesFromCurrent = (transfers: WalletTransferData[], currentBalance: number) => {
         let balance = currentBalance;
 
         const withBalances: WalletTransferData[] = transfers.map((t) => {
@@ -136,16 +137,17 @@ export const WalletTransfers: React.FC<IWalletTransfers> = ({
         } as WalletTransferData;
 
         return [...withBalances, initialRow];
-    }
+    };
 
     const orderedConnectionEntitiesWithBalances = calculateBalancesFromCurrent(orderedConnectionEntities, currentEntityBalance);
 
-    const getRowModelProps = <Data extends any = WalletTransferData>(paginationPageSize: number): React.ComponentProps<typeof AgGridReact<Data>> => {
+    const getRowModelProps = <Data = WalletTransferData>(paginationPageSize: number): React.ComponentProps<typeof AgGridReact<Data>> => {
         return {
             rowModelType: 'clientSide',
             rowData: orderedConnectionEntitiesWithBalances as Data[],
             pagination: true,
             paginationPageSize,
+            domLayout: 'normal',
         };
     };
 
@@ -186,7 +188,17 @@ export const WalletTransfers: React.FC<IWalletTransfers> = ({
             field: 'createdAt',
             headerName: i18next.t('entityPage.walletTransfer.createdAt'),
             valueGetter: (params: any) =>
-                params.data?.entity.properties.createdAt ? new Date(params.data.entity.properties.createdAt).toLocaleString() : '',
+                params.data?.entity?.properties?.createdAt
+                    ? new Date(params.data.entity.properties.createdAt).toLocaleString(undefined, {
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          second: '2-digit',
+                          hour12: false,
+                      })
+                    : '',
         },
         {
             field: 'transfer.entity',
@@ -251,7 +263,21 @@ export const WalletTransfers: React.FC<IWalletTransfers> = ({
         {
             field: 'transfer.description',
             headerName: i18next.t('entityPage.walletTransfer.description'),
-            valueGetter: (params: any) => params.data?.entity?.properties[params.data?.template.walletTransfer?.description] ?? '',
+            valueGetter: (params: any) => {
+                if (!params.data) return '';
+
+                const { direction, entity, template } = params.data;
+
+                return direction === 'initial'
+                    ? i18next.t('entityPage.walletTransfer.initialBalanceDescription')
+                    : (entity?.properties?.[template?.walletTransfer?.description] ?? '');
+            },
+            cellRenderer: (params: any) => {
+                if (params.data?.direction === 'initial') {
+                    return <strong>{params.value}</strong>;
+                }
+                return params.value;
+            },
         },
         {
             field: 'transfer.amount',
@@ -364,11 +390,11 @@ export const WalletTransfers: React.FC<IWalletTransfers> = ({
             </Box>
             <Grid container sx={{ marginTop: 2 }}>
                 <AgGridTable
-                    defaultColDef={defaultColDef as any}
-                    getRowId={(data: any) => data.entity._id}
+                    defaultColDef={defaultColDef as ColDef<WalletTransferData>}
+                    getRowId={(data: WalletTransferData) => data.entity.properties._id}
                     rowModelProps={rowModelProps}
                     columnDefs={columnDefs}
-                    ref={walletTransferTableRef as ForwardedRef<WalletTransferTableRef<WalletTransferData>>}
+                    ref={walletTransferTableRef}
                 />
             </Grid>
         </Grid>

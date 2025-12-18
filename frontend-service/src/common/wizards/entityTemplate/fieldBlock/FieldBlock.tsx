@@ -640,6 +640,11 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                                 <Attachment key={data.id} field={data} index={index} buildProps={{ ...buildProps(data, index) }} onDrop={moveField} />
                             );
                         })}
+                        <div>
+                            {errors?.[propertiesType] === i18next.t('validation.accountBalanceField') && (
+                                <div style={{ color: '#d32f2f' }}>{i18next.t('validation.accountBalanceField')}</div>
+                            )}
+                        </div>
                     </Grid>
                 </div>
                 <Grid>

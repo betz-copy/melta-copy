@@ -21,6 +21,7 @@ import { searchRolesRequest, searchUsersRequest } from '../../../services/userSe
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { translatedEnumColDef } from '../../../utils/agGrid/commonColDefs';
 import { trycatch } from '../../../utils/trycatch';
+import { WalletTransferData } from '../../Entity/walletTransfers';
 
 const { infiniteScrollPageCount } = environment.permission;
 
@@ -40,7 +41,7 @@ const getChipsFromArray = (chips: { key: string; label: string }[]) => (
     </ScrollContainer>
 );
 
-export const defaultColDef: ColDef<PermissionData> = {
+export const defaultColDef: ColDef<PermissionData | WalletTransferData> = {
     editable: false,
     sortable: false,
     flex: 1,
@@ -300,7 +301,7 @@ const PermissionsTable = forwardRef<PermissionsTableRef<PermissionData>, Permiss
 
         return (
             <AgGridTable
-                defaultColDef={defaultColDef}
+                defaultColDef={defaultColDef as ColDef<PermissionData>}
                 getRowId={getRowId}
                 quickFilterText={quickFilterText}
                 rowModelProps={rowModelProps}

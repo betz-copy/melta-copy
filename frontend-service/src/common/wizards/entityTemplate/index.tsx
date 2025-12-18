@@ -150,6 +150,7 @@ const EntityTemplateWizard: React.FC<
 
     const createTemplateSettingsSchema = useCreateOrEditTemplateNameSchema(templates, currentTemplateId);
     const walletTransferSchema = walletTransferSettingsSchema();
+    const addFieldsSettingsSchema = addFieldsSchema(isAccountTemplate);
 
     const { isLoading, mutateAsync } = useMutation(
         async (entityTemplate: EntityTemplateWizardValues) => {
@@ -296,7 +297,7 @@ const EntityTemplateWizard: React.FC<
                     setIsTransferTemplate={setIsTransferTemplate}
                 />
             ),
-            validationSchema: addFieldsSchema,
+            validationSchema: addFieldsSettingsSchema,
         },
         ...(isTransferTemplate && !isAccountTemplate
             ? [

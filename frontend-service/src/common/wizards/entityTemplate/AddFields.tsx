@@ -223,48 +223,63 @@ const fieldByTypeSchema = Yup.lazy((item: any) => {
     return Yup.mixed().notRequired();
 });
 
-const propertiesSchema = Yup.array()
-    .of(fieldByTypeSchema as any)
-    .min(1, i18next.t('validation.oneField'))
-    .test('hasActiveFields', i18next.t('validation.oneField'), (entries) => {
-        if (!entries) return false;
-        return (entries as PropertyItem[]).some((item) => {
-            if (item.type === 'field') return !item.data?.deleted;
-            if (item.type === 'group') return item.fields?.some((f) => !f.deleted);
-            return false;
-        });
-    })
-    .test('hasNonArchivedFields', i18next.t('validation.oneField'), (entries) => {
-        if (!entries) return false;
-        return (entries as PropertyItem[]).some((item) => {
-            if (item.type === 'field') return item.data?.archive !== true;
-            if (item.type === 'group') return item.fields?.some((f) => f.archive !== true);
-            return false;
-        });
-    })
-    .test('mapSearchLimit', i18next.t('validation.mapSearchPropertiesLimit', { limit: mapSearchPropertiesLimit }), (entries) => {
-        if (!entries) return true;
-        let count = 0;
-        for (const item of entries as PropertyItem[]) {
-            if (item.type === 'field' && item.data?.mapSearch) count++;
-            if (item.type === 'group') count += item.fields?.filter((f) => f.mapSearch).length || 0;
-        }
-        if (count > mapSearchPropertiesLimit) toast.error(i18next.t('validation.mapSearchPropertiesLimit', { limit: mapSearchPropertiesLimit }));
+const propertiesSchema = (isAccountTemplate = false) => {
+    return Yup.array()
+        .of(fieldByTypeSchema as any)
+        .min(1, i18next.t('validation.oneField'))
+        .test('hasNonAccountBalanceField', i18next.t('validation.accountBalanceField'), (entries) => {
+            if (!isAccountTemplate) return true;
+            if (!entries) return false;
+            return !(entries as PropertyItem[]).every((item) => {
+                if (item.type === 'field') return !item.data?.accountBalance;
+                if (item.type === 'group') {
+                    return item.fields?.every((f) => !f.accountBalance);
+                }
+                return false;
+            });
+        })
+        .test('hasActiveFields', i18next.t('validation.oneField'), (entries) => {
+            if (!entries) return false;
+            return (entries as PropertyItem[]).some((item) => {
+                if (item.type === 'field') return !item.data?.deleted;
+                if (item.type === 'group') return item.fields?.some((f) => !f.deleted);
+                return false;
+            });
+        })
+        .test('hasNonArchivedFields', i18next.t('validation.oneField'), (entries) => {
+            if (!entries) return false;
+            return (entries as PropertyItem[]).some((item) => {
+                if (item.type === 'field') return item.data?.archive !== true;
+                if (item.type === 'group') return item.fields?.some((f) => f.archive !== true);
+                return false;
+            });
+        })
+        .test('mapSearchLimit', i18next.t('validation.mapSearchPropertiesLimit', { limit: mapSearchPropertiesLimit }), (entries) => {
+            if (!entries) return true;
+            let count = 0;
+            for (const item of entries as PropertyItem[]) {
+                if (item.type === 'field' && item.data?.mapSearch) count++;
+                if (item.type === 'group') count += item.fields?.filter((f) => f.mapSearch).length || 0;
+            }
+            if (count > mapSearchPropertiesLimit) toast.error(i18next.t('validation.mapSearchPropertiesLimit', { limit: mapSearchPropertiesLimit }));
 
-        return count <= mapSearchPropertiesLimit;
-    });
+            return count <= mapSearchPropertiesLimit;
+        });
+};
 
-const addFieldsSchema = Yup.object({
-    properties: propertiesSchema,
-    attachmentProperties: Yup.array().of(
-        Yup.object({
-            type: Yup.string().oneOf(['field']).required(),
-            data: attachmentPropertiesBaseSchema.shape({
-                required: Yup.boolean().required(i18next.t('validation.required')),
+const addFieldsSchema = (isAccountTemplate = false) => {
+    return Yup.object({
+        properties: propertiesSchema(isAccountTemplate),
+        attachmentProperties: Yup.array().of(
+            Yup.object({
+                type: Yup.string().oneOf(['field']).required(),
+                data: attachmentPropertiesBaseSchema.shape({
+                    required: Yup.boolean().required(i18next.t('validation.required')),
+                }),
             }),
-        }),
-    ),
-}).test('uniqueProperties', entityTemplateUniqueProperties);
+        ),
+    }).test('uniqueProperties', entityTemplateUniqueProperties);
+};
 
 type AddFieldsDNDProps = Pick<
     FormikProps<EntityTemplateWizardValues>,

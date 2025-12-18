@@ -874,8 +874,11 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         );
         return {
             ...createdEntity,
-            ...(source && { [from]: source }),
-            ...(destination && { [to]: destination }),
+            properties: {
+                ...createdEntity.properties,
+                ...(source && { [from]: source }),
+                ...(destination && { [to]: destination }),
+            },
         };
     }
 
