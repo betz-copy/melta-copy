@@ -13,13 +13,13 @@ export type AgGridTableProps<Data> = {
     quickFilterText?: string;
 };
 
-export type AgGridTableRef<Data extends any> = {
+export type AgGridTableRef<Data> = {
     refreshServerSide: () => void;
     updateRowDataClientSide: (data: Data) => void;
 };
 
 const AgGridTable = forwardRef<AgGridTableRef<unknown>, AgGridTableProps<unknown>>(
-    <Data extends any>(
+    <Data,>(
         { defaultColDef, columnDefs, getRowId, rowModelProps, quickFilterText }: AgGridTableProps<Data>,
         ref: ForwardedRef<AgGridTableRef<Data>>,
     ) => {
@@ -81,7 +81,7 @@ const AgGridTable = forwardRef<AgGridTableRef<unknown>, AgGridTableProps<unknown
                 }}
                 quickFilterText={quickFilterText}
                 localeText={agGridLocaleText}
-                animateRows
+                suppressRowTransform
             />
         );
     },
