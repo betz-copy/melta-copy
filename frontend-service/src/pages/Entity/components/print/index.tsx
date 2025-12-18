@@ -1,7 +1,7 @@
 import { PrintOutlined } from '@mui/icons-material';
 import { Backdrop, Button, CircularProgress, ThemeProvider } from '@mui/material';
 import i18next from 'i18next';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
 import PrintOptionsDialog, { PrintType } from '../../../../common/print/PrintOptionsDialog';
@@ -119,6 +119,17 @@ const Print: React.FC<{
         entityDates: { show: showEntityDates, set: setShowEntityDates, label: 'entityPage.print.showEntityDates' },
     };
 
+    const memoizedOptions = useMemo(
+        () => ({
+            showDisabled: isShowDisabled,
+            showEntityDates,
+            showEntityFiles: !!selectedFiles.length,
+            showPreviewPropertiesOnly,
+            addEntityCheckbox: true,
+        }),
+        [isShowDisabled, showEntityDates, selectedFiles.length, showPreviewPropertiesOnly],
+    );
+
     useEffect(() => {
         if (data && isPreparingPdf) {
             handlePrint();
@@ -144,13 +155,7 @@ const Print: React.FC<{
                             filesToPrint={selectedFiles}
                             setSelectedFiles={setSelectedFiles}
                             setFilesLoadingStatus={setFilesLoadingStatus}
-                            options={{
-                                showDisabled: isShowDisabled,
-                                showEntityDates,
-                                showEntityFiles: !!selectedFiles.length,
-                                showPreviewPropertiesOnly,
-                                addEntityCheckbox: true,
-                            }}
+                            options={memoizedOptions}
                             printTitle={title}
                         />
                     </ThemeProvider>

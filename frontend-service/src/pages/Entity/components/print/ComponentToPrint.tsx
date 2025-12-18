@@ -1,12 +1,14 @@
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import React from 'react';
+import React, { useMemo } from 'react';
+import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import BlueTitle from '../../../../common/MeltaDesigns/BlueTitle';
 import { FileToPrint } from '../../../../common/print/FileToPrint';
 import { IEntity } from '../../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IFile } from '../../../../interfaces/preview';
+import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { EntityComponentToPrint } from './EntityComponentToPrint';
 
 export type IEntityTreeNode = IEntity & { relationshipId: string; children: IEntityTreeNode[] };
@@ -30,6 +32,15 @@ const ComponentToPrint = React.forwardRef<
     }
 >(({ entityTemplate, entity, options, filesToPrint = [], setSelectedFiles, setFilesLoadingStatus, printTitle }, ref) => {
     const theme = useTheme();
+    const queryClient = useQueryClient();
+
+    const { entityTemplates, relationships } = useMemo(
+        () => ({
+            entityTemplates: queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!,
+            relationships: queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!,
+        }),
+        [queryClient],
+    );
 
     if (!entity) return <></>;
 
@@ -40,7 +51,14 @@ const ComponentToPrint = React.forwardRef<
                     {printTitle}
                 </Typography>
 
-                <EntityComponentToPrint entityTemplate={entityTemplate} entity={entity} options={options} hierarchicalChildren={entity.children} />
+                <EntityComponentToPrint
+                    entityTemplates={entityTemplates}
+                    relationships={relationships}
+                    entityTemplate={entityTemplate}
+                    entity={entity}
+                    options={options}
+                    hierarchicalChildren={entity.children}
+                />
             </Grid>
 
             {options.showEntityFiles && filesToPrint.length > 0 && (
