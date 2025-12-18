@@ -1,6 +1,5 @@
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
-import { Box, Divider, Grid, IconButton, Typography } from '@mui/material';
-import type { Property } from 'csstype';
+import { Divider, IconButton, Typography } from '@mui/material';
 import _ from 'lodash';
 import React, { CSSProperties, JSX, useState } from 'react';
 import { pdfjs } from 'react-pdf';
@@ -215,20 +214,20 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                 );
 
                 return (
-                    <Grid
+                    <div
                         key={propertyKey}
-                        container
-                        flexDirection="row"
                         style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            flexWrap: 'wrap',
                             ...(overrideStyleInLongText ? { width: '100%' } : innerStyle),
                             marginBottom: '10px',
+                            alignItems: textWrap ? 'flex-start' : 'center',
                         }}
-                        alignItems={textWrap ? 'flex-start' : 'center'}
-                        size={{ xs: 12 }}
                     >
-                        <Grid container width="100%" flexWrap="nowrap" alignItems={textWrap ? 'flex-start' : 'center'}>
+                        <div style={{ display: 'flex', width: '100%', flexWrap: 'nowrap', alignItems: textWrap ? 'flex-start' : 'center' }}>
                             {!comment && (
-                                <Grid
+                                <div
                                     style={{
                                         width: overrideStyleInLongText ? '10%' : '30%',
                                     }}
@@ -240,14 +239,14 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                                             {titleTypography}
                                         </MeltaTooltip>
                                     )}
-                                </Grid>
+                                </div>
                             )}
-                            <Grid
-                                container
-                                flexDirection="row"
-                                alignItems={textWrap ? 'flex-start' : 'center'}
-                                flexWrap={isPrintingMode ? 'wrap' : 'nowrap'}
+                            <div
                                 style={{
+                                    display: 'flex',
+                                    flexDirection: 'row',
+                                    alignItems: textWrap ? 'flex-start' : 'center',
+                                    flexWrap: isPrintingMode ? 'wrap' : 'nowrap',
                                     direction: 'rtl',
                                     textAlign: 'right',
                                     width: comment ? '100%' : overrideStyleInLongText ? '90%' : '70%',
@@ -259,13 +258,13 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                                     <MeltaTooltip
                                         disableHoverListener={format === 'relationshipReference' ? true : textWrap}
                                         placement="bottom"
-                                        title={<Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>{titleContent}</Grid>}
+                                        title={<div style={{ maxHeight: '500px', overflowY: 'auto' }}>{titleContent}</div>}
                                     >
                                         {valueTypography}
                                     </MeltaTooltip>
                                 )}
                                 {hideField && !isPrintingMode && (
-                                    <Grid>
+                                    <div>
                                         <IconButton
                                             onClick={(event) => {
                                                 event.stopPropagation();
@@ -279,11 +278,11 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                                         >
                                             {hideFieldsToDisplay.includes(propertyKey) ? <VisibilityOffIcon /> : <VisibilityIcon />}
                                         </IconButton>
-                                    </Grid>
+                                    </div>
                                 )}
-                            </Grid>
-                        </Grid>
-                    </Grid>
+                            </div>
+                        </div>
+                    </div>
                 );
             })}
         </>
@@ -344,12 +343,21 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     });
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+        <div style={{ display: 'flex', flexDirection: 'row' }}>
             {/* Profile image */}
             {imageOfKartoffelKeys.map((key) => getUserAvatar(entityTemplate, key, properties, { size: 120, border: 4 }))}
             {showDivider && <Divider title={dividerTitle} sx={{ marginY: '1rem' }} />}
-            <Box sx={{ marginY: '1rem' }}>{dividerTitle && <BlueTitle title={dividerTitle} component="p" variant="subtitle1" />}</Box>
-            <Grid container width="100%" style={{ ...style, alignItems: textWrap ? 'flex-start' : 'center', alignContent: 'center' }}>
+            <div style={{ margin: '1rem 0' }}>{dividerTitle && <BlueTitle title={dividerTitle} component="p" variant="subtitle1" />}</div>
+            <div
+                style={{
+                    ...style,
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    width: '100%',
+                    alignItems: textWrap ? 'flex-start' : 'center',
+                    alignContent: 'center',
+                }}
+            >
                 {showByGroups && entityTemplate.fieldGroups ? (
                     propertiesOrderedToShow.map((propertyKey) => {
                         const group = entityTemplate.fieldGroups?.find((g) => g.fields.includes(propertyKey));
@@ -360,9 +368,11 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                             const orderedGroupFields = propertiesOrderedToShow.filter((key) => group.fields.includes(key));
 
                             return (
-                                <Grid
-                                    container
-                                    sx={{
+                                <div
+                                    key={group.name}
+                                    style={{
+                                        display: 'flex',
+                                        flexWrap: 'wrap',
                                         width: '100%',
                                         borderRadius: '10px',
                                         backgroundColor: darkMode ? '#4a4a5033' : 'rgba(240, 242, 247, 0.3)',
@@ -370,18 +380,16 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                         marginTop: '3px',
                                         marginBottom: '3px',
                                     }}
-                                    key={group.name}
                                 >
-                                    <Box
-                                        key={group.name}
-                                        sx={{
+                                    <div
+                                        style={{
                                             width: '100%',
                                         }}
                                     >
                                         <Typography fontWeight="bold" fontSize="16px" color="primary" paddingBottom={1} marginBottom="20px">
                                             {group.displayName}
                                         </Typography>
-                                        <Grid container>
+                                        <div style={{ display: 'flex', flexWrap: 'wrap' }}>
                                             <PropertiesDetails
                                                 key={group.name}
                                                 propertiesOrderedToShow={orderedGroupFields}
@@ -401,9 +409,9 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                                 textWrap={textWrap}
                                                 preview={preview}
                                             />
-                                        </Grid>
-                                    </Box>
-                                </Grid>
+                                        </div>
+                                    </div>
+                                </div>
                             );
                         }
 
@@ -453,8 +461,8 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                         preview={preview}
                     />
                 )}
-            </Grid>
-        </Box>
+            </div>
+        </div>
     );
 };
 
