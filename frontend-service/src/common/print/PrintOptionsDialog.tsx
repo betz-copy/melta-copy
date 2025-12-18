@@ -89,6 +89,7 @@ const PrintOptionsDialog: React.FC<{
     setTitle: React.Dispatch<React.SetStateAction<string | undefined>>;
 
     setSelectedRelationShipIds?: React.Dispatch<React.SetStateAction<string[]>>;
+    isPrintButtonEnabled?: boolean;
 }> = ({
     open,
     handleClose,
@@ -103,6 +104,7 @@ const PrintOptionsDialog: React.FC<{
     title,
     setTitle,
     setSelectedRelationShipIds,
+    isPrintButtonEnabled = true,
 }) => {
     const theme = useTheme();
     const [isLoading, setIsLoading] = useState(false);
@@ -232,7 +234,7 @@ const PrintOptionsDialog: React.FC<{
                             onClick(ev);
                         }}
                         endIcon={<DownloadIcon />}
-                        disabled={isLoading}
+                        disabled={isLoading || !isPrintButtonEnabled}
                         sx={{ borderRadius: '7px', fontWeight: 400 }}
                     >
                         {`${i18next.t('entityPage.print.continue')}-pdf`}

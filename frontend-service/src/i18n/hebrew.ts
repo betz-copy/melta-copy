@@ -249,6 +249,8 @@ export default {
             relationships: 'קשרים',
             noPreviewProperties: 'אין מאפייני תצוגה מקדימה',
             title: 'כותרת הדפסה',
+            fetchingData: 'מחפש קשרים...',
+            generatingPdf: 'יוצר pdf...',
         },
         previewRefetch: 'קובץ בתהליך עיבוד, נסה שוב מאוחר יותר',
     },

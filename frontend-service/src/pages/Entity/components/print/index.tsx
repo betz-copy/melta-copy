@@ -2,7 +2,7 @@ import { PrintOutlined } from '@mui/icons-material';
 import { Backdrop, Button, CircularProgress, ThemeProvider } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
-import { UseReactToPrintOptions, useReactToPrint } from 'react-to-print';
+import { useReactToPrint } from 'react-to-print';
 import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
 import PrintOptionsDialog, { PrintType } from '../../../../common/print/PrintOptionsDialog';
 import { IEntityExpanded } from '../../../../interfaces/entities';
@@ -12,44 +12,43 @@ import { lightTheme } from '../../../../theme';
 import { INestedRelationshipTemplates } from '../..';
 import { ComponentToPrint } from './ComponentToPrint';
 import './print.css';
-import html2pdf from 'html2pdf.js';
+// import html2pdf from 'html2pdf.js';
 import { useQuery } from 'react-query';
-import { toast } from 'react-toastify';
 import { getEntitiesTreeForPrint } from '../../../../services/entitiesService';
 
-export async function generateAndSavePDF(printIframe: HTMLIFrameElement, filename?: string) {
-    const iframeDoc = printIframe.contentDocument;
-    if (!iframeDoc) return;
+// export async function generateAndSavePDF(printIframe: HTMLIFrameElement, filename?: string) {
+//     const iframeDoc = printIframe.contentDocument;
+//     if (!iframeDoc) return;
 
-    const content = iframeDoc.body;
+//     const content = iframeDoc.body;
 
-    // Wait for content to fully generate
-    await new Promise<void>((resolve) => {
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => resolve());
-        });
-    });
+//     // Wait for content to fully generate
+//     await new Promise<void>((resolve) => {
+//         requestAnimationFrame(() => {
+//             requestAnimationFrame(() => resolve());
+//         });
+//     });
 
-    const options = {
-        margin: 10,
-        filename: `${filename || 'document'}.pdf`,
-        image: { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas: {
-            scale: 0.85, // Controls quality
-            useCORS: true,
-            logging: true,
-            windowWidth: 1920,
-            windowHeight: 1080,
-        },
-        jsPDF: {
-            unit: 'mm',
-            format: 'a4',
-            orientation: 'portrait' as const,
-        },
-    };
+//     const options = {
+//         margin: 10,
+//         filename: `${filename || 'document'}.pdf`,
+//         image: { type: 'jpeg' as const, quality: 0.98 },
+//         html2canvas: {
+//             scale: 0.85, // Controls quality
+//             useCORS: true,
+//             logging: true,
+//             windowWidth: 1920,
+//             windowHeight: 1080,
+//         },
+//         jsPDF: {
+//             unit: 'mm',
+//             format: 'a4',
+//             orientation: 'portrait' as const,
+//         },
+//     };
 
-    await html2pdf().set(options).from(content).save();
-}
+//     await html2pdf().set(options).from(content).save();
+// }
 
 const Print: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -59,11 +58,9 @@ const Print: React.FC<{
     const componentRef = useRef(null);
 
     const [openModal, setOpenModal] = useState<boolean>(false);
-
     const [files, setFiles] = useState<IFile[]>([]);
     const [selectedFiles, setSelectedFiles] = useState<IFile[]>(files);
     const [filesLoadingStatus, setFilesLoadingStatus] = useState<Record<string, boolean>>({});
-
     const [title, setTitle] = useState<string | undefined>(undefined);
 
     const [isShowDisabled, setIsShowDisabled] = useState<boolean>(true);
@@ -71,20 +68,23 @@ const Print: React.FC<{
     const [showPreviewPropertiesOnly, setShowPreviewPropertiesOnly] = useState<boolean>(false);
 
     const [selectedRelationShipIds, setSelectedRelationShipIds] = useState<string[]>([]);
-    const [shouldPrint, setShouldPrint] = useState<boolean>(false);
-    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
+    const [isPreparingPdf, setIsPreparingPdf] = useState<boolean>(false);
 
     const { data, refetch, isFetching } = useQuery({
-        queryKey: ['getEntitiesTreeForPrint', selectedRelationShipIds.join(',')],
+        queryKey: ['getEntitiesTreeForPrint', expandedEntity.entity.properties._id, selectedRelationShipIds.join(',')],
         queryFn: () => getEntitiesTreeForPrint(expandedEntity.entity.properties._id, selectedRelationShipIds),
         enabled: false,
+        onSuccess: () => {
+            setIsPreparingPdf(true);
+        },
     });
 
     const handleClose = () => {
         setOpenModal(false);
     };
 
-    const handleOpen = async () => {
+    const handleOpen = () => {
         setSelectedRelationShipIds([]);
         setOpenModal(true);
     };
@@ -95,29 +95,19 @@ const Print: React.FC<{
         contentRef: componentRef,
         documentTitle,
         bodyClass: 'print-body',
-        print: async (iframe) => {
-            try {
-                setIsGeneratingPdf(true);
-                await generateAndSavePDF(iframe, documentTitle);
-            } finally {
-                setIsGeneratingPdf(false);
-            }
+        onAfterPrint: () => setIsPreparingPdf(false),
+        onBeforePrint: async () => {
+            setIsPreparingPdf(true);
         },
-        removeAfterPrint: true,
-    } as UseReactToPrintOptions);
-
-    useEffect(() => {
-        if (shouldPrint) refetch();
-    }, [shouldPrint, refetch]);
-
-    useEffect(() => {
-        if (shouldPrint && data && !isFetching) {
-            handlePrint();
-            setShouldPrint(false);
-        }
-    }, [shouldPrint, data, isFetching, handlePrint]);
-
-    const getPageMargins = '@page { margin: 15px 10px 15px 10px !important; }';
+        // print: async (iframe) => {
+        //     try {
+        //         setIsPreparingPrint(true);
+        //         await generateAndSavePDF(iframe, documentTitle);
+        //     } finally {
+        //         setIsPreparingPrint(false);
+        //     }
+        // },
+    });
 
     const options = {
         disabled: { show: isShowDisabled, set: setIsShowDisabled, label: 'entityPage.print.showDisabled' },
@@ -129,6 +119,12 @@ const Print: React.FC<{
         entityDates: { show: showEntityDates, set: setShowEntityDates, label: 'entityPage.print.showEntityDates' },
     };
 
+    useEffect(() => {
+        if (data && isPreparingPdf) {
+            handlePrint();
+        }
+    }, [data, isPreparingPdf, handlePrint]);
+
     return (
         <>
             <MeltaTooltip title={i18next.t('entityPage.print.header')}>
@@ -137,27 +133,30 @@ const Print: React.FC<{
                 </Button>
             </MeltaTooltip>
 
-            <div style={{ position: 'absolute', top: 0, left: '-9999px' }}>
-                <style>{getPageMargins}</style>
-                <ThemeProvider theme={lightTheme}>
-                    <ComponentToPrint
-                        ref={componentRef}
-                        entityTemplate={entityTemplate}
-                        entity={data}
-                        filesToPrint={selectedFiles}
-                        setSelectedFiles={setSelectedFiles}
-                        setFilesLoadingStatus={setFilesLoadingStatus}
-                        options={{
-                            showDisabled: isShowDisabled,
-                            showEntityDates,
-                            showEntityFiles: !!selectedFiles.length,
-                            showPreviewPropertiesOnly,
-                            addEntityCheckbox: true,
-                        }}
-                        printTitle={title}
-                    />
-                </ThemeProvider>
-            </div>
+            {(data || isPreparingPdf) && (
+                <div style={{ display: 'none' }}>
+                    <style>{'@page { margin: 15px 10px 15px 10px !important; }'}</style>
+                    <ThemeProvider theme={lightTheme}>
+                        <ComponentToPrint
+                            ref={componentRef}
+                            entityTemplate={entityTemplate}
+                            entity={data}
+                            filesToPrint={selectedFiles}
+                            setSelectedFiles={setSelectedFiles}
+                            setFilesLoadingStatus={setFilesLoadingStatus}
+                            options={{
+                                showDisabled: isShowDisabled,
+                                showEntityDates,
+                                showEntityFiles: !!selectedFiles.length,
+                                showPreviewPropertiesOnly,
+                                addEntityCheckbox: true,
+                            }}
+                            printTitle={title}
+                        />
+                    </ThemeProvider>
+                </div>
+            )}
+
             {openModal && (
                 <PrintOptionsDialog
                     open={openModal}
@@ -175,16 +174,21 @@ const Print: React.FC<{
                     filesLoadingStatus={filesLoadingStatus}
                     setFilesLoadingStatus={setFilesLoadingStatus}
                     onClick={() => {
-                        //TODO text
-                        selectedRelationShipIds.length > 0 ? (setShouldPrint(true), setIsGeneratingPdf(true)) : toast.warning('&&&&&&&&&');
+                        handleClose();
+                        refetch();
                     }}
                     title={title}
                     setTitle={setTitle}
                     setSelectedRelationShipIds={setSelectedRelationShipIds}
+                    isPrintButtonEnabled={!!selectedRelationShipIds.length}
                 />
             )}
-            <Backdrop open={isGeneratingPdf} sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-                <CircularProgress color="inherit" />
+
+            <Backdrop open={isFetching || isPreparingPdf} sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 2 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+                    <CircularProgress color="inherit" />
+                    <span style={{ fontWeight: 'bold' }}>{i18next.t(`entityPage.print.${isFetching ? 'fetchingData' : 'generatingPdf'}`)}</span>
+                </div>
             </Backdrop>
         </>
     );

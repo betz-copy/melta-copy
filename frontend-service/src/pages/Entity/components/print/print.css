@@ -27,3 +27,15 @@
         overflow: initial !important;
     }
 }
+
+.entity-container {
+    content-visibility: auto; /* Magic property for large DOMs */
+    contain-intrinsic-size: 1px 100px; /* Placeholder size */
+    break-inside: avoid;
+}
+
+@media print {
+    .entity-container {
+        content-visibility: visible; /* Ensure it shows up in PDF */
+    }
+}
