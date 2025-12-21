@@ -9,8 +9,11 @@ import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfa
 import { useUserStore } from '../../stores/user';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 
-const Category: React.FC = () => {
-    const { categoryId } = useParams<{ categoryId: string }>();
+interface Props{
+    categoryId:string;
+}
+
+const Category: React.FC<Props> = ({ categoryId }) => {
     const queryClient = useQueryClient();
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
@@ -135,7 +138,7 @@ const Category: React.FC = () => {
 const CategoryWrapper: React.FC = () => {
     const { categoryId } = useParams<{ categoryId: string }>();
 
-    return <Category key={categoryId} />;
+    return <Category key={categoryId} categoryId={categoryId}/>;
 };
 
 export default CategoryWrapper;

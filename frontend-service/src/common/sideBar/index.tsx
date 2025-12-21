@@ -27,6 +27,7 @@ import { useMeltaPlusStore } from '../../stores/meltaPlus';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { sideBarTransition } from '../../theme';
+import { buildUrl } from '../../utils/buildUrl';
 import { CustomIcon, CustomImage } from '../CustomIcon';
 import { GlobalSearchBar } from '../EntitiesPage/Headline';
 import IconButtonWithPopover from '../IconButtonWithPopover';
@@ -48,6 +49,7 @@ const {
     notifications,
     searchPath,
     dashboard: { dashboardPath },
+    searchParams: { viewModeKey, searchKey, semanticSearchKey, viewModeOptions },
 } = environment;
 
 const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
@@ -207,8 +209,13 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         {isDrawerOpen ? (
                             <GlobalSearchBar
                                 onSearch={(searchValue) => {
-                                    handleChangeActiveButton(true, 'search');
-                                    navigate(`${searchPath}?search=${searchValue}&viewMode=templates-tables-view`);
+                                    handleChangeActiveButton(true, searchKey);
+                                    navigate(
+                                        buildUrl(searchPath, {
+                                            [searchKey]: searchValue,
+                                            [viewModeKey]: viewModeOptions.templatesTables,
+                                        }),
+                                    );
                                 }}
                                 placeholder={i18next.t('pages.globalSearch')}
                                 size="small"
@@ -286,7 +293,11 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             ) && (
                                 <NavButton
                                     key={category._id}
-                                    to={`/category/${category._id}`}
+                                    to={buildUrl(`/category/${category._id}`, {
+                                        [semanticSearchKey]: false,
+                                        [searchKey]: '',
+                                        [viewModeKey]: viewModeOptions.templatesTables,
+                                    })}
                                     text={category.displayName}
                                     isDrawerOpen={isDrawerOpen}
                                     onChangeToActive={(isActive) => {
