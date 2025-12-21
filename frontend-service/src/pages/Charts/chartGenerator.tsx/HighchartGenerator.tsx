@@ -1,5 +1,5 @@
-import { GeneratorChart, IAxis, IChart, IChartType } from '@microservices/shared';
 import { Box, useTheme } from '@mui/material';
+import { GeneratorChart, IAxis, IChart, IChartType } from '@packages/chart';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import i18next from 'i18next';

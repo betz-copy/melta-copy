@@ -1,12 +1,8 @@
-import {
-    DashboardItemType,
-    FilterLogicalOperator,
-    IChartType,
-    IChildTemplateMap,
-    IColumnOrLineMetaData,
-    IEntityTemplateMap,
-    IChartPermission as IPermission,
-} from '@microservices/shared';
+import { IChartPermission, IChartType, IColumnOrLineMetaData } from '@packages/chart';
+import { IChildTemplateMap } from '@packages/child-template';
+import { DashboardItemType } from '@packages/dashboard';
+import { FilterLogicalOperator } from '@packages/entity';
+import { IEntityTemplateMap } from '@packages/entity-template';
 import i18next from 'i18next';
 import { QueryClient } from 'react-query';
 import * as Yup from 'yup';
@@ -38,7 +34,7 @@ export const dashboardInitialValues = {
             xAxis: { field: '', title: '' },
             yAxis: { field: '', title: '' },
         } as IColumnOrLineMetaData,
-        permission: IPermission.Private,
+        permission: IChartPermission.Private,
         createdBy: '',
         templateId: '',
     } as ChartForm,

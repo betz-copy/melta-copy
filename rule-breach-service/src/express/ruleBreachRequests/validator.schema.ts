@@ -1,6 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 
-import { ActionTypes, RuleBreachRequestStatus } from '@microservices/shared';
+import { ActionTypes, RuleBreachRequestStatus } from '@packages/rule-breach';
 import * as joi from 'joi';
 import { mongoIdSchema } from '../../utils/joi/schemas';
 import { agGridRequestSchema } from '../../utils/joi/schemas/agGrid';

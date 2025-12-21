@@ -1,4 +1,5 @@
-import type { ByCurrentDefaultValue, IChildTemplatePopulatedFromDb, IChildTemplateProperty, relativeDateFilters } from '@microservices/shared';
+import type { ByCurrentDefaultValue, IChildTemplatePopulatedFromDb, IChildTemplateProperty } from '@packages/child-template';
+import type { relativeDateFilters } from '@packages/rule-breach';
 import type { IAgGridFilter } from '../common/wizards/entityTemplate/commonInterfaces';
 
 export enum ChipType {

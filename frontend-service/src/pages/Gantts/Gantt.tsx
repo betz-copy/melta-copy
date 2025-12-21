@@ -29,7 +29,8 @@ import timeZoneNames from '../../CLDR/hebrew/timeZoneNames.json';
 import darkTheme from '../../css/syncfusion/dark.css?inline'; // eslint-disable-line import/no-unresolved
 import lightTheme from '../../css/syncfusion/light.css?inline'; // eslint-disable-line import/no-unresolved
 import '../../css/syncfusion/schedule.css';
-import { IEntityTemplateMap, IMongoGantt } from '@microservices/shared';
+import { IEntityTemplateMap } from '@packages/entity-template';
+import { IMongoGantt } from '@packages/gantt';
 import { environment } from '../../globals';
 import hebrew from '../../i18n/hebrew';
 import { getEntitiesWithDirectConnections } from '../../services/entitiesService';

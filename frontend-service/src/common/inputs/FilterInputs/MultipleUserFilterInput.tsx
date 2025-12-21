@@ -1,4 +1,5 @@
-import { IAgGridSetFilter, IUser } from '@microservices/shared';
+import { IAgGridSetFilter } from '@packages/rule-breach';
+import { IUser } from '@packages/user';
 import React from 'react';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { UserArrayInput } from '../UserArrayInput';

@@ -1,3 +1,7 @@
+import { IEntity } from '@packages/entity';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IRelationshipPopulated } from '@packages/relationship';
+import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import {
     ActionTypes,
     IActionPopulated,
@@ -5,15 +9,10 @@ import {
     ICreateEntityMetadataPopulated,
     ICreateRelationshipMetadataPopulated,
     IDuplicateEntityMetadataPopulated,
-    IEntity,
     IEntityForBrokenRules,
-    IEntityTemplateMap,
-    IMongoEntityTemplateWithConstraintsPopulated,
     IRelationshipForBrokenRules,
-    IRelationshipPopulated,
-    IRelationshipTemplateMap,
     IUpdateEntityMetadataPopulated,
-} from '@microservices/shared';
+} from '@packages/rule-breach';
 import isEqual from 'lodash.isequal';
 import { environment } from '../../globals';
 

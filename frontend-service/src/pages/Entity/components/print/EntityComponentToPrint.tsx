@@ -1,5 +1,7 @@
-import { IConnection, IEntity, IMongoEntityTemplateWithConstraintsPopulated, IMongoRelationshipTemplatePopulated } from '@microservices/shared';
 import { Box, SxProps, Typography, useTheme } from '@mui/material';
+import { IConnection, IEntity } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoRelationshipTemplatePopulated } from '@packages/relationship-template';
 import i18next from 'i18next';
 import React from 'react';
 import { EntityPropertiesInternal } from '../../../../common/EntityProperties';

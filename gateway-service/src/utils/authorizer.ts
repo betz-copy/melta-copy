@@ -1,4 +1,6 @@
-import { createController, ISubCompactPermissions, PermissionScope, PermissionType, RelatedPermission } from '@microservices/shared';
+import { ISubCompactPermissions, PermissionScope, PermissionType } from '@packages/permission';
+import { RelatedPermission } from '@packages/user';
+import { createController } from '@packages/utils';
 import { Request } from 'express';
 import { UserIncorrectScopeError, UserNotAuthorizedError } from '../express/error';
 import WorkspaceManager from '../express/workspaces/manager';

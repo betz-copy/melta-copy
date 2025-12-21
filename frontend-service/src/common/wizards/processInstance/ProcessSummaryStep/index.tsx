@@ -1,11 +1,11 @@
+import { Box, Grid, Step, StepConnector, Stepper, stepConnectorClasses, styled } from '@mui/material';
 import {
     IMongoProcessInstanceReviewerPopulated,
     IMongoProcessTemplateReviewerPopulated,
     IMongoStepInstancePopulated,
     IMongoStepTemplatePopulated,
     Status,
-} from '@microservices/shared';
-import { Box, Grid, Step, StepConnector, Stepper, stepConnectorClasses, styled } from '@mui/material';
+} from '@packages/process';
 import i18next from 'i18next';
 import React from 'react';
 import { StepIcon } from '../../../../pages/ProcessInstances/ProcessCard';

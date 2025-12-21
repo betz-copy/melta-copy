@@ -1,5 +1,6 @@
-import { IAgGridDateFilter, IAgGridNumberFilter, IAgGridTextFilter, IGraphFilterBody } from '@microservices/shared';
 import { Grid, MenuItem } from '@mui/material';
+import { IGraphFilterBody } from '@packages/entity';
+import { IAgGridDateFilter, IAgGridNumberFilter, IAgGridTextFilter } from '@packages/rule-breach';
 import i18next from 'i18next';
 import React from 'react';
 import { FieldOption } from '../../wizards/entityTemplate/RelationshipReference/filterEntitiesByCriteria';

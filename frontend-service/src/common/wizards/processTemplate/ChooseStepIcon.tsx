@@ -1,4 +1,4 @@
-import { FileDetails } from '@microservices/shared';
+import { FileDetails } from '@packages/common';
 import React from 'react';
 import { ImagePicker } from '../../inputs/ImagePicker';
 

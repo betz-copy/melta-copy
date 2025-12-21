@@ -1,4 +1,3 @@
-import { MongoIdSchema } from '@microservices/shared';
 import * as Joi from 'joi';
 
 const ganttItemSchema = Joi.object({

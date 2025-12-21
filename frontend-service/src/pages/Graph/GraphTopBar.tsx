@@ -1,8 +1,9 @@
 import { useMatomo } from '@datapunt/matomo-tracker-react';
-import { IChildTemplateMap, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { RestartAltOutlined as ResetIcon } from '@mui/icons-material';
 import { Grid, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { IChildTemplateMap } from '@packages/child-template';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';

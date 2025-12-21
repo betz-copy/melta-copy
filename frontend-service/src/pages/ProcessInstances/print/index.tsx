@@ -1,6 +1,6 @@
-import { IMongoProcessInstanceReviewerPopulated, IMongoProcessTemplateReviewerPopulated } from '@microservices/shared';
 import { Print as PrintIcon } from '@mui/icons-material';
 import { IconButton, ThemeProvider } from '@mui/material';
+import { IMongoProcessInstanceReviewerPopulated, IMongoProcessTemplateReviewerPopulated } from '@packages/process';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useRef, useState } from 'react';

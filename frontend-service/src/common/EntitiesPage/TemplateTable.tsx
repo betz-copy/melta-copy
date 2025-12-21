@@ -1,16 +1,6 @@
 import { FilterModel } from '@ag-grid-community/core';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
 import {
-    ActionTypes,
-    IEntity,
-    IEntityTemplateMap,
-    IEntityTemplatePopulated,
-    IKartoffelUser,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    PermissionScope,
-} from '@microservices/shared';
-import {
     AddCircle,
     BarChart,
     CloseFullscreenRounded,
@@ -23,6 +13,12 @@ import {
     Upload,
 } from '@mui/icons-material';
 import { Box, CircularProgress, Dialog, Grid, useTheme } from '@mui/material';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IEntity } from '@packages/entity';
+import { IEntityTemplateMap, IEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { PermissionScope } from '@packages/permission';
+import { ActionTypes } from '@packages/rule-breach';
+import { IKartoffelUser } from '@packages/user';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';

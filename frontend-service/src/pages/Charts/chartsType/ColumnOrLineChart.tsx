@@ -1,5 +1,6 @@
-import { IMongoEntityTemplateWithConstraintsPopulated, OptionsType } from '@microservices/shared';
 import { Grid } from '@mui/material';
+import { OptionsType } from '@packages/chart';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React from 'react';

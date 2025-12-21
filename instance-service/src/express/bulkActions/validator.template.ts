@@ -1,15 +1,9 @@
-import {
-    ActionErrors,
-    ActionTypes,
-    CoordinateSystem,
-    IAction,
-    ICreateEntityMetadata,
-    ICreateRelationshipMetadata,
-    IEntity,
-    IMongoEntityTemplate,
-    IMongoRelationshipTemplate,
-    ValidationError,
-} from '@microservices/shared';
+
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplate } from '@packages/entity-template';
+import { IMongoRelationshipTemplate } from '@packages/relationship-template';
+import { ActionErrors, ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata } from '@packages/rule-breach';
+import { CoordinateSystem, ValidationError } from '@packages/utils';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { Request } from 'express';

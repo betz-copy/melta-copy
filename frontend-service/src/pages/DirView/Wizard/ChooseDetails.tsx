@@ -1,5 +1,5 @@
-import { WorkspaceTypes } from '@microservices/shared';
 import { Grid, TextField } from '@mui/material';
+import { WorkspaceTypes } from '@packages/workspace';
 import i18next from 'i18next';
 import React from 'react';
 import { useLocation } from 'wouter';

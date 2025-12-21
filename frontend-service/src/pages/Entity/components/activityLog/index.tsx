@@ -1,6 +1,7 @@
-import { IEntityExpanded, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { History } from '@mui/icons-material';
 import { Button, Typography, useTheme } from '@mui/material';
+import { IEntityExpanded } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';

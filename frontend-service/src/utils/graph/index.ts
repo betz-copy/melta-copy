@@ -1,13 +1,8 @@
-import {
-    IChildTemplateMap,
-    IEntity,
-    IEntityExpanded,
-    IEntityTemplateMap,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IMongoRelationshipTemplate,
-    IRelationshipTemplateMap,
-} from '@microservices/shared';
 /* eslint-disable no-param-reassign */
+import { IChildTemplateMap } from '@packages/child-template';
+import { IEntity, IEntityExpanded } from '@packages/entity';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoRelationshipTemplate, IRelationshipTemplateMap } from '@packages/relationship-template';
 import uniqBy from 'lodash.uniqby';
 import { GraphData, LinkObject, NodeObject } from 'react-force-graph-2d';
 import { environment } from '../../globals';

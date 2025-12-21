@@ -1,5 +1,6 @@
-import { IMongoCategory, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { TreeViewBaseItem } from '@mui/x-tree-view-pro';
+import { IMongoCategory } from '@packages/category';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 
 export const groupTemplatesByCategory = (
     categories: IMongoCategory[],

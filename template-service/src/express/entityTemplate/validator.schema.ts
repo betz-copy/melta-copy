@@ -1,4 +1,3 @@
-import { MongoIdSchema, variableNameValidation } from '@microservices/shared';
 import Joi from 'joi';
 import {
     enumPropertiesColorsSchema,

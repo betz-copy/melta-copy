@@ -1,6 +1,8 @@
-import { IChildTemplateMap, IEntity, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
 import { Grid, Typography, tooltipClasses, useTheme } from '@mui/material';
+import { IChildTemplateMap } from '@packages/child-template';
+import { IEntity } from '@packages/entity';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React, { CSSProperties } from 'react';
 import { useQueryClient } from 'react-query';

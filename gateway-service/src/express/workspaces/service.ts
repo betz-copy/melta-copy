@@ -1,4 +1,4 @@
-import { IWorkspace } from '@microservices/shared';
+import { IWorkspace } from '@packages/workspace';
 import axios from 'axios';
 import config from '../../config';
 

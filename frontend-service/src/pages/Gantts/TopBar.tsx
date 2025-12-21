@@ -1,4 +1,3 @@
-import { IGantt, PermissionScope } from '@microservices/shared';
 import {
     Category as AddGroupByIcon,
     CalendarMonth as CalendarModeIcon,
@@ -10,6 +9,8 @@ import {
     Check as SaveIcon,
 } from '@mui/icons-material';
 import { Box, Button, CircularProgress, Grid, IconButton, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { IGantt } from '@packages/gantt';
+import { PermissionScope } from '@packages/permission';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { Fragment, useState } from 'react';

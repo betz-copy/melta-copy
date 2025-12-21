@@ -1,6 +1,8 @@
-import { IEntity, IEntitySingleProperty, IEntityTemplateMap, IGetUnits, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
 import { Box, Divider, Grid, IconButton, Typography } from '@mui/material';
+import { IEntity } from '@packages/entity';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IGetUnits } from '@packages/unit';
 import type { Property } from 'csstype';
 import i18next from 'i18next';
 import _ from 'lodash';

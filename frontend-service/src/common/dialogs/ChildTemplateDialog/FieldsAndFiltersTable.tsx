@@ -1,16 +1,10 @@
-import {
-    ByCurrentDefaultValue,
-    IAgGridTextFilter,
-    IChildTemplateProperty,
-    IEntitySingleProperty,
-    IGetUnits,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IMongoUnit,
-    IUser,
-    ViewType,
-} from '@microservices/shared';
 import { AddRounded } from '@mui/icons-material';
 import { Button, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
+import { ByCurrentDefaultValue, IChildTemplateProperty, ViewType } from '@packages/child-template';
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IAgGridTextFilter } from '@packages/rule-breach';
+import { IGetUnits, IMongoUnit } from '@packages/unit';
+import { IUser } from '@packages/user';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useState } from 'react';

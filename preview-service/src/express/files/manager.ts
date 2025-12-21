@@ -1,4 +1,4 @@
-import { NotFoundError } from '@microservices/shared';
+import { NotFoundError } from '@packages/utils';
 import * as libreoffice from 'libreoffice-convert';
 import { menash } from 'menashmq';
 import { Readable } from 'stream';

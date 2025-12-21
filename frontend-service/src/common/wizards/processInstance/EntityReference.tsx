@@ -1,9 +1,3 @@
-import {
-    IEntityTemplateMap,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IReferencedEntityForProcess,
-    PermissionScope,
-} from '@microservices/shared';
 import { Add, Close } from '@mui/icons-material';
 import {
     Autocomplete,
@@ -21,6 +15,9 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { PermissionScope } from '@packages/permission';
+import { IReferencedEntityForProcess } from '@packages/process';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useMemo, useState } from 'react';

@@ -1,6 +1,7 @@
-import { IEntity, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { Check, Close, Gavel } from '@mui/icons-material';
 import { CircularProgress, Grid } from '@mui/material';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React from 'react';
 import { IStatusEntitiesTables } from '../../../../interfaces/excel';

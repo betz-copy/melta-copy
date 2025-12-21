@@ -1,6 +1,7 @@
-import { IMongoProcessTemplateReviewerPopulated } from '@microservices/shared';
 import { Add as AddIcon } from '@mui/icons-material';
 import { Grid, Typography, useTheme } from '@mui/material';
+import { PermissionScope } from '@packages/permission';
+import { IMongoProcessTemplateReviewerPopulated } from '@packages/process';
 import i18next from 'i18next';
 import React, { Dispatch, SetStateAction } from 'react';
 import BlueTitle from '../../common/MeltaDesigns/BlueTitle';
@@ -9,7 +10,6 @@ import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { AddProcessButton } from './AddProcessButton';
 import './ProcessesList.css';
-import { PermissionScope } from '@microservices/shared';
 
 const ProcessInstancesHeadline: React.FC<{
     onSearch: (value: string) => void;

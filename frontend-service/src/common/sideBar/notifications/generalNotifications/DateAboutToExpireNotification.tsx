@@ -1,5 +1,6 @@
-import { IDateAboutToExpireMetadataPopulated, IEntityTemplateMap, NotificationType } from '@microservices/shared';
 import { Grid, Typography } from '@mui/material';
+import { IEntityTemplateMap } from '@packages/entity-template';
+import { IDateAboutToExpireMetadataPopulated, NotificationType } from '@packages/notification';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';

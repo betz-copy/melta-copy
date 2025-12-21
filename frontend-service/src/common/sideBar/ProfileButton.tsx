@@ -1,5 +1,5 @@
-import { IUser } from '@microservices/shared';
 import { Grid, IconButton } from '@mui/material';
+import { IUser } from '@packages/user';
 import React from 'react';
 import UserAvatar from '../UserAvatar';
 

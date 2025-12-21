@@ -1,4 +1,4 @@
-import { ActionOnFail, IRule, IRuleMap } from '@microservices/shared';
+import { ActionOnFail, IRule, IRuleMap } from '@packages/rule';
 import { ImmutableTree, Utils as QbUtils } from '@react-awesome-query-builder/mui';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';

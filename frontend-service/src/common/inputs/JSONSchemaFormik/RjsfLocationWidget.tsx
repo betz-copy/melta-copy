@@ -1,6 +1,6 @@
-import { SplitBy } from '@microservices/shared';
 import { Map } from '@mui/icons-material';
 import { Autocomplete, Box, Dialog, Grid, InputAdornment, TextField } from '@mui/material';
+import { SplitBy } from '@packages/common';
 import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import { Cartesian3 } from 'cesium';

@@ -1,4 +1,5 @@
-import { ICompactPermissions, IUser } from '@microservices/shared';
+import { ICompactPermissions } from '@packages/permission';
+import { IUser } from '@packages/user';
 import axios from 'axios';
 import config from './config';
 import { IPermissionsOfUser } from './old_interfaces';

@@ -9,7 +9,7 @@ import {
     IColumnOrLineMetaData,
     INUmberMetaData,
     IPieMetaData,
-} from '@microservices/shared';
+} from '@packages/chart';
 import i18next from 'i18next';
 import * as Yup from 'yup';
 

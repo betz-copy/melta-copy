@@ -1,4 +1,4 @@
-import { ForbiddenError } from '@microservices/shared';
+import { ForbiddenError } from '@packages/utils';
 import { Request } from 'express';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultController from '../../utils/express/controller';

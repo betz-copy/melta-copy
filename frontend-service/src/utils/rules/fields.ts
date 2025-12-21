@@ -1,13 +1,7 @@
-import {
-    ActionOnFail,
-    ICurrentUser,
-    IEntitySingleProperty,
-    IEntityTemplateMap,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IMongoRelationshipTemplatePopulated,
-    IRelationshipTemplateMap,
-    IVariable,
-} from '@microservices/shared';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '@packages/relationship-template';
+import { ActionOnFail, IVariable } from '@packages/rule';
+import { ICurrentUser } from '@packages/user';
 import { Field, Fields, ImmutableTree } from '@react-awesome-query-builder/mui';
 import i18next from 'i18next';
 import lodashFindLast from 'lodash.findlast';

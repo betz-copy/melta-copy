@@ -1,5 +1,6 @@
-import { IRuleBreachResponseNotificationMetadataPopulated, NotificationType, RuleBreachRequestStatus } from '@microservices/shared';
 import { Box, Grid, Typography } from '@mui/material';
+import { IRuleBreachResponseNotificationMetadataPopulated, NotificationType } from '@packages/notification';
+import { RuleBreachRequestStatus } from '@packages/rule-breach';
 import i18next from 'i18next';
 import React from 'react';
 import { environment } from '../../../../globals';

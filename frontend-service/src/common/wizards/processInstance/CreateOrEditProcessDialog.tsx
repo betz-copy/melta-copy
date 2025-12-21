@@ -1,6 +1,6 @@
-import { IMongoProcessInstanceReviewerPopulated, IProcessTemplateMap } from '@microservices/shared';
 import { Close, NavigateBefore } from '@mui/icons-material';
 import { Box, Dialog, Divider, Fab, Grid, IconButton, Step, StepLabel, Stepper } from '@mui/material';
+import { IMongoProcessInstanceReviewerPopulated, IProcessTemplateMap } from '@packages/process';
 import { AxiosError } from 'axios';
 import { FormikProvider } from 'formik';
 import i18next from 'i18next';

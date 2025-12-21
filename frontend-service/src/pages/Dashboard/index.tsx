@@ -1,5 +1,5 @@
-import { DashboardItemType, MongoDashboardItemPopulated } from '@microservices/shared';
 import { CircularProgress, Grid } from '@mui/material';
+import { DashboardItemType, MongoDashboardItemPopulated } from '@packages/dashboard';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';

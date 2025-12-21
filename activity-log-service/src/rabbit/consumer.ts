@@ -1,4 +1,5 @@
-import { basicValidateRequest, IActivityLog, ServiceError } from '@microservices/shared';
+import { IActivityLog } from '@packages/activity-log';
+import { basicValidateRequest, ServiceError } from '@packages/utils';
 import { ConsumerMessage } from 'menashmq';
 import config from '../config';
 import ActivityLogManager from '../express/activityLog/manager';

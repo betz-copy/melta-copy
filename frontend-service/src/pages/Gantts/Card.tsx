@@ -1,5 +1,5 @@
-import { IMongoGantt } from '@microservices/shared';
 import { Card, CardHeader } from '@mui/material';
+import { IMongoGantt } from '@packages/gantt';
 import React from 'react';
 import { useLocation } from 'wouter';
 import { environment } from '../../globals';

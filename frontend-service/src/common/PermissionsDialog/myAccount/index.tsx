@@ -1,5 +1,5 @@
-import { IUser, IUserPopulated } from '@microservices/shared';
 import { Button, Grid } from '@mui/material';
+import { IUser, IUserPopulated } from '@packages/user';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import isEqual from 'lodash/isEqual';

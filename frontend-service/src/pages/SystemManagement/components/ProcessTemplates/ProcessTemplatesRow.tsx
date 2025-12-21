@@ -1,5 +1,5 @@
-import { IMongoProcessTemplateReviewerPopulated, IProcessTemplateMap } from '@microservices/shared';
 import { Grid } from '@mui/material';
+import { IMongoProcessTemplateReviewerPopulated, IProcessTemplateMap } from '@packages/process';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';

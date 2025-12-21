@@ -1,12 +1,8 @@
-import {
-    IChildTemplateMap,
-    IEntityTemplateMap,
-    IEntityWithDirectConnections,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    ISemanticSearchResult,
-} from '@microservices/shared';
 import { Grid } from '@mui/material';
+import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IEntityWithDirectConnections } from '@packages/entity';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { ISemanticSearchResult } from '@packages/semantic-search';
 import i18next from 'i18next';
 import { forwardRef, useImperativeHandle, useState } from 'react';
 import { useQueryClient } from 'react-query';

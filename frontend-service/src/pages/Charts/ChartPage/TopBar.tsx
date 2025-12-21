@@ -1,6 +1,8 @@
-import { IChart, IGraphFilterBodyBatch, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { Close as CancelIcon, Delete, Edit as EditIcon, Check as SaveIcon } from '@mui/icons-material';
 import { Box, CircularProgress, Grid, useTheme } from '@mui/material';
+import { IChart } from '@packages/chart';
+import { IGraphFilterBodyBatch } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useState } from 'react';

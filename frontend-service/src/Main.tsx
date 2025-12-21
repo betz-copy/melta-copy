@@ -1,7 +1,7 @@
 import createCache from '@emotion/cache';
 import { CacheProvider } from '@emotion/react';
-import { WorkspaceTypes } from '@microservices/shared';
 import { CssBaseline } from '@mui/material';
+import { WorkspaceTypes } from '@packages/workspace';
 import React from 'react';
 import { prefixer } from 'stylis';
 import rtlPlugin from 'stylis-plugin-rtl';

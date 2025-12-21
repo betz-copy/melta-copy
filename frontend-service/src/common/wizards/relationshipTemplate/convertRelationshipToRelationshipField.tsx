@@ -1,11 +1,11 @@
+import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, TextField } from '@mui/material';
 import {
     IEntitySingleProperty,
     IEntityTemplateMap,
     IMongoEntityTemplateWithConstraintsPopulated,
-    IMongoRelationshipTemplate,
     IRelationshipReference,
-} from '@microservices/shared';
-import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, TextField } from '@mui/material';
+} from '@packages/entity-template';
+import { IMongoRelationshipTemplate } from '@packages/relationship-template';
 import { Form, Formik } from 'formik';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';

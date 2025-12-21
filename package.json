@@ -18,12 +18,12 @@
         "process-service",
         "rule-breach-service",
         "semantic-service",
-        "shared",
         "storage-service",
         "template-service",
         "user-service",
         "workspace-service",
-        "mock-service"
+        "mock-service",
+        "packages/*"
     ],
     "scripts": {
         "build": "turbo run build",

@@ -1,12 +1,12 @@
+import { Close, History } from '@mui/icons-material';
+import { Button, Dialog, DialogContent, Grid, IconButton } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     IMongoProcessInstanceReviewerPopulated,
     IMongoProcessTemplateReviewerPopulated,
     IMongoStepTemplatePopulated,
     IProcessTemplateMap,
-} from '@microservices/shared';
-import { Close, History } from '@mui/icons-material';
-import { Button, Dialog, DialogContent, Grid, IconButton } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+} from '@packages/process';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';

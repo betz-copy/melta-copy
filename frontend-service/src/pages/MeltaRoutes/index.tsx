@@ -1,13 +1,11 @@
-import {
-    ICategoryMap,
-    IChildTemplateMap,
-    IEntityTemplateMap,
-    IPrintingTemplateMap,
-    IProcessTemplateMap,
-    IRelationshipTemplateMap,
-    IRuleMap,
-} from '@microservices/shared';
 import { Box } from '@mui/material';
+import { ICategoryMap } from '@packages/category';
+import { IChildTemplateMap } from '@packages/child-template';
+import { IEntityTemplateMap } from '@packages/entity-template';
+import { IPrintingTemplateMap } from '@packages/printing-template';
+import { IProcessTemplateMap } from '@packages/process';
+import { IRelationshipTemplateMap } from '@packages/relationship-template';
+import { IRuleMap } from '@packages/rule';
 import i18next from 'i18next';
 import _ from 'lodash';
 import React, { useEffect, useMemo } from 'react';

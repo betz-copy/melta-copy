@@ -1,5 +1,5 @@
-import { GeneratorChart } from '@microservices/shared';
 import { Box, Typography, useTheme } from '@mui/material';
+import { GeneratorChart } from '@packages/chart';
 import React from 'react';
 import { ChartForm } from '../../../interfaces/dashboard';
 import { CardTitle } from '../../Dashboard/dashboardPage/TableCard';

@@ -1,15 +1,10 @@
 import { IServerSideSelectionState, IStatusPanelParams } from '@ag-grid-community/core';
-import {
-    ActionTypes,
-    IBrokenRule,
-    ICreateEntityMetadata,
-    IDeleteEntityBody,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IMultipleSelect,
-} from '@microservices/shared';
 import { Delete, Edit } from '@mui/icons-material';
 import { Box, CircularProgress, Grid, Typography } from '@mui/material';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IDeleteEntityBody, IMultipleSelect } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { ActionTypes, IBrokenRule, ICreateEntityMetadata } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';

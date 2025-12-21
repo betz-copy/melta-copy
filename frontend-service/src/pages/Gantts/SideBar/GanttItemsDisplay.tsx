@@ -1,5 +1,5 @@
-import { IGantt } from '@microservices/shared';
 import { Divider, Grid } from '@mui/material';
+import { IGantt } from '@packages/gantt';
 import { FormikProps } from 'formik';
 import React from 'react';
 import { GanttItemDisplay } from '../GanttItemDisplay';

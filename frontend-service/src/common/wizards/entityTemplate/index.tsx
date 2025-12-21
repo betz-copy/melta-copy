@@ -1,18 +1,11 @@
-import {
-    FieldGroupData,
-    FileDetails,
-    ICategoryMap,
-    IChildTemplateMap,
-    IConstraint,
-    IEntityTemplateMap,
-    IEntityTemplateWithConstraintsPopulated,
-    IMongoCategory,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IRelationshipTemplateMap,
-    IUniqueConstraintOfTemplate,
-} from '@microservices/shared';
 /* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable react/no-unstable-nested-components */
+import { ICategoryMap, IMongoCategory } from '@packages/category';
+import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { FileDetails } from '@packages/common';
+import { IConstraint, IUniqueConstraintOfTemplate } from '@packages/entity';
+import { FieldGroupData, IEntityTemplateMap, IEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React from 'react';

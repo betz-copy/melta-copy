@@ -1,5 +1,6 @@
-import { IEntityTemplateMap, IRelationshipReference, ISearchFilter, IUniqueConstraintOfTemplate } from '@microservices/shared';
 import { Box, FormControlLabel } from '@mui/material';
+import { ISearchFilter, IUniqueConstraintOfTemplate } from '@packages/entity';
+import { IEntityTemplateMap, IRelationshipReference } from '@packages/entity-template';
 import i18next from 'i18next';
 import React, { SetStateAction } from 'react';
 import { useQueryClient } from 'react-query';

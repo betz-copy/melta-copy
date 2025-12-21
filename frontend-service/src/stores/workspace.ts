@@ -1,4 +1,4 @@
-import { IMetadata, IWorkspace, WorkspaceTypes } from '@microservices/shared';
+import { IMetadata, IWorkspace, WorkspaceTypes } from '@packages/workspace';
 import { create } from 'zustand';
 
 export interface WorkspaceState {

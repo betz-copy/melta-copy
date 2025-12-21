@@ -1,4 +1,4 @@
-import { logger } from '@microservices/shared';
+import { logger } from '@packages/utils';
 import * as minio from 'minio';
 import { Readable } from 'stream';
 import config from '../../config';

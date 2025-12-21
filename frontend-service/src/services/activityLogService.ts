@@ -1,4 +1,6 @@
-import { ActionsLog, IEntitySingleProperty, IProcessSingleProperty, Status } from '@microservices/shared';
+import { ActionsLog } from '@packages/activity-log';
+import { IEntitySingleProperty } from '@packages/entity-template';
+import { IProcessSingleProperty, Status } from '@packages/process';
 import axios from '../axios';
 import { environment } from '../globals';
 

@@ -1,4 +1,4 @@
-import { IKartoffelUser, IKartoffelUserStringFields, IUser } from '@microservices/shared';
+import { IKartoffelUser, IKartoffelUserStringFields, IUser } from '@packages/user';
 import React from 'react';
 import UserAutocomplete, { IUserAutocomplete } from './UserAutocomplete';
 

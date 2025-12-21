@@ -1,4 +1,4 @@
-import { IAxisField, IChartType, IChartTypeMetaData, IColumnOrLineMetaData, INUmberMetaData, IPieMetaData } from '@microservices/shared';
+import { IAxisField, IChartType, IChartTypeMetaData, IColumnOrLineMetaData, INUmberMetaData, IPieMetaData } from '@packages/chart';
 
 // eslint-disable-next-line import/prefer-default-export
 export const getMetaDataAxes = (type: IChartType, metaData: IChartTypeMetaData, filter?: string) => {

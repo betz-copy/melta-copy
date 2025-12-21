@@ -1,6 +1,6 @@
-import { IMongoProcessTemplateReviewerPopulated, IProcessTemplateMap } from '@microservices/shared';
 import { Groups2 } from '@mui/icons-material';
 import { Button, Card, CardContent, Divider, Grid, Typography } from '@mui/material';
+import { IMongoProcessTemplateReviewerPopulated, IProcessTemplateMap } from '@packages/process';
 import { FormikProvider } from 'formik';
 import i18next from 'i18next';
 import pickBy from 'lodash.pickby';

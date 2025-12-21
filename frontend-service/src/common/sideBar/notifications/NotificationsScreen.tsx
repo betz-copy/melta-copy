@@ -1,7 +1,7 @@
-import { INotificationGroupCountDetails, INotificationPopulated, NotificationType } from '@microservices/shared';
 import { CalendarToday, FilterList, FilterListOff, MarkChatUnreadOutlined, SmsOutlined } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 import { CircularProgress, Grid, IconButton, Tab, Tabs, Typography, useTheme } from '@mui/material';
+import { INotificationGroupCountDetails, INotificationPopulated, NotificationType } from '@packages/notification';
 import i18next from 'i18next';
 import React, { CSSProperties, useState } from 'react';
 import { useMutation } from 'react-query';

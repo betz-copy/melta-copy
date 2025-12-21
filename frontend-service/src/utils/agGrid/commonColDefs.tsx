@@ -1,4 +1,5 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: properties... */
+
 import {
     ColDef,
     ICellEditorParams,
@@ -9,31 +10,26 @@ import {
     ValueGetterFunc,
     ValueGetterParams,
 } from '@ag-grid-community/core';
-import {
-    ActionErrors,
-    EntityData,
-    IEntity,
-    IEntitySingleProperty,
-    IEntityTemplateMap,
-    IExcelNotFoundError,
-    IGetUnits,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IMongoUnit,
-    IRelationshipRefNotFoundError,
-    IRequiredConstraint,
-    IRuleBreachPopulated,
-    IRuleBreachRequestPopulated,
-    ISearchFilter,
-    ISemanticSearchResult,
-    IUniqueConstraint,
-    IUser,
-    IUsersNotFoundError,
-    NotFoundErrorTypes,
-    PermissionData,
-} from '@microservices/shared';
 import { PriorityHigh } from '@mui/icons-material';
 import { Box, Grid, Tooltip, tooltipClasses } from '@mui/material';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import {
+    EntityData,
+    IEntity,
+    IExcelNotFoundError,
+    IRelationshipRefNotFoundError,
+    IRequiredConstraint,
+    ISearchFilter,
+    IUniqueConstraint,
+    IUsersNotFoundError,
+    NotFoundErrorTypes,
+} from '@packages/entity';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { PermissionData } from '@packages/permission';
+import { ActionErrors, IRuleBreachPopulated, IRuleBreachRequestPopulated } from '@packages/rule-breach';
+import { ISemanticSearchResult } from '@packages/semantic-search';
+import { IGetUnits, IMongoUnit } from '@packages/unit';
+import { IUser } from '@packages/user';
 import i18next from 'i18next';
 import { EntityWizardValues } from '../../common/dialogs/entity';
 import OpenPreview from '../../common/FilePreview/OpenPreview';

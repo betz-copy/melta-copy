@@ -1,5 +1,8 @@
-import { DashboardItemType, IChildTemplateMap, IEntityTemplateMap, ISubCompactPermissions, PermissionScope } from '@microservices/shared';
 import { CircularProgress } from '@mui/material';
+import { IChildTemplateMap } from '@packages/child-template';
+import { DashboardItemType } from '@packages/dashboard';
+import { IEntityTemplateMap } from '@packages/entity-template';
+import { ISubCompactPermissions, PermissionScope } from '@packages/permission';
 import { AxiosError } from 'axios';
 import { StatusCodes } from 'http-status-codes';
 import React, { isValidElement, ReactNode } from 'react';

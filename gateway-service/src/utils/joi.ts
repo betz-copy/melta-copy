@@ -1,4 +1,3 @@
-import { fileSchema } from '@microservices/shared';
 import Joi from 'joi';
 
 export const ExtendedJoi = Joi.extend(

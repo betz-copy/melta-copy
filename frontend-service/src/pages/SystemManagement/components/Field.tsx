@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-globals */
 
-import { IMetadata } from '@microservices/shared';
 import { Autocomplete, InputAdornment, TextField } from '@mui/material';
+import { IMetadata } from '@packages/workspace';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';

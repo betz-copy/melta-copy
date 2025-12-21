@@ -1,6 +1,7 @@
-import { DashboardItemType, IMongoChart } from '@microservices/shared';
 import { Check, Close, Edit } from '@mui/icons-material';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
+import { IMongoChart } from '@packages/chart';
+import { DashboardItemType } from '@packages/dashboard';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import { isEqual } from 'lodash';

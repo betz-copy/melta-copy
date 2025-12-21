@@ -1,5 +1,5 @@
-import { IProcessSingleProperty } from '@microservices/shared';
 import { Grid } from '@mui/material';
+import { IProcessSingleProperty } from '@packages/process';
 import i18next from 'i18next';
 import { Dictionary } from 'lodash';
 import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';

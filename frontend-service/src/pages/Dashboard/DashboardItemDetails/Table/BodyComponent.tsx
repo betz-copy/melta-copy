@@ -1,5 +1,6 @@
-import { IEntity, IEntityTemplateMap } from '@microservices/shared';
 import { Card, Grid, Typography, useTheme } from '@mui/material';
+import { IEntity } from '@packages/entity';
+import { IEntityTemplateMap } from '@packages/entity-template';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef, ExternalIdType } from '../../../../common/EntitiesTableOfTemplate';

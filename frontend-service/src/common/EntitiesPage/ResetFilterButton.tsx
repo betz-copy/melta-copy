@@ -1,6 +1,6 @@
-import { IEntity } from '@microservices/shared';
 import { FilterList, FilterListOff } from '@mui/icons-material';
 import { useTheme } from '@mui/material';
+import { IEntity } from '@packages/entity';
 import i18next from 'i18next';
 import React from 'react';
 import { useDarkModeStore } from '../../stores/darkMode';

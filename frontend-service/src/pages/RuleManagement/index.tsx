@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from 'react-query';
 import { useLocation, useParams } from 'wouter';
 import BlueTitle from '../../common/MeltaDesigns/BlueTitle';
 import '../../css/pages.css';
-import { BreachType, IRuleBreachAlertPopulated, IRuleBreachRequestPopulated } from '@microservices/shared';
+import { BreachType, IRuleBreachAlertPopulated, IRuleBreachRequestPopulated } from '@packages/rule-breach';
 import { getBreachAlertById, getBreachRequestById } from '../../services/ruleBreachesService';
 import { useWorkspaceStore } from '../../stores/workspace';
 import RuleBreachDialog from './ruleBreachDialog';

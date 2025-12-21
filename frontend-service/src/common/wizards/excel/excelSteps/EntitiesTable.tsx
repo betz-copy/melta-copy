@@ -1,6 +1,7 @@
-import { IEntity, IMongoEntityTemplateWithConstraintsPopulated, ISearchFilter } from '@microservices/shared';
 import { Download, ExpandMore } from '@mui/icons-material';
 import { Accordion, AccordionDetails, AccordionSummary, CircularProgress, Grid, Typography, useTheme } from '@mui/material';
+import { IEntity, ISearchFilter } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { v4 as uuid } from 'uuid';

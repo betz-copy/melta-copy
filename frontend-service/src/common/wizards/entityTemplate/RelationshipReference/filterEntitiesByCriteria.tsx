@@ -1,6 +1,7 @@
-import { filterTypes as FilterTypesEnum, IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { Add, Clear } from '@mui/icons-material';
 import { Autocomplete, Button, Grid, IconButton, TextField, Typography } from '@mui/material';
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { FilterTypes } from '@packages/rule-breach';
 import { FormikErrors, FormikTouched, getIn } from 'formik';
 import i18next from 'i18next';
 import { isEqual } from 'lodash';
@@ -133,12 +134,12 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                             switch (selectedProperty.type) {
                                 case 'string':
                                 case 'boolean':
-                                    if (['date-time', 'date'].includes(selectedProperty.format ?? '')) return FilterTypesEnum.date;
-                                    return FilterTypesEnum.text;
+                                    if (['date-time', 'date'].includes(selectedProperty.format ?? '')) return FilterTypes.date;
+                                    return FilterTypes.text;
                                 case 'array':
-                                    return FilterTypesEnum.set;
+                                    return FilterTypes.set;
                                 default:
-                                    return selectedProperty.type as FilterTypesEnum;
+                                    return selectedProperty.type as FilterTypes;
                             }
                         };
 

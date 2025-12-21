@@ -1,23 +1,20 @@
+
 import {
-    ChartItem,
     ChartsAndGenerator,
-    DashboardItemType,
-    getDefaultFilterFromChildTemplate,
-    getFilterModal,
     IAxisField,
     IChart,
     IChartBody,
     IChartPermission,
     IChartType,
-    IChildTemplatePopulated,
     IColumnOrLineMetaData,
     IMongoChart,
-    IMongoEntityTemplatePopulated,
     IPieMetaData,
-    ISearchFilter,
-    ISubCompactPermissions,
-    isAdmin,
-} from '@microservices/shared';
+} from '@packages/chart';
+import { getDefaultFilterFromChildTemplate, IChildTemplatePopulated } from '@packages/child-template';
+import { ChartItem, DashboardItemType } from '@packages/dashboard';
+import { ISearchFilter } from '@packages/entity';
+import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { ISubCompactPermissions, isAdmin } from '@packages/permission';
 import ChartService from '../../externalServices/dashboardService/chartService';
 import DashboardItemService from '../../externalServices/dashboardService/dashboardItemService';
 import InstancesService from '../../externalServices/instanceService';

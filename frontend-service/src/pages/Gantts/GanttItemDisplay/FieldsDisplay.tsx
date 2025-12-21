@@ -1,5 +1,5 @@
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { Typography } from '@mui/material';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import React, { CSSProperties } from 'react';
 import { environment } from '../../../globals';
 

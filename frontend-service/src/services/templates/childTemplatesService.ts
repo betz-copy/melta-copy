@@ -1,4 +1,4 @@
-import { IChildTemplate, IMongoChildTemplate, IMongoChildTemplateWithConstraintsPopulated } from '@microservices/shared';
+import { IChildTemplate, IMongoChildTemplate, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import axios from '../../axios';
 import { environment } from '../../globals';
 

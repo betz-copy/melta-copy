@@ -3,14 +3,14 @@
 import {
     basicFilterOperationTypes,
     FilterQuery,
-    filterTypes,
+    FilterTypes,
     IAgGridFilterModel,
     IAgGridSort,
     numberFilterOperationTypes,
     relativeDateFilters,
-    ServiceError,
     textFilterOperationTypes,
-} from '@microservices/shared';
+} from '@packages/rule-breach';
+import { ServiceError } from '@packages/utils';
 
 const translateAgGridFilter = (
     type: basicFilterOperationTypes | numberFilterOperationTypes | textFilterOperationTypes | relativeDateFilters,
@@ -64,16 +64,16 @@ export const translateAgGridFilterModel = (filterModel: Record<string, IAgGridFi
     return Object.entries(filterModel).reduce(
         (acc, [field, filter]) => {
             switch (filter.filterType) {
-                case filterTypes.text:
+                case FilterTypes.text:
                     acc[field] = translateAgGridFilter(filter.type, filter.filter);
                     break;
-                case filterTypes.number:
+                case FilterTypes.number:
                     acc[field] = translateAgGridFilter(filter.type, filter.filter, filter.filterTo);
                     break;
-                case filterTypes.date:
+                case FilterTypes.date:
                     acc[field] = translateAgGridFilter(filter.type, filter.dateFrom, filter.dateTo);
                     break;
-                case filterTypes.set:
+                case FilterTypes.set:
                     acc[field] = { $in: filter.values.map((value) => (typeof value === 'object' ? (value?._id ?? null) : value)) };
                     break;
             }

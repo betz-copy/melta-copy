@@ -1,9 +1,9 @@
 /* eslint-disable no-restricted-syntax */
 
+/* eslint-disable class-methods-use-this */
+import { ActionsLog } from '@packages/activity-log';
 import {
-    ActionsLog,
     CreateProcessReqBody,
-    DefaultManagerMongo,
     IMongoProcessInstance,
     IMongoProcessInstancePopulated,
     IMongoProcessTemplate,
@@ -15,12 +15,10 @@ import {
     IProcessInstance,
     IProcessInstanceSearchProperties,
     ProcessInstanceDocument,
-    ServiceError,
     Status,
     UpdateProcessReqBody,
-    ValidationError,
-} from '@microservices/shared';
-/* eslint-disable class-methods-use-this */
+} from '@packages/process';
+import { DefaultManagerMongo, ServiceError, ValidationError } from '@packages/utils';
 import { Request } from 'express';
 import { ClientSession, FilterQuery, Types, UpdateWriteOpResult } from 'mongoose';
 import config from '../../../config';

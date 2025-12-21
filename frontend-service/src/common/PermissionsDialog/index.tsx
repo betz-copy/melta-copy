@@ -1,8 +1,10 @@
-import { IRole, IUser, PermissionData, RelatedPermission } from '@microservices/shared';
 /* eslint-disable no-nested-ternary */
 import { Close as CloseIcon } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Button, Dialog, Grid, IconButton, Tab } from '@mui/material';
+import { PermissionData } from '@packages/permission';
+import { IRole } from '@packages/role';
+import { IUser, RelatedPermission } from '@packages/user';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import React, { useState } from 'react';

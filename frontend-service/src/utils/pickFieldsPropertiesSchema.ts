@@ -1,4 +1,4 @@
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import pickBy from 'lodash.pickby';
 export const filterFieldsFromPropertiesSchema = (
     schema: IMongoEntityTemplateWithConstraintsPopulated['properties'] | undefined = {} as IMongoEntityTemplateWithConstraintsPopulated['properties'],

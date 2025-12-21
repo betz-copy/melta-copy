@@ -1,4 +1,6 @@
-import { IEntity, IMongoChildTemplateWithConstraintsPopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { cloneDeep, debounce } from 'lodash';
 import { Dispatch, SetStateAction, useCallback, useMemo } from 'react';
 import { v4 as uuid } from 'uuid';

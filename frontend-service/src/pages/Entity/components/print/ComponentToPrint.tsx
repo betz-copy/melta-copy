@@ -1,5 +1,6 @@
-import { IConnection, IEntity, IEntityExpanded, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { Box, Grid, Typography } from '@mui/material';
+import { IConnection, IEntity, IEntityExpanded } from '@packages/entity';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React, { JSX } from 'react';
 import { useQueryClient } from 'react-query';

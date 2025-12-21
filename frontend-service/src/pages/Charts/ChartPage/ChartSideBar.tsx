@@ -1,4 +1,3 @@
-import { DashboardItemType, IChildTemplateMap, IEntityTemplateMap, IChartPermission as IPermission } from '@microservices/shared';
 import { Group as AllUsers, PermIdentity as PersonalIcon } from '@mui/icons-material';
 import {
     Box,
@@ -13,6 +12,10 @@ import {
     Typography,
     useTheme,
 } from '@mui/material';
+import { IChartPermission } from '@packages/chart';
+import { IChildTemplateMap } from '@packages/child-template';
+import { DashboardItemType } from '@packages/dashboard';
+import { IEntityTemplateMap } from '@packages/entity-template';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useState } from 'react';
@@ -193,9 +196,9 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                                             size="small"
                                             sx={{ height: '35px' }}
                                             value={values.permission}
-                                            onChange={(_event, permission: IPermission) => {
+                                            onChange={(_event, permission: IChartPermission) => {
                                                 if (permission === null) return;
-                                                if (values.usedInDashboard && values.permission === IPermission.Protected)
+                                                if (values.usedInDashboard && values.permission === IChartPermission.Protected)
                                                     setPermissionDialogWarningOpen(true);
                                                 else setFieldValue('permission', permission);
                                             }}
@@ -209,7 +212,7 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                                             {!isDashboardPage && (
                                                 <MeltaTooltip title={i18next.t('charts.personal')}>
                                                     <Box>
-                                                        <ToggleButton value={IPermission.Private}>
+                                                        <ToggleButton value={IChartPermission.Private}>
                                                             <PersonalIcon />
                                                         </ToggleButton>
                                                     </Box>
@@ -217,7 +220,7 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                                             )}
                                             <MeltaTooltip title={i18next.t('charts.protected')}>
                                                 <Box>
-                                                    <ToggleButton value={IPermission.Protected}>
+                                                    <ToggleButton value={IChartPermission.Protected}>
                                                         <AllUsers />
                                                     </ToggleButton>
                                                 </Box>
@@ -225,7 +228,7 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                                         </ToggleButtonGroup>
                                     </Grid>
                                 </Grid>
-                                {values.permission === IPermission.Protected && (
+                                {values.permission === IChartPermission.Protected && (
                                     <Grid>
                                         <InfoTypography text={i18next.t('dashboard.charts.permissionWarning')} />
                                     </Grid>
@@ -244,7 +247,7 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                 isDialogOpen={permissionDialogWarningOpen}
                 handleClose={() => setPermissionDialogWarningOpen(false)}
                 onEditYes={() => {
-                    setFieldValue('permission', IPermission.Private);
+                    setFieldValue('permission', IChartPermission.Private);
                     setPermissionDialogWarningOpen(false);
                 }}
             />

@@ -1,5 +1,5 @@
-import { ChartsAndGenerator, IChartType } from '@microservices/shared';
 import { Box } from '@mui/material';
+import { ChartsAndGenerator, IChartType } from '@packages/chart';
 import React from 'react';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';

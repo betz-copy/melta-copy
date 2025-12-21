@@ -1,9 +1,10 @@
 import { useMatomo } from '@datapunt/matomo-tracker-react';
-import { IMongoCategory, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { FilterList } from '@mui/icons-material';
 import { Box, Button, Grid, SxProps, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { TreeViewBaseItem } from '@mui/x-tree-view-pro';
+import { IMongoCategory } from '@packages/category';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React, { Dispatch, useState } from 'react';
 import { IoIosArrowBack, IoIosArrowDown } from 'react-icons/io';

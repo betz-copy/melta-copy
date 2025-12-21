@@ -1,18 +1,18 @@
 import {
-    IMongoProcessInstanceReviewerPopulated,
-    IMongoStepInstancePopulated,
-    Status,
-    StatusBackgroundColors,
-    StatusColorsNames,
-    StatusFontColors,
-} from '@microservices/shared';
-import {
     Cancel as CancelIcon,
     CancelOutlined as CancelOutlinedIcon,
     CheckCircle as CheckCircleIcon,
     CheckCircleOutline as CheckCircleOutlineIcon,
 } from '@mui/icons-material';
 import { Grid, IconButton, SvgIconProps, Typography } from '@mui/material';
+import {
+    IMongoProcessInstanceReviewerPopulated,
+    IMongoStepInstancePopulated,
+    Status,
+    StatusBackgroundColors,
+    StatusColorsNames,
+    StatusFontColors,
+} from '@packages/process';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React from 'react';

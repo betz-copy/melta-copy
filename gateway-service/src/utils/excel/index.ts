@@ -1,19 +1,10 @@
-import {
-    ActionErrors,
-    ActionTypes,
-    BadRequestError,
-    IBrokenRuleEntity,
-    IBrokenRulesError,
-    IChildTemplatePopulated,
-    IEntity,
-    IExcelNotFoundError,
-    IFailedEntity,
-    IFailedEntityError,
-    IMongoEntityTemplatePopulated,
-    IWorkspace,
-    ServiceError,
-    UploadedFile,
-} from '@microservices/shared';
+
+import { IChildTemplatePopulated } from '@packages/child-template';
+import { IBrokenRulesError, IEntity, IExcelNotFoundError, UploadedFile } from '@packages/entity';
+import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { ActionErrors, ActionTypes, IBrokenRuleEntity, IFailedEntity, IFailedEntityError } from '@packages/rule-breach';
+import { BadRequestError, ServiceError } from '@packages/utils';
+import { IWorkspace } from '@packages/workspace';
 import { AxiosError } from 'axios';
 import { StatusCodes } from 'http-status-codes';
 import config from '../../config';

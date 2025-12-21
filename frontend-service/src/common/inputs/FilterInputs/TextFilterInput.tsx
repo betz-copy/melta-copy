@@ -1,12 +1,6 @@
-import {
-    basicFilterOperationTypes,
-    filterTypes,
-    IAgGridDateFilter,
-    IAgGridNumberFilter,
-    IAgGridTextFilter,
-    IGraphFilterBody,
-} from '@microservices/shared';
 import { Grid } from '@mui/material';
+import { IGraphFilterBody } from '@packages/entity';
+import { basicFilterOperationTypes, FilterTypes, IAgGridDateFilter, IAgGridNumberFilter, IAgGridTextFilter } from '@packages/rule-breach';
 import React, { useEffect } from 'react';
 import { StyledFilterInput } from './StyledFilterInput';
 import { TypeSelectFilter } from './TypeSelectFilter';
@@ -76,7 +70,7 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
                     onChange={(e) => {
                         const { value } = e.target;
                         const updatedFilter =
-                            type === filterTypes.number
+                            type === FilterTypes.number
                                 ? ({
                                       ...filterField,
                                       filter: value ? Number(value) : undefined,

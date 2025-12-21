@@ -1,7 +1,9 @@
-import { ICategoryMap, IEntityTemplateMap, IMongoRelationshipTemplate, IRelationshipTemplateMap } from '@microservices/shared';
 import { Hive as HiveIcon } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, CircularProgress, Grid, Tab, Typography, useTheme } from '@mui/material';
+import { ICategoryMap } from '@packages/category';
+import { IEntityTemplateMap } from '@packages/entity-template';
+import { IMongoRelationshipTemplate, IRelationshipTemplateMap } from '@packages/relationship-template';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';

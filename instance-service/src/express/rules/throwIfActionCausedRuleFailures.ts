@@ -1,4 +1,5 @@
-import { BadRequestError, IAction, IBrokenRule, ICausesOfInstance } from '@microservices/shared';
+import { IAction, IBrokenRule, ICausesOfInstance } from '@packages/rule-breach';
+import { BadRequestError } from '@packages/utils';
 import _groupBy from 'lodash.groupby';
 import _sortBy from 'lodash.sortby';
 import config from '../../config';

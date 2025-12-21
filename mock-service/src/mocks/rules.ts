@@ -1,4 +1,4 @@
-import { ActionOnFail, IRule } from '@microservices/shared';
+import { ActionOnFail, IRule } from '@packages/rule';
 
 const rulesCreator = (
     fliesOnId: string,

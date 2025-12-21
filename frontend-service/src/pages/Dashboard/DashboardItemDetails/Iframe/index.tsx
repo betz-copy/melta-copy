@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unstable-nested-components */
 
-import { DashboardItemType } from '@microservices/shared';
 import { CircularProgress } from '@mui/material';
+import { DashboardItemType } from '@packages/dashboard';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';

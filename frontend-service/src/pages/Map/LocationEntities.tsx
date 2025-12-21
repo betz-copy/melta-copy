@@ -1,4 +1,4 @@
-import { IEntity } from '@microservices/shared';
+import { IEntity } from '@packages/entity';
 import * as Cesium from 'cesium';
 import { Cartesian3, Color } from 'cesium';
 import { BillboardGraphics, Entity, PointGraphics, PolygonGraphics, PolylineGraphics } from 'resium';

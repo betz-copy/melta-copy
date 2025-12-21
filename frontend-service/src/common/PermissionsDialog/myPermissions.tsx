@@ -1,5 +1,9 @@
-import { IChildTemplateMap, IEntityTemplateMap, IGetUnits, IUser, PermissionData, RelatedPermission } from '@microservices/shared';
 import { Box, Button, CircularProgress, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material';
+import { IChildTemplateMap } from '@packages/child-template';
+import { IEntityTemplateMap } from '@packages/entity-template';
+import { PermissionData } from '@packages/permission';
+import { IGetUnits } from '@packages/unit';
+import { IUser, RelatedPermission } from '@packages/user';
 import { Form, Formik, FormikProps } from 'formik';
 import i18next from 'i18next';
 import _ from 'lodash';

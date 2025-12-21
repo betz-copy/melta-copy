@@ -1,5 +1,6 @@
-import { DashboardItemType, IChartType, MongoDashboardItemPopulated } from '@microservices/shared';
 import { Box } from '@mui/material';
+import { IChartType } from '@packages/chart';
+import { DashboardItemType, MongoDashboardItemPopulated } from '@packages/dashboard';
 import React from 'react';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';

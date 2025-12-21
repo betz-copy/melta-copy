@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 
-import { ServiceError } from '@microservices/shared';
+import { ServiceError } from '@packages/utils';
 import _forEach from 'lodash.foreach';
 import { ClientSession, startSession, Types } from 'mongoose';
 import { trycatch } from '.';

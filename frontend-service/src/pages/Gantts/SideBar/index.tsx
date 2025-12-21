@@ -1,6 +1,6 @@
-import { IGantt, IGanttItem } from '@microservices/shared';
 import { Add as AddIcon } from '@mui/icons-material';
 import { Box, Button, Grid } from '@mui/material';
+import { IGantt, IGanttItem } from '@packages/gantt';
 import { FieldArray, FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';

@@ -1,5 +1,5 @@
-import { IUser } from '@microservices/shared';
 import { Grid, IconButton } from '@mui/material';
+import { IUser } from '@packages/user';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { defaultInputType, isProfileFile } from '../../../utils/userProfile';

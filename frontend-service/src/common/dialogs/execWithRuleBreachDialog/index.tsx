@@ -1,5 +1,6 @@
-import { ActionOnFail, ActionTypes, IActionMetadataPopulated, IActionPopulated, IRuleBreachPopulated, IRuleMap } from '@microservices/shared';
 import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { ActionOnFail, IRuleMap } from '@packages/rule';
+import { ActionTypes, IActionMetadataPopulated, IActionPopulated, IRuleBreachPopulated } from '@packages/rule-breach';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';

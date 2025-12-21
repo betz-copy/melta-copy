@@ -1,6 +1,7 @@
-import { DashboardItemType, IMongoIframe } from '@microservices/shared';
 import { Delete, Edit, Favorite, FavoriteBorder, Hive as HiveIcon, OpenInFull } from '@mui/icons-material';
 import { Dialog, Grid, IconButton, Typography, useTheme } from '@mui/material';
+import { DashboardItemType } from '@packages/dashboard';
+import { IMongoIframe } from '@packages/iframe';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';

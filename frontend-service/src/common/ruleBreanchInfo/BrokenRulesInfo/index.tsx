@@ -1,5 +1,6 @@
-import { IActionPopulated, IRuleBreachPopulated, IRuleMap } from '@microservices/shared';
 import { Grid, List } from '@mui/material';
+import { IRuleMap } from '@packages/rule';
+import { IActionPopulated, IRuleBreachPopulated } from '@packages/rule-breach';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import { useDarkModeStore } from '../../../stores/darkMode';

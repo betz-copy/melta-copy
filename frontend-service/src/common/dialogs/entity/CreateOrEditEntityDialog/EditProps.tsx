@@ -1,6 +1,7 @@
-import { IMongoChildTemplateWithConstraintsPopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { Box, Divider, Grid, IconButton, Typography, useTheme } from '@mui/material';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { FormikComputedProps, FormikHelpers, FormikState } from 'formik';
 import i18next from 'i18next';
 import { DebouncedFunc, isEqual } from 'lodash';

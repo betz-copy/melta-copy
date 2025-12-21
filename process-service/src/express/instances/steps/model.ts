@@ -1,4 +1,4 @@
-import { Status } from '@microservices/shared';
+import { Status } from '@packages/process';
 import mongoose from 'mongoose';
 import config from '../../../config';
 

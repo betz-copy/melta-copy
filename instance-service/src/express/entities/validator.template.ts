@@ -1,23 +1,19 @@
+
+import { getFilterFromChildTemplate } from '@packages/child-template';
 import {
-    ActionErrors,
-    addPropertyToRequest,
-    CoordinateSystem,
     FilterLogicalOperator,
-    getFilterFromChildTemplate,
-    IEntitySingleProperty,
-    IEntityTemplate,
     IFilterGroup,
     IFilterOfField,
-    IMongoEntityTemplate,
-    IMongoRelationshipTemplate,
     ISearchBatchBody,
     ISearchEntitiesByTemplatesBody,
     ISearchEntitiesOfTemplateBody,
     ISearchFilter,
     IUniqueConstraintOfTemplate,
-    matchValueAgainstFilter,
-    ValidationError,
-} from '@microservices/shared';
+} from '@packages/entity';
+import { IEntitySingleProperty, IEntityTemplate, IMongoEntityTemplate } from '@packages/entity-template';
+import { IMongoRelationshipTemplate } from '@packages/relationship-template';
+import { ActionErrors } from '@packages/rule-breach';
+import { addPropertyToRequest, CoordinateSystem, ValidationError } from '@packages/utils';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import axios from 'axios';

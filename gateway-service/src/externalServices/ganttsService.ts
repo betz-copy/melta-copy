@@ -1,4 +1,4 @@
-import { IGantt, IMongoGantt, ISearchGanttsBody } from '@microservices/shared';
+import { IGantt, IMongoGantt, ISearchGanttsBody } from '@packages/gantt';
 import config from '../config';
 import DefaultExternalServiceApi from '../utils/express/externalService';
 

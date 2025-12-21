@@ -1,5 +1,6 @@
+import { IEntity } from '@packages/entity';
+import { ActionOnFail, IRuleMap } from '@packages/rule';
 import {
-    ActionOnFail,
     ActionTypes,
     IAction,
     IActionPopulated,
@@ -7,16 +8,14 @@ import {
     ICreateEntityMetadataPopulated,
     IDuplicateEntityMetadata,
     IDuplicateEntityMetadataPopulated,
-    IEntity,
     IRuleBreach,
     IRuleBreachPopulated,
     IRuleBreachRequestPopulated,
-    IRuleMap,
     IUpdateEntityMetadata,
     IUpdateEntityMetadataPopulated,
     IUpdateMultipleEntitiesMetadata,
     IUpdateMultipleEntitiesMetadataPopulated,
-} from '@microservices/shared';
+} from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import mapValues from 'lodash.mapvalues';

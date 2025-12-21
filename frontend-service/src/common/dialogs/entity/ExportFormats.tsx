@@ -1,6 +1,7 @@
-import { IEntity, IEntityTemplateMap } from '@microservices/shared';
 import { FileDownloadOutlined } from '@mui/icons-material';
 import { Autocomplete, Button, CircularProgress, Grid, TextField } from '@mui/material';
+import { IEntity } from '@packages/entity';
+import { IEntityTemplateMap } from '@packages/entity-template';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
 import _ from 'lodash';

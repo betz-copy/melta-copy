@@ -1,6 +1,8 @@
-import { IEntity, IEntityTemplateMap, TableMetaData } from '@microservices/shared';
 import { Download } from '@mui/icons-material';
 import { Box, CircularProgress, Grid, Typography, useTheme } from '@mui/material';
+import { TableMetaData } from '@packages/dashboard';
+import { IEntity } from '@packages/entity';
+import { IEntityTemplateMap } from '@packages/entity-template';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
 import React, { useEffect, useMemo, useRef, useState } from 'react';

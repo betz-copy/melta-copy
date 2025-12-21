@@ -1,5 +1,5 @@
-import { IMongoIframe } from '@microservices/shared';
 import { Grid } from '@mui/material';
+import { IMongoIframe } from '@packages/iframe';
 import React, { useRef } from 'react';
 import Iframe from 'react-iframe';
 import { CardTitle } from './TableCard';

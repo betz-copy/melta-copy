@@ -1,6 +1,7 @@
-import { FileDetails, IUser } from '@microservices/shared';
 import { Payment } from '@mui/icons-material';
 import { Avatar, Box, Grid, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { FileDetails } from '@packages/common';
+import { IUser } from '@packages/user';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { environment } from '../../globals';

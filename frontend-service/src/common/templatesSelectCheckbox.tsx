@@ -1,4 +1,6 @@
-import { IMongoCategory, IMongoChildTemplateWithConstraintsPopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
+import { IMongoCategory } from '@packages/category';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React, { Dispatch } from 'react';
 import { groupTemplatesByCategory } from '../utils/hooks/useTreeUtils';

@@ -1,4 +1,5 @@
-import { ForbiddenError, NotFoundError, PermissionScope, ValidationError } from '@microservices/shared';
+import { PermissionScope } from '@packages/permission';
+import { ForbiddenError, NotFoundError, ValidationError } from '@packages/utils';
 import { Request } from 'express';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import RelationshipsTemplateService from '../../externalServices/templates/relationshipsTemplateService';

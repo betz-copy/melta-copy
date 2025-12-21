@@ -1,12 +1,6 @@
 import { GridApi } from '@ag-grid-community/core';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
 import {
-    IEntity,
-    IMongoCategory,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-} from '@microservices/shared';
-import {
     Add as AddIcon,
     AutoAwesome,
     AutoAwesomeOutlined,
@@ -16,6 +10,10 @@ import {
     TableChartOutlined,
 } from '@mui/icons-material';
 import { BaseTextFieldProps, Box, CircularProgress, Grid, IconButton, ToggleButton, ToggleButtonGroup, Typography, useTheme } from '@mui/material';
+import { IMongoCategory } from '@packages/category';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import { debounce } from 'lodash';
 import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';

@@ -1,5 +1,5 @@
-import { IGantt } from '@microservices/shared';
 import { CircularProgress, Grid } from '@mui/material';
+import { IGantt } from '@packages/gantt';
 import { AxiosError } from 'axios';
 import { Form, Formik } from 'formik';
 import i18next from 'i18next';

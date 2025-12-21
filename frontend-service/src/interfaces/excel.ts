@@ -1,3 +1,6 @@
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IEntity, IEntityWithIgnoredRules, IRequiredConstraint, IUniqueConstraint, IUsersNotFoundError } from '@packages/entity';
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import {
     ActionErrors,
     ActionTypes,
@@ -6,15 +9,7 @@ import {
     IBrokenRule,
     IBrokenRulePopulated,
     ICreateEntityMetadata,
-    IEntity,
-    IEntitySingleProperty,
-    IEntityWithIgnoredRules,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IRequiredConstraint,
-    IUniqueConstraint,
-    IUsersNotFoundError,
-} from '@microservices/shared';
+} from '@packages/rule-breach';
 
 export interface EntitiesWizardValues {
     files?: File[];

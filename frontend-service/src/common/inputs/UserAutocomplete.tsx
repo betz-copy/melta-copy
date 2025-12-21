@@ -1,6 +1,6 @@
-import { IUser } from '@microservices/shared';
 import { ExpandMore } from '@mui/icons-material';
 import { Autocomplete, AutocompleteProps, TextField } from '@mui/material';
+import { IUser } from '@packages/user';
 import i18next from 'i18next';
 import _debounce from 'lodash.debounce';
 import React, { useState } from 'react';

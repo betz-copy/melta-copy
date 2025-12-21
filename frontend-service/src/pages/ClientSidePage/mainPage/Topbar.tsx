@@ -1,5 +1,6 @@
-import { IKartoffelUser, INotificationCountGroups } from '@microservices/shared';
 import { Divider, Grid, Typography } from '@mui/material';
+import { INotificationCountGroups } from '@packages/notification';
+import { IKartoffelUser } from '@packages/user';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';

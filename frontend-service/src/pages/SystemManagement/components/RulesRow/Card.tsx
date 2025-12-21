@@ -1,6 +1,8 @@
-import { ActionOnFail, IMongoEntityTemplateWithConstraintsPopulated, IMongoRule, PermissionScope } from '@microservices/shared';
 import { Brush, WarningAmberRounded, WarningRounded } from '@mui/icons-material';
 import { Grid, Typography, useTheme } from '@mui/material';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { PermissionScope } from '@packages/permission';
+import { ActionOnFail, IMongoRule } from '@packages/rule';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { UseMutateAsyncFunction } from 'react-query';

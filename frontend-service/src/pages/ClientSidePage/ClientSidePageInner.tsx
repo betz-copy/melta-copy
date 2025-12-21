@@ -1,6 +1,7 @@
 import { useMatomo } from '@datapunt/matomo-tracker-react';
-import { IChildTemplateMap, IKartoffelUser } from '@microservices/shared';
 import { Box, debounce, Grid, useScrollTrigger } from '@mui/material';
+import { IChildTemplateMap } from '@packages/child-template';
+import { IKartoffelUser } from '@packages/user';
 import i18next from 'i18next';
 import React, { lazy, Suspense, useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from 'react-query';

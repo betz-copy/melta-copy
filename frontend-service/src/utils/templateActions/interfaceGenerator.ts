@@ -3,7 +3,7 @@ import {
     IEntityTemplateMap,
     IFullMongoEntityTemplate,
     IMongoEntityTemplateWithConstraintsPopulated,
-} from '@microservices/shared';
+} from '@packages/entity-template';
 import { QueryClient } from 'react-query';
 import { CoordinateSystem } from '../../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
 

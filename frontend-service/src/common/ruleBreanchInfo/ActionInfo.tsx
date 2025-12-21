@@ -1,5 +1,9 @@
+import { Box, Grid, Typography, useTheme } from '@mui/material';
+import { IEntity } from '@packages/entity';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '@packages/relationship-template';
+import { ActionOnFail, IMongoRule } from '@packages/rule';
 import {
-    ActionOnFail,
     ActionTypes,
     IActionMetadataPopulated,
     IActionPopulated,
@@ -8,18 +12,11 @@ import {
     ICronjobRunMetadataPopulated,
     IDeleteRelationshipMetadataPopulated,
     IDuplicateEntityMetadataPopulated,
-    IEntity,
     IEntityForBrokenRules,
-    IEntityTemplateMap,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IMongoRelationshipTemplatePopulated,
-    IMongoRule,
-    IRelationshipTemplateMap,
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadataPopulated,
-    IUser,
-} from '@microservices/shared';
-import { Box, Grid, Typography, useTheme } from '@mui/material';
+} from '@packages/rule-breach';
+import { IUser } from '@packages/user';
 import i18next from 'i18next';
 import React, { CSSProperties, ReactNode } from 'react';
 import { useQueryClient } from 'react-query';

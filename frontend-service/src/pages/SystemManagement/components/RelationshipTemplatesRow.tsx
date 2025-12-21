@@ -1,16 +1,10 @@
-import {
-    ICategoryMap,
-    IEntityTemplateMap,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IMongoRelationshipTemplate,
-    IMongoRelationshipTemplatePopulated,
-    IRelationshipReference,
-    IRelationshipTemplateMap,
-    PermissionScope,
-} from '@microservices/shared';
 import { AppRegistration as AppRegistrationIcon, ArrowBack } from '@mui/icons-material';
 import { Grid, IconButton, Typography, useTheme } from '@mui/material';
+import { ICategoryMap } from '@packages/category';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated, IRelationshipReference } from '@packages/entity-template';
+import { PermissionScope } from '@packages/permission';
+import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '@packages/relationship-template';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useMemo, useState } from 'react';

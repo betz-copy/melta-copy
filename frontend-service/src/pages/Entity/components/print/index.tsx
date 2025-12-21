@@ -10,7 +10,8 @@ import { lightTheme } from '../../../../theme';
 import { INestedRelationshipTemplates } from '../..';
 import { ComponentToPrint } from './ComponentToPrint';
 import './print.css';
-import { IConnection, IEntityExpanded, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
+import { IConnection, IEntityExpanded } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 
 const Print: React.FC<{
     entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;

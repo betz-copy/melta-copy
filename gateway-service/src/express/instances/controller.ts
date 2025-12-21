@@ -1,4 +1,4 @@
-import { IDeleteEntityBody, ISearchEntitiesByLocationBody } from '@microservices/shared';
+import { IDeleteEntityBody, ISearchEntitiesByLocationBody } from '@packages/entity';
 import { Request, Response } from 'express';
 import { promises as fsp } from 'fs';
 import { promisify } from 'util';

@@ -1,14 +1,7 @@
-import {
-    IAggregation,
-    IChartType,
-    IColumnOrLineMetaData,
-    IEntityTemplateMap,
-    IMongoChart,
-    INUmberMetaData,
-    IPieMetaData,
-} from '@microservices/shared';
 import { InfoOutlined } from '@mui/icons-material';
 import { Autocomplete, Grid, TextField, Typography } from '@mui/material';
+import { IAggregation, IChartType, IColumnOrLineMetaData, IMongoChart, INUmberMetaData, IPieMetaData } from '@packages/chart';
+import { IEntityTemplateMap } from '@packages/entity-template';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useState } from 'react';

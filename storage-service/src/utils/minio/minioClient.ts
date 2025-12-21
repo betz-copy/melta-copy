@@ -1,4 +1,4 @@
-import { logger } from '@microservices/shared';
+import { logger } from '@packages/utils';
 import * as http from 'http';
 import { BucketItem, Client, CopyConditions } from 'minio';
 import { Readable } from 'stream';

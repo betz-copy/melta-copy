@@ -1,8 +1,8 @@
 /* eslint-disable no-param-reassign */
 
+import { IAxisField } from '@packages/chart';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import {
-    IAxisField,
-    IBrokenRule,
     ICountSearchResult,
     IDeleteEntityBody,
     IEntity,
@@ -10,17 +10,16 @@ import {
     IEntityWithIgnoredRules,
     IExportEntitiesBody,
     IGraphFilterBodyBatch,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
     IMultipleSelect,
-    IRuleBreach,
     ISearchBatchBody,
     ISearchEntitiesByLocationBody,
     ISearchEntitiesByTemplatesBody,
     ISearchEntitiesOfTemplateBody,
     ISearchFilter,
     ISearchResult,
-} from '@microservices/shared';
+} from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IBrokenRule, IRuleBreach } from '@packages/rule-breach';
 import { mapValues } from 'lodash';
 import axios from '../axios';
 import { EntityWizardValues } from '../common/dialogs/entity';

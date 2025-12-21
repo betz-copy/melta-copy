@@ -1,6 +1,7 @@
-import { ICompactPermissions, IMongoUser, RelatedPermission } from '@microservices/shared';
 import { Delete } from '@mui/icons-material';
 import { Divider, Grid, IconButton, Paper, Typography } from '@mui/material';
+import { ICompactPermissions } from '@packages/permission';
+import { IMongoUser, RelatedPermission } from '@packages/user';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';

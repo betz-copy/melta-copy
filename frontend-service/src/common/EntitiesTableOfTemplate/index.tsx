@@ -1,5 +1,6 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-case-declarations */
+
 import {
     BodyScrollEvent,
     CellEditingStoppedEvent,
@@ -21,28 +22,13 @@ import {
     StatusPanelDef,
 } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
-import {
-    ActionTypes,
-    EntityData,
-    IAction,
-    IActionPopulated,
-    IBrokenRule,
-    IChildTemplateMap,
-    IConnection,
-    IDeleteEntityBody,
-    IEntity,
-    IEntityExpanded,
-    IEntityTemplateMap,
-    IGetUnits,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IRuleBreach,
-    IRuleBreachPopulated,
-    ISearchFilter,
-    ISemanticSearchResult,
-    IUniqueConstraint,
-} from '@microservices/shared';
 import { Box, CircularProgress, debounce } from '@mui/material';
+import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { EntityData, IConnection, IDeleteEntityBody, IEntity, IEntityExpanded, ISearchFilter, IUniqueConstraint } from '@packages/entity';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { ActionTypes, IAction, IActionPopulated, IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '@packages/rule-breach';
+import { ISemanticSearchResult } from '@packages/semantic-search';
+import { IGetUnits } from '@packages/unit';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import { pickBy } from 'lodash';
@@ -54,7 +40,7 @@ import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import '../../css/resizeTable.css';
 import '../../css/table.css';
-import { IAgGridRequest } from '@microservices/shared';
+import { IAgGridRequest } from '@packages/rule-breach';
 import { environment } from '../../globals';
 import { IErrorResponse } from '../../interfaces/error';
 import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';

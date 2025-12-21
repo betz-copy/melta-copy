@@ -1,15 +1,10 @@
-import {
-    IAgGridDateFilter,
-    IAgGridNumberFilter,
-    IAgGridSetFilter,
-    IAgGridTextFilter,
-    IGetUnits,
-    IGraphFilterBody,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IUser,
-} from '@microservices/shared';
 import { Close } from '@mui/icons-material';
 import { Autocomplete, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, TextField, Typography } from '@mui/material';
+import { IGraphFilterBody } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IAgGridDateFilter, IAgGridNumberFilter, IAgGridSetFilter, IAgGridTextFilter } from '@packages/rule-breach';
+import { IGetUnits } from '@packages/unit';
+import { IUser } from '@packages/user';
 import { format } from 'date-fns';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';

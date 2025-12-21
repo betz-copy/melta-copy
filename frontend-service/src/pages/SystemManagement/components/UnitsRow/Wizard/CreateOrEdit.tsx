@@ -1,5 +1,5 @@
-import { IGetUnits } from '@microservices/shared';
 import { Autocomplete, Grid, TextField } from '@mui/material';
+import { IGetUnits } from '@packages/unit';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';

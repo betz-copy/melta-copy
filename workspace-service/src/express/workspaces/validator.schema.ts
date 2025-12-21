@@ -1,4 +1,4 @@
-import { Colors, FilePathSchema, HexColorSchema, MongoIdSchema, WorkspaceNameSchema, WorkspaceTypes } from '@microservices/shared';
+import { Colors, WorkspaceTypes } from '@packages/workspace';
 import * as Joi from 'joi';
 
 // Joi schema for IMetadata

@@ -1,13 +1,14 @@
 /* eslint-disable default-case */
+
 import {
     basicFilterOperationTypes,
-    filterTypes,
+    FilterTypes,
     IAgGridRequest,
     IAgGridSort,
     numberFilterOperationTypes,
     relativeDateFilters,
     textFilterOperationTypes,
-} from '@microservices/shared';
+} from '@packages/rule-breach';
 import { RuleBreachSearchFilterTypeError } from '../../express/error';
 
 const translateAgGridFilter = (
@@ -63,16 +64,16 @@ export const translateAgGridFilterModel = (filterModel: IAgGridRequest['filterMo
 
     Object.entries(filterModel).forEach(([field, filter]) => {
         switch (filter.filterType) {
-            case filterTypes.text:
+            case FilterTypes.text:
                 query[field] = translateAgGridFilter(filter.type, filter.filter);
                 break;
-            case filterTypes.number:
+            case FilterTypes.number:
                 query[field] = translateAgGridFilter(filter.type, filter.filter, filter.filterTo);
                 break;
-            case filterTypes.date:
+            case FilterTypes.date:
                 query[field] = translateAgGridFilter(filter.type, filter.dateFrom, filter.dateTo);
                 break;
-            case filterTypes.set:
+            case FilterTypes.set:
                 query[field] = { $in: filter.values };
                 break;
         }

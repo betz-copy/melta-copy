@@ -1,4 +1,6 @@
-import { IEntityExpanded, IEntityTemplateMap, IRelationshipTemplateMap } from '@microservices/shared';
+import { IEntityExpanded } from '@packages/entity';
+import { IEntityTemplateMap } from '@packages/entity-template';
+import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import { environment } from '../globals';
 import { INestedRelationshipTemplates } from '../pages/Entity';
 import { getFullRelationshipTemplates } from './templates';

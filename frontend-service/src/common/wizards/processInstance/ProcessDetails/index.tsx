@@ -3,7 +3,7 @@ import {
     IMongoProcessTemplateReviewerPopulated,
     IReferencedEntityForProcess,
     StepsObjectPopulated,
-} from '@microservices/shared';
+} from '@packages/process';
 import { FormikProps } from 'formik';
 
 export interface ProcessDetailsValues {

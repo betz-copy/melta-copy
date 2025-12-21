@@ -1,14 +1,4 @@
 import {
-    IDeleteEntityBody,
-    IEntity,
-    IEntityExpanded,
-    IEntityTemplateMap,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IRuleBreach,
-    IRuleBreachPopulated,
-    PermissionScope,
-} from '@microservices/shared';
-import {
     Archive,
     Delete as DeleteIcon,
     DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
@@ -19,6 +9,10 @@ import {
     Unarchive,
 } from '@mui/icons-material';
 import { Card, CardContent, Dialog, Grid, IconButton, Menu } from '@mui/material';
+import { IDeleteEntityBody, IEntity, IEntityExpanded } from '@packages/entity';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { PermissionScope } from '@packages/permission';
+import { IRuleBreach, IRuleBreachPopulated } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';

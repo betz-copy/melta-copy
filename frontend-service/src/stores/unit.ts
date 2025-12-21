@@ -1,4 +1,4 @@
-import { IGetUnits } from '@microservices/shared';
+import { IGetUnits } from '@packages/unit';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 

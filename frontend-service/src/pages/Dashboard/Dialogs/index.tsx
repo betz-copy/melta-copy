@@ -1,4 +1,4 @@
-import { DashboardItemType } from '@microservices/shared';
+import { DashboardItemType } from '@packages/dashboard';
 import i18next from 'i18next';
 import React from 'react';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';

@@ -1,6 +1,6 @@
-import { IMongoPrintingTemplate } from '@microservices/shared';
 import { ChevronLeft, ExpandMore } from '@mui/icons-material';
 import { Button, Divider, Grid, Typography, useTheme } from '@mui/material';
+import { IMongoPrintingTemplate } from '@packages/printing-template';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';

@@ -1,4 +1,4 @@
-import { IMongoRule } from '@microservices/shared';
+import { IMongoRule } from '@packages/rule';
 import { IFormulaCauses } from './formulaWithCauses';
 
 export type CypherQuery = {

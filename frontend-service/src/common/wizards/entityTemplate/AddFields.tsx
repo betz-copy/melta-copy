@@ -1,11 +1,11 @@
+import { Grid } from '@mui/material';
 import {
     basicFilterOperationTypes,
-    filterTypes,
+    FilterTypes,
     numberFilterOperationTypes,
     relativeDateFilters,
     textFilterOperationTypes,
-} from '@microservices/shared';
-import { Grid } from '@mui/material';
+} from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import { isValid } from 'date-fns';
 import { FormikProps } from 'formik';
@@ -64,7 +64,7 @@ export const attachmentPropertiesBaseSchema = Yup.object({
 });
 
 const agGridTextFilterSchema = Yup.object({
-    filterType: Yup.string().oneOf([filterTypes.text]).required(i18next.t('validation.required')),
+    filterType: Yup.string().oneOf([FilterTypes.text]).required(i18next.t('validation.required')),
     type: Yup.string()
         .oneOf([...Object.values(basicFilterOperationTypes), ...Object.values(textFilterOperationTypes)])
         .required(i18next.t('validation.required')),
@@ -73,7 +73,7 @@ const agGridTextFilterSchema = Yup.object({
 
 const agGridNumberFilterSchema = (parentFilterType: FilterType = FilterType.value) =>
     Yup.object({
-        filterType: Yup.string().oneOf([filterTypes.number]).strict(true).required(i18next.t('validation.required')),
+        filterType: Yup.string().oneOf([FilterTypes.number]).strict(true).required(i18next.t('validation.required')),
         type: Yup.string()
             .oneOf([...Object.values(basicFilterOperationTypes), ...Object.values(numberFilterOperationTypes)])
             .required(i18next.t('validation.required')),
@@ -113,7 +113,7 @@ const validateExactDate = (value?: string) => {
 
 const agGridDateFilterSchema = (parentFilterType: FilterType = FilterType.value) =>
     Yup.object({
-        filterType: Yup.string().oneOf([filterTypes.date]).required(i18next.t('validation.required')),
+        filterType: Yup.string().oneOf([FilterTypes.date]).required(i18next.t('validation.required')),
         type: Yup.string()
             .oneOf([...Object.values(basicFilterOperationTypes), ...Object.values(numberFilterOperationTypes), ...Object.values(relativeDateFilters)])
             .required(i18next.t('validation.required')),
@@ -136,7 +136,7 @@ const agGridDateFilterSchema = (parentFilterType: FilterType = FilterType.value)
     });
 
 const agGridSetFilterSchema = Yup.object({
-    filterType: Yup.string().oneOf([filterTypes.set]).required(i18next.t('validation.required')),
+    filterType: Yup.string().oneOf([FilterTypes.set]).required(i18next.t('validation.required')),
     values: Yup.array().of(Yup.string().nullable()).min(1, i18next.t('validation.atLeastOne')).required(i18next.t('validation.required')),
 });
 

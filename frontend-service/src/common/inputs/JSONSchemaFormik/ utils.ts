@@ -1,4 +1,6 @@
-import { IEntitySingleProperty, IKartoffelUser, IMongoEntityTemplateWithConstraintsPopulated, IMongoUnit, IProperties } from '@microservices/shared';
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated, IProperties } from '@packages/entity-template';
+import { IMongoUnit } from '@packages/unit';
+import { IKartoffelUser } from '@packages/user';
 import { UiSchema } from '@rjsf/utils';
 import { flatten } from 'flat';
 import { FormikHelpers } from 'formik';

@@ -1,3 +1,4 @@
+import { MenuItem } from '@mui/material';
 import {
     basicFilterOperationTypes,
     IAgGridDateFilter,
@@ -6,8 +7,7 @@ import {
     numberFilterOperationTypes,
     relativeDateFilters,
     textFilterOperationTypes,
-} from '@microservices/shared';
-import { MenuItem } from '@mui/material';
+} from '@packages/rule-breach';
 import i18next from 'i18next';
 import React, { useMemo } from 'react';
 import { IoIosArrowDown } from 'react-icons/io';

@@ -1,4 +1,5 @@
-import { FileDetails, IFrame, IMongoIframe } from '@microservices/shared';
+import { FileDetails } from '@packages/common';
+import { IFrame, IMongoIframe } from '@packages/iframe';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React from 'react';

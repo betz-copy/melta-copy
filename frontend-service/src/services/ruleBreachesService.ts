@@ -1,5 +1,5 @@
 import { IServerSideGetRowsRequest } from '@ag-grid-community/core';
-import { IRuleBreach, IRuleBreachAlertPopulated, IRuleBreachRequestPopulated } from '@microservices/shared';
+import { IRuleBreach, IRuleBreachAlertPopulated, IRuleBreachRequestPopulated } from '@packages/rule-breach';
 import axios from '../axios';
 import { environment } from '../globals';
 

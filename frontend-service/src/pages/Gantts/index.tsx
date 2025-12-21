@@ -1,6 +1,7 @@
-import { IMongoGantt, PermissionScope } from '@microservices/shared';
 import { AddCircle as AddCircleIcon } from '@mui/icons-material';
 import { Box, Grid, IconButton } from '@mui/material';
+import { IMongoGantt } from '@packages/gantt';
+import { PermissionScope } from '@packages/permission';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';

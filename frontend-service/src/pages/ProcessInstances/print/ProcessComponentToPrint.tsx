@@ -1,10 +1,10 @@
+import { Box, Typography, useTheme } from '@mui/material';
 import {
     IMongoProcessInstanceReviewerPopulated,
     IMongoStepInstancePopulated,
     IMongoStepTemplatePopulated,
     IProcessTemplateMap,
-} from '@microservices/shared';
-import { Box, Typography, useTheme } from '@mui/material';
+} from '@packages/process';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';

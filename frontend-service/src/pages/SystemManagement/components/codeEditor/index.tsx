@@ -1,14 +1,8 @@
-import {
-    EntityTemplateType,
-    IChildTemplateMap,
-    IEntityTemplateMap,
-    IMongoCategory,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    TemplateItem,
-} from '@microservices/shared';
 import { CloseOutlined, ContentCopy, Done } from '@mui/icons-material';
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, Typography } from '@mui/material';
+import { IMongoCategory } from '@packages/category';
+import { EntityTemplateType, IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated, TemplateItem } from '@packages/child-template';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import { editor } from 'monaco-editor';

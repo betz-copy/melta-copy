@@ -1,11 +1,8 @@
-import {
-    IBrokenRule,
-    IEntity,
-    IMongoEntityTemplatePopulated,
-    ISearchEntitiesOfTemplateBody,
-    NotFoundError,
-    UploadedFile,
-} from '@microservices/shared';
+
+import { IEntity, ISearchEntitiesOfTemplateBody, UploadedFile } from '@packages/entity';
+import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { IBrokenRule } from '@packages/rule-breach';
+import { NotFoundError } from '@packages/utils';
 import config from '../../config';
 import InstancesService from '../../externalServices/instanceService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';

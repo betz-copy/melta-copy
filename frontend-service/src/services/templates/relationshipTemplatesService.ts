@@ -1,12 +1,10 @@
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import {
     IConvertToRelationshipField,
-    IEntityTemplateMap,
-    IMongoEntityTemplatePopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
     IMongoRelationshipTemplate,
     IRelationshipTemplate,
     ISearchRelationshipTemplatesBody,
-} from '@microservices/shared';
+} from '@packages/relationship-template';
 import axios from '../../axios';
 import { defaultInitialValues, RelationshipTemplateWizardValues } from '../../common/wizards/relationshipTemplate';
 import { environment } from '../../globals';

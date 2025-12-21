@@ -1,6 +1,6 @@
-import { IMongoProcessTemplateReviewerPopulated, IMongoStepTemplatePopulated } from '@microservices/shared';
 import { ScatterPlotOutlined as HiveIcon } from '@mui/icons-material';
 import { Divider, Grid, Typography, useTheme } from '@mui/material';
+import { IMongoProcessTemplateReviewerPopulated, IMongoStepTemplatePopulated } from '@packages/process';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { CustomIcon } from '../../../../common/CustomIcon';

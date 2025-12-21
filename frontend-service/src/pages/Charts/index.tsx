@@ -1,5 +1,8 @@
-import { ChartsAndGenerator, DashboardItemType, IChildTemplateMap, IEntityTemplateMap } from '@microservices/shared';
 import { CircularProgress, Grid } from '@mui/material';
+import { ChartsAndGenerator } from '@packages/chart';
+import { IChildTemplateMap } from '@packages/child-template';
+import { DashboardItemType } from '@packages/dashboard';
+import { IEntityTemplateMap } from '@packages/entity-template';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';

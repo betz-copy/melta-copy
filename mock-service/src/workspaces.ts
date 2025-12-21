@@ -1,4 +1,4 @@
-import { IMetadata, IWorkspace } from '@microservices/shared';
+import { IMetadata, IWorkspace } from '@packages/workspace';
 import axios from 'axios';
 import config from './config';
 import { trycatch } from './utils';

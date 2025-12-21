@@ -1,6 +1,7 @@
-import { IEntityExpanded, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { AppRegistration } from '@mui/icons-material';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
+import { IEntityExpanded } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import React from 'react';
 import { Link } from 'wouter';
 import { CustomIcon } from '../../../common/CustomIcon';

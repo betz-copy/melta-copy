@@ -1,4 +1,4 @@
-import { IGetUnits, IMongoUnit, IUnit, IUnitHierarchy } from '@microservices/shared';
+import { IGetUnits, IMongoUnit, IUnit, IUnitHierarchy } from '@packages/unit';
 import mongoose from 'mongoose';
 import config from '../../config';
 import { CyclicalTreeError, DisabledChildUnderEnabledParent, UnitDoesNotExistError } from './errors';

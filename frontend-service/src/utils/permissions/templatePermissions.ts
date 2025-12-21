@@ -1,15 +1,10 @@
-import {
-    ICategoryMap,
-    ICurrentUser,
-    IMongoCategory,
-    IMongoChildTemplate,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IMongoRelationshipTemplate,
-    IMongoRule,
-    ISubCompactPermissions,
-    PermissionScope,
-} from '@microservices/shared';
+import { ICategoryMap, IMongoCategory } from '@packages/category';
+import { IMongoChildTemplate, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { ISubCompactPermissions, PermissionScope } from '@packages/permission';
+import { IMongoRelationshipTemplate } from '@packages/relationship-template';
+import { IMongoRule } from '@packages/rule';
+import { ICurrentUser } from '@packages/user';
 
 export const allowedCategories = (categories: ICategoryMap, currentUser: ICurrentUser): IMongoCategory[] => {
     const allowedCategoriesToShow = currentUser.currentWorkspacePermissions?.admin

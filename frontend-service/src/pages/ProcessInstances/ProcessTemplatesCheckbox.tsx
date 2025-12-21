@@ -1,4 +1,4 @@
-import { IMongoProcessTemplateReviewerPopulated } from '@microservices/shared';
+import { IMongoProcessTemplateReviewerPopulated } from '@packages/process';
 import i18next from 'i18next';
 import React from 'react';
 import { SelectCheckbox } from '../../common/SelectCheckBox';

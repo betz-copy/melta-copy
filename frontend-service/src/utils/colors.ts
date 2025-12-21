@@ -1,4 +1,5 @@
-import { IMongoEntityTemplateWithConstraintsPopulated, IMongoRelationshipTemplate } from '@microservices/shared';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoRelationshipTemplate } from '@packages/relationship-template';
 import randomColor from 'randomcolor';
 
 export const getEntityTemplateColor = (entityTemplate: IMongoEntityTemplateWithConstraintsPopulated, categoryColor?: string) => {

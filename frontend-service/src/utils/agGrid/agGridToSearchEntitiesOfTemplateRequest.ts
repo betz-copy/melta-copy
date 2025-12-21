@@ -1,24 +1,19 @@
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { ICountSearchResult, IFilterOfField, IFilterOfTemplate, ISearchEntitiesOfTemplateBody, ISearchFilter } from '@packages/entity';
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import {
     basicFilterOperationTypes,
-    filterTypes,
+    FilterTypes,
     IAgGridDateFilter,
     IAgGridFilterModel,
     IAgGridNumberFilter,
     IAgGridRequest,
     IAgGridSort,
     IAgGridTextFilter,
-    ICountSearchResult,
-    IEntitySingleProperty,
-    IFilterOfField,
-    IFilterOfTemplate,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    ISearchEntitiesOfTemplateBody,
-    ISearchFilter,
     numberFilterOperationTypes,
     relativeDateFilters,
     textFilterOperationTypes,
-} from '@microservices/shared';
+} from '@packages/rule-breach';
 import { FilterType } from '../../common/wizards/entityTemplate/commonInterfaces';
 import { environment } from '../../globals';
 import { getDayEnd, getDayStart } from '../date';
@@ -235,16 +230,16 @@ export const filterModelToFilterOfTemplatePerField = (
     filterType?: FilterType,
 ) => {
     switch (fieldFilter.filterType) {
-        case filterTypes.text:
+        case FilterTypes.text:
             if (fieldTemplate.format === 'fileId') return textFilterOfFileToFilterTemplate(field, fieldFilter, filterType);
             else return textFilterToFilterOfTemplate(field, fieldFilter, filterType);
-        case filterTypes.number:
+        case FilterTypes.number:
             return numberFilterToFilterOfTemplate(field, fieldFilter, filterType);
-        case filterTypes.date:
+        case FilterTypes.date:
             if (fieldTemplate.format === 'date') return dateFilterToFilterOfTemplate(field, fieldFilter, filterType);
             else return dateTimeFilterToFilterOfTemplate(field, fieldFilter, filterType);
 
-        case filterTypes.set: {
+        case FilterTypes.set: {
             const filtersValues = Array.isArray(fieldFilter.values)
                 ? fieldFilter.values.map((item) => (typeof item === 'object' ? item?.fullName || null : item))
                 : fieldFilter.values;

@@ -1,12 +1,8 @@
-import {
-    IChildTemplateMap,
-    IEntity,
-    IExportEntitiesBody,
-    IMongoCategory,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-} from '@microservices/shared';
 import { Box, Grid } from '@mui/material';
+import { IMongoCategory } from '@packages/category';
+import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IEntity, IExportEntitiesBody } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
 import mapValues from 'lodash.mapvalues';

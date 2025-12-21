@@ -1,4 +1,5 @@
-import { ISubCompactPermissions, IUserPopulated, PermissionData, RelatedPermission } from '@microservices/shared';
+import { ISubCompactPermissions, PermissionData } from '@packages/permission';
+import { IUserPopulated, RelatedPermission } from '@packages/user';
 import i18next from 'i18next';
 import React from 'react';
 import { useMutation } from 'react-query';

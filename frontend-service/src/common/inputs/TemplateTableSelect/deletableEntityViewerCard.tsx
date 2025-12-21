@@ -1,6 +1,8 @@
-import { IChildTemplateMap, IEntityTemplateMap, IEntityWithChildTemplate } from '@microservices/shared';
 import { AppRegistration as AppRegistrationIcon, Clear as ClearIcon } from '@mui/icons-material';
 import { Card, CardContent, CardHeader, IconButton } from '@mui/material';
+import { IChildTemplateMap } from '@packages/child-template';
+import { IEntityWithChildTemplate } from '@packages/entity';
+import { IEntityTemplateMap } from '@packages/entity-template';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import { useDarkModeStore } from '../../../stores/darkMode';

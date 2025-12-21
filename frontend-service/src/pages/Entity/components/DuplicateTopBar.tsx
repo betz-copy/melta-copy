@@ -1,5 +1,5 @@
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { Box, Typography, useTheme } from '@mui/material';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import React from 'react';
 import { useDarkModeStore } from '../../../stores/darkMode';
 

@@ -1,12 +1,12 @@
+import { FileDetails } from '@packages/common';
 import {
-    FileDetails,
     ICreateProcessTemplateBody,
     IMongoProcessTemplateReviewerPopulated,
     IProcessDetails,
     IProcessSingleProperty,
     ISearchProcessTemplatesBody,
     IUpdateProcessTemplateBody,
-} from '@microservices/shared';
+} from '@packages/process';
 import { v4 as uuid } from 'uuid';
 import axios from '../../axios';
 import { ProcessTemplateFormInputProperties, ProcessTemplatePropertyByType, ProcessTemplateWizardValues } from '../../common/wizards/processTemplate';

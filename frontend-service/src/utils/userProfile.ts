@@ -1,4 +1,4 @@
-import { IUser } from '@microservices/shared';
+import { IUser } from '@packages/user';
 import { environment } from '../globals';
 
 const { kartoffelProfile } = environment.users;

@@ -1,4 +1,3 @@
-import { MongoIdSchema } from '@microservices/shared';
 import joi from 'joi';
 
 // GET /api/notifications/my

@@ -1,11 +1,7 @@
-import {
-    IEntitySingleProperty,
-    IEntityTemplateMap,
-    IGetUnits,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IUpdateEntityMetadataPopulated,
-} from '@microservices/shared';
 import { Typography } from '@mui/material';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IUpdateEntityMetadataPopulated } from '@packages/rule-breach';
+import { IGetUnits } from '@packages/unit';
 import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import React from 'react';

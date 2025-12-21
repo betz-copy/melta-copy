@@ -1,4 +1,5 @@
-import { ActionTypes, IEntityWithIgnoredRules } from '@microservices/shared';
+import { IEntityWithIgnoredRules } from '@packages/entity';
+import { ActionTypes } from '@packages/rule-breach';
 /* eslint-disable react/no-unstable-nested-components */
 
 import { Grid } from '@mui/material';

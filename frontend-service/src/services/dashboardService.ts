@@ -1,4 +1,4 @@
-import { DashboardItem, MongoDashboardItem, MongoDashboardItemPopulated, TableItem } from '@microservices/shared';
+import { DashboardItem, MongoDashboardItem, MongoDashboardItemPopulated, TableItem } from '@packages/dashboard';
 import axios from '../axios';
 import { environment } from '../globals';
 import { TableItemToBackend } from '../interfaces/dashboard';

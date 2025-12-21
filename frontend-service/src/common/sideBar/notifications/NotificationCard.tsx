@@ -1,7 +1,7 @@
-import { INotificationPopulated, NotificationType } from '@microservices/shared';
 import { Done as DoneIcon } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 import { Card, CardContent, Grid, Typography } from '@mui/material';
+import { INotificationPopulated, NotificationType } from '@packages/notification';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useMutation } from 'react-query';

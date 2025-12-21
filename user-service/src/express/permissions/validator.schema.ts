@@ -1,4 +1,5 @@
-import { PermissionTypeOptions, RelatedPermission } from '@microservices/shared';
+import { PermissionTypeOptions } from '@packages/permission';
+import { RelatedPermission } from '@packages/user';
 import * as joi from 'joi';
 import { mongoIdSchema } from '../../utils/joi/schemas';
 import { CompactNullablePermissionsSchema, SubCompactNullablePermissionSchema } from '../../utils/joi/schemas/permission/compact';

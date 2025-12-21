@@ -1,5 +1,5 @@
 /** biome-ignore-all lint/suspicious/noThenProperty: Joi must have the "then" prop so we can't follow this rule :( */
-import { ActionOnFail, MongoIdSchema } from '@microservices/shared';
+import { ActionOnFail } from '@packages/rule';
 import Joi from 'joi';
 
 export const fieldColorSchema = Joi.object({

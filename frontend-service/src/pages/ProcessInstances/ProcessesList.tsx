@@ -1,5 +1,6 @@
-import { IMongoProcessInstanceReviewerPopulated, IMongoProcessTemplateReviewerPopulated, Status } from '@microservices/shared';
 import { CircularProgress, Grid, Typography } from '@mui/material';
+import { PermissionScope } from '@packages/permission';
+import { IMongoProcessInstanceReviewerPopulated, IMongoProcessTemplateReviewerPopulated, Status } from '@packages/process';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
@@ -13,7 +14,6 @@ import { useUserStore } from '../../stores/user';
 import { ViewingBox } from '../SystemManagement/components/ViewingBox';
 import ProcessCard from './ProcessCard';
 import './ProcessesList.css';
-import { PermissionScope } from '@microservices/shared';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 

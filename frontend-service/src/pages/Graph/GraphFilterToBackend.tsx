@@ -1,21 +1,15 @@
+import { filterFieldToValue, IFilterOfField, IFilterOfTemplate, IGraphFilterBody, IGraphFilterBodyBatch, ISearchFilter } from '@packages/entity';
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import {
-    filterFieldToValue,
-    filterTypes,
+    FilterTypes,
     IAgGridDateFilter,
     IAgGridNumberFilter,
     IAgGridSetFilter,
     IAgGridTextFilter,
-    IEntitySingleProperty,
-    IFilterOfField,
-    IFilterOfTemplate,
-    IGraphFilterBody,
-    IGraphFilterBodyBatch,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    ISearchFilter,
     numberFilterOperationTypes,
     relativeDateFilters,
     textFilterOperationTypes,
-} from '@microservices/shared';
+} from '@packages/rule-breach';
 import { FilterType } from '../../common/wizards/entityTemplate/commonInterfaces';
 import { environment } from '../../globals';
 import { filterModelToFilterOfTemplatePerField } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
@@ -54,21 +48,21 @@ export const handleRegexFilter = (filterValue: string, not: boolean = false): IA
 
     if (startsWith && endsWith)
         return {
-            filterType: filterTypes.text,
+            filterType: FilterTypes.text,
             type: not ? textFilterOperationTypes.notContains : textFilterOperationTypes.contains,
             filter: filterValue.slice(2, -2),
         } as IAgGridTextFilter;
 
     if (endsWith)
         return {
-            filterType: filterTypes.text,
+            filterType: FilterTypes.text,
             type: textFilterOperationTypes.startsWith,
             filter: filterValue.slice(0, -2),
         } as IAgGridTextFilter;
 
     if (startsWith)
         return {
-            filterType: filterTypes.text,
+            filterType: FilterTypes.text,
             type: textFilterOperationTypes.endsWith,
             filter: filterValue.slice(2),
         } as IAgGridTextFilter;
@@ -91,7 +85,7 @@ export const handleDateFilter = (
 
         if (Object.values(relativeDateFilters).includes(fieldFilter[dateFrom] as relativeDateFilters)) {
             return {
-                filterType: filterTypes.date,
+                filterType: FilterTypes.date,
                 type: fieldFilter[dateFrom],
                 dateFrom: fieldFilter[dateFrom],
                 dateTo: fieldFilter[dateTo],
@@ -99,7 +93,7 @@ export const handleDateFilter = (
         }
 
         return {
-            filterType: filterTypes.date,
+            filterType: FilterTypes.date,
             type: numberFilterOperationTypes.inRange,
             dateFrom: fieldFilter[dateFrom],
             dateTo: fieldFilter[dateTo],
@@ -109,7 +103,7 @@ export const handleDateFilter = (
     const dateFromVal = fieldFilter[filterKeys[0]] as string;
 
     return {
-        filterType: filterTypes.date,
+        filterType: FilterTypes.date,
         type: filterType,
         dateFrom: isFieldType ? dateFromVal.slice(fieldFilterPrefix.length) : dateFromVal,
         dateTo: null,
@@ -147,7 +141,7 @@ export const translateFieldFilter = (
                 return {
                     filterType,
                     filterField: {
-                        filterType: filterTypes.set,
+                        filterType: FilterTypes.set,
                         values: filterValue as (string | null)[],
                     } as IAgGridSetFilter,
                 };
@@ -163,7 +157,7 @@ export const translateFieldFilter = (
                     return {
                         filterType,
                         filterField: {
-                            filterType: filterTypes.text,
+                            filterType: FilterTypes.text,
                             type: textFilterOperationTypes.notContains,
                             filter: handleRegexFilter(notFilter.$rgx as string, true)?.filter,
                         } as IAgGridTextFilter,
@@ -174,7 +168,7 @@ export const translateFieldFilter = (
             return {
                 filterType,
                 filterField: {
-                    filterType: filterTypes.text,
+                    filterType: FilterTypes.text,
                     type: type,
                     filter: filterValue as string,
                 } as IAgGridTextFilter,
@@ -184,7 +178,7 @@ export const translateFieldFilter = (
             return {
                 filterType,
                 filterField: {
-                    filterType: filterTypes.number,
+                    filterType: FilterTypes.number,
                     type: type,
                     filter: filterValue as number,
                 } as IAgGridNumberFilter,
@@ -194,7 +188,7 @@ export const translateFieldFilter = (
             return {
                 filterType,
                 filterField: {
-                    filterType: filterTypes.set,
+                    filterType: FilterTypes.set,
                     values: filterValue as (string | null)[],
                 } as IAgGridSetFilter,
             };

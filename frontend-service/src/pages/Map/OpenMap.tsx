@@ -1,6 +1,8 @@
-import { IEntity, IMongoChildTemplateWithConstraintsPopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { LocationOn } from '@mui/icons-material';
 import { Dialog, Grid, IconButton, Typography } from '@mui/material';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import React, { useState } from 'react';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { HighlightText } from '../../utils/HighlightText';

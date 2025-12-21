@@ -1,4 +1,4 @@
-import { ActionsLog } from '@microservices/shared';
+import { ActionsLog } from '@packages/activity-log';
 
 interface IBaseActivityLog {
     _id: string;

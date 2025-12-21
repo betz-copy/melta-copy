@@ -1,18 +1,12 @@
 import { ColDef, ICellRendererParams, IServerSideDatasource, IServerSideGetRowsParams } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
-import {
-    ICompact,
-    IInstancesPermission,
-    IMongoCategory,
-    IRole,
-    IUser,
-    IWorkspace,
-    PermissionData,
-    PermissionScope,
-    RelatedPermission,
-} from '@microservices/shared';
 import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 import { Chip, Grid, IconButton } from '@mui/material';
+import { IMongoCategory } from '@packages/category';
+import { ICompact, IInstancesPermission, PermissionData, PermissionScope } from '@packages/permission';
+import { IRole } from '@packages/role';
+import { IUser, RelatedPermission } from '@packages/user';
+import { IWorkspace } from '@packages/workspace';
 import i18next from 'i18next';
 import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
 import ScrollContainer from 'react-indiana-drag-scroll';

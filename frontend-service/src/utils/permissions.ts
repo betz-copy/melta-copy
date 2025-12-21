@@ -1,4 +1,4 @@
-import { IUser } from '@microservices/shared';
+import { IUser } from '@packages/user';
 import { defaultMetadata, WorkspaceState } from '../stores/workspace';
 
 export const getWorkspacePermissions = async (permissions: IUser['permissions'], hierarchyIds: string[]) => {

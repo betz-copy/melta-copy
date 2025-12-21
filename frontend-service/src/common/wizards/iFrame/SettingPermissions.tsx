@@ -1,6 +1,6 @@
-import { ICategoryMap } from '@microservices/shared';
 import { Hive } from '@mui/icons-material';
 import { Card, CardContent, Divider, FormControlLabel, FormGroup, Grid, Typography, useTheme } from '@mui/material';
+import { ICategoryMap } from '@packages/category';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';

@@ -1,5 +1,5 @@
-import { IUniqueConstraintOfTemplate } from '@microservices/shared';
 import { Accordion, styled } from '@mui/material';
+import { IUniqueConstraintOfTemplate } from '@packages/entity';
 import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import _debounce from 'lodash.debounce';
 import React, { SetStateAction } from 'react';

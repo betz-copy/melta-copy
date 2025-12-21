@@ -1,8 +1,10 @@
-import { ICategoryMap, IEntityTemplateMap, IMongoPrintingTemplate, IPrintingTemplateMap } from '@microservices/shared';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Autocomplete, Button, Chip, FormControlLabel, Grid, IconButton, Box as MuiBox, TextField, Typography } from '@mui/material';
+import { ICategoryMap } from '@packages/category';
+import { IEntityTemplateMap } from '@packages/entity-template';
+import { IMongoPrintingTemplate, IPrintingTemplateMap } from '@packages/printing-template';
 import { FieldArray, Formik, getIn } from 'formik';
 import i18next from 'i18next';
 import React, { useMemo } from 'react';

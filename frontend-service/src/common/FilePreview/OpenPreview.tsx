@@ -1,6 +1,6 @@
-import { ISemanticSearchResult } from '@microservices/shared';
 import { AutoAwesome } from '@mui/icons-material';
 import { Grid, IconButton, Link, Typography } from '@mui/material';
+import { ISemanticSearchResult } from '@packages/semantic-search';
 import i18next from 'i18next';
 import React, { useMemo, useState } from 'react';
 import { environment } from '../../globals';

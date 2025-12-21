@@ -1,4 +1,4 @@
-import { ISearchFilter } from '@microservices/shared';
+import { ISearchFilter } from '@packages/entity';
 import { debounce } from 'lodash';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { QueryClient } from 'react-query';

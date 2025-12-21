@@ -1,5 +1,5 @@
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { CircularProgress, Grid, Typography, useTheme } from '@mui/material';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useState } from 'react';

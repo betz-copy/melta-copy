@@ -1,10 +1,10 @@
 import { _debounce } from '@ag-grid-community/core';
-import { IMongoUnit, IUnitHierarchy } from '@microservices/shared';
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { Grid, IconButton, Tooltip } from '@mui/material';
+import { IMongoUnit, IUnitHierarchy } from '@packages/unit';
 import i18next from 'i18next';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import SearchInput from '../../../../common/inputs/SearchInput';

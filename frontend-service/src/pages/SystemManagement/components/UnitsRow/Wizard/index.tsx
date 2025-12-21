@@ -1,4 +1,4 @@
-import { IMongoUnit } from '@microservices/shared';
+import { IMongoUnit } from '@packages/unit';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React from 'react';

@@ -1,4 +1,3 @@
-import { ColorSchema, MongoIdSchema, variableNameValidation } from '@microservices/shared';
 import Joi from 'joi';
 
 // GET /api/categories/:categoryId

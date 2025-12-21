@@ -1,14 +1,3 @@
-import {
-    FilterLogicalOperator,
-    ICategoryMap,
-    IChildTemplate,
-    IChildTemplateMap,
-    IChildTemplateProperty,
-    IEntitySingleProperty,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    ViewType,
-} from '@microservices/shared';
 import { Close } from '@mui/icons-material';
 import {
     Autocomplete,
@@ -28,6 +17,16 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
+import { ICategoryMap } from '@packages/category';
+import {
+    IChildTemplate,
+    IChildTemplateMap,
+    IChildTemplateProperty,
+    IMongoChildTemplateWithConstraintsPopulated,
+    ViewType,
+} from '@packages/child-template';
+import { FilterLogicalOperator } from '@packages/entity';
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { AxiosError } from 'axios';
 import { Form, Formik } from 'formik';
 import i18next from 'i18next';

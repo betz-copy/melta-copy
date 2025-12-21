@@ -1,7 +1,7 @@
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
 import { Grid, Typography } from '@mui/material';
 import { CSSProperties } from '@mui/styles';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import React, { useMemo } from 'react';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { useDarkModeStore } from '../../../stores/darkMode';

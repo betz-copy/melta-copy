@@ -1,4 +1,5 @@
-import { DefaultController, IProcessTemplate } from '@microservices/shared';
+import { IProcessTemplate } from '@packages/process';
+import { DefaultController } from '@packages/utils';
 import { Request, Response } from 'express';
 import ProcessTemplateManager from './manager';
 

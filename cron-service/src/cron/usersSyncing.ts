@@ -1,6 +1,9 @@
 /* eslint-disable import/prefer-default-export */
 
-import { IEntity, IMongoEntityTemplatePopulated, logger, WorkspaceTypes } from '@microservices/shared';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { logger } from '@packages/utils';
+import { WorkspaceTypes } from '@packages/workspace';
 import { keyBy } from 'lodash';
 import schedule from 'node-schedule';
 import config from '../config';

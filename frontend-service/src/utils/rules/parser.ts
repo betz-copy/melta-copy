@@ -9,7 +9,7 @@ import {
     IPropertyOfVariable,
     IRegularFunction,
     IVariable,
-} from '@microservices/shared';
+} from '@packages/rule';
 import { JsonGroup, JsonItem, JsonRule, JsonRuleGroupExt, RuleProperties } from '@react-awesome-query-builder/mui';
 import { environment } from '../../globals';
 import { FunctionObject, ValueType } from './interfaces';

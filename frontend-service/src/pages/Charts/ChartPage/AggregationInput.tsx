@@ -1,12 +1,6 @@
-import {
-    IAggregation,
-    IAggregationType,
-    IAxisField,
-    IEntityTemplateMap,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    OptionsType,
-} from '@microservices/shared';
 import { Grid, Typography } from '@mui/material';
+import { IAggregation, IAggregationType, IAxisField, OptionsType } from '@packages/chart';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { FormikProps, getIn } from 'formik';
 import i18next from 'i18next';
 import { pickBy } from 'lodash';

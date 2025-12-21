@@ -1,6 +1,8 @@
-import { IChildTemplateMap, IEntityExpanded, IGraphFilterBodyBatch, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 /* eslint-disable no-param-reassign */
 import { MenuItem, Menu as MuiMenu } from '@mui/material';
+import { IChildTemplateMap } from '@packages/child-template';
+import { IEntityExpanded, IGraphFilterBodyBatch } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React from 'react';
 import { GraphData, NodeObject } from 'react-force-graph-2d';

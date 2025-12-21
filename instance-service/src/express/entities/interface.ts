@@ -1,4 +1,4 @@
-import { IEntity, ISearchFilter } from '@microservices/shared';
+import { IEntity, ISearchFilter } from '@packages/entity';
 
 export interface IGetExpandedEntityBody {
     disabled: boolean | null;

@@ -1,10 +1,9 @@
+import { IEntitySingleProperty, IEntityTemplateMap } from '@packages/entity-template';
 import {
     IAggregationGroup,
     IArgument,
     IConstant,
     ICountAggFunction,
-    IEntitySingleProperty,
-    IEntityTemplateMap,
     IEquation,
     IFormula,
     IGroup,
@@ -19,7 +18,7 @@ import {
     isGroup,
     isPropertyOfVariable,
     isRegularFunction,
-} from '@microservices/shared';
+} from '@packages/rule';
 import { JsonGroup, JsonItem, JsonRule, JsonRuleGroupExt, RuleProperties } from '@react-awesome-query-builder/mui';
 import { v4 as uuid } from 'uuid';
 import { environment } from '../../globals';

@@ -1,6 +1,7 @@
-import { IMongoStepTemplatePopulated, IUser } from '@microservices/shared';
 import { ScatterPlotOutlined as HiveIcon, NavigateBefore, NavigateNext } from '@mui/icons-material';
 import { Card, CardContent, CardHeader, Fab, Grid } from '@mui/material';
+import { IMongoStepTemplatePopulated } from '@packages/process';
+import { IUser } from '@packages/user';
 import i18next from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
 import { useDarkModeStore } from '../../../../stores/darkMode';

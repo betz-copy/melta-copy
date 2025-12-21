@@ -1,4 +1,5 @@
-import { IEntity, IKartoffelUser } from '@microservices/shared';
+import { IEntity } from '@packages/entity';
+import { IKartoffelUser } from '@packages/user';
 import { create } from 'zustand';
 
 export interface ClientSideUserState {

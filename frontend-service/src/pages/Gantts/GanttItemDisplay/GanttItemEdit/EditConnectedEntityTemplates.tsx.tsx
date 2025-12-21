@@ -1,5 +1,7 @@
-import { IEntityTemplateMap, IGantt, IGanttItem, IRelationshipTemplateMap } from '@microservices/shared';
 import { Button, Grid } from '@mui/material';
+import { IEntityTemplateMap } from '@packages/entity-template';
+import { IGantt, IGanttItem } from '@packages/gantt';
+import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import { FieldArray, FormikProps } from 'formik';
 import i18next from 'i18next';
 import { pickBy } from 'lodash';

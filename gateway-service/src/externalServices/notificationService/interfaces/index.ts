@@ -10,7 +10,7 @@ import {
     IRuleBreachRequestNotificationMetadata,
     IRuleBreachResponseNotificationMetadata,
     NotificationType,
-} from '@microservices/shared';
+} from '@packages/notification';
 
 export const isRuleBreachAlertNotification = (
     notification: Partial<INotification>,

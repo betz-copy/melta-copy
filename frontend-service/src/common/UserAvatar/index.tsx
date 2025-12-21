@@ -1,5 +1,5 @@
-import { IUser } from '@microservices/shared';
 import { Box, Chip, ChipProps, Grid, TooltipProps, Typography } from '@mui/material';
+import { IUser } from '@packages/user';
 import React from 'react';
 import { useQueries } from 'react-query';
 import { getKartoffelUserProfileRequest, getUserProfileRequest } from '../../services/userService';

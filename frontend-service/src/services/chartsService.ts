@@ -1,4 +1,5 @@
-import { ChartsAndGenerator, IChartPermission, IMongoChart, MongoBaseFields } from '@microservices/shared';
+import { ChartsAndGenerator, IChartPermission, IMongoChart } from '@packages/chart';
+import { MongoBaseFields } from '@packages/dashboard';
 import axios from '../axios';
 import { environment } from '../globals';
 import { ChartToBackend } from '../interfaces/dashboard';

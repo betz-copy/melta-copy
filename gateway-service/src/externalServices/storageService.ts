@@ -1,4 +1,4 @@
-import { UploadedFile } from '@microservices/shared';
+import { UploadedFile } from '@packages/entity';
 import FormData from 'form-data';
 import { PassThrough } from 'stream';
 import config from '../config';

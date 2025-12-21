@@ -1,57 +1,31 @@
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-param-reassign */
+
+import { ICategory, IMongoCategory } from '@packages/category';
+import { IAxisField, IChartType, IColumnOrLineMetaData, INUmberMetaData, IPieMetaData } from '@packages/chart';
+import { IChildTemplate, IChildTemplatePopulated, IChildTemplateWithConstraintsPopulated, isChildTemplate } from '@packages/child-template';
+import { DashboardItemType, MongoBaseFields, TableItem } from '@packages/dashboard';
+import { IConstraintsOfTemplate, IEntity, IUniqueConstraintOfTemplate, UploadedFile } from '@packages/entity';
 import {
-    BadRequestError,
-    ConfigTypes,
-    DashboardItemType,
-    IAxisField,
-    ICategory,
-    ICategoryOrderConfig,
-    IChartType,
-    IChildTemplate,
-    IChildTemplatePopulated,
-    IChildTemplateWithConstraintsPopulated,
-    IColumnOrLineMetaData,
-    IConstraintsOfTemplate,
-    IEntity,
     IEntitySingleProperty,
     IEntityTemplate,
     IEntityTemplatePopulated,
     IEntityTemplateWithConstraints,
-    IFormula,
     IFullMongoEntityTemplate,
-    IMongoBaseConfig,
-    IMongoCategory,
-    IMongoCategoryOrderConfig,
     IMongoEntityTemplatePopulated,
     IMongoEntityTemplateWithConstraints,
     IMongoEntityTemplateWithConstraintsPopulated,
-    IMongoPrintingTemplate,
-    IMongoRelationshipTemplate,
-    IMongoRule,
-    INUmberMetaData,
-    IPieMetaData,
-    IPrintingTemplate,
-    IRelationship,
-    IRule,
     ISearchEntityTemplatesBody,
-    ISearchRelationshipTemplatesBody,
-    ISearchRulesBody,
-    ISubCompactPermissions,
-    IUniqueConstraintOfTemplate,
     IUpdateOrDeleteEnumFieldReqData,
-    isChildTemplate,
-    logger,
-    MongoBaseFields,
-    NotFoundError,
-    PermissionScope,
-    PermissionType,
-    RelatedPermission,
-    ServiceError,
-    TableItem,
-    UploadedFile,
-    ValidationError,
-} from '@microservices/shared';
+} from '@packages/entity-template';
+import { ISubCompactPermissions, PermissionScope, PermissionType } from '@packages/permission';
+import { IMongoPrintingTemplate, IPrintingTemplate } from '@packages/printing-template';
+import { IRelationship } from '@packages/relationship';
+import { IMongoRelationshipTemplate, ISearchRelationshipTemplatesBody } from '@packages/relationship-template';
+import { IFormula, IMongoRule, IRule, ISearchRulesBody } from '@packages/rule';
+import { RelatedPermission } from '@packages/user';
+import { BadRequestError, logger, NotFoundError, ServiceError, ValidationError } from '@packages/utils';
+import { ConfigTypes, ICategoryOrderConfig, IMongoBaseConfig, IMongoCategoryOrderConfig } from '@packages/workspace-configs';
 import { AxiosError, AxiosResponse } from 'axios';
 import { StatusCodes } from 'http-status-codes';
 import _, { groupBy } from 'lodash';

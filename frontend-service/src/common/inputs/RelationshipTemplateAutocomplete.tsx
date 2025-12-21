@@ -1,10 +1,6 @@
-import {
-    IEntityTemplateMap,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IMongoRelationshipTemplatePopulated,
-    IRelationshipTemplateMap,
-} from '@microservices/shared';
 import { Autocomplete, AutocompleteChangeDetails, AutocompleteProps, TextField } from '@mui/material';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '@packages/relationship-template';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';

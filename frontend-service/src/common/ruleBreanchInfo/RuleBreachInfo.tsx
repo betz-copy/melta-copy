@@ -1,5 +1,6 @@
-import { ActionTypes, IActionPopulated, IRuleBreachPopulated, IUser } from '@microservices/shared';
 import { Grid, Typography } from '@mui/material';
+import { ActionTypes, IActionPopulated, IRuleBreachPopulated } from '@packages/rule-breach';
+import { IUser } from '@packages/user';
 import i18next from 'i18next';
 import React from 'react';
 import { ActionInfo } from './ActionInfo';

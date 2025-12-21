@@ -1,13 +1,14 @@
+
 import {
     ActionTypes,
-    DefaultManagerMongo,
     IActionMetadata,
     IAgGridRequest,
     IBrokenRule,
     IRuleBreach,
     IRuleBreachRequest,
     RuleBreachRequestStatus,
-} from '@microservices/shared';
+} from '@packages/rule-breach';
+import { DefaultManagerMongo } from '@packages/utils';
 import config from '../../config';
 import { translateAgGridFilterModel, translateAgGridSortModel } from '../../utils/agGrid';
 import { RuleBreachDoesNotExistError } from '../error';

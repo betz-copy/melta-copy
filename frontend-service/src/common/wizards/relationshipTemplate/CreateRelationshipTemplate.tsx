@@ -1,5 +1,5 @@
-import { IEntityTemplateMap } from '@microservices/shared';
 import { Autocomplete, Box, TextField } from '@mui/material';
+import { IEntityTemplateMap } from '@packages/entity-template';
 import i18next from 'i18next';
 import React from 'react';
 import { useQuery, useQueryClient } from 'react-query';

@@ -1,5 +1,5 @@
-import { Colors } from '@microservices/shared';
 import { Box, Divider, Typography } from '@mui/material';
+import { Colors } from '@packages/workspace';
 import i18next from 'i18next';
 import React from 'react';
 import * as Yup from 'yup';

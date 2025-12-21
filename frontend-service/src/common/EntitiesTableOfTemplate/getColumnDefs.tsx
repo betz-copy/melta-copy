@@ -1,18 +1,13 @@
 import { ColDef, ValueGetterFunc } from '@ag-grid-community/core';
-import {
-    EntityData,
-    IChildTemplateMap,
-    IEntity,
-    IEntityTemplateMap,
-    IGetUnits,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IRuleBreach,
-    ISemanticSearchResult,
-    IWorkspace,
-} from '@microservices/shared';
 import { Add as AddIcon } from '@mui/icons-material';
 import { Grid, Typography } from '@mui/material';
+import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { EntityData, IEntity } from '@packages/entity';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IRuleBreach } from '@packages/rule-breach';
+import { ISemanticSearchResult } from '@packages/semantic-search';
+import { IGetUnits } from '@packages/unit';
+import { IWorkspace } from '@packages/workspace';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { memo } from 'react';

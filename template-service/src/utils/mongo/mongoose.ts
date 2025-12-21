@@ -1,4 +1,4 @@
-import { logger } from '@microservices/shared';
+import { logger } from '@packages/utils';
 import _forEach from 'lodash.foreach';
 import { ClientSession, startSession, Types } from 'mongoose';
 import { trycatch } from '..';

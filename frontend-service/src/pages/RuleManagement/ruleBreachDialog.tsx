@@ -1,4 +1,3 @@
-import { BreachType, IRuleBreachAlertPopulated, IRuleBreachRequestPopulated, PermissionScope, RuleBreachRequestStatus } from '@microservices/shared';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import {
@@ -15,6 +14,8 @@ import {
     Tab,
     Typography,
 } from '@mui/material';
+import { PermissionScope } from '@packages/permission';
+import { BreachType, IRuleBreachAlertPopulated, IRuleBreachRequestPopulated, RuleBreachRequestStatus } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';

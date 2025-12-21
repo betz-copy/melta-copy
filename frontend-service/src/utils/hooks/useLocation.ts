@@ -1,4 +1,5 @@
-import { IEntity, IEntityTemplateMap } from '@microservices/shared';
+import { IEntity } from '@packages/entity';
+import { IEntityTemplateMap } from '@packages/entity-template';
 import * as Cesium from 'cesium';
 import { Cartesian3, Math as CesiumMath } from 'cesium';
 import { useEffect, useMemo } from 'react';

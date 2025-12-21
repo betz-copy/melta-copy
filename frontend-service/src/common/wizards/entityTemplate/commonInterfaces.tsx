@@ -1,11 +1,5 @@
-import {
-    FieldGroupData,
-    IAgGridDateFilter,
-    IAgGridNumberFilter,
-    IAgGridSetFilter,
-    IAgGridTextFilter,
-    IRelationshipReference,
-} from '@microservices/shared';
+import { FieldGroupData, IRelationshipReference } from '@packages/entity-template';
+import { IAgGridDateFilter, IAgGridNumberFilter, IAgGridSetFilter, IAgGridTextFilter } from '@packages/rule-breach';
 
 export interface CommonFormInputProperties {
     name: string;

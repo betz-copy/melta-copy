@@ -1,5 +1,5 @@
-import { FileDetails } from '@microservices/shared';
 import { Grid, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { FileDetails } from '@packages/common';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import IconPicker from './IconPicker';

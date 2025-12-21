@@ -1,5 +1,5 @@
-import { IMongoProcessInstanceReviewerPopulated } from '@microservices/shared';
 import { Typography } from '@mui/material';
+import { IMongoProcessInstanceReviewerPopulated } from '@packages/process';
 import i18next from 'i18next';
 import React from 'react';
 import MeltaTooltip from '../../../MeltaDesigns/MeltaTooltip';

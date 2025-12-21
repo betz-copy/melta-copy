@@ -1,4 +1,4 @@
-import { ConfigTypes, MongoIdSchema } from '@microservices/shared';
+import { ConfigTypes } from '@packages/workspace-configs';
 import Joi from 'joi';
 
 // GET /api/config/all

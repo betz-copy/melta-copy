@@ -1,5 +1,5 @@
-import { IProcessReviewerUpdateNotificationMetadataPopulated, NotificationType } from '@microservices/shared';
 import { Grid, Typography } from '@mui/material';
+import { IProcessReviewerUpdateNotificationMetadataPopulated, NotificationType } from '@packages/notification';
 import i18next from 'i18next';
 import React from 'react';
 import { environment } from '../../../../../globals';

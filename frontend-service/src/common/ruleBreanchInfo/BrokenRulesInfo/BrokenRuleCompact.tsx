@@ -1,5 +1,6 @@
-import { IBrokenRulePopulated, IMongoRule } from '@microservices/shared';
 import { Box, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import { IMongoRule } from '@packages/rule';
+import { IBrokenRulePopulated } from '@packages/rule-breach';
 import React from 'react';
 import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
 import { RuleIcon } from './RuleIcon';

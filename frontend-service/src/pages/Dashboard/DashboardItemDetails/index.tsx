@@ -1,5 +1,5 @@
-import { DashboardItemType } from '@microservices/shared';
 import { Grid } from '@mui/material';
+import { DashboardItemType } from '@packages/dashboard';
 import { Form, Formik, FormikHelpers, FormikProps } from 'formik';
 import React, { JSX } from 'react';
 import { isSchema } from 'yup';

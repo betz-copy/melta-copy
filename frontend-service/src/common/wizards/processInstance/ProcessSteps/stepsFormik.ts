@@ -1,4 +1,4 @@
-import { IMongoStepInstancePopulated, IMongoStepTemplatePopulated, InstanceProperties, IReferencedEntityForProcess } from '@microservices/shared';
+import { IMongoStepInstancePopulated, IMongoStepTemplatePopulated, InstanceProperties, IReferencedEntityForProcess } from '@packages/process';
 import pickBy from 'lodash.pickby';
 import { ProcessStepValues } from './index';
 

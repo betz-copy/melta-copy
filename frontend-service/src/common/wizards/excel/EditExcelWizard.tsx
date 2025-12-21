@@ -1,6 +1,7 @@
-import { ActionTypes, IEntityWithIgnoredRules } from '@microservices/shared';
 /* eslint-disable react/no-unstable-nested-components */
 import { Grid } from '@mui/material';
+import { IEntityWithIgnoredRules } from '@packages/entity';
+import { ActionTypes } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';

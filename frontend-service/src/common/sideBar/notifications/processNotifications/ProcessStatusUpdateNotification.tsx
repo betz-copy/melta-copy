@@ -1,5 +1,5 @@
-import { IProcessStatusUpdateNotificationMetadataPopulated, NotificationType } from '@microservices/shared';
 import { Grid, Typography } from '@mui/material';
+import { IProcessStatusUpdateNotificationMetadataPopulated, NotificationType } from '@packages/notification';
 import i18next from 'i18next';
 import React from 'react';
 import { ProcessName } from './ProcessName';

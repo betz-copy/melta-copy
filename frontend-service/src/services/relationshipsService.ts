@@ -1,4 +1,5 @@
-import { IRelationship, IRuleBreach } from '@microservices/shared';
+import { IRelationship } from '@packages/relationship';
+import { IRuleBreach } from '@packages/rule-breach';
 import axios from '../axios';
 import { environment } from '../globals';
 

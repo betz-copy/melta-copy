@@ -1,15 +1,8 @@
-import {
-    ICategoryMap,
-    IChildTemplateMap,
-    IEntityTemplate,
-    IEntityTemplateMap,
-    IMongoCategory,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IRelationshipTemplateMap,
-    TemplateItem,
-} from '@microservices/shared';
 import { Grid } from '@mui/material';
+import { ICategoryMap, IMongoCategory } from '@packages/category';
+import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated, TemplateItem } from '@packages/child-template';
+import { IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import { keyBy } from 'lodash';

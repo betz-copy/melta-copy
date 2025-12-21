@@ -1,5 +1,5 @@
-import { IMongoPrintingTemplate, IPrintingTemplateMap } from '@microservices/shared';
 import { Dialog, Grid, Typography } from '@mui/material';
+import { IMongoPrintingTemplate, IPrintingTemplateMap } from '@packages/printing-template';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';

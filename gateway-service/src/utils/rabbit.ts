@@ -1,11 +1,7 @@
-import {
-    IKartoffelUser,
-    INotificationMetadata,
-    IRuleIndicatorAlertNotificationMetadata,
-    IUser,
-    logger,
-    NotificationType,
-} from '@microservices/shared';
+
+import { INotificationMetadata, IRuleIndicatorAlertNotificationMetadata, NotificationType } from '@packages/notification';
+import { IKartoffelUser, IUser } from '@packages/user';
+import { logger } from '@packages/utils';
 import { menash } from 'menashmq';
 import config from '../config';
 import UsersManager from '../express/users/manager';

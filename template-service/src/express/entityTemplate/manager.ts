@@ -1,13 +1,8 @@
-import {
-    DefaultManagerMongo,
-    IEntitySingleProperty,
-    IEntityTemplate,
-    IEntityTemplatePopulated,
-    IMongoCategory,
-    IMongoEntityTemplate,
-    IRelationshipTemplate,
-    NotFoundError,
-} from '@microservices/shared';
+
+import { IMongoCategory } from '@packages/category';
+import { IEntitySingleProperty, IEntityTemplate, IEntityTemplatePopulated, IMongoEntityTemplate } from '@packages/entity-template';
+import { IRelationshipTemplate } from '@packages/relationship-template';
+import { DefaultManagerMongo, NotFoundError } from '@packages/utils';
 import { ClientSession, FilterQuery } from 'mongoose';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';

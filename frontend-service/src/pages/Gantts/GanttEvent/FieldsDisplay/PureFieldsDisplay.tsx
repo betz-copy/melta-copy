@@ -1,5 +1,7 @@
-import { IEntity, IGetUnits, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { Grid, Typography } from '@mui/material';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IGetUnits } from '@packages/unit';
 import React, { CSSProperties, Fragment } from 'react';
 import { useQueryClient } from 'react-query';
 import { formatToString } from '../../../../common/EntityProperties';

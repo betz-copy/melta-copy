@@ -1,17 +1,9 @@
-import {
-    EntityTemplateType,
-    ICategoryMap,
-    IChildTemplateMap,
-    IEntitySingleProperty,
-    IEntityTemplateMap,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    PermissionScope,
-    TemplateItem,
-    ViewType,
-} from '@microservices/shared';
 import { AppRegistration as AppRegistrationIcon, ArrowBackIosNew, InfoOutlined } from '@mui/icons-material';
 import { Grid, Typography, useTheme } from '@mui/material';
+import { ICategoryMap } from '@packages/category';
+import { EntityTemplateType, IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated, TemplateItem, ViewType } from '@packages/child-template';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { PermissionScope } from '@packages/permission';
 import i18next from 'i18next';
 import React, { useMemo, useState } from 'react';
 import { UseMutateAsyncFunction, useQueryClient } from 'react-query';

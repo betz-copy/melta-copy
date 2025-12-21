@@ -1,12 +1,12 @@
+
 import {
-    IAction,
-    IBrokenRule,
     IEntity,
     IEntityWithDirectRelationships,
     ISearchEntitiesByTemplatesBody,
     ISearchEntitiesOfTemplateBody,
     ISearchResult,
-} from '@microservices/shared';
+} from '@packages/entity';
+import { IAction, IBrokenRule } from '@packages/rule-breach';
 import config from '../config';
 import DefaultExternalServiceApi from '../utils/express/externalService';
 

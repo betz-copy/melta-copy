@@ -1,5 +1,23 @@
-import { fileSchema, iconFileSchema } from '@microservices/shared';
 import Joi from 'joi';
+
+// File schemas
+const fileSchema = Joi.object({
+    fieldname: Joi.string(),
+    originalname: Joi.string(),
+    encoding: Joi.string(),
+    mimetype: Joi.string(),
+    buffer: Joi.binary(),
+    size: Joi.number(),
+});
+
+const iconFileSchema = Joi.object({
+    fieldname: Joi.string(),
+    originalname: Joi.string(),
+    encoding: Joi.string(),
+    mimetype: Joi.string(),
+    buffer: Joi.binary(),
+    size: Joi.number(),
+});
 
 export const defaultSchema = Joi.object({
     query: {

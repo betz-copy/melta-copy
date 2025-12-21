@@ -1,36 +1,21 @@
+
+import { IChildTemplatePopulated, IChildTemplateProperty, isChildTemplate } from '@packages/child-template';
+import { IEntity, IEntityWithDirectRelationships, IEntityWithIgnoredRules, IValidationErrorData, UploadedFile } from '@packages/entity';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import {
     ActionErrors,
     ActionTypes,
-    BadRequestError,
-    CoordinateSystem,
-    extractUtmLocation,
-    getCoordinateSystem,
     IAction,
     IActionPopulated,
     IBrokenRule,
     IBrokenRuleEntity,
     IBrokenRulePopulated,
-    IChildTemplatePopulated,
-    IChildTemplateProperty,
     ICreateEntityMetadata,
     ICreateEntityMetadataPopulated,
-    IEntity,
-    IEntitySingleProperty,
-    IEntityWithDirectRelationships,
-    IEntityWithIgnoredRules,
     IFailedEntity,
-    IMongoEntityTemplatePopulated,
     IUpdateEntityMetadataPopulated,
-    IValidationErrorData,
-    isChildTemplate,
-    isValidUTM,
-    isValidWGS84,
-    locationConverterToString,
-    logger,
-    ServiceError,
-    stringToCoordinates,
-    UploadedFile,
-} from '@microservices/shared';
+} from '@packages/rule-breach';
+import { BadRequestError, CoordinateSystem, logger, ServiceError } from '@packages/utils';
 import { AxiosError } from 'axios';
 import Excel, { CellModel } from 'exceljs';
 import { StatusCodes } from 'http-status-codes';

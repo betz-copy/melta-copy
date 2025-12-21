@@ -1,6 +1,6 @@
-import { INotificationGroupCountDetails } from '@microservices/shared';
 import { Notifications as NotificationsIcon } from '@mui/icons-material';
 import { Grid, IconButton } from '@mui/material';
+import { INotificationGroupCountDetails } from '@packages/notification';
 import React from 'react';
 import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
 import { NotificationCount } from './NotificationCount';

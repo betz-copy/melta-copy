@@ -1,4 +1,6 @@
-import { FileDetails, IMongoProcessTemplateReviewerPopulated, IProcessTemplateMap, IUser } from '@microservices/shared';
+import { FileDetails } from '@packages/common';
+import { IMongoProcessTemplateReviewerPopulated, IProcessTemplateMap } from '@packages/process';
+import { IUser } from '@packages/user';
 
 /* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable react/no-unstable-nested-components */

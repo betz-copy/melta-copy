@@ -1,4 +1,4 @@
-import { IMongoProcessInstanceReviewerPopulated, IMongoProcessTemplateReviewerPopulated, InstanceProperties } from '@microservices/shared';
+import { IMongoProcessInstanceReviewerPopulated, IMongoProcessTemplateReviewerPopulated, InstanceProperties } from '@packages/process';
 import { get } from 'lodash';
 import pickBy from 'lodash.pickby';
 import { ProcessDetailsValues } from '../../common/wizards/processInstance/ProcessDetails';

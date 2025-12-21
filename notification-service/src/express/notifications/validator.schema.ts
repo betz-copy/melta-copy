@@ -1,6 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 
-import { NotificationType } from '@microservices/shared';
+import { NotificationType } from '@packages/notification';
 import * as joi from 'joi';
 import config from '../../config';
 import { mongoIdSchema } from '../../utils/joi/schemas';

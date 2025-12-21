@@ -1,14 +1,14 @@
+import { FormControlLabel, Grid } from '@mui/material';
+import { ByCurrentDefaultValue } from '@packages/child-template';
 import {
-    ByCurrentDefaultValue,
     basicFilterOperationTypes,
-    filterTypes,
+    FilterTypes,
     IAgGridDateFilter,
     IAgGridNumberFilter,
     IAgGridTextFilter,
     numberFilterOperationTypes,
     relativeDateFilters,
-} from '@microservices/shared';
-import { FormControlLabel, Grid } from '@mui/material';
+} from '@packages/rule-breach';
 import i18next from 'i18next';
 import React, { useEffect } from 'react';
 import { useDarkModeStore } from '../../../stores/darkMode';
@@ -103,7 +103,7 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
                             filterField={filterField as IAgGridDateFilter}
                             handleFilterTypeChange={handleFilterTypeChange}
                             readOnly={readOnly || forceEqualsType}
-                            type={filterTypes.date}
+                            type={FilterTypes.date}
                         />
                     </Grid>
                 )}

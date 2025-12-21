@@ -1,12 +1,7 @@
-import {
-    ActionOnFail,
-    ICategoryMap,
-    IEntityTemplateMap,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IMongoRule,
-    IRuleMap,
-} from '@microservices/shared';
 import { FormControlLabel, Grid } from '@mui/material';
+import { ICategoryMap } from '@packages/category';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { ActionOnFail, IMongoRule, IRuleMap } from '@packages/rule';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';

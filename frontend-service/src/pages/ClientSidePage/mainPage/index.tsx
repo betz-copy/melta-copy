@@ -1,5 +1,6 @@
-import { IChildTemplateMap, IChildTemplateWithConstraintsPopulated, IEntityTemplateMap } from '@microservices/shared';
 import { Box, Grid } from '@mui/material';
+import { IChildTemplateMap, IChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IEntityTemplateMap } from '@packages/entity-template';
 import React, { useRef } from 'react';
 import { useQueryClient } from 'react-query';
 import { useClientSideUserStore } from '../../../stores/clientSideUser';

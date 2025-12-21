@@ -1,10 +1,7 @@
-import {
-    IChildTemplateMap,
-    IEntity,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-} from '@microservices/shared';
 import { Box, Grid } from '@mui/material';
+import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import _debounce from 'lodash.debounce';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';

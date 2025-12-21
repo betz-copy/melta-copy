@@ -1,4 +1,5 @@
-import { ChartItemPopulated, DashboardItemType, ISubCompactPermissions, MongoBaseFields, MongoDashboardItemPopulated } from '@microservices/shared';
+import { ChartItemPopulated, DashboardItemType, MongoBaseFields, MongoDashboardItemPopulated } from '@packages/dashboard';
+import { ISubCompactPermissions } from '@packages/permission';
 import { flatten, groupBy, keyBy, map, partition, sortBy } from 'lodash';
 import DashboardItemService from '../../externalServices/dashboardService/dashboardItemService';
 import DefaultManagerProxy from '../../utils/express/manager';

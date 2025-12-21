@@ -1,5 +1,7 @@
-import { DashboardItemType, IChildTemplateMap, IEntityTemplateMap } from '@microservices/shared';
 import { Divider, Grid } from '@mui/material';
+import { IChildTemplateMap } from '@packages/child-template';
+import { DashboardItemType } from '@packages/dashboard';
+import { IEntityTemplateMap } from '@packages/entity-template';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';

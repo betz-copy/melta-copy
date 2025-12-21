@@ -1,7 +1,7 @@
 /* eslint-disable react/no-array-index-key */
 
-import { IMongoIframe } from '@microservices/shared';
 import { Grid } from '@mui/material';
+import { IMongoIframe } from '@packages/iframe';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';

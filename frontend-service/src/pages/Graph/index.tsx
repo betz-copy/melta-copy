@@ -1,16 +1,10 @@
-import {
-    ICategoryMap,
-    IChildTemplateMap,
-    IEntityExpanded,
-    IEntityTemplateMap,
-    IGraphFilterBody,
-    IGraphFilterBodyBatch,
-    IMongoCategory,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IRelationshipTemplateMap,
-} from '@microservices/shared';
-/* eslint-disable no-param-reassign */
 import { Backdrop, Box, Button, CircularProgress } from '@mui/material';
+/* eslint-disable no-param-reassign */
+import { ICategoryMap, IMongoCategory } from '@packages/category';
+import { IChildTemplateMap } from '@packages/child-template';
+import { IEntityExpanded, IGraphFilterBody, IGraphFilterBodyBatch } from '@packages/entity';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import { forceManyBody } from 'd3-force';
 import i18next from 'i18next';
 import uniqBy from 'lodash.uniqby';

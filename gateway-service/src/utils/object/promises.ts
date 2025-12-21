@@ -1,4 +1,4 @@
-import { Awaited } from '@microservices/shared';
+import { Awaited } from '@packages/common';
 
 export const objectMap = async <T extends object, Func extends (key: string, value: T[keyof T]) => Promise<any>>(
     obj: T,

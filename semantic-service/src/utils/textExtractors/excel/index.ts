@@ -1,4 +1,4 @@
-import { FileTypes } from '@microservices/shared';
+import { FileTypes } from '@packages/semantic-search';
 import Excel from 'exceljs';
 import { Stream } from 'stream';
 

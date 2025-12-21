@@ -1,14 +1,9 @@
-import {
-    IChildTemplateMap,
-    IEntityTemplateMap,
-    IMongoCategory,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    PermissionScope,
-    TemplateItem,
-} from '@microservices/shared';
 import { Edit, SubdirectoryArrowLeft } from '@mui/icons-material';
 import { Grid, IconButton, Skeleton, useTheme } from '@mui/material';
+import { IMongoCategory } from '@packages/category';
+import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated, TemplateItem } from '@packages/child-template';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { PermissionScope } from '@packages/permission';
 import i18next from 'i18next';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Draggable, Droppable } from 'react-beautiful-dnd';

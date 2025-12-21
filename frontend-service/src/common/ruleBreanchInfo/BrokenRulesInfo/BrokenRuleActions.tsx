@@ -1,4 +1,4 @@
-import { IActionPopulated } from '@microservices/shared';
+import { IActionPopulated } from '@packages/rule-breach';
 /* eslint-disable react/no-array-index-key */
 
 import { ExpandLess as ExpandLessIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';

@@ -1,7 +1,7 @@
-import { IUser } from '@microservices/shared';
 /* eslint-disable no-nested-ternary */
 /* eslint-disable react/no-array-index-key */
 import { Chip, Grid } from '@mui/material';
+import { IUser } from '@packages/user';
 import React from 'react';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import UserAvatar from '../../UserAvatar';

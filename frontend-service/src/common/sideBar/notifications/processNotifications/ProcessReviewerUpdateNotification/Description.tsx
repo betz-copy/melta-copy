@@ -1,5 +1,5 @@
-import { IProcessReviewerUpdateNotificationMetadataPopulated } from '@microservices/shared';
 import { Grid, Typography } from '@mui/material';
+import { IProcessReviewerUpdateNotificationMetadataPopulated } from '@packages/notification';
 import i18next from 'i18next';
 import React from 'react';
 import { ProcessName } from '../ProcessName';

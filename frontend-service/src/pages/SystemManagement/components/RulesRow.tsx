@@ -1,14 +1,9 @@
-import {
-    ActionOnFail,
-    ICategoryMap,
-    IEntityTemplateMap,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IMongoRule,
-    IRuleMap,
-    PermissionScope,
-} from '@microservices/shared';
 import { Brush, Email, WarningAmberRounded, WarningRounded } from '@mui/icons-material';
 import { FormControlLabel, Grid, Typography, useTheme } from '@mui/material';
+import { ICategoryMap } from '@packages/category';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { PermissionScope } from '@packages/permission';
+import { ActionOnFail, IMongoRule, IRuleMap } from '@packages/rule';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';

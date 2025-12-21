@@ -1,6 +1,8 @@
-import { ICategoryMap, IEntityTemplateMap, IMongoCategory, PermissionScope } from '@microservices/shared';
 import { AddCircle, Edit, Hive as HiveIcon } from '@mui/icons-material';
 import { Grid, IconButton, Typography, useTheme } from '@mui/material';
+import { ICategoryMap, IMongoCategory } from '@packages/category';
+import { IEntityTemplateMap } from '@packages/entity-template';
+import { PermissionScope } from '@packages/permission';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';

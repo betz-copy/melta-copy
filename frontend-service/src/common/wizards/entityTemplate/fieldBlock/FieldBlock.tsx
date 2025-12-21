@@ -1,6 +1,6 @@
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { DragHandle as DragHandleIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { AccordionDetails, AccordionSummary, Box, Button, Grid, Typography } from '@mui/material';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import _debounce from 'lodash.debounce';

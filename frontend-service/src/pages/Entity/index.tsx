@@ -1,6 +1,12 @@
 import { Hive as HiveIcon } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, CircularProgress, Grid, Tab, Typography, useTheme } from '@mui/material';
+import { ICategoryMap } from '@packages/category';
+import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { ISearchFilter } from '@packages/entity';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { ISubCompactPermissions, PermissionScope } from '@packages/permission';
+import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '@packages/relationship-template';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -10,18 +16,7 @@ import { CustomIcon } from '../../common/CustomIcon';
 import { getChildTemplatesFilter } from '../../common/inputs/TemplateEntitiesAutocomplete';
 import BlueTitle from '../../common/MeltaDesigns/BlueTitle';
 import '../../css/pages.css';
-import {
-    ICategoryMap,
-    IChildTemplateMap,
-    IEntityTemplateMap,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IMongoRelationshipTemplatePopulated,
-    IRelationshipTemplateMap,
-    ISearchFilter,
-    ISubCompactPermissions,
-    PermissionScope,
-} from '@microservices/shared';
+
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';

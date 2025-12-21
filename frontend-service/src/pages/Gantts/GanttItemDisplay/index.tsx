@@ -1,5 +1,7 @@
-import { IEntityTemplateMap, IGantt, IGanttItem, IRelationshipTemplateMap } from '@microservices/shared';
 import { Grid } from '@mui/material';
+import { IEntityTemplateMap } from '@packages/entity-template';
+import { IGantt, IGanttItem } from '@packages/gantt';
+import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import { FormikProps } from 'formik';
 import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';

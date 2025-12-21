@@ -1,12 +1,3 @@
-import {
-    IMongoProcessInstanceReviewerPopulated,
-    IMongoStepInstancePopulated,
-    IMongoStepTemplatePopulated,
-    IProcessTemplateMap,
-    Status,
-    StatusColors,
-    StatusColorsNames,
-} from '@microservices/shared';
 import { Archive, Delete, Edit, ScatterPlotOutlined as HiveIcon, MoreVertSharp, Unarchive } from '@mui/icons-material';
 import {
     Box,
@@ -25,6 +16,15 @@ import {
     useTheme,
 } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
+import {
+    IMongoProcessInstanceReviewerPopulated,
+    IMongoStepInstancePopulated,
+    IMongoStepTemplatePopulated,
+    IProcessTemplateMap,
+    Status,
+    StatusColors,
+    StatusColorsNames,
+} from '@packages/process';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';

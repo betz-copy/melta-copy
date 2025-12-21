@@ -1,4 +1,4 @@
-import { createController, ValidateRequest, wrapMiddleware } from '@microservices/shared';
+import { createController, ValidateRequest, wrapMiddleware } from '@packages/utils';
 import { Router } from 'express';
 import { translateWorkspaceParameter, translateWorkspaceParameterFlow, translateWorkspaceParameterFlowColumns } from '../../utils/express';
 import InstancesValidator from '../instances/middlewares';

@@ -1,5 +1,6 @@
-import { IEntityTemplateMap, IGantt, IGanttGroupBy, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { Grid, Typography } from '@mui/material';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IGantt, IGanttGroupBy } from '@packages/gantt';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import lodashIsEqual from 'lodash.isequal';

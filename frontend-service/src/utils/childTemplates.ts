@@ -1,16 +1,15 @@
 import {
     IChildTemplate,
     IChildTemplateMap,
-    IEntity,
-    IEntitySingleProperty,
-    IKartoffelUser,
     IMongoChildTemplatePopulated,
     IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    matchValueAgainstFilter,
-} from '@microservices/shared';
+} from '@packages/child-template';
+import { IEntity } from '@packages/entity';
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IKartoffelUser } from '@packages/user';
 import { isUserHasWritePermissions } from '../common/EntitiesPage/TemplateTable';
 import { UserState } from '../stores/user';
+import { matchValueAgainstFilter } from './filters';
 
 const parseFilterObject = (filters: any): any | null => {
     if (typeof filters === 'string') {

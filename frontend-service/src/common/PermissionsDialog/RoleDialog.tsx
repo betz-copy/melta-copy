@@ -1,5 +1,9 @@
-import { IChildTemplateMap, IEntityTemplateMap, IRole, PermissionData, RelatedPermission } from '@microservices/shared';
 import { Box, Button, CircularProgress, DialogActions, DialogContent, DialogTitle, Grid, TextField } from '@mui/material';
+import { IChildTemplateMap } from '@packages/child-template';
+import { IEntityTemplateMap } from '@packages/entity-template';
+import { PermissionData } from '@packages/permission';
+import { IRole } from '@packages/role';
+import { RelatedPermission } from '@packages/user';
 import { Form, Formik, FormikProps } from 'formik';
 import i18next from 'i18next';
 import _cloneDeep from 'lodash.clonedeep';

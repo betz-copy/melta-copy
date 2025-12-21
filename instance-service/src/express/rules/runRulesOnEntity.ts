@@ -1,4 +1,5 @@
-import { IMongoEntityTemplate, IMongoRule } from '@microservices/shared';
+import { IMongoEntityTemplate } from '@packages/entity-template';
+import { IMongoRule } from '@packages/rule';
 import _difference from 'lodash.difference';
 import _groupBy from 'lodash.groupby';
 import _isEqual from 'lodash.isequal';

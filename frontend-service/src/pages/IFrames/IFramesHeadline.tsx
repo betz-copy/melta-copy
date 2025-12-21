@@ -1,6 +1,6 @@
-import { IMongoIframe } from '@microservices/shared';
 import { Add, FilterAltOff } from '@mui/icons-material';
 import { Grid, IconButton, Typography, useTheme } from '@mui/material';
+import { IMongoIframe } from '@packages/iframe';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { DropResult } from 'react-beautiful-dnd';

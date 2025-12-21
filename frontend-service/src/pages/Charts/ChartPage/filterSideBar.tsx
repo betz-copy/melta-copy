@@ -1,6 +1,6 @@
-import { IEntityTemplateMap } from '@microservices/shared';
 import { Add } from '@mui/icons-material';
 import { Button, Divider, FormHelperText, Grid } from '@mui/material';
+import { IEntityTemplateMap } from '@packages/entity-template';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
 import { SelectCheckbox } from '../../../common/SelectCheckBox';

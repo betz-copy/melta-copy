@@ -1,4 +1,5 @@
-import { IWorkspace, UploadedFile } from '@microservices/shared';
+import { UploadedFile } from '@packages/entity';
+import { IWorkspace } from '@packages/workspace';
 import config from '../../config';
 import StorageService from '../../externalServices/storageService';
 import DefaultManagerProxy from '../../utils/express/manager';

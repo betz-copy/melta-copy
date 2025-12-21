@@ -1,6 +1,6 @@
-import { IWorkspace } from '@microservices/shared';
 import { Check, DriveFileMove, Edit, FolderOff, MoreVert } from '@mui/icons-material';
 import { Box, IconButton, ListItemIcon, Menu, MenuItem } from '@mui/material';
+import { IWorkspace } from '@packages/workspace';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';

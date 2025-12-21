@@ -1,7 +1,8 @@
-import { IEntity, IEntityTemplateMap, IFilterOfField, ISearchEntitiesByLocationBody } from '@microservices/shared';
 /** biome-ignore-all lint/correctness/useExhaustiveDependencies: useEffects dependencies */
 import { CircleTwoTone as CircleIcon, Close, StraightenTwoTone as DistanceIcon, PentagonTwoTone as PolygonIcon } from '@mui/icons-material';
 import { Grid, ToggleButton, ToggleButtonGroup, useTheme } from '@mui/material';
+import { IEntity, IFilterOfField, ISearchEntitiesByLocationBody } from '@packages/entity';
+import { IEntityTemplateMap } from '@packages/entity-template';
 import * as Cesium from 'cesium';
 import { Cartesian3, Color } from 'cesium';
 import i18next from 'i18next';

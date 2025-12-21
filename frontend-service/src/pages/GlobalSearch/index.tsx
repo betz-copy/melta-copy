@@ -1,4 +1,6 @@
-import { ICategoryMap, IChildTemplateMap, IEntityTemplateMap } from '@microservices/shared';
+import { ICategoryMap } from '@packages/category';
+import { IChildTemplateMap } from '@packages/child-template';
+import { IEntityTemplateMap } from '@packages/entity-template';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';

@@ -1,6 +1,6 @@
-import { IMongoProcessTemplateReviewerPopulated, IProcessTemplateMap, Status } from '@microservices/shared';
 import { FilterList, Search } from '@mui/icons-material';
 import { Box, FormControl, FormControlLabel, Grid, IconButton, Paper, Radio, RadioGroup, useTheme } from '@mui/material';
+import { IMongoProcessTemplateReviewerPopulated, IProcessTemplateMap, Status } from '@packages/process';
 import i18next from 'i18next';
 import debounce from 'lodash/debounce';
 import React, { useCallback, useState } from 'react';

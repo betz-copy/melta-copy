@@ -1,6 +1,7 @@
-import { IEntity, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { AppRegistration as AppRegistrationIcon, ExpandLess as ExpandLessIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { Collapse, Divider, Grid, Paper, Typography, useTheme } from '@mui/material';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useWorkspaceStore } from '../../../stores/workspace';

@@ -1,5 +1,5 @@
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { Autocomplete, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography } from '@mui/material';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { FilterMode } from '.';

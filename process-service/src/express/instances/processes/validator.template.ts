@@ -2,15 +2,14 @@
 
 import {
     CreateProcessReqBody,
-    DefaultController,
     IMongoStepInstance,
     IMongoStepTemplate,
     InstanceProperties,
     IProcessDetails,
     IProcessInstance,
     UpdateProcessReqBody,
-    ValidationError,
-} from '@microservices/shared';
+} from '@packages/process';
+import { DefaultController, ValidationError } from '@packages/utils';
 import { Request } from 'express';
 import ajv from '../../../utils/ajv';
 import { InstancePropertiesValidationError } from '../../error';

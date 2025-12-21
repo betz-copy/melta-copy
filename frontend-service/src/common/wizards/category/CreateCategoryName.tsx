@@ -1,5 +1,5 @@
-import { IMongoCategory } from '@microservices/shared';
 import { Grid, TextField } from '@mui/material';
+import { IMongoCategory } from '@packages/category';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';

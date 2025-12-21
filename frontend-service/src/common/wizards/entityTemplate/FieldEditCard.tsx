@@ -1,4 +1,3 @@
-import { IEntityTemplateMap, IUniqueConstraintOfTemplate } from '@microservices/shared';
 import {
     Add as AddIcon,
     AddLocationAlt,
@@ -11,6 +10,8 @@ import {
     WrongLocation,
 } from '@mui/icons-material';
 import { Autocomplete, Box, Card, CardContent, FormControlLabel, Grid, IconButton, MenuItem, TextField } from '@mui/material';
+import { IUniqueConstraintOfTemplate } from '@packages/entity';
+import { IEntityTemplateMap } from '@packages/entity-template';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';

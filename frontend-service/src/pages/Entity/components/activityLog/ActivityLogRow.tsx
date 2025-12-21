@@ -1,5 +1,6 @@
-import { IMongoEntityTemplateWithConstraintsPopulated, IMongoStepTemplatePopulated, IProcessDetails } from '@microservices/shared';
 import { Grid, Skeleton, Typography } from '@mui/material';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoStepTemplatePopulated, IProcessDetails } from '@packages/process';
 import i18next from 'i18next';
 import React from 'react';
 import { useQuery } from 'react-query';

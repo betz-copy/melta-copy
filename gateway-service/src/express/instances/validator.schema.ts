@@ -1,4 +1,4 @@
-import { fileSchema, MongoIdSchema, searchFilterSchema, variableNameValidation } from '@microservices/shared';
+import { searchFilterSchema } from '@packages/utils';
 import Joi from 'joi';
 import config from '../../config';
 import { ExtendedJoi, excelTemplateSchema } from '../../utils/joi';

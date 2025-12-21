@@ -1,11 +1,6 @@
-import {
-    ConfigTypes,
-    DefaultManagerMongo,
-    ICategoryOrderConfig,
-    IMongoBaseConfig,
-    IMongoCategoryOrderConfig,
-    NotFoundError,
-} from '@microservices/shared';
+
+import { DefaultManagerMongo, NotFoundError } from '@packages/utils';
+import { ConfigTypes, ICategoryOrderConfig, IMongoBaseConfig, IMongoCategoryOrderConfig } from '@packages/workspace-configs';
 import mongoose from 'mongoose';
 import config from '../../config';
 import { ConfigSchema, orderConfigSchema } from './model';

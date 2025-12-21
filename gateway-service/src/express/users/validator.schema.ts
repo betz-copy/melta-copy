@@ -1,4 +1,4 @@
-import { iconFileSchema, MongoIdSchema, PermissionType } from '@microservices/shared';
+import { PermissionType } from '@packages/permission';
 import joi from 'joi';
 import config from '../../config';
 import { ExtendedJoi } from '../../utils/joi';

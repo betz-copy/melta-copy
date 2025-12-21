@@ -1,15 +1,9 @@
-import {
-    ActionsLog,
-    IEntitySingleProperty,
-    IEntityTemplateMap,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IMongoStepTemplatePopulated,
-    IProcessDetails,
-    IProcessSingleProperty,
-    IRelationshipTemplateMap,
-} from '@microservices/shared';
-/* eslint-disable no-nested-ternary */
 import { Grid, styled, Typography, useTheme } from '@mui/material';
+/* eslint-disable no-nested-ternary */
+import { ActionsLog } from '@packages/activity-log';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoStepTemplatePopulated, IProcessDetails, IProcessSingleProperty } from '@packages/process';
+import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';

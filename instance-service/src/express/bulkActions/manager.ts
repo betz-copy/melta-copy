@@ -1,24 +1,22 @@
 /* eslint-disable no-await-in-loop */
+
+import { IActivityLog } from '@packages/activity-log';
+import { IEntity, IRequiredConstraint } from '@packages/entity';
+import { IMongoEntityTemplate } from '@packages/entity-template';
+import { IRelationship } from '@packages/relationship';
+import { IMongoRelationshipTemplate } from '@packages/relationship-template';
+import { ActionOnFail, IBulkRuleMail, IRuleMail } from '@packages/rule';
 import {
     ActionErrors,
-    ActionOnFail,
     ActionTypes,
-    BadRequestError,
     IAction,
-    IActivityLog,
     IBrokenRule,
-    IBulkRuleMail,
     ICreateEntityMetadata,
     ICreateRelationshipMetadata,
     IDuplicateEntityMetadata,
-    IEntity,
-    IMongoEntityTemplate,
-    IMongoRelationshipTemplate,
-    IRelationship,
-    IRequiredConstraint,
-    IRuleMail,
     IUpdateEntityMetadata,
-} from '@microservices/shared';
+} from '@packages/rule-breach';
+import { BadRequestError } from '@packages/utils';
 import groupBy from 'lodash.groupby';
 import _partition from 'lodash.partition';
 import pickBy from 'lodash.pickby';

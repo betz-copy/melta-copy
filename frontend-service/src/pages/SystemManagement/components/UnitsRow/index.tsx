@@ -1,6 +1,6 @@
-import { IMongoUnit, IUnitHierarchy } from '@microservices/shared';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { FormControlLabel, Grid, Typography } from '@mui/material';
+import { IMongoUnit, IUnitHierarchy } from '@packages/unit';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';

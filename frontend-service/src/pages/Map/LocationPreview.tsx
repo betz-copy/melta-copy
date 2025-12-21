@@ -1,4 +1,5 @@
-import { IEntity, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import * as Cesium from 'cesium';
 import { Cartesian3 } from 'cesium';
 import { useEffect, useRef } from 'react';

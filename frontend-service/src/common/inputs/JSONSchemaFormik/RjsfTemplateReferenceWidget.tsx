@@ -1,4 +1,6 @@
-import { IChildTemplateMap, IEntity, IEntityTemplateMap } from '@microservices/shared';
+import { IChildTemplateMap } from '@packages/child-template';
+import { IEntity } from '@packages/entity';
+import { IEntityTemplateMap } from '@packages/entity-template';
 import { WidgetProps } from '@rjsf/utils';
 import { useFormikContext } from 'formik';
 import i18next from 'i18next';

@@ -1,5 +1,6 @@
-import { IEntity, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { Box, Grid, useTheme } from '@mui/material';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React, { CSSProperties } from 'react';
 import { Link } from 'wouter';

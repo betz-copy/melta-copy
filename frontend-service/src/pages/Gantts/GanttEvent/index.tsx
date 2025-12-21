@@ -1,6 +1,7 @@
-import { IEntityTemplateMap, IRelationshipTemplateMap } from '@microservices/shared';
 import { ImportExport as RelatedIcon } from '@mui/icons-material';
 import { Grid, Typography } from '@mui/material';
+import { IEntityTemplateMap } from '@packages/entity-template';
+import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import React, { CSSProperties, Fragment, useMemo } from 'react';
 import { useQueryClient } from 'react-query';
 import { environment } from '../../../globals';

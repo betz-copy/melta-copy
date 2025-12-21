@@ -1,4 +1,4 @@
-import { RelatedPermission } from '@microservices/shared';
+import { RelatedPermission } from '@packages/user';
 import i18next from 'i18next';
 import React from 'react';
 import ManagePermissionTab from './ManagePermissionTab';

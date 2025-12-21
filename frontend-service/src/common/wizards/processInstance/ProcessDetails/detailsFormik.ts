@@ -3,7 +3,7 @@ import {
     IMongoProcessTemplateReviewerPopulated,
     IProcessDetails,
     IProcessTemplateMap,
-} from '@microservices/shared';
+} from '@packages/process';
 import { useFormik, yupToFormErrors } from 'formik';
 import i18next from 'i18next';
 import { useMemo } from 'react';

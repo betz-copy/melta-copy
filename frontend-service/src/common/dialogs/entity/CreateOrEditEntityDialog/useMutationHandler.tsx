@@ -1,13 +1,8 @@
-import {
-    ActionTypes,
-    IChildTemplateMap,
-    IEntity,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IRuleBreach,
-    IUniqueConstraint,
-} from '@microservices/shared';
 import { Button, Grid } from '@mui/material';
+import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IEntity, IUniqueConstraint } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { ActionTypes, IRuleBreach } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import { StatusCodes } from 'http-status-codes';
 import i18next from 'i18next';

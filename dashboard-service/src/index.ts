@@ -1,4 +1,4 @@
-import { logger } from '@microservices/shared';
+import { logger } from '@packages/utils';
 import axios from 'axios';
 import 'elastic-apm-node/start';
 import mongoose from 'mongoose';

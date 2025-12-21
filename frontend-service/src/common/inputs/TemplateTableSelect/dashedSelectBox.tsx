@@ -1,5 +1,8 @@
-import { IChildTemplateMap, IEntity, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated, PermissionScope } from '@microservices/shared';
 import { Grid } from '@mui/material';
+import { IChildTemplateMap } from '@packages/child-template';
+import { IEntity } from '@packages/entity';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { PermissionScope } from '@packages/permission';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';

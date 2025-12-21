@@ -1,11 +1,11 @@
+/* eslint-disable no-param-reassign */
 import {
     IMongoProcessInstanceReviewerPopulated,
     IMongoProcessTemplateReviewerPopulated,
     IMongoStepInstancePopulated,
     IReferencedEntityForProcess,
     ISearchProcessInstancesBody,
-} from '@microservices/shared';
-/* eslint-disable no-param-reassign */
+} from '@packages/process';
 import mapValues from 'lodash.mapvalues';
 import axios from '../axios';
 import urlToFile from '../common/fileConversions';

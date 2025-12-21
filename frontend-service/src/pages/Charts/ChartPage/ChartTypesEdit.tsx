@@ -1,6 +1,7 @@
-import { IChartType, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { BarChart as BarChartIcon, Money as NumberChartIcon, PieChart as PieChartIcon, ShowChart as ShowChartIcon } from '@mui/icons-material';
 import { Grid, Typography } from '@mui/material';
+import { IChartType } from '@packages/chart';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useMemo } from 'react';

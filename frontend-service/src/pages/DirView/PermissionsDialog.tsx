@@ -1,4 +1,3 @@
-import { IMongoUser, IUser, PermissionScope } from '@microservices/shared';
 import {
     Box,
     Button,
@@ -12,6 +11,8 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
+import { PermissionScope } from '@packages/permission';
+import { IMongoUser, IUser } from '@packages/user';
 import i18next from 'i18next';
 import _debounce from 'lodash.debounce';
 import React, { useCallback, useState } from 'react';

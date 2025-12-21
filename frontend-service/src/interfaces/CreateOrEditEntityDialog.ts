@@ -1,4 +1,5 @@
-import { ActionTypes, IAction, IActionPopulated, IEntity, IRuleBreach, IRuleBreachPopulated } from '@microservices/shared';
+import { IEntity } from '@packages/entity';
+import { ActionTypes, IAction, IActionPopulated, IRuleBreach, IRuleBreachPopulated } from '@packages/rule-breach';
 import { EntityWizardValues } from '../common/dialogs/entity';
 
 export type ICreateOrUpdateWithRuleBreachDialogState = {

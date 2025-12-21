@@ -1,6 +1,6 @@
-import { IMongoUnit } from '@microservices/shared';
 import { Close, ExpandMore } from '@mui/icons-material';
 import { Autocomplete, Grid, MenuItem, TextField, TextFieldProps } from '@mui/material';
+import { IMongoUnit } from '@packages/unit';
 import { RJSFSchema } from '@rjsf/utils';
 import React from 'react';
 import { useQueryClient } from 'react-query';

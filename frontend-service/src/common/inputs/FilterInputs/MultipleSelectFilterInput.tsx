@@ -1,5 +1,5 @@
-import { IAgGridSetFilter } from '@microservices/shared';
 import { Chip, Grid, ListItemText, MenuItem } from '@mui/material';
+import { IAgGridSetFilter } from '@packages/rule-breach';
 import i18next from 'i18next';
 import React from 'react';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';

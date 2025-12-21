@@ -1,4 +1,5 @@
-import { FileDetails, IWorkspace, WorkspaceTypes } from '@microservices/shared';
+import { FileDetails } from '@packages/common';
+import { IWorkspace, WorkspaceTypes } from '@packages/workspace';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React from 'react';

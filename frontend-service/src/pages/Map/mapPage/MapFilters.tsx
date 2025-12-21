@@ -1,13 +1,8 @@
-import {
-    FilterLogicalOperator,
-    IEntity,
-    IEntityTemplateMap,
-    IFilterOfField,
-    IMongoEntityTemplateWithConstraintsPopulated,
-} from '@microservices/shared';
-/** biome-ignore-all lint/correctness/useExhaustiveDependencies: useEffect dependencies */
 import { FilterList } from '@mui/icons-material';
 import { Autocomplete, Box, Button, Divider, Grid, TextField, Typography, useTheme } from '@mui/material';
+/** biome-ignore-all lint/correctness/useExhaustiveDependencies: useEffect dependencies */
+import { FilterLogicalOperator, IEntity, IFilterOfField } from '@packages/entity';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { IoIosArrowDown } from 'react-icons/io';

@@ -1,5 +1,5 @@
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated, IRelationshipReference } from '@microservices/shared';
 import { Autocomplete, Grid, MenuItem, TextField, Typography } from '@mui/material';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated, IRelationshipReference } from '@packages/entity-template';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import React from 'react';

@@ -1,6 +1,7 @@
-import { IDefaultPermissionDetails, InstancesSubclassesPermissions, IPermissionMetadata, PermissionScope, ViewType } from '@microservices/shared';
 import { ArrowLeftRounded, FilterList } from '@mui/icons-material';
 import { Collapse, Grid, IconButton, Typography, useTheme } from '@mui/material';
+import { ViewType } from '@packages/child-template';
+import { IDefaultPermissionDetails, InstancesSubclassesPermissions, IPermissionMetadata, PermissionScope } from '@packages/permission';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { entityTemplatePermissionDialog } from '../../utils/permissions/permissionOfUserDialog';

@@ -1,4 +1,4 @@
-import { INotificationCountGroups, INotificationGroupCountDetails, INotificationPopulated, NotificationType } from '@microservices/shared';
+import { INotificationCountGroups, INotificationGroupCountDetails, INotificationPopulated, NotificationType } from '@packages/notification';
 import axios from '../axios';
 import { environment } from '../globals';
 

@@ -1,12 +1,8 @@
-import {
-    IMongoCategory,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplatePopulated,
-    ISubCompactPermissions,
-    IUser,
-    PermissionScope,
-    ViewType,
-} from '@microservices/shared';
+import { IMongoCategory } from '@packages/category';
+import { IMongoChildTemplateWithConstraintsPopulated, ViewType } from '@packages/child-template';
+import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { ISubCompactPermissions, PermissionScope } from '@packages/permission';
+import { IUser } from '@packages/user';
 import isEqualWith from 'lodash.isequalwith';
 
 export const userHasNoPermissions = (permissions: ISubCompactPermissions) => {

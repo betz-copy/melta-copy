@@ -1,12 +1,3 @@
-import {
-    IEntity,
-    IEntityExpanded,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IMongoProcessInstanceReviewerPopulated,
-    IMongoProcessTemplateReviewerPopulated,
-    IMongoStepTemplatePopulated,
-    InstanceProperties,
-} from '@microservices/shared';
 import { CloseOutlined, PrintOutlined } from '@mui/icons-material';
 import {
     Button,
@@ -21,6 +12,14 @@ import {
     TextField,
     useTheme,
 } from '@mui/material';
+import { IEntity, IEntityExpanded } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import {
+    IMongoProcessInstanceReviewerPopulated,
+    IMongoProcessTemplateReviewerPopulated,
+    IMongoStepTemplatePopulated,
+    InstanceProperties,
+} from '@packages/process';
 import i18next from 'i18next';
 import React, { useCallback, useEffect, useState } from 'react';
 import { IFile } from '../../interfaces/preview';

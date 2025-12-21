@@ -1,5 +1,5 @@
-import { IMongoIframe } from '@microservices/shared';
 import { CircularProgress, Grid } from '@mui/material';
+import { IMongoIframe } from '@packages/iframe';
 import React from 'react';
 import Iframe from 'react-iframe';
 import { useQuery } from 'react-query';

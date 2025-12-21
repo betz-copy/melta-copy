@@ -1,4 +1,5 @@
-import { IMongoEntityTemplateWithConstraintsPopulated, IRelationshipTemplateMap } from '@microservices/shared';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React from 'react';

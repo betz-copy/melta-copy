@@ -1,5 +1,5 @@
-import { IMongoProcessInstanceReviewerPopulated, IMongoProcessTemplateReviewerPopulated } from '@microservices/shared';
 import { Box, Divider, Grid, Typography, useTheme } from '@mui/material';
+import { IMongoProcessInstanceReviewerPopulated, IMongoProcessTemplateReviewerPopulated } from '@packages/process';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import { noop } from 'lodash';

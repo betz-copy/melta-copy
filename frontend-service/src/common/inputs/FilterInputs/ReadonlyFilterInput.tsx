@@ -1,5 +1,6 @@
-import { IGraphFilterBody, relativeDateFilters } from '@microservices/shared';
 import { Grid } from '@mui/material';
+import { IGraphFilterBody } from '@packages/entity';
+import { relativeDateFilters } from '@packages/rule-breach';
 import i18next from 'i18next';
 import React from 'react';
 import { ViewModeTextField } from '../ViewModeTextField';

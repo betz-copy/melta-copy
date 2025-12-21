@@ -1,7 +1,10 @@
-import { IActionPopulated, IBrokenRulePopulated, IEntityTemplateMap, IMongoRule, IRelationshipTemplateMap } from '@microservices/shared';
 /* eslint-disable react/no-array-index-key */
 import { ExpandLess as ExpandLessIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { Box, Collapse, Grid, List, ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material';
+import { IEntityTemplateMap } from '@packages/entity-template';
+import { IRelationshipTemplateMap } from '@packages/relationship-template';
+import { IMongoRule } from '@packages/rule';
+import { IActionPopulated, IBrokenRulePopulated } from '@packages/rule-breach';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
 import React, { useState } from 'react';

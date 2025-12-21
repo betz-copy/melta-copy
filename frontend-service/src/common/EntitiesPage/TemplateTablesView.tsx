@@ -1,12 +1,7 @@
-import {
-    IEntity,
-    IFilterGroup,
-    IFilterOfTemplate,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    ISearchFilter,
-} from '@microservices/shared';
 import { CircularProgress, Grid, Typography } from '@mui/material';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IEntity, IFilterGroup, IFilterOfTemplate, ISearchFilter } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';

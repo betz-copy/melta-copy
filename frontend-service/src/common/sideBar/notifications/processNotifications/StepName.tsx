@@ -1,5 +1,5 @@
-import { IMongoStepInstancePopulated, IProcessTemplateMap } from '@microservices/shared';
 import { Typography } from '@mui/material';
+import { IMongoStepInstancePopulated, IProcessTemplateMap } from '@packages/process';
 import i18next from 'i18next';
 import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';

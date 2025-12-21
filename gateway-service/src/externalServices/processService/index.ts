@@ -1,3 +1,5 @@
+
+import { PermissionScope } from '@packages/permission';
 import {
     IMongoProcessInstancePopulated,
     IMongoProcessTemplatePopulated,
@@ -7,9 +9,8 @@ import {
     IProcessInstanceSearchProperties,
     IProcessTemplatePopulated,
     ISearchProcessTemplatesBody,
-    PermissionScope,
     UpdateStepReqBody,
-} from '@microservices/shared';
+} from '@packages/process';
 import config from '../../config';
 import { NotFoundError } from '../../express/processes/error';
 import { Authorizer } from '../../utils/authorizer';

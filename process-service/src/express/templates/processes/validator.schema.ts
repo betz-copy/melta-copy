@@ -1,4 +1,3 @@
-import { MongoIdSchema } from '@microservices/shared';
 import * as Joi from 'joi';
 import { createProcessTemplateBody, updateProcessTemplateBody } from '../../../utils/joi';
 

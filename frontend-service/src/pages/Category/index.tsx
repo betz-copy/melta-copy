@@ -1,10 +1,6 @@
-import {
-    ICategoryMap,
-    IChildTemplateMap,
-    IEntityTemplateMap,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-} from '@microservices/shared';
+import { ICategoryMap } from '@packages/category';
+import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import React, { useEffect } from 'react';
 import { useQueryClient } from 'react-query';
 import { useParams } from 'wouter';

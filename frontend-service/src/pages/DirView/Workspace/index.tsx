@@ -1,6 +1,6 @@
-import { IWorkspace, WorkspaceTypes } from '@microservices/shared';
 import { Folder } from '@mui/icons-material';
 import { Box, Card, Typography } from '@mui/material';
+import { IWorkspace, WorkspaceTypes } from '@packages/workspace';
 import React, { useMemo } from 'react';
 import { Link } from 'wouter';
 import { CustomIcon } from '../../../common/CustomIcon';

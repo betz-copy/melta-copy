@@ -1,5 +1,6 @@
-import { ActionOnFail, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { Autocomplete, Divider, FormControl, FormControlLabel, FormHelperText, Grid, Radio, RadioGroup, TextField } from '@mui/material';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { ActionOnFail } from '@packages/rule';
 import { getIn } from 'formik';
 import Handlebars from 'handlebars';
 import i18next from 'i18next';

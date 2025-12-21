@@ -1,4 +1,4 @@
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import * as Yup from 'yup';
 import { IChildTemplateFormProperty, IFieldChip } from '../../../interfaces/childTemplateForms';

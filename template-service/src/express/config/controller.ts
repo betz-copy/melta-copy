@@ -1,4 +1,5 @@
-import { ConfigTypes, DefaultController, IMongoBaseConfig } from '@microservices/shared';
+import { DefaultController } from '@packages/utils';
+import { ConfigTypes, IMongoBaseConfig } from '@packages/workspace-configs';
 import { Request, Response } from 'express';
 import ConfigManager from './manager';
 

@@ -1,16 +1,8 @@
-import {
-    ActionTypes,
-    IAction,
-    IActionPopulated,
-    IBrokenRule,
-    IEntity,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IRuleBreach,
-    IRuleBreachPopulated,
-    IUniqueConstraint,
-} from '@microservices/shared';
 import { Clear as ClearIcon, Done as DoneIcon } from '@mui/icons-material';
 import { Button, Card, CardContent, CircularProgress, Divider, Grid, Typography } from '@mui/material';
+import { IEntity, IUniqueConstraint } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { ActionTypes, IAction, IActionPopulated, IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import { Form, Formik } from 'formik';
 import { StatusCodes } from 'http-status-codes';

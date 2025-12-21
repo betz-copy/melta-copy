@@ -1,6 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 
-import { ActionTypes, IAction } from '@microservices/shared';
+import { ActionTypes, IAction } from '@packages/rule-breach';
 import * as joi from 'joi';
 import {
     createEntityMetadataSchema,

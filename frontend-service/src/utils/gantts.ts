@@ -1,15 +1,8 @@
-import {
-    IEntityTemplateMap,
-    IEntityWithDirectConnections,
-    IFilterOfTemplate,
-    IGantt,
-    IGanttGroupBy,
-    IGanttItem,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IRelationshipTemplateMap,
-    ISearchBatchBody,
-} from '@microservices/shared';
 /* eslint-disable consistent-return */
+import { IEntityWithDirectConnections, IFilterOfTemplate, ISearchBatchBody } from '@packages/entity';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IGantt, IGanttGroupBy, IGanttItem } from '@packages/gantt';
+import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import i18next from 'i18next';
 import cloneDeep from 'lodash.clonedeep';
 import * as Yup from 'yup';

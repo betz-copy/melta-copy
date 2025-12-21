@@ -1,0 +1,14 @@
+{
+    "extends": "../tsconfig.json",
+    "compilerOptions": {
+        "declaration": true,
+        "outDir": "./dist/",
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "baseUrl": ".",
+        "paths": {
+            "@packages/*": ["./*"]
+        }
+    },
+    "include": ["src/**/*", "*/src/**/*"]
+}

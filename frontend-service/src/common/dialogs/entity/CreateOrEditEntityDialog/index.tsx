@@ -1,12 +1,9 @@
-import {
-    ActionTypes,
-    ByCurrentDefaultValue,
-    IEntity,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-} from '@microservices/shared';
 import { Clear as ClearIcon, Done as DoneIcon } from '@mui/icons-material';
 import { Button, Card, CardContent, CircularProgress, Divider, Grid } from '@mui/material';
+import { ByCurrentDefaultValue, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { ActionTypes } from '@packages/rule-breach';
 import { format } from 'date-fns';
 import { Form, Formik } from 'formik';
 import i18next from 'i18next';

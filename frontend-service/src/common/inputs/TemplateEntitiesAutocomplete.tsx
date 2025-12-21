@@ -1,14 +1,9 @@
-import {
-    IChildTemplateMap,
-    IEntity,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    ISearchEntitiesOfTemplateBody,
-    ISearchFilter,
-    IWorkspace,
-} from '@microservices/shared';
 import { ExpandMore, InfoOutlined } from '@mui/icons-material';
 import { Autocomplete, AutocompleteInputChangeReason, AutocompleteProps, Grid, TextField, Typography } from '@mui/material';
+import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IEntity, ISearchEntitiesOfTemplateBody, ISearchFilter } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IWorkspace } from '@packages/workspace';
 import i18next from 'i18next';
 import _debounce from 'lodash.debounce';
 import React, { useCallback, useEffect, useRef, useState } from 'react';

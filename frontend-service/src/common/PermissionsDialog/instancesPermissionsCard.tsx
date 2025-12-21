@@ -1,5 +1,5 @@
-import { PermissionData, PermissionScope } from '@microservices/shared';
 import { Box, CheckboxProps, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
+import { PermissionData, PermissionScope } from '@packages/permission';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React from 'react';

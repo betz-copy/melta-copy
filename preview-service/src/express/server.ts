@@ -1,4 +1,4 @@
-import { errorMiddleware } from '@microservices/shared';
+import { errorMiddleware } from '@packages/utils';
 import * as bodyParser from 'body-parser';
 import { once } from 'events';
 import express from 'express';

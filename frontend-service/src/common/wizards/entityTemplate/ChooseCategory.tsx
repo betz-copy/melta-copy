@@ -1,5 +1,5 @@
-import { ICategoryMap } from '@microservices/shared';
 import { Autocomplete, TextField } from '@mui/material';
+import { ICategoryMap } from '@packages/category';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';

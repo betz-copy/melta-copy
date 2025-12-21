@@ -1,15 +1,10 @@
-import {
-    CoordinatesResult,
-    IEntity,
-    IEntitySingleProperty,
-    IFilterOfField,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    MapItemType,
-    SplitBy,
-} from '@microservices/shared';
+import { SplitBy } from '@packages/common';
+import { IEntity, IFilterOfField } from '@packages/entity';
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { Cartesian3 } from 'cesium';
 import { environment } from '../../globals';
 import { ICoordinateSearchResult, IPolygonSearchResult } from '../../interfaces/location';
+import { CoordinatesResult, MapItemType } from '../../interfaces/map';
 import { convertECEFToWGS84, convertWGS94ToECEF, isValidWGS84 } from './convert';
 
 const { polygonPrefix, polygonSuffix } = environment.map.polygon;

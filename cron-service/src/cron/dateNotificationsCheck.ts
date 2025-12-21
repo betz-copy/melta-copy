@@ -1,14 +1,10 @@
-import {
-    IDateAboutToExpireNotificationMetadata,
-    IEntityTemplatePopulated,
-    IFilterDatesRange,
-    InstancesSubclassesPermissions,
-    logger,
-    NotificationType,
-    PermissionScope,
-    PermissionType,
-    WorkspaceTypes,
-} from '@microservices/shared';
+
+import { IFilterDatesRange } from '@packages/entity';
+import { IEntityTemplatePopulated } from '@packages/entity-template';
+import { IDateAboutToExpireNotificationMetadata, NotificationType } from '@packages/notification';
+import { InstancesSubclassesPermissions, PermissionScope, PermissionType } from '@packages/permission';
+import { logger } from '@packages/utils';
+import { WorkspaceTypes } from '@packages/workspace';
 import schedule from 'node-schedule';
 import config from '../config';
 import EntityTemplateService from '../services/entityTemplate';

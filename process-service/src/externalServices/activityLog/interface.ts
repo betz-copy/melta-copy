@@ -1,4 +1,5 @@
-import { ActionsLog, Status } from '@microservices/shared';
+import { ActionsLog } from '@packages/activity-log';
+import { Status } from '@packages/process';
 
 export interface IUpdatedFields {
     fieldName: string;

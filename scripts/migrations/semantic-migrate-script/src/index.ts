@@ -1,4 +1,4 @@
-import { IMongoEntityTemplate } from '@microservices/shared';
+import { IMongoEntityTemplate } from '@packages/entity-template';
 import { Driver } from 'neo4j-driver';
 import path from 'path';
 import { getTemplatesWithFiles } from './clients/mongo/repository';

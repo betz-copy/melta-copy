@@ -1,4 +1,4 @@
-import { IBaseUser } from '@microservices/shared';
+import { IBaseUser } from '@packages/user';
 import * as mongoose from 'mongoose';
 import config from '../../config';
 

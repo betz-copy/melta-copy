@@ -1,4 +1,3 @@
-import { iconFileSchema, MongoIdSchema } from '@microservices/shared';
 import * as Joi from 'joi';
 
 const iFrameSchema = Joi.object({

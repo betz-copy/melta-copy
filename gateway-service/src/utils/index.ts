@@ -1,6 +1,6 @@
 /* eslint-disable no-plusplus */
 
-import { Awaited } from '@microservices/shared';
+import { Awaited } from '@packages/common';
 import lodashIsEqual from 'lodash.isequal';
 import { pipeline } from 'stream';
 import { promisify } from 'util';

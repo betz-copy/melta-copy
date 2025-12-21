@@ -1,4 +1,4 @@
-import { NotFoundError, ServiceError, ValidationError } from '@microservices/shared';
+import { NotFoundError, ServiceError, ValidationError } from '@packages/utils';
 import { StatusCodes } from 'http-status-codes';
 
 export class InstanceNotFoundError extends ServiceError {

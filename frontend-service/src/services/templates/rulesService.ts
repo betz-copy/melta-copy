@@ -1,4 +1,5 @@
-import { IEntityTemplateMap, IMongoRule, IRule, ISearchRulesBody } from '@microservices/shared';
+import { IEntityTemplateMap } from '@packages/entity-template';
+import { IMongoRule, IRule, ISearchRulesBody } from '@packages/rule';
 import { JsonItem, JsonTree, Utils as QbUtils } from '@react-awesome-query-builder/mui';
 import axios from '../../axios';
 import { RuleWizardValues } from '../../common/wizards/rule';

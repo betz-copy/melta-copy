@@ -1,5 +1,5 @@
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { Grid, TextField, Typography } from '@mui/material';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React from 'react';
 import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';

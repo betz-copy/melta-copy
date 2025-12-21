@@ -1,5 +1,10 @@
 import { AddCircle, CloseFullscreenRounded, Expand, TableRowsOutlined } from '@mui/icons-material';
 import { Box, Grid, useTheme } from '@mui/material';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IConnection, IEntity, IEntityExpanded } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { ISubCompactPermissions, PermissionScope } from '@packages/permission';
+import { IRelationship } from '@packages/relationship';
 import i18next from 'i18next';
 import React, { useRef, useState } from 'react';
 import { useQueryClient } from 'react-query';
@@ -13,16 +18,7 @@ import { EntityTemplateTextComponent, RelationshipTitle } from '../../common/Rel
 import { TableButton } from '../../common/TableButton';
 import '../../css/pages.css';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
-import {
-    IConnection,
-    IEntity,
-    IEntityExpanded,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IRelationship,
-    ISubCompactPermissions,
-    PermissionScope,
-} from '@microservices/shared';
+
 import { useClientSideUserStore } from '../../stores/clientSideUser';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';

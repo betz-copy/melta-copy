@@ -1,18 +1,12 @@
-import {
-    ActionOnFail,
-    ForbiddenError,
-    IAction,
-    IBrokenRule,
-    IChildTemplatePopulated,
-    IEntity,
-    IExportEntitiesBody,
-    IMongoEntityTemplatePopulated,
-    IRelationship,
-    IRule,
-    PermissionScope,
-    ServiceError,
-    ValidationError,
-} from '@microservices/shared';
+
+import { IChildTemplatePopulated } from '@packages/child-template';
+import { IEntity, IExportEntitiesBody } from '@packages/entity';
+import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { PermissionScope } from '@packages/permission';
+import { IRelationship } from '@packages/relationship';
+import { ActionOnFail, IRule } from '@packages/rule';
+import { IAction, IBrokenRule } from '@packages/rule-breach';
+import { ForbiddenError, ServiceError, ValidationError } from '@packages/utils';
 import { Request } from 'express';
 import lodashUniqby from 'lodash.uniqby';
 import config from '../../config';

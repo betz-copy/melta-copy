@@ -1,4 +1,5 @@
-import { ServiceError, UploadedFile } from '@microservices/shared';
+import { UploadedFile } from '@packages/entity';
+import { ServiceError } from '@packages/utils';
 import { menash } from 'menashmq';
 import { Stream } from 'stream';
 import config from '../../config';

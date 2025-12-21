@@ -1,11 +1,8 @@
-import {
-    ActionsLog,
-    IEntityExpanded,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IMongoStepTemplatePopulated,
-    IProcessDetails,
-} from '@microservices/shared';
 import { Grid, InputAdornment, Paper, TextField } from '@mui/material';
+import { ActionsLog } from '@packages/activity-log';
+import { IEntityExpanded } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoStepTemplatePopulated, IProcessDetails } from '@packages/process';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';

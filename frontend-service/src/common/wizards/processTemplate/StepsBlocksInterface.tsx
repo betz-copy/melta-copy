@@ -1,4 +1,5 @@
-import { FileDetails, IUser } from '@microservices/shared';
+import { FileDetails } from '@packages/common';
+import { IUser } from '@packages/user';
 import { FormikErrors, FormikTouched } from 'formik';
 import { ProcessTemplateWizardValues } from '.';
 

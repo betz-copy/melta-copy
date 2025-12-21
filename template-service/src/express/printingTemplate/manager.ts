@@ -1,4 +1,5 @@
-import { DefaultManagerMongo, IMongoPrintingTemplate, IPrintingTemplate, NotFoundError } from '@microservices/shared';
+import { IMongoPrintingTemplate, IPrintingTemplate } from '@packages/printing-template';
+import { DefaultManagerMongo, NotFoundError } from '@packages/utils';
 import { ClientSession, FilterQuery } from 'mongoose';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';

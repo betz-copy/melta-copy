@@ -1,4 +1,5 @@
-import { ColorSchema, ConfigTypes, fileSchema, filterOfTemplateSchema, iconFileSchema, MongoIdSchema, ViewType } from '@microservices/shared';
+import { ViewType } from '@packages/child-template';
+import { ConfigTypes } from '@packages/workspace-configs';
 import Joi from 'joi';
 import { ExtendedJoi } from '../../utils/joi';
 

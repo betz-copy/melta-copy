@@ -1,5 +1,5 @@
-import { IUserPopulated } from '@microservices/shared';
 import { Divider, Grid, Typography } from '@mui/material';
+import { IUserPopulated } from '@packages/user';
 import i18next from 'i18next';
 import React from 'react';
 import { useWorkspaceStore } from '../../../stores/workspace';

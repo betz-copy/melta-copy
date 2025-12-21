@@ -1,19 +1,10 @@
-import {
-    ICountSearchResult,
-    IEntity,
-    IEntityExpanded,
-    IMongoCategory,
-    IMongoChildTemplateWithConstraintsPopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IMongoRelationshipTemplate,
-    INotificationCountGroups,
-    INotificationGroupCountDetails,
-    INotificationPopulated,
-    IRuleBreach,
-    ISearchEntitiesOfTemplateBody,
-    ISearchResult,
-    NotificationType,
-} from '@microservices/shared';
+import { IMongoCategory } from '@packages/category';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { ICountSearchResult, IEntity, IEntityExpanded, ISearchEntitiesOfTemplateBody, ISearchResult } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { INotificationCountGroups, INotificationGroupCountDetails, INotificationPopulated, NotificationType } from '@packages/notification';
+import { IMongoRelationshipTemplate } from '@packages/relationship-template';
+import { IRuleBreach } from '@packages/rule-breach';
 import { mapValues } from 'lodash';
 import axios from '../axios';
 import { EntityWizardValues } from '../common/dialogs/entity';

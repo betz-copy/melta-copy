@@ -1,6 +1,7 @@
-import { IEntityTemplateMap, IRelationshipTemplateMap } from '@microservices/shared';
 import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
 import { Grid, ThemeProvider } from '@mui/material';
+import { IEntityTemplateMap } from '@packages/entity-template';
+import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import {
     Builder,
     BuilderProps,

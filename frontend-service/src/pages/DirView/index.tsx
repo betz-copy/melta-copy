@@ -1,5 +1,5 @@
-import { IWorkspace } from '@microservices/shared';
 import { Box, Grid } from '@mui/material';
+import { IWorkspace } from '@packages/workspace';
 import i18next from 'i18next';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useQueries } from 'react-query';

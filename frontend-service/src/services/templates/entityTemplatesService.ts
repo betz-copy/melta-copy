@@ -1,15 +1,15 @@
 /* eslint-disable no-nested-ternary */
 
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import {
     FieldGroupData,
     IEntitySingleProperty,
     IEntityTemplate,
     IEntityTemplateMap,
     IEntityTemplateWithConstraints,
-    IMongoChildTemplateWithConstraintsPopulated,
     IMongoEntityTemplateWithConstraintsPopulated,
     ISearchEntityTemplatesBody,
-} from '@microservices/shared';
+} from '@packages/entity-template';
 import { QueryClient } from 'react-query';
 import { v4 as uuid } from 'uuid';
 import axios from '../../axios';

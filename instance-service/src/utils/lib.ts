@@ -1,4 +1,4 @@
-import { Awaited } from '@microservices/shared';
+import { Awaited } from '@packages/common';
 import isEqual from 'lodash.isequal';
 import isEqualWith from 'lodash.isequalwith';
 import isObject from 'lodash.isobject';

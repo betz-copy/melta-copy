@@ -3,7 +3,7 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-restricted-syntax */
 
-import { INotification, NotificationType, ProcessStatus } from '@microservices/shared';
+import { INotification, NotificationType } from '@packages/notification';
 import { Express } from 'express';
 import * as request from 'supertest';
 import Server from '../src/express/server';

@@ -1,5 +1,6 @@
-import { IChildTemplateMap, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { Grid } from '@mui/material';
+import { IChildTemplateMap } from '@packages/child-template';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';

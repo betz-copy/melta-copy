@@ -1,8 +1,10 @@
-import { IConnection, IEntityExpanded, IEntityTemplateMap, IRelationshipTemplateMap } from '@microservices/shared';
 /* eslint-disable react/no-unstable-nested-components */
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
 import { Grid, Typography } from '@mui/material';
 import { RichTreeViewPro, TreeItemProps, useTreeViewApiRef } from '@mui/x-tree-view-pro';
+import { IConnection, IEntityExpanded } from '@packages/entity';
+import { IEntityTemplateMap } from '@packages/entity-template';
+import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import i18next from 'i18next';
 import React, { Dispatch, SetStateAction, useCallback, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
