@@ -2,10 +2,14 @@ export const buildUrl = (
     path: string,
     params: Record<string, string | number | boolean | undefined>
 ) => {
-    const queryString = Object.entries(params)
-        .filter(([, value]) => value !== undefined && value !== null)
-        .map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`)
-        .join("&");
+    const searchParams = new URLSearchParams();
 
-    return `${path}?${queryString}`;
+    Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+            searchParams.append(key, String(value));
+        }
+    });
+
+    const queryString = searchParams.toString();
+    return queryString ? `${path}?${queryString}` : path;
 };
