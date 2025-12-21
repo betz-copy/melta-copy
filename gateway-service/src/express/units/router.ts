@@ -24,6 +24,6 @@ unitsRouter.get(
     wrapController(UnitsController.getHierarchyByWorkspace),
 );
 
-unitsRouter.use('*', AuthorizerControllerMiddleware.userHasSomePermissions, UnitsProxy);
+unitsRouter.use('/', AuthorizerControllerMiddleware.userHasSomePermissions, UnitsProxy);
 
 export default unitsRouter;
