@@ -8,7 +8,10 @@ import { environment } from '../../../../globals';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import BlueTitle from '../../../MeltaDesigns/BlueTitle';
 
-const { date } = environment.formats;
+const {
+    formats: { date },
+    datePickerViews,
+} = environment;
 
 export const GeneralDetailsFields = ({
     processTemplatesMap,
@@ -131,6 +134,7 @@ export const GeneralDetailsFields = ({
                                 label={i18next.t('wizard.processInstance.processInstanceStartDate')}
                                 value={values.startDate}
                                 onChange={(newStartDate) => setFieldValue('startDate', newStartDate)}
+                                views={datePickerViews}
                                 slots={{ textField: (params) => <TextField {...params} />, openPickerIcon: viewMode ? () => null : undefined }}
                                 slotProps={{
                                     textField: {
@@ -162,6 +166,7 @@ export const GeneralDetailsFields = ({
                                 minDate={values.startDate}
                                 format={date}
                                 enableAccessibleFieldDOMStructure={false}
+                                views={datePickerViews}
                                 label={i18next.t('wizard.processInstance.processInstanceEndDate')}
                                 value={values.endDate}
                                 onChange={(newEndDate) => setFieldValue('endDate', newEndDate)}

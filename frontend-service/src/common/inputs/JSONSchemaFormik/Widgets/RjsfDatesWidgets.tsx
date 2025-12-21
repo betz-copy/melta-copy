@@ -14,7 +14,10 @@ import i18next from 'i18next';
 import React, { JSX } from 'react';
 import { environment } from '../../../../globals';
 
-const { date, dateTime } = environment.formats;
+const {
+    formats: { date, dateTime },
+    datePickerViews,
+} = environment;
 
 export const CustomDateTimePickerToolbar = styled(DateTimePickerToolbar)({
     [`& .${dateTimePickerToolbarClasses.timeContainer}`]: {
@@ -85,6 +88,7 @@ const getRjsfDateOrDateTimeWidget =
                 <MuiDatePicker
                     value={parseDefaultDate(value)}
                     enableAccessibleFieldDOMStructure={false}
+                    views={datePickerViews}
                     onChange={(val) => onChangeDateWidget(val)}
                     slots={{
                         textField: (params) => <TextField {...params} style={{ textAlign: 'right' }} inputformat={inputFormat} />,
