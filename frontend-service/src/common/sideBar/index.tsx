@@ -49,7 +49,7 @@ const {
     notifications,
     searchPath,
     dashboard: { dashboardPath },
-    searchParams: {viewModeKey, searchKey, semanticSearchKey, viewModeOptions},
+    searchParams: { viewModeKey, searchKey, semanticSearchKey, viewModeOptions },
 } = environment;
 
 const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
@@ -210,12 +210,12 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             <GlobalSearchBar
                                 onSearch={(searchValue) => {
                                     handleChangeActiveButton(true, searchKey);
-                                            navigate(
-                                                buildUrl(searchPath, {
-                                                    [searchKey]: searchValue,
-                                                    [viewModeKey]: viewModeOptions.templatesTables,
-                                                })
-                                            );
+                                    navigate(
+                                        buildUrl(searchPath, {
+                                            [searchKey]: searchValue,
+                                            [viewModeKey]: viewModeOptions.templatesTables,
+                                        }),
+                                    );
                                 }}
                                 placeholder={i18next.t('pages.globalSearch')}
                                 size="small"
@@ -295,7 +295,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                     key={category._id}
                                     to={buildUrl(`/category/${category._id}`, {
                                         [semanticSearchKey]: false,
-                                        [searchKey]: "",
+                                        [searchKey]: '',
                                         [viewModeKey]: viewModeOptions.templatesTables,
                                     })}
                                     text={category.displayName}
