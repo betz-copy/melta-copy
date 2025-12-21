@@ -225,11 +225,11 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                             alignItems: textWrap ? 'flex-start' : 'center',
                         }}
                     >
-                        <div style={{ display: 'flex', width: '100%', flexWrap: 'nowrap', alignItems: textWrap ? 'flex-start' : 'center' }}>
+                        <div style={{ display: 'flex', width: '100%', flexWrap: 'nowrap', alignItems: textWrap ? 'flex-start' : 'center', gap: '10px' }}>
                             {!comment && (
                                 <div
                                     style={{
-                                        width: overrideStyleInLongText ? '10%' : '30%',
+                                        width: isPrintingMode ? 'fit-content' : overrideStyleInLongText ? '10%' : '30%',
                                     }}
                                 >
                                     {isPrintingMode ? (
@@ -249,7 +249,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                                     flexWrap: isPrintingMode ? 'wrap' : 'nowrap',
                                     direction: 'rtl',
                                     textAlign: 'right',
-                                    width: comment ? '100%' : overrideStyleInLongText ? '90%' : '70%',
+                                    width: isPrintingMode ? 'fit-content' : comment ? '100%' : overrideStyleInLongText ? '90%' : '70%',
                                 }}
                             >
                                 {isPrintingMode ? (

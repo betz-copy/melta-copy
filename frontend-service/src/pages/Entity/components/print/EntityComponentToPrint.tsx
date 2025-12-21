@@ -25,12 +25,20 @@ interface IEntityComponentToPrintProps {
 
 const EntityComponentToPrint: React.FC<IEntityComponentToPrintProps> = React.memo(
     ({ entityTemplate, entity, options, showPreviewPropertiesOnly, hierarchicalChildren, depth = 0, entityTemplates, relationships }) => {
+         const rowStyle: React.CSSProperties = {
+            display: 'flex',
+            flexDirection: 'column',
+            padding: depth > 0 ? `10px 0px 0px 30px` : '20px 0px',
+            width: '100%',
+        };
+        
         const containerStyle: React.CSSProperties = {
             display: 'flex',
             flexDirection: 'column',
-            backgroundColor: depth === 2 ? '#CCCFE526' : 'transparent',
+            backgroundColor: depth === 1 ? '#CCCFE526' : 'transparent',
+            marginTop: '10px',
+            paddingBottom: '10px',
             borderRadius: '8px',
-            padding: depth > 1 ? `10px 0px 0px 30px` : '20px 0px',
             width: '100%',
         };
 
@@ -39,9 +47,7 @@ const EntityComponentToPrint: React.FC<IEntityComponentToPrintProps> = React.mem
 
             if (isRoot) {
                 return (
-                    <div
-                        style={{ backgroundColor: '#CCCFE526', border: '1px solid #CCCFE526', borderRadius: '12px', width: '100%', padding: '1rem' }}
-                    >
+                    <div style={{ backgroundColor: '#CCCFE526', border: '1px solid #CCCFE5', borderRadius: '12px', width: '100%', padding: '1rem' }}>
                         <EntityPropertiesInternal
                             properties={entity.properties}
                             coloredFields={entity.coloredFields}
@@ -94,7 +100,7 @@ const EntityComponentToPrint: React.FC<IEntityComponentToPrintProps> = React.mem
                                 isPrintingMode
                                 showByGroups
                                 textWrap
-                                style={{ width: '100%', display: 'flex', flexDirection: 'row', flexWrap: 'nowrap', alignItems: 'center' }}
+                                style={{ width: '100%', display: 'flex', flexDirection: 'row', alignItems: 'center' }}
                             />
                         </div>
                     </div>
@@ -103,30 +109,34 @@ const EntityComponentToPrint: React.FC<IEntityComponentToPrintProps> = React.mem
         };
 
         return (
-            <div style={containerStyle}>
+            <div style={rowStyle}>
                 {renderRow()}
-                {hierarchicalChildren
-                    ?.filter((child) => options.showDisabled || !child.properties.disabled)
-                    .map((child) => {
-                        const template = entityTemplates.get(child.templateId);
-                        const relationship = relationships.get(child.relationshipId);
-                        if (!template || !relationship) return null;
+                {hierarchicalChildren && hierarchicalChildren?.filter((child) => options.showDisabled || !child.properties.disabled).length > 0 && (
+                    <div style={containerStyle}>
+                        {hierarchicalChildren
+                            ?.filter((child) => options.showDisabled || !child.properties.disabled)
+                            .map((child) => {
+                                const template = entityTemplates.get(child.templateId);
+                                const relationship = relationships.get(child.relationshipId);
+                                if (!template || !relationship) return null;
 
-                        return (
-                            <div key={child.properties._id} style={{ paddingRight: depth > 0 ? '30px' : '0px' }}>
-                                <EntityComponentToPrint
-                                    depth={depth + 1}
-                                    entityTemplate={template}
-                                    entity={child}
-                                    options={options}
-                                    showPreviewPropertiesOnly
-                                    hierarchicalChildren={child.children}
-                                    entityTemplates={entityTemplates}
-                                    relationships={relationships}
-                                />
-                            </div>
-                        );
-                    })}
+                                return (
+                                    <div key={child.properties._id} style={{ paddingRight: depth > 0 ? '30px' : '0px' }}>
+                                        <EntityComponentToPrint
+                                            depth={depth + 1}
+                                            entityTemplate={template}
+                                            entity={child}
+                                            options={options}
+                                            showPreviewPropertiesOnly
+                                            hierarchicalChildren={child.children}
+                                            entityTemplates={entityTemplates}
+                                            relationships={relationships}
+                                        />
+                                    </div>
+                                );
+                            })}
+                    </div>
+                )}
             </div>
         );
     },
