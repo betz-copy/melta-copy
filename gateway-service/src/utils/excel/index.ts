@@ -29,13 +29,25 @@ export const getAllEntitiesFromExcel = async (
     failedEntities: IFailedEntity[],
     workspace: IWorkspace,
     relatedTemplatesMap: Record<string, IMongoEntityTemplatePopulated>,
+    requiredConstraints: string[] = [],
+    userUnits?: string[],
 ) => {
     const workspaceFilesLimit = workspace.metadata?.excel?.filesLimit;
 
     const effectiveFilesLimit = workspaceFilesLimit ?? loadExcel.filesLimit;
     if (files.length > effectiveFilesLimit) throw new BadRequestError(`files limit: more than ${effectiveFilesLimit} files`, {});
 
-    return readExcelFile(files, template, failedEntities, relatedTemplatesMap, workspace._id, workspace.metadata?.excel?.entitiesFileLimit);
+    return readExcelFile(
+        files,
+        template,
+        failedEntities,
+        relatedTemplatesMap,
+        workspace._id,
+        workspace.metadata?.excel?.entitiesFileLimit,
+        [],
+        requiredConstraints,
+        userUnits,
+    );
 };
 
 export const generateSerialNumbers = (index: number, serialStarters: Record<string, number>) =>
@@ -86,6 +98,13 @@ export const classifyEntityErrors = (
             errors: [{ type: ActionErrors.validation, metadata: error.metadata as IValidationError }],
         });
         return;
+    }
+
+    if (error instanceof ValidationError && error?.metadata && (error.metadata as IValidationError).path) {
+        failedEntities.push({
+            properties,
+            errors: [{ type: ActionErrors.validation, metadata: error.metadata as IValidationError }],
+        });
     }
 
     if (error instanceof AxiosError) {

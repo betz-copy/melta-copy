@@ -9,7 +9,7 @@ import * as ReactDOMServer from 'react-dom/server';
 import ForceGraph, { ForceGraphMethods, ForceGraphProps, GraphData, NodeObject } from 'react-force-graph-2d';
 import ForceGraph3D, { ForceGraphMethods as ForceGraphMethods3D, ForceGraphProps as ForceGraphProps3D } from 'react-force-graph-3d';
 import { BsFillPlusCircleFill } from 'react-icons/bs';
-import { useQuery, useQueryClient } from 'react-query';
+import { QueryClientProvider, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useParams } from 'wouter';
 import { ILinkObject, INodeObject } from '../../customTypes';
@@ -240,13 +240,18 @@ const Graph: React.FC = () => {
     const renderTooltip = (node: NodeObject) => {
         const entityTemplate = entityTemplates.get(node.templateId)!;
 
+        // Because this is Server-Side Rendering, the QueryClientProvider needs to be set again.
         return ReactDOMServer.renderToString(
-            <NodeTooltip
-                node={node}
-                entityTemplate={entityTemplate ?? [...childTemplates.values()].find(({ parentTemplate }) => parentTemplate._id === node.templateId)}
-                darkMode={darkMode}
-                entityTemplates={entityTemplate ? entityTemplates : childTemplates}
-            />,
+            <QueryClientProvider client={queryClient}>
+                <NodeTooltip
+                    node={node}
+                    entityTemplate={
+                        entityTemplate ?? [...childTemplates.values()].find(({ parentTemplate }) => parentTemplate._id === node.templateId)
+                    }
+                    darkMode={darkMode}
+                    entityTemplates={entityTemplate ? entityTemplates : childTemplates}
+                />
+            </QueryClientProvider>,
         );
     };
 
@@ -307,7 +312,7 @@ const Graph: React.FC = () => {
             return (
                 <ForceGraph3D
                     {...commonGraphProps}
-                    ref={forceRef as React.MutableRefObject<ForceGraphMethods3D>}
+                    ref={forceRef as React.RefObject<ForceGraphMethods3D>}
                     rendererConfig={{ powerPreference: 'low-power', precision: 'lowp' }}
                     linkDirectionalArrowLength={4}
                     linkDirectionalParticleWidth={(link) => ((link as ILinkObject).highlighted ? 2.5 : 0)}
@@ -346,7 +351,7 @@ const Graph: React.FC = () => {
         return (
             <ForceGraph
                 {...(commonGraphProps as ForceGraphProps)}
-                ref={forceRef as React.MutableRefObject<ForceGraphMethods>}
+                ref={forceRef as React.RefObject<ForceGraphMethods>}
                 nodeCanvasObjectMode={() => 'after'}
                 nodeCanvasObject={(node, ctx) => {
                     const entityTemplate =

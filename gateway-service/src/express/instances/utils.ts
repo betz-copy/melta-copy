@@ -1,13 +1,11 @@
-import { getDefaultFilterFromChildTemplate, IEntity, ISearchFilter, ValidationError } from '@microservices/shared';
-import config from '../../config';
+import { getDefaultFilterFromChildTemplate, IEntity, ISearchFilter, NotFoundError, ValidationError } from '@microservices/shared';
 import InstancesService from '../../externalServices/instanceService';
 import Kartoffel from '../../externalServices/kartoffel';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import UserService from '../../externalServices/userService';
 import DefaultController from '../../utils/express/controller';
+import { unflattenUnitHierarchy } from '../../utils/units';
 import WorkspaceService from '../workspaces/service';
-
-const { searchEntitiesMaxLimit } = config.instanceService;
 
 class InstancesUtils extends DefaultController {
     private workspaceId: string;
@@ -23,64 +21,93 @@ class InstancesUtils extends DefaultController {
         this.instancesService = new InstancesService(workspaceId);
     }
 
-    async validateEntityProperties(properties: IEntity['properties'], templateId: string, childTemplateId?: string) {
+    async validateEntityProperties(properties: IEntity['properties'], templateId: string, userId: string, childTemplateId?: string) {
         const template = childTemplateId
             ? await this.entityTemplateService.getChildTemplateById(childTemplateId)
             : await this.entityTemplateService.getEntityTemplateById(templateId);
 
-        const units: string[] = [];
-        const relationshipRefs: Record<string, string[]> = {};
-        const users: Set<string> = new Set();
+        const userUnits = (await unflattenUnitHierarchy(this.workspaceId, userId)).map((unit) => unit._id);
 
-        Object.entries(properties).forEach(([key, value]) => {
-            const prop = template.properties.properties[key];
+        await Promise.all(
+            Object.entries(properties).map(async ([key, value]) => {
+                if (!value) return;
+                const prop = template.properties.properties[key];
 
-            switch (prop?.format) {
-                case 'unitField':
-                    units.push(value);
-                    break;
-                case 'user':
-                    if (value) users.add(JSON.parse(value)._id);
-                    break;
-                case 'relationshipReference': {
-                    const { relatedTemplateId } = prop.relationshipReference!;
-                    if (!relationshipRefs[relatedTemplateId]) relationshipRefs[relatedTemplateId] = [];
-                    relationshipRefs[relatedTemplateId].push(value);
-                    break;
+                switch (prop?.format) {
+                    case 'unitField': {
+                        const unit = await UserService.getUnitById(value).catch(() => undefined);
+                        const noUnitPermission = childTemplateId && unit && userUnits && !userUnits?.includes(unit._id);
+
+                        // We need both logical operators because if there is no unit, noUnitPermission is false
+                        // but we still need to throw an error
+                        if (!unit || noUnitPermission) {
+                            throw new ValidationError('must be unit', {
+                                message: 'must be unit',
+                                path: key,
+                                schemaPath: `#/properties/${key}/type`,
+                                params: {
+                                    type: prop.type,
+                                },
+                            });
+                        }
+
+                        break;
+                    }
+
+                    case 'user': {
+                        try {
+                            const userId: string = JSON.parse(value)._id;
+                            await Kartoffel.getUserById(userId);
+                        } catch {
+                            throw new ValidationError('must be user', {
+                                message: 'must be user',
+                                path: key,
+                                schemaPath: `#/properties/${key}/type`,
+                                params: {
+                                    type: prop.type,
+                                },
+                            });
+                        }
+                        break;
+                    }
+
+                    case 'relationshipReference': {
+                        const { relatedTemplateId } = prop.relationshipReference!;
+                        try {
+                            const entity = await this.instancesService.getEntityInstanceById(value);
+                            if (entity.templateId !== relatedTemplateId) throw new Error('Wrong template');
+                        } catch (error) {
+                            if (error instanceof NotFoundError)
+                                throw new ValidationError('must be relationshipReference', {
+                                    message: 'must be relationshipReference',
+                                    path: key,
+                                    schemaPath: `#/properties/${key}/type`,
+                                    params: {
+                                        type: prop.type,
+                                    },
+                                });
+                        }
+
+                        break;
+                    }
                 }
-            }
 
-            if (prop?.items?.format === 'user' && !!value) {
-                value.map((userString) => users.add(JSON.parse(userString)._id));
-            }
-        });
-
-        if (units.length) {
-            const fullUnits = await UserService.getUnitsByIds(units);
-
-            if (fullUnits.length !== units.length) throw new ValidationError('Some units do not exist');
-        }
-
-        if (Object.entries(relationshipRefs).length) {
-            await Promise.all(
-                Object.entries(relationshipRefs).map(async ([templateId, ids]) => {
-                    const entities = await this.instancesService.searchEntitiesOfTemplateRequest(templateId, {
-                        skip: 0,
-                        limit: searchEntitiesMaxLimit,
-                        showRelationships: false,
-                        entityIdsToInclude: ids,
-                        filter: { $and: [{ _id: { $in: ids } }] },
-                    });
-
-                    if (entities.count !== ids.length) throw new ValidationError('Some relationship references do not exist');
-                }),
-            );
-        }
-
-        if (users.size) {
-            const kartoffelUsers = await Kartoffel.getUsersByIds([...users]);
-            if (kartoffelUsers.length !== users.size) throw new ValidationError('Some users do not exist');
-        }
+                if (prop?.items?.format === 'user') {
+                    const userIds: string[] = value.map((userString) => JSON.parse(userString)._id);
+                    const users = await Kartoffel.getUsersByIds(userIds);
+                    if (userIds.length !== users.length) {
+                        throw new ValidationError('must be users', {
+                            message: 'must be users',
+                            path: key,
+                            schemaPath: `#/properties/${key}/type`,
+                            params: {
+                                type: prop.items.type,
+                            },
+                        });
+                    }
+                }
+            }),
+        );
     }
 
     async getChildFilters(childTemplateId: string, userId: string): Promise<ISearchFilter | undefined> {

@@ -8,7 +8,10 @@ import { CustomDateTimePickerToolbar } from '../../common/inputs/JSONSchemaFormi
 import { environment } from '../../globals';
 import { useDarkModeStore } from '../../stores/darkMode';
 
-const { date: dateFormat } = environment.formats;
+const {
+    formats: { date: dateFormat },
+    datePickerViews,
+} = environment;
 
 const DateFilterComponent: React.FC<{ date: Date; onDateChange: (newDate: Date | null) => void }> = ({ date, onDateChange }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
@@ -25,6 +28,7 @@ const DateFilterComponent: React.FC<{ date: Date; onDateChange: (newDate: Date |
                     value={date}
                     onChange={onDateChange}
                     format={dateFormat}
+                    views={datePickerViews}
                     enableAccessibleFieldDOMStructure={false}
                     label={i18next.t('wizard.date')}
                     slots={{
