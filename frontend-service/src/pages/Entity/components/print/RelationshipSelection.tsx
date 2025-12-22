@@ -52,7 +52,7 @@ const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity,
 
         while (stack.length) {
             const node = stack.pop()!;
-            map.set(node.path, node.entitiesCount);
+            map.set(`${node.neoRelIds} ${node.path}`, node.entitiesCount);
             if (node.children?.length) stack.push(...node.children);
         }
 
@@ -70,7 +70,7 @@ const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity,
 
             <Tree<ITreeNode>
                 treeItems={relationShips}
-                getItemId={(item) => item.path}
+                getItemId={(item) => `${item.neoRelIds} ${item.path}`}
                 getItemLabel={(item) =>
                     `${item.displayName} (${item.sourceEntity.displayName} > ${item.destinationEntity.displayName}) – ${item.entitiesCount}`
                 }
@@ -82,9 +82,21 @@ const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity,
                     const prev = new Set(selectedTreeItemIds);
 
                     if (next.size > prev.size) {
-                        for (const id of next) {
-                            const parts = id.split('&');
-                            for (let i = 1; i < parts.length; i++) next.add(parts.slice(0, i).join('&'));
+                        for (const id of Array.from(next)) {
+                            const path = id.split(' ').slice(1).join(' ');
+                            const parts = path.split('&');
+
+                            for (let i = 1; i < parts.length; i++) {
+                                const parentPath = parts.slice(0, i).join('&');
+
+                                const parentId = (relationShips ?? [])
+                                    .flatMap(function flat(n): ITreeNode[] {
+                                        return [n, ...(n.children?.flatMap(flat) ?? [])];
+                                    })
+                                    .find((n) => n.path === parentPath);
+
+                                if (parentId) next.add(`${parentId.neoRelIds} ${parentId.path}`);
+                            }
                         }
                     }
 
@@ -98,7 +110,8 @@ const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity,
                     const final = [...next];
                     setSelectedEntitiesCount(newSelectedEntitiesCount);
                     setSelectedTreeItemIds(final);
-                    setSelectedRelationShipIds([...new Set(final.flatMap((x) => x.split('&')))]);
+
+                    setSelectedRelationShipIds([...new Set(final.flatMap((id) => id.split(' ')[0]?.split(',') ?? []))]);
                 }}
             />
         </>
