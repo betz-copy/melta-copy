@@ -2,6 +2,7 @@ import { v4 as uuid } from 'uuid';
 import axios from '../../axios';
 import { ProcessTemplateFormInputProperties, ProcessTemplatePropertyByType, ProcessTemplateWizardValues } from '../../common/wizards/processTemplate';
 import { environment } from '../../globals';
+import { PropertyType } from '../../interfaces/entityTemplates';
 import fileDetails from '../../interfaces/fileDetails';
 import {
     ICreateProcessTemplateBody,
@@ -159,7 +160,6 @@ const addAttachmentProperties = (
     attachmentProperties.forEach(({ name, title, type, required, deleted }) => {
         if (!deleted) {
             const { required: requiredFile, ...attachmentProperty } = createFileAttachmentProperty(type, required);
-            // eslint-disable-next-line no-param-reassign
             properties[name] = {
                 title,
                 ...attachmentProperty,
@@ -189,7 +189,7 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
         if (!deleted) {
             detailsSchema.properties[name] = {
                 title,
-                type: basePropertyTypes.includes(type) ? (type as IProcessSingleProperty['type']) : 'string',
+                type: basePropertyTypes.includes(type) ? (type as IProcessSingleProperty['type']) : PropertyType.string,
                 format: stringFormats.includes(type) ? (type as IProcessSingleProperty['format']) : undefined,
                 enum: type === 'enum' ? options : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
@@ -218,7 +218,7 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
             if (!deleted) {
                 stepSchema.properties[name] = {
                     title,
-                    type: basePropertyTypes.includes(type) ? (type as IProcessSingleProperty['type']) : 'string',
+                    type: basePropertyTypes.includes(type) ? (type as IProcessSingleProperty['type']) : PropertyType.string,
                     format: stringFormats.includes(type) ? (type as IProcessSingleProperty['format']) : undefined,
                     enum: type === 'enum' ? options : undefined,
                     pattern: type === 'pattern' ? pattern : undefined,

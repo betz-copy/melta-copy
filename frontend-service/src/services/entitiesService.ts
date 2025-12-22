@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { mapValues } from 'lodash';
 import axios from '../axios';
 import { EntityWizardValues } from '../common/dialogs/entity';
@@ -323,7 +322,6 @@ const getBodyForUpdateRequest = async (
     formData.append(
         'properties',
         JSON.stringify(
-            // eslint-disable-next-line consistent-return
             mapValues(newEntityData.properties, (property, key) => {
                 switch (template.properties.properties[key]?.format) {
                     case 'relationshipReference':

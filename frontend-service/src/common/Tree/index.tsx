@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/correctness/useExhaustiveDependencies: useEffect dependencies */
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
 import { Box, Divider, SxProps, Theme, ThemeProvider } from '@mui/material';
 import { RichTreeViewPro, RichTreeViewProProps, TreeItemProps, TreeViewBaseItem, UseTreeItemStatus, useTreeViewApiRef } from '@mui/x-tree-view-pro';
@@ -7,14 +8,14 @@ import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'rea
 import { SelectAll } from './SelectAll';
 import TreeItem from './TreeItem';
 
-export interface TreeProps<T extends Record<string, any>> extends Omit<RichTreeViewProProps<T, true>, 'onDragEnd' | 'items'> {
+export interface TreeProps<T extends {}> extends Omit<RichTreeViewProProps<T, true>, 'onDragEnd' | 'items'> {
     // All of the treeItems that the tree has.
     treeItems: TreeViewBaseItem<T>[];
     getItemId: (item: T) => string;
     getItemLabel: (item: T) => string;
     // Display a selectAll checkbox
     selectAll?: boolean;
-    onSelectItems?: (itemIds: string | string[]) => any;
+    onSelectItems?: (itemIds: string | string[]) => void;
     isDraggable?: boolean;
     allowDraggingBetweenParents?: boolean;
     preSelectedItemsIds?: string[];
@@ -37,7 +38,7 @@ export interface TreeProps<T extends Record<string, any>> extends Omit<RichTreeV
 
 export const flattenTree = <T extends {}>(
     treeItems: TreeViewBaseItem<T>[],
-    getItemId: (item: T) => string,
+    getItemId: (item: TreeViewBaseItem<T>) => string,
     shouldCountParents: boolean,
     flattenedNodes: (Omit<TreeViewBaseItem<T>, 'children'> & { path: string })[] = [],
     parentPath = '',
@@ -47,21 +48,17 @@ export const flattenTree = <T extends {}>(
         const currentId = getItemId(rest as T);
         const path = parentPath ? `${parentPath}/${currentId}` : currentId;
 
-        if (children && children.length > 0) {
+        if (children?.length) {
             flattenTree(children, getItemId, shouldCountParents, flattenedNodes, path);
 
-            if (shouldCountParents) {
-                flattenedNodes.push({ ...rest, path });
-            }
-        } else {
-            flattenedNodes.push({ ...rest, path });
-        }
+            if (shouldCountParents) flattenedNodes.push({ ...rest, path });
+        } else flattenedNodes.push({ ...rest, path });
     });
 
     return flattenedNodes;
 };
 
-const Tree = <T extends Record<string, any>>({
+const Tree = <T extends {}>({
     treeItems,
     onSelectItems,
     getItemId,
@@ -111,7 +108,6 @@ const Tree = <T extends Record<string, any>>({
         [getItemId, treeItems, selectionPropagation],
     );
 
-    // biome-ignore lint/correctness/useExhaustiveDependencies: infinite loop
     useEffect(() => {
         onSelectItems?.(selectedItemIds);
     }, [selectedItemIds]);
@@ -120,7 +116,6 @@ const Tree = <T extends Record<string, any>>({
         setExpandedItemsIds(preExpandedItemIds ?? []);
     }, [preExpandedItemIds]);
 
-    // biome-ignore lint/correctness/useExhaustiveDependencies: infinite loop
     useEffect(() => {
         if (!_.isEqual(preSelectedItemsIds, selectedItemIds)) {
             setSelectedItemIds(preSelectedItemsIds ?? []);

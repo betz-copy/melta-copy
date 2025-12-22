@@ -1,4 +1,3 @@
-/* eslint-disable react/no-array-index-key */
 import { Box } from '@mui/material';
 import React from 'react';
 import { IGraphFilterBody, IGraphFilterBodyBatch } from '../../interfaces/entities';

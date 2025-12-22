@@ -1,17 +1,17 @@
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
+import { useQueryClient } from 'react-query';
+import { IChildTemplateMap } from '../../../interfaces/childTemplates';
 import { IEntity } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
 import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
 import { AddIconWithText } from '../../AddIconWithText';
+import { IChooseTemplateMode } from '../../dialogs/entity/ChooseTemplate';
 import { AddEntityButton } from '../../EntitiesPage/Buttons/AddEntity';
 import IconButtonWithPopover from '../../IconButtonWithPopover';
-import { useQueryClient } from 'react-query';
-import { IChildTemplateMap } from '../../../interfaces/childTemplates';
-import { IChooseTemplateMode } from '../../dialogs/entity/ChooseTemplate';
 
 const DashedSelectBox: React.FC<{
     text: string;

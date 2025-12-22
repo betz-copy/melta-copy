@@ -15,6 +15,8 @@ import OpenPreview from '../FilePreview/OpenPreview';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import { LoadingFilesInput } from './LoadingFilesInput';
 
+const { color, fileExtensions } = environment;
+
 interface FileInputProps {
     file: Partial<File> | { name: string } | undefined;
     fileName?: string;
@@ -54,7 +56,7 @@ const FileInput: React.FC<FileInputProps> = ({
     const [openImageView, setOpenImageView] = useState(false);
 
     const errorStyle = {
-        color: '#d32f2f',
+        color: color.error,
         margin: 0,
         padding: 0,
     };
@@ -79,6 +81,7 @@ const FileInput: React.FC<FileInputProps> = ({
         }
     };
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         updateInputWidth();
         window.addEventListener('resize', updateInputWidth);
@@ -128,7 +131,7 @@ const FileInput: React.FC<FileInputProps> = ({
 
         if ('name' in file && typeof file.name === 'string') {
             const extension = getFileExtension(file.name);
-            return environment.fileExtensions.imageToManipulate.includes(extension);
+            return fileExtensions.imageToManipulate.includes(extension);
         }
 
         return false;
@@ -213,7 +216,7 @@ const FileInput: React.FC<FileInputProps> = ({
                     ) : (
                         <Grid style={inputStyle} {...getRootProps()}>
                             <input {...getInputProps()} placeholder="aa" />
-                            <img src="\icons\Choose-File.svg" height="25px" width="120px" />
+                            <img src="\icons\Choose-File.svg" alt="Choose-File" height="25px" width="120px" />
                             {!disableCamera && (
                                 <IconButton
                                     style={{
@@ -231,11 +234,11 @@ const FileInput: React.FC<FileInputProps> = ({
                                         });
                                     }}
                                 >
-                                    <CameraIcon style={{ color: '#1E2775', width: '20px', height: '20px' }} />
+                                    <CameraIcon style={{ color: theme.palette.primary.main, width: '20px', height: '20px' }} />
                                 </IconButton>
                             )}
                             <Typography>|</Typography>
-                            <img src="\icons\File-Drag-Icon.svg" height="25px" style={{ marginRight: '10px' }} />
+                            <img src="\icons\File-Drag-Icon.svg" alt="File-Drag-Icon" height="25px" style={{ marginRight: '10px' }} />
                             <Typography
                                 style={{
                                     marginRight: '30px',

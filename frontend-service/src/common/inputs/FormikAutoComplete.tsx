@@ -71,8 +71,12 @@ export const FormikAutoComplete = <T,>({
             )}
             renderTags={(tags, getTagProps) =>
                 tags.map((option, index) => (
-                    // eslint-disable-next-line react/jsx-key
-                    <Chip {...getTagProps({ index })} variant="outlined" label={getOptionLabel ? getOptionLabel(option) : String(option)} />
+                    <Chip
+                        {...getTagProps({ index })}
+                        key={getTagProps({ index }).key}
+                        variant="outlined"
+                        label={getOptionLabel ? getOptionLabel(option) : String(option)}
+                    />
                 ))
             }
             popupIcon={<IoIosArrowDown fontSize="Medium" />}

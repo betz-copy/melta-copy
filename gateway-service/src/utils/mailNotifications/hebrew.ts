@@ -36,12 +36,12 @@ const hebrew = {
         inProcess: 'בתהליך: ',
         updatedTo: 'עודכן ל: ',
     },
-    processReviwerUpdate: {
-        processReviwerUpdate: 'עדכון הרשאות לתהליך',
+    processReviewerUpdate: {
+        processReviewerUpdate: 'עדכון הרשאות לתהליך',
         inProcess: 'בתהליך:',
-        addToReviwers: 'התווספת לגורמים המאשרים בשלבים: ',
-        removeFromReviwers: 'הוסרת מהגורמים המאשרים בשלבים: ',
-        removeFromReviwersInProcess: 'הוסרת מהגורמים המאשרים של התהליך: ',
+        addToReviewers: 'התווספת לגורמים המאשרים בשלבים: ',
+        removeFromReviewers: 'הוסרת מהגורמים המאשרים בשלבים: ',
+        removeFromReviewersInProcess: 'הוסרת מהגורמים המאשרים של התהליך: ',
     },
     ruleBreach: {
         note: 'שים לב,',

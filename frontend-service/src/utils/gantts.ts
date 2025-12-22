@@ -1,6 +1,5 @@
-/* eslint-disable consistent-return */
 import i18next from 'i18next';
-import cloneDeep from 'lodash.clonedeep';
+import { cloneDeep } from 'lodash';
 import * as Yup from 'yup';
 import { environment } from '../globals';
 import { IEntityWithDirectConnections, IFilterOfTemplate, ISearchBatchBody } from '../interfaces/entities';
@@ -57,7 +56,6 @@ export const getEntitiesSearchBody = (
             disabled: { $eq: false },
         };
 
-        // eslint-disable-next-line no-param-reassign
         currTemplates[item.entityTemplate.id] = {
             filter: showEntitiesWithoutEndDate
                 ? {

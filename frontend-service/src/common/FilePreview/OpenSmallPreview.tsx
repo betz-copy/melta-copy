@@ -1,5 +1,5 @@
 import { KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
-import { Box, IconButton } from '@mui/material';
+import { Box, IconButton, useTheme } from '@mui/material';
 import React from 'react';
 import { FileExtensions, IFile } from '../../interfaces/preview';
 import { SmallPreview } from './SmallPreview';
@@ -13,10 +13,19 @@ interface IOpenSmallPreview {
 }
 
 const OpenSmallPreview: React.FC<IOpenSmallPreview> = ({ files, currentIndex, increaseIndex, decreaseIndex }) => {
+    const theme = useTheme();
     const file = files[currentIndex];
 
     return (
-        <Box sx={{ borderRadius: '1rem', border: '1.5px solid #1E2775', overflow: 'hidden', height: '100%', position: 'relative' }}>
+        <Box
+            sx={{
+                borderRadius: '1rem',
+                border: `1.5px solid ${theme.palette.primary.main}`,
+                overflow: 'hidden',
+                height: '100%',
+                position: 'relative',
+            }}
+        >
             {currentIndex !== 0 && (
                 <IconButton
                     sx={{

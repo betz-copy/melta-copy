@@ -2,15 +2,46 @@ import { FieldGroupData } from '../common/wizards/entityTemplate/commonInterface
 import { IMongoCategory } from './categories';
 import { IFieldsGroup, ISearchFilter, IUniqueConstraintOfTemplate } from './entities';
 
+export enum PropertyType {
+    string = 'string',
+    number = 'number',
+    boolean = 'boolean',
+    array = 'array',
+}
+
+export enum PropertyFormat {
+    date = 'date',
+    'date-time' = 'date-time',
+    email = 'email',
+    fileId = 'fileId',
+    'text-area' = 'text-area',
+    relationshipReference = 'relationshipReference',
+    location = 'location',
+    user = 'user',
+    signature = 'signature',
+    comment = 'comment',
+    kartoffelUserField = 'kartoffelUserField',
+    unitField = 'unitField',
+}
+
+export enum PropertyExternalWizardType {
+    users = 'users',
+    serialNumber = 'serialNumber',
+    enum = 'enum',
+    pattern = 'pattern',
+    multipleFiles = 'multipleFiles',
+    enumArray = 'enumArray',
+}
+
 export interface IEntitySingleProperty {
     title: string;
-    type: 'string' | 'number' | 'boolean' | 'array';
-    format?: string;
+    type: PropertyType;
+    format?: PropertyFormat;
     enum?: string[];
     items?: {
-        type: 'string';
+        type: PropertyType.string;
         enum?: string[];
-        format?: 'fileId' | 'user';
+        format?: PropertyFormat.fileId | PropertyFormat.user;
     };
     minItems?: 1;
     readOnly?: true;

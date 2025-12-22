@@ -1,4 +1,3 @@
-/* eslint-disable consistent-return */
 import { UploadedFile } from '@microservices/shared';
 import Busboy from 'busboy';
 import { NextFunction, Request, Response } from 'express';
@@ -8,8 +7,10 @@ import config from '../../config';
 
 const busboyMiddleware = (req: Request, _res: Response, next: NextFunction): void => {
     if (!req.is('multipart/form-data')) {
-        return next();
+        next();
+        return;
     }
+
     try {
         const busboy = Busboy({ headers: req.headers, defCharset: 'utf8' });
         const fields: Record<string, unknown> = {};

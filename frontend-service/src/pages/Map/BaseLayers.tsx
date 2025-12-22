@@ -1,5 +1,5 @@
 import { LayersTwoTone } from '@mui/icons-material';
-import { Box, Divider, FormControlLabel, Grid, IconButton, Radio, RadioGroup, Typography } from '@mui/material';
+import { Box, Divider, FormControlLabel, Grid, IconButton, Radio, RadioGroup, Typography, useTheme } from '@mui/material';
 import * as Cesium from 'cesium';
 import i18next from 'i18next';
 import React, { RefObject, useCallback, useEffect, useMemo, useState } from 'react';
@@ -7,7 +7,6 @@ import { CesiumComponentRef } from 'resium';
 import MeltaCheckbox from '../../common/MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
 import { BackendConfigState } from '../../services/backendConfigService';
-import { useDarkModeStore } from '../../stores/darkMode';
 
 type LayerProvider = {
     id: string;
@@ -19,9 +18,9 @@ export const BaseLayers: React.FC<{
     viewerRef: RefObject<CesiumComponentRef<Cesium.Viewer> | null>;
     config: BackendConfigState;
 }> = ({ viewerRef, config }) => {
-    const darkMode = useDarkModeStore((state) => state.darkMode);
+    const theme = useTheme();
 
-    const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState<boolean>(false);
 
     const { mapLayers, textLayers } = config;
 
@@ -72,8 +71,7 @@ export const BaseLayers: React.FC<{
                 }),
             );
         });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activeMapLayer, activeTextLayers, providers]);
+    }, [activeMapLayer, activeTextLayers, providers, viewerRef, config.isOutsideDevelopment]);
 
     return (
         <Box
@@ -94,7 +92,7 @@ export const BaseLayers: React.FC<{
                         sx={{
                             height: 20,
                             borderRadius: 7,
-                            color: darkMode ? '#9398c2' : '#1E2775',
+                            color: theme.palette.primary.main,
                         }}
                     />
                 </IconButton>

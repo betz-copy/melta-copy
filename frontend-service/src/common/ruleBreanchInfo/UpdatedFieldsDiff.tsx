@@ -1,6 +1,6 @@
 import { Typography } from '@mui/material';
 import i18next from 'i18next';
-import pickBy from 'lodash.pickby';
+import { pickBy } from 'lodash';
 import React from 'react';
 import ReactDiffViewer from 'react-diff-viewer';
 import { useQueryClient } from 'react-query';
@@ -23,13 +23,9 @@ const getEntityPropertyString = (
 ) => {
     const { format } = propertyTemplate;
 
-    if (value === null || value === undefined) {
-        return '-';
-    }
+    if (value === null || value === undefined) return '-';
 
-    if (containsHTMLTags(value)) {
-        return new DOMParser().parseFromString(value, 'text/html').body.innerText;
-    }
+    if (containsHTMLTags(value)) return new DOMParser().parseFromString(value, 'text/html').body.innerText;
 
     if (format === 'relationshipReference') {
         const isRelatedEntityAllowed = entityTemplates.get(propertyTemplate.relationshipReference!.relatedTemplateId);
@@ -38,16 +34,13 @@ const getEntityPropertyString = (
         const displayValue = value.properties[propertyTemplate.relationshipReference!.relatedTemplateField];
         const oldDisplayValue = oldValue?.properties[propertyTemplate.relationshipReference!.relatedTemplateField];
 
-        if (isDiff && displayValue === oldDisplayValue) {
+        if (isDiff && displayValue === oldDisplayValue)
             return `${displayValue} (${i18next.t('ruleBreachInfo.updateEntityActionInfo.contentUpdated')})`;
-        }
 
         return displayValue;
     }
 
-    if (format !== 'fileId' && !items) {
-        return formatToString({ value, property: propertyTemplate, units, darkMode });
-    }
+    if (format !== 'fileId' && !items) return formatToString({ value, property: propertyTemplate, units, darkMode });
 
     // single
     if (format === 'fileId') {

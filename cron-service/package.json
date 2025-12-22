@@ -22,7 +22,6 @@
         "node-schedule": "^2.1.1"
     },
     "devDependencies": {
-        "@types/lodash.groupby": "^4.6.9",
         "@types/node-schedule": "^2.1.7"
     }
 }

@@ -1,6 +1,5 @@
 import { BadRequestError, IAction, IBrokenRule, ICausesOfInstance } from '@microservices/shared';
-import _groupBy from 'lodash.groupby';
-import _sortBy from 'lodash.sortby';
+import { groupBy, sortBy } from 'lodash';
 import config from '../../config';
 import filteredMap from '../../utils/filteredMap';
 import { isEqualStripUndefined } from '../../utils/lib';
@@ -75,7 +74,7 @@ export const sortBrokenRules = (brokenRules: IBrokenRule[]) => {
 
             return {
                 entityId,
-                causes: _sortBy(causesContentSorted, [
+                causes: sortBy(causesContentSorted, [
                     'instance.entityId',
                     'instance.aggregatedRelationship.relationshipId',
                     'instance.aggregatedRelationship.otherEntityId',
@@ -84,11 +83,11 @@ export const sortBrokenRules = (brokenRules: IBrokenRule[]) => {
         });
         return {
             ruleId,
-            failures: _sortBy(failuresContentSorted, 'entityId'),
+            failures: sortBy(failuresContentSorted, 'entityId'),
         };
     });
 
-    return _sortBy(brokenRulesContentSorted, 'ruleId');
+    return sortBy(brokenRulesContentSorted, 'ruleId');
 };
 
 export const areAllBrokenRulesIgnored = (brokenRules: IBrokenRule[], ignoredRules: IBrokenRule[]) => {
@@ -125,7 +124,7 @@ export const throwIfActionCausedRuleFailures = (
         };
     });
 
-    const ruleFailuresWithNewCausesPerRuleId = _groupBy(ruleFailuresWithNewCauses, ({ ruleId }) => ruleId);
+    const ruleFailuresWithNewCausesPerRuleId = groupBy(ruleFailuresWithNewCauses, ({ ruleId }) => ruleId);
     const brokenRules: IBrokenRule[] = Object.entries(ruleFailuresWithNewCausesPerRuleId)
         .map(([ruleId, ruleFailuresOfRuleId]) => ({
             ruleId,

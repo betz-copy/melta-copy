@@ -1,21 +1,17 @@
-/* eslint-disable no-underscore-dangle */
-
+import { ICategory, IEntityTemplate } from '@microservices/shared';
 import { Express } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import mongoose from 'mongoose';
-import * as request from 'supertest';
-import { ICategory } from '../src/express/category/interface';
-
+import request from 'supertest';
 import CategoryManager from '../src/express/category/manager';
 import categoryModel from '../src/express/category/model';
-import { IEntityTemplate } from '../src/express/entityTemplate/interface';
 import EntityTemplateManager from '../src/express/entityTemplate/manager';
 import EntityTemplateModel from '../src/express/entityTemplate/model';
+import RelationshipTemplateManager from '../src/express/relationshipTemplate/manager';
 import Server from '../src/express/server';
-import * as relationshipTemplateManager from '../src/relationshipTemplateManager';
 
 jest.mock('../src/relationshipTemplateManager');
-const relationshipTemplateManagerMocked = jest.mocked(relationshipTemplateManager, true);
+const relationshipTemplateManagerMocked = jest.mocked(RelationshipTemplateManager, { shallow: true });
 
 const { OK: okStatus, BAD_REQUEST: badRequest, NOT_FOUND: notFoundStatus, FORBIDDEN: forbiddenStatus } = StatusCodes;
 

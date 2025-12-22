@@ -1,5 +1,4 @@
-import { get } from 'lodash';
-import pickBy from 'lodash.pickby';
+import { get, pickBy } from 'lodash';
 import { ProcessDetailsValues } from '../../common/wizards/processInstance/ProcessDetails';
 import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';

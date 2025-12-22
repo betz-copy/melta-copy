@@ -30,7 +30,7 @@ const UserFilterInput: React.FC<UserFilterProps> = ({ filterField, handleFilterT
 
     useEffect(() => {
         if (forceEqualsType && filterField && filterField.type !== 'equals') handleFilterTypeChange('equals');
-    }, [forceEqualsType, filterField]);
+    }, [forceEqualsType, filterField, handleFilterTypeChange]);
 
     return (
         <Grid container flexDirection="column" spacing={1}>

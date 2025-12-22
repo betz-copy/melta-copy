@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import { IndexingAction } from '@microservices/shared';
 import Joi from 'joi';
 

@@ -9,7 +9,7 @@ import {
     ServiceError,
 } from '@microservices/shared';
 import { StatusCodes } from 'http-status-codes';
-import groupBy from 'lodash.groupby';
+import { groupBy } from 'lodash';
 import { FilterQuery, Types } from 'mongoose';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';

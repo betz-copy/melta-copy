@@ -78,6 +78,7 @@ const App: React.FC = () => {
         handleWorkspace();
     }, [currentUser, hierarchyIds, setUser, workspaceStore]);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         const initUser = async () => {
             const user = AuthService.getUser();
@@ -124,7 +125,7 @@ const App: React.FC = () => {
         };
 
         initUser();
-    }, [setUser, navigate, workspaceStore]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [setUser, setDarkMode, navigate, location.length, location.replace]);
 
     if (isClientSide) return <ClientSidePage />;
 
@@ -136,7 +137,11 @@ const App: React.FC = () => {
 
     if (isErrorBackendConfig) return <ErrorPage errorText={i18next.t('errorPage.systemUnavailable')} />;
 
-    return <MatomoWrapper matomoInstance={matomoInstance! as MatomoTracker} children={<Main />} />;
+    return (
+        <MatomoWrapper matomoInstance={matomoInstance! as MatomoTracker}>
+            <Main />
+        </MatomoWrapper>
+    );
 };
 
 export default App;

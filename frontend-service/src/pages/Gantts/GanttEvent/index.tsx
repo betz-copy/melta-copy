@@ -75,7 +75,6 @@ export const GanttEvent: React.FC<GanttEventProps> = ({ entityWithConnections: {
                         <Fragment key={connectedEntityTemplate._id}>
                             <Grid>
                                 <Typography fontSize={14} sx={{ ...textStyle }}>
-                                    {/* eslint-disable-next-line no-nested-ternary */}
                                     {connectedEntityTemplatesIndex ? (
                                         ganttSettings.separators.template
                                     ) : expanded ? (

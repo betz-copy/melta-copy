@@ -115,7 +115,7 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
             Object.keys(removedFileProperties.stepsProperties).forEach((stepId) => {
                 const stepWithFilesToRemove = processInstance.steps.find((step) => step.templateId === stepId);
 
-                if (stepWithFilesToRemove && stepWithFilesToRemove.properties) {
+                if (stepWithFilesToRemove?.properties) {
                     Object.entries(removedFileProperties.stepsProperties[stepId]).forEach(([filePropertyName, isMultipleFiles]) => {
                         const fileToRemove = stepWithFilesToRemove.properties![filePropertyName];
 
@@ -234,7 +234,6 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
         let skip = 0;
 
         do {
-            // eslint-disable-next-line no-await-in-loop
             instancesChunk = await this.service.searchProcessInstances({
                 ...query,
                 templateIds: [templateId],
