@@ -123,18 +123,6 @@ const Print: React.FC<{
         appendSignatureField: { show: appendSignatureField, set: setAppendSignatureField, label: 'entityPage.print.appendSignatureField' },
     };
 
-    const memoizedOptions = useMemo(
-        () => ({
-            showDisabled: isShowDisabled,
-            showEntityDates,
-            showEntityFiles: !!selectedFiles.length,
-            showPreviewPropertiesOnly,
-            addEntityCheckbox: showEntityPrintCheckbox,
-            appendSignatureField,
-        }),
-        [isShowDisabled, showEntityDates, selectedFiles.length, showPreviewPropertiesOnly, showEntityPrintCheckbox, appendSignatureField],
-    );
-
     useEffect(() => {
         if (data && isPreparingPdf) {
             handlePrint();
@@ -160,7 +148,14 @@ const Print: React.FC<{
                             filesToPrint={selectedFiles}
                             setSelectedFiles={setSelectedFiles}
                             setFilesLoadingStatus={setFilesLoadingStatus}
-                            options={memoizedOptions}
+                            options={{
+                                showDisabled: isShowDisabled,
+                                showEntityDates,
+                                showEntityFiles: !!selectedFiles.length,
+                                showPreviewPropertiesOnly,
+                                addEntityCheckbox: showEntityPrintCheckbox,
+                                appendSignatureField,
+                            }}
                             printTitle={title}
                         />
                     </ThemeProvider>

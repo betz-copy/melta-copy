@@ -9,10 +9,10 @@ import { IEntity } from '../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IGetUnits } from '../interfaces/units';
 import { useDarkModeStore } from '../stores/darkMode';
-import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
-import { formatToString, getPropertyColor, getUserAvatar } from '../utils/entityProperties';
 import { HighlightText } from '../utils/HighlightText';
 import { containsHTMLTags, getFirstLine, getNumLines, renderHTML } from '../utils/HtmlTagsStringValue';
+import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
+import { formatToString, getPropertyColor, getUserAvatar } from '../utils/entityProperties';
 import { getFixedNumber, getTextDirection } from '../utils/stringValues';
 import BlueTitle from './MeltaDesigns/BlueTitle';
 import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
@@ -225,7 +225,15 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                             alignItems: textWrap ? 'flex-start' : 'center',
                         }}
                     >
-                        <div style={{ display: 'flex', width: '100%', flexWrap: 'nowrap', alignItems: textWrap ? 'flex-start' : 'center', gap: '10px' }}>
+                        <div
+                            style={{
+                                display: 'flex',
+                                width: '100%',
+                                flexWrap: 'nowrap',
+                                alignItems: textWrap ? 'flex-start' : 'center',
+                                gap: '10px',
+                            }}
+                        >
                             {!comment && (
                                 <div
                                     style={{

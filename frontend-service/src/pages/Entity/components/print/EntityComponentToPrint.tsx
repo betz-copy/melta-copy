@@ -16,8 +16,8 @@ interface IEntityComponentToPrintProps {
         showEntityDates: boolean;
         showDisabled: boolean;
         addEntityCheckbox?: boolean;
+        showPreviewPropertiesOnly?: boolean;
     };
-    showPreviewPropertiesOnly?: boolean;
     hierarchicalChildren?: IEntityTreeNode[];
     depth?: number;
     entityTemplates: IEntityTemplateMap;
@@ -25,7 +25,7 @@ interface IEntityComponentToPrintProps {
 }
 
 const EntityComponentToPrint: React.FC<IEntityComponentToPrintProps> = React.memo(
-    ({ entityTemplate, entity, options, showPreviewPropertiesOnly, hierarchicalChildren, depth = 0, entityTemplates, relationships }) => {
+    ({ entityTemplate, entity, options, hierarchicalChildren, depth = 0, entityTemplates, relationships }) => {
         const rowStyle: React.CSSProperties = {
             display: 'flex',
             flexDirection: 'column',
@@ -50,7 +50,7 @@ const EntityComponentToPrint: React.FC<IEntityComponentToPrintProps> = React.mem
                     coloredFields={entity.coloredFields}
                     entityTemplate={entityTemplate}
                     darkMode={false}
-                    showPreviewPropertiesOnly={showPreviewPropertiesOnly}
+                    showPreviewPropertiesOnly={options.showPreviewPropertiesOnly}
                     mode="normal"
                     textWrap
                     isPrintingMode
@@ -90,7 +90,7 @@ const EntityComponentToPrint: React.FC<IEntityComponentToPrintProps> = React.mem
                             coloredFields={entity.coloredFields}
                             entityTemplate={entityTemplate}
                             darkMode={false}
-                            showPreviewPropertiesOnly={showPreviewPropertiesOnly}
+                            showPreviewPropertiesOnly={options.showPreviewPropertiesOnly}
                             mode="normal"
                             isPrintingMode
                             showByGroups
