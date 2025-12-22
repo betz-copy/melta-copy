@@ -1,4 +1,4 @@
-import { CircularProgress, Grid, Typography } from '@mui/material';
+import { CircularProgress, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { FC, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
@@ -68,7 +68,7 @@ const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity,
                 fontSize={'12px'}
             >{`${i18next.t('entityPage.print.limits.alreadySelected')}: ${selectedEntitiesCount} (${i18next.t('entityPage.print.limits.max')} ${maxEntitiesToPrint})`}</Typography>
 
-            <Tree<ITreeNode>
+            <Tree
                 treeItems={relationShips}
                 getItemId={(item) => `${item.neoRelIds} ${item.path}`}
                 getItemLabel={(item) =>
