@@ -25,13 +25,13 @@ interface IEntityComponentToPrintProps {
 
 const EntityComponentToPrint: React.FC<IEntityComponentToPrintProps> = React.memo(
     ({ entityTemplate, entity, options, showPreviewPropertiesOnly, hierarchicalChildren, depth = 0, entityTemplates, relationships }) => {
-         const rowStyle: React.CSSProperties = {
+        const rowStyle: React.CSSProperties = {
             display: 'flex',
             flexDirection: 'column',
-            padding: depth > 0 ? `10px 0px 0px 30px` : '20px 0px',
+            padding: depth > 0 ? '10px 0px 0px 30px' : '20px 0px',
             width: '100%',
         };
-        
+
         const containerStyle: React.CSSProperties = {
             display: 'flex',
             flexDirection: 'column',
@@ -111,30 +111,28 @@ const EntityComponentToPrint: React.FC<IEntityComponentToPrintProps> = React.mem
         return (
             <div style={rowStyle}>
                 {renderRow()}
-                {hierarchicalChildren && hierarchicalChildren?.filter((child) => options.showDisabled || !child.properties.disabled).length > 0 && (
+                {hierarchicalChildren && (
                     <div style={containerStyle}>
-                        {hierarchicalChildren
-                            ?.filter((child) => options.showDisabled || !child.properties.disabled)
-                            .map((child) => {
-                                const template = entityTemplates.get(child.templateId);
-                                const relationship = relationships.get(child.relationshipId);
-                                if (!template || !relationship) return null;
+                        {hierarchicalChildren.map((child) => {
+                            const template = entityTemplates.get(child.templateId);
+                            const relationship = relationships.get(child.relationshipId);
+                            if (!template || !relationship) return null;
 
-                                return (
-                                    <div key={child.properties._id} style={{ paddingRight: depth > 0 ? '30px' : '0px' }}>
-                                        <EntityComponentToPrint
-                                            depth={depth + 1}
-                                            entityTemplate={template}
-                                            entity={child}
-                                            options={options}
-                                            showPreviewPropertiesOnly
-                                            hierarchicalChildren={child.children}
-                                            entityTemplates={entityTemplates}
-                                            relationships={relationships}
-                                        />
-                                    </div>
-                                );
-                            })}
+                            return (
+                                <div key={child.properties._id} style={{ paddingRight: depth > 0 ? '30px' : '0px' }}>
+                                    <EntityComponentToPrint
+                                        depth={depth + 1}
+                                        entityTemplate={template}
+                                        entity={child}
+                                        options={options}
+                                        showPreviewPropertiesOnly
+                                        hierarchicalChildren={child.children}
+                                        entityTemplates={entityTemplates}
+                                        relationships={relationships}
+                                    />
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
             </div>

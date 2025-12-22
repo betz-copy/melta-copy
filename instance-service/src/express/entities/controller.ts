@@ -1,9 +1,9 @@
 import {
-    fetchPropertyFromRequest,
     IDeleteEntityBody,
     IMongoEntityTemplate,
     IMongoRelationshipTemplate,
     RequestWithQuery,
+    fetchPropertyFromRequest,
 } from '@microservices/shared';
 import { Request, Response } from 'express';
 import DefaultController from '../../utils/express/controller';
@@ -78,9 +78,9 @@ class EntityController extends DefaultController<EntityManager> {
     }
 
     async printEntities(req: Request, res: Response) {
-        const { relationshipIds } = req.body;
+        const { relationshipIds, isShowDisabled } = req.body;
 
-        res.json(await this.manager.printEntities(req.params.id, relationshipIds));
+        res.json(await this.manager.printEntities(req.params.id, relationshipIds, isShowDisabled));
     }
 
     async deleteEntityInstances(req: Request, res: Response) {

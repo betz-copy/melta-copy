@@ -17,47 +17,51 @@ const fixFilters = (
     );
 };
 
-export const getOnlyTemplateIdsTree = (
+/**
+ * Generates the Cypher query for filtering nodes in the path.
+ */
+const generateFilterClause = (filters: IGetExpandedEntityBody['filters'], filterQuery: { cypherQuery: string }, mainId: string): string => {
+    if (Object.keys(filters).length === 0) return '';
+
+    return `WHERE apoc.meta.cypher.type(node) = "RELATIONSHIP" 
+           OR ${filterQuery.cypherQuery} 
+           OR node._id = '${mainId}'`;
+};
+
+/**
+ * Generates the configuration object string for apoc.path.spanningTree.
+ */
+const generateSpanningTreeConfig = (
     entityId: string,
-    templateIds: IGetExpandedEntityBody['templateIds'],
-    relationshipIds: IGetExpandedEntityBody['relationshipIds'],
+    templateIds: string[],
+    relationshipIds: string[] | undefined,
     expandedParams: IGetExpandedEntityBody['expandedParams'],
-) => {
-    return {
-        cypherQuery: `
-            MATCH (p {_id:'${entityId}'})
-            CALL apoc.path.spanningTree(p, {
+): string => {
+    const params = expandedParams[entityId];
+    const minLevel = params?.minLevel ?? 0;
+    const maxLevel = params?.maxLevel ?? 1;
+    const relFilter = relationshipIds?.length ? `, relationshipFilter: '${relationshipIds.join('|')}'` : '';
+
+    return `{
                 labelFilter: '${templateIds.join('|')}',
-                minLevel: ${expandedParams[entityId].minLevel || 0},
-                maxLevel: ${expandedParams[entityId].maxLevel || 1}
-                ${relationshipIds?.length ? `, relationshipFilter: '${relationshipIds.join('|')}'` : ''}
-            })
-            YIELD path
-
-            WITH relationships(path) AS rels
-            WITH [r IN rels | type(r) + "&" + r._id] AS relationshipIds, rels
-
-            UNWIND rels AS r
-            WITH relationshipIds, type(r) + "&" + r._id AS relationshipKey, endNode(r)._id AS nodeId
-
-            RETURN relationshipIds, relationshipKey, count(DISTINCT nodeId) AS entitiesCount
-        `,
-        parameters: {},
-    };
+                minLevel: ${minLevel},
+                maxLevel: ${maxLevel}
+                ${relFilter}
+            }`;
 };
 
-export const getEntitiesForPrintByRelIds = (relationshipIds: string[]) => {
-    return {
-        cypherQuery: `
-            MATCH (node1)-[rel]-(node2)
-            WHERE rel._id IN $relationshipIds
-            RETURN node1, rel, node2
-        `,
-        parameters: { relationshipIds },
-    };
-};
-
-// TODO: Docs
+/**
+ * Constructs a Neo4j Cypher query to expand an entity based on templates, relationships, and filters.
+ *
+ * @param filters - Filters to apply to the expanded entities.
+ * @param entityId - The ID of the root entity to expand.
+ * @param templateIds - List of template IDs to include in the expansion.
+ * @param relationshipIds - List of relationship IDs to traverse.
+ * @param expandedParams - Configuration for expansion depth per entity.
+ * @param entityTemplatesMap - Map of entity templates for filter generation.
+ * @param mainId - The ID of the main entity (to ensure it's always included).
+ * @returns An object containing the Cypher query string and its parameters.
+ */
 export const expandEntityToNeoQuery = (
     filters: IGetExpandedEntityBody['filters'],
     entityId: string,
@@ -66,35 +70,22 @@ export const expandEntityToNeoQuery = (
     expandedParams: IGetExpandedEntityBody['expandedParams'],
     entityTemplatesMap: Map<string, IMongoEntityTemplate>,
     mainId: string,
-    isShowDisabled: boolean | null,
 ) => {
     const fullFilters = fixFilters(filters, templateIds);
     const filterQuery = templatesFilterToNeoQuery(fullFilters, entityTemplatesMap);
 
-    const filterCypherQuery = Object.keys(filters).length
-        ? `WHERE apoc.meta.cypher.type(node) = "RELATIONSHIP" 
-           OR ${filterQuery.cypherQuery} 
-           OR node._id = '${mainId}'`
-        : '';
-
-    // TODO: move into fixFilters
-    const disabledFilter = isShowDisabled ? '' : `AND ALL(n IN nodes(path)[1..] WHERE n.disabled = false)`;
+    const filterClause = generateFilterClause(filters, filterQuery, mainId);
+    const spanningTreeConfig = generateSpanningTreeConfig(entityId, templateIds, relationshipIds, expandedParams);
 
     return {
         cypherQuery: `
-             MATCH (p {_id:'${entityId}'})
-            CALL apoc.path.spanningTree(p, {
-                labelFilter: '${templateIds.join('|')}',
-                minLevel: ${expandedParams[entityId].minLevel || 0},
-                maxLevel: ${expandedParams[entityId].maxLevel || 1}
-                ${relationshipIds?.length ? `, relationshipFilter: '${relationshipIds.join('|')}'` : ''}
-            })
+            MATCH (p {_id:'${entityId}'})
+            CALL apoc.path.spanningTree(p, ${spanningTreeConfig})
             YIELD path
             WITH apoc.path.elements(path) AS elementsOfPath, path
             WITH elementsOfPath, path,
-                 [node IN elementsOfPath ${filterCypherQuery} | node] AS filteredElementsOfPath
+                 [node IN elementsOfPath ${filterClause} | node] AS filteredElementsOfPath
             WHERE size(filteredElementsOfPath) = size(elementsOfPath)
-            ${disabledFilter}
             RETURN elementsOfPath
         `,
         parameters: {

@@ -2,9 +2,9 @@
 
 import { mapValues } from 'lodash';
 import axios from '../axios';
-import { EntityWizardValues } from '../common/dialogs/entity';
 import { IUpdateMultipleEntitiesResponse } from '../common/EntitiesPage/MultiSelectStatusBar';
 import { IExternalId } from '../common/EntitiesTableOfTemplate';
+import { EntityWizardValues } from '../common/dialogs/entity';
 import urlToFile from '../common/fileConversions';
 import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
 import { environment } from '../globals';
@@ -157,7 +157,6 @@ export const getExpandedEntityByIdRequest = async (
     entityId: string,
     expandedParams: Record<string, { minLevel?: number; maxLevel: number }>,
     options?: {
-        isShowDisabled?: boolean;
         templateIds: string[];
         childTemplateId?: string;
     },
@@ -175,9 +174,10 @@ export const getExpandedEntityByIdRequest = async (
 };
 
 // Actual tree with entities for print
-export const getEntitiesTreeForPrint = async (id: string, relationshipIds: string[]) => {
+export const getEntitiesTreeForPrint = async (id: string, relationshipIds: string[], isShowDisabled: boolean) => {
     const { data } = await axios.post<IEntityTreeNode>(`${entities}/printEntities/${id}`, {
         relationshipIds,
+        isShowDisabled,
     });
     return data;
 };
@@ -542,8 +542,8 @@ export const searchEntitiesOfTemplateRequest = async (
 export const getCountByTemplateIdsRequest = async (
     templateIds: string[],
     childTemplateIds: string[] = [],
-    textSearch: string = '',
-    shouldSemanticSearch: boolean = false,
+    textSearch = '',
+    shouldSemanticSearch = false,
 ) => {
     const { data } = await axios.post<ICountSearchResult[]>(`${entities}/count`, { templateIds, childTemplateIds, textSearch, shouldSemanticSearch });
     return data;

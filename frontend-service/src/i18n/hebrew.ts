@@ -238,7 +238,7 @@ export default {
         },
         print: {
             header: 'הדפס ישות',
-            continue: 'ייצוא ל',
+            continue: 'הדפסה',
             showDisabled: 'הצגת יישויות מושבתות',
             showEntityDates: 'הצגת תאריך יצירה ועדכון יישות',
             showOnlyPreviewProperties: 'הדפסת תצוגה מצומצמת',
@@ -249,7 +249,7 @@ export default {
                 stampedByDetails: 'פרטי החותם',
                 fullName: 'שם מלא',
                 rank: 'דרגה',
-                personalNumber: 'מס\' אישי',
+                personalNumber: "מס' אישי",
                 signature: 'חתימה',
             },
             chooseRelationship: 'בחירת קשרים',

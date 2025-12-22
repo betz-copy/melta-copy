@@ -1,6 +1,6 @@
 import CloseOutlined from '@mui/icons-material/CloseOutlined';
-import DownloadIcon from '@mui/icons-material/Download';
 
+import { PrintOutlined } from '@mui/icons-material';
 import {
     Button,
     CircularProgress,
@@ -24,10 +24,10 @@ import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/proce
 import { IMongoStepTemplatePopulated } from '../../interfaces/processes/stepTemplate';
 import RelationshipSelection from '../../pages/Entity/components/print/RelationshipSelection';
 import { getFile } from '../../utils/getFileType';
-import MultipleSelect from '../inputs/MultipleSelect';
 import BlueTitle from '../MeltaDesigns/BlueTitle';
 import MeltaSwitch from '../MeltaDesigns/MeltaSwitch';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
+import MultipleSelect from '../inputs/MultipleSelect';
 
 type IOption = {
     show: boolean;
@@ -233,11 +233,11 @@ const PrintOptionsDialog: React.FC<{
                             handleClose();
                             onClick(ev);
                         }}
-                        endIcon={<DownloadIcon />}
+                        endIcon={<PrintOutlined />}
                         disabled={isLoading || !isPrintButtonEnabled}
                         sx={{ borderRadius: '7px', fontWeight: 400 }}
                     >
-                        {`${i18next.t('entityPage.print.continue')}-pdf`}
+                        {i18next.t('entityPage.print.continue')}
                         {isLoading && <CircularProgress size={20} />}
                     </Button>
                 </Grid>

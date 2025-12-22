@@ -2,19 +2,19 @@ import { PrintOutlined } from '@mui/icons-material';
 import { Backdrop, Button, CircularProgress, ThemeProvider } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+// import html2pdf from 'html2pdf.js';
+import { useQuery } from 'react-query';
 import { useReactToPrint } from 'react-to-print';
+import { INestedRelationshipTemplates } from '../..';
 import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
 import PrintOptionsDialog, { PrintType } from '../../../../common/print/PrintOptionsDialog';
 import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IFile } from '../../../../interfaces/preview';
+import { getEntitiesTreeForPrint } from '../../../../services/entitiesService';
 import { lightTheme } from '../../../../theme';
-import { INestedRelationshipTemplates } from '../..';
 import { ComponentToPrint } from './ComponentToPrint';
 import './print.css';
-// import html2pdf from 'html2pdf.js';
-import { useQuery } from 'react-query';
-import { getEntitiesTreeForPrint } from '../../../../services/entitiesService';
 
 // export async function generateAndSavePDF(printIframe: HTMLIFrameElement, filename?: string) {
 //     const iframeDoc = printIframe.contentDocument;
@@ -75,7 +75,7 @@ const Print: React.FC<{
 
     const { data, refetch, isFetching } = useQuery({
         queryKey: ['getEntitiesTreeForPrint', expandedEntity.entity.properties._id, selectedRelationShipIds.join(',')],
-        queryFn: () => getEntitiesTreeForPrint(expandedEntity.entity.properties._id, selectedRelationShipIds),
+        queryFn: () => getEntitiesTreeForPrint(expandedEntity.entity.properties._id, selectedRelationShipIds, isShowDisabled),
         enabled: false,
         onSuccess: () => {
             setIsPreparingPdf(true);
@@ -119,8 +119,8 @@ const Print: React.FC<{
             label: 'entityPage.print.showOnlyPreviewProperties',
         },
         entityDates: { show: showEntityDates, set: setShowEntityDates, label: 'entityPage.print.showEntityDates' },
-        entityCheckbox: { show: showEntityPrintCheckbox, set: setShowEntityPrintCheckbox, label: 'entityPage.print.showEntityCheckbox'},
-        appendSignatureField: { show: appendSignatureField, set: setAppendSignatureField, label: 'entityPage.print.appendSignatureField'}
+        entityCheckbox: { show: showEntityPrintCheckbox, set: setShowEntityPrintCheckbox, label: 'entityPage.print.showEntityCheckbox' },
+        appendSignatureField: { show: appendSignatureField, set: setAppendSignatureField, label: 'entityPage.print.appendSignatureField' },
     };
 
     const memoizedOptions = useMemo(

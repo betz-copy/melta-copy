@@ -4,6 +4,7 @@ import { FC, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import Tree from '../../../../common/Tree';
+import { environment } from '../../../../globals';
 import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { IRelationShipSelectionTree } from '../../../../interfaces/printingTemplates';
@@ -11,6 +12,8 @@ import { BackendConfigState } from '../../../../services/backendConfigService';
 import { getRelationshipSelectTreeForPrint } from '../../../../services/entitiesService';
 import { useUserStore } from '../../../../stores/user';
 import { getAllAllowedEntities } from '../../../../utils/permissions/templatePermissions';
+
+const { maxPrintLevel, neoIdsPathSeparator, relationshipPathSeparator, neoRelIdsSeparator } = environment.print;
 
 interface ITreeNode extends Omit<IRelationShipSelectionTree, 'children'> {
     children?: ITreeNode[];
@@ -41,7 +44,11 @@ const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity,
     const { data: relationShips, isLoading } = useQuery<ITreeNode[]>({
         queryKey: ['getRelationshipSelectTreeForPrint', rootEntityId, { allowedEntityTemplatesIds }],
         queryFn: () =>
-            getRelationshipSelectTreeForPrint(rootEntityId, { [rootEntityId]: { maxLevel: 4 } }, { templateIds: allowedEntityTemplatesIds }),
+            getRelationshipSelectTreeForPrint(
+                rootEntityId,
+                { [rootEntityId]: { maxLevel: maxPrintLevel } },
+                { templateIds: allowedEntityTemplatesIds },
+            ),
 
         enabled: !!rootEntityId,
     });
@@ -72,13 +79,15 @@ const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity,
 
     return (
         <>
-            <Typography
-                fontSize={'12px'}
-            >{`${i18next.t('entityPage.print.limits.alreadySelected')}: ${selectedEntitiesCount} (${i18next.t('entityPage.print.limits.max')} ${maxEntitiesToPrint})`}</Typography>
+            <Typography fontSize={'12px'}>
+                {`${i18next.t('entityPage.print.limits.alreadySelected')}: ${selectedEntitiesCount} (${i18next.t(
+                    'entityPage.print.limits.max',
+                )} ${maxEntitiesToPrint})`}
+            </Typography>
 
             <Tree
                 treeItems={relationShips}
-                getItemId={(item) => `${item.neoRelIds} ${item.path}`}
+                getItemId={(item) => `${item.neoRelIds.join(neoRelIdsSeparator)}${neoIdsPathSeparator}${item.path}`}
                 getItemLabel={(item) =>
                     `${item.displayName} (${item.sourceEntity.displayName} > ${item.destinationEntity.displayName}) – ${item.entitiesCount}`
                 }
@@ -89,16 +98,16 @@ const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity,
                     const selectedIds = new Set(itemIds as string[]);
 
                     if (selectedIds.size > selectedTreeItemIds.length) {
-                        [...selectedIds].forEach((selectedId) => {
-                            const path = selectedId.split(' ').slice(1).join(' ');
-                            const pathSegments = path.split('&');
+                        for (const selectedId of selectedIds) {
+                            const path = selectedId.split(neoIdsPathSeparator).slice(1).join(neoIdsPathSeparator);
+                            const pathSegments = path.split(relationshipPathSeparator);
 
                             for (let i = 1; i < pathSegments.length; i++) {
-                                const parentPath = pathSegments.slice(0, i).join('&');
+                                const parentPath = pathSegments.slice(0, i).join(relationshipPathSeparator);
                                 const parentNode = allNodes.find((node) => node.path === parentPath);
-                                parentNode && selectedIds.add(`${parentNode.neoRelIds} ${parentNode.path}`);
+                                parentNode && selectedIds.add(`${parentNode.neoRelIds}${neoIdsPathSeparator}${parentNode.path}`);
                             }
-                        });
+                        }
                     }
 
                     const finalSelection = [...selectedIds];
@@ -109,7 +118,9 @@ const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity,
                     } else {
                         setSelectedEntitiesCount(totalCount);
                         setSelectedTreeItemIds(finalSelection);
-                        setSelectedRelationShipIds([...new Set(finalSelection.flatMap((id) => id.split(' ')[0]?.split(',') ?? []))]);
+                        setSelectedRelationShipIds([
+                            ...new Set(finalSelection.flatMap((id) => id.split(neoIdsPathSeparator)[0]?.split(neoRelIdsSeparator) ?? [])),
+                        ]);
                     }
                 }}
             />

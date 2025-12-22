@@ -1,6 +1,7 @@
 import i18next from 'i18next';
 import { NotificationType } from './interfaces/notifications';
 import { ILabelIcon } from './utils/graph/helperTypes';
+import { M } from './utils/icons/fa6Icons';
 
 export const environment = {
     api: {
@@ -350,7 +351,12 @@ export const environment = {
     dateRegex: /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/,
     dateTimeRegex: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
     objectIdRegex: /^[0-9a-fA-F]{24}$/,
-    maxPrintLevel: 5,
+    print: {
+        maxPrintLevel: 4,
+        neoIdsPathSeparator: ' ',
+        relationshipPathSeparator: '&',
+        neoRelIdsSeparator: ',',
+    },
     formats: {
         date: 'dd/MM/yyyy',
         dateTime: 'dd/MM/yyyy HH:mm',

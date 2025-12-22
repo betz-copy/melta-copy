@@ -1,7 +1,6 @@
 import { IEntity, IMongoEntityTemplate, IMongoRelationshipTemplate, ISearchFilter } from '@microservices/shared';
 
 export interface IGetExpandedEntityBody {
-    isShowDisabled: boolean | null;
     templateIds: string[];
     expandedParams: Record<string, { minLevel?: number; maxLevel: number }>;
     filters: { [templateId: string]: { filter?: ISearchFilter; showRelationships: boolean } };

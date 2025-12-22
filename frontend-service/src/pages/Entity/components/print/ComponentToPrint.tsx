@@ -91,26 +91,26 @@ const ComponentToPrint = React.forwardRef<
                     })}
                 </>
             )}
-             {options?.appendSignatureField && (
-                    <Grid container flexDirection="column" marginTop="40px" width="100%" rowGap="20px">
-                        {['signedByDetails', 'stampedByDetails'].map((role) => (
-                            <Grid key={role} container width="100%" justifyContent="space-around">
-                                <Grid width="100px">
-                                    <Typography fontSize="14px" fontWeight="600">
-                                        {i18next.t(`entityPage.print.signatureFields.${role}`)}
+            {options?.appendSignatureField && (
+                <Grid container flexDirection="column" marginTop="40px" width="100%" rowGap="20px">
+                    {['signedByDetails', 'stampedByDetails'].map((role) => (
+                        <Grid key={role} container width="100%" justifyContent="space-around">
+                            <Grid width="100px">
+                                <Typography fontSize="14px" fontWeight="600">
+                                    {i18next.t(`entityPage.print.signatureFields.${role}`)}
+                                </Typography>
+                            </Grid>
+                            {['fullName', 'rank', 'personalNumber', 'signature'].map((field) => (
+                                <Grid key={field} borderTop="1px solid #9398C2" width="120px" marginTop="15px">
+                                    <Typography fontSize="14px" textAlign="center" color="#787C9E">
+                                        {i18next.t(`entityPage.print.signatureFields.${field}`)}
                                     </Typography>
                                 </Grid>
-                                {['fullName', 'rank', 'personalNumber', 'signature'].map((field) => (
-                                    <Grid key={field} borderTop="1px solid #9398C2" width="120px" marginTop="15px">
-                                        <Typography fontSize="14px" textAlign="center" color="#787C9E">
-                                            {i18next.t(`entityPage.print.signatureFields.${field}`)}
-                                        </Typography>
-                                    </Grid>
-                                ))}
-                            </Grid>
-                        ))}
-                    </Grid>
-                )}
+                            ))}
+                        </Grid>
+                    ))}
+                </Grid>
+            )}
         </Box>
     );
 });

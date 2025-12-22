@@ -1,28 +1,21 @@
 import {
     ActionErrors,
-    BadRequestError,
     IEntity,
     IEntityExpanded,
     IEntityWithDirectRelationships,
-    IMongoEntityTemplate,
-    IMongoRelationshipTemplate,
     IRelationship,
     SplitBy,
     ValidationError,
 } from '@microservices/shared';
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
-import { IEntityTreeNode, IRelationShipTreeNode, ITreeNodeMap } from 'instance-service/src/express/entities/interface';
-import neo4j, { Node as Neo4jNode, Relationship as Neo4jRelationship, QueryResult, Transaction } from 'neo4j-driver';
+import neo4j, { Node as Neo4jNode, QueryResult, Relationship as Neo4jRelationship, Transaction } from 'neo4j-driver';
 import { v4 as uuidv4 } from 'uuid';
 import config from '../../config';
 import EntityManager from '../../express/entities/manager';
 import { IFormulaCauses } from '../../express/rules/interfaces/formulaWithCauses';
 
 const {
-    map: {
-        polygon: { polygonPrefix, polygonSuffix },
-        srid,
-    },
+    map: { polygon: { polygonPrefix, polygonSuffix }, srid },
     timezone,
     neo4j: {
         stringPropertySuffix,
@@ -37,7 +30,7 @@ const {
     },
 } = config;
 
-type Node = Neo4jNode<number>;
+export type Node = Neo4jNode<number>;
 type Relationship = Neo4jRelationship<number>;
 
 /**
@@ -59,10 +52,10 @@ export const normalizeFields = (properties: Record<string, any>): { properties: 
     const usersArrayKeys: Set<string> = new Set<string>();
     const userKeys: Set<string> = new Set<string>();
 
-    Object.entries(properties).forEach(([key, value]) => {
+    for (const [key, value] of Object.entries(properties)) {
         const suffixes = [stringPropertySuffix, booleanPropertySuffix, filePropertySuffix, locationCoordinateSystemSuffix];
 
-        if (suffixes.some((suffix) => key.endsWith(suffix))) return;
+        if (suffixes.some((suffix) => key.endsWith(suffix))) continue;
 
         if (key.endsWith(colorPropertySuffix) && properties[key] !== undefined) coloredFields[key.slice(0, -colorPropertySuffix.length)] = value;
 
@@ -72,31 +65,31 @@ export const normalizeFields = (properties: Record<string, any>): { properties: 
                 key.includes(suffixFieldName),
             )!.suffixFieldName;
             usersArrayKeys.add(key.split(currentUserField)[0]);
-            return;
+            continue;
         }
 
         if (key.includes('.') && key.endsWith(`${userFieldPropertySuffix}`)) {
             const currentUserField = userOriginalAndSuffixFieldsMap.find(({ suffixFieldName }) => key.includes(suffixFieldName))!.suffixFieldName;
             userKeys.add(key.split(currentUserField)[0]);
-            return;
+            continue;
         }
 
         if (value instanceof neo4j.types.LocalDateTime) {
             props[key] = fromZonedTime(new Date(value.toString()), timezone).toISOString();
 
-            return;
+            continue;
         }
 
         if (value instanceof neo4j.types.Date) {
             props[key] = formatDate(value.toString());
 
-            return;
+            continue;
         }
 
         if (value instanceof neo4j.types.Point) {
             props[key] = { location: `${value.x}, ${value.y}`, coordinateSystem: properties[`${key}${locationCoordinateSystemSuffix}`] };
 
-            return;
+            continue;
         }
         if (Array.isArray(value) && value.every((item) => item instanceof neo4j.types.Point)) {
             const points = value.map((point) => `${point.x} ${point.y}`);
@@ -105,43 +98,43 @@ export const normalizeFields = (properties: Record<string, any>): { properties: 
                 coordinateSystem: properties[`${key}${locationCoordinateSystemSuffix}`],
             };
 
-            return;
+            continue;
         }
 
         props[key] = value;
-    });
+    }
 
     if (usersArrayKeys.size) {
-        usersArrayKeys.forEach((userKey) => {
+        for (const userKey of usersArrayKeys) {
             props[userKey] = properties[`${userKey}${usersArrayOriginalAndSuffixFieldsMap[0].suffixFieldName}${usersFieldsPropertySuffix}`].map(
                 (_id: string, index: string | number) => {
-                    const objToReturn: any = {};
+                    const objToReturn: Record<string, unknown> = {};
 
-                    usersArrayOriginalAndSuffixFieldsMap.forEach((userField) => {
+                    for (const userField of usersArrayOriginalAndSuffixFieldsMap) {
                         objToReturn[userField.originalFieldName] =
                             properties[`${userKey}${userField.suffixFieldName}${usersFieldsPropertySuffix}`][index];
-                    });
+                    }
 
                     return JSON.stringify({
                         ...objToReturn,
                     });
                 },
             );
-        });
+        }
     }
 
     if (userKeys.size) {
-        userKeys.forEach((userKey) => {
-            const objToReturn: any = {};
+        for (const userKey of userKeys) {
+            const objToReturn: Record<string, unknown> = {};
 
-            userOriginalAndSuffixFieldsMap.forEach((userField) => {
+            for (const userField of userOriginalAndSuffixFieldsMap) {
                 objToReturn[userField.originalFieldName] = properties[`${userKey}${userField.suffixFieldName}${userFieldPropertySuffix}`];
-            });
+            }
 
             props[userKey] = JSON.stringify({
                 ...objToReturn,
             });
-        });
+        }
     }
 
     return { properties: props, coloredFields };
@@ -151,12 +144,12 @@ type ResponseType = 'singleResponse' | 'singleResponseNotNullable' | 'multipleRe
 type Response<ResType extends ResponseType, Data> = ResType extends 'singleResponse'
     ? Data | null
     : ResType extends 'singleResponseNotNullable'
-      ? Data
-      : ResType extends 'multipleResponses'
-        ? Data[]
-        : never;
+    ? Data
+    : ResType extends 'multipleResponses'
+    ? Data[]
+    : never;
 
-const nodeToEntity = (node: Node): IEntity => {
+export const nodeToEntity = (node: Node): IEntity => {
     const { properties, coloredFields } = normalizeFields(node.properties);
     return {
         templateId: node.labels[0],
@@ -280,193 +273,6 @@ export const normalizeReturnedRelAndEntities =
             entity: nodeToEntity(entity),
             connections,
         };
-    };
-
-// TODO: clean function
-export const normalizeTree =
-    (rootElementId: string) =>
-    (result: QueryResult): IEntityTreeNode | null => {
-        const records = result.records;
-        if (!records?.length) return null;
-
-        const nodeMap = new Map<string, IEntity>();
-
-        const ensureEntity = (node: Node): IEntity => {
-            const id = String(node.properties._id);
-            const existing = nodeMap.get(id);
-
-            if (existing) return existing;
-
-            const entity = nodeToEntity(node);
-            nodeMap.set(id, entity);
-            return entity;
-        };
-
-        const adj = new Map<string, { toId: string; relationshipId: string; uniqueRelationShipId: string }[]>();
-        const edgeSeen = new Set<string>();
-
-        const addEdge = (fromId: string, toId: string, relationshipId: string, uniqueRelationShipId: string) => {
-            const key = `${fromId}|${toId}|${uniqueRelationShipId}`;
-            if (edgeSeen.has(key)) return;
-            edgeSeen.add(key);
-
-            const list = adj.get(fromId);
-            if (list) list.push({ toId, relationshipId, uniqueRelationShipId });
-            else adj.set(fromId, [{ toId, relationshipId, uniqueRelationShipId }]);
-        };
-
-        for (const record of records) {
-            const node1 = record.get('node1');
-            const node2 = record.get('node2');
-            const rel = record.get('rel');
-            if (!node1 || !node2 || !rel) continue;
-
-            const entity1 = ensureEntity(node1);
-            const entity2 = ensureEntity(node2);
-
-            const id1 = String(entity1.properties._id);
-            const id2 = String(entity2.properties._id);
-            const uniqueRelationShipId = String(rel.properties._id);
-            const relationshipId = String(rel.type);
-
-            addEdge(id1, id2, relationshipId, uniqueRelationShipId);
-            addEdge(id2, id1, relationshipId, uniqueRelationShipId);
-        }
-
-        const rootEntity = nodeMap.get(rootElementId);
-
-        if (!rootEntity) throw new BadRequestError(`RootId was not found in ${rootElementId} entities`);
-
-        const usedNodeIds = new Set<string>();
-
-        const buildTree = (nodeId: string, pathTemplateIds: Set<string>): IEntityTreeNode => {
-            const node = nodeMap.get(nodeId)!;
-            const templateId = String(node.templateId);
-
-            if (usedNodeIds.has(nodeId)) return { ...node, children: [] };
-
-            if (pathTemplateIds.has(templateId)) {
-                usedNodeIds.add(nodeId);
-                return { ...node, children: [] };
-            }
-
-            usedNodeIds.add(nodeId);
-
-            const nextPath = new Set(pathTemplateIds);
-            nextPath.add(templateId);
-
-            const edges = adj.get(nodeId) ?? [];
-
-            return {
-                ...node,
-                children: edges
-                    .filter((e) => !usedNodeIds.has(e.toId))
-                    .map(({ toId, relationshipId }) => ({
-                        ...buildTree(toId, nextPath),
-                        relationshipId,
-                    })),
-            };
-        };
-
-        return buildTree(String(rootEntity.properties._id), new Set<string>());
-    };
-
-// TODO: clean function
-export const buildTemplateTree =
-    (entityTemplatesMap: Map<string, IMongoEntityTemplate>, relationShipsMap: Map<string, IMongoRelationshipTemplate>) =>
-    (result: QueryResult): IRelationShipTreeNode[] => {
-        if (!result.records.length) return [];
-
-        const relationships: string[][] = result.records.map((r) => r.get('relationshipIds'));
-
-        const entitiesCountMap = new Map<string, number>();
-        for (const record of result.records) {
-            const key = record.get('relationshipKey');
-            const count = record.get('entitiesCount');
-            entitiesCountMap.set(key, count?.toNumber?.() ?? count);
-        }
-
-        const buildRelationshipTree = (
-            paths: string[][],
-            entityTemplatesMap: Map<string, IMongoEntityTemplate>,
-            relationShipsMap: Map<string, IMongoRelationshipTemplate>,
-        ): IRelationShipTreeNode[] => {
-            const roots: ITreeNodeMap = new Map();
-
-            const insert = (map: ITreeNodeMap, [head, ...tail]: string[]) => {
-                if (!head) return;
-
-                const [type, id] = head.split('&');
-                const existsInMap = map.get(type);
-
-                if (!existsInMap) {
-                    map.set(type, {
-                        _id: head,
-                        children: new Map(),
-                        neoRelIds: new Set([id]),
-                    });
-                } else {
-                    map.set(type, {
-                        ...existsInMap,
-                        neoRelIds: new Set([...existsInMap.neoRelIds, id]),
-                    });
-                }
-
-                insert(map.get(type)!.children, tail);
-            };
-
-            for (const path of paths) insert(roots, path);
-
-            const buildTree = (map: ITreeNodeMap, path = '', depth = 0, pathEntities = new Set<string>()): IRelationShipTreeNode[] => {
-                const out: IRelationShipTreeNode[] = [];
-
-                for (const n of map.values()) {
-                    const mongoRelId = n._id.split('&')[0];
-                    const newPath = `${path}${path ? '&' : ''}${mongoRelId}`;
-
-                    const relationshipFromMongo = relationShipsMap.get(mongoRelId);
-                    if (!relationshipFromMongo) continue;
-
-                    const sourceEntityTemplate = entityTemplatesMap.get(relationshipFromMongo.sourceEntityId);
-                    const destinationEntityTemplate = entityTemplatesMap.get(relationshipFromMongo.destinationEntityId);
-                    if (!sourceEntityTemplate || !destinationEntityTemplate) continue;
-
-                    const sourceId = sourceEntityTemplate._id;
-                    const destinationId = destinationEntityTemplate._id;
-
-                    const newPathEntities = new Set(pathEntities);
-                    newPathEntities.add(sourceId);
-
-                    let children: IRelationShipTreeNode[] = [];
-                    if (!newPathEntities.has(destinationId)) {
-                        newPathEntities.add(destinationId);
-                        children = buildTree(n.children, newPath, depth + 1, newPathEntities);
-                    }
-
-                    const entitiesCount = [...n.neoRelIds.values()].reduce(
-                        (sum, relId) => sum + (entitiesCountMap.get(`${mongoRelId}&${relId}`) ?? 0),
-                        0,
-                    );
-
-                    out.push({
-                        ...relationshipFromMongo,
-                        neoRelIds: [...n.neoRelIds.values()],
-                        sourceEntity: sourceEntityTemplate,
-                        destinationEntity: destinationEntityTemplate,
-                        depth,
-                        entitiesCount,
-                        path: newPath,
-                        children,
-                    });
-                }
-
-                return out;
-            };
-
-            return buildTree(roots);
-        };
-
-        return buildRelationshipTree(relationships, entityTemplatesMap, relationShipsMap);
     };
 
 const formatUndirectedRelationship = (relationship: Relationship, node1: Node, node2: Node): IRelationship => {
