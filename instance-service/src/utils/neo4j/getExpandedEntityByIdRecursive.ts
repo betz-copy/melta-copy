@@ -8,13 +8,10 @@ const fixFilters = (
     filters: IGetExpandedEntityBody['filters'],
     templateIds: IGetExpandedEntityBody['templateIds'],
 ): ISearchBatchBody['templates'] => {
-    return templateIds.reduce(
-        (acc, templateId) => ({
-            ...acc,
-            [templateId]: filters?.[templateId] ?? {},
-        }),
-        {},
-    );
+    return templateIds.reduce((acc, templateId) => {
+        acc[templateId] = filters?.[templateId] ?? {};
+        return acc;
+    }, {});
 };
 
 /**
