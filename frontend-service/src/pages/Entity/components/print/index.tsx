@@ -66,6 +66,8 @@ const Print: React.FC<{
     const [isShowDisabled, setIsShowDisabled] = useState<boolean>(true);
     const [showEntityDates, setShowEntityDates] = useState<boolean>(true);
     const [showPreviewPropertiesOnly, setShowPreviewPropertiesOnly] = useState<boolean>(false);
+    const [showEntityPrintCheckbox, setShowEntityPrintCheckbox] = useState<boolean>(false);
+    const [appendSignatureField, setAppendSignatureField] = useState<boolean>(false);
 
     const [selectedRelationShipIds, setSelectedRelationShipIds] = useState<string[]>([]);
 
@@ -117,6 +119,8 @@ const Print: React.FC<{
             label: 'entityPage.print.showOnlyPreviewProperties',
         },
         entityDates: { show: showEntityDates, set: setShowEntityDates, label: 'entityPage.print.showEntityDates' },
+        entityCheckbox: { show: showEntityPrintCheckbox, set: setShowEntityPrintCheckbox, label: 'entityPage.print.showEntityCheckbox'},
+        appendSignatureField: { show: appendSignatureField, set: setAppendSignatureField, label: 'entityPage.print.appendSignatureField'}
     };
 
     const memoizedOptions = useMemo(
@@ -125,9 +129,10 @@ const Print: React.FC<{
             showEntityDates,
             showEntityFiles: !!selectedFiles.length,
             showPreviewPropertiesOnly,
-            addEntityCheckbox: true,
+            addEntityCheckbox: showEntityPrintCheckbox,
+            appendSignatureField,
         }),
-        [isShowDisabled, showEntityDates, selectedFiles.length, showPreviewPropertiesOnly],
+        [isShowDisabled, showEntityDates, selectedFiles.length, showPreviewPropertiesOnly, showEntityPrintCheckbox, appendSignatureField],
     );
 
     useEffect(() => {
