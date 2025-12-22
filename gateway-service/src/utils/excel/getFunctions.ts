@@ -37,6 +37,7 @@ import Excel, { Cell, CellModel } from 'exceljs';
 import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
 import UserService from '../../externalServices/userService';
+import { showRelationshipRefColumn } from './createFunctions';
 import excelConfig from './excelConfig';
 
 const { invalidDate, invalidTime, invalidLocation, invalidUnit } = config.loadExcel;
@@ -216,15 +217,22 @@ export const readExcelFile = async (
     relatedTemplatesMap: Record<string, IMongoEntityTemplatePopulated>,
     workspaceId: string,
     entitiesFileLimit = config.loadExcel.entitiesFileLimit,
-    userUnits?: string[],
     oldEntities: IEntityWithDirectRelationships[] = [],
+    requiredConstraints: string[] = [],
+    userUnits?: string[],
 ) => {
     const isEditMode = oldEntities.length > 0;
     const isChild = isChildTemplate(template);
 
     const entities: IEntityWithIgnoredRules[] = [];
     const columns = Object.fromEntries(
-        Object.entries(template.properties.properties).filter(([_propertyKey, propertyTemplate]) => isEditMode || isIncludedColumn(propertyTemplate)),
+        Object.entries(template.properties.properties).filter(([propertyKey, propertyTemplate]) => {
+            if (isEditMode) return true;
+            const showRelationshipRef = showRelationshipRefColumn(propertyKey, propertyTemplate, relatedTemplatesMap, requiredConstraints);
+            if (!showRelationshipRef) return false;
+
+            return isIncludedColumn(propertyTemplate);
+        }),
     );
 
     const identifier = Object.entries(template.properties.properties).find(([_key, value]) => value.identifier === true)?.[0];

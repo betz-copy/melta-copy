@@ -43,7 +43,7 @@
     },
     "homepage": "https://github.com/melta-team/melta#readme",
     "devDependencies": {
-        "@biomejs/biome": "2.1.2",
+        "@biomejs/biome": "^2.1.2",
         "@types/jest": "^30.0.0",
         "@types/mongoose": "^5.11.97",
         "@types/node": "^24.3.0",
@@ -65,9 +65,9 @@
         "joi": "^18.0.1",
         "mongoose": "^8.17.2",
         "morgan": "^1.10.1",
+        "nodemon": "^3.1.0",
         "uuid": "^11.1.0",
         "winston": "^3.17.0",
-        "winston-daily-rotate-file": "^5.0.0",
-        "nodemon": "^3.1.0"
+        "winston-daily-rotate-file": "^5.0.0"
     }
 }

@@ -12,9 +12,7 @@ import EntitiesTableOfTemplate from '../../../EntitiesTableOfTemplate';
 import OpenPreview from '../../../FilePreview/OpenPreview';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 
-const {
-    loadExcel: { excelExtension, acceptedFilesTypes },
-} = environment;
+const { excelExtension, acceptedFilesTypes } = environment.loadExcel;
 
 export const UploadExcel: React.FC<{
     formikProps: FormikProps<EntitiesWizardValues>;

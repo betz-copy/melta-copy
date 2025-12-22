@@ -17,7 +17,7 @@ const convertFileDataToRowData = (gridData: any[][], headers: string[], template
                 rowObject[key] = row[index] || '';
             });
 
-            const isEmptyRow = Object.values(rowObject).every((value) => value === '' || value === undefined);
+            const isEmptyRow = !Object.values(rowObject).some((value) => value !== '' && value !== undefined);
 
             return isEmptyRow ? null : { properties: rowObject };
         })

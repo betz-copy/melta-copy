@@ -159,7 +159,6 @@
         "chance": "^1.1.13",
         "json-schema-faker": "^0.5.9",
         "patch-package": "^8.0.0",
-        "prettier": "^3.6.2",
         "source-map-explorer": "^2.5.3",
         "typescript": "^5.9.2"
     }

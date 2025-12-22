@@ -1,5 +1,5 @@
 import { useMatomo } from '@datapunt/matomo-tracker-react';
-import { Box, Button, debounce, useScrollTrigger } from '@mui/material';
+import { Box, Button, CircularProgress, debounce, useScrollTrigger } from '@mui/material';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
@@ -185,7 +185,7 @@ export const MeltaRoutesInner: React.FC = () => {
                 style={{ overflowY: match ? 'hidden' : 'auto', overflowAnchor: 'none' }}
             >
                 <Box>
-                    <Suspense fallback={<div />}>
+                    <Suspense fallback={<CircularProgress />}>
                         <Switch>
                             <Route path="/system-management">
                                 <TopBar title={title} />

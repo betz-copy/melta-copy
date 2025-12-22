@@ -12,7 +12,7 @@ import {
     ServiceError,
 } from '@microservices/shared';
 import { Request } from 'express';
-import { uniqBy } from 'lodash';
+import { keyBy, uniqBy } from 'lodash';
 import InstancesService from '../../externalServices/instanceService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import RelationshipsTemplateService from '../../externalServices/templates/relationshipsTemplateService';
@@ -82,6 +82,10 @@ class InstancesValidator extends DefaultController {
         const unauthorizedTemplates = templateIds.filter((templateId) => !allowedEntityTemplateIds.includes(templateId));
         if (unauthorizedTemplates.length)
             throw new ForbiddenError('user not authorized', { metadata: `unauthorized templates ${JSON.stringify(unauthorizedTemplates)}` });
+
+        const templateIdSet = new Set(templateIds);
+        const templates = [...allowedEntityTemplates, ...allowedChildTemplates].filter(({ _id }) => templateIdSet.has(_id));
+        return keyBy(templates, '_id');
     }
 
     async getAllowedChildTemplatesForInstances(
@@ -123,13 +127,28 @@ class InstancesValidator extends DefaultController {
             ? await this.entityTemplateService.getChildTemplateById(childTemplateId)
             : await this.entityTemplateService.getEntityTemplateById(templateId);
 
-        const relatedTemplateIds = Object.values(template.properties.properties).flatMap((value) =>
-            value.format === 'relationshipReference' && value.relationshipReference?.relatedTemplateId
-                ? [value.relationshipReference.relatedTemplateId]
-                : [],
-        );
+        const { requiredConstraints } = await this.instancesService.getConstraintsOfTemplate(templateId);
+        const relatedTemplateIds: string[] = [];
 
-        if (relatedTemplateIds.length) await this.validateHasPermissionsToEntitiesInTemplates(req.user!, relatedTemplateIds);
+        Object.entries(template.properties.properties).forEach(([key, property]) => {
+            if (property.format === 'relationshipReference') {
+                const relatedTemplateId = property.relationshipReference?.relatedTemplateId;
+                if (!relatedTemplateId) return;
+
+                if (requiredConstraints.includes(key)) relatedTemplateIds.push(relatedTemplateId);
+            }
+        });
+
+        if (!relatedTemplateIds.length) return;
+
+        const entityTemplatesMap = await this.validateHasPermissionsToEntitiesInTemplates(req.user!, relatedTemplateIds);
+
+        Object.entries(entityTemplatesMap).map(([templateId, relatedTemplate]) => {
+            const hasIdentifier = Object.values(relatedTemplate.properties.properties).some((prop) => prop.identifier === true);
+
+            if (!hasIdentifier)
+                throw new ForbiddenError(`Required property format relationshipReference- related template ${templateId} has no identifier property`);
+        });
     }
 
     private async validateUserPermissionForEntityInstance(

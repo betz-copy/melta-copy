@@ -409,7 +409,8 @@ const collectEnumColors = (
     property: EntityTemplateFormInputProperties,
     enumPropertiesColors: IEntityTemplate['enumPropertiesColors'] | undefined,
 ) => {
-    if (![PropertyExternalWizardType.enum, PropertyExternalWizardType.enumArray].includes(property.type as PropertyExternalWizardType)) return enumPropertiesColors;
+    if (![PropertyExternalWizardType.enum, PropertyExternalWizardType.enumArray].includes(property.type as PropertyExternalWizardType))
+        return enumPropertiesColors;
 
     Object.entries(property.optionColors).forEach(([option, enumColor]) => {
         if (!enumColor) return;

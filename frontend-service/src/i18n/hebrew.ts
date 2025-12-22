@@ -888,7 +888,6 @@ export default {
                 required: 'ליישות חסרה שדה חובה',
                 createdSuccessfully: 'ישויות נוצרו בהצלחה',
                 editedSuccessfully: 'ישויות נערכו בהצלחה',
-                tableCantLoadEntities: 'טבלה זו לא תומכת בטעינה מקבצים',
                 tableCantEditExcel: 'טבלה זו לא תומכת בעריכת טבלה, נא להוסיף שדה מזהה ייחודי',
                 limitNumberFiles: 'מספר קבצים שניתן להעלות: ',
                 limitNumberEntities: 'מספר ישויות שניתן להעלות בתוך קובץ הוא: ',
@@ -900,6 +899,12 @@ export default {
                 relatedEntityNotFound: 'לא נמצאה ישות בתבנית "{{templateName}}" עם ערך זה בשדה "{{propertyName}}" - שדה מזהה ייחודי',
                 userNotFound: 'לא נמצא משתמש עבור ת.ז. {{attemptedIds}}',
                 usersNotFound: 'לא נמצאו משתמשים בעבור ת.ז. {{attemptedIds}}',
+                disabledTooltip: {
+                    requiredFile: 'אין תמיכה בטעינה מקבצים משום שקיים שדה קובץ שהוא שדה חובה',
+                    requiredRelationshipRef: 'אין תמיכה בטעינה מקבצים משום שקיים שדה חובה שמקושר לתבנית ללא שדה מזהה ייחודי',
+                    doesntHavePermissionToRelatedTemplate: 'אין תמיכה בטעינה מקבצים משום שאין הרשאות לתבנית מקשורת',
+                    disabledTemplate: 'אין תמיכה בטעינה מקבצים משום שהתבנית מושבתת',
+                },
             },
             multipleUpdate: {
                 title: 'עריכת ישויות',
