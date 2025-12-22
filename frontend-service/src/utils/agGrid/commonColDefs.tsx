@@ -17,6 +17,7 @@ import { EntityWizardValues } from '../../common/dialogs/entity';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 import UserAvatar, { IUserAvatarProps } from '../../common/UserAvatar';
+import { environment } from '../../globals';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import {
     EntityData,
@@ -49,6 +50,8 @@ import OverflowWrapper from './OverflowWrapper';
 import RelationshipRefCellEditor from './RelationshipRefCellEditor';
 import SelectCellEditor from './SelectCellEditor';
 import { Value } from './Value';
+
+const { failed } = environment.color;
 
 type IColDefData = EntityData | IRuleBreachPopulated | PermissionData | IRuleBreachRequestPopulated | undefined;
 
@@ -130,7 +133,7 @@ const errorColDef = <Data extends IColDefData>(
 
     return (
         <Box display="flex" justifyContent="center" alignItems="center" gap={1} width="100%">
-            <Value hideValue={false} value={props.value ?? i18next.t('validation.required')} enumColor="error" />
+            <Value hideValue={false} value={props.value ?? i18next.t('validation.required')} enumColor={failed} />
             <Tooltip
                 title={message}
                 placement="top"
@@ -143,7 +146,7 @@ const errorColDef = <Data extends IColDefData>(
                                 backgroundColor: 'white',
                                 borderRadius: '10px',
                                 marginLeft: '5px',
-                                color: 'error',
+                                color: failed,
                                 fontWeight: 400,
                                 boxShadow: '0px 2.05px 6.16px 0px #00000040',
                             },

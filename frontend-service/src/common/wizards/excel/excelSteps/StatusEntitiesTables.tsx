@@ -8,7 +8,7 @@ import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemp
 import { IStatusEntitiesTables } from '../../../../interfaces/excel';
 import { EntitiesTable } from './EntitiesTable';
 
-const { warning, success } = environment.color;
+const { warning, success, failed } = environment.color;
 
 export const StatusEntitiesTables: React.FC<{
     tablesData: IStatusEntitiesTables;
@@ -45,7 +45,7 @@ export const StatusEntitiesTables: React.FC<{
                 rowData={tablesData.failedEntities}
                 template={template}
                 defaultExpanded={isFailedEntities}
-                icon={<Close sx={{ color: 'error' }} />}
+                icon={<Close sx={{ color: failed }} />}
                 title={`${tablesData.failedEntities.length} ${i18next.t('wizard.entity.loadEntities.failedEntities')}`}
                 description={i18next.t('wizard.entity.loadEntities.failedEntitiesDescription')}
                 download={onDownload && isLoadingDownload ? { onDownload: () => onDownload(false), isLoading: isLoadingDownload } : undefined}
