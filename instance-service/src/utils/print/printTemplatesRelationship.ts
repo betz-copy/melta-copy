@@ -108,6 +108,9 @@ const buildRelationshipNode = (
 
     const updatedAncestors = new Set(ancestorEntities).add(sourceTemplate._id);
 
+    // Cycle Detection:
+    // If the destination entity is already in the ancestor path, we stop recursion here.
+    // The current node is still created (to show the relationship), but it will have no children.
     const children = updatedAncestors.has(destinationTemplate._id)
         ? []
         : constructRelationshipTree(
