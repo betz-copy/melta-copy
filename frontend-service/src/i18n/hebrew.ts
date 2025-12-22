@@ -888,7 +888,6 @@ export default {
                 required: 'ליישות חסרה שדה חובה',
                 createdSuccessfully: 'ישויות נוצרו בהצלחה',
                 editedSuccessfully: 'ישויות נערכו בהצלחה',
-                tableCantLoadEntities: 'טבלה זו לא תומכת בטעינה מקבצים',
                 tableCantEditExcel: 'טבלה זו לא תומכת בעריכת טבלה, נא להוסיף שדה מזהה ייחודי',
                 limitNumberFiles: 'מספר קבצים שניתן להעלות: ',
                 limitNumberEntities: 'מספר ישויות שניתן להעלות בתוך קובץ הוא: ',
