@@ -59,6 +59,14 @@ const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity,
         return map;
     }, [relationShips]);
 
+    const allNodes = useMemo(
+        () =>
+            relationShips?.flatMap(function flat(n): ITreeNode[] {
+                return [n, ...(n.children?.flatMap(flat) ?? [])];
+            }) ?? [],
+        [relationShips],
+    );
+
     if (isLoading) return <CircularProgress size={20} />;
     if (!relationShips?.length) return null;
 
@@ -79,38 +87,29 @@ const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity,
                 selectionPropagation={{ descendants: true, parents: false }}
                 onSelectItems={(itemIds) => {
                     const next = new Set(itemIds as string[]);
-                    const prev = new Set(selectedTreeItemIds);
+                    const prevSize = selectedTreeItemIds.length;
 
-                    if (next.size > prev.size) {
-                        for (const id of Array.from(next)) {
-                            const path = id.split(' ').slice(1).join(' ');
-                            const parts = path.split('&');
+                    if (next.size > prevSize) {
+                        for (const id of next) {
+                            const parts = id.split(' ').slice(1).join(' ').split('&');
 
                             for (let i = 1; i < parts.length; i++) {
-                                const parentPath = parts.slice(0, i).join('&');
-
-                                const parentId = (relationShips ?? [])
-                                    .flatMap(function flat(n): ITreeNode[] {
-                                        return [n, ...(n.children?.flatMap(flat) ?? [])];
-                                    })
-                                    .find((n) => n.path === parentPath);
-
-                                if (parentId) next.add(`${parentId.neoRelIds} ${parentId.path}`);
+                                const p = allNodes.find((n) => n.path === parts.slice(0, i).join('&'));
+                                if (p) next.add(`${p.neoRelIds} ${p.path}`);
                             }
                         }
                     }
 
-                    const newSelectedEntitiesCount = Array.from(next).reduce((sum, id) => sum + (getSelectedEntitiesCountById.get(id) ?? 0), 0);
+                    const final = [...next];
+                    const count = final.reduce((s, id) => s + (getSelectedEntitiesCountById.get(id) ?? 0), 0);
 
-                    if (newSelectedEntitiesCount > maxEntitiesToPrint) {
+                    if (count > maxEntitiesToPrint) {
                         toast.error(i18next.t('entityPage.print.limits.warning'));
                         return;
                     }
 
-                    const final = [...next];
-                    setSelectedEntitiesCount(newSelectedEntitiesCount);
+                    setSelectedEntitiesCount(count);
                     setSelectedTreeItemIds(final);
-
                     setSelectedRelationShipIds([...new Set(final.flatMap((id) => id.split(' ')[0]?.split(',') ?? []))]);
                 }}
             />
