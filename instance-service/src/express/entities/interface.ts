@@ -14,7 +14,10 @@ export type IRelationShipTreeNode = IMongoRelationshipTemplate & {
     depth: number;
     destinationEntity: IMongoEntityTemplate;
     sourceEntity: IMongoEntityTemplate;
+    entitiesCount: number;
+    neoRelIds: string[];
     children: IRelationShipTreeNode[];
+    path: string;
 };
 
 export type ITreeNodeMap = Map<string, { _id: string; children: ITreeNodeMap; neoRelIds: Set<string> }>;

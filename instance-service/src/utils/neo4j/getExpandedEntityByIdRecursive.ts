@@ -25,7 +25,7 @@ export const getOnlyTemplateIdsTree = (
 ) => {
     return {
         cypherQuery: `
-             MATCH (p {_id:'${entityId}'})
+            MATCH (p {_id:'${entityId}'})
             CALL apoc.path.spanningTree(p, {
                 labelFilter: '${templateIds.join('|')}',
                 minLevel: ${expandedParams[entityId].minLevel || 0},
@@ -33,12 +33,14 @@ export const getOnlyTemplateIdsTree = (
                 ${relationshipIds?.length ? `, relationshipFilter: '${relationshipIds.join('|')}'` : ''}
             })
             YIELD path
-            WITH apoc.path.elements(path) AS elementsOfPath, path
 
-            WITH path,
-                 relationships(path) AS rels
-            WITH rels, [r IN rels | type(r) + "&" + r._id] AS relationshipIds, length(path) AS pathLength
-            RETURN DISTINCT relationshipIds
+            WITH relationships(path) AS rels
+            WITH [r IN rels | type(r) + "&" + r._id] AS relationshipIds, rels
+
+            UNWIND rels AS r
+            WITH relationshipIds, type(r) + "&" + r._id AS relationshipKey, endNode(r)._id AS nodeId
+
+            RETURN relationshipIds, relationshipKey, count(DISTINCT nodeId) AS entitiesCount
         `,
         parameters: {},
     };

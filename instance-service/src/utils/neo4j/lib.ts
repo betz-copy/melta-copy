@@ -371,14 +371,21 @@ export const normalizeTree =
         return buildTree(String(rootEntity.properties._id), new Set<string>());
     };
 
+// TODO: clean function
 export const buildTemplateTree =
     (entityTemplatesMap: Map<string, IMongoEntityTemplate>, relationShipsMap: Map<string, IMongoRelationshipTemplate>) =>
-    (result: QueryResult): any => {
-        if (!result.records.length) return null;
+    (result: QueryResult): IRelationShipTreeNode[] => {
+        if (!result.records.length) return [];
 
-        const relationships: string[][] = result.records.map((key) => key.get('relationshipIds'));
+        const relationships: string[][] = result.records.map((r) => r.get('relationshipIds'));
 
-        // TODO: clean function
+        const entitiesCountMap = new Map<string, number>();
+        for (const record of result.records) {
+            const key = record.get('relationshipKey');
+            const count = record.get('entitiesCount');
+            entitiesCountMap.set(key, count?.toNumber?.() ?? count);
+        }
+
         const buildRelationshipTree = (
             paths: string[][],
             entityTemplatesMap: Map<string, IMongoEntityTemplate>,
@@ -410,15 +417,19 @@ export const buildTemplateTree =
 
             for (const path of paths) insert(roots, path);
 
-            const buildTree = (map: ITreeNodeMap, depth = 0, pathEntities = new Set<string>()): IRelationShipTreeNode[] =>
-                [...map.values()].flatMap((n) => {
-                    const relationshipFromMongo = relationShipsMap.get(n._id.split('&')[0]);
-                    if (!relationshipFromMongo) return [];
+            const buildTree = (map: ITreeNodeMap, path = '', depth = 0, pathEntities = new Set<string>()): IRelationShipTreeNode[] => {
+                const out: IRelationShipTreeNode[] = [];
+
+                for (const n of map.values()) {
+                    const mongoRelId = n._id.split('&')[0];
+                    const newPath = `${path}${path ? '&' : ''}${mongoRelId}`;
+
+                    const relationshipFromMongo = relationShipsMap.get(mongoRelId);
+                    if (!relationshipFromMongo) continue;
 
                     const sourceEntityTemplate = entityTemplatesMap.get(relationshipFromMongo.sourceEntityId);
                     const destinationEntityTemplate = entityTemplatesMap.get(relationshipFromMongo.destinationEntityId);
-
-                    if (!sourceEntityTemplate || !destinationEntityTemplate) return [];
+                    if (!sourceEntityTemplate || !destinationEntityTemplate) continue;
 
                     const sourceId = sourceEntityTemplate._id;
                     const destinationId = destinationEntityTemplate._id;
@@ -427,20 +438,30 @@ export const buildTemplateTree =
                     newPathEntities.add(sourceId);
 
                     let children: IRelationShipTreeNode[] = [];
-                    if (!pathEntities.has(destinationId)) {
+                    if (!newPathEntities.has(destinationId)) {
                         newPathEntities.add(destinationId);
-                        children = buildTree(n.children, depth + 1, newPathEntities);
+                        children = buildTree(n.children, newPath, depth + 1, newPathEntities);
                     }
 
-                    return {
+                    const entitiesCount = [...n.neoRelIds.values()].reduce(
+                        (sum, relId) => sum + (entitiesCountMap.get(`${mongoRelId}&${relId}`) ?? 0),
+                        0,
+                    );
+
+                    out.push({
                         ...relationshipFromMongo,
                         neoRelIds: [...n.neoRelIds.values()],
                         sourceEntity: sourceEntityTemplate,
                         destinationEntity: destinationEntityTemplate,
                         depth,
+                        entitiesCount,
+                        path: newPath,
                         children,
-                    };
-                });
+                    });
+                }
+
+                return out;
+            };
 
             return buildTree(roots);
         };

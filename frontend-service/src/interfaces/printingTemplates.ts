@@ -27,6 +27,8 @@ type IRelationShipPrintTreeNode = IMongoRelationshipTemplate & {
     destinationEntity: IMongoEntityTemplate;
     sourceEntity: IMongoEntityTemplate;
     children: IRelationShipSelectionTree[];
+    entitiesCount: number;
+    path: string;
     neoRelIds: string[]; // The relationship ids of the instances (in neo) of each relationship type (that is the mongo id)
 };
 

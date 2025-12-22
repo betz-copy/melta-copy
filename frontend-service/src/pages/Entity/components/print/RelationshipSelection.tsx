@@ -1,62 +1,107 @@
-import { CircularProgress } from '@mui/material';
-import { Dispatch, SetStateAction } from 'react';
+import { CircularProgress, Grid, Typography } from '@mui/material';
+import i18next from 'i18next';
+import { FC, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
 import Tree from '../../../../common/Tree';
-import { IConnection, IEntityExpanded } from '../../../../interfaces/entities';
+import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { IRelationShipSelectionTree } from '../../../../interfaces/printingTemplates';
+import { BackendConfigState } from '../../../../services/backendConfigService';
 import { getRelationshipSelectTreeForPrint } from '../../../../services/entitiesService';
 import { useUserStore } from '../../../../stores/user';
 import { getAllAllowedEntities } from '../../../../utils/permissions/templatePermissions';
-import { INestedRelationshipTemplates } from '../..';
 
-export type EntityConnectionsProps = {
-    connectionsTemplates: INestedRelationshipTemplates[];
-    setConnectionsTemplates: Dispatch<SetStateAction<INestedRelationshipTemplates[]>>;
-    setConnectionsInstances: Dispatch<SetStateAction<IConnection[]>>;
-    selectedConnections: INestedRelationshipTemplates[];
-    setSelectedConnections: Dispatch<SetStateAction<INestedRelationshipTemplates[]>>;
-};
+interface ITreeNode extends Omit<IRelationShipSelectionTree, 'children'> {
+    children?: ITreeNode[];
+}
 
-const RelationshipSelection: React.FC<{
+interface RelationshipSelectionProps {
     expandedEntity: IEntityExpanded;
-    setSelectedRelationShipIds: React.Dispatch<React.SetStateAction<string[]>>;
-}> = ({ expandedEntity, setSelectedRelationShipIds }) => {
+    setSelectedRelationShipIds: (ids: string[]) => void;
+}
+
+const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity, setSelectedRelationShipIds }) => {
+    const [selectedTreeItemIds, setSelectedTreeItemIds] = useState<string[]>([]);
+    const [selectedEntitiesCount, setSelectedEntitiesCount] = useState<number>(0);
+
+    const rootEntityId = expandedEntity.entity.properties._id;
+
     const queryClient = useQueryClient();
+    const currentUser = useUserStore((s) => s.user);
+    const { maxEntitiesToPrint } = queryClient.getQueryData<BackendConfigState>('getBackendConfig')!;
+
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const currentUser = useUserStore((state) => state.user);
+    const allowedEntityTemplatesIds = useMemo(
+        () => getAllAllowedEntities(Array.from(entityTemplates.values()), currentUser).map((e) => e._id),
+        [entityTemplates, currentUser],
+    );
 
-    const allowedEntityTemplates = getAllAllowedEntities(Array.from(entityTemplates.values()), currentUser);
-    const allowedEntityTemplatesIds = allowedEntityTemplates.map((entity) => entity._id);
-
-    const templateIds = [...entityTemplates.keys()];
-
-    const { data: relationShips, isLoading } = useQuery<IRelationShipSelectionTree[]>({
-        queryKey: ['getRelationshipSelectTreeForPrint', expandedEntity.entity.properties._id, { templateIds }],
+    const { data: relationShips, isLoading } = useQuery<ITreeNode[]>({
+        queryKey: ['getRelationshipSelectTreeForPrint', rootEntityId, { allowedEntityTemplatesIds }],
         queryFn: () =>
-            getRelationshipSelectTreeForPrint(
-                expandedEntity.entity.properties._id,
-                { [expandedEntity.entity.properties._id]: { maxLevel: 4 } }, // TODO: put in config
-                { templateIds: allowedEntityTemplatesIds },
-            ),
-    });
-    if (isLoading) return <CircularProgress size={20} />;
+            getRelationshipSelectTreeForPrint(rootEntityId, { [rootEntityId]: { maxLevel: 4 } }, { templateIds: allowedEntityTemplatesIds }),
 
-    return relationShips ? (
-        <Tree
-            treeItems={relationShips}
-            getItemId={({ neoRelIds }) => neoRelIds.join(',')}
-            getItemLabel={({ sourceEntity, destinationEntity, displayName }) =>
-                `${displayName} (${sourceEntity.displayName} > ${destinationEntity.displayName})`
-            }
-            removeDivider
-            onSelectItems={(itemIds) => setSelectedRelationShipIds([...new Set((itemIds as string[]).flatMap((id) => id.split(',')))])}
-            selectionPropagation={{ descendants: true, parents: false }}
-            // TODO: selects like eve wants
-        />
-    ) : (
-        <></>
+        enabled: !!rootEntityId,
+    });
+
+    const getSelectedEntitiesCountById = useMemo(() => {
+        const map = new Map<string, number>();
+        const stack = [...(relationShips ?? [])];
+
+        while (stack.length) {
+            const node = stack.pop()!;
+            map.set(node.path, node.entitiesCount);
+            if (node.children?.length) stack.push(...node.children);
+        }
+
+        return map;
+    }, [relationShips]);
+
+    if (isLoading) return <CircularProgress size={20} />;
+    if (!relationShips?.length) return null;
+
+    return (
+        <>
+            <Typography
+                fontSize={'12px'}
+            >{`${i18next.t('entityPage.print.limits.alreadySelected')}: ${selectedEntitiesCount} (${i18next.t('entityPage.print.limits.max')} ${maxEntitiesToPrint})`}</Typography>
+
+            <Tree<ITreeNode>
+                treeItems={relationShips}
+                getItemId={(item) => item.path}
+                getItemLabel={(item) =>
+                    `${item.displayName} (${item.sourceEntity.displayName} > ${item.destinationEntity.displayName}) – ${item.entitiesCount}`
+                }
+                removeDivider
+                selectedItems={selectedTreeItemIds}
+                selectionPropagation={{ descendants: true, parents: false }}
+                onSelectItems={(itemIds) => {
+                    const next = new Set(itemIds as string[]);
+                    const prev = new Set(selectedTreeItemIds);
+
+                    if (next.size > prev.size) {
+                        for (const id of next) {
+                            const parts = id.split('&');
+                            for (let i = 1; i < parts.length; i++) next.add(parts.slice(0, i).join('&'));
+                        }
+                    }
+
+                    const newSelectedEntitiesCount = Array.from(next).reduce((sum, id) => sum + (getSelectedEntitiesCountById.get(id) ?? 0), 0);
+
+                    if (newSelectedEntitiesCount > maxEntitiesToPrint) {
+                        toast.error(i18next.t('entityPage.print.limits.warning'));
+                        return;
+                    }
+
+                    const final = [...next];
+                    setSelectedEntitiesCount(newSelectedEntitiesCount);
+                    setSelectedTreeItemIds(final);
+                    setSelectedRelationShipIds([...new Set(final.flatMap((x) => x.split('&')))]);
+                }}
+            />
+        </>
     );
 };
 

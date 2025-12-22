@@ -251,6 +251,11 @@ export default {
             title: 'כותרת הדפסה',
             fetchingData: 'מחפש קשרים...',
             generatingPdf: 'יוצר pdf...',
+            limits: {
+                alreadySelected: 'סך הישויות שנבחרו',
+                max: 'מקסימום',
+                warning: 'אי אפשר להוסיף ישות זו',
+            },
         },
         previewRefetch: 'קובץ בתהליך עיבוד, נסה שוב מאוחר יותר',
     },
