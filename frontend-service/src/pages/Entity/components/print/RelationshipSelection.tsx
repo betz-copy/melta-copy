@@ -86,31 +86,31 @@ const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity,
                 selectedItems={selectedTreeItemIds}
                 selectionPropagation={{ descendants: true, parents: false }}
                 onSelectItems={(itemIds) => {
-                    const next = new Set(itemIds as string[]);
-                    const prevSize = selectedTreeItemIds.length;
+                    const selectedIds = new Set(itemIds as string[]);
 
-                    if (next.size > prevSize) {
-                        for (const id of next) {
-                            const parts = id.split(' ').slice(1).join(' ').split('&');
+                    if (selectedIds.size > selectedTreeItemIds.length) {
+                        [...selectedIds].forEach((selectedId) => {
+                            const path = selectedId.split(' ').slice(1).join(' ');
+                            const pathSegments = path.split('&');
 
-                            for (let i = 1; i < parts.length; i++) {
-                                const p = allNodes.find((n) => n.path === parts.slice(0, i).join('&'));
-                                if (p) next.add(`${p.neoRelIds} ${p.path}`);
+                            for (let i = 1; i < pathSegments.length; i++) {
+                                const parentPath = pathSegments.slice(0, i).join('&');
+                                const parentNode = allNodes.find((node) => node.path === parentPath);
+                                parentNode && selectedIds.add(`${parentNode.neoRelIds} ${parentNode.path}`);
                             }
-                        }
+                        });
                     }
 
-                    const final = [...next];
-                    const count = final.reduce((s, id) => s + (getSelectedEntitiesCountById.get(id) ?? 0), 0);
+                    const finalSelection = [...selectedIds];
+                    const totalCount = finalSelection.reduce((sum, id) => sum + (getSelectedEntitiesCountById.get(id) ?? 0), 0);
 
-                    if (count > maxEntitiesToPrint) {
+                    if (totalCount > maxEntitiesToPrint) {
                         toast.error(i18next.t('entityPage.print.limits.warning'));
-                        return;
+                    } else {
+                        setSelectedEntitiesCount(totalCount);
+                        setSelectedTreeItemIds(finalSelection);
+                        setSelectedRelationShipIds([...new Set(finalSelection.flatMap((id) => id.split(' ')[0]?.split(',') ?? []))]);
                     }
-
-                    setSelectedEntitiesCount(count);
-                    setSelectedTreeItemIds(final);
-                    setSelectedRelationShipIds([...new Set(final.flatMap((id) => id.split(' ')[0]?.split(',') ?? []))]);
                 }}
             />
         </>
