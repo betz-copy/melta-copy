@@ -45,10 +45,31 @@ const ComponentToPrint = React.forwardRef<
 
     if (!entity) return <></>;
 
+    const signatureFields = (
+        <Grid container flexDirection="column" marginTop="2.5rem" width="100%" rowGap="1.25rem">
+            {['signedByDetails', 'stampedByDetails'].map((role) => (
+                <Grid key={role} container width="100%" justifyContent="space-around">
+                    <Grid width="6.25rem">
+                        <Typography fontSize="0.875rem" fontWeight="600">
+                            {i18next.t(`entityPage.print.signatureFields.${role}`)}
+                        </Typography>
+                    </Grid>
+                    {['fullName', 'rank', 'personalNumber', 'signature'].map((field) => (
+                        <Grid key={field} borderTop="1px solid #9398C2" width="7.5rem" marginTop="0.9375rem">
+                            <Typography fontSize="0.875rem" textAlign="center" color="#787C9E">
+                                {i18next.t(`entityPage.print.signatureFields.${field}`)}
+                            </Typography>
+                        </Grid>
+                    ))}
+                </Grid>
+            ))}
+        </Grid>
+    );
+
     return (
-        <Box ref={ref} margin="20px" style={{ direction: 'rtl', color: '#000' }}>
+        <Box ref={ref} margin="1.25rem" style={{ direction: 'rtl', color: '#000' }}>
             <Grid style={{ pageBreakInside: 'avoid' }}>
-                <Typography color={theme.palette.primary.main} fontWeight={700} fontSize={'20px'} marginBottom={'2rem'}>
+                <Typography color={theme.palette.primary.main} fontWeight={700} fontSize={'1.25rem'} marginBottom={'2rem'}>
                     {printTitle}
                 </Typography>
 
@@ -64,7 +85,7 @@ const ComponentToPrint = React.forwardRef<
 
             {options.showEntityFiles && filesToPrint.length > 0 && (
                 <>
-                    <Grid sx={{ width: '100%', height: '100%', paddingY: '55%', paddingX: '27%' }}>
+                    <Grid sx={{ width: '100%', height: '100%', paddingY: '27.5rem', paddingX: '13.5rem' }}>
                         <BlueTitle
                             title={i18next.t('entityPage.print.accompanyingFiles')}
                             component="h2"
@@ -91,26 +112,7 @@ const ComponentToPrint = React.forwardRef<
                     })}
                 </>
             )}
-            {options?.appendSignatureField && (
-                <Grid container flexDirection="column" marginTop="40px" width="100%" rowGap="20px">
-                    {['signedByDetails', 'stampedByDetails'].map((role) => (
-                        <Grid key={role} container width="100%" justifyContent="space-around">
-                            <Grid width="100px">
-                                <Typography fontSize="14px" fontWeight="600">
-                                    {i18next.t(`entityPage.print.signatureFields.${role}`)}
-                                </Typography>
-                            </Grid>
-                            {['fullName', 'rank', 'personalNumber', 'signature'].map((field) => (
-                                <Grid key={field} borderTop="1px solid #9398C2" width="120px" marginTop="15px">
-                                    <Typography fontSize="14px" textAlign="center" color="#787C9E">
-                                        {i18next.t(`entityPage.print.signatureFields.${field}`)}
-                                    </Typography>
-                                </Grid>
-                            ))}
-                        </Grid>
-                    ))}
-                </Grid>
-            )}
+            {options?.appendSignatureField && signatureFields}
         </Box>
     );
 });

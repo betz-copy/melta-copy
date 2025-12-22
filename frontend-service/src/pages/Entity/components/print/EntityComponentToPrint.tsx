@@ -29,7 +29,7 @@ const EntityComponentToPrint: React.FC<IEntityComponentToPrintProps> = React.mem
         const rowStyle: React.CSSProperties = {
             display: 'flex',
             flexDirection: 'column',
-            padding: depth > 0 ? '10px 0px 0px 30px' : '20px 0px',
+            padding: depth > 0 ? '10px 0px 0px 20px' : '20px 0px',
             width: '100%',
         };
 
@@ -37,7 +37,7 @@ const EntityComponentToPrint: React.FC<IEntityComponentToPrintProps> = React.mem
             display: 'flex',
             flexDirection: 'column',
             backgroundColor: depth === 1 ? '#CCCFE526' : 'transparent',
-            marginTop: '10px',
+            marginTop: depth === 0 ? '10px' : '0px',
             paddingBottom: '10px',
             borderRadius: '8px',
             width: '100%',
@@ -77,8 +77,8 @@ const EntityComponentToPrint: React.FC<IEntityComponentToPrintProps> = React.mem
                         alignItems: 'center',
                         gap: '10px',
                         backgroundColor: 'white',
-                        width: '90%',
                         minWidth: 0,
+                        width: '100%',
                         flexWrap: 'nowrap',
                     }}
                 >
@@ -105,7 +105,7 @@ const EntityComponentToPrint: React.FC<IEntityComponentToPrintProps> = React.mem
         return (
             <div style={rowStyle}>
                 {depth === 0 ? rootEntityComponent : connectionRow}
-                {hierarchicalChildren && (
+                {hierarchicalChildren?.length ? (
                     <div style={containerStyle}>
                         {hierarchicalChildren.map((child) => {
                             const template = entityTemplates.get(child.templateId);
@@ -128,6 +128,8 @@ const EntityComponentToPrint: React.FC<IEntityComponentToPrintProps> = React.mem
                             );
                         })}
                     </div>
+                ) : (
+                    <div style={{ marginTop: '10px' }} />
                 )}
             </div>
         );
