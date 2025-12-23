@@ -36,6 +36,7 @@ export const environment = {
         workspaces: '/workspaces',
         dashboard: '/dashboard',
     },
+    twinWalletId: '$twin',
     unauthorizedId: 'unauthorized',
     clientSideId: 'client-side',
     defaultTitle: 'Melta',

@@ -864,11 +864,12 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         )
             throw new Error('Source and destination wallets in the transfer are identical');
 
-        const sourceWalletTemplate = await this.entityTemplateService.getEntityTemplateById(properties[from].templateId);
-        const destWalletTemplate = await this.entityTemplateService.getEntityTemplateById(properties[to].templateId);
-
-        const sourceWalletEntity = await this.service.getEntityInstanceById(properties[from].properties._id);
-        const destinationWalletEntity = await this.service.getEntityInstanceById(properties[to].properties._id);
+        const [sourceWalletTemplate, sourceWalletEntity, destWalletTemplate, destinationWalletEntity] = await Promise.all([
+            this.entityTemplateService.getEntityTemplateById(properties[from].templateId),
+            this.service.getEntityInstanceById(properties[from].properties._id),
+            this.entityTemplateService.getEntityTemplateById(properties[to].templateId),
+            this.service.getEntityInstanceById(properties[to].properties._id),
+        ]);
 
         const convertedFromProperties = mapValues(sourceWalletEntity.properties, (property, key) =>
             this.convertEntities(sourceWalletTemplate, key, property, true),
@@ -913,10 +914,12 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         if (!(isDestinationWallet && instanceData.properties[walletTransfer.to] === '$twin')) return;
 
         const sourceWallet = await this.service.getEntityInstanceById(instanceData.properties[walletTransfer.from]);
-        const sourceWalletTemplate = await this.entityTemplateService.getEntityTemplateById(sourceWallet.templateId);
-
         const destTemplateId = properties.properties[walletTransfer.to].relationshipReference?.relatedTemplateId ?? '';
-        const destWalletTemplate = await this.entityTemplateService.getEntityTemplateById(destTemplateId);
+
+        const [sourceWalletTemplate, destWalletTemplate] = await Promise.all([
+            this.entityTemplateService.getEntityTemplateById(sourceWallet.templateId),
+            this.entityTemplateService.getEntityTemplateById(destTemplateId),
+        ]);
 
         const serialKeys = Object.entries(destWalletTemplate.properties.properties)
             .filter(([_, value]) => value.serialStarter !== undefined)

@@ -25,7 +25,7 @@ import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import RelationshipReferenceView from '../RelationshipReferenceView';
 import { CoordinateSystem } from './JSONSchemaFormik/Widgets/RjsfLocationWidget';
 
-const { fieldFilterPrefix } = environment;
+const { fieldFilterPrefix, twinWalletId } = environment;
 
 export const getChildTemplatesFilter = (
     childTemplatesOfRelatedTemplate: IChildTemplatePopulated[],
@@ -299,7 +299,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
 
     const twinEntity: IEntity = {
         templateId: template?._id ?? '',
-        properties: { _id: '$twin', createdAt: new Date().toString(), updatedAt: new Date().toString(), disabled: false },
+        properties: { _id: twinWalletId, createdAt: new Date().toString(), updatedAt: new Date().toString(), disabled: false },
     };
     const getTemplate = (option: IEntity) => {
         return templates.get(option.templateId) || childTemplates.get(option.childTemplateId ?? '');
@@ -328,7 +328,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
             popupIcon={<ExpandMore />}
             renderInput={(params) => {
                 const relProperty = value?.properties[showField];
-                const isTwinWallet = value?.properties._id === '$twin';
+                const isTwinWallet = value?.properties._id === twinWalletId;
 
                 return (
                     <TextField
@@ -387,7 +387,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
                         ref={props['data-option-index'] === allEntities.length - 1 ? lastElementRef : null}
                         style={{ display: 'flex', alignItems: 'center', gap: '8px', whiteSpace: 'nowrap' }}
                     >
-                        {option.properties['_id'] === '$twin' ? (
+                        {option.properties['_id'] === twinWalletId ? (
                             <Box display="flex" alignItems="center" width="100%">
                                 <Add color="primary" />
                                 <Typography

@@ -746,7 +746,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
         const ruleFailures = await this.runRulesOnEntity(transaction, createdEntity);
 
-        const [indicatorRules, rulesToThrowError] = _partition(ruleFailures, (r) => r.rule.actionOnFail === ActionOnFail.INDICATOR);
+        const [indicatorRules, rulesToThrowError] = partition(ruleFailures, (r) => r.rule.actionOnFail === ActionOnFail.INDICATOR);
 
         throwIfActionCausedRuleFailures(ignoredRules, [], rulesToThrowError, [{ createdEntityId: createdEntity.properties._id }], []);
 

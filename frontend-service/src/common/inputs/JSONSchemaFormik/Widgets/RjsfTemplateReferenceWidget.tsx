@@ -5,10 +5,10 @@ import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { IChildTemplateMap } from '../../../../interfaces/childTemplates';
 import { IEntity } from '../../../../interfaces/entities';
-import TemplateEntitiesAutocomplete from '../../TemplateEntitiesAutocomplete';
-import { useWorkspaceStore } from '../../../../stores/workspace';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import { useWorkspaceStore } from '../../../../stores/workspace';
 import { EntityWizardValues } from '../../../dialogs/entity';
+import TemplateEntitiesAutocomplete from '../../TemplateEntitiesAutocomplete';
 
 const RjsfTemplateReferenceWidget = ({
     id,
@@ -28,11 +28,12 @@ const RjsfTemplateReferenceWidget = ({
     ...widgetProps
 }: WidgetProps) => {
     const { template } = options;
+    const properties = template.properties.properties;
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { twinTemplates } = workspace.metadata;
 
     const [inputValue, setInputValue] = useState<string>('');
-    const fieldName = Object.keys(template.properties.properties).find((key) => template.properties.properties[key].title === label);
+    const fieldName = Object.keys(properties).find((key) => properties[key].title === label);
 
     const { values } = useFormikContext();
 
@@ -58,8 +59,8 @@ const RjsfTemplateReferenceWidget = ({
 
     const noRelationPermission = !relatedEntityTemplate && !childTemplatesOfRelatedTemplate.length;
 
-    const sourceTransfer = template.properties.properties[template.walletTransfer?.from];
-    const destTransfer = template.properties.properties[template.walletTransfer?.to];
+    const sourceTransfer = properties[template.walletTransfer?.from];
+    const destTransfer = properties[template.walletTransfer?.to];
 
     const isSourceWallet = sourceTransfer?.format === 'relationshipReference';
     const isDestWallet = destTransfer?.format === 'relationshipReference';
