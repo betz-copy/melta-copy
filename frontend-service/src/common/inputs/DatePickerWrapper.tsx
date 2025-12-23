@@ -8,7 +8,10 @@ import i18next from 'i18next';
 import React from 'react';
 import { environment } from '../../globals';
 
-const { date } = environment.formats;
+const {
+    formats: { date },
+    datePickerViews,
+} = environment;
 
 interface DatePickerWrapperProps {
     label?: string;
@@ -48,8 +51,8 @@ const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
     >
         <DatePicker
             format={date}
-            views={['year', 'month', 'day']}
-            yearsPerRow={4}
+            views={datePickerViews}
+            enableAccessibleFieldDOMStructure={false}
             minDate={minDate ? new Date(minDate) : undefined}
             maxDate={maxDate ? new Date(maxDate) : undefined}
             label={label}
@@ -58,7 +61,6 @@ const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
             onAccept={onChange}
             readOnly={readOnly || disableKeyboardInput}
             disabled={readOnly}
-            enableAccessibleFieldDOMStructure={false}
             slotProps={{
                 field: {
                     readOnly: readOnly || disableKeyboardInput,

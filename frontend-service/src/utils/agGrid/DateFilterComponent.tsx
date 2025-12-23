@@ -7,7 +7,10 @@ import { CustomDateTimePickerToolbar } from '../../common/inputs/JSONSchemaFormi
 import { environment } from '../../globals';
 import { useDarkModeStore } from '../../stores/darkMode';
 
-const { date: dateFormat } = environment.formats;
+const {
+    formats: { date: dateFormat },
+    datePickerViews,
+} = environment;
 
 const DateFilterComponent: React.FC<{
     date: Date;
@@ -31,7 +34,8 @@ const DateFilterComponent: React.FC<{
                     value={date}
                     onChange={onDateChange}
                     format={dateFormat}
-                    views={['year', 'month', 'day']}
+                    views={datePickerViews}
+                    enableAccessibleFieldDOMStructure={false}
                     label={i18next.t('wizard.date')}
                     slots={{
                         toolbar: CustomDateTimePickerToolbar,

@@ -1,4 +1,4 @@
-import { FormControl } from '@mui/material';
+import { FormControl, TextField } from '@mui/material';
 import { DatePicker, DateTimePicker, PickersLocaleText } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -9,7 +9,10 @@ import React, { useEffect, useState } from 'react';
 import { CustomDateTimePickerToolbar } from '../../common/inputs/JSONSchemaFormik/Widgets/RjsfDatesWidgets';
 import { environment } from '../../globals';
 
-const { dateTime, date: dateFormat } = environment.formats;
+const {
+    formats: { dateTime, date: dateFormat },
+    datePickerViews,
+} = environment;
 
 interface DateTimeCellEditorProps {
     value: string | Date | null;
@@ -64,10 +67,8 @@ const DateTimeCellEditor: React.FC<DateTimeCellEditorProps> = ({ value, onValueC
                         onChange={handleDateChange}
                         format={dateFormat}
                         enableAccessibleFieldDOMStructure={false}
-                        views={['year', 'month', 'day']}
-                        slots={{
-                            toolbar: CustomDateTimePickerToolbar,
-                        }}
+                        views={datePickerViews}
+                        slots={{ toolbar: CustomDateTimePickerToolbar, textField: (params) => <TextField {...params} /> }}
                         slotProps={{
                             actionBar: { actions: ['clear', 'cancel', 'accept'] },
                             textField: { fullWidth: true },

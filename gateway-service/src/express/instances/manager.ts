@@ -366,7 +366,17 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 displayColumns,
             );
 
-            styleAWorksheet(worksheet, entitiesToInsert, templateItem, workspace, unitsMap, columnDisplay, undefined, !!entitiesToInsert);
+            styleAWorksheet(
+                worksheet,
+                entitiesToInsert,
+                templateItem,
+                workspace,
+                unitsMap,
+                relatedTemplatesMap,
+                columnDisplay,
+                undefined,
+                !!entitiesToInsert,
+            );
             return;
         }
 
@@ -399,6 +409,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 templateItem,
                 workspace,
                 unitsMap,
+                relatedTemplatesMap,
                 displayColumns,
                 headersOnly,
                 undefined,
@@ -446,6 +457,8 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         relatedTemplatesObject.forEach(({ fieldName, relatedTemplateId }) => {
             const relatedTemplate: IMongoEntityTemplatePopulated = relatedTemplatesMap[relatedTemplateId!]!;
+
+            if (!relatedTemplate) return;
             const identifierField = Object.entries(relatedTemplate?.properties.properties).find(([_key, value]) => value.identifier)?.[0];
             if (!identifierField) return;
 
@@ -494,6 +507,9 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
     ) {
         let entities = insertBrokenEntities;
         const { metaData: template, type } = await this.handleTemplate(templateId, childTemplateId);
+        const parentTemplate = type === EntityTemplateType.Child ? template.parentTemplate : template;
+        const { requiredConstraints } = await this.service.getConstraintsOfTemplate(parentTemplate._id);
+
         const { relatedTemplatesMap } = await this.getRelatedTemplates(template, userId);
 
         const failedEntities: IFailedEntity[] = [];
@@ -502,9 +518,8 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             const units = (await unflattenUnitHierarchy(this.workspaceId, userId)).map((unit) => unit._id);
 
             const workspace = await WorkspaceService.getById(this.workspaceId);
-            entities = await getAllEntitiesFromExcel(files, template, failedEntities, workspace, relatedTemplatesMap, units);
+            entities = await getAllEntitiesFromExcel(files, template, failedEntities, workspace, relatedTemplatesMap, requiredConstraints, units);
         }
-
         const serialStarters = getSerialStarters(template);
         const succeededEntities: IEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
@@ -569,6 +584,9 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     async getChangedEntitiesFromExcel(templateId: string, file: UploadedFile, userId: string, childTemplateId?: string) {
         const { metaData: template, type } = await this.handleTemplate(templateId, childTemplateId);
+        const parentTemplate = type === EntityTemplateType.Child ? template.parentTemplate : template;
+        const { requiredConstraints } = await this.service.getConstraintsOfTemplate(parentTemplate._id);
+
         const { relatedTemplatesMap } = await this.getRelatedTemplates(template, userId);
         const units = (await unflattenUnitHierarchy(this.workspaceId, userId)).map((unit) => unit._id);
 
@@ -584,8 +602,9 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             relatedTemplatesMap,
             this.workspaceId,
             workspace.metadata?.excel?.entitiesFileLimit,
-            units,
             oldEntities,
+            requiredConstraints,
+            units,
         );
 
         const entities = entitiesWithIgnoresRules.map(({ properties }) => ({

@@ -8,7 +8,10 @@ import { environment } from '../../../../globals';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import BlueTitle from '../../../MeltaDesigns/BlueTitle';
 
-const { date } = environment.formats;
+const {
+    formats: { date },
+    datePickerViews,
+} = environment;
 
 export const GeneralDetailsFields = ({
     processTemplatesMap,
@@ -135,8 +138,8 @@ export const GeneralDetailsFields = ({
                                 label={i18next.t('wizard.processInstance.processInstanceStartDate')}
                                 value={values.startDate}
                                 onChange={(newStartDate) => setFieldValue('startDate', newStartDate)}
-                                views={['year', 'month', 'day']}
-                                slots={viewMode ? { openPickerIcon: () => null } : undefined}
+                                views={datePickerViews}
+                                slots={{ textField: (params) => <TextField {...params} />, openPickerIcon: viewMode ? () => null : undefined }}
                                 slotProps={{
                                     textField: {
                                         size: 'small',
@@ -169,7 +172,8 @@ export const GeneralDetailsFields = ({
                             <DatePicker
                                 minDate={values.startDate}
                                 format={date}
-                                views={['year', 'month', 'day']}
+                                enableAccessibleFieldDOMStructure={false}
+                                views={datePickerViews}
                                 label={i18next.t('wizard.processInstance.processInstanceEndDate')}
                                 value={values.endDate}
                                 onChange={(newEndDate) => setFieldValue('endDate', newEndDate)}
@@ -187,9 +191,7 @@ export const GeneralDetailsFields = ({
                                         InputProps: { disableUnderline: viewMode },
                                     },
                                 }}
-                                readOnly={viewMode}
-                                enableAccessibleFieldDOMStructure={false}
-                            />
+                                readOnly={viewMode}                            />
                         </LocalizationProvider>
                     </Grid>
                 </Grid>
