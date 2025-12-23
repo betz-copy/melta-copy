@@ -29,7 +29,8 @@ const NavButton: React.FC<NavButtonProps> = ({
     onClick,
     extension,
 }) => {
-    const [isActive] = useRoute(to);
+    const route = to.startsWith('/category/') ? to.split('?')[0] : to;
+    const [isActive] = useRoute(route);
 
     useEffect(() => {
         if (isActive) onChangeToActive(isActive);
