@@ -85,6 +85,7 @@ entityRouter.get('/get-is-field-used/:id', ValidateRequest(getIfValueFieldIsUsed
 
 entityRouter.post('/rules/dependant', ValidateRequest(getDependentRulesRequestSchema), entityController.getDependentRules);
 
+// Print
 entityRouter.post(
     '/printTemplates/:id',
     ValidateRequest(getPrintTemplatesByIdRequestSchema),
@@ -94,7 +95,7 @@ entityRouter.post(
 
 entityRouter.post('/printEntities/:id', ValidateRequest(getPrintEntitiesByIdRequestSchema), entityController.printEntities);
 
-// Graph (TODO: merge with print)
+// Graph
 entityRouter.post(
     '/expanded/:id',
     ValidateRequest(getExpandedGraphByIdRequestSchema),

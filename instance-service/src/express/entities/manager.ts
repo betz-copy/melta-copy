@@ -1,7 +1,7 @@
 import {
     ActionOnFail,
-    ActionTypes,
     ActionsLog,
+    ActionTypes,
     BadRequestError,
     IAction,
     IActivityLog,
@@ -35,15 +35,15 @@ import {
     ISemanticSearchResult,
     IUniqueConstraint,
     IUniqueConstraintOfTemplate,
-    IUpdateEntityMetadata,
     IUpdatedFields,
+    IUpdateEntityMetadata,
+    logger,
     NotFoundError,
     Polygon,
     PropertyFormat,
     PropertyType,
     ServiceError,
     ValidationError,
-    logger,
 } from '@microservices/shared';
 import { booleanPointInPolygon, featureCollection, intersect, point as turfPoint, polygon as turfPolygon } from '@turf/turf';
 import { startOfToday, startOfYesterday } from 'date-fns';
@@ -52,8 +52,6 @@ import { StatusCodes } from 'http-status-codes';
 import { cloneDeep, differenceWith, groupBy, isEqual, mapValues, partition, pickBy } from 'lodash';
 import { Neo4jError, Transaction } from 'neo4j-driver';
 import pLimit from 'p-limit';
-import { expandEntityToNeoQuery } from '../..//utils/neo4j/getExpandedEntityByIdRecursive';
-import { buildTemplateTree } from '../..//utils/print/printTemplatesRelationship';
 import config from '../../config';
 import ActivityLogProducer from '../../externalServices/activityLog/producer';
 import GatewayServiceProducer from '../../externalServices/gateway/producer';
@@ -64,6 +62,7 @@ import { executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/exe
 import isBodyFunctionHasContent from '../../utils/actions/isBodyFunctionHasContent';
 import filteredMap from '../../utils/filteredMap';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
+import { expandEntityToNeoQuery } from '../..//utils/neo4j/getExpandedEntityByIdRecursive';
 import {
     generateDefaultProperties,
     getNeo4jDateTime,
@@ -85,6 +84,7 @@ import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { escapeNeo4jQuerySpecialChars, searchWithRelationshipsToNeoQuery, templatesFilterToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
 import { getEntitiesForPrintByRelIds, getOnlyTemplateIdsTree } from '../../utils/print/neo4j';
 import { buildEntityTree } from '../../utils/print/printEntity';
+import { buildTemplateTree } from '../..//utils/print/printTemplatesRelationship';
 import { buildChartAggregationQuery, handleChartPropertiesTemplate, manipulateReturnedChart } from '../../utils/templateCharts';
 import BulkActionManager from '../bulkActions/manager';
 import RelationshipManager from '../relationships/manager';
@@ -107,7 +107,9 @@ import { addStringFieldsAndNormalizeSpecialStringValues } from './validator.temp
 const {
     brokenRulesFakeEntityIdPrefix,
     deleteEntitiesMaxLimit,
-    map: { wgs84: { maxLatitude, maxLongitude, minLatitude, minLongitude } },
+    map: {
+        wgs84: { maxLatitude, maxLongitude, minLatitude, minLongitude },
+    },
 } = config;
 
 const { BAD_REQUEST: badRequestStatus } = StatusCodes;
@@ -1284,15 +1286,18 @@ class EntityManager extends DefaultManagerNeo4j {
     }
 
     getFilesProperties({ properties: { properties } }: IMongoEntityTemplate) {
-        return Object.keys(properties).reduce((acc, propertyToRemove) => {
-            const { format, items } = properties[propertyToRemove];
+        return Object.keys(properties).reduce(
+            (acc, propertyToRemove) => {
+                const { format, items } = properties[propertyToRemove];
 
-            if (format === 'fileId' || items?.format === 'fileId') {
-                acc[propertyToRemove] = items?.format === 'fileId';
-            }
+                if (format === 'fileId' || items?.format === 'fileId') {
+                    acc[propertyToRemove] = items?.format === 'fileId';
+                }
 
-            return acc;
-        }, {} as Record<string, boolean>);
+                return acc;
+            },
+            {} as Record<string, boolean>,
+        );
     }
 
     getFilesOfEntities(entitiesToDelete: IEntity[], entityTemplate: IMongoEntityTemplate) {
@@ -1529,10 +1534,13 @@ class EntityManager extends DefaultManagerNeo4j {
     private getUpdatedProperties(oldEntity: Record<string, any>, newEntity: Record<string, any>, entityTemplate: IMongoEntityTemplate) {
         const updatedPropertiesNames = this.getKeysOfUpdatedProperties(oldEntity, newEntity, entityTemplate);
 
-        const updatedProperties = updatedPropertiesNames.reduce((acc, property) => {
-            acc[property] = newEntity[property];
-            return acc;
-        }, {} as Record<string, any>);
+        const updatedProperties = updatedPropertiesNames.reduce(
+            (acc, property) => {
+                acc[property] = newEntity[property];
+                return acc;
+            },
+            {} as Record<string, any>,
+        );
 
         return this.removeBasicProperties(updatedProperties);
     }
@@ -1814,7 +1822,7 @@ class EntityManager extends DefaultManagerNeo4j {
             });
 
             const bulkManager = new BulkActionManager(this.workspaceId);
-            const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId); //
+            const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
             const updatedEntity = await this.getEntityById(results.instances[0].properties._id);
             const fixedActions = this.fixActions(actions, results.instances);
 
