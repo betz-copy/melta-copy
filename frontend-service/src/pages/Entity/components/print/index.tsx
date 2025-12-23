@@ -2,7 +2,6 @@ import { PrintOutlined } from '@mui/icons-material';
 import { Backdrop, Button, CircularProgress, ThemeProvider } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
-// import html2pdf from 'html2pdf.js';
 import { useQuery } from 'react-query';
 import { useReactToPrint } from 'react-to-print';
 import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
@@ -15,40 +14,6 @@ import { lightTheme } from '../../../../theme';
 import { INestedRelationshipTemplates } from '../..';
 import { ComponentToPrint } from './ComponentToPrint';
 import './print.css';
-
-// export async function generateAndSavePDF(printIframe: HTMLIFrameElement, filename?: string) {
-//     const iframeDoc = printIframe.contentDocument;
-//     if (!iframeDoc) return;
-
-//     const content = iframeDoc.body;
-
-//     // Wait for content to fully generate
-//     await new Promise<void>((resolve) => {
-//         requestAnimationFrame(() => {
-//             requestAnimationFrame(() => resolve());
-//         });
-//     });
-
-//     const options = {
-//         margin: 10,
-//         filename: `${filename || 'document'}.pdf`,
-//         image: { type: 'jpeg' as const, quality: 0.98 },
-//         html2canvas: {
-//             scale: 0.85, // Controls quality
-//             useCORS: true,
-//             logging: true,
-//             windowWidth: 1920,
-//             windowHeight: 1080,
-//         },
-//         jsPDF: {
-//             unit: 'mm',
-//             format: 'a4',
-//             orientation: 'portrait' as const,
-//         },
-//     };
-
-//     await html2pdf().set(options).from(content).save();
-// }
 
 const Print: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -101,14 +66,6 @@ const Print: React.FC<{
         onBeforePrint: async () => {
             setIsPreparingPdf(true);
         },
-        // print: async (iframe) => {
-        //     try {
-        //         setIsPreparingPrint(true);
-        //         await generateAndSavePDF(iframe, documentTitle);
-        //     } finally {
-        //         setIsPreparingPrint(false);
-        //     }
-        // },
     });
 
     const options = {
