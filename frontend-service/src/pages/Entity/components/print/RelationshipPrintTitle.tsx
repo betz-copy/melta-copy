@@ -1,6 +1,6 @@
 import { SxProps, Typography } from '@mui/material';
-import { IMongoRelationshipTemplatePopulated } from '../../../../interfaces/relationshipTemplates';
 import { Box } from '@mui/system';
+import { IMongoRelationshipTemplatePopulated } from '../../../../interfaces/relationshipTemplates';
 
 interface RelationshipPrintTitleProps {
     relationshipTemplate: IMongoRelationshipTemplatePopulated;

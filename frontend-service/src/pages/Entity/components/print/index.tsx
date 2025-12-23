@@ -1,11 +1,10 @@
 import { PrintOutlined } from '@mui/icons-material';
 import { Backdrop, Button, CircularProgress, ThemeProvider } from '@mui/material';
 import i18next from 'i18next';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 // import html2pdf from 'html2pdf.js';
 import { useQuery } from 'react-query';
 import { useReactToPrint } from 'react-to-print';
-import { INestedRelationshipTemplates } from '../..';
 import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
 import PrintOptionsDialog, { PrintType } from '../../../../common/print/PrintOptionsDialog';
 import { IEntityExpanded } from '../../../../interfaces/entities';
@@ -13,6 +12,7 @@ import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemp
 import { IFile } from '../../../../interfaces/preview';
 import { getEntitiesTreeForPrint } from '../../../../services/entitiesService';
 import { lightTheme } from '../../../../theme';
+import { INestedRelationshipTemplates } from '../..';
 import { ComponentToPrint } from './ComponentToPrint';
 import './print.css';
 

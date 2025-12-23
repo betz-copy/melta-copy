@@ -1,6 +1,5 @@
-import CloseOutlined from '@mui/icons-material/CloseOutlined';
-
 import { PrintOutlined } from '@mui/icons-material';
+import CloseOutlined from '@mui/icons-material/CloseOutlined';
 import {
     Button,
     CircularProgress,
@@ -24,10 +23,10 @@ import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/proce
 import { IMongoStepTemplatePopulated } from '../../interfaces/processes/stepTemplate';
 import RelationshipSelection from '../../pages/Entity/components/print/RelationshipSelection';
 import { getFile } from '../../utils/getFileType';
+import MultipleSelect from '../inputs/MultipleSelect';
 import BlueTitle from '../MeltaDesigns/BlueTitle';
 import MeltaSwitch from '../MeltaDesigns/MeltaSwitch';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
-import MultipleSelect from '../inputs/MultipleSelect';
 
 type IOption = {
     show: boolean;

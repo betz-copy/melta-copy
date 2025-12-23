@@ -21,7 +21,7 @@ import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { expandedEntityToGraphData, fixHighlighted, getFixedGraphLinks, getGraphDataWithNodeSizes, updateNodeLabelIcons } from '../../utils/graph';
 import { drawLinkLabel, drawNode, lookAt } from '../../utils/graph/2DCanvas';
-import { LinkMiddlePoint3D, create3DLabel, create3DNodeDetails, lookAt3D, scale3DNode } from '../../utils/graph/3DCanvas';
+import { create3DLabel, create3DNodeDetails, LinkMiddlePoint3D, lookAt3D, scale3DNode } from '../../utils/graph/3DCanvas';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { PartialRequired, SharedProperties } from '../../utils/typeHelpers';

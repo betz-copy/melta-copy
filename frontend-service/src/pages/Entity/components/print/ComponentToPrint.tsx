@@ -20,7 +20,7 @@ const ComponentToPrint = React.forwardRef<
         entity?: IEntityTreeNode;
         filesToPrint?: IFile[];
         setSelectedFiles?: React.Dispatch<React.SetStateAction<IFile[]>>;
-         setFilesLoadingStatus: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+        setFilesLoadingStatus: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
         options: {
             showDisabled: boolean;
             showEntityDates: boolean;
