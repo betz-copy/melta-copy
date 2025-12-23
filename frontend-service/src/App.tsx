@@ -125,7 +125,7 @@ const App: React.FC = () => {
         };
 
         initUser();
-    }, [setUser, setDarkMode, navigate, location.length, location.replace]);
+    }, [setUser, navigate, workspaceStore]);
 
     if (isClientSide) return <ClientSidePage />;
 

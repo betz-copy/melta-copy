@@ -41,9 +41,7 @@ const NavButton: React.FC<NavButtonProps> = ({
             return;
         }
 
-        if (!isActive) {
-            sessionStorage.clear();
-        }
+        if (!isActive) sessionStorage.clear();
 
         onClick?.();
     };
