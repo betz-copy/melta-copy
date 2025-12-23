@@ -1,7 +1,6 @@
 import i18next from 'i18next';
 import { NotificationType } from './interfaces/notifications';
 import { ILabelIcon } from './utils/graph/helperTypes';
-import { M } from './utils/icons/fa6Icons';
 
 export const environment = {
     api: {
