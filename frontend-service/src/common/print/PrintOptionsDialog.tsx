@@ -113,12 +113,12 @@ const PrintOptionsDialog: React.FC<{
     const getPropertiesFiles = useCallback((): IFile[] => {
         if (type === PrintType.Entity) return getFilesFromTemplate(instance.entity.properties, template);
         return getFilesFromTemplate(instance.details, template.details);
-    }, [template, instance]);
+    }, [template, instance, type]);
 
     const getProcessStepsFiles = useCallback((): IFile[] => {
         if (type === PrintType.Entity) return [];
         return template.steps.flatMap((stepTemplate) => instance.steps.flatMap((step) => getFilesFromTemplate(step.properties ?? {}, stepTemplate)));
-    }, [instance, template]);
+    }, [instance, template, type]);
 
     useEffect(() => {
         const filterFiles = ({ contentType }: IFile) => contentType !== 'video' && contentType !== 'audio' && contentType !== 'unsupported';
@@ -128,13 +128,13 @@ const PrintOptionsDialog: React.FC<{
         setSelectedFiles([]);
     }, [getPropertiesFiles, getProcessStepsFiles, setFiles, setSelectedFiles]);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
     useEffect(() => {
-        setFilesLoadingStatus(
-            selectedFiles.reduce((acc, file) => {
-                return { ...acc, [file.id]: true };
-            }, {}),
-        );
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        const status: Record<string, boolean> = {};
+        for (const file of selectedFiles) {
+            status[file.id] = true;
+        }
+        setFilesLoadingStatus(status);
     }, [selectedFiles]);
 
     useEffect(() => {
@@ -208,6 +208,7 @@ const PrintOptionsDialog: React.FC<{
                                     label={i18next.t(value.label)}
                                     disabled={isDisabled}
                                     sx={{ color: '#53566E', fontSize: '14px' }}
+                                    key={value.label}
                                 />
                             );
                             return (

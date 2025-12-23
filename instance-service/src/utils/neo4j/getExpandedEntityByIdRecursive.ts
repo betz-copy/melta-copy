@@ -1,5 +1,3 @@
-/* eslint-disable no-restricted-syntax */
-/* eslint-disable no-await-in-loop */
 import { IMongoEntityTemplate, ISearchBatchBody } from '@microservices/shared';
 import { IGetExpandedEntityBody } from '../../express/entities/interface';
 import { templatesFilterToNeoQuery } from './searchBodyToNeoQuery';

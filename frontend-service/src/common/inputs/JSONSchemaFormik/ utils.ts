@@ -22,11 +22,8 @@ const changeRelatedUserFields = (properties: IProperties['properties'], changedU
                   })
                 : undefined;
         }
-        if (value.properties) {
-            acc[key] = changeRelatedUserFields(value.properties, changedUserKey, user);
-        } else if (value.expandedUserField?.relatedUserField === changedUserKey) {
-            acc[key] = user?.[value.expandedUserField.kartoffelField];
-        }
+        if (value.properties) acc[key] = changeRelatedUserFields(value.properties, changedUserKey, user);
+        else if (value.expandedUserField?.relatedUserField === changedUserKey) acc[key] = user?.[value.expandedUserField.kartoffelField];
 
         return acc;
     }, {});

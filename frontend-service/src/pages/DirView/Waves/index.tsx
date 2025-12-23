@@ -1,13 +1,16 @@
 import React, { useEffect, useRef } from 'react';
 import { waterSimulation } from './waterSimulation';
 
+type WaterSimulationInstance = ReturnType<typeof waterSimulation>;
+
 export const Waves: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
-    const cleanup = (simulation: any) => {
+    const cleanup = (simulation: WaterSimulationInstance) => {
         simulation.destroy();
     };
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: i trust Nadav
     useEffect(() => {
         const simulation = waterSimulation();
 

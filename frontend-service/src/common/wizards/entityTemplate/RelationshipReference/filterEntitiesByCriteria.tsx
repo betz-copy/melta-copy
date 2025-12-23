@@ -138,7 +138,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                                 case 'array':
                                     return 'set';
                                 default:
-                                    return selectedProperty.type;
+                                    return selectedProperty.type as any;
                             }
                         };
 

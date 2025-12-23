@@ -119,7 +119,6 @@ const EntityComponentToPrint: React.FC<IEntityComponentToPrintProps> = React.mem
                                         entityTemplate={template}
                                         entity={child}
                                         options={options}
-                                        showPreviewPropertiesOnly
                                         hierarchicalChildren={child.children}
                                         entityTemplates={entityTemplates}
                                         relationships={relationships}

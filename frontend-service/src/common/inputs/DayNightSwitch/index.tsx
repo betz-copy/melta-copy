@@ -15,6 +15,7 @@ export const DayNightSwitch: React.FC<DayNightSwitchProps> = ({ checked, onClick
     const checkedRef = useRef(checked);
     checkedRef.current = checked;
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         const stars = Array.from(document.getElementsByClassName('star'));
 
@@ -63,23 +64,21 @@ export const DayNightSwitch: React.FC<DayNightSwitchProps> = ({ checked, onClick
             .to('#day-content', { duration: animationDuration * 0.5, opacity: 0.5 }, animationDuration * 1.5);
 
         toNightAnimation.reverse();
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    }, []);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
-        if (checked) {
-            toNightAnimation.play();
-        } else {
-            toNightAnimation.reverse();
-        }
-    }, [checked]); // eslint-disable-line react-hooks/exhaustive-deps
+        if (checked) toNightAnimation.play();
+        else toNightAnimation.reverse();
+    }, [checked]);
 
     return (
         <div className="layout">
-            {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
             <label className="container">
                 <input id="input" type="checkbox" onClick={onClick} />
                 <span className="checkmark">
                     <svg id="toggle" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 34" width="60" height="34">
+                        <title id="dayNightSwitchTitle">Toggle day and night mode</title>{' '}
                         <defs>
                             <clipPath id="container">
                                 <rect width="60" height="34" rx="17" />
@@ -280,7 +279,6 @@ export const DayNightSwitch: React.FC<DayNightSwitchProps> = ({ checked, onClick
                                 <circle id="circle" cx="19" cy="17" r="10" />
                             </clipPath>
                         </defs>
-
                         <g clipPath="url(#container)">
                             <use id="back" href={`#${isDay ? 'day' : 'night'}`} />
                             <g clipPath="url(#switch)">
@@ -288,7 +286,6 @@ export const DayNightSwitch: React.FC<DayNightSwitchProps> = ({ checked, onClick
                             </g>
                             <rect className="inner-shadow" width="70" height="44" rx="20" />
                         </g>
-
                         <rect width="60" height="44" rx="17" opacity="0" />
                     </svg>
                 </span>

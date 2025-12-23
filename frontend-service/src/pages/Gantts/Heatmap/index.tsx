@@ -17,9 +17,10 @@ interface IHeatmapProps {
 }
 
 export const Heatmap: React.FC<IHeatmapProps> = ({ ganttEvents, groupByEntityResources, onInit }) => {
+    // biome-ignore lint/correctness/useExhaustiveDependencies: Yahalom knows what he's doing
     useEffect(() => {
         if (onInit) onInit();
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    }, []);
 
     const heatmapData = useMemo(
         () => groupByEntityResources && getGanttHeatmapData(ganttEvents, groupByEntityResources),

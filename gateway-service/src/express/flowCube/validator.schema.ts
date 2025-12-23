@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import Joi from 'joi';
 
 // POST /api/flow-cube/:workspaceId/entities/search/template/:templateId

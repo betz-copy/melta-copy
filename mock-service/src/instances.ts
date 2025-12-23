@@ -8,7 +8,7 @@ import axios from 'axios';
 import { JSONSchemaFaker } from 'json-schema-faker';
 import pLimit from 'p-limit';
 import config from './config';
-import { trycatch } from './utils';
+import { tryCatch } from './utils';
 import createAxiosInstance from './utils/axios';
 import { generateRandomLocation, generateRandomPolygon } from './utils/map';
 
@@ -127,7 +127,6 @@ export const createRelationshipInstances = async (
         const relevantDestinationEntities = entities.filter((entity) => entity.templateId === relationshipTemplate.destinationEntityId);
 
         if (relevantSourceEntities.length === 0 || relevantDestinationEntities.length === 0) {
-            // eslint-disable-next-line no-console
             console.warn('No relevant source or destination entities found for this template, skipping...');
             return [];
         }
@@ -153,7 +152,6 @@ export const createRelationshipInstances = async (
                     return data;
                 } catch (error) {
                     if (axios.isAxiosError(error) && error.response?.data.metadata?.errorCode === 'RELATIONSHIP_ALREADY_EXISTS') {
-                        // eslint-disable-next-line no-console
                         console.log('Relationship already exists, skipping...');
                     }
 
@@ -169,7 +167,7 @@ export const createRelationshipInstances = async (
 };
 
 export const isInstanceServiceAlive = async () => {
-    const { result, err } = await trycatch(() => axios.get(url + isAliveRoute));
+    const { result, err } = await tryCatch(() => axios.get(url + isAliveRoute));
 
     return { result, err };
 };

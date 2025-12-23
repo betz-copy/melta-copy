@@ -1,5 +1,5 @@
+import * as http from 'node:http';
 import { logger } from '@microservices/shared';
-import * as http from 'http';
 import { BucketItem, Client, CopyConditions } from 'minio';
 import { Readable } from 'stream';
 import config from '../../config';

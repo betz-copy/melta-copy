@@ -164,7 +164,6 @@ export const dateFilterToFilterOfTemplate = (
         case 'greaterThanOrEqual':
             return { [field]: { $gte: dateFrom } };
         case 'inRange': {
-            // eslint-disable-next-line no-case-declarations
             const dateTo =
                 filterType === FilterType.field
                     ? `${fieldFilterPrefix}${dateToString}`
@@ -210,7 +209,6 @@ export const dateTimeFilterToFilterOfTemplate = (
         case 'greaterThanOrEqual':
             return { [field]: { $gte: dateFrom } }; // include this day
         case 'inRange': {
-            // eslint-disable-next-line no-case-declarations
             const dateTo = FilterType.field ? `${fieldFilterPrefix}${dateToString}` : getDayEnd(new Date(dateToString!)).toISOString();
             return { [field]: { $gte: dateFrom, $lte: dateTo } };
         }

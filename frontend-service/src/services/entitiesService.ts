@@ -1,10 +1,8 @@
-/* eslint-disable no-param-reassign */
-
 import { mapValues } from 'lodash';
 import axios from '../axios';
+import { EntityWizardValues } from '../common/dialogs/entity';
 import { IUpdateMultipleEntitiesResponse } from '../common/EntitiesPage/MultiSelectStatusBar';
 import { IExternalId } from '../common/EntitiesTableOfTemplate';
-import { EntityWizardValues } from '../common/dialogs/entity';
 import urlToFile from '../common/fileConversions';
 import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
 import { environment } from '../globals';
@@ -357,7 +355,6 @@ const getBodyForUpdateRequest = async (
     formData.append(
         'properties',
         JSON.stringify(
-            // eslint-disable-next-line consistent-return
             mapValues(newEntityData.properties, (property, key) => {
                 switch (template.properties.properties[key]?.format) {
                     case 'relationshipReference':

@@ -1,8 +1,8 @@
 import { Box, Button, CircularProgress, DialogActions, DialogContent, DialogTitle, Grid, TextField } from '@mui/material';
+import { AxiosError } from 'axios';
 import { Form, Formik, FormikProps } from 'formik';
 import i18next from 'i18next';
-import _cloneDeep from 'lodash.clonedeep';
-import _isEqual from 'lodash.isequal';
+import { cloneDeep, isEqual } from 'lodash';
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -18,6 +18,10 @@ import { useWorkspaceStore } from '../../stores/workspace';
 import { createDialogCategories, isPermissionsEquals, userHasNoPermissions } from '../../utils/permissions/permissionOfUserDialog';
 import BlueTitle from '../MeltaDesigns/BlueTitle';
 import ManagePermissions from './managePermissions';
+
+export interface ErrorResponseData {
+    metadata?: { message?: string };
+}
 
 const RoleDialog: React.FC<{
     handleClose: () => void;
@@ -53,9 +57,9 @@ const RoleDialog: React.FC<{
     );
 
     const { mutate: createRole } = useMutation((formRole: IRole) => createRoleRequest(formRole.name, formRole.permissions), {
-        onError: (error: any) => {
+        onError: (error: AxiosError<ErrorResponseData>) => {
             console.error('failed to upsert permission. error:', error);
-            const uniqueRoleNameError = error.response.data.metadata.message === 'role name needs to be unique';
+            const uniqueRoleNameError = error.response?.data.metadata?.message === 'role name needs to be unique';
             toast.error(
                 i18next.t(
                     `permissions.permissionsOfRoleDialog.${
@@ -91,7 +95,7 @@ const RoleDialog: React.FC<{
 
                 onSuccess?.({ ...existingRole, permissions: newPermissions });
 
-                if (existingRole?._id === currentUser._id && !_isEqual(currentUser.currentWorkspacePermissions, newPermissions[workspace._id])) {
+                if (existingRole?._id === currentUser._id && !isEqual(currentUser.currentWorkspacePermissions, newPermissions[workspace._id])) {
                     setUser({
                         ...currentUser,
                         permissions: { ...currentUser.permissions, ...newPermissions },
@@ -109,7 +113,7 @@ const RoleDialog: React.FC<{
 
     return (
         <Formik
-            initialValues={existingRole ? _cloneDeep(existingRole) : defaultEmptyRole}
+            initialValues={existingRole ? cloneDeep(existingRole) : defaultEmptyRole}
             validationSchema={Yup.object({
                 name: Yup.string().nullable().required(i18next.t('validation.required')),
             }).unknown(true)}
@@ -178,7 +182,7 @@ const RoleDialog: React.FC<{
                             />
                         </DialogContent>
 
-                        <DialogActions sx={{ direction: 'rtl', marginRight: '1rem', marginBottom: '0.5rem' }}>
+                        <DialogActions sx={{ marginRight: '1rem', marginBottom: '0.5rem' }}>
                             <Grid container justifyContent="space-between">
                                 <Grid>
                                     {mode !== 'view' && (

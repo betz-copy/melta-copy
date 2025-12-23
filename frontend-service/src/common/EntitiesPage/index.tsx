@@ -1,8 +1,7 @@
 import { Box, Grid } from '@mui/material';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
-import _debounce from 'lodash.debounce';
-import mapValues from 'lodash.mapvalues';
+import { mapValues } from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -89,16 +88,13 @@ const EntitiesPage = <T extends IMongoEntityTemplatePopulated | IMongoChildTempl
                         .map((child) => child?._id);
 
                     [...childTemplateIds, templateId].map((tempId) => {
-                        if (templateTablesViewRef.current) {
-                            const reference = templateTablesViewRef.current!.templateTablesRefs?.[tempId];
-
-                            if (reference) reference.refreshServerSide();
-                        }
+                        const reference = templateTablesViewRef.current?.templateTablesRefs?.[tempId];
+                        if (reference) reference.refreshServerSide();
                     });
                 });
             }
         }
-    }, [updatedTemplateIds, viewMode]);
+    }, [updatedTemplateIds, viewMode, entityChildTemplates, searchInput, urlSemanticSearch, queryClient]);
 
     useEffect(() => {
         setSearchInput(search || '');

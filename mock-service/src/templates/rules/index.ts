@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import { IMongoEntityTemplateWithConstraintsPopulated, IMongoRelationshipTemplate, IMongoRule } from '@microservices/shared';
 import config from '../../config';
 import rulesCreator from '../../mocks/rules';

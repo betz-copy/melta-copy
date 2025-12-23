@@ -5,8 +5,8 @@ import { useCesium } from 'resium';
 import { environment } from '../../globals';
 import { IEntity } from '../../interfaces/entities';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import { parsePolygon, stringToCoordinates } from '../map';
 import { ICoordinateSearchResult, IPolygonSearchResult } from '../../interfaces/location';
+import { parsePolygon, stringToCoordinates } from '../map';
 
 const { squareLength } = environment.map;
 

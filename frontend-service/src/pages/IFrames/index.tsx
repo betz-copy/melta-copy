@@ -1,4 +1,3 @@
-/* eslint-disable react/no-array-index-key */
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
@@ -37,6 +36,7 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
     const screenWidth = window.innerWidth;
     const sideBarWidthPrec = (screenWidth - sideBarWidth) / screenWidth;
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: dependencies
     useEffect(() => {
         const iFramesIds = allIFrames?.map(({ _id }) => _id) || [];
         localStorage.setItem(localStorageKey, JSON.stringify(iFramesIds));
@@ -60,8 +60,7 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
 
         localStorage.setItem(sideBarOpenKey, `${isSideBarOpen}`);
         setIsDimensionsChange(true);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isSideBarOpen]);
+    }, [isSideBarOpen, sideBarWidthPrec]);
 
     return (
         <Grid dir="ltr" style={{ display: 'flex', flexWrap: 'wrap' }}>

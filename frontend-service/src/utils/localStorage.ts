@@ -1,5 +1,3 @@
-/* eslint-disable no-undef */
-
 export class LocalStorage {
     public static set(key: string, value: any) {
         localStorage.setItem(key, JSON.stringify(value));

@@ -9,10 +9,10 @@ import { IEntity } from '../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IGetUnits } from '../interfaces/units';
 import { useDarkModeStore } from '../stores/darkMode';
-import { HighlightText } from '../utils/HighlightText';
-import { containsHTMLTags, getFirstLine, getNumLines, renderHTML } from '../utils/HtmlTagsStringValue';
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
 import { formatToString, getPropertyColor, getUserAvatar } from '../utils/entityProperties';
+import { HighlightText } from '../utils/HighlightText';
+import { containsHTMLTags, getFirstLine, getNumLines, renderHTML } from '../utils/HtmlTagsStringValue';
 import { getFixedNumber, getTextDirection } from '../utils/stringValues';
 import BlueTitle from './MeltaDesigns/BlueTitle';
 import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
@@ -139,14 +139,14 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                 const propertyTitleColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#9398C2', {});
 
                 let innerContent: string | JSX.Element | undefined;
-                if (hideFieldsToDisplay.includes(propertyKey) && !isPrintingMode) innerContent = <>••••••••</>;
+                if (hideFieldsToDisplay.includes(propertyKey) && !isPrintingMode) innerContent = '••••••••';
                 else if (containsHtmlTags)
                     innerContent = viewFirstLineOfLongText
                         ? `${getFirstLine(stringFormatValue)}${getNumLines(stringFormatValue) > 1 ? '...' : ''}`
                         : renderHTML(stringFormatValue);
                 else if (propertyValue && calculateTime)
                     innerContent = <CalculateDateDifference date={stringFormatValue} searchValue={searchedText} />;
-                else if (propertyValue && type === 'number') innerContent = getFixedNumber(propertyValue);
+                else if (propertyValue && type === 'number') innerContent = getFixedNumber(propertyValue as number);
                 else if (format === 'relationshipReference' && entityTemplates && !relatedEntityAllowed) innerContent = '-';
                 else innerContent = stringFormatValue;
 

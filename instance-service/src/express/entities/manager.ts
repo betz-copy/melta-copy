@@ -1,6 +1,3 @@
-/* eslint-disable class-methods-use-this */
-/* eslint-disable no-continue */
-/* eslint-disable no-await-in-loop */
 import {
     ActionOnFail,
     ActionTypes,
@@ -42,6 +39,8 @@ import {
     IUpdatedFields,
     NotFoundError,
     Polygon,
+    PropertyFormat,
+    PropertyType,
     ServiceError,
     ValidationError,
     logger,
@@ -50,12 +49,7 @@ import { booleanPointInPolygon, featureCollection, intersect, point as turfPoint
 import { startOfToday, startOfYesterday } from 'date-fns';
 import { flatten, unflatten } from 'flatley';
 import { StatusCodes } from 'http-status-codes';
-import differenceWith from 'lodash.differencewith';
-import groupBy from 'lodash.groupby';
-import isEqual from 'lodash.isequal';
-import mapValues from 'lodash.mapvalues';
-import _partition from 'lodash.partition';
-import pickBy from 'lodash.pickby';
+import { cloneDeep, differenceWith, groupBy, isEqual, mapValues, partition, pickBy } from 'lodash';
 import { Neo4jError, Transaction } from 'neo4j-driver';
 import pLimit from 'p-limit';
 import { expandEntityToNeoQuery } from '../..//utils/neo4j/getExpandedEntityByIdRecursive';
@@ -624,7 +618,10 @@ class EntityManager extends DefaultManagerNeo4j {
                 } else {
                     const currentEntity = await this.getEntityById(entityId);
                     const currentEntityTemplate = entitiesTemplatesByIds.get(currentEntity.templateId)!;
-                    const currentNotPopulated = this.relationshipReferenceObjectToId(currentEntity, currentEntityTemplate);
+                    const currentNotPopulated = {
+                        ...currentEntity,
+                        properties: this.relationshipReferenceObjectToId(currentEntity, currentEntityTemplate),
+                    };
 
                     updatedFields = this.getUpdatedProperties(currentNotPopulated.properties, allProperties, currentEntityTemplate);
                     before = currentEntity.properties;
@@ -750,7 +747,7 @@ class EntityManager extends DefaultManagerNeo4j {
                 );
                 const ruleFailuresAfterAction = await this.runRulesOnEntity(transaction, createdEntity);
 
-                const [indicatorRules, rulesToThrowError]: [IRuleFailure[], IRuleFailure[]] = _partition(
+                const [indicatorRules, rulesToThrowError]: [IRuleFailure[], IRuleFailure[]] = partition(
                     ruleFailuresAfterAction,
                     (rule) => rule.rule.actionOnFail === ActionOnFail.INDICATOR,
                 );
@@ -1081,7 +1078,6 @@ class EntityManager extends DefaultManagerNeo4j {
             acc[key.replace(config.neo4j.relationshipReferencePropertySuffix, '')] = value;
         });
 
-        // eslint-disable-next-line no-param-reassign
         acc = unflatten(acc);
 
         Object.entries(acc).forEach(([key, value]) => {
@@ -1507,16 +1503,19 @@ class EntityManager extends DefaultManagerNeo4j {
         newEntityProperties: Record<string, any>,
         entityTemplate: IMongoEntityTemplate,
     ) {
+        const unPopulatedOldProperties = this.relationshipReferenceObjectToId(oldEntityProperties, entityTemplate);
+        const unPopulatedNewProperties = this.relationshipReferenceObjectToId(newEntityProperties, entityTemplate);
+
         const propertiesWithGeneratedProperties: Record<string, IEntitySingleProperty> = {
             ...entityTemplate.properties.properties,
-            disabled: { title: `doesn'tMatter`, type: 'boolean' },
-            createdAt: { title: `doesn'tMatter`, type: 'string', format: 'date-time' },
-            updatedAt: { title: `doesn'tMatter`, type: 'string', format: 'date-time' },
+            disabled: { title: `doesn'tMatter`, type: PropertyType.boolean },
+            createdAt: { title: `doesn'tMatter`, type: PropertyType.string, format: PropertyFormat['date-time'] },
+            updatedAt: { title: `doesn'tMatter`, type: PropertyType.string, format: PropertyFormat['date-time'] },
         };
 
         const templateUpdatedProperties = pickBy(
             propertiesWithGeneratedProperties,
-            (_propertyTemplate, key) => !isEqual(newEntityProperties[key], oldEntityProperties[key]),
+            (_propertyTemplate, key) => !isEqual(unPopulatedNewProperties[key], unPopulatedOldProperties[key]),
         );
 
         return Object.keys(templateUpdatedProperties);
@@ -1683,9 +1682,11 @@ class EntityManager extends DefaultManagerNeo4j {
         const propertiesToUpdate = { ...entityProperties, ...defaultValues };
 
         const entity = await this.getEntityByIdInTransaction(id, transaction);
+
         if (entity.properties.disabled) throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
 
-        const updatedProperties = this.getKeysOfUpdatedProperties(entity.properties, { ...propertiesToUpdate }, entityTemplate);
+        const updatedProperties = this.getKeysOfUpdatedProperties(entity.properties, propertiesToUpdate, entityTemplate);
+
         const updatedColoredFields = indicatorRules ? this.getColoredFields(indicatorRules.map(({ rule }) => rule)) : undefined;
 
         const { fixedProperties } = await this.handleRelationshipReferenceFieldsChanges(
@@ -1770,12 +1771,12 @@ class EntityManager extends DefaultManagerNeo4j {
         return { updatedEntity, activityLogsToCreate };
     }
 
-    relationshipReferenceObjectToId(entity: IEntity, entityTemplate: IMongoEntityTemplate) {
-        const entityAfterManipulations = JSON.parse(JSON.stringify(entity.properties));
+    relationshipReferenceObjectToId(entityProperties: IEntity['properties'], entityTemplate: IMongoEntityTemplate) {
+        const entityAfterManipulations = cloneDeep(entityProperties);
 
         Object.entries(entityTemplate.properties.properties).forEach(([name, value]) => {
-            if (name in entity.properties) {
-                const propertyValue = entity.properties[name];
+            if (name in entityProperties) {
+                const propertyValue = entityProperties[name];
 
                 if (value.format === 'relationshipReference' && typeof propertyValue !== 'string') {
                     entityAfterManipulations[name] = (propertyValue as IEntity).properties._id;
@@ -1783,7 +1784,7 @@ class EntityManager extends DefaultManagerNeo4j {
             }
         });
 
-        return { ...entity, properties: entityAfterManipulations } as IEntity;
+        return entityAfterManipulations as IEntity['properties'];
     }
 
     async updateEntityById(
@@ -1796,7 +1797,7 @@ class EntityManager extends DefaultManagerNeo4j {
         convertToRelationshipField = false,
     ) {
         const entity = await this.getEntityById(id);
-        const unPopulatedEntity = this.relationshipReferenceObjectToId(entity, entityTemplate);
+        const unPopulatedOldEntityProperties = this.relationshipReferenceObjectToId(entity, entityTemplate);
 
         if (entity.properties.disabled) throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
 
@@ -1807,7 +1808,10 @@ class EntityManager extends DefaultManagerNeo4j {
         }
 
         if (template.actions && isBodyFunctionHasContent(template.actions, IEntityCrudAction.onUpdateEntity)) {
-            const actions = await this.buildActionsArray(IEntityCrudAction.onUpdateEntity, entityProperties, template, userId, unPopulatedEntity);
+            const actions = await this.buildActionsArray(IEntityCrudAction.onUpdateEntity, entityProperties, template, userId, {
+                ...entity,
+                properties: unPopulatedOldEntityProperties,
+            });
 
             const bulkManager = new BulkActionManager(this.workspaceId);
             const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId); //
@@ -1819,7 +1823,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
         return this.neo4jClient
             .performComplexTransaction('writeTransaction', async (transaction) => {
-                const updatedProperties = this.getKeysOfUpdatedProperties(entity.properties, { ...entityProperties }, template);
+                const updatedProperties = this.getKeysOfUpdatedProperties(entity.properties, entityProperties, template);
                 const ruleFailuresBeforeAction = await this.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
 
                 const { updatedEntity, activityLogsToCreate } = await this.updateEntityByIdInnerTransaction(
@@ -1834,7 +1838,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
                 const ruleFailuresAfterAction = await this.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
 
-                const [indicatorRules, rulesToThrowError]: [IRuleFailure[], IRuleFailure[]] = _partition(
+                const [indicatorRules, rulesToThrowError]: [IRuleFailure[], IRuleFailure[]] = partition(
                     ruleFailuresAfterAction,
                     ({ rule: { actionOnFail } }) => actionOnFail === ActionOnFail.INDICATOR,
                 );
@@ -1918,7 +1922,7 @@ class EntityManager extends DefaultManagerNeo4j {
         field: any,
         transaction: Transaction,
     ) {
-        let updateRelatedEntitiesQuery;
+        let updateRelatedEntitiesQuery: string;
         const originalChangedEntityIds = originalEntities.map((node) => node.properties._id);
         const entitiesNeedToUpdate = await this.getRelatedEntitiesOfEntity(templateId, originalChangedEntityIds, transaction);
 
@@ -2025,21 +2029,22 @@ class EntityManager extends DefaultManagerNeo4j {
     }
 
     private buildConstraintsOfTemplate(templateId: string, constraints: IConstraint[]) {
-        return constraints.reduce<IConstraintsOfTemplate>(
-            (acc, curr) => ({
-                ...acc,
-                requiredConstraints: curr.type === 'REQUIRED' ? [...acc.requiredConstraints, curr.property] : acc.requiredConstraints,
-                uniqueConstraints:
-                    curr.type === 'UNIQUE'
-                        ? [...acc.uniqueConstraints, { groupName: curr.uniqueGroupName, properties: curr.properties }]
-                        : acc.uniqueConstraints,
-            }),
-            {
-                templateId,
-                requiredConstraints: [],
-                uniqueConstraints: [],
-            },
-        );
+        const result: IConstraintsOfTemplate = {
+            templateId,
+            requiredConstraints: [],
+            uniqueConstraints: [],
+        };
+
+        for (const curr of constraints) {
+            if (curr.type === 'REQUIRED') result.requiredConstraints.push(curr.property);
+            else if (curr.type === 'UNIQUE')
+                result.uniqueConstraints.push({
+                    groupName: curr.uniqueGroupName,
+                    properties: curr.properties,
+                });
+        }
+
+        return result;
     }
 
     async getConstraintsOfTemplate(templateId: string) {
@@ -2267,26 +2272,26 @@ class EntityManager extends DefaultManagerNeo4j {
     removeRelationshipReferences(relatedEntityTemplate: IMongoEntityTemplate, property: string, propertiesToRemove: string[]) {
         const propertiesWithGeneratedProperties: Record<string, IEntitySingleProperty> = {
             ...relatedEntityTemplate.properties.properties,
-            disabled: { title: 'disabled', type: 'string' },
-            createdAt: { title: 'createdAt', type: 'string', format: 'date-time' },
-            updatedAt: { title: 'updatedAt', type: 'string', format: 'date-time' },
-            _id: { title: '_id', type: 'string' },
+            disabled: { title: 'disabled', type: PropertyType.string },
+            createdAt: { title: 'createdAt', type: PropertyType.string, format: PropertyFormat['date-time'] },
+            updatedAt: { title: 'updatedAt', type: PropertyType.string, format: PropertyFormat['date-time'] },
+            _id: { title: '_id', type: PropertyType.string },
         };
 
         Object.entries(propertiesWithGeneratedProperties).forEach(([key, value]) => {
             propertiesToRemove.push(`${property}.properties.${key}${config.neo4j.relationshipReferencePropertySuffix}`);
 
-            if (value.type !== 'string')
+            if (value.type !== PropertyType.string)
                 propertiesToRemove.push(
                     `${property}.properties.${key}${config.neo4j.stringPropertySuffix}${config.neo4j.relationshipReferencePropertySuffix}`,
                 );
 
-            if (value.type === 'boolean')
+            if (value.type === PropertyType.boolean)
                 propertiesToRemove.push(
                     `${property}.properties.${key}${config.neo4j.booleanPropertySuffix}${config.neo4j.relationshipReferencePropertySuffix}`,
                 );
 
-            if (value.format === 'fileId' || (value.type === 'array' && value.items?.format === 'fileId'))
+            if (value.format === PropertyFormat.fileId || (value.type === PropertyType.array && value.items?.format === PropertyFormat.fileId))
                 propertiesToRemove.push(
                     `${property}.properties.${key}${config.neo4j.filePropertySuffix}${config.neo4j.relationshipReferencePropertySuffix}`,
                 );
@@ -2314,12 +2319,12 @@ class EntityManager extends DefaultManagerNeo4j {
         for (const property of properties) {
             const propertyTemplate = currentTemplateProperties[property];
 
-            if (propertyTemplate.format === 'user') {
+            if (propertyTemplate.format === PropertyFormat.user) {
                 propertiesToRemove.push(...this.getUserProperties(property));
                 continue;
             }
 
-            if (propertyTemplate.items?.format === 'user') {
+            if (propertyTemplate.items?.format === PropertyFormat.user) {
                 propertiesToRemove.push(...this.getUsersArrayProperties(property));
                 continue;
             }
@@ -2327,12 +2332,16 @@ class EntityManager extends DefaultManagerNeo4j {
             const { type, format, items } = propertyTemplate;
             propertiesToRemove.push(property);
 
-            if (type !== 'string') propertiesToRemove.push(`${property}${config.neo4j.stringPropertySuffix}`);
-            if (type === 'boolean') propertiesToRemove.push(`${property}${config.neo4j.booleanPropertySuffix}`);
-            if (format === 'fileId' || (type === 'array' && items?.format === 'fileId') || format === 'signature')
+            if (type !== PropertyType.string) propertiesToRemove.push(`${property}${config.neo4j.stringPropertySuffix}`);
+            if (type === PropertyType.boolean) propertiesToRemove.push(`${property}${config.neo4j.booleanPropertySuffix}`);
+            if (
+                format === PropertyFormat.fileId ||
+                (type === PropertyType.array && items?.format === PropertyFormat.fileId) ||
+                format === PropertyFormat.signature
+            )
                 propertiesToRemove.push(`${property}${config.neo4j.filePropertySuffix}`);
 
-            if (format !== 'relationshipReference') continue;
+            if (format !== PropertyFormat.relationshipReference) continue;
 
             relationshipTemplatesToRemove.push(propertyTemplate.relationshipReference?.relationshipTemplateId as string);
 

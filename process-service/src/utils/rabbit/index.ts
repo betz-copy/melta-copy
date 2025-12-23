@@ -1,5 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-
 import { logger } from '@microservices/shared';
 import { menash } from 'menashmq';
 import config from '../../config';

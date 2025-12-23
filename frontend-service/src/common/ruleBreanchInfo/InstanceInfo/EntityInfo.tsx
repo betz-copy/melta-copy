@@ -57,7 +57,6 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({ entity, entityTemplate, 
     );
 
     const entityPropertiesTooltip =
-        // eslint-disable-next-line no-nested-ternary
         !entityTemplate || !entity ? (
             ''
         ) : !entityTemplate.propertiesPreview.length ? (

@@ -1,4 +1,4 @@
-import { Grid, InputLabel } from '@mui/material';
+import { Grid, InputLabel, useTheme } from '@mui/material';
 import { ErrorSchema } from '@rjsf/utils';
 import React, { useState } from 'react';
 import ReactQuill, { DeltaStatic, EmitterSource } from 'react-quill-new';
@@ -6,7 +6,7 @@ import 'react-quill-new/dist/quill.snow.css';
 import '../../css/quill.css';
 import { environment } from '../../globals';
 
-const { emptyHtmlStringValues, errorColor } = environment;
+const { emptyHtmlStringValues } = environment;
 
 const TextArea = ({
     id,
@@ -29,6 +29,7 @@ const TextArea = ({
     toPrint?: boolean;
     error?: boolean;
 }) => {
+    const theme = useTheme();
     const [showLabel, setShowLabel] = useState<boolean>(false);
 
     const handleChange = (_content: string, _delta: DeltaStatic, _source: EmitterSource, editor: ReactQuill.UnprivilegedEditor) => {
@@ -53,8 +54,12 @@ const TextArea = ({
     const formats = ['header', 'font', 'size', 'bold', 'italic', 'underline', 'strike', 'blockquote', 'list', 'indent', 'direction', 'align'];
 
     const editorStyle: React.CSSProperties = {
-        border: readonly ? 'none' : error ? `1px solid ${errorColor}` : (showLabel && '1px solid #1E2775') || '1px solid #CCCFE5',
-        borderBottom: readonly ? '1px solid gray' : error ? `1px solid ${errorColor}` : (showLabel && '1px solid #1E2775') || '1px solid #CCCFE5',
+        border: readonly ? 'none' : error ? `1px solid error` : (showLabel && `1px solid ${theme.palette.primary.main}`) || '1px solid #CCCFE5',
+        borderBottom: readonly
+            ? '1px solid gray'
+            : error
+              ? `1px solid error`
+              : (showLabel && `1px solid ${theme.palette.primary.main}`) || '1px solid #CCCFE5',
         transition: 'border-color 0.3s',
     };
 
@@ -76,7 +81,7 @@ const TextArea = ({
                         transition: 'top 0.3s',
                         transform: 'translate(-14px,-9px) scale(0.75)',
                         transformOrigin: 'top-right',
-                        color: error ? errorColor : showLabel ? '#1E2775' : '#9398C2',
+                        color: error ? 'error' : theme.palette.primary.main,
                     }}
                     shrink={readonly || undefined}
                 >
@@ -100,7 +105,7 @@ const TextArea = ({
                 <div
                     className="ql-editor-placeholder"
                     style={{
-                        color: error ? errorColor : '#9398C2',
+                        color: error ? 'error' : '#9398C2',
                         padding: '8.5px 14px',
                         position: 'absolute',
                         right: 0,

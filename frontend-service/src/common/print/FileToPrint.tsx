@@ -19,13 +19,15 @@ const FileToPrint: React.FC<{
     const { data, isFetching: isPreviewLoading } = useFilePreview(file.id, file.contentType, setNoSuchKeyError);
     const onLoadSuccess = ({ numPages }: { numPages: number }) => setNumOfPages(numPages);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
     useEffect(() => {
         if (file.contentType === 'image' && isPreviewLoading === false) onPreviewLoadingFinished();
-    }, [isPreviewLoading === true]);
+    }, [isPreviewLoading, file.contentType]);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
     useEffect(() => {
         if (noSuchKeyError) onPreviewLoadingFinished(true);
-    }, [noSuchKeyError === true]);
+    }, [noSuchKeyError]);
 
     return (
         <Grid ref={fileRef}>
