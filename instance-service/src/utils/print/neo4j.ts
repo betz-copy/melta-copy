@@ -1,4 +1,9 @@
+import config from '../../config';
 import { IGetExpandedEntityBody } from '../../express/entities/interface';
+
+const {
+    neo4j: { relationshipPathSeparator },
+} = config;
 
 /**
  * Generates a Cypher query to retrieve a spanning tree of entities starting from a root entity.
@@ -29,10 +34,10 @@ export const getOnlyTemplateIdsTree = (
             YIELD path
 
             WITH relationships(path) AS rels
-            WITH [r IN rels | type(r) + "&" + r._id] AS relationshipIds, rels
+            WITH [r IN rels | type(r) + "${relationshipPathSeparator}" + r._id] AS relationshipIds, rels
 
             UNWIND rels AS r
-            RETURN relationshipIds, type(r) + "&" + r._id AS relationshipKey, count(*) AS entitiesCount
+            RETURN relationshipIds, type(r) + "${relationshipPathSeparator}" + r._id AS relationshipKey, count(*) AS entitiesCount
         `,
         parameters: {},
     };

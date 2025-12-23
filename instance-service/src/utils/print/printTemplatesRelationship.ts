@@ -1,6 +1,11 @@
 import { IMongoEntityTemplate, IMongoRelationshipTemplate } from '@microservices/shared';
 import { QueryResult } from 'neo4j-driver';
+import config from '../../config';
 import { IRelationShipTreeNode, ITreeNodeMap } from '../../express/entities/interface';
+
+const {
+    neo4j: { relationshipPathSeparator },
+} = config;
 
 type EntitiesCountMap = Map<string, number>;
 
@@ -23,7 +28,7 @@ const buildEntitiesCountMap = (records: QueryResult['records']): EntitiesCountMa
 const insertPathIntoTree = (treeMap: ITreeNodeMap, [head, ...tail]: string[]): void => {
     if (!head) return;
 
-    const [type, id] = head.split('&');
+    const [type, id] = head.split(relationshipPathSeparator);
     const existingNode = treeMap.get(type);
 
     if (existingNode) {
@@ -55,7 +60,7 @@ const buildTreeRoots = (paths: string[][]): ITreeNodeMap => {
  * by summing counts of all its underlying Neo4j relationships.
  */
 const calculateEntitiesCount = (neoRelIds: Set<string>, mongoRelId: string, entitiesCountMap: EntitiesCountMap): number =>
-    [...neoRelIds].reduce((sum, relId) => sum + (entitiesCountMap.get(`${mongoRelId}&${relId}`) ?? 0), 0);
+    [...neoRelIds].reduce((sum, relId) => sum + (entitiesCountMap.get(`${mongoRelId}${relationshipPathSeparator}${relId}`) ?? 0), 0);
 
 /**
  * Recursively constructs the full relationship tree nodes.
@@ -96,8 +101,8 @@ const buildRelationshipNode = (
 ): IRelationShipTreeNode | null => {
     if (!treeNode) return null;
 
-    const mongoRelId = treeNode?._id.split('&')[0];
-    const nodePath = currentPath ? `${currentPath}&${mongoRelId}` : mongoRelId;
+    const mongoRelId = treeNode?._id.split(relationshipPathSeparator)[0];
+    const nodePath = currentPath ? `${currentPath}${relationshipPathSeparator}${mongoRelId}` : mongoRelId;
 
     const relationship = relationShipsMap.get(mongoRelId);
     if (!relationship) return null;
