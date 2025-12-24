@@ -6,6 +6,8 @@ import {
     IEnumPropertiesColors,
     IMongoEntityTemplatePopulated,
     locationConverterToString,
+    PropertyFormat,
+    PropertyType,
     TemplateItem,
 } from '@microservices/shared';
 import Excel, { Cell } from 'exceljs';
@@ -182,9 +184,12 @@ const createWorksheet = async (
     let columnIndex = 0; // TODO: make data validation work in office excel
 
     Object.entries(template.properties.properties).forEach(([propertyKey, propertyTemplate]) => {
-        const shouldAddColumn = isLoadMode
-            ? showRelationshipRefColumn(propertyKey, propertyTemplate, relatedTemplatesMap, requiredConstraints) && isIncludedColumn(propertyTemplate)
-            : displayColumns?.includes(propertyKey);
+        const showRelationshipRef = showRelationshipRefColumn(propertyKey, propertyTemplate, relatedTemplatesMap, requiredConstraints);
+        const shouldAddColumn = showRelationshipRef
+            ? isLoadMode
+                ? isIncludedColumn(propertyTemplate)
+                : displayColumns?.includes(propertyKey)
+            : false;
 
         if (shouldAddColumn) {
             // TODO: make data validation work in office excel
@@ -427,12 +432,32 @@ const styleAWorksheet = (
 
     const { disabled, createdAt, updatedAt } = template;
 
-    const allProperties: Record<string, IEntitySingleProperty> = Object.entries({ ...template.properties.properties, disabled, createdAt, updatedAt })
-        .filter(([key]) => displayColumns?.includes(key))
-        .reduce((acc, [key, value]) => {
-            acc[key] = value;
+    const mongoProperties = {
+        disabled: { title: 'disabled', type: PropertyType.string },
+        createdAt: { title: 'createdAt', type: PropertyType.string, format: PropertyFormat['date-time'] },
+        updatedAt: { title: 'updatedAt', type: PropertyType.string, format: PropertyFormat['date-time'] },
+    };
+
+    const allProperties = Object.entries({
+        ...template.properties.properties,
+        disabled,
+        createdAt,
+        updatedAt,
+    }).reduce<Record<string, IEntitySingleProperty>>((acc, [key, value]) => {
+        if (!displayColumns?.includes(key)) return acc;
+
+        if (Object.keys(mongoProperties).includes(key)) {
+            acc[key] = mongoProperties[key];
             return acc;
-        }, {});
+        }
+
+        const property = value as unknown as IEntitySingleProperty;
+
+        if (!showRelationshipRefColumn(key, property, relatedTemplatesMap, [])) return acc;
+
+        acc[key] = property;
+        return acc;
+    }, {});
 
     Object.entries(allProperties).forEach(([key, value], columnIndex) => {
         rows.forEach((row, index) => {
