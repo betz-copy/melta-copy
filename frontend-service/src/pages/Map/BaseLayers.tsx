@@ -7,6 +7,8 @@ import { CesiumComponentRef } from 'resium';
 import MeltaCheckbox from '../../common/MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
 import { BackendConfigState } from '../../services/backendConfigService';
+import { useQuery } from 'react-query';
+import { getMapLayer } from '../../services/mapService';
 
 type LayerProvider = {
     id: string;

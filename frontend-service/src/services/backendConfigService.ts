@@ -12,6 +12,12 @@ export interface BackendConfigState {
     };
     mapLayers: Record<string, string>;
     textLayers: Record<string, string>;
+    getMapLayers: {
+        url: string, 
+        params: string, 
+        body: string, 
+        token: string
+    },
     deleteEntitiesLimit: number;
     meltaUpdates: Record<string, string>;
     meltaUpdatesDescription: string;

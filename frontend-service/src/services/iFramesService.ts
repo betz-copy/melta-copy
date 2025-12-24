@@ -4,7 +4,10 @@ import { environment } from '../globals';
 import { IMongoIFrame, ISearchIFramesBody } from '../interfaces/iFrames';
 import { getFileName } from '../utils/getFileName';
 
-const { iFrames } = environment.api;
+const { iFrames } 
+
+
+= environment.api;
 
 const iFrameObjectToIFrameForm = (iFrame: IMongoIFrame | null): IFrameWizardValues | undefined => {
     if (!iFrame) return undefined;

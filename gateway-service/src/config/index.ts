@@ -39,16 +39,22 @@ const config = {
             })
             .required()
             .asJsonObject(),
-        textLayers: env
-            .get('FRONTEND_CONFIG_TEXT_LAYERS')
-            .default({
-                'Labels (OSM Hot)': 'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
-                'Hillshading (Wikimedia)': 'https://tiles.wmflabs.org/hillshading/{z}/{x}/{y}.png',
-                'Boundaries (OpenMapTiles)': 'https://{s}.tile.opentiles.org/admin/{z}/{x}/{y}.png',
-            })
-            .required()
-            .asJsonObject(),
-        isOutsideDevelopment: env.get('FRONTEND_CONFIG_IS_OUTSIDE_DEVELOPMENT').default('true').required().asBool(),
+    textLayers: env
+        .get('FRONTEND_CONFIG_TEXT_LAYERS')
+        .default({
+            'Labels (OSM Hot)': 'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+            'Hillshading (Wikimedia)': 'https://tiles.wmflabs.org/hillshading/{z}/{x}/{y}.png',
+            'Boundaries (OpenMapTiles)': 'https://{s}.tile.opentiles.org/admin/{z}/{x}/{y}.png',
+        })
+        .required()
+        .asJsonObject(),
+    getMapLayers: {
+        token: env.get('FRONTEND_MAP_TOKEN').asString(),
+        body: env.get('FRONTEND_MAP_BODY').asString(),
+        url: env.get('FRONTEND_MAP_URL').asString(),
+        params: env.get('FRONTEND_MAP_PARAMS').asString(),
+    },
+    isOutsideDevelopment: env.get('FRONTEND_CONFIG_IS_OUTSIDE_DEVELOPMENT').default('true').required().asBool(),
 
         agGridLimit: {
             deleteLimit: env.get('DELETE_ENTITIES_MAX_LIMIT').default(1000).asIntPositive(),
