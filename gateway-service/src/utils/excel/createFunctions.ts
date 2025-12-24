@@ -430,29 +430,25 @@ const styleAWorksheet = (
         cell.alignment = excelStyle.columnHeader.alignment;
     });
 
-    const { disabled, createdAt, updatedAt } = template;
-
     const mongoProperties = {
         disabled: { title: 'disabled', type: PropertyType.string },
         createdAt: { title: 'createdAt', type: PropertyType.string, format: PropertyFormat['date-time'] },
         updatedAt: { title: 'updatedAt', type: PropertyType.string, format: PropertyFormat['date-time'] },
     };
 
-    const allProperties = Object.entries({
+    const allProperties = Object.keys({
         ...template.properties.properties,
-        disabled,
-        createdAt,
-        updatedAt,
-    }).reduce<Record<string, IEntitySingleProperty>>((acc, [key, value]) => {
+        ...mongoProperties,
+    }).reduce<Record<string, IEntitySingleProperty>>((acc, key) => {
         if (!displayColumns?.includes(key)) return acc;
 
-        if (Object.keys(mongoProperties).includes(key)) {
+        if (key in mongoProperties) {
             acc[key] = mongoProperties[key];
             return acc;
         }
 
-        const property = value as unknown as IEntitySingleProperty;
-
+        const property = template.properties.properties[key];
+        if (!property) return acc;
         if (!showRelationshipRefColumn(key, property, relatedTemplatesMap, [])) return acc;
 
         acc[key] = property;
@@ -464,7 +460,7 @@ const styleAWorksheet = (
             const rowIndex = index + skip;
             const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${rowIndex + SKIP_ROW_HEADER}`);
 
-            if (!isIncludedEditColumn(value, row.disabled, disabled)) readOnlyCell(cell);
+            if (!isIncludedEditColumn(value, row.disabled, template.disabled)) readOnlyCell(cell);
 
             if (row[key] !== undefined && value !== undefined) {
                 cell.alignment = excelStyle.cell.alignment;
