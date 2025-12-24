@@ -30,7 +30,7 @@ const Print: React.FC<{
 
     const [isShowDisabled, setIsShowDisabled] = useState<boolean>(true);
     const [showEntityDates, setShowEntityDates] = useState<boolean>(true);
-    const [showPreviewPropertiesOnly, setShowPreviewPropertiesOnly] = useState<boolean>(false);
+    const [showPreviewPropertiesOnly, setShowPreviewPropertiesOnly] = useState<boolean>(true);
     const [showEntityPrintCheckbox, setShowEntityPrintCheckbox] = useState<boolean>(false);
     const [appendSignatureField, setAppendSignatureField] = useState<boolean>(false);
 
