@@ -3,12 +3,13 @@ import { Box, Divider, FormControlLabel, Grid, IconButton, Radio, RadioGroup, Ty
 import * as Cesium from 'cesium';
 import i18next from 'i18next';
 import React, { RefObject, useCallback, useEffect, useMemo, useState } from 'react';
+import { useQuery } from 'react-query';
 import { CesiumComponentRef } from 'resium';
 import MeltaCheckbox from '../../common/MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
 import { BackendConfigState } from '../../services/backendConfigService';
-import { useQuery } from 'react-query';
 import { getMapLayer } from '../../services/mapService';
+import { extractImageryUrl } from '../../utils/map';
 
 type LayerProvider = {
     id: string;
@@ -24,7 +25,11 @@ export const BaseLayers: React.FC<{
 
     const [isOpen, setIsOpen] = useState<boolean>(false);
 
-    const { mapLayers, textLayers } = config;
+    const {
+        mapLayers,
+        textLayers,
+        getMapLayers: { url, params, body, token },
+    } = config;
 
     const providers = useMemo<LayerProvider[]>(() => {
         const mapLayerArray = Object.entries(mapLayers).map(([name, url]) => ({
@@ -54,6 +59,16 @@ export const BaseLayers: React.FC<{
             return next;
         });
     }, []);
+
+    const {
+        data: imageryUrl,
+        isLoading,
+        error,
+    } = useQuery(['getMapLayer', url, params, body, token], () => async () => {
+        const xml = await getMapLayer(url, params, body, token);
+
+        return extractImageryUrl(xml);
+    });
 
     useEffect(() => {
         const viewer = viewerRef.current?.cesiumElement;

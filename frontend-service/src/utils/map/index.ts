@@ -1,4 +1,5 @@
 import { Cartesian3 } from 'cesium';
+import { XMLParser } from 'fast-xml-parser';
 import { environment } from '../../globals';
 import { IEntity, IFilterOfField, SplitBy } from '../../interfaces/entities';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -184,3 +185,23 @@ export const getFilteredItems = (
     polygons: IPolygonSearchResult[],
     coordinates: ICoordinateSearchResult[],
 ) => [...polygons, ...coordinates].filter((item) => matchesAutoSearch(item, autoSearch) && matchesListFilters(item, listFields, sourceTemplateId));
+
+const xmlParser = new XMLParser({
+    ignoreAttributes: false,
+    attributeNamePrefix: '',
+});
+
+export const extractImageryUrl = (xml: string): string => {
+    const json = xmlParser.parse(xml);
+
+    const layers = json?.Layer;
+    const list = Array.isArray(layers) ? layers : [layers];
+
+    const match = list.find((l) => l.schema === 'WBMS_BASE'); /// change to variable
+
+    if (!match?.Url) {
+        throw new Error('schema="WBMS_BASE" layer not found');
+    }
+
+    return match.Url;
+};
