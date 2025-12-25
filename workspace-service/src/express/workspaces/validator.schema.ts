@@ -1,3 +1,4 @@
+import { FilePathSchema, HexColorSchema, MongoIdSchema, WorkspaceNameSchema } from '@packages/utils';
 import { Colors, WorkspaceTypes } from '@packages/workspace';
 import * as Joi from 'joi';
 

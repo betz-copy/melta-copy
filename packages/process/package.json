@@ -22,7 +22,7 @@
         "typescript": "^5.6.2"
     },
     "dependencies": {
-        "@packages/entity": "*",
-        "@packages/entity-template": "*"
+        "@packages/entity": "workspace:*",
+        "@packages/entity-template": "workspace:*"
     }
 }

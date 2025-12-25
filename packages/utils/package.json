@@ -4,10 +4,12 @@
     "description": "utils package",
     "type": "commonjs",
     "main": "dist/index.js",
+    "module": "dist/index.mjs",
     "types": "src/index.ts",
     "exports": {
         ".": {
             "types": "./dist/index.d.ts",
+            "import": "./dist/index.mjs",
             "require": "./dist/index.js"
         }
     },
@@ -16,8 +18,8 @@
         "clean": "rimraf dist"
     },
     "dependencies": {
-        "@packages/common": "*",
-        "@packages/config": "*",
+        "@packages/common": "workspace:*",
+        "@packages/config": "workspace:*",
         "neo4j-driver": "^5.23.0",
         "proj4": "^2.15.0",
         "express": "^4.21.2",

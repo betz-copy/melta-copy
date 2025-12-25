@@ -22,8 +22,8 @@
         "typescript": "^5.6.2"
     },
     "dependencies": {
-        "@packages/chart": "*",
-        "@packages/child-template": "*",
-        "@packages/iframe": "*"
+        "@packages/chart": "workspace:*",
+        "@packages/child-template": "workspace:*",
+        "@packages/iframe": "workspace:*"
     }
 }

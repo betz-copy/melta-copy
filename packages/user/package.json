@@ -18,10 +18,10 @@
         "clean": "rimraf dist"
     },
     "dependencies": {
-        "@packages/common": "*",
-        "@packages/notification": "*",
-        "@packages/permission": "*",
-        "@packages/role": "*"
+        "@packages/common": "workspace:*",
+        "@packages/notification": "workspace:*",
+        "@packages/permission": "workspace:*",
+        "@packages/role": "workspace:*"
     },
     "devDependencies": {
         "tsup": "^8.5.1",

@@ -1,4 +1,3 @@
-import { resolve } from 'path';
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
@@ -20,9 +19,4 @@ export default defineConfig({
     clean: true,
     shims: true,
     external: [/^@packages\//],
-    esbuildOptions(options) {
-        options.alias = {
-            '@packages': resolve(__dirname),
-        };
-    },
 });
