@@ -1,9 +1,8 @@
 import { CloseOutlined as DeleteIcon } from '@mui/icons-material';
 import { Box, Grid, IconButton, Pagination, TextField } from '@mui/material';
 import i18next from 'i18next';
-import _debounce from 'lodash.debounce';
+import { debounce } from 'lodash';
 import React, { CSSProperties, useCallback, useState } from 'react';
-
 import '../../css/index.css';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { allIcons } from '../../utils/icons';
@@ -33,9 +32,8 @@ const IconPicker: React.FC<IconPickerProps> = ({ width, height, iconsPerPage, se
 
     const borderColor = `rgb(211, 211, 211, ${darkMode ? 0.4 : 1})`;
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const searchDebounced = useCallback(
-        _debounce((str: string) => {
+        debounce((str: string) => {
             setPage(1);
 
             if (!str) {

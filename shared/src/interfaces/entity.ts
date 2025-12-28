@@ -143,7 +143,6 @@ export type IFilterOfTemplate<T extends Record<string, any> = Record<string, any
     [field in keyof T]?: IFilterOfField;
 };
 
-// eslint-disable-next-line no-use-before-define
 export type IFilterGroup = IFilterOfTemplate | ISearchFilter;
 
 export enum FilterLogicalOperator {

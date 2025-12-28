@@ -1,10 +1,7 @@
-/* eslint-disable react/no-array-index-key */
-
 import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { AccordionDetails, AccordionSummary, Grid, Typography } from '@mui/material';
 import { FormikErrors } from 'formik';
 import i18next from 'i18next';
-import _debounce from 'lodash.debounce';
 import React from 'react';
 import { FieldBlockAccordion } from '../entityTemplate/fieldBlock/interfaces';
 import { ProcessTemplateWizardValues } from '.';
@@ -19,7 +16,7 @@ const StepsIconBlock: React.FC<StepsGenericBlockProps> = ({ title, values, setFi
                 <Typography>{title}</Typography>
             </AccordionSummary>
             <AccordionDetails>
-                {errorsOfStep?.icon && <div style={{ color: '#d32f2f', justifyContent: 'center' }}>{i18next.t('validation.iconRequired')}</div>}
+                {errorsOfStep?.icon && <div style={{ color: 'error', justifyContent: 'center' }}>{i18next.t('validation.iconRequired')}</div>}
                 <Grid container direction="column" alignItems="center">
                     <ChooseStepsIcon icon={values.steps[propIndex].icon} index={propIndex} setFieldValue={setFieldValue} key={propIndex} />
                 </Grid>

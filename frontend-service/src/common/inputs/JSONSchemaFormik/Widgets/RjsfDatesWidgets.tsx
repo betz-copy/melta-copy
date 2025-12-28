@@ -1,5 +1,3 @@
-/* eslint-disable consistent-return */
-/* eslint-disable no-underscore-dangle */
 import { styled, TextField, TextFieldProps } from '@mui/material';
 import { DateTimePickerToolbar, dateTimePickerToolbarClasses, LocalizationProvider, PickersLocaleText } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -29,7 +27,7 @@ const parseDefaultDate = (val: any) => {
     if (!val) return null;
 
     const date = new Date(val);
-    if (isNaN(date.getTime())) return null;
+    if (Number.isNaN(date.getTime())) return null;
     return date;
 };
 

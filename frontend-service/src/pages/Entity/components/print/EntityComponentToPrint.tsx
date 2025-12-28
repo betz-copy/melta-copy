@@ -1,10 +1,11 @@
 import { Box, SxProps, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
+import { useQueryClient } from 'react-query';
 import { EntityPropertiesInternal } from '../../../../common/EntityProperties';
 import BlueTitle from '../../../../common/MeltaDesigns/BlueTitle';
 import { IConnection, IEntity } from '../../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplatePopulated } from '../../../../interfaces/relationshipTemplates';
 import { INestedRelationshipTemplates } from '../..';
 import { EntityDates } from '../EntityDates';
@@ -61,6 +62,8 @@ const EntityComponentToPrint: React.FC<{
     expandedRelationships?: { instances: IConnection[]; templates: INestedRelationshipTemplates[] };
 }> = ({ entityTemplate, entity, options, showPreviewPropertiesOnly, expandedRelationships }) => {
     const theme = useTheme();
+    const queryClient = useQueryClient();
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     return (
         <Box border={`2px solid ${theme.palette.primary.main}`} borderRadius="20px" padding="1rem">
@@ -80,23 +83,22 @@ const EntityComponentToPrint: React.FC<{
             <EntityDisableCheckbox isEntityDisabled={entity.properties.disabled} />
             {options.showEntityDates && <EntityDates createdAt={entity.properties.createdAt} updatedAt={entity.properties.updatedAt} toPrint />}
 
-            {expandedRelationships &&
-                expandedRelationships.instances.some((_outerInstance) =>
-                    expandedRelationships.templates.some((expandedTemplate) => {
-                        const expandedRelationship = expandedRelationships.instances.find(
-                            (innerInstance) =>
-                                (expandedTemplate.relationshipTemplate._id === innerInstance.relationship.templateId &&
-                                    entity.properties._id === innerInstance.sourceEntity.properties._id) ||
-                                entity.properties._id === innerInstance.destinationEntity.properties._id,
-                        );
-                        return expandedRelationship !== undefined;
-                    }),
-                ) && (
-                    <div>
-                        <BlueTitle title={i18next.t('entityPage.print.relationships')} component="p" variant="h6" style={{ marginTop: '5px' }} />
-                        {renderConnectionTree(entity, expandedRelationships.templates, expandedRelationships.instances, options)}
-                    </div>
-                )}
+            {expandedRelationships?.instances.some((_outerInstance) =>
+                expandedRelationships?.templates.some((expandedTemplate) => {
+                    const expandedRelationship = expandedRelationships.instances.find(
+                        (innerInstance) =>
+                            (expandedTemplate.relationshipTemplate._id === innerInstance.relationship.templateId &&
+                                entity.properties._id === innerInstance.sourceEntity.properties._id) ||
+                            entity.properties._id === innerInstance.destinationEntity.properties._id,
+                    );
+                    return expandedRelationship !== undefined;
+                }),
+            ) && (
+                <div>
+                    <BlueTitle title={i18next.t('entityPage.print.relationships')} component="p" variant="h6" style={{ marginTop: '5px' }} />
+                    {renderConnectionTree(entity, expandedRelationships.templates, expandedRelationships.instances, options, entityTemplates)}
+                </div>
+            )}
         </Box>
     );
 };

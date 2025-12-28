@@ -1,4 +1,3 @@
-/* eslint-disable react/destructuring-assignment */
 import { Grid } from '@mui/material';
 import React from 'react';
 import { NavButton } from '../../../../common/NavButton';

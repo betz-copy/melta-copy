@@ -1,5 +1,3 @@
-/* eslint-disable no-param-reassign */
-/* eslint-disable no-case-declarations */
 import {
     BodyScrollEvent,
     CellEditingStoppedEvent,
@@ -24,9 +22,7 @@ import { AgGridReact } from '@ag-grid-community/react';
 import { Box, CircularProgress, debounce } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
-import { pickBy } from 'lodash';
-import isEqual from 'lodash.isequal';
-import sortBy from 'lodash.sortby';
+import { isEqual, pickBy, sortBy } from 'lodash';
 import React, { ForwardedRef, forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -62,7 +58,7 @@ import { IAGGridRequest } from '../../utils/agGrid/interfaces';
 import useDeepCompareMemo from '../../utils/hooks/useDeepCompareMemo';
 import { LocalStorage } from '../../utils/localStorage';
 import { isChildTemplate } from '../../utils/templates';
-import { trycatch } from '../../utils/trycatch';
+import { tryCatch } from '../../utils/tryCatch';
 import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
 import { EntityWizardValues } from '../dialogs/entity';
 import { MultiSelectStatusBar } from '../EntitiesPage/MultiSelectStatusBar';
@@ -138,7 +134,7 @@ export const getDatasource = <Data extends EntityData>(
 
             const agGridRequest = { ...params.request, filterModel: { ...params.request.filterModel } };
 
-            const { result: data, err } = await trycatch(() =>
+            const { result: data, err } = await tryCatch(() =>
                 pageType === 'client-side'
                     ? searchEntitiesOfTemplateClientSideRequest(
                           parentTemplateId,
@@ -607,7 +603,6 @@ const EntitiesTableOfTemplate = forwardRef(
 
             api.refreshHeader();
             api.sizeColumnsToFit();
-            // eslint-disable-next-line no-unused-expressions
             Object.keys(defaultColumnWidths).length ? api.autoSizeColumns(columnsKeys) : api.autoSizeColumns(filteredColumns);
 
             const columnStates = api.getColumnState().filter((col) => columnsKeys.includes(col.colId));
@@ -758,6 +753,7 @@ const EntitiesTableOfTemplate = forwardRef(
             resizeTableHeight: (newHeight: number) => setGridHeight(newHeight),
         }));
 
+        // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
         const rowModelProps = useMemo(
             () =>
                 getRowModelProps(
@@ -775,7 +771,20 @@ const EntitiesTableOfTemplate = forwardRef(
                     externalId,
                     usePagination,
                 ),
-            [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances, defaultFilter, childTemplatesOfParentIds, usePagination],
+            [
+                rowModelType,
+                saveStorageProps.pageType,
+                template,
+                clientSideUserEntity?.properties?._id,
+                externalId,
+                rowData,
+                pageRowCount,
+                quickFilterText,
+                hasInstances,
+                defaultFilter,
+                childTemplatesOfParentIds,
+                usePagination,
+            ],
         );
 
         const statusPanels = useMemo(() => {
@@ -793,7 +802,7 @@ const EntitiesTableOfTemplate = forwardRef(
                 });
 
             return panels;
-        }, [multipleSelect, quickFilterText, template]);
+        }, [multipleSelect, quickFilterText, setUpdatedTemplateIds, template]);
 
         const rowSelection = useMemo<RowSelectionOptions | 'single' | 'multiple' | undefined>(() => {
             if (onRowSelected) return 'single';
@@ -987,7 +996,6 @@ const EntitiesTableOfTemplate = forwardRef(
                             const isRequired = template.properties.required.includes(params.colDef.field!);
                             const updatedProperties = {
                                 ...params.data?.properties,
-                                // eslint-disable-next-line no-nested-ternary
                                 [params.column.getColId()]: isEmpty ? (isRequired || isEmptyArray ? undefined : '') : params.newValue,
                             };
                             setCurrEntity({ templateId: template._id, properties: params.data?.properties });

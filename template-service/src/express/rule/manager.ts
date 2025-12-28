@@ -79,7 +79,6 @@ class RuleManager extends DefaultManagerMongo<IMongoRule> {
         }
 
         if (doesFormulaHaveTodayFunc !== undefined) {
-            // eslint-disable-next-line no-underscore-dangle
             query.doesFormulaHaveTodayFunc = doesFormulaHaveTodayFunc;
         }
 

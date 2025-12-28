@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/rules-of-hooks */
 import { CloseOutlined, ContentCopy, Done } from '@mui/icons-material';
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
@@ -30,13 +29,11 @@ const {
 const CodeEditorDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
-    templateItem: TemplateItem | null;
+    templateItem: TemplateItem;
     searchText: string;
     categoriesToShow: IMongoCategory[];
     isChild?: boolean;
 }> = ({ open, handleClose, templateItem, searchText, categoriesToShow }) => {
-    if (!templateItem) return null;
-
     const { type, metaData: entityTemplate } = templateItem;
 
     const queryClient = useQueryClient();

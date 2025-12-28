@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import {
     CoordinateSystem,
     EntityTemplateType,
@@ -7,6 +6,8 @@ import {
     IEnumPropertiesColors,
     IMongoEntityTemplatePopulated,
     locationConverterToString,
+    PropertyFormat,
+    PropertyType,
     TemplateItem,
 } from '@microservices/shared';
 import Excel, { Cell } from 'exceljs';
@@ -180,13 +181,15 @@ const createWorksheet = async (
     const worksheet = workbook.addWorksheet(template.displayName);
 
     const sheetColumns: Partial<Excel.Column>[] = [];
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let columnIndex = 0; // TODO: make data validation work in office excel
 
     Object.entries(template.properties.properties).forEach(([propertyKey, propertyTemplate]) => {
-        const shouldAddColumn = isLoadMode
-            ? showRelationshipRefColumn(propertyKey, propertyTemplate, relatedTemplatesMap, requiredConstraints) && isIncludedColumn(propertyTemplate)
-            : displayColumns?.includes(propertyKey);
+        const showRelationshipRef = showRelationshipRefColumn(propertyKey, propertyTemplate, relatedTemplatesMap, requiredConstraints);
+        const shouldAddColumn = showRelationshipRef
+            ? isLoadMode
+                ? isIncludedColumn(propertyTemplate)
+                : displayColumns?.includes(propertyKey)
+            : false;
 
         if (shouldAddColumn) {
             // TODO: make data validation work in office excel
@@ -427,21 +430,37 @@ const styleAWorksheet = (
         cell.alignment = excelStyle.columnHeader.alignment;
     });
 
-    const { disabled, createdAt, updatedAt } = template;
+    const mongoProperties = {
+        disabled: { title: 'disabled', type: PropertyType.string },
+        createdAt: { title: 'createdAt', type: PropertyType.string, format: PropertyFormat['date-time'] },
+        updatedAt: { title: 'updatedAt', type: PropertyType.string, format: PropertyFormat['date-time'] },
+    };
 
-    const allProperties: Record<string, IEntitySingleProperty> = Object.entries({ ...template.properties.properties, disabled, createdAt, updatedAt })
-        .filter(([key]) => displayColumns?.includes(key))
-        .reduce((acc, [key, value]) => {
-            acc[key] = value;
+    const allProperties = Object.keys({
+        ...template.properties.properties,
+        ...mongoProperties,
+    }).reduce<Record<string, IEntitySingleProperty>>((acc, key) => {
+        if (!displayColumns?.includes(key)) return acc;
+
+        if (key in mongoProperties) {
+            acc[key] = mongoProperties[key];
             return acc;
-        }, {});
+        }
+
+        const property = template.properties.properties[key];
+        if (!property) return acc;
+        if (!showRelationshipRefColumn(key, property, relatedTemplatesMap, [])) return acc;
+
+        acc[key] = property;
+        return acc;
+    }, {});
 
     Object.entries(allProperties).forEach(([key, value], columnIndex) => {
         rows.forEach((row, index) => {
             const rowIndex = index + skip;
             const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${rowIndex + SKIP_ROW_HEADER}`);
 
-            if (!isIncludedEditColumn(value, row.disabled, disabled)) readOnlyCell(cell);
+            if (!isIncludedEditColumn(value, row.disabled, template.disabled)) readOnlyCell(cell);
 
             if (row[key] !== undefined && value !== undefined) {
                 cell.alignment = excelStyle.cell.alignment;

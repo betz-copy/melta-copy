@@ -12,12 +12,12 @@ import {
 import { Autocomplete, Box, Card, CardContent, FormControlLabel, Grid, IconButton, MenuItem, TextField } from '@mui/material';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
-import isEqual from 'lodash.isequal';
+import { isEqual } from 'lodash';
 import React, { memo, SetStateAction } from 'react';
 import { useQueryClient } from 'react-query';
 import { environment } from '../../../globals';
 import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { IEntityTemplateMap, PropertyExternalWizardType } from '../../../interfaces/entityTemplates';
 import { arrayTypes } from '../../../services/templates/entityTemplatesService';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
@@ -345,11 +345,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 if (validPropertyType === 'fileId' || validPropertyType === 'multipleFiles') return false; // TODO: support file inputs
                                                 if (validPropertyType === 'user' || validPropertyType === 'users') return supportUserType;
                                                 if (validPropertyType === 'comment') return supportComment;
-                                                if (
-                                                    validPropertyType === 'kartoffelUserField' &&
-                                                    userPropertiesInTemplate.length === 0 &&
-                                                    !value.deleted
-                                                )
+                                                if (validPropertyType === 'kartoffelUserField' && !userPropertiesInTemplate.length && !value.deleted)
                                                     return false;
                                                 return true;
                                             })
@@ -404,7 +400,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                         value.type !== 'fileId' &&
                                         value.type !== 'relationshipReference' &&
                                         !isComment &&
-                                        !arrayTypes.includes(value.type) && (
+                                        !arrayTypes.includes(value.type as PropertyExternalWizardType) && (
                                             <MeltaTooltip
                                                 title={i18next.t(
                                                     mapSearchDisabled

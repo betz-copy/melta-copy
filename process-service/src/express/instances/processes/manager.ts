@@ -1,5 +1,3 @@
-/* eslint-disable no-restricted-syntax */
-
 import {
     ActionsLog,
     CreateProcessReqBody,
@@ -20,7 +18,6 @@ import {
     UpdateProcessReqBody,
     ValidationError,
 } from '@microservices/shared';
-/* eslint-disable class-methods-use-this */
 import { Request } from 'express';
 import { ClientSession, FilterQuery, Types, UpdateWriteOpResult } from 'mongoose';
 import config from '../../../config';

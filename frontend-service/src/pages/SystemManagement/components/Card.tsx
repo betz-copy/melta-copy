@@ -16,8 +16,8 @@ export const ViewingCard: React.FC<{
     return (
         <Grid>
             <Card
-                onMouseEnter={() => (onHover ? onHover(true) : '')}
-                onMouseLeave={() => (onHover ? onHover(false) : '')}
+                onMouseEnter={() => onHover?.(true)}
+                onMouseLeave={() => onHover?.(false)}
                 sx={{
                     bgcolor: darkMode ? '#111111' : '#fff',
                     opacity: isDisabled ? 0.6 : 1,

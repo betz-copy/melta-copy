@@ -4,7 +4,7 @@ import {
     DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
     DoNotDisturbOnOutlined as DoNotDisturbOnOutlinedIcon,
     ContentCopy as DuplicateIcon,
-    Map,
+    Map as MapIcon,
     MoreVertOutlined,
     Unarchive,
 } from '@mui/icons-material';
@@ -76,7 +76,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     };
 
     const entityDetailTooltipTitle = (canWriteInstance: boolean, isEntityDisabled: boolean) => {
-        // eslint-disable-next-line no-nested-ternary
         return !canWriteInstance
             ? i18next.t('permissions.dontHaveWritePermissionsToTemplate')
             : isEntityDisabled
@@ -201,7 +200,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                 {includeLocationProperty && (
                                     <Grid onClick={() => setMapDialogOpen(true)}>
                                         <IconButtonWithPopover popoverText={i18next.t('map')}>
-                                            <Map sx={{ color: '#787c9e' }} />
+                                            <MapIcon sx={{ color: '#787c9e' }} />
                                         </IconButtonWithPopover>
                                     </Grid>
                                 )}
@@ -212,7 +211,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                 >
                                     <IconButtonWithPopover
                                         popoverText={
-                                            // eslint-disable-next-line no-nested-ternary
                                             !canWriteInstance
                                                 ? i18next.t('permissions.dontHaveWritePermissionsToTemplate')
                                                 : isEntityDisabled
@@ -232,7 +230,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                     }}
                                 >
                                     <IconButtonWithPopover popoverText={i18next.t('actions.graph')}>
-                                        <img src="/icons/graph-icon.svg" />
+                                        <img src="/icons/graph-icon.svg" alt="graph-icon" />
                                     </IconButtonWithPopover>
                                 </Grid>
                                 <IconButton onClick={handleClick}>

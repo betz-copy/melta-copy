@@ -1,7 +1,4 @@
-export const buildUrl = (
-    path: string,
-    params: Record<string, string | number | boolean | undefined>
-) => {
+export const buildUrl = (path: string, params: Record<string, string | number | boolean | undefined>) => {
     const searchParams = new URLSearchParams();
 
     Object.entries(params).forEach(([key, value]) => {

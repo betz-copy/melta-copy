@@ -21,7 +21,7 @@ import { useDarkModeStore } from '../../../stores/darkMode';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { agGridLocaleText } from '../../../utils/agGrid/agGridLocaleText';
 import { translatedEnumColDef } from '../../../utils/agGrid/commonColDefs';
-import { trycatch } from '../../../utils/trycatch';
+import { tryCatch } from '../../../utils/tryCatch';
 
 const { infiniteScrollPageCount } = environment.permission;
 
@@ -60,8 +60,8 @@ const columnDefs = (
     workspaceId: string,
     permissionType: RelatedPermission,
     categories: IMongoCategory[],
-    onDeletePermissions: (permissions: PermissionData) => any,
-    onEditPermissions: (permissions: PermissionData) => any,
+    onDeletePermissions: (permissions: PermissionData) => void,
+    onEditPermissions: (permissions: PermissionData) => void,
     units: IGetUnits,
 ): ColDef[] => [
     {
@@ -198,10 +198,10 @@ const columnDefs = (
     },
 ];
 
-const getDatasource = <Data = PermissionData>(
+const getDatasource = <Data extends PermissionData>(
     { _id }: IWorkspace,
     quickFilter: string | undefined,
-    onFail: (err: unknown) => void | undefined,
+    onFail: (err: unknown) => void,
     permissionType: RelatedPermission,
 ): IServerSideDatasource => {
     return {
@@ -209,7 +209,7 @@ const getDatasource = <Data = PermissionData>(
             const { startRow, endRow, filterModel, sortModel } = request;
             let data: { dataArray?: IUser[] | IRole[]; count?: number }, error: unknown; //TODO: add types :)
             if (permissionType === RelatedPermission.User) {
-                const { result, err } = await trycatch(() =>
+                const { result, err } = await tryCatch(() =>
                     searchUsersRequest({
                         workspaceIds: [_id],
                         step: startRow! / infiniteScrollPageCount,
@@ -222,7 +222,7 @@ const getDatasource = <Data = PermissionData>(
                 data = { dataArray: result?.users, count: result?.count };
                 error = err;
             } else {
-                const { result, err } = await trycatch(() =>
+                const { result, err } = await tryCatch(() =>
                     searchRolesRequest({
                         workspaceIds: [_id],
                         step: startRow! / infiniteScrollPageCount,
@@ -249,7 +249,7 @@ const getDatasource = <Data = PermissionData>(
     };
 };
 
-const getRowModelProps = <Data = PermissionData>(
+const getRowModelProps = <Data extends PermissionData>(
     workspace: IWorkspace,
     paginationPageSize: number,
     quickFilterText: string | undefined,
@@ -268,8 +268,8 @@ const getRowModelProps = <Data = PermissionData>(
 
 type PermissionsTableProps<PermissionData> = {
     categories: IMongoCategory[];
-    onDeletePermissions: (permissionsOfUser: PermissionData) => any;
-    onEditPermissions: (permissionsOfUser: PermissionData) => any;
+    onDeletePermissions: (permissionsOfUser: PermissionData) => void;
+    onEditPermissions: (permissionsOfUser: PermissionData) => void;
     quickFilterText: string;
     permissionType: RelatedPermission;
     getRowId: (data: PermissionData) => string;
@@ -312,9 +312,10 @@ const PermissionsTable = forwardRef<PermissionsTableRef<PermissionData>, Permiss
             toast.error(i18next.t('permissions.failedToLoadAllPermissions'));
         };
 
+        // biome-ignore lint/correctness/useExhaustiveDependencies: datasourceOnFail changes on every re-render and should not be used as a hook dependency.
         const rowModelProps = useMemo(
             () => getRowModelProps(workspace, infiniteScrollPageCount, quickFilterText, datasourceOnFail, permissionType),
-            [quickFilterText, workspace],
+            [quickFilterText, workspace, permissionType],
         );
 
         return (
@@ -363,6 +364,6 @@ const PermissionsTable = forwardRef<PermissionsTableRef<PermissionData>, Permiss
     },
 );
 
-export default PermissionsTable as <Data = PermissionData>(
+export default PermissionsTable as <Data extends PermissionData>(
     props: PermissionsTableProps<Data> & { ref?: React.ForwardedRef<PermissionsTableRef<Data>> },
 ) => ReturnType<typeof PermissionsTable>;

@@ -38,8 +38,7 @@ const TemplateTableSelect: React.FC<{
         // if no entityTemplate, return to DashedSelectBox with disabled message
         if (!entityTemplate) setIsSelectBoxEntityClicked(false);
         else if (autoLoad) setIsSelectBoxEntityClicked(true);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [entityTemplate?._id]);
+    }, [entityTemplate, autoLoad]);
 
     const shouldShowDashedSelectBox = !value && (!isSelectBoxEntityClicked || !entityTemplate);
 

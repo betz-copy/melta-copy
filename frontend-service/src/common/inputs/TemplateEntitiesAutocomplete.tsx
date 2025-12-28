@@ -1,8 +1,8 @@
 import { ExpandMore, InfoOutlined } from '@mui/icons-material';
 import { Autocomplete, AutocompleteInputChangeReason, AutocompleteProps, Grid, TextField, Typography } from '@mui/material';
 import i18next from 'i18next';
-import _debounce from 'lodash.debounce';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { debounce } from 'lodash';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useInfiniteQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
@@ -172,13 +172,13 @@ const TemplateEntitiesAutocomplete: React.FC<{
         .filter(([_, value]) => value === undefined || value === null)
         .map(([key]) => template?.properties.properties[key].title);
 
-    const isDisabled = React.useMemo(() => disabled || !!emptyDependentFields.length, [disabled, dependentFields]);
+    const isDisabled = useMemo(() => disabled || !!emptyDependentFields.length, [disabled, emptyDependentFields]);
 
     const debouncedSearch = useCallback(
-        _debounce((value: string) => {
+        debounce((value: string) => {
             if (emptyDependentFields.length) setInputValue(value);
         }, 1000),
-        [dependentFields],
+        [],
     );
 
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery(
@@ -204,7 +204,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
     );
 
     useEffect(() => {
-        if (data) setAllEntities(data.pages.flatMap((page) => page.entities.map(({ entity }) => entity)));
+        if (data) setAllEntities(data.pages.flatMap(({ entities }) => entities.map(({ entity }) => entity)));
     }, [data]);
 
     const handleInputChange = (_e: any, newValue: string, reason: AutocompleteInputChangeReason) => {
@@ -372,6 +372,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
                     >
                         {displayOptionValues.map((displayOptionValue, index) => (
                             <MeltaTooltip
+                                // biome-ignore lint/suspicious/noArrayIndexKey: lol
                                 key={`${displayOptionValue}${index}`}
                                 placement="top"
                                 title={template?.properties.properties[displayKeys[index]].title}

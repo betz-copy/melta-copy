@@ -1,7 +1,7 @@
 import { Grid, TextField } from '@mui/material';
 import { FormikErrors } from 'formik';
 import i18next from 'i18next';
-import _debounce from 'lodash.debounce';
+import { debounce } from 'lodash';
 import React, { useCallback, useState } from 'react';
 import { ProcessTemplateWizardValues } from './index';
 import { StepsGenericBlockProps } from './StepsBlocksInterface';
@@ -22,13 +22,13 @@ const StepsNameBlock: React.FC<StepsGenericBlockProps> = ({
     const [displayName, setDisplayName] = useState(values.steps[propIndex].displayName);
 
     const setNameFieldDebounced = useCallback(
-        _debounce((newName: string) => {
+        debounce((newName: string) => {
             setFieldValue(`steps[${propIndex}].name`, newName);
         }, 1000),
         [],
     );
     const setDisplayNameFieldDebounced = useCallback(
-        _debounce((newDisplayName: string) => {
+        debounce((newDisplayName: string) => {
             setFieldValue(`steps[${propIndex}].displayName`, newDisplayName);
         }, 1000),
         [],

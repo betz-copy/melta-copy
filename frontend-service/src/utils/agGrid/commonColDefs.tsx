@@ -17,6 +17,7 @@ import { EntityWizardValues } from '../../common/dialogs/entity';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 import UserAvatar, { IUserAvatarProps } from '../../common/UserAvatar';
+import { environment } from '../../globals';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import {
     EntityData,
@@ -29,7 +30,7 @@ import {
     IUsersNotFoundError,
     NotFoundErrorTypes,
 } from '../../interfaces/entities';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated, PropertyFormat } from '../../interfaces/entityTemplates';
 import { IError, IFailedEntity, IValidationError } from '../../interfaces/excel';
 import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
@@ -38,6 +39,7 @@ import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import { IGetUnits, IMongoUnit } from '../../interfaces/units';
 import { IUser, PermissionData } from '../../interfaces/users';
 import OpenMap from '../../pages/Map/OpenMap';
+import { PropertyWizardType } from '../../services/templates/entityTemplatesService';
 import { getDateWithoutTime, getLongDate } from '../date';
 import { getFileName } from '../getFileName';
 import { convertToPlainText } from '../HtmlTagsStringValue';
@@ -48,6 +50,8 @@ import OverflowWrapper from './OverflowWrapper';
 import RelationshipRefCellEditor from './RelationshipRefCellEditor';
 import SelectCellEditor from './SelectCellEditor';
 import { Value } from './Value';
+
+const { failed } = environment.color;
 
 type IColDefData = EntityData | IRuleBreachPopulated | PermissionData | IRuleBreachRequestPopulated | undefined;
 
@@ -129,7 +133,7 @@ const errorColDef = <Data extends IColDefData>(
 
     return (
         <Box display="flex" justifyContent="center" alignItems="center" gap={1} width="100%">
-            <Value hideValue={false} value={props.value ?? i18next.t('validation.required')} enumColor="#A40000" />
+            <Value hideValue={false} value={props.value ?? i18next.t('validation.required')} enumColor={failed} />
             <Tooltip
                 title={message}
                 placement="top"
@@ -142,7 +146,7 @@ const errorColDef = <Data extends IColDefData>(
                                 backgroundColor: 'white',
                                 borderRadius: '10px',
                                 marginLeft: '5px',
-                                color: '#A40000',
+                                color: failed,
                                 fontWeight: 400,
                                 boxShadow: '0px 2.05px 6.16px 0px #00000040',
                             },
@@ -584,7 +588,7 @@ export const userColDef = <Data extends IUser>(
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, any | undefined>) => {
             const error = isPropertyInvalid(props, field, ignoreType);
-            if (error) return errorColDef(props, error, { ...value, format: 'user' });
+            if (error) return errorColDef(props, error, { ...value, format: PropertyFormat.user });
             if (!props.value) return '';
 
             if (ignoreType && !stringifiedJSONtoObj(props.value))
@@ -642,7 +646,7 @@ export const userArrayColDef = <Data extends IEntity>(
             if (error) {
                 const errorValue = Array.isArray(props.value) ? props.value.join(', ') : props.value;
 
-                return errorColDef({ ...props, value: errorValue }, error, { ...value, format: 'users' });
+                return errorColDef({ ...props, value: errorValue }, error, { ...value, format: PropertyWizardType.users as any });
             }
 
             if (!props.value) return '';

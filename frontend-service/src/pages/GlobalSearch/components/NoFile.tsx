@@ -6,6 +6,7 @@ export const NoFile: React.FC = () => {
 
     return (
         <svg width="165" height="200" viewBox="0 0 165 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <title>No File</title>
             <path
                 d="M0.467773 11.2644C0.467773 5.04323 5.511 0 11.7321 0H153.736C159.957 0 165 5.04323 165 11.2644V200H0.467773V11.2644Z"
                 fill={darkMode ? '#121212' : '#fff'}

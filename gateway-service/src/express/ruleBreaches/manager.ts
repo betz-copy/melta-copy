@@ -1,4 +1,3 @@
-/* eslint-disable no-plusplus */
 import {
     ActionTypes,
     BadRequestError,
@@ -55,13 +54,13 @@ import {
     RuleBreachRequestStatus,
     UploadedFile,
 } from '@microservices/shared';
-import pickBy from 'lodash.pickby';
+import { pickBy } from 'lodash';
 import config from '../../config';
 import InstancesService from '../../externalServices/instanceService';
 import RuleBreachService from '../../externalServices/ruleBreachService';
 import StorageService from '../../externalServices/storageService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
-import { trycatch } from '../../utils';
+import { tryCatch } from '../../utils';
 import { IAgGridResult } from '../../utils/agGrid/interface';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
@@ -101,7 +100,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     ): Promise<IRuleBreachRequestPopulated> {
         await this.uploadRuleBreachFiles(ruleBreachRequestData, files);
 
-        const { result, err } = await trycatch(async () => {
+        const { result, err } = await tryCatch(async () => {
             const ruleBreachRequest = await this.service.createRuleBreachRequest({
                 ...ruleBreachRequestData,
                 originUserId: userId,
@@ -143,7 +142,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     ): Promise<IRuleBreachAlertPopulated> {
         await this.uploadRuleBreachFiles(ruleBreachAlertData, files);
 
-        const { result, err } = await trycatch(async () => {
+        const { result, err } = await tryCatch(async () => {
             const rulesBreachAlert = await this.service.createRuleBreachAlert({ ...ruleBreachAlertData, originUserId: userId });
             const alert = await this.getRuleBreachAlertsById(rulesBreachAlert._id);
 
@@ -214,7 +213,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     > {
         const ruleBreachRequest = await this.service.getRuleBreachRequestById(ruleBreachRequestId);
         this.checkIfRuleBreachRequestIsReviewable(ruleBreachRequest);
-        let actionsResults;
+        let actionsResults: any;
 
         if (ruleBreachRequest.actions.length > 1) {
             const fixedActionsPromises = await this.addBeforeFieldToUpdateAction(ruleBreachRequest.actions);
@@ -273,9 +272,8 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                         ruleBreachRequest.brokenRules,
                     );
             } catch (error: any) {
-                if (error.metadata.errorCode === errorCodes.ruleBlock) {
+                if (error.metadata.errorCode === errorCodes.ruleBlock)
                     await this.service.updateRuleBreachRequestBrokenRules(ruleBreachRequestId, error.metadata.rawBrokenRules);
-                }
 
                 throw error;
             }
@@ -297,9 +295,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
             [ruleBreachRequest.originUserId],
         );
 
-        if (ruleBreachRequest.actions.length > 1) {
-            return { ruleBreachRequestPopulated, actionsResults };
-        }
+        if (ruleBreachRequest.actions.length > 1) return { ruleBreachRequestPopulated, actionsResults };
 
         return ruleBreachRequestPopulated;
     }
@@ -657,7 +653,6 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                 files,
                 (action.actionMetadata as ICreateEntityMetadata).properties,
             );
-            // eslint-disable-next-line no-param-reassign
             (action.actionMetadata as ICreateEntityMetadata).properties = propertiesWithFiles;
             return;
         }
@@ -667,7 +662,6 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                 files,
                 (action.actionMetadata as IUpdateEntityMetadata).updatedFields,
             );
-            // eslint-disable-next-line no-param-reassign
             (action.actionMetadata as IUpdateEntityMetadata).updatedFields = updatedFieldsWithFiles;
             return;
         }
@@ -687,7 +681,6 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                 ...duplicatedFilesProperties,
             });
 
-            // eslint-disable-next-line no-param-reassign
             (action.actionMetadata as IDuplicateEntityMetadata).properties = propertiesWithFiles;
             return;
         }
@@ -714,7 +707,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
             await this.storageService.deleteFiles(fileIdsToDelete);
         } else if (action.actionType === ActionTypes.UpdateEntity) {
-            let entityTemplateId;
+            let entityTemplateId: string;
             const { entityId } = action.actionMetadata as IUpdateEntityMetadata;
 
             if (entityId.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) {

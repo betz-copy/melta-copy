@@ -1,7 +1,6 @@
 import * as joi from 'joi';
 import { PermissionScopeSchema } from '.';
 
-// eslint-disable-next-line import/prefer-default-export
 export const getPermissionMetadataSchema = (classHierarchy: readonly string[], allowNull = false) => {
     const [className, ...restOfHierarchy] = classHierarchy;
 

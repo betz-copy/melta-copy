@@ -115,7 +115,6 @@ const generateNeo4jQueryFromRegularFunction = (
     const resultCausesVariableName = `${resultVariableNamePrefix}${resultCausesVariableNameSuffix}`;
 
     const funcArguments = func.arguments.map((argument, index) =>
-        // eslint-disable-next-line no-use-before-define -- circular recursive functions (formula->group->formulas)
         generateNeo4jQueryFromArgument(argument, withVariablesForSubQueries, `${resultVariableNamePrefix}argument${index}_`, entityTemplate),
     );
     if (func.functionType === 'toDate') {
@@ -333,7 +332,6 @@ const generateNeo4jQueryFromGroup = (
     entityTemplate: IMongoEntityTemplate,
 ): CypherQuery => {
     const subFormulasQueries = formula.subFormulas.map((subFormula, index) => {
-        // eslint-disable-next-line no-use-before-define -- circular recursive functions (formula->group->formulas)
         return generateNeo4jQueryFromFormula(
             subFormula,
             withVariablesForSubQueries,
@@ -458,7 +456,6 @@ const generateNeo4jQueryFromAggregationGroup = (
     const aggregationVariableName = getVariableName(formula.variableOfAggregation);
     const aggregatedRelationshipName = getAggregatedRelationshipName(formula.variableOfAggregation);
 
-    // eslint-disable-next-line no-use-before-define -- circular recursive functions (formula->aggGroup->subFormulas)
     const formulaQuery = generateNeo4jQueryFromGroup(
         { isGroup: true, ruleOfGroup: formula.ruleOfGroup, subFormulas: formula.subFormulas },
         [...withVariablesForSubQueries, aggregatedRelationshipName, aggregationVariableName],
@@ -548,7 +545,6 @@ const generateNeo4jQueryFromFormula = (
     throw new Error('unexpected formula, must be group/equation/aggeregationGroup');
 };
 
-// eslint-disable-next-line import/prefer-default-export
 export const generateNeo4jRuleQueryOnEntity = (rule: IMongoRule, entityId: string, entityTemplate: IMongoEntityTemplate): CypherQuery => {
     const { entityTemplateId, formula } = rule;
 
@@ -571,7 +567,6 @@ export const generateNeo4jRuleQueryOnEntity = (rule: IMongoRule, entityId: strin
         parameters: {
             entityId,
             ...formulaQuery.parameters,
-            // eslint-disable-next-line no-underscore-dangle
             getTodayFuncValue: rule.doesFormulaHaveTodayFunc ? getNeo4jDate(new Date()) : undefined,
         },
     };

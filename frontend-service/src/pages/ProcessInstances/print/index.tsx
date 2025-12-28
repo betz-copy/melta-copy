@@ -46,7 +46,6 @@ const Print: React.FC<{
     } as UseReactToPrintOptions);
 
     const getPageMargins = () => {
-        // eslint-disable-next-line quotes
         return `@page { margin: 15px 10px 15px 10px !important; }`;
     };
 

@@ -36,9 +36,7 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
     const props = {};
 
     Object.entries(properties).forEach(([key, value]) => {
-        if (key.endsWith(config.neo4j.stringPropertySuffix)) {
-            return;
-        }
+        if (key.endsWith(config.neo4j.stringPropertySuffix)) return;
 
         if (value instanceof Neo4j.types.LocalDateTime) {
             props[key] = fromZonedTime(new Date(value.toString()), 'Asia/Jerusalem').toISOString();

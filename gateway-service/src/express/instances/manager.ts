@@ -1,4 +1,3 @@
-/** biome-ignore-all lint/suspicious/noExplicitAny: properties need to be of type any */
 import { promises as fsp } from 'node:fs';
 import {
     ActionTypes,
@@ -61,7 +60,7 @@ import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import StorageService from '../../externalServices/storageService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import UserService from '../../externalServices/userService';
-import { trycatch } from '../../utils';
+import { tryCatch } from '../../utils';
 import { getUserFields } from '../../utils/entities';
 import { classifyEntityErrors, generateSerialNumbers, getAllEntitiesFromExcel, getSerialStarters } from '../../utils/excel';
 import { createWorkbook, createWorksheet, styleAWorksheet } from '../../utils/excel/createFunctions';
@@ -1177,14 +1176,13 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             const propertyTemplate = entityTemplate.properties.properties[field];
 
             let newValue: any;
-            if (propertyTemplate?.format === 'fileId' || propertyTemplate?.items?.format === 'fileId') {
+            if (propertyTemplate?.format === 'fileId' || propertyTemplate?.items?.format === 'fileId')
                 newValue = uploadedFilesAndProperties[field] ?? updatedEntity.properties[field];
-            } else if (propertyTemplate?.format === 'relationshipReference') {
+            else if (propertyTemplate?.format === 'relationshipReference') {
                 if (updatedEntity.properties[field]?.properties) newValue = updatedEntity.properties[field].properties._id;
                 if (currentEntity.properties[field]?.properties) currentEntity.properties[field] = currentEntity.properties[field].properties._id;
-            } else {
-                newValue = updatedEntity.properties[field];
-            }
+            } else newValue = updatedEntity.properties[field];
+
             if (
                 newValue !== undefined &&
                 Array.isArray(currentEntity.properties[field]) &&
@@ -1257,7 +1255,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         const filesOfDeletedInstances = await this.service.deleteEntityInstances(deleteBody);
 
-        const { err: error } = await trycatch(() => this.deleteAllEntitiesFiles(filesOfDeletedInstances));
+        const { err: error } = await tryCatch(() => this.deleteAllEntitiesFiles(filesOfDeletedInstances));
 
         if (error) logger.error(`failed to delete files ${filesOfDeletedInstances}`, { error });
     }

@@ -108,8 +108,9 @@ const ChartsPage: React.FC = () => {
                     localStorageKey={`${chartsOrderKey}${templateId}`}
                     generateDom={() =>
                         charts.map((chart, index) => (
-                            <div
+                            <button
                                 key={chart._id}
+                                type="button"
                                 style={{
                                     background: darkMode ? '#131313' : 'white',
                                     border: '1px solid #CCCFE5',
@@ -118,6 +119,9 @@ const ChartsPage: React.FC = () => {
                                     overflow: 'hidden',
                                     direction: 'rtl',
                                     padding: '20px 10px',
+                                    width: '100%',
+                                    textAlign: 'inherit',
+                                    cursor: 'default',
                                 }}
                                 onMouseEnter={() => setIsHoverOnCard(index)}
                                 onMouseLeave={() => setIsHoverOnCard(null)}
@@ -136,7 +140,7 @@ const ChartsPage: React.FC = () => {
                                             : onEditChartYes(chart._id)
                                     }
                                 />
-                            </div>
+                            </button>
                         ))
                     }
                     layout={{ value: layout, set: setLayout }}

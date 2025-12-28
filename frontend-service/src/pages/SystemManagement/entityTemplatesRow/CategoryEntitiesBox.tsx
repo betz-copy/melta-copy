@@ -88,6 +88,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
 
     const theme = useTheme();
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         containerWrapperRef.current?.focus();
     }, [isEditableCategory]);
@@ -109,7 +110,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
             const matchesSearch = searchText === '' || (child.displayName ?? '').toLowerCase().includes(searchText.toLowerCase());
             return matchesCategory && matchesSearch;
         });
-    }, [childTemplates, entityTemplatesWithCategory.category._id, searchText]);
+    }, [childTemplates, entityTemplatesWithCategory.category._id, searchText, entityTemplates]);
 
     const disabledParentTemplates = useMemo(() => {
         if (!childTemplates || !entityTemplates) return new Map();
@@ -125,6 +126,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
         return result;
     }, [childTemplates, entityTemplates, entityTemplatesWithCategory, categoryChildTemplates]);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     const categoryChildTemplatesFiltered = useMemo(() => {
         return categoryChildTemplates.filter((child) => {
             if (child.parentTemplate?.category.toString() === entityTemplatesWithCategory.category._id) return true;

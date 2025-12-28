@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { environment } from '../globals';
 
 const { canvasSettings } = environment;
