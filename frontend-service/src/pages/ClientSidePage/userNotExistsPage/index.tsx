@@ -8,8 +8,8 @@ import { useWorkspaceStore } from '../../../stores/workspace';
 const UserNotExistsPage: React.FC = () => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { clientSideWorkspaceName } = workspace.metadata?.clientSide || {};
-    const { contacts } = hebrew.clientSidePage[clientSideWorkspaceName].contactInfoCard;
-
+    const contacts: { role: string; name: string; hichatLink: string; mailLink: string }[] =
+        hebrew.clientSidePage[clientSideWorkspaceName].contactInfoCard.contacts;
     return (
         <Grid container flexDirection="column" height="100vh" width="100%" padding="50px" sx={{ backgroundColor: 'white' }} flexWrap="nowrap">
             <Grid container height="100%">
@@ -34,7 +34,7 @@ const UserNotExistsPage: React.FC = () => {
                         </Typography>
                         <Grid container marginTop="20px" flexWrap="nowrap" gap="25px">
                             <Grid marginTop="4px">
-                                <img src="/icons/car-key.svg"></img>
+                                <img src="/icons/car-key.svg" alt="car-key"></img>
                             </Grid>
                             <Grid container flexDirection="column">
                                 <Grid>
@@ -53,7 +53,7 @@ const UserNotExistsPage: React.FC = () => {
                         </Grid>
                         <Grid container flexWrap="nowrap" gap="25px" marginTop="15px">
                             <Grid marginTop="4px">
-                                <img src="/icons/car-key.svg"></img>
+                                <img src="/icons/car-key.svg" alt="car-key"></img>
                             </Grid>
                             <Grid container flexDirection="column">
                                 <Grid>
@@ -106,7 +106,12 @@ const UserNotExistsPage: React.FC = () => {
             </Grid>
             <Grid container alignItems="center" height="80px" flexWrap="nowrap" justifyContent="space-between" paddingX="150px" marginTop="20px">
                 <Grid>
-                    <img height="60px" src={`/clientSide/${clientSideWorkspaceName}/small-logo.svg`} style={{ marginBottom: '25px' }} />
+                    <img
+                        height="60px"
+                        src={`/clientSide/${clientSideWorkspaceName}/small-logo.svg`}
+                        alt="small-logo"
+                        style={{ marginBottom: '25px' }}
+                    />
                 </Grid>
                 <Grid>
                     <Typography fontWeight="500" fontSize="14px" color="#1E2775" sx={{ textWrap: 'nowrap' }}>
@@ -127,10 +132,10 @@ const UserNotExistsPage: React.FC = () => {
                         </Grid>
                         <Grid>
                             <IconButton>
-                                <img src="/icons/hi-chat-icon.svg"></img>
+                                <img src="/icons/hi-chat-icon.svg" alt="hi-chat"></img>
                             </IconButton>
                             <IconButton>
-                                <img src="/icons/outlook-icon.svg"></img>
+                                <img src="/icons/outlook-icon.svg" alt="outlook"></img>
                             </IconButton>
                         </Grid>
                     </Grid>

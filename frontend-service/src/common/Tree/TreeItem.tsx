@@ -96,7 +96,7 @@ const TreeItem = React.forwardRef(function CustomTreeItem<T extends Record<strin
     const theme = useTheme();
 
     const checkBoxProps = getCheckboxProps();
-    const item = (publicAPI as any).getItem(itemId);
+    const item = publicAPI.getItem(itemId);
 
     const rootProps = getRootProps(other) as ReturnType<typeof getRootProps>;
     const { draggable, onDragStart, onDragOver, onDragEnd, ...otherRootProps } = rootProps;

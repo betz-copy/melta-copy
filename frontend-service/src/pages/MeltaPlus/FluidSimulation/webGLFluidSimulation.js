@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 // original code taken from https://github.com/PavelDoGreat/WebGL-Fluid-Simulation
 
 export const webGLFluidSimulation = (canvas) => {
@@ -137,7 +135,7 @@ export const webGLFluidSimulation = (canvas) => {
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 
         const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-        return status == gl.FRAMEBUFFER_COMPLETE;
+        return status === gl.FRAMEBUFFER_COMPLETE;
     }
 
     function framebufferToTexture(target) {
@@ -201,7 +199,7 @@ export const webGLFluidSimulation = (canvas) => {
                 this.programs[hash] = program;
             }
 
-            if (program == this.activeProgram) return;
+            if (program === this.activeProgram) return;
 
             this.uniforms = getUniforms(program);
             this.activeProgram = program;
@@ -824,7 +822,7 @@ export const webGLFluidSimulation = (canvas) => {
 
     function CHECK_FRAMEBUFFER_STATUS() {
         const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-        if (status != gl.FRAMEBUFFER_COMPLETE) console.trace(`Framebuffer error: ${status}`);
+        if (status !== gl.FRAMEBUFFER_COMPLETE) console.trace(`Framebuffer error: ${status}`);
     }
 
     let dye;
@@ -989,7 +987,7 @@ export const webGLFluidSimulation = (canvas) => {
     }
 
     function resizeDoubleFBO(target, w, h, internalFormat, format, type, param) {
-        if (target.width == w && target.height == h) return target;
+        if (target.width === w && target.height === h) return target;
         target.read = resizeFBO(target.read, w, h, internalFormat, format, type, param);
         target.write = createFBO(w, h, internalFormat, format, type, param);
         target.width = w;
@@ -1068,7 +1066,7 @@ export const webGLFluidSimulation = (canvas) => {
     function resizeCanvas() {
         const width = scaleByPixelRatio(canvas.parentElement.clientWidth);
         const height = scaleByPixelRatio(window.innerHeight);
-        if (canvas.width != width || canvas.height != height) {
+        if (canvas.width !== width || canvas.height !== height) {
             canvas.width = width;
             canvas.height = height;
             return true;
@@ -1423,7 +1421,7 @@ export const webGLFluidSimulation = (canvas) => {
 
     function wrap(value, min, max) {
         const range = max - min;
-        if (range == 0) return min;
+        if (range === 0) return min;
         return ((value - min) % range) + min;
     }
 
@@ -1451,7 +1449,7 @@ export const webGLFluidSimulation = (canvas) => {
     }
 
     function hashCode(s) {
-        if (s.length == 0) return 0;
+        if (s.length === 0) return 0;
         let hash = 0;
         for (let i = 0; i < s.length; i++) {
             hash = (hash << 5) - hash + s.charCodeAt(i);
@@ -1463,7 +1461,7 @@ export const webGLFluidSimulation = (canvas) => {
     const mouseDownCanvasEventLIstener = (e) => {
         const posX = scaleByPixelRatio(e.offsetX);
         const posY = scaleByPixelRatio(e.offsetY);
-        let pointer = pointers.find((p) => p.id == -1);
+        let pointer = pointers.find((p) => p.id === -1);
         if (pointer == null) pointer = new pointerPrototype();
         updatePointerDownData(pointer, -1, posX, posY);
     };

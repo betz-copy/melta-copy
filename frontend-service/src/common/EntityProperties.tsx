@@ -8,7 +8,13 @@ import { pdfjs } from 'react-pdf';
 import { useQueryClient } from 'react-query';
 import { environment } from '../globals';
 import { IEntity } from '../interfaces/entities';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import {
+    IEntitySingleProperty,
+    IEntityTemplateMap,
+    IMongoEntityTemplatePopulated,
+    PropertyFormat,
+    PropertyType,
+} from '../interfaces/entityTemplates';
 import { IGetUnits } from '../interfaces/units';
 import { useDarkModeStore } from '../stores/darkMode';
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
@@ -29,15 +35,15 @@ const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
-function formatDateToDDMMYYYY(dateString: string): string {
+const formatDateToDDMMYYYY = (dateString: string): string => {
     if (!dateString) return '-';
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return '-';
+    if (Number.isNaN(date.getTime())) return '-';
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
-}
+};
 
 interface FormatOptions {
     keyEnumColors?: Record<string, string>;
@@ -69,7 +75,19 @@ const getUserAvatar = (
     );
 };
 
-export const formatToString = (data: {
+export const formatToString = ({
+    value,
+    property,
+    units,
+    key,
+    preview,
+    color,
+    options = {},
+    hideProps = [],
+    entityTemplate,
+    properties,
+    darkMode,
+}: {
     value: any;
     property: IEntitySingleProperty;
     units: IGetUnits;
@@ -82,8 +100,6 @@ export const formatToString = (data: {
     properties?: IEntityPropertiesProps['properties'];
     darkMode: boolean;
 }) => {
-    const { value, property, units, key, preview, color, options = {}, hideProps = [], entityTemplate, properties, darkMode } = data;
-
     const { format, type: valueType, title, expandedUserField } = property;
     const { keyEnumColors, isPrintingMode, pureString } = options;
 
@@ -98,24 +114,22 @@ export const formatToString = (data: {
         expandedUserField?.kartoffelField &&
         ['birthDate', 'dischargeDay', 'enlistmentDay'].includes(expandedUserField.kartoffelField) &&
         value
-    ) {
+    )
         return formatDateToDDMMYYYY(value);
-    }
 
-    if (valueType === 'number') {
-        return value >= 0 ? value : `${(value * -1).toString()}-`;
-    }
-    if (valueType === 'boolean') return value ? i18next.t('booleanOptions.yes') : i18next.t('booleanOptions.no');
-    if (valueType === 'string') {
-        if (format === 'date') return new Date(value).toLocaleDateString('en-uk');
-        if (format === 'comment') return property.hideFromDetailsPage || (key && hideProps.includes(key)) ? undefined : property.comment;
-        if (format === 'date-time') return new Date(value).toLocaleString('en-uk');
-        if (format === 'fileId' || format === 'signature') {
+    if (valueType === 'number') return value >= 0 ? value : `${(value * -1).toString()}-`;
+
+    if (valueType === PropertyType.boolean) return value ? i18next.t('booleanOptions.yes') : i18next.t('booleanOptions.no');
+    if (valueType === PropertyType.string) {
+        if (format === PropertyFormat.date) return new Date(value).toLocaleDateString('en-uk');
+        if (format === PropertyFormat.comment) return property.hideFromDetailsPage || (key && hideProps.includes(key)) ? undefined : property.comment;
+        if (format === PropertyFormat['date-time']) return new Date(value).toLocaleString('en-uk');
+        if (format === PropertyFormat.fileId || format === PropertyFormat.signature) {
             return (
                 <OpenPreview
                     fileId={value}
                     download={isPrintingMode}
-                    defaultFileName={format === 'signature' ? `${title}.${environment.fileExtensions.defaultImage}` : undefined}
+                    defaultFileName={format === PropertyFormat.signature ? `${title}.${environment.fileExtensions.defaultImage}` : undefined}
                     disabled={preview}
                     color={color}
                 />
@@ -148,14 +162,14 @@ export const formatToString = (data: {
             return units.find(({ _id }) => _id === value)?.name;
         }
     }
-    if (format === 'location') {
+    if (format === PropertyFormat.location) {
         const convertLocation = (value: LocationData) =>
             value.coordinateSystem === CoordinateSystem.UTM && !extractUtmLocation(value.location)
                 ? locationConverterToString(value.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
                 : value.location;
 
-        if (typeof value === 'string') {
-            if (value.includes('location')) return convertLocation(JSON.parse(value));
+        if (typeof value === PropertyType.string) {
+            if (value.includes(PropertyFormat.location)) return convertLocation(JSON.parse(value));
             else return value;
         }
         return convertLocation(value);
@@ -336,14 +350,14 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                 const propertyTitleColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#9398C2', {});
 
                 let innerContent: string | JSX.Element | undefined;
-                if (hideFieldsToDisplay.includes(propertyKey)) innerContent = <>••••••••</>;
+                if (hideFieldsToDisplay.includes(propertyKey)) innerContent = '••••••••';
                 else if (containsHtmlTags)
                     innerContent = viewFirstLineOfLongText
                         ? `${getFirstLine(stringFormatValue)}${getNumLines(stringFormatValue) > 1 ? '...' : ''}`
                         : renderHTML(stringFormatValue);
                 else if (propertyValue && calculateTime)
                     innerContent = <CalculateDateDifference date={stringFormatValue} searchValue={searchedText} />;
-                else if (propertyValue && type === 'number') innerContent = getFixedNumber(propertyValue);
+                else if (propertyValue && type === 'number') innerContent = getFixedNumber(propertyValue as number);
                 else if (format === 'relationshipReference' && entityTemplates && !relatedEntityAllowed) innerContent = '-';
                 else innerContent = stringFormatValue;
 

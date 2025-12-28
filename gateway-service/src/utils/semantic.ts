@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { IEntityWithDirectRelationships, IRerankResult, ISearchResult, ISemanticSearchResult } from '@microservices/shared';
 import excelConfig from './excel/excelConfig';
 

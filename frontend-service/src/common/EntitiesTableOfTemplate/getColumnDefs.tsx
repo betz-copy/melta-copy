@@ -9,7 +9,7 @@ import { Link } from 'wouter';
 import { environment } from '../../globals';
 import { IChildTemplateMap, IChildTemplatePopulated, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { EntityData, IEntity } from '../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated, PropertyFormat } from '../../interfaces/entityTemplates';
 import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
 import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import { IGetUnits } from '../../interfaces/units';
@@ -395,7 +395,7 @@ export const getColumnDefs = <Data = EntityData>({
             ({ data }) => (data ? getEntityPropertiesData(data as Data).createdAt : undefined),
             {
                 title: i18next.t('entityPage.createdAt'),
-                format: 'date-time',
+                format: PropertyFormat['date-time'],
             },
             defaultColumnsOrder.createdAt?.order === lastColumnIndex,
             defaultColumnWidths.createdAt,
@@ -409,7 +409,7 @@ export const getColumnDefs = <Data = EntityData>({
             ({ data }) => (data ? getEntityPropertiesData(data as Data).updatedAt : undefined),
             {
                 title: i18next.t('entityPage.updatedAt'),
-                format: 'date-time',
+                format: PropertyFormat['date-time'],
             },
             defaultColumnsOrder.updatedAt?.order === lastColumnIndex,
             defaultColumnWidths.updatedAt,
@@ -496,7 +496,7 @@ export const getColumnDefs = <Data = EntityData>({
                                         )}
                                         disabled={!hasPermissionToTemplate}
                                     >
-                                        <img src="/icons/read-more-icon.svg" />
+                                        <img src="/icons/read-more-icon.svg" alt="read-more" />
                                     </IconButtonWithPopover>
                                 </Link>
                             </Grid>
@@ -558,7 +558,7 @@ export const getColumnDefs = <Data = EntityData>({
                                             disabledEntity ? i18next.t('permissions.dontHavePermissionsToCategory') : i18next.t('actions.graph')
                                         }
                                     >
-                                        <img src="/icons/graph-icon.svg" />
+                                        <img src="/icons/graph-icon.svg" alt="graph" />
                                     </IconButtonWithPopover>
                                 </Link>
                             </Grid>

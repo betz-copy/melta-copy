@@ -1,6 +1,3 @@
-/* eslint-disable class-methods-use-this */
-/* eslint-disable no-continue */
-/* eslint-disable no-await-in-loop */
 import {
     ActionOnFail,
     ActionsLog,
@@ -42,6 +39,8 @@ import {
     logger,
     NotFoundError,
     Polygon,
+    PropertyFormat,
+    PropertyType,
     ServiceError,
     ValidationError,
 } from '@microservices/shared';
@@ -1070,7 +1069,6 @@ class EntityManager extends DefaultManagerNeo4j {
             acc[key.replace(config.neo4j.relationshipReferencePropertySuffix, '')] = value;
         });
 
-        // eslint-disable-next-line no-param-reassign
         acc = unflatten(acc);
 
         Object.entries(acc).forEach(([key, value]) => {
@@ -1478,9 +1476,9 @@ class EntityManager extends DefaultManagerNeo4j {
 
         const propertiesWithGeneratedProperties: Record<string, IEntitySingleProperty> = {
             ...entityTemplate.properties.properties,
-            disabled: { title: `doesn'tMatter`, type: 'boolean' },
-            createdAt: { title: `doesn'tMatter`, type: 'string', format: 'date-time' },
-            updatedAt: { title: `doesn'tMatter`, type: 'string', format: 'date-time' },
+            disabled: { title: `doesn'tMatter`, type: PropertyType.boolean },
+            createdAt: { title: `doesn'tMatter`, type: PropertyType.string, format: PropertyFormat['date-time'] },
+            updatedAt: { title: `doesn'tMatter`, type: PropertyType.string, format: PropertyFormat['date-time'] },
         };
 
         const templateUpdatedProperties = pickBy(
@@ -1895,7 +1893,7 @@ class EntityManager extends DefaultManagerNeo4j {
         field: any,
         transaction: Transaction,
     ) {
-        let updateRelatedEntitiesQuery;
+        let updateRelatedEntitiesQuery: string;
         const originalChangedEntityIds = originalEntities.map((node) => node.properties._id);
         const entitiesNeedToUpdate = await this.getRelatedEntitiesOfEntity(templateId, originalChangedEntityIds, transaction);
 
@@ -2002,21 +2000,22 @@ class EntityManager extends DefaultManagerNeo4j {
     }
 
     private buildConstraintsOfTemplate(templateId: string, constraints: IConstraint[]) {
-        return constraints.reduce<IConstraintsOfTemplate>(
-            (acc, curr) => ({
-                ...acc,
-                requiredConstraints: curr.type === 'REQUIRED' ? [...acc.requiredConstraints, curr.property] : acc.requiredConstraints,
-                uniqueConstraints:
-                    curr.type === 'UNIQUE'
-                        ? [...acc.uniqueConstraints, { groupName: curr.uniqueGroupName, properties: curr.properties }]
-                        : acc.uniqueConstraints,
-            }),
-            {
-                templateId,
-                requiredConstraints: [],
-                uniqueConstraints: [],
-            },
-        );
+        const result: IConstraintsOfTemplate = {
+            templateId,
+            requiredConstraints: [],
+            uniqueConstraints: [],
+        };
+
+        for (const curr of constraints) {
+            if (curr.type === 'REQUIRED') result.requiredConstraints.push(curr.property);
+            else if (curr.type === 'UNIQUE')
+                result.uniqueConstraints.push({
+                    groupName: curr.uniqueGroupName,
+                    properties: curr.properties,
+                });
+        }
+
+        return result;
     }
 
     async getConstraintsOfTemplate(templateId: string) {
@@ -2244,26 +2243,26 @@ class EntityManager extends DefaultManagerNeo4j {
     removeRelationshipReferences(relatedEntityTemplate: IMongoEntityTemplate, property: string, propertiesToRemove: string[]) {
         const propertiesWithGeneratedProperties: Record<string, IEntitySingleProperty> = {
             ...relatedEntityTemplate.properties.properties,
-            disabled: { title: 'disabled', type: 'string' },
-            createdAt: { title: 'createdAt', type: 'string', format: 'date-time' },
-            updatedAt: { title: 'updatedAt', type: 'string', format: 'date-time' },
-            _id: { title: '_id', type: 'string' },
+            disabled: { title: 'disabled', type: PropertyType.string },
+            createdAt: { title: 'createdAt', type: PropertyType.string, format: PropertyFormat['date-time'] },
+            updatedAt: { title: 'updatedAt', type: PropertyType.string, format: PropertyFormat['date-time'] },
+            _id: { title: '_id', type: PropertyType.string },
         };
 
         Object.entries(propertiesWithGeneratedProperties).forEach(([key, value]) => {
             propertiesToRemove.push(`${property}.properties.${key}${config.neo4j.relationshipReferencePropertySuffix}`);
 
-            if (value.type !== 'string')
+            if (value.type !== PropertyType.string)
                 propertiesToRemove.push(
                     `${property}.properties.${key}${config.neo4j.stringPropertySuffix}${config.neo4j.relationshipReferencePropertySuffix}`,
                 );
 
-            if (value.type === 'boolean')
+            if (value.type === PropertyType.boolean)
                 propertiesToRemove.push(
                     `${property}.properties.${key}${config.neo4j.booleanPropertySuffix}${config.neo4j.relationshipReferencePropertySuffix}`,
                 );
 
-            if (value.format === 'fileId' || (value.type === 'array' && value.items?.format === 'fileId'))
+            if (value.format === PropertyFormat.fileId || (value.type === PropertyType.array && value.items?.format === PropertyFormat.fileId))
                 propertiesToRemove.push(
                     `${property}.properties.${key}${config.neo4j.filePropertySuffix}${config.neo4j.relationshipReferencePropertySuffix}`,
                 );
@@ -2291,12 +2290,12 @@ class EntityManager extends DefaultManagerNeo4j {
         for (const property of properties) {
             const propertyTemplate = currentTemplateProperties[property];
 
-            if (propertyTemplate.format === 'user') {
+            if (propertyTemplate.format === PropertyFormat.user) {
                 propertiesToRemove.push(...this.getUserProperties(property));
                 continue;
             }
 
-            if (propertyTemplate.items?.format === 'user') {
+            if (propertyTemplate.items?.format === PropertyFormat.user) {
                 propertiesToRemove.push(...this.getUsersArrayProperties(property));
                 continue;
             }
@@ -2304,12 +2303,16 @@ class EntityManager extends DefaultManagerNeo4j {
             const { type, format, items } = propertyTemplate;
             propertiesToRemove.push(property);
 
-            if (type !== 'string') propertiesToRemove.push(`${property}${config.neo4j.stringPropertySuffix}`);
-            if (type === 'boolean') propertiesToRemove.push(`${property}${config.neo4j.booleanPropertySuffix}`);
-            if (format === 'fileId' || (type === 'array' && items?.format === 'fileId') || format === 'signature')
+            if (type !== PropertyType.string) propertiesToRemove.push(`${property}${config.neo4j.stringPropertySuffix}`);
+            if (type === PropertyType.boolean) propertiesToRemove.push(`${property}${config.neo4j.booleanPropertySuffix}`);
+            if (
+                format === PropertyFormat.fileId ||
+                (type === PropertyType.array && items?.format === PropertyFormat.fileId) ||
+                format === PropertyFormat.signature
+            )
                 propertiesToRemove.push(`${property}${config.neo4j.filePropertySuffix}`);
 
-            if (format !== 'relationshipReference') continue;
+            if (format !== PropertyFormat.relationshipReference) continue;
 
             relationshipTemplatesToRemove.push(propertyTemplate.relationshipReference?.relationshipTemplateId as string);
 

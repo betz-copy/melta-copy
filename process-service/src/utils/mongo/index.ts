@@ -10,7 +10,8 @@ import {
 import { ClientSession, connection, FilterQuery, Model, PipelineStage, Types } from 'mongoose';
 import config from '../../config';
 
-export const transaction = async <T, Func extends (session: ClientSession) => Promise<T>>(func: Func): Promise<T> => {
+export const transaction = async <Func extends (session: ClientSession) => Promise<any>>(func: Func): Promise<Awaited<ReturnType<Func>>> => {
+    // biome-ignore lint/suspicious/noImplicitAnyLet: to avoid build error
     let ret;
 
     await connection.transaction(async (session) => {

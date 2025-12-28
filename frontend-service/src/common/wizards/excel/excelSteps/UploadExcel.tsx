@@ -12,9 +12,7 @@ import EntitiesTableOfTemplate from '../../../EntitiesTableOfTemplate';
 import OpenPreview from '../../../FilePreview/OpenPreview';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 
-const {
-    loadExcel: { excelExtension, acceptedFilesTypes },
-} = environment;
+const { excelExtension, acceptedFilesTypes } = environment.loadExcel;
 
 export const UploadExcel: React.FC<{
     formikProps: FormikProps<EntitiesWizardValues>;
@@ -94,7 +92,7 @@ export const UploadExcel: React.FC<{
                 />
             </Grid>
             <Grid marginTop="15px">
-                <Typography color={theme.palette.mode === 'dark' ? '#FFFFFF' : '#1E2775'} fontSize="14px" fontWeight={400}>
+                <Typography color={theme.palette.mode === 'dark' ? '#FFFFFF' : theme.palette.primary.main} fontSize="14px" fontWeight={400}>
                     {i18next.t('wizard.entity.loadEntities.preview')}
                 </Typography>
             </Grid>

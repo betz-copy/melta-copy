@@ -19,10 +19,8 @@ export const renderConnectionTree = (
         showEntityDates: boolean;
         showDisabled: boolean;
     },
+    entityTemplates: IEntityTemplateMap,
 ): JSX.Element[] => {
-    const queryClient = useQueryClient();
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-
     return connectionsTemplates.flatMap(({ relationshipTemplate, isExpandedEntityRelationshipSource, children }) => {
         const entityType = isExpandedEntityRelationshipSource ? 'sourceEntity' : 'destinationEntity';
 
@@ -76,7 +74,7 @@ const ComponentToPrint = React.forwardRef<
         connectionsInstances: IConnection[];
         filesToPrint: IFile[];
         setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
-        setFilesLoadingStatus: React.Dispatch<React.SetStateAction<{}>>;
+        setFilesLoadingStatus: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
         options: {
             showDisabled: boolean;
             showEntityDates: boolean;
@@ -98,6 +96,9 @@ const ComponentToPrint = React.forwardRef<
         },
         ref,
     ) => {
+        const queryClient = useQueryClient();
+        const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
         return (
             <Box ref={ref} margin="20px" style={{ direction: 'rtl', color: '#000' }}>
                 <Grid style={{ pageBreakInside: 'avoid' }}>
@@ -122,7 +123,7 @@ const ComponentToPrint = React.forwardRef<
                 {connectionsTemplates.length > 0 && (
                     <>
                         <BlueTitle title={i18next.t('entityPage.relationshipTitle')} component="h4" variant="h4" style={{ marginTop: '2rem' }} />
-                        {renderConnectionTree(expandedEntity.entity, connectionsTemplates, connectionsInstances, options)}
+                        {renderConnectionTree(expandedEntity.entity, connectionsTemplates, connectionsInstances, options, entityTemplates)}
                     </>
                 )}
                 {options.showEntityFiles && (

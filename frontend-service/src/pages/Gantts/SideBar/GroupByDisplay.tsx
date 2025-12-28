@@ -1,7 +1,7 @@
 import { Grid, Typography } from '@mui/material';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
-import lodashIsEqual from 'lodash.isequal';
+import { isEqual } from 'lodash';
 import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';
 import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
@@ -31,7 +31,7 @@ export const GroupByDisplay: React.FC<GroupByDisplayProps> = ({ groupBy, formik,
             groupByEntityTemplate &&
             filteredMap(Object.keys(groupByEntityTemplate.properties.properties), (property) => ({
                 include: Boolean(
-                    groupByEntityTemplate.uniqueConstraints.find((uniqueConstraint) => lodashIsEqual(uniqueConstraint.properties, [property])),
+                    groupByEntityTemplate.uniqueConstraints.find((uniqueConstraint) => isEqual(uniqueConstraint.properties, [property])),
                 ),
                 value: property,
             })),

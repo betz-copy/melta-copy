@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-shadow */
-/** biome-ignore-all lint/correctness/useExhaustiveDependencies: <explanation> */
-/* eslint-disable react/no-unstable-nested-components */
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
@@ -10,7 +7,15 @@ import { environment } from '../../../globals';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { IConstraint, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
-import { IEntityTemplateMap, IEntityTemplatePopulated, IWalletTransfer, IWalletTransferPopulated } from '../../../interfaces/entityTemplates';
+import {
+    IEntityTemplateMap,
+    IEntityTemplatePopulated,
+    IWalletTransfer,
+    IWalletTransferPopulated,
+    PropertyExternalWizardType,
+    PropertyFormat,
+    PropertyType,
+} from '../../../interfaces/entityTemplates';
 import { IErrorResponse } from '../../../interfaces/error';
 import fileDetails from '../../../interfaces/fileDetails';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
@@ -33,10 +38,12 @@ import { WalletTransferSettings, walletTransferSettingsSchema } from './WalletTr
 
 const { errorCodes } = environment;
 
+type PropertyWizardType = keyof typeof PropertyType | keyof typeof PropertyFormat | keyof typeof PropertyExternalWizardType;
+
 export interface EntityTemplateFormInputProperties {
     name: string;
     title: string;
-    type: string;
+    type: PropertyWizardType;
     id: string;
     options: string[];
     pattern: string;

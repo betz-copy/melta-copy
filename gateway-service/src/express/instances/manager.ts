@@ -1,4 +1,3 @@
-/** biome-ignore-all lint/suspicious/noExplicitAny: properties need to be of type any */
 import { promises as fsp } from 'node:fs';
 import {
     ActionTypes,
@@ -62,7 +61,7 @@ import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import StorageService from '../../externalServices/storageService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import UserService from '../../externalServices/userService';
-import { trycatch } from '../../utils';
+import { tryCatch } from '../../utils';
 import { getUserFields } from '../../utils/entities';
 import { classifyEntityErrors, generateSerialNumbers, getAllEntitiesFromExcel, getSerialStarters } from '../../utils/excel';
 import { createWorkbook, createWorksheet, styleAWorksheet } from '../../utils/excel/createFunctions';
@@ -367,7 +366,17 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 displayColumns,
             );
 
-            styleAWorksheet(worksheet, entitiesToInsert, templateItem, workspace, unitsMap, columnDisplay, undefined, !!entitiesToInsert);
+            styleAWorksheet(
+                worksheet,
+                entitiesToInsert,
+                templateItem,
+                workspace,
+                unitsMap,
+                relatedTemplatesMap,
+                columnDisplay,
+                undefined,
+                !!entitiesToInsert,
+            );
             return;
         }
 
@@ -400,6 +409,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 templateItem,
                 workspace,
                 unitsMap,
+                relatedTemplatesMap,
                 displayColumns,
                 headersOnly,
                 undefined,
@@ -447,6 +457,8 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         relatedTemplatesObject.forEach(({ fieldName, relatedTemplateId }) => {
             const relatedTemplate: IMongoEntityTemplatePopulated = relatedTemplatesMap[relatedTemplateId!]!;
+
+            if (!relatedTemplate) return;
             const identifierField = Object.entries(relatedTemplate?.properties.properties).find(([_key, value]) => value.identifier)?.[0];
             if (!identifierField) return;
 
@@ -495,6 +507,9 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
     ) {
         let entities = insertBrokenEntities;
         const { metaData: template, type } = await this.handleTemplate(templateId, childTemplateId);
+        const parentTemplate = type === EntityTemplateType.Child ? template.parentTemplate : template;
+        const { requiredConstraints } = await this.service.getConstraintsOfTemplate(parentTemplate._id);
+
         const { relatedTemplatesMap } = await this.getRelatedTemplates(template, userId);
 
         const failedEntities: IFailedEntity[] = [];
@@ -503,9 +518,8 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             const units = (await unflattenUnitHierarchy(this.workspaceId, userId)).map((unit) => unit._id);
 
             const workspace = await WorkspaceService.getById(this.workspaceId);
-            entities = await getAllEntitiesFromExcel(files, template, failedEntities, workspace, relatedTemplatesMap, units);
+            entities = await getAllEntitiesFromExcel(files, template, failedEntities, workspace, relatedTemplatesMap, requiredConstraints, units);
         }
-
         const serialStarters = getSerialStarters(template);
         const succeededEntities: IEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
@@ -570,6 +584,9 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     async getChangedEntitiesFromExcel(templateId: string, file: UploadedFile, userId: string, childTemplateId?: string) {
         const { metaData: template, type } = await this.handleTemplate(templateId, childTemplateId);
+        const parentTemplate = type === EntityTemplateType.Child ? template.parentTemplate : template;
+        const { requiredConstraints } = await this.service.getConstraintsOfTemplate(parentTemplate._id);
+
         const { relatedTemplatesMap } = await this.getRelatedTemplates(template, userId);
         const units = (await unflattenUnitHierarchy(this.workspaceId, userId)).map((unit) => unit._id);
 
@@ -585,8 +602,9 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             relatedTemplatesMap,
             this.workspaceId,
             workspace.metadata?.excel?.entitiesFileLimit,
-            units,
             oldEntities,
+            requiredConstraints,
+            units,
         );
 
         const entities = entitiesWithIgnoresRules.map(({ properties }) => ({
@@ -1266,14 +1284,13 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             const propertyTemplate = entityTemplate.properties.properties[field];
 
             let newValue: any;
-            if (propertyTemplate?.format === 'fileId' || propertyTemplate?.items?.format === 'fileId') {
+            if (propertyTemplate?.format === 'fileId' || propertyTemplate?.items?.format === 'fileId')
                 newValue = uploadedFilesAndProperties[field] ?? updatedEntity.properties[field];
-            } else if (propertyTemplate?.format === 'relationshipReference') {
+            else if (propertyTemplate?.format === 'relationshipReference') {
                 if (updatedEntity.properties[field]?.properties) newValue = updatedEntity.properties[field].properties._id;
                 if (currentEntity.properties[field]?.properties) currentEntity.properties[field] = currentEntity.properties[field].properties._id;
-            } else {
-                newValue = updatedEntity.properties[field];
-            }
+            } else newValue = updatedEntity.properties[field];
+
             if (
                 newValue !== undefined &&
                 Array.isArray(currentEntity.properties[field]) &&
@@ -1348,7 +1365,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         const filesOfDeletedInstances = await this.service.deleteEntityInstances(deleteBody);
 
-        const { err: error } = await trycatch(() => this.deleteAllEntitiesFiles(filesOfDeletedInstances));
+        const { err: error } = await tryCatch(() => this.deleteAllEntitiesFiles(filesOfDeletedInstances));
 
         if (error) logger.error(`failed to delete files ${filesOfDeletedInstances}`, { error });
     }

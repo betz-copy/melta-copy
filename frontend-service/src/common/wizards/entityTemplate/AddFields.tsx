@@ -405,15 +405,13 @@ export const FieldBlockWrapper = ({
             if (property.type === 'group' && 'fields' in property && Array.isArray(property.fields)) {
                 for (let idx = 0; idx < property.fields.length; idx++) {
                     const field = property.fields[idx];
-                    if (field.type === 'kartoffelUserField' && field.expandedUserField?.relatedUserField === propertyToCheck.name) {
+                    if (field.type === 'kartoffelUserField' && field.expandedUserField?.relatedUserField === propertyToCheck.name)
                         indexesArray.push({ propertyIndex: idx, propertyGroupIndex: index });
-                    }
                 }
             } else if (property.type !== 'group') {
                 const propertyData = (property as FieldProperty).data;
-                if (propertyData.type === 'kartoffelUserField' && propertyData.expandedUserField?.relatedUserField === propertyToCheck.name) {
+                if (propertyData.type === 'kartoffelUserField' && propertyData.expandedUserField?.relatedUserField === propertyToCheck.name)
                     indexesArray.push({ propertyIndex: index });
-                }
             }
         }
 
@@ -675,7 +673,6 @@ export const FieldBlockWrapper = ({
             if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
 
             moveItem(dragIndex, hoverIndex);
-            // eslint-disable-next-line no-param-reassign
             item.index = hoverIndex;
         },
     });
@@ -690,7 +687,7 @@ export const FieldBlockWrapper = ({
 
     useEffect(() => {
         preview(getEmptyImage(), { captureDraggingState: true });
-    }, []);
+    }, [preview]);
 
     drag(drop(ref));
 
@@ -743,24 +740,18 @@ export const FieldBlockWrapper = ({
                     draggable={{ isDraggable: true }}
                     locationSearchFields={{
                         show: (Object.values(values.properties) as PropertyItem[]).some((property) => {
-                            if (property.type === 'field') {
-                                return property.data.type === 'location';
-                            }
-                            if (property.type === 'group') {
-                                return property.fields.some((field) => field.type === 'location');
-                            }
+                            if (property.type === 'field') return property.data.type === 'location';
+                            if (property.type === 'group') return property.fields.some((field) => field.type === 'location');
+
                             return false;
                         }),
                         disabled: countMapSearchProperties >= 2,
                     }}
                     supportIdentifier
                     hasIdentifier={(Object.values(values.properties) as PropertyItem[]).some((property) => {
-                        if (property.type === 'field') {
-                            return 'identifier' in property.data && Boolean(property.data.identifier);
-                        }
-                        if (property.type === 'group') {
-                            return property.fields.some((field) => 'identifier' in field && Boolean(field.identifier));
-                        }
+                        if (property.type === 'field') return 'identifier' in property.data && Boolean(property.data.identifier);
+                        if (property.type === 'group') return property.fields.some((field) => 'identifier' in field && Boolean(field.identifier));
+
                         return false;
                     })}
                     userPropertiesInTemplate={userPropertiesInTemplate}
@@ -797,7 +788,7 @@ export const AddFieldsDND: React.FC<AddFieldsDNDProps> = ({
 
             setFieldValue('propertiesTypeOrder', newValuesOrder);
         },
-        [values.propertiesTypeOrder],
+        [values.propertiesTypeOrder, setFieldValue],
     );
 
     return (

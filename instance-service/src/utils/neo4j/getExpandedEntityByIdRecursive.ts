@@ -1,5 +1,3 @@
-/* eslint-disable no-restricted-syntax */
-/* eslint-disable no-await-in-loop */
 import { IEntityExpanded, IMongoEntityTemplate } from '@microservices/shared';
 import { IGetExpandedEntityBody } from '../../express/entities/interface';
 import Neo4jClient from '.';
@@ -16,8 +14,7 @@ export const expandEntityToNeoQuery = async (
 ) => {
     const templateIdsWithFilter = Object.keys(filters);
     const emptyFilters = templateIds?.filter((templateId) => !templateIdsWithFilter.includes(templateId));
-    const mappedRecords: IGetExpandedEntityBody['filters'] = emptyFilters?.reduce((acc: any, currentId) => {
-        // eslint-disable-next-line no-param-reassign
+    const mappedRecords: IGetExpandedEntityBody['filters'] = emptyFilters?.reduce((acc, currentId) => {
         acc[currentId] = {};
         return acc;
     }, {});

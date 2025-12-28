@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 import { Close as CloseIcon } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Button, Dialog, Grid, IconButton, Tab } from '@mui/material';
@@ -21,7 +20,7 @@ import RoleDialog from './RoleDialog';
 
 const PermissionsDialog: React.FC<{
     isOpen: boolean;
-    handleClose: () => any;
+    handleClose: () => void;
     mode: 'create' | 'edit' | 'view';
     roleOrUser?: PermissionData;
     onSuccess?: (roleOrUser?: PermissionData) => void;

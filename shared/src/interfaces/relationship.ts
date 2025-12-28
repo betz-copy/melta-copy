@@ -2,7 +2,6 @@ import { Transaction } from 'neo4j-driver';
 import { IEntity } from './entity';
 import { IRelationshipReference } from './entityTemplate';
 
-/* eslint-disable no-shadow */
 export interface IRelationship {
     templateId: string;
     properties: Record<string, any>;

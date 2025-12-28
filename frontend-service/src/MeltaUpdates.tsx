@@ -77,7 +77,7 @@ const MeltaUpdates: React.FC<MeltaUpdatesProps> = ({ open, handleClose, meltaUpd
                                         backgroundColor: darkMode ? 'rgb(134 141 199)' : '#DEEDFF',
                                     }}
                                 >
-                                    <CheckCircleOutline sx={{ color: darkMode ? 'white' : '#1E2775', fontSize: '16px' }} />
+                                    <CheckCircleOutline sx={{ color: darkMode ? 'white' : theme.palette.primary.main, fontSize: '16px' }} />
                                 </Box>
                             </Box>
                         </Grid>

@@ -25,9 +25,9 @@ export const MinimizedColorPicker: React.FC<IMinimizedColorPickerProps> = ({
         <>
             <IconButton ref={circleRef} onClick={() => setOpen(true)} sx={{ padding: '0.1rem', ...style }}>
                 {color ? (
-                    <CircleIcon sx={{ color: error ? '#d32f2f' : color, fontSize: circleSize }} />
+                    <CircleIcon sx={{ color: error ? 'error' : color, fontSize: circleSize }} />
                 ) : (
-                    <AddColorIcons sx={{ color: error ? '#d32f2f' : 'gray', fontSize: circleSize }} />
+                    <AddColorIcons sx={{ color: error ? 'error' : 'gray', fontSize: circleSize }} />
                 )}
             </IconButton>
 

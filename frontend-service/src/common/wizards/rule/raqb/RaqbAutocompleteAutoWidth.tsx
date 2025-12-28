@@ -8,12 +8,11 @@ export const RaqbMuiAutocompleteAutoWidth: React.FC<FieldProps> = (fieldProps) =
     const { setField, selectedLabel } = fieldProps;
     const autocompleteRef = useRef<HTMLDivElement | undefined>(undefined);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: useEffect dependencies
     useEffect(() => {
         const inputElement = autocompleteRef.current?.firstChild?.firstChild?.firstChild as HTMLInputElement;
 
         if (inputWidth < inputElement.scrollWidth) setInputWidth(inputElement.scrollWidth);
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedLabel]);
 
     return (

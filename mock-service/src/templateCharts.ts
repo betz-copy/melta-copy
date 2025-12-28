@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import { IMongoChart, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import config from './config';
 import { chartsCreator } from './mocks/templateCharts';

@@ -60,7 +60,7 @@ const NoItemsCard: React.FC = () => {
                         {i18next.t('dashboard.noItems.admin.comment')}
                     </Typography>
                 )}
-                <img src="/icons/dashboardViews/chart.svg" style={{ opacity: 0.5, padding: '20px' }} />
+                <img src="/icons/dashboardViews/chart.svg" alt="chart" style={{ opacity: 0.5, padding: '20px' }} />
                 {hasAdminPermissions && (
                     <AddDashboardItem
                         overrideStyle={{

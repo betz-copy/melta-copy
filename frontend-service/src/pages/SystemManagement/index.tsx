@@ -1,6 +1,6 @@
 import { Box } from '@mui/material';
 import i18next from 'i18next';
-import React, { ReactElement, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import MeltaTabs from '../../common/MeltaDesigns/MeltaTabs';
 import '../../css/pages.css';
 import { PermissionScope } from '../../interfaces/permissions';
@@ -19,7 +19,7 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
 
     const currentUser = useUserStore((state) => state.user);
 
-    const tabsComponentsMapping: Record<string, ReactElement<any, any>> = {
+    const tabsComponentsMapping: Record<string, React.ReactElement> = {
         categories: <CategoriesRow />,
         entityTemplates: <EntityTemplatesRow />,
         relationshipTemplates: <RelationshipTemplatesRow />,

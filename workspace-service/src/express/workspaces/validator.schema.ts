@@ -54,7 +54,12 @@ const workspaceSchema = Joi.object({
     type: Joi.string()
         .valid(...Object.values(WorkspaceTypes))
         .required(),
-    colors: Joi.object(Object.values(Colors).reduce((acc, color) => ({ ...acc, [color]: HexColorSchema.required() }), {})).required(),
+    colors: Joi.object(
+        Object.values(Colors).reduce((acc, color) => {
+            acc[color] = HexColorSchema.required();
+            return acc;
+        }, {}),
+    ).required(),
     iconFileId: Joi.string(),
     logoFileId: Joi.string(),
 });
