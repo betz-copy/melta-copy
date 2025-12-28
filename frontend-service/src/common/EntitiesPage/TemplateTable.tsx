@@ -176,36 +176,44 @@ const TemplateTable = forwardRef<
         });
     };
 
-    const checkIfLoadExcelIsDisabled = () => {
-        const { properties } = template.properties;
-        const requiredProperties = new Set(template.properties.required);
+    const getLoadExcelDisabledReason = () => {
+        const hebrewPrefix = 'wizard.entity.loadEntities.disabledTooltip';
 
-        return Object.entries(properties).some(([key, property]) => {
-            if (property.format === 'fileId' && requiredProperties.has(key)) return true;
+        if (!userHasWritePermissions) return 'permissions.dontHaveWritePermissionsToTemplate';
+
+        if (template.disabled) return `${hebrewPrefix}.disabledTemplate`;
+
+        const { properties, required } = template.properties;
+        const requiredProperties = new Set(required);
+
+        for (const [key, property] of Object.entries(properties)) {
+            const isRequiredProperty = requiredProperties.has(key);
+
+            if (property.format === 'fileId' && isRequiredProperty) return `${hebrewPrefix}.requiredFile`;
 
             if (property.format === 'relationshipReference') {
                 const relatedTemplateId = property.relationshipReference?.relatedTemplateId;
                 const relatedTemplate = entityTemplates.get(relatedTemplateId!);
 
-                const hasIdentifier = Object.values(relatedTemplate?.properties?.properties ?? {}).some((prop) => !!prop.identifier);
-
-                return !hasIdentifier;
+                if (!relatedTemplate) {
+                    if (isRequiredProperty) return `${hebrewPrefix}.doesntHavePermissionToRelatedTemplate`;
+                } else {
+                    const hasIdentifier = Object.values(relatedTemplate.properties?.properties ?? {}).some((prop) => Boolean(prop.identifier));
+                    if (!hasIdentifier && isRequiredProperty) return `${hebrewPrefix}.requiredRelationshipRef`;
+                }
             }
+        }
 
-            return false;
-        });
+        return undefined;
     };
-
-    const isLoadExcelDisabled = !userHasWritePermissions || checkIfLoadExcelIsDisabled() || template.disabled;
-    const loadExcelTooltip = isLoadExcelDisabled
-        ? i18next.t(!userHasWritePermissions ? 'permissions.dontHaveWritePermissionsToTemplate' : 'wizard.entity.loadEntities.tableCantLoadEntities')
-        : undefined;
 
     const checkIfEditExcelIsDisabled = () => {
         const { properties } = template.properties;
         return Object.values(properties).some((property) => property.identifier);
     };
 
+    const loadExcelDisabledReason = getLoadExcelDisabledReason();
+    const isLoadExcelDisabled = !!getLoadExcelDisabledReason();
     const isEditExcelDisabled = !userHasWritePermissions || !checkIfEditExcelIsDisabled() || template.disabled;
     const editExcelTooltip = isEditExcelDisabled
         ? i18next.t(!userHasWritePermissions ? 'permissions.dontHaveWritePermissionsToTemplate' : 'wizard.entity.loadEntities.tableCantEditExcel')
@@ -290,9 +298,7 @@ const TemplateTable = forwardRef<
                             iconButtonWithPopoverProps={{
                                 popoverText: i18next.t('entitiesTableOfTemplate.downloadOneTable'),
                                 iconButtonProps: {
-                                    onClick: () => {
-                                        handleDownloadClick();
-                                    },
+                                    onClick: () => handleDownloadClick(),
                                 },
                             }}
                             icon={isExportingTableToExcelFile ? <CircularProgress size="24px" /> : <Download fontSize="small" />}
@@ -345,7 +351,7 @@ const TemplateTable = forwardRef<
                             disabled={isLoadExcelDisabled}
                             initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
                             onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
-                            popoverText={loadExcelTooltip}
+                            popoverText={loadExcelDisabledReason ? i18next.t(loadExcelDisabledReason) : undefined}
                         >
                             <Upload
                                 fontSize="small"

@@ -1,5 +1,5 @@
-/* eslint-disable jsx-a11y/no-static-element-interactions */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
+/** biome-ignore-all lint/a11y/useKeyWithClickEvents: woohoo */
+/** biome-ignore-all lint/a11y/noStaticElementInteractions: woohoo */
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useLocation } from 'wouter';

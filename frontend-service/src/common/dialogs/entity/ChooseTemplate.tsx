@@ -32,7 +32,7 @@ const ChooseTemplate: React.FC<{
     values: EntityWizardValues;
     touched: FormikTouched<EntityWizardValues>;
     errors: FormikErrors<EntityWizardValues>;
-    setFieldValue: (field: string, value: any, shouldValidate?: boolean | undefined) => void;
+    setFieldValue: <K extends keyof EntityWizardValues>(field: K, value: EntityWizardValues[K], shouldValidate?: boolean) => void;
     parentId?: string;
     chooseMode?: IChooseTemplateMode;
     entityId?: string;

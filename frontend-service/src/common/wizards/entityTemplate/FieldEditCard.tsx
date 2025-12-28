@@ -12,12 +12,12 @@ import {
 import { Autocomplete, Box, Card, CardContent, FormControlLabel, Grid, IconButton, MenuItem, TextField } from '@mui/material';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
-import isEqual from 'lodash.isequal';
+import { isEqual } from 'lodash';
 import React, { memo, SetStateAction } from 'react';
 import { useQueryClient } from 'react-query';
 import { environment } from '../../../globals';
 import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { IEntityTemplateMap, PropertyExternalWizardType } from '../../../interfaces/entityTemplates';
 import { arrayTypes } from '../../../services/templates/entityTemplatesService';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
@@ -147,6 +147,19 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
 
     const isNewProperty = !initialValue;
     const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
+
+    const isRequiredWalletTransferField = React.useMemo(() => {
+        if (!values?.walletTransfer) return false;
+        console.log(values.walletTransfer);
+
+        const walletTransfer = values.walletTransfer as any;
+        const from  = typeof walletTransfer.from === 'string' ? walletTransfer.from : walletTransfer.from.name;
+        const to = typeof walletTransfer.to === 'string' ? walletTransfer.to : walletTransfer.to.name;
+        return (
+            from === value.name || to === value.name || walletTransfer?.amount === value.name
+        );
+
+    }, [values, value.name]);
 
     const createNewUniqueGroup = (groupName) => {
         if (groupName) {
@@ -351,11 +364,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 if (validPropertyType === 'fileId' || validPropertyType === 'multipleFiles') return false; // TODO: support file inputs
                                                 if (validPropertyType === 'user' || validPropertyType === 'users') return supportUserType;
                                                 if (validPropertyType === 'comment') return supportComment;
-                                                if (
-                                                    validPropertyType === 'kartoffelUserField' &&
-                                                    userPropertiesInTemplate.length === 0 &&
-                                                    !value.deleted
-                                                )
+                                                if (validPropertyType === 'kartoffelUserField' && !userPropertiesInTemplate.length && !value.deleted)
                                                     return false;
                                                 return true;
                                             })
@@ -407,13 +416,14 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     isAccountTemplate={isAccountTemplate}
                                     hasAccountBalanceField={hasAccountBalanceField}
                                     isAlreadyWalletTemplate={isAlreadyWalletTemplate}
+                                    isRequiredWalletTransferField={isRequiredWalletTransferField}
                                 />
                                 <Grid display="flex">
                                     {locationSearchFields?.show &&
                                         value.type !== 'fileId' &&
                                         value.type !== 'relationshipReference' &&
                                         !isComment &&
-                                        !arrayTypes.includes(value.type) && (
+                                        !arrayTypes.includes(value.type as PropertyExternalWizardType) && (
                                             <MeltaTooltip
                                                 title={i18next.t(
                                                     mapSearchDisabled

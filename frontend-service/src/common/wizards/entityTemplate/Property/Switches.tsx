@@ -3,7 +3,7 @@ import i18next from 'i18next';
 import React, { SetStateAction } from 'react';
 import { useQueryClient } from 'react-query';
 import { ISearchFilter, IUniqueConstraintOfTemplate } from '../../../../interfaces/entities';
-import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import { IEntityTemplateMap, PropertyFormat, PropertyType } from '../../../../interfaces/entityTemplates';
 import { MinimizedColorPicker } from '../../../inputs/MinimizedColorPicker';
 import MeltaSwitch from '../../../MeltaDesigns/MeltaSwitch';
 import { CommonFormInputProperties, IRelationshipReference } from '../commonInterfaces';
@@ -27,6 +27,7 @@ export interface SwitchesProps {
     isAccountTemplate?: boolean;
     hasAccountBalanceField?: boolean;
     isAlreadyWalletTemplate?: boolean;
+    isRequiredWalletTransferField?: boolean;
 }
 
 export const Switches: React.FC<SwitchesProps> = ({
@@ -48,13 +49,14 @@ export const Switches: React.FC<SwitchesProps> = ({
     isAccountTemplate,
     hasAccountBalanceField,
     isAlreadyWalletTemplate,
+    isRequiredWalletTransferField = false,
 }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const isText = value.type === 'string' || value.type === 'text-area';
-    const isComment = value.type === 'comment';
-    const isKartoffelImage = value.type === 'kartoffelUserField' && value?.expandedUserField?.kartoffelField === 'image';
+    const isText = value.type === PropertyType.string || value.type === PropertyFormat['text-area'];
+    const isComment = value.type === PropertyFormat.comment;
+    const isKartoffelImage = value.type === PropertyFormat.kartoffelUserField && value?.expandedUserField?.kartoffelField === 'image';
     const isNewProperty = !initialValue;
 
     const property = `properties[${index}]`;
@@ -67,7 +69,7 @@ export const Switches: React.FC<SwitchesProps> = ({
     const hideFromDetailsPage = `${property}.hideFromDetailsPage`;
 
     const calculateTime = `${property}.calculateTime`;
-    const isIdentifierAble = isText || value.type === 'number' || value.type === 'pattern' || value.type === 'serialNumber';
+    const isIdentifierAble = isText || value.type === PropertyType.number || value.type === 'pattern' || value.type === 'serialNumber';
 
     // TODO: when upgrading the mongo version to v5, update the types and delete the (Omit<IRelationshipReference, 'filters'> & { filters?: string | ISearchFilter })[] type
     const relationshipRefs = Array.from(entityTemplates.values()).reduce(
@@ -76,7 +78,8 @@ export const Switches: React.FC<SwitchesProps> = ({
 
             const references = Object.values(properties).reduce(
                 (refAcc: (Omit<IRelationshipReference, 'filters'> & { filters?: string | ISearchFilter })[], property) => {
-                    if (property.format === 'relationshipReference' && property.relationshipReference) refAcc.push(property.relationshipReference);
+                    if (property.format === PropertyFormat.relationshipReference && property.relationshipReference)
+                        refAcc.push(property.relationshipReference);
 
                     return refAcc;
                 },
@@ -114,9 +117,8 @@ export const Switches: React.FC<SwitchesProps> = ({
                 .map((group) => {
                     if (group.groupName === groupName) {
                         const updatedProperties = group.properties.filter((prop) => prop !== fieldName);
-                        if (updatedProperties.length === 0) {
-                            return null;
-                        }
+                        if (updatedProperties.length === 0) return null;
+
                         return {
                             ...group,
                             properties: updatedProperties,
@@ -130,7 +132,7 @@ export const Switches: React.FC<SwitchesProps> = ({
     };
     return (
         <Box>
-            {value.required !== undefined && setValues && !isComment && value.type !== 'kartoffelUserField' && (
+            {value.required !== undefined && setValues && !isComment && value.type !== PropertyFormat.kartoffelUserField && (
                 <FormControlLabel
                     control={
                         <MeltaSwitch
@@ -149,14 +151,15 @@ export const Switches: React.FC<SwitchesProps> = ({
                             }}
                             disabled={
                                 value.type === 'serialNumber' ||
-                                value.type === 'boolean' ||
+                                value.type === PropertyType.boolean ||
                                 value.readOnly ||
                                 (supportChangeToRequiredWithInstances
                                     ? false
                                     : isEditMode && areThereAnyInstances && (isNewProperty || (!isNewProperty && !initialValue?.required))) ||
                                 value.deleted ||
                                 value.archive ||
-                                disableRemoveRequire
+                                disableRemoveRequire ||
+                                isRequiredWalletTransferField
                             }
                             checked={value.required}
                         />
@@ -178,7 +181,7 @@ export const Switches: React.FC<SwitchesProps> = ({
                         disabled={
                             value.required ||
                             value.archive ||
-                            value.type === 'kartoffelUserField' ||
+                            value.type === PropertyFormat.kartoffelUserField ||
                             isComment ||
                             (value.accountBalance && value.type === 'number')
                         }
@@ -218,8 +221,8 @@ export const Switches: React.FC<SwitchesProps> = ({
             {supportUnique &&
                 unique !== undefined &&
                 setValues &&
-                value.type !== 'signature' &&
-                value.type !== 'kartoffelUserField' &&
+                value.type !== PropertyFormat.signature &&
+                value.type !== PropertyFormat.kartoffelUserField &&
                 !isComment && (
                     <FormControlLabel
                         control={
@@ -245,7 +248,7 @@ export const Switches: React.FC<SwitchesProps> = ({
                         label={i18next.t('validation.unique')}
                     />
                 )}
-            {(value.type === 'date' || value.type === 'date-time') && 'calculateTime' in value && (
+            {(value.type === PropertyFormat.date || value.type === PropertyFormat['date-time']) && 'calculateTime' in value && (
                 <FormControlLabel
                     control={<MeltaSwitch id={calculateTime} name={calculateTime} onChange={onChange} checked={value.calculateTime ?? false} />}
                     label={i18next.t('validation.calculateTime')}
@@ -258,14 +261,14 @@ export const Switches: React.FC<SwitchesProps> = ({
                             id={type}
                             name={type}
                             onChange={(e) => {
-                                const newFormatToText = e.target.checked ? 'text-area' : 'string';
+                                const newFormatToText = e.target.checked ? PropertyFormat['text-area'] : PropertyType.string;
 
                                 setValues?.((prev) => ({
                                     ...prev,
                                     type: newFormatToText,
                                 }));
                             }}
-                            checked={value.type === 'text-area'}
+                            checked={value.type === PropertyFormat['text-area']}
                             disabled={value.archive}
                         />
                     }
@@ -352,24 +355,22 @@ export const Switches: React.FC<SwitchesProps> = ({
                 </>
             )}
             {isKartoffelImage && (
-                <>
-                    <FormControlLabel
-                        control={
-                            <MeltaSwitch
-                                id={`${property}.isProfileImage`}
-                                name={`${property}.isProfileImage`}
-                                onChange={(_e, checked) => {
-                                    setValues?.((prev) => ({
-                                        ...prev,
-                                        isProfileImage: checked,
-                                    }));
-                                }}
-                                checked={value.isProfileImage ?? false}
-                            />
-                        }
-                        label={i18next.t('validation.isProfileImage')}
-                    />
-                </>
+                <FormControlLabel
+                    control={
+                        <MeltaSwitch
+                            id={`${property}.isProfileImage`}
+                            name={`${property}.isProfileImage`}
+                            onChange={(_e, checked) => {
+                                setValues?.((prev) => ({
+                                    ...prev,
+                                    isProfileImage: checked,
+                                }));
+                            }}
+                            checked={value.isProfileImage ?? false}
+                        />
+                    }
+                    label={i18next.t('validation.isProfileImage')}
+                />
             )}
         </Box>
     );

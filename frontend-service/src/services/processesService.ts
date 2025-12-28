@@ -1,5 +1,4 @@
-/* eslint-disable no-param-reassign */
-import mapValues from 'lodash.mapvalues';
+import { mapValues } from 'lodash';
 import axios from '../axios';
 import urlToFile from '../common/fileConversions';
 import { ProcessDetailsValues } from '../common/wizards/processInstance/ProcessDetails';

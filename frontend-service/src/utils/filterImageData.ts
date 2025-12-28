@@ -1,5 +1,4 @@
 export const filterImageData = (context, croppedCanvas, filteredCanvas) => {
-    // eslint-disable-next-line no-param-reassign
     context.filter = 'grayscale(100%) contrast(150%) brightness(120%)';
     context.drawImage(croppedCanvas, 0, 0);
 

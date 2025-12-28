@@ -407,7 +407,9 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                         {files[previewImageIndex] && (
                                             <OpenPreview
                                                 fileId={files[previewImageIndex].id}
-                                                img={<img src="/icons/expand-preview-file.svg" style={{ height: '11px' }} />}
+                                                img={
+                                                    <img src="/icons/expand-preview-file.svg" alt="expand-preview-file" style={{ height: '11px' }} />
+                                                }
                                                 showText={false}
                                             />
                                         )}
@@ -510,7 +512,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                     <Grid size={{ xs: 3 }} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                                         <OpenPreview
                                             fileId={files[previewImageIndex].id}
-                                            img={<img src="/icons/expand-preview-file.svg" style={{ height: '11px' }} />}
+                                            img={<img src="/icons/expand-preview-file.svg" alt="expand-preview-file" style={{ height: '11px' }} />}
                                             showText={false}
                                             searchValue={searchedText}
                                         />

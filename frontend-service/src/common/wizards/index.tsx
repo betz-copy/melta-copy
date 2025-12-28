@@ -74,6 +74,7 @@ const Wizard = <T extends object>({
         setActiveStep((prevActiveStep) => prevActiveStep - 1);
     };
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: it was there a long time ago
     useEffect(() => {
         setActiveStep(initialStep);
     }, [open, initialStep]);

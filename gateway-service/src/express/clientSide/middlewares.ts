@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { Request } from 'express';
 import config from '../../config';
 import InstancesService from '../../externalServices/instanceService';

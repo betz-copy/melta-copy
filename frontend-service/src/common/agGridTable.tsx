@@ -11,6 +11,7 @@ export type AgGridTableProps<Data> = {
     rowModelProps: AgGridReactProps<Data>;
     getRowId: (data: Data) => string;
     quickFilterText?: string;
+    height?: string;
 };
 
 export type AgGridTableRef<Data> = {
@@ -20,7 +21,7 @@ export type AgGridTableRef<Data> = {
 
 const AgGridTable = forwardRef<AgGridTableRef<unknown>, AgGridTableProps<unknown>>(
     <Data,>(
-        { defaultColDef, columnDefs, getRowId, rowModelProps, quickFilterText }: AgGridTableProps<Data>,
+        { defaultColDef, columnDefs, getRowId, rowModelProps, quickFilterText, height = '780px' }: AgGridTableProps<Data>,
         ref: ForwardedRef<AgGridTableRef<Data>>,
     ) => {
         const darkMode = useDarkModeStore((state) => state.darkMode);
@@ -46,7 +47,7 @@ const AgGridTable = forwardRef<AgGridTableRef<unknown>, AgGridTableProps<unknown
                 ref={gridRef}
                 className={`ag-theme-material${darkMode ? '-dark' : ''}`}
                 containerStyle={{
-                    height: '780px',
+                    height,
                     width: '100%',
                     marginBottom: '30px',
                     fontFamily: 'Rubik',

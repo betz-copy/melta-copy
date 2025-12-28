@@ -39,7 +39,7 @@ const ClientSideEntityPage: React.FC = () => {
 
     useEffect(() => {
         if (!expandedEntity) return;
-    }, [expandedEntity]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [expandedEntity]);
 
     if (!expandedEntity) return <CircularProgress />;
 
@@ -187,7 +187,7 @@ const ClientSideEntityPage: React.FC = () => {
                                         {connectionsTemplatesOfCategory.map((connectionTemplate, connectedRelationshipTemplateIndex) => {
                                             return (
                                                 <ConnectionsTable
-                                                    key={connectedRelationshipTemplateIndex}
+                                                    key={String(connectedRelationshipTemplateIndex)}
                                                     expandedEntity={expandedEntity}
                                                     templateIds={Array.from(entityTemplates.keys())}
                                                     connectionTemplate={connectionTemplate}

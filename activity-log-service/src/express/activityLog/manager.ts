@@ -43,10 +43,9 @@ export default class ActivityLogManager extends DefaultManagerMongo<IActivityLog
         if (fieldsSearch.length) {
             const elemMatch = { fieldName: { $in: fieldsSearch } };
 
-            if (query.$or![0] && query.$or![0]['metadata.updatedFields']) {
-                query.$or![0]['metadata.updatedFields'].$elemMatch.$or.push(elemMatch);
-            } else {
-                query.$or!.push({
+            if (query.$or?.[0]['metadata.updatedFields']) query.$or[0]['metadata.updatedFields'].$elemMatch.$or.push(elemMatch);
+            else {
+                query.$or?.push({
                     'metadata.updatedFields': {
                         $elemMatch: elemMatch,
                     },
@@ -73,7 +72,7 @@ export default class ActivityLogManager extends DefaultManagerMongo<IActivityLog
     }
 
     async createActivity(activityLog: IActivityLog) {
-        let createValue;
+        let createValue: IActivityLog;
         try {
             createValue = await this.model.create(activityLog);
         } catch (error: any) {

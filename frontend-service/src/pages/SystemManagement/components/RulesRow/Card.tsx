@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { UseMutateAsyncFunction } from 'react-query';
 import { EntityTemplateColor } from '../../../../common/EntityTemplateColor';
 import { MinimizedColorPicker } from '../../../../common/inputs/MinimizedColorPicker';
+import { environment } from '../../../../globals';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../../interfaces/permissions';
 import { ActionOnFail, IMongoRule } from '../../../../interfaces/rules';
@@ -16,12 +17,14 @@ import { checkUserTemplatePermission } from '../../../../utils/permissions/insta
 import { ViewingCard } from '../Card';
 import { CardMenu } from '../CardMenu';
 
+const { warning } = environment.color;
+
 const getRuleIcon = (rule: IMongoRule) => {
     switch (rule.actionOnFail) {
         case ActionOnFail.WARNING:
-            return <WarningAmberRounded sx={{ color: '#FFAC2F' }} />;
+            return <WarningAmberRounded sx={{ color: warning }} />;
         case ActionOnFail.ENFORCEMENT:
-            return <WarningRounded sx={{ color: '#DD3500' }} />;
+            return <WarningRounded sx={{ color: 'error' }} />;
         case ActionOnFail.INDICATOR: {
             if (rule.fieldColor) return <Brush sx={{ color: '#166BD4' }} />;
             return null;

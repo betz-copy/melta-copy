@@ -13,7 +13,7 @@ export const LoadingFilesInput: React.FC<{
     const loadingStyle = {
         border: '1px solid #c4c4c4',
         borderRadius: '10px',
-        borderColor: errorText ? '#A40000' : '#CCCFE5',
+        borderColor: errorText ? 'error' : '#CCCFE5',
         color: '#9398C2',
         width: '100%',
         display: 'flex',
@@ -31,7 +31,7 @@ export const LoadingFilesInput: React.FC<{
                             whiteSpace: 'nowrap',
                             textOverflow: 'ellipsis',
                             maxWidth: inputWidth * 0.7,
-                            color: errorText ? '#A40000' : '',
+                            color: errorText ? 'error' : '',
                         }}
                     >
                         {errorText ?? files.map((file) => (isFileFromInput ? file.name : getFileName(file.name!))).join(', ')}
@@ -55,13 +55,13 @@ export const LoadingFilesInput: React.FC<{
                 <LinearProgress
                     style={{
                         width: '100%',
-                        backgroundColor: errorText ? '#A40000' : '#E1F5FE',
+                        backgroundColor: errorText ? 'error' : '#E1F5FE',
                         borderRadius: '25px',
                         margin: '5px',
                     }}
                     sx={{
                         '& .MuiLinearProgress-bar': {
-                            backgroundColor: errorText ? '#A40000' : '#4752B6',
+                            backgroundColor: errorText ? 'error' : '#4752B6',
                         },
                     }}
                     variant={errorText ? 'determinate' : 'indeterminate'}

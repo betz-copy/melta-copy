@@ -1,5 +1,3 @@
-/* eslint-disable no-nested-ternary */
-/* eslint-disable react/no-array-index-key */
 import { Chip, Grid } from '@mui/material';
 import React from 'react';
 import { IUser } from '../../../interfaces/users';

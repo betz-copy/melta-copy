@@ -1,7 +1,7 @@
 import { IMetadata, IWorkspace } from '@microservices/shared';
 import axios from 'axios';
 import config from './config';
-import { trycatch } from './utils';
+import { tryCatch } from './utils';
 
 const { url, baseRoute, isAliveRoute } = config.workspacesService;
 
@@ -13,9 +13,7 @@ export const createWorkspace = async (workspace: Omit<IWorkspace, '_id'>) => {
 export const createWorkspaces = async (workspaces: Omit<IWorkspace, '_id'>[]) => {
     const mainWorkspaces: IWorkspace[] = [];
 
-    // eslint-disable-next-line no-restricted-syntax
     for (const workspace of workspaces) {
-        // eslint-disable-next-line no-await-in-loop
         const mainWorkspace = await createWorkspace(workspace);
         mainWorkspaces.push(mainWorkspace);
     }
@@ -34,7 +32,7 @@ export const getWorkspaces = async () => {
 };
 
 export const isWorkpacesServiceAlive = async () => {
-    const { result, err } = await trycatch(() => axios.get(url + isAliveRoute));
+    const { result, err } = await tryCatch(() => axios.get(url + isAliveRoute));
 
     return { result, err };
 };

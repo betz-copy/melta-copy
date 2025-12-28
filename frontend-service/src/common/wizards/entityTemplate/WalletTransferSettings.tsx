@@ -2,7 +2,7 @@ import { InfoOutlined } from '@mui/icons-material';
 import { Box, Grid, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
@@ -11,7 +11,7 @@ import { searchEntitiesOfTemplateRequest } from '../../../services/entitiesServi
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { ErrorToast } from '../../ErrorToast';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
-import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
+import MeltaTooltip, { TooltipVariant } from '../../MeltaDesigns/MeltaTooltip';
 import { StepComponentProps } from '../index';
 import { EntityTemplateWizardValues } from '.';
 import { CommonFormInputProperties } from './commonInterfaces';
@@ -133,6 +133,10 @@ export const WalletTransferSettings: React.FC<
     const showDestInfo = !!values.walletTransfer && allFields.some((f) => f.name === destKeyName && f.type === 'relationshipReference');
     const walletTransferInfo = i18next.t('wizard.entityTemplate.walletTransfer.walletTransferInfo', { returnObjects: true }) as string[];
 
+    useEffect(() => {
+        if (!values.walletTransfer) setFieldValue('walletTransfer', null);
+    }, []);
+
     return (
         <Grid container direction="column">
             <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
@@ -163,7 +167,7 @@ export const WalletTransferSettings: React.FC<
                             </div>
                         )
                     }
-                    variant="bubble"
+                    variant={TooltipVariant.Bubble}
                 >
                     <InfoOutlined
                         sx={{
@@ -188,21 +192,8 @@ export const WalletTransferSettings: React.FC<
                             errors={errors}
                             disabled={!values.walletTransfer || areThereAnyInstances}
                             darkMode={darkMode}
+                            infoTooltip={showSourceInfo ? i18next.t('wizard.entityTemplate.walletTransfer.fromWallet') : undefined}
                         />
-                        {showSourceInfo && (
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <MeltaTooltip title={i18next.t('wizard.entityTemplate.walletTransfer.fromWallet')} variant="bubble">
-                                    <InfoOutlined
-                                        sx={{
-                                            fontSize: 16,
-                                            opacity: 0.7,
-                                            ml: 1,
-                                            color: '#9398C2',
-                                        }}
-                                    />
-                                </MeltaTooltip>
-                            </Box>
-                        )}
                     </Grid>
                     <Grid container direction="row" spacing={1}>
                         <WalletTransferAutocomplete
@@ -215,21 +206,8 @@ export const WalletTransferSettings: React.FC<
                             errors={errors}
                             disabled={!values.walletTransfer || areThereAnyInstances}
                             darkMode={darkMode}
+                            infoTooltip={showDestInfo ? i18next.t('wizard.entityTemplate.walletTransfer.toWallet') : undefined}
                         />
-                        {showDestInfo && (
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <MeltaTooltip title={i18next.t('wizard.entityTemplate.walletTransfer.toWallet')} variant="bubble">
-                                    <InfoOutlined
-                                        sx={{
-                                            fontSize: 16,
-                                            opacity: 0.7,
-                                            ml: 1,
-                                            color: '#9398C2',
-                                        }}
-                                    />
-                                </MeltaTooltip>
-                            </Box>
-                        )}
                     </Grid>
                 </Grid>
                 <Grid container spacing={6} direction="row" marginBottom={3}>

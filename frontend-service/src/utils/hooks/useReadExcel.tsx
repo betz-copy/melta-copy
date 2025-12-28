@@ -17,7 +17,7 @@ const convertFileDataToRowData = (gridData: any[][], headers: string[], template
                 rowObject[key] = row[index] || '';
             });
 
-            const isEmptyRow = Object.values(rowObject).every((value) => value === '' || value === undefined);
+            const isEmptyRow = !Object.values(rowObject).some((value) => value !== '' && value !== undefined);
 
             return isEmptyRow ? null : { properties: rowObject };
         })
@@ -25,7 +25,7 @@ const convertFileDataToRowData = (gridData: any[][], headers: string[], template
 };
 
 const importDataToGrid = (fileData: any[][], template: IMongoEntityTemplatePopulated): { properties: Record<string, any> }[] | [] => {
-    if (fileData.length === 0) return [];
+    if (!fileData.length) return [];
 
     const headers = fileData[0] as string[];
     const newRows = convertFileDataToRowData(fileData.slice(1), headers, template);
@@ -39,9 +39,13 @@ const createFileObject = (filesLimit: number, files?: File[]): Record<string, Fi
         toast.error(i18next.t('wizard.entity.loadEntities.limitNumberFiles') + filesLimit);
         return undefined;
     }
-    return validFiles.reduce<Record<string, File>>((acc, file) => {
-        return { ...acc, [file.name]: file };
-    }, {});
+
+    const filesMap: Record<string, File> = {};
+    for (const file of validFiles) {
+        filesMap[file.name] = file;
+    }
+
+    return filesMap;
 };
 
 export const useReadExcel = () => {
@@ -78,9 +82,8 @@ export const useReadExcel = () => {
                         const fileData: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
                         const newEntities = importDataToGrid(fileData, template);
-                        if ((newEntities?.length || 0) > entitiesFileLimit) {
-                            reject(new Error(file.name));
-                        } else {
+                        if ((newEntities?.length || 0) > entitiesFileLimit) reject(new Error(file.name));
+                        else {
                             newEntities?.forEach((newEntity) => entities.push(newEntity));
                             resolve();
                         }
@@ -95,7 +98,7 @@ export const useReadExcel = () => {
 
         try {
             await Promise.all(fileReadPromises);
-            if (entities.length === 0) {
+            if (!entities.length) {
                 toast.warn(i18next.t('wizard.entity.loadEntities.emptyExcel'));
                 return;
             }

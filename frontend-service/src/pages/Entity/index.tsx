@@ -3,7 +3,7 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, CircularProgress, Grid, Tab, useTheme } from '@mui/material';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useParams, useSearchParams } from 'wouter';
 import { getChildTemplatesFilter } from '../../common/inputs/TemplateEntitiesAutocomplete';
@@ -24,7 +24,7 @@ import { EntityDetails } from './components/EntityDetails';
 import { EntityTopBar } from './components/TopBar';
 import { EntityConnections } from './entityConnections';
 import { RelationshipIcon } from './RelationshipIcon';
-import { WalletTransferData, WalletTransfers, WalletTransferTableRef } from './walletTransfers';
+import { WalletTransfers } from './walletTransfers';
 
 export const getButtonState = (
     isEntityDisabled: boolean,
@@ -91,8 +91,6 @@ const Entity: React.FC = () => {
 
     const groupChildTemplate = groupChildTemplatesByParent(childTemplates, entityTemplates);
 
-    const walletTransferTableRef = useRef<WalletTransferTableRef<WalletTransferData>>(null);
-
     const filters: any =
         Object.entries(groupChildTemplate).length > 0
             ? Object.fromEntries(
@@ -113,12 +111,13 @@ const Entity: React.FC = () => {
 
     const [selectTransfersOrConnections, setSelectTransfersOrConnections] = useState('walletTransfers');
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         if (!expandedEntity) return;
 
         setCurrentStep((currStep) => currStep + 1);
         setDisabledActions(false);
-    }, [expandedEntity]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [expandedEntity]);
 
     const currentEntityTemplate = childTemplateId
         ? childTemplates.get(childTemplateId)!
@@ -142,7 +141,7 @@ const Entity: React.FC = () => {
             expandedEntity,
             groupChildTemplate,
         );
-    }, [currentEntityTemplate, expandedEntity]);
+    }, [currentEntityTemplate, expandedEntity, childTemplateId, groupChildTemplate, entityTemplates, relationshipTemplates]);
 
     // Early return if data is not ready - must be after all hooks
     if (!expandedEntity || !currentEntityTemplate || !currentEntityTemplate.category) {
@@ -248,7 +247,6 @@ const Entity: React.FC = () => {
                                     templateId={currentEntityTemplate._id}
                                     expandedEntity={expandedEntity}
                                     getButtonStateByRelatedTemplate={getButtonStateByRelatedTemplate}
-                                    walletTransferTableRef={walletTransferTableRef}
                                 />
                             </TabPanel>
                         </TabContext>

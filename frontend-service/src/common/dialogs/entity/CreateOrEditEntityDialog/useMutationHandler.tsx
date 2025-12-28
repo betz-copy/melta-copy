@@ -32,6 +32,8 @@ const useMutationHandler = (
     setCreateOrUpdateWithRuleBreachDialogState: Dispatch<SetStateAction<ICreateOrUpdateWithRuleBreachDialogState>>,
     clientSideUserEntity?: IEntity,
 ) => {
+    const queryClient = useQueryClient();
+
     const [_, navigate] = useLocation();
     let isLoading = false;
     let mutateAsync: MutateAsyncFn | undefined;
@@ -131,8 +133,6 @@ const useMutationHandler = (
     );
 
     if (Object.keys(clientSideUserEntity || {}).length) {
-        const queryClient = useQueryClient();
-
         const childTemplates = queryClient.getQueryData<IChildTemplateMapPopulated>('getClientSideChildTemplates')!;
         childTemplate = Array.from(childTemplates.values()).find((childTemplate) => childTemplate.parentTemplate._id === entityTemplate._id);
     }

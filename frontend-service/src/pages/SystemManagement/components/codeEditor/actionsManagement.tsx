@@ -18,7 +18,6 @@ const ActionManagement: React.FC<ActionManagementProps> = ({ onChange, onValidat
     const monacoRef = useRef<editor.IStandaloneCodeEditor | null>(null);
 
     const handleEditorDidMount = (editorDefs: editor.IStandaloneCodeEditor, monaco: Monaco) => {
-        // eslint-disable-next-line no-param-reassign
         editorDefs.getDomNode()!.style.direction = 'ltr';
         monacoRef.current = editorDefs;
         setEditorContent(monacoRef.current.getValue());

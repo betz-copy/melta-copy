@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import Joi from 'joi';
 
 const nativeDataTypeSchema = Joi.alternatives(Joi.boolean(), Joi.string(), Joi.number());

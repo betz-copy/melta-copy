@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import { IAggregationType, IChart, IChartPermission, IChartType, IColumnOrLineMetaData, INUmberMetaData, IPieMetaData } from '@microservices/shared';
 
 export const chartsCreator = (

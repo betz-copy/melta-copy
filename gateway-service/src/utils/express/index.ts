@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-function-type */
-
 import { dataLogger, FunctionKey } from '@microservices/shared';
 import { NextFunction, Request, Response } from 'express';
 import { get } from 'lodash';
@@ -115,11 +113,11 @@ export const createWorkspacesController = <T extends InstanceType<typeof Default
                     if (!workspaceId) return;
 
                     if (isMiddleware) {
-                        (new Controller(workspaceId)[funcName] as Function)(req, res, next).then(next).catch(next);
+                        new Controller(workspaceId)[funcName](req, res, next).then(next).catch(next);
                         return;
                     }
 
-                    (new Controller(workspaceId)[funcName] as Function)(req, res, next).catch(next);
+                    new Controller(workspaceId)[funcName](req, res, next).catch(next);
                 };
             },
         },

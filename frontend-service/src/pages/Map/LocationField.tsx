@@ -8,6 +8,7 @@ import { useQueryClient } from 'react-query';
 import { CesiumComponentRef, CesiumMovementEvent, Viewer } from 'resium';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
+import { MapItemType } from '../../interfaces/location';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import {
@@ -21,7 +22,6 @@ import {
 import { convertWGS94ToECEF, isValidWGS84 } from '../../utils/map/convert';
 import { BaseLayers } from './BaseLayers';
 import { MeltaCoordinate, MeltaPolygon } from './LocationEntities';
-import { MapItemType } from '../../interfaces/location';
 
 type Props = {
     defaultLocation?: string;
@@ -96,7 +96,7 @@ const LocationField = ({ defaultLocation, field, updateValue, handleCloseDialog 
 
         const animationFrameId = requestAnimationFrame(animateCamera);
         return () => cancelAnimationFrame(animationFrameId);
-    }, [markerPosition, polygonPosition]);
+    }, [markerPosition, polygonPosition, drawingMode]);
 
     const handleViewerClick = useCallback(
         (clickEvent: CesiumMovementEvent) => {
@@ -122,7 +122,7 @@ const LocationField = ({ defaultLocation, field, updateValue, handleCloseDialog 
                 }
             }
         },
-        [drawingMode, viewerRef, polygonPosition, setPolygonPosition, setMarkerPosition, setDrawingMode, updateValue],
+        [drawingMode, polygonPosition, updateValue],
     );
 
     const onClear = () => {
@@ -195,7 +195,7 @@ const LocationField = ({ defaultLocation, field, updateValue, handleCloseDialog 
                                                 width: '20px',
                                                 height: '20px',
                                                 borderRadius: '7px',
-                                                color: darkMode ? '#9398c2' : '#1E2775',
+                                                color: theme.palette.primary.main,
                                             }}
                                         />
                                     </ToggleButton>
@@ -207,7 +207,7 @@ const LocationField = ({ defaultLocation, field, updateValue, handleCloseDialog 
                                                 width: '20px',
                                                 height: '20px',
                                                 borderRadius: '7px',
-                                                color: darkMode ? '#9398c2' : '#1E2775',
+                                                color: theme.palette.primary.main,
                                             }}
                                         />
                                     </ToggleButton>
@@ -229,7 +229,7 @@ const LocationField = ({ defaultLocation, field, updateValue, handleCloseDialog 
                             <DeleteTwoTone
                                 sx={{
                                     height: 20,
-                                    color: darkMode ? '#9398c2' : '#1E2775',
+                                    color: theme.palette.primary.main,
                                 }}
                             />
                         </IconButtonWithPopover>

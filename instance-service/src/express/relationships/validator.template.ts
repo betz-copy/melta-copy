@@ -4,7 +4,7 @@ import { Request } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import DefaultController from '../../utils/express/controller';
-import { trycatch } from '../../utils/lib';
+import { tryCatch } from '../../utils/lib';
 import EntityManager from '../entities/manager';
 
 export default class RelationshipValidator extends DefaultController<EntityManager> {
@@ -16,7 +16,7 @@ export default class RelationshipValidator extends DefaultController<EntityManag
     }
 
     private async getRelationshipTemplateByIdOrThrowValidationError(templateId: string) {
-        const { result: relationshipTemplate, err: getRelationshipTemplateByIdErr } = await trycatch(() =>
+        const { result: relationshipTemplate, err: getRelationshipTemplateByIdErr } = await tryCatch(() =>
             this.relationshipsTemplateManagerService.getRelationshipTemplateById(templateId),
         );
 

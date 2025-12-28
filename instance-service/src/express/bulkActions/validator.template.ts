@@ -13,7 +13,7 @@ import {
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { Request } from 'express';
-import groupBy from 'lodash.groupby';
+import { groupBy } from 'lodash';
 import config from '../../config';
 import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';

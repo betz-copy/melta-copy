@@ -1,9 +1,7 @@
-/* eslint-disable no-param-reassign */
 import { Backdrop, Box, Button, CircularProgress } from '@mui/material';
 import { forceManyBody } from 'd3-force';
 import i18next from 'i18next';
-import uniqBy from 'lodash.uniqby';
-import uniqWith from 'lodash.uniqwith';
+import { uniqBy, uniqWith } from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
 import ForceGraph, { ForceGraphMethods, ForceGraphProps, GraphData, NodeObject } from 'react-force-graph-2d';
@@ -100,6 +98,7 @@ const Graph: React.FC = () => {
     };
 
     window.addEventListener('resize', updateGraphSize);
+    // biome-ignore lint/correctness/useExhaustiveDependencies: dependencies
     useEffect(() => {
         return updateGraphSize();
     }, []);
@@ -232,9 +231,9 @@ const Graph: React.FC = () => {
         }
     };
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: dependencies
     useEffect(() => {
         loadNextBatch();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentBatchIndex, initialExpandedEntity, is3DGraph, entityId, filteredEntityTemplates, load, filterRecord]);
 
     const renderTooltip = (node: NodeObject) => {

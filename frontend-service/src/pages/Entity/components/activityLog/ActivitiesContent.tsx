@@ -92,7 +92,7 @@ const ActivitiesContent: React.FC<{
                                             gap: '10px',
                                         }}
                                     >
-                                        <img src="/icons/search-gray.svg" style={{ alignSelf: 'center', height: '18px' }} />
+                                        <img src="/icons/search-gray.svg" alt="search-gray" style={{ alignSelf: 'center', height: '18px' }} />
                                     </InputAdornment>
                                 ),
                                 startAdornment: <InputAdornment position="start" />,

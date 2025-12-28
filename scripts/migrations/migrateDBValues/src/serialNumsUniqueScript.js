@@ -1,12 +1,9 @@
-/* eslint-disable no-console */
-/* eslint-disable no-await-in-loop */
 import mongoose from 'mongoose';
 import neo4j from 'neo4j-driver';
 import config from './config/index.js';
 
 const { mongo, neo } = config;
 
-// eslint-disable-next-line import/prefer-default-export
 export const getSerialPropsAggregation = [
     {
         $set: {

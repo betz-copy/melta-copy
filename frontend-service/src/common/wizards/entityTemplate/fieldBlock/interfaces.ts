@@ -1,6 +1,5 @@
 import { Accordion, styled } from '@mui/material';
 import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
-import _debounce from 'lodash.debounce';
 import React, { SetStateAction } from 'react';
 import { IUniqueConstraintOfTemplate } from '../../../../interfaces/entities';
 import { StepComponentHelpers } from '../..';
