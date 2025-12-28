@@ -191,17 +191,26 @@ const xmlParser = new XMLParser({
     attributeNamePrefix: '',
 });
 
-export const extractImageryUrl = (xml: string): string => {
-    const json = xmlParser.parse(xml);
+function findLinks(paredXml: object, schema: string, layerName: string, layerLinkTag: string): { url: string; name: string } {
+    const emptyResult = { url: '', name: '' };
+    if (!paredXml || typeof paredXml !== 'object') return emptyResult;
 
-    const layers = json?.Layer;
-    const list = Array.isArray(layers) ? layers : [layers];
+    for (const tag in paredXml) {
+        const tagValue = paredXml[tag];
 
-    const match = list.find((l) => l.schema === 'WBMS_BASE'); /// change to variable
+        if (tag === layerLinkTag) {
+            const linksList = Array.isArray(tagValue) ? tagValue : [tagValue];
 
-    if (!match?.Url) {
-        throw new Error('schema="WBMS_BASE" layer not found');
+            const matchedLink = linksList.find((link) => link.schema === schema && link.name.startsWith(layerName));
+            return matchedLink ? { name: matchedLink.name, url: matchedLink['#text'] } : emptyResult;
+        } else if (typeof tagValue === 'object') return findLinks(tagValue, schema, layerName, layerLinkTag);
     }
 
-    return match.Url;
+    return emptyResult;
+}
+
+export const extractImageryUrl = (xml: string, schema: string, layerName: string, layerLinkTag: string): { url: string; name: string } => {
+    const json = xmlParser.parse(xml);
+
+    return findLinks(json, schema, layerName, layerLinkTag);
 };

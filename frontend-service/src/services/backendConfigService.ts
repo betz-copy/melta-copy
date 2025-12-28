@@ -13,11 +13,13 @@ export interface BackendConfigState {
     mapLayers: Record<string, string>;
     textLayers: Record<string, string>;
     getMapLayers: {
-        url: string, 
-        params: string, 
-        body: string, 
-        token: string
-    },
+        layers: { name: string; body: string }[];
+        url: string;
+        params: string;
+        token: string;
+        layerLinkTag: string;
+        layerLinkSchema: string;
+    };
     deleteEntitiesLimit: number;
     meltaUpdates: Record<string, string>;
     meltaUpdatesDescription: string;

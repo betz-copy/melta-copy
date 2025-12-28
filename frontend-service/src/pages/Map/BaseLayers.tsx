@@ -3,13 +3,11 @@ import { Box, Divider, FormControlLabel, Grid, IconButton, Radio, RadioGroup, Ty
 import * as Cesium from 'cesium';
 import i18next from 'i18next';
 import React, { RefObject, useCallback, useEffect, useMemo, useState } from 'react';
-import { useQuery } from 'react-query';
+import { useQueryClient } from 'react-query';
 import { CesiumComponentRef } from 'resium';
 import MeltaCheckbox from '../../common/MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
 import { BackendConfigState } from '../../services/backendConfigService';
-import { getMapLayer } from '../../services/mapService';
-import { extractImageryUrl } from '../../utils/map';
 
 type LayerProvider = {
     id: string;
@@ -25,11 +23,11 @@ export const BaseLayers: React.FC<{
 
     const [isOpen, setIsOpen] = useState<boolean>(false);
 
-    const {
-        mapLayers,
-        textLayers,
-        getMapLayers: { url, params, body, token },
-    } = config;
+    const { mapLayers, textLayers } = config;
+
+    const queryClient = useQueryClient();
+
+    const layers = queryClient.getQueryData<{ url: string; name: string }[]>('getMaLayers');
 
     const providers = useMemo<LayerProvider[]>(() => {
         const mapLayerArray = Object.entries(mapLayers).map(([name, url]) => ({
@@ -60,15 +58,25 @@ export const BaseLayers: React.FC<{
         });
     }, []);
 
-    const {
-        data: imageryUrl,
-        isLoading,
-        error,
-    } = useQuery(['getMapLayer', url, params, body, token], () => async () => {
-        const xml = await getMapLayer(url, params, body, token);
+    // useEffect(() => {
+    //     const viewer = viewerRef.current?.cesiumElement;
+    //     if (!viewer) return;
 
-        return extractImageryUrl(xml);
-    });
+    //     viewer.imageryLayers.removeAll();
+
+    //     const activeLayers = providers.filter(
+    //         (layer) => (layer.type === 'map' && layer.id === activeMapLayer) || (layer.type === 'text' && activeTextLayers.has(layer.id)),
+    //     );
+
+    //     activeLayers.forEach((layer) => {
+    //         viewer.imageryLayers.addImageryProvider(
+    //             new Cesium.UrlTemplateImageryProvider({
+    //                 url: layer.url,
+    //                 tilingScheme: config.isOutsideDevelopment ? undefined : new Cesium.GeographicTilingScheme(),
+    //             }),
+    //         );
+    //     });
+    // }, [activeMapLayer, activeTextLayers, providers, viewerRef, config.isOutsideDevelopment]);
 
     useEffect(() => {
         const viewer = viewerRef.current?.cesiumElement;
@@ -80,11 +88,15 @@ export const BaseLayers: React.FC<{
             (layer) => (layer.type === 'map' && layer.id === activeMapLayer) || (layer.type === 'text' && activeTextLayers.has(layer.id)),
         );
 
-        activeLayers.forEach((layer) => {
+        layers?.forEach((layer) => {
             viewer.imageryLayers.addImageryProvider(
-                new Cesium.UrlTemplateImageryProvider({
-                    url: layer.url,
-                    tilingScheme: config.isOutsideDevelopment ? undefined : new Cesium.GeographicTilingScheme(),
+                new Cesium.WebMapTileServiceImageryProvider({
+                    url: new Cesium.Resource({ url: layer.url, headers: { 'x-api-key': config.getMapLayers.token } }),
+                    layer: layer.name,
+                    style: 'default',
+                    format: 'image/png',
+                    tileMatrixSetID: 'WorldCRS84',
+                    tilingScheme: new Cesium.GeographicTilingScheme(),
                 }),
             );
         });
