@@ -449,30 +449,41 @@ export const enumColDef = <Data extends EntityData>(
     searchValue: string | undefined = undefined,
     editable: (data: any) => boolean = () => false,
 ): ColDef => {
-    const filterParams: ISetFilterParams<Data, string | undefined> = {
-        suppressMiniFilter: true,
-        values: [...values, undefined],
+    const filterParams: ISetFilterParams<Data, string | null> = {
+        values: [...values, null],
+        suppressMiniFilter: false,
+        excelMode: 'windows',
+        applyMiniFilterWhileTyping: false,
+        ...({
+            suppressAddCurrentSelectionToFilter: true,
+            suppressSelectAll: false,
+            refreshValuesOnOpen: false,
+        } as Partial<ISetFilterParams<Data, string | null>>),
+        buttons: ['apply', 'reset'],
+        closeOnApply: false,
     };
 
     return {
         field,
         headerName: value.title,
         valueGetter,
-        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
+        filter: 'agSetColumnFilter',
+        filterParams,
+        cellRenderer: (props: ICellRendererParams<Data, string | null>) => {
             const error = isPropertyInvalid(props, field, ignoreType);
             if (error) return errorColDef(props, error, value);
+            const displayValue = props.value === null ? '' : props.value;
+
             return (
                 <Value
                     searchValue={searchValue}
                     hideValue={hideValue}
-                    value={props.value ?? ''}
-                    enumColor={(props.value && enumColorOptions?.[props.value]) ?? 'default'}
+                    value={displayValue ?? ''}
+                    enumColor={(displayValue && enumColorOptions?.[displayValue]) ?? 'default'}
                     color={getColor(props, field)}
                 />
             );
         },
-        filter: 'agSetColumnFilter',
-        filterParams,
         width: hardcodedWidth,
         flex: isLastColumn ? 1 : 0,
         hide: hideColumn,
@@ -480,8 +491,9 @@ export const enumColDef = <Data extends EntityData>(
         cellEditor: SelectCellEditor,
         cellEditorParams: {
             options: values,
-            multiple: false,
+            multiple: true,
             colorsOptions: enumColorOptions,
+            enableSearch: true,
         },
     };
 };
