@@ -3,7 +3,7 @@ import { AgGridReact } from '@ag-grid-community/react';
 import { AccountBalanceWalletOutlined, ArrowBack as ArrowBackIcon, ArrowForward as ArrowForwardIcon } from '@mui/icons-material';
 import { Avatar, Box, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import React, { ForwardedRef, memo, useMemo } from 'react';
+import React, { memo, useMemo, useRef } from 'react';
 import { useQueryClient } from 'react-query';
 import { Link } from 'wouter';
 import AgGridTable from '../../common/agGridTable';
@@ -47,7 +47,6 @@ export const WalletTransfers: React.FC<IWalletTransfers> = ({
     connectionsTemplates,
     expandedEntity,
     getButtonStateByRelatedTemplate,
-    walletTransferTableRef,
 }: {
     templateId: string;
     expandedEntity: IEntityExpanded;
@@ -57,10 +56,10 @@ export const WalletTransfers: React.FC<IWalletTransfers> = ({
         disabledButtonText: string;
         hasPermissionToRelatedTemplate: boolean;
     };
-    walletTransferTableRef: ForwardedRef<WalletTransferTableRef<WalletTransferData>>;
 }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const walletTransferTableRef = useRef<WalletTransferTableRef<WalletTransferData>>(null);
 
     const currentUser = useUserStore((state) => state.user);
     const isAdmin = Boolean(currentUser.currentWorkspacePermissions?.admin) || false;
@@ -189,10 +188,10 @@ export const WalletTransfers: React.FC<IWalletTransfers> = ({
             headerName: i18next.t('entityPage.walletTransfer.createdAt'),
             valueGetter: (params: any) =>
                 params.data?.entity?.properties?.createdAt
-                    ? new Date(params.data.entity.properties.createdAt).toLocaleString(undefined, {
-                          year: 'numeric',
-                          month: '2-digit',
+                    ? new Date(params.data.entity.properties.createdAt).toLocaleString('en-GB', {
                           day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
                           hour: '2-digit',
                           minute: '2-digit',
                           second: '2-digit',
@@ -283,8 +282,10 @@ export const WalletTransfers: React.FC<IWalletTransfers> = ({
             field: 'transfer.amount',
             headerName: i18next.t('entityPage.walletTransfer.amount'),
             valueGetter: (params: any) => {
-                const amount = params.data?.entity?.properties?.[params.data?.template.walletTransfer?.amount] ?? '';
-                return params.data?.direction === 'to' ? `${amount} -` : `${amount} +`;
+                if (!params.data) return '';
+                const { direction, entity, balanceAtThatTime, template } = params.data;
+                const amount = direction === 'initial' ? balanceAtThatTime : (entity?.properties?.[template.walletTransfer?.amount] ?? '');
+                return direction === 'to' ? `${amount} -` : `${amount} +`;
             },
             cellStyle: (params: any) => ({
                 color: params.data?.direction === 'to' ? '#EA6466' : '#12B08A',
@@ -395,6 +396,7 @@ export const WalletTransfers: React.FC<IWalletTransfers> = ({
                     rowModelProps={rowModelProps}
                     columnDefs={columnDefs}
                     ref={walletTransferTableRef}
+                    height="600px"
                 />
             </Grid>
         </Grid>

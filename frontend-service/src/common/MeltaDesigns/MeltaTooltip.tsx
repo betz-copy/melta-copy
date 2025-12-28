@@ -1,11 +1,17 @@
 import { Tooltip, TooltipProps, tooltipClasses } from '@mui/material';
 import React from 'react';
 
+export enum TooltipVariant {
+    Default = 'default',
+    Bubble = 'bubble',
+}
+
 interface CustomTooltipProps extends TooltipProps {
     sxColor?: object;
-    variant?: 'default' | 'bubble';
+    variant?: TooltipVariant;
 }
-const MeltaTooltip: React.FC<CustomTooltipProps> = ({ children, variant = 'default', ...tooltipProps }) => {
+
+const MeltaTooltip: React.FC<CustomTooltipProps> = ({ children, variant = TooltipVariant.Default, ...tooltipProps }) => {
     const defaultSx = {
         fontSize: '1rem',
         backgroundColor: '#101440',

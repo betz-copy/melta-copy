@@ -91,8 +91,6 @@ const Entity: React.FC = () => {
 
     const groupChildTemplate = groupChildTemplatesByParent(childTemplates, entityTemplates);
 
-    const walletTransferTableRef = useRef<WalletTransferTableRef<WalletTransferData>>(null);
-
     const filters: any =
         Object.entries(groupChildTemplate).length > 0
             ? Object.fromEntries(
@@ -248,7 +246,6 @@ const Entity: React.FC = () => {
                                     templateId={currentEntityTemplate._id}
                                     expandedEntity={expandedEntity}
                                     getButtonStateByRelatedTemplate={getButtonStateByRelatedTemplate}
-                                    walletTransferTableRef={walletTransferTableRef}
                                 />
                             </TabPanel>
                         </TabContext>

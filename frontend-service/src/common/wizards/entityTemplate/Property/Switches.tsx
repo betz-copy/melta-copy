@@ -27,6 +27,7 @@ export interface SwitchesProps {
     isAccountTemplate?: boolean;
     hasAccountBalanceField?: boolean;
     isAlreadyWalletTemplate?: boolean;
+    isRequiredWalletTransferField?: boolean;
 }
 
 export const Switches: React.FC<SwitchesProps> = ({
@@ -48,6 +49,7 @@ export const Switches: React.FC<SwitchesProps> = ({
     isAccountTemplate,
     hasAccountBalanceField,
     isAlreadyWalletTemplate,
+    isRequiredWalletTransferField = false,
 }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -156,7 +158,8 @@ export const Switches: React.FC<SwitchesProps> = ({
                                     : isEditMode && areThereAnyInstances && (isNewProperty || (!isNewProperty && !initialValue?.required))) ||
                                 value.deleted ||
                                 value.archive ||
-                                disableRemoveRequire
+                                disableRemoveRequire ||
+                                isRequiredWalletTransferField
                             }
                             checked={value.required}
                         />

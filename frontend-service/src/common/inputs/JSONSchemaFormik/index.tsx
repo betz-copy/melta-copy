@@ -171,9 +171,10 @@ export const ajvValidate = (
         const sourceWalletEntityId = data[from]?.properties?._id;
         const destWalletEntityId = data[to]?.properties?._id;
 
-        if (sourceWalletEntityId && destWalletEntityId && sourceWalletEntityId === destWalletEntityId) {
-            walletTemplateErrors[from] = i18next.t('validation.sameSourceAndDestWallet');
-            walletTemplateErrors[to] = i18next.t('validation.sameSourceAndDestWallet');
+        if (sourceWalletEntityId && sourceWalletEntityId === destWalletEntityId) {
+            const error = i18next.t('validation.sameSourceAndDestWallet');
+            walletTemplateErrors[from] = error;
+            walletTemplateErrors[to] = error;
         }
     }
 

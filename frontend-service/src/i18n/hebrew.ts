@@ -253,15 +253,15 @@ export default {
         },
         previewRefetch: 'קובץ בתהליך עיבוד, נסה שוב מאוחר יותר',
         walletTransfer: {
-            editDisabled: 'לא ניתן לערוך תבנית העברה',
-            deleteDisabled: 'לא ניתן למחוק תבנית העברה',
+            editDisabled: 'לא ניתן לערוך יישות מתבנית העברה',
+            deleteDisabled: 'לא ניתן למחוק יישות מתבנית העברה',
             createdAt: 'תאריך',
             entity: 'מקור/יעד',
             description: 'תיאור',
             amount: 'כמות',
             accountBalance: 'יתרת חשבון',
             actions: 'פעולות',
-            initialBalanceDescription:'יתרת פתיחה',
+            initialBalanceDescription:'יתרה התחלתית',
         },
     },
     categoryPage: {
@@ -778,7 +778,7 @@ export default {
                     'אם מטרת תבנית זו הינה העברה אוטומטית מ- או ל- יתרת יישות ארנק אחד או יותר - יש לסמן את התיבה ולבחור את השדות המתאימים לביצוע ההעברה.',
                 ],
             },
-            cannotEditWithInstances: 'לא ניתן לערוך תבנית בעלת יישיות',
+            cannotEditWithInstances: 'לא ניתן לערוך תבנית בעלת יישויות',
             relationshipRef: { filterType: 'סוג פלטור', filterTypes: { field: 'שדה מתבנית זו', value: 'ערך מוגדר' }, fieldLabel: 'שדה מתבנית זו' },
         },
         relationshipTemplate: {

@@ -148,6 +148,19 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const isNewProperty = !initialValue;
     const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
 
+    const isRequiredWalletTransferField = React.useMemo(() => {
+        if (!values?.walletTransfer) return false;
+        console.log(values.walletTransfer);
+
+        const walletTransfer = values.walletTransfer as any;
+        const from  = typeof walletTransfer.from === 'string' ? walletTransfer.from : walletTransfer.from.name;
+        const to = typeof walletTransfer.to === 'string' ? walletTransfer.to : walletTransfer.to.name;
+        return (
+            from === value.name || to === value.name || walletTransfer?.amount === value.name
+        );
+
+    }, [values, value.name]);
+
     const createNewUniqueGroup = (groupName) => {
         if (groupName) {
             setUniqueConstraints?.((prev) => {
@@ -407,6 +420,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     isAccountTemplate={isAccountTemplate}
                                     hasAccountBalanceField={hasAccountBalanceField}
                                     isAlreadyWalletTemplate={isAlreadyWalletTemplate}
+                                    isRequiredWalletTransferField={isRequiredWalletTransferField}
                                 />
                                 <Grid display="flex">
                                     {locationSearchFields?.show &&

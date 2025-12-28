@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 import { searchEntitiesOfTemplateRequest } from '../../../services/entitiesService';
 import { ErrorToast } from '../../ErrorToast';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
-import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
+import MeltaTooltip, { TooltipVariant } from '../../MeltaDesigns/MeltaTooltip';
 import { StepComponentProps } from '../index';
 import { EntityTemplateWizardValues, hasAccountBalanceField } from '.';
 import { ChooseCategory } from './ChooseCategory';
@@ -106,7 +106,7 @@ const CreateTemplateSettings: React.FC<
                                 </>
                             )
                         }
-                        variant="bubble"
+                        variant={TooltipVariant.Bubble}
                     >
                         <InfoOutlined
                             sx={{
@@ -126,7 +126,7 @@ const CreateTemplateSettings: React.FC<
                         }}
                     />
                     <Typography>{i18next.t('wizard.entityTemplate.exportDocumentsSelect')}</Typography>
-                    <MeltaTooltip title={i18next.t('wizard.entityTemplate.exportDocuments')} variant="bubble">
+                    <MeltaTooltip title={i18next.t('wizard.entityTemplate.exportDocuments')} variant={TooltipVariant.Bubble}>
                         <InfoOutlined
                             sx={{
                                 fontSize: 16,

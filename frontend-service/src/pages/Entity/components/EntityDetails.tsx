@@ -207,20 +207,23 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                 )}
                                 <Grid
                                     onClick={() => {
-                                        if (canWriteInstance && !isEntityDisabled) setIsEditMode(true);
+                                        if (canWriteInstance && !isEntityDisabled && !currentEntityTemplate?.walletTransfer) setIsEditMode(true);
                                     }}
                                 >
                                     <IconButtonWithPopover
                                         popoverText={
                                             // eslint-disable-next-line no-nested-ternary
-                                            !canWriteInstance
+                                            !canWriteInstance || currentEntityTemplate?.walletTransfer
                                                 ? i18next.t('permissions.dontHaveWritePermissionsToTemplate')
                                                 : isEntityDisabled
                                                   ? i18next.t('entityPage.disabledEntity')
                                                   : i18next.t('actions.edit')
                                         }
                                         style={{
-                                            cursor: !canWriteInstance || isEntityDisabled ? 'default' : 'pointer',
+                                            cursor:
+                                                !canWriteInstance || isEntityDisabled || !!currentEntityTemplate?.walletTransfer
+                                                    ? 'default'
+                                                    : 'pointer',
                                         }}
                                     >
                                         <ImageWithDisable
@@ -263,7 +266,12 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                             setOpenDeleteDialog(true);
                                             handleClose();
                                         }}
-                                        disabled={!canWriteInstance || entityTemplate.disabled || entity.properties.disabled || !!currentEntityTemplate?.walletTransfer}
+                                        disabled={
+                                            !canWriteInstance ||
+                                            entityTemplate.disabled ||
+                                            entity.properties.disabled ||
+                                            !!currentEntityTemplate?.walletTransfer
+                                        }
                                         icon={DeleteIcon}
                                         text={i18next.t('actions.delete')}
                                     />
