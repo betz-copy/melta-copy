@@ -66,6 +66,22 @@ const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity,
         return map;
     }, [relationShips]);
 
+    const includeParentRelationshipsInSelection = (selectedRelationshipIds: Set<string>, flattenedRelationshipNodes: ITreeNode[]) => {
+        for (const selectedId of selectedRelationshipIds) {
+            const path = selectedId.split(neoIdsPathSeparator).slice(1).join(neoIdsPathSeparator);
+            const pathSegments = path.split(relationshipPathSeparator);
+
+            for (let i = 1; i < pathSegments.length; i++) {
+                const parentPath = pathSegments.slice(0, i).join(relationshipPathSeparator);
+                const parentNode = flattenedRelationshipNodes.find((node) => node.path === parentPath);
+                parentNode && selectedRelationshipIds.add(`${parentNode.neoRelIds}${neoIdsPathSeparator}${parentNode.path}`);
+            }
+        }
+    };
+
+    const calculateSelectedEntitiesCount = (selectedRelationshipIds: string[], entitiesCountByRelationshipId: Map<string, number>) =>
+        selectedRelationshipIds.reduce((sum, id) => sum + (entitiesCountByRelationshipId.get(id) ?? 0), 0);
+
     const allNodes = useMemo(
         () =>
             relationShips?.flatMap(function flat(n): ITreeNode[] {
@@ -95,31 +111,22 @@ const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity,
                 selectedItems={selectedTreeItemIds}
                 selectionPropagation={{ descendants: true, parents: false }}
                 onSelectItems={(itemIds) => {
-                    const selectedIds = new Set(itemIds as string[]);
+                    const selectedRelationshipIds = new Set(itemIds as string[]);
 
-                    if (selectedIds.size > selectedTreeItemIds.length) {
-                        for (const selectedId of selectedIds) {
-                            const path = selectedId.split(neoIdsPathSeparator).slice(1).join(neoIdsPathSeparator);
-                            const pathSegments = path.split(relationshipPathSeparator);
-
-                            for (let i = 1; i < pathSegments.length; i++) {
-                                const parentPath = pathSegments.slice(0, i).join(relationshipPathSeparator);
-                                const parentNode = allNodes.find((node) => node.path === parentPath);
-                                parentNode && selectedIds.add(`${parentNode.neoRelIds}${neoIdsPathSeparator}${parentNode.path}`);
-                            }
-                        }
+                    if (selectedRelationshipIds.size > selectedTreeItemIds.length) {
+                        includeParentRelationshipsInSelection(selectedRelationshipIds, allNodes);
                     }
 
-                    const finalSelection = [...selectedIds];
-                    const totalCount = finalSelection.reduce((sum, id) => sum + (getSelectedEntitiesCountById.get(id) ?? 0), 0);
+                    const finalSelectedIds = [...selectedRelationshipIds];
+                    const totalEntitiesCount = calculateSelectedEntitiesCount(finalSelectedIds, getSelectedEntitiesCountById);
 
-                    if (totalCount > maxEntitiesToPrint) {
+                    if (totalEntitiesCount > maxEntitiesToPrint) {
                         toast.error(i18next.t('entityPage.print.limits.warning'));
                     } else {
-                        setSelectedEntitiesCount(totalCount);
-                        setSelectedTreeItemIds(finalSelection);
+                        setSelectedEntitiesCount(totalEntitiesCount);
+                        setSelectedTreeItemIds(finalSelectedIds);
                         setSelectedRelationShipIds([
-                            ...new Set(finalSelection.flatMap((id) => id.split(neoIdsPathSeparator)[0]?.split(neoRelIdsSeparator) ?? [])),
+                            ...new Set(finalSelectedIds.flatMap((id) => id.split(neoIdsPathSeparator)[0]?.split(neoRelIdsSeparator) ?? [])),
                         ]);
                     }
                 }}
