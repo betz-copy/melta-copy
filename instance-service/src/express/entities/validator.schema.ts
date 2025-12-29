@@ -104,7 +104,7 @@ export const createEntityRequestSchema = Joi.object({
 });
 
 /**
- * POST /api/instances/entities/printTemplates/:id
+ * POST /api/instances/entities/templatesStructure/:id
  */
 export const getPrintEntitiesByIdRequestSchema = Joi.object({
     query: {},

@@ -195,7 +195,7 @@ export const getRelationshipSelectTreeForPrint = async (
 ): Promise<IRelationShipSelectionTree[]> => {
     const filters = filterModelToFilterOfGraph(filterRecord);
 
-    const { data } = await axios.post(`${entities}/printTemplates/${entityId}`, {
+    const { data } = await axios.post(`${entities}/templatesStructure/${entityId}`, {
         ...options,
         expandedParams,
         filters: combineFilters(filters['filter'], childTemplateFilters),

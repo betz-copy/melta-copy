@@ -142,7 +142,7 @@ InstancesRouter.post(
 InstancesRouter.post('/entities/printEntities/:id', InstancesValidatorMiddleware.validateUserCanReadEntityInstance, InstanceManagerProxy);
 
 InstancesRouter.post(
-    '/entities/printTemplates/:id',
+    '/entities/templatesStructure/:id',
     InstancesValidatorMiddleware.validateUserCanReadEntityInstance,
     InstancesValidatorMiddleware.validateUserCanGetExpandedEntity,
     InstanceManagerProxy,

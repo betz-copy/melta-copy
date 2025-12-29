@@ -87,7 +87,7 @@ entityRouter.post('/rules/dependant', ValidateRequest(getDependentRulesRequestSc
 
 // Print
 entityRouter.post(
-    '/printTemplates/:id',
+    '/templatesStructure/:id',
     ValidateRequest(getPrintTemplatesByIdRequestSchema),
     entityValidatorController.validatePrintBody,
     entityController.printTemplates,
