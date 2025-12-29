@@ -4,6 +4,7 @@ import { environment } from '../../globals';
 import { IEntity, IFilterOfField, SplitBy } from '../../interfaces/entities';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { CoordinatesResult, ICoordinateSearchResult, IPolygonSearchResult, MapItemType } from '../../interfaces/location';
+import { LayerProvider, LayerProviderType } from '../../pages/Map/BaseLayers';
 import { convertECEFToWGS84, convertWGS94ToECEF, isValidWGS84 } from './convert';
 
 const { polygonPrefix, polygonSuffix } = environment.map.polygon;
@@ -136,7 +137,7 @@ export const getLocationProperties = (entity: IEntity, selectedTemplates: IMongo
                 acc[key] = value;
                 return acc;
             },
-            {} as { [x: string]: any },
+            {} as { [x: string]: IEntity['properties'] },
         );
 
     return { template, locationTemplateProperties, locationProperties };
@@ -191,8 +192,9 @@ const xmlParser = new XMLParser({
     attributeNamePrefix: '',
 });
 
-function findLinks(paredXml: object, schema: string, layerName: string, layerLinkTag: string): { url: string; name: string } {
-    const emptyResult = { url: '', name: '' };
+function findLinks(paredXml: object, schema: string, layerName: string, layerType: LayerProviderType, layerLinkTag: string): LayerProvider {
+    const emptyResult: LayerProvider = { url: '', id: '', type: LayerProviderType.map };
+
     if (!paredXml || typeof paredXml !== 'object') return emptyResult;
 
     for (const tag in paredXml) {
@@ -202,15 +204,21 @@ function findLinks(paredXml: object, schema: string, layerName: string, layerLin
             const linksList = Array.isArray(tagValue) ? tagValue : [tagValue];
 
             const matchedLink = linksList.find((link) => link.schema === schema && link.name.startsWith(layerName));
-            return matchedLink ? { name: matchedLink.name, url: matchedLink['#text'] } : emptyResult;
-        } else if (typeof tagValue === 'object') return findLinks(tagValue, schema, layerName, layerLinkTag);
+            return matchedLink ? { id: matchedLink.name, url: matchedLink['#text'], type: layerType } : emptyResult;
+        } else if (typeof tagValue === 'object') return findLinks(tagValue, schema, layerName, layerType, layerLinkTag);
     }
 
     return emptyResult;
 }
 
-export const extractImageryUrl = (xml: string, schema: string, layerName: string, layerLinkTag: string): { url: string; name: string } => {
+export const extractImageryUrl = (
+    xml: string,
+    schema: string,
+    layerName: string,
+    layerType: LayerProviderType,
+    layerLinkTag: string,
+): LayerProvider => {
     const json = xmlParser.parse(xml);
 
-    return findLinks(json, schema, layerName, layerLinkTag);
+    return findLinks(json, schema, layerName, layerType, layerLinkTag);
 };

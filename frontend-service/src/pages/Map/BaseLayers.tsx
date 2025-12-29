@@ -9,10 +9,15 @@ import MeltaCheckbox from '../../common/MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
 import { BackendConfigState } from '../../services/backendConfigService';
 
-type LayerProvider = {
+export enum LayerProviderType {
+    map = 'map',
+    text = 'text',
+}
+
+export type LayerProvider = {
     id: string;
     url: string;
-    type: 'map' | 'text';
+    type: LayerProviderType;
 };
 
 export const BaseLayers: React.FC<{
@@ -23,27 +28,28 @@ export const BaseLayers: React.FC<{
 
     const [isOpen, setIsOpen] = useState<boolean>(false);
 
-    const { mapLayers, textLayers } = config;
+    const { mapLayers, textLayers, isOutsideDevelopment, getMapLayers } = config;
 
     const queryClient = useQueryClient();
 
-    const layers = queryClient.getQueryData<{ url: string; name: string }[]>('getMaLayers');
+    const layers = queryClient.getQueryData<LayerProvider[]>('getMapLayers');
 
     const providers = useMemo<LayerProvider[]>(() => {
-        const mapLayerArray = Object.entries(mapLayers).map(([name, url]) => ({
-            id: name,
-            url,
-            type: 'map' as const,
-        }));
-        const textLayerArray = Object.entries(textLayers).map(([name, url]) => ({
-            id: name,
-            url,
-            type: 'text' as const,
-        }));
-        return [...mapLayerArray, ...textLayerArray];
-    }, [mapLayers, textLayers]);
+        const buildLayerProvider = (outsideLayers: Record<string, string>, type: LayerProviderType): LayerProvider[] => {
+            if (isOutsideDevelopment)
+                return Object.entries(outsideLayers).map(([id, url]) => ({
+                    id,
+                    url,
+                    type,
+                }));
 
-    const [activeMapLayer, setActiveMapLayer] = useState<string>(providers.find((p) => p.type === 'map')?.id || '');
+            return layers?.filter((layer) => layer.type === type) ?? [];
+        };
+
+        return [...buildLayerProvider(mapLayers, LayerProviderType.map), ...buildLayerProvider(textLayers, LayerProviderType.text)];
+    }, [mapLayers, textLayers, layers, isOutsideDevelopment]);
+
+    const [activeMapLayer, setActiveMapLayer] = useState<string>(providers.find((p) => p.type === LayerProviderType.map)?.id || '');
     const [activeTextLayers, setActiveTextLayers] = useState<Set<string>>(new Set());
 
     const handleTextLayerToggle = useCallback((layerId: string) => {
@@ -58,26 +64,6 @@ export const BaseLayers: React.FC<{
         });
     }, []);
 
-    // useEffect(() => {
-    //     const viewer = viewerRef.current?.cesiumElement;
-    //     if (!viewer) return;
-
-    //     viewer.imageryLayers.removeAll();
-
-    //     const activeLayers = providers.filter(
-    //         (layer) => (layer.type === 'map' && layer.id === activeMapLayer) || (layer.type === 'text' && activeTextLayers.has(layer.id)),
-    //     );
-
-    //     activeLayers.forEach((layer) => {
-    //         viewer.imageryLayers.addImageryProvider(
-    //             new Cesium.UrlTemplateImageryProvider({
-    //                 url: layer.url,
-    //                 tilingScheme: config.isOutsideDevelopment ? undefined : new Cesium.GeographicTilingScheme(),
-    //             }),
-    //         );
-    //     });
-    // }, [activeMapLayer, activeTextLayers, providers, viewerRef, config.isOutsideDevelopment]);
-
     useEffect(() => {
         const viewer = viewerRef.current?.cesiumElement;
         if (!viewer) return;
@@ -85,22 +71,34 @@ export const BaseLayers: React.FC<{
         viewer.imageryLayers.removeAll();
 
         const activeLayers = providers.filter(
-            (layer) => (layer.type === 'map' && layer.id === activeMapLayer) || (layer.type === 'text' && activeTextLayers.has(layer.id)),
+            (layer) =>
+                (layer.type === LayerProviderType.map && layer.id === activeMapLayer) ||
+                (layer.type === LayerProviderType.text && activeTextLayers.has(layer.id)),
         );
 
-        layers?.forEach((layer) => {
-            viewer.imageryLayers.addImageryProvider(
-                new Cesium.WebMapTileServiceImageryProvider({
-                    url: new Cesium.Resource({ url: layer.url, headers: { 'x-api-key': config.getMapLayers.token } }),
-                    layer: layer.name,
-                    style: 'default',
-                    format: 'image/png',
-                    tileMatrixSetID: 'WorldCRS84',
-                    tilingScheme: new Cesium.GeographicTilingScheme(),
-                }),
+        if (isOutsideDevelopment)
+            activeLayers.forEach((layer) =>
+                viewer.imageryLayers.addImageryProvider(
+                    new Cesium.UrlTemplateImageryProvider({
+                        url: layer.url,
+                        tilingScheme: undefined,
+                    }),
+                ),
             );
-        });
-    }, [activeMapLayer, activeTextLayers, providers, viewerRef, config.isOutsideDevelopment]);
+        else
+            activeLayers?.forEach((layer) =>
+                viewer.imageryLayers.addImageryProvider(
+                    new Cesium.WebMapTileServiceImageryProvider({
+                        url: new Cesium.Resource({ url: layer.url, headers: { 'x-api-key': getMapLayers.token } }),
+                        layer: layer.id,
+                        style: 'default',
+                        format: 'image/png',
+                        tileMatrixSetID: 'WorldCRS84',
+                        tilingScheme: new Cesium.GeographicTilingScheme(),
+                    }),
+                ),
+            );
+    }, [activeMapLayer, activeTextLayers, providers, viewerRef, isOutsideDevelopment, getMapLayers]);
 
     return (
         <Box

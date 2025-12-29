@@ -8,8 +8,6 @@ import { useLocation, useSearchParams } from 'wouter';
 import { LoadingAnimation } from './common/LoadingAnimation';
 import './css/index.css';
 import './css/loading.css';
-import { config } from 'bignumber.js';
-import { XMLParser } from 'fast-xml-parser';
 import { environment } from './globals';
 import Main from './Main';
 import { useMatomoInstance } from './matomo';
@@ -37,10 +35,6 @@ const App: React.FC = () => {
 
     const matomoInstance = useMatomoInstance();
     const queryClient = useQueryClient();
-    const xmlParser = new XMLParser({
-        ignoreAttributes: false,
-        attributeNamePrefix: '',
-    });
 
     useEffect(() => {
         const browser = Bowser.getParser(window.navigator.userAgent);
@@ -51,96 +45,6 @@ const App: React.FC = () => {
         if (!isValidBrowser) {
             toast.error(i18next.t('error.unsupportedChromeVersion'), { autoClose: false, theme: 'colored', style: { fontSize: 'large' } });
         }
-        const xml = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- pycsw 3.0-dev -->
-<csw:GetRecordsResponse xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dct="http://purl.org/dc/terms/" xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gml="http://www.opengis.net/gml" xmlns:gml32="http://www.opengis.net/gml/3.2" xmlns:ows="http://www.opengis.net/ows" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.0.2" xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 http://schemas.opengis.net/csw/2.0.2/CSW-discovery.xsd">
-    <csw:SearchStatus timestamp="2025-12-28T09:30:42Z"/>
-    <csw:SearchResults numberOfRecordsMatched="12" numberOfRecordsReturned="10" nextRecord="11" recordSchema="http://www.opengis.net/cat/csw/2.0.2" elementSet="summary">
-        <csw:SummaryRecord>
-            <dc:identifier>urn:uuid:19887a8a-f6b0-4a63-ae56-7fba0e17801f</dc:identifier>
-            <dc:title>Lorem ipsum</dc:title>
-            <dc:type>http://purl.org/dc/dcmitype/Image</dc:type>
-            <dc:subject>Tourism--Greece</dc:subject>
-            <dc:format>image/svg+xml</dc:format>
-            <dct:abstract>Quisque lacus diam, placerat mollis, pharetra in, commodo sed, augue. Duis iaculis arcu vel arcu.</dct:abstract>
-        </csw:SummaryRecord>
-        <csw:SummaryRecord>
-            <dc:identifier>urn:uuid:1ef30a8b-876d-4828-9246-c37ab4510bbd</dc:identifier>
-            <dc:title></dc:title>
-            <dc:type>http://purl.org/dc/dcmitype/Service</dc:type>
-            <dct:abstract>Proin sit amet justo. In justo. Aenean adipiscing nulla id tellus.</dct:abstract>
-            <ows:BoundingBox crs="urn:x-ogc:def:crs:EPSG:6.11:4326" dimensions="2">
-                <ows:LowerCorner>60.04 13.75</ows:LowerCorner>
-                <ows:UpperCorner>68.41 17.92</ows:UpperCorner>
-            </ows:BoundingBox>
-        </csw:SummaryRecord>
-        <csw:SummaryRecord>
-            <dc:identifier>urn:uuid:66ae76b7-54ba-489b-a582-0f0633d96493</dc:identifier>
-            <dc:title>Maecenas enim</dc:title>
-            <dc:type>http://purl.org/dc/dcmitype/Text</dc:type>
-            <dc:subject>Marine sediments</dc:subject>
-            <dc:format>application/xhtml+xml</dc:format>
-            <dct:abstract>Pellentesque tempus magna non sapien fringilla blandit.</dct:abstract>
-        </csw:SummaryRecord>
-        <csw:SummaryRecord>
-            <dc:identifier>urn:uuid:6a3de50b-fa66-4b58-a0e6-ca146fdd18d4</dc:identifier>
-            <dc:title>Ut facilisis justo ut lacus</dc:title>
-            <dc:type>http://purl.org/dc/dcmitype/Service</dc:type>
-            <dc:subject>Vegetation</dc:subject>
-            <dc:relation>urn:uuid:94bc9c83-97f6-4b40-9eb8-a8e8787a5c63</dc:relation>
-        </csw:SummaryRecord>
-        <csw:SummaryRecord>
-            <dc:identifier>urn:uuid:784e2afd-a9fd-44a6-9a92-a3848371c8ec</dc:identifier>
-            <dc:title>Aliquam fermentum purus quis arcu</dc:title>
-            <dc:type>http://purl.org/dc/dcmitype/Text</dc:type>
-            <dc:subject>Hydrography--Dictionaries</dc:subject>
-            <dc:format>application/pdf</dc:format>
-            <dct:abstract>Vestibulum quis ipsum sit amet metus imperdiet vehicula. Nulla scelerisque cursus mi.</dct:abstract>
-        </csw:SummaryRecord>
-        <csw:SummaryRecord>
-            <dc:identifier>urn:uuid:829babb0-b2f1-49e1-8cd5-7b489fe71a1e</dc:identifier>
-            <dc:title>Vestibulum massa purus</dc:title>
-            <dc:type>http://purl.org/dc/dcmitype/Image</dc:type>
-            <dc:format>image/jp2</dc:format>
-            <dc:relation>urn:uuid:9a669547-b69b-469f-a11f-2d875366bbdc</dc:relation>
-        </csw:SummaryRecord>
-        <csw:SummaryRecord>
-            <dc:identifier>urn:uuid:88247b56-4cbc-4df9-9860-db3f8042e357</dc:identifier>
-            <dc:title></dc:title>
-            <dc:type>http://purl.org/dc/dcmitype/Dataset</dc:type>
-            <dc:subject>Physiography-Landforms</dc:subject>
-            <dct:abstract>Donec scelerisque pede ut nisl luctus accumsan. Quisque ultrices, lorem eget feugiat fringilla, lorem dui porttitor ante, cursus ultrices magna odio eu neque.</dct:abstract>
-        </csw:SummaryRecord>
-        <csw:SummaryRecord>
-            <dc:identifier>urn:uuid:94bc9c83-97f6-4b40-9eb8-a8e8787a5c63</dc:identifier>
-            <dc:title>Mauris sed neque</dc:title>
-            <dc:type>http://purl.org/dc/dcmitype/Dataset</dc:type>
-            <dc:subject>Vegetation-Cropland</dc:subject>
-            <dct:abstract>Curabitur lacinia, ante non porta tempus, mi lorem feugiat odio, eget suscipit eros pede ac velit.</dct:abstract>
-            <ows:BoundingBox crs="urn:x-ogc:def:crs:EPSG:6.11:4326" dimensions="2">
-                <ows:LowerCorner>47.59 -4.1</ows:LowerCorner>
-                <ows:UpperCorner>51.22 0.89</ows:UpperCorner>
-            </ows:BoundingBox>
-        </csw:SummaryRecord>
-        <csw:SummaryRecord>
-            <dc:identifier>urn:uuid:9a669547-b69b-469f-a11f-2d875366bbdc</dc:identifier>
-            <dc:title>Ñunç elementum</dc:title>
-            <dc:type>http://purl.org/dc/dcmitype/Dataset</dc:type>
-            <dc:subject>Hydrography-Oceanographic</dc:subject>
-            <ows:BoundingBox crs="urn:x-ogc:def:crs:EPSG:6.11:4326" dimensions="2">
-                <ows:LowerCorner>44.79 -6.17</ows:LowerCorner>
-                <ows:UpperCorner>51.13 -2.23</ows:UpperCorner>
-            </ows:BoundingBox>
-        </csw:SummaryRecord>
-        <csw:SummaryRecord>
-            <dc:identifier>urn:uuid:a06af396-3105-442d-8b40-22b57a90d2f2</dc:identifier>
-            <dc:title>Lorem ipsum dolor sit amet</dc:title>
-            <dc:type>http://purl.org/dc/dcmitype/Image</dc:type>
-            <dc:format>image/jpeg</dc:format>
-        </csw:SummaryRecord>
-    </csw:SearchResults>
-</csw:GetRecordsResponse>`;
-        console.log({ parsed: xmlParser.parse(xml) });
     }, []);
 
     const currentUser = useUserStore((state) => state.user);
@@ -160,7 +64,7 @@ const App: React.FC = () => {
                 layers.map(async (layer) => {
                     const xml = await getMapLayer(url, params, layer.body, token);
 
-                    return extractImageryUrl(xml, layer.name, layerLinkSchema, layerLinkTag); //layerLinkSchema=wmts_base layerLinkTag=mc:links name=othophoto-base
+                    return extractImageryUrl(xml, layer.name, layerLinkSchema, layer.type, layerLinkTag); //layerLinkSchema=wmts_base layerLinkTag=mc:links name=othophoto-base
                 }),
             );
 

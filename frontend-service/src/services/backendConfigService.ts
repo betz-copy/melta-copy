@@ -1,5 +1,6 @@
 import axios from '../axios';
 import { environment } from '../globals';
+import { LayerProviderType } from '../pages/Map/BaseLayers';
 
 const { config } = environment.api;
 
@@ -13,7 +14,7 @@ export interface BackendConfigState {
     mapLayers: Record<string, string>;
     textLayers: Record<string, string>;
     getMapLayers: {
-        layers: { name: string; body: string }[];
+        layers: { name: string; body: string; type: LayerProviderType }[];
         url: string;
         params: string;
         token: string;
