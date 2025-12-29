@@ -64,6 +64,8 @@ const App: React.FC = () => {
                 layers.map(async (layer) => {
                     const xml = await getMapLayer(url, params, layer.body, token);
 
+                    console.log({ xmlOfLayer: xml });
+
                     return extractImageryUrl(xml, layerLinkSchema, layer.name, layer.displayName, layer.type, layerLinkTag); //layerLinkSchema=wmts_base layerLinkTag=mc:links name=othophoto-base
                 }),
             );
