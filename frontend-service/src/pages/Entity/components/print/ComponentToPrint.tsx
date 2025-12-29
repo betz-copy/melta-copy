@@ -5,6 +5,7 @@ import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import BlueTitle from '../../../../common/MeltaDesigns/BlueTitle';
 import { FileToPrint } from '../../../../common/print/FileToPrint';
+import { environment } from '../../../../globals';
 import { IEntity } from '../../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IFile } from '../../../../interfaces/preview';
@@ -47,14 +48,14 @@ const ComponentToPrint = React.forwardRef<
 
     const signatureFields = (
         <Grid container flexDirection="column" marginTop="2.5rem" width="100%" rowGap="1.25rem">
-            {['signedByDetails', 'stampedByDetails'].map((role) => (
+            {environment.signatureFields.map((role) => (
                 <Grid key={role} container width="100%" justifyContent="space-around">
                     <Grid width="6.25rem">
                         <Typography fontSize="0.875rem" fontWeight="600">
                             {i18next.t(`entityPage.print.signatureFields.${role}`)}
                         </Typography>
                     </Grid>
-                    {['fullName', 'rank', 'personalNumber', 'signature'].map((field) => (
+                    {environment.signatureFieldDetails.map((field) => (
                         <Grid key={field} borderTop="1px solid #9398C2" width="7.5rem" marginTop="0.9375rem">
                             <Typography fontSize="0.875rem" textAlign="center" color="#787C9E">
                                 {i18next.t(`entityPage.print.signatureFields.${field}`)}

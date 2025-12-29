@@ -55,7 +55,7 @@ const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity,
 
     const getSelectedEntitiesCountById = useMemo(() => {
         const map = new Map<string, number>();
-        const stack = [...(relationShips ?? [])];
+        const stack = relationShips ? [...relationShips] : [];
 
         while (stack.length) {
             const node = stack.pop()!;

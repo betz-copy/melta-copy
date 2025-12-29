@@ -9,10 +9,10 @@ import { IEntity } from '../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IGetUnits } from '../interfaces/units';
 import { useDarkModeStore } from '../stores/darkMode';
-import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
-import { formatToString, getPropertyColor, getUserAvatar } from '../utils/entityProperties';
 import { HighlightText } from '../utils/HighlightText';
 import { containsHTMLTags, getFirstLine, getNumLines, renderHTML } from '../utils/HtmlTagsStringValue';
+import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
+import { formatToString, getPropertyColor, getUserAvatar } from '../utils/entityProperties';
 import { getFixedNumber, getTextDirection } from '../utils/stringValues';
 import BlueTitle from './MeltaDesigns/BlueTitle';
 import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
@@ -67,8 +67,6 @@ type PropertiesDetailsProps = {
     preview?: boolean;
 };
 
-const excludedFormats = ['text-area', 'fileId', 'relationshipReference', 'user', 'location', 'signature', 'comment'];
-
 const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
     propertiesOrderedToShow,
     properties,
@@ -92,6 +90,14 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
     const units = queryClient.getQueryData<IGetUnits>('getUnits')!;
 
     const [hideFieldsToDisplay, setHideFieldsToDisplay] = useState(entityTemplate.properties.hide);
+
+    const handleToggleHideField = (event: React.MouseEvent, propertyKey: string) => {
+        event.stopPropagation();
+        setHideFieldsToDisplay(() => {
+            if (hideFieldsToDisplay.includes(propertyKey)) return hideFieldsToDisplay.filter((hiddenProperty) => hiddenProperty !== propertyKey);
+            return [...hideFieldsToDisplay, propertyKey];
+        });
+    };
 
     return (
         <>
@@ -163,7 +169,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                     stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
 
                 const textDirection =
-                    format && !excludedFormats.includes(format)
+                    format && !environment.excludedFormats.includes(format)
                         ? getTextDirection(propertyValue, {
                               type,
                               serialCurrent,
@@ -193,7 +199,6 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                         fontSize="14px"
                         color={color ?? propertyValueColor}
                         style={{
-                            // When printing a long word, go to next line
                             ...(isPrintingMode
                                 ? {
                                       overflowWrap: 'anywhere',
@@ -273,17 +278,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                                 )}
                                 {hideField && !isPrintingMode && (
                                     <div>
-                                        <IconButton
-                                            onClick={(event) => {
-                                                event.stopPropagation();
-                                                setHideFieldsToDisplay(() => {
-                                                    if (hideFieldsToDisplay.includes(propertyKey))
-                                                        return hideFieldsToDisplay.filter((hiddenProperty) => hiddenProperty !== propertyKey);
-                                                    return [...hideFieldsToDisplay, propertyKey];
-                                                });
-                                            }}
-                                            size="small"
-                                        >
+                                        <IconButton onClick={(event) => handleToggleHideField(event, propertyKey)} size="small">
                                             {hideFieldsToDisplay.includes(propertyKey) ? <VisibilityOffIcon /> : <VisibilityIcon />}
                                         </IconButton>
                                     </div>
@@ -352,7 +347,6 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
 
     return (
         <div style={{ display: 'flex', flexDirection: 'row' }}>
-            {/* Profile image */}
             {imageOfKartoffelKeys.map((key) => getUserAvatar(entityTemplate, key, properties, { size: 120, border: 4 }))}
             {showDivider && <Divider title={dividerTitle} sx={{ marginY: '1rem' }} />}
             <div style={{ margin: '1rem 0' }}>{dividerTitle && <BlueTitle title={dividerTitle} component="p" variant="subtitle1" />}</div>

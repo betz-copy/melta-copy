@@ -96,6 +96,9 @@ export const environment = {
         heightPaddingMultiplier: 0.3,
         widthPaddingMultiplier: 0.6,
     },
+    excludedFormats: ['text-area', 'fileId', 'relationshipReference', 'user', 'location', 'signature', 'comment'] as string[],
+    signatureFields: ['signedByDetails', 'stampedByDetails'],
+    signatureFieldDetails: ['fullName', 'rank', 'personalNumber', 'signature'],
     users: {
         kartoffelProfile: 'kartoffelProfile',
     },

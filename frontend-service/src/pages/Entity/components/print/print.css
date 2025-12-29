@@ -2,19 +2,16 @@
     background-color: #fff !important;
 }
 
-/* Ensure content doesn't get cut off */
 .print-body * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
 }
 
-/* Avoid breaking inside elements */
 .print-section {
     page-break-inside: avoid;
     break-inside: avoid;
 }
 
-/* Force page breaks where needed */
 .page-break {
     page-break-after: always;
     break-after: page;
@@ -29,13 +26,13 @@
 }
 
 .entity-container {
-    content-visibility: auto; /* Magic property for large DOMs */
-    contain-intrinsic-size: 1px 100px; /* Placeholder size */
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 100px;
     break-inside: avoid;
 }
 
 @media print {
     .entity-container {
-        content-visibility: visible; /* Ensure it shows up in PDF */
+        content-visibility: visible;
     }
 }
