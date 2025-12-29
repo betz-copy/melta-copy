@@ -18,6 +18,7 @@ export type LayerProvider = {
     id: string;
     url: string;
     type: LayerProviderType;
+    displayName?: string;
 };
 
 export const BaseLayers: React.FC<{
@@ -154,7 +155,7 @@ export const BaseLayers: React.FC<{
                                     <FormControlLabel
                                         key={layer.id}
                                         control={<Radio checked={activeMapLayer === layer.id} value={layer.id} />}
-                                        label={layer.id}
+                                        label={layer.displayName || layer.id}
                                         sx={{ display: 'flex', alignItems: 'center' }}
                                     />
                                 ))}
@@ -171,7 +172,7 @@ export const BaseLayers: React.FC<{
                                     control={
                                         <MeltaCheckbox checked={activeTextLayers.has(layer.id)} onChange={() => handleTextLayerToggle(layer.id)} />
                                     }
-                                    label={layer.id}
+                                    label={layer.displayName || layer.id}
                                     sx={{ display: 'flex', alignItems: 'center' }}
                                 />
                             ))}

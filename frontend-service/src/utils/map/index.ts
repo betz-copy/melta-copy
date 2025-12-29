@@ -192,20 +192,40 @@ const xmlParser = new XMLParser({
     attributeNamePrefix: '',
 });
 
-function findLinks(paredXml: object, schema: string, layerName: string, layerType: LayerProviderType, layerLinkTag: string): LayerProvider {
+function findLinks(
+    paredXml: object,
+    schema: string,
+    layerName: string,
+    layerDisplayName: string,
+    layerType: LayerProviderType,
+    layerLinkTag: string,
+): LayerProvider {
     const emptyResult: LayerProvider = { url: '', id: '', type: LayerProviderType.map };
 
     if (!paredXml || typeof paredXml !== 'object') return emptyResult;
 
-    for (const tag in paredXml) {
-        const tagValue = paredXml[tag];
+    // If it's an array, search each element
+    if (Array.isArray(paredXml)) {
+        for (const item of paredXml) {
+            const result = findLinks(item, schema, layerName, layerDisplayName, layerType, layerLinkTag);
+            if (result.url) return result;
+        }
+        return emptyResult;
+    }
 
-        if (tag === layerLinkTag) {
-            const linksList = Array.isArray(tagValue) ? tagValue : [tagValue];
+    // Check the current level
+    if (paredXml[layerLinkTag]) {
+        const linksList = Array.isArray(paredXml[layerLinkTag]) ? paredXml[layerLinkTag] : [paredXml[layerLinkTag]];
+        const matchedLink = linksList.find((link) => link.scheme === schema && link.name?.startsWith(layerName));
+        return matchedLink ? { id: matchedLink.name, url: matchedLink['#text'], displayName: layerDisplayName, type: layerType } : emptyResult;
+    }
 
-            const matchedLink = linksList.find((link) => link.schema === schema && link.name.startsWith(layerName));
-            return matchedLink ? { id: matchedLink.name, url: matchedLink['#text'], type: layerType } : emptyResult;
-        } else if (typeof tagValue === 'object') return findLinks(tagValue, schema, layerName, layerType, layerLinkTag);
+    // Recurse deeper
+    for (const key in paredXml) {
+        if (typeof paredXml[key] === 'object') {
+            const result = findLinks(paredXml[key], schema, layerName, layerDisplayName, layerType, layerLinkTag);
+            if (result.url) return result;
+        }
     }
 
     return emptyResult;
@@ -215,10 +235,11 @@ export const extractImageryUrl = (
     xml: string,
     schema: string,
     layerName: string,
+    layerDisplayName: string,
     layerType: LayerProviderType,
     layerLinkTag: string,
 ): LayerProvider => {
     const json = xmlParser.parse(xml);
 
-    return findLinks(json, schema, layerName, layerType, layerLinkTag);
+    return findLinks(json, schema, layerName, layerDisplayName, layerType, layerLinkTag);
 };

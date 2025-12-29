@@ -14,7 +14,7 @@ export interface BackendConfigState {
     mapLayers: Record<string, string>;
     textLayers: Record<string, string>;
     getMapLayers: {
-        layers: { name: string; body: string; type: LayerProviderType }[];
+        layers: { name: string; body: string; type: LayerProviderType; displayName: string }[];
         url: string;
         params: string;
         token: string;
