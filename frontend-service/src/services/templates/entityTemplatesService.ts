@@ -152,6 +152,7 @@ export const entityTemplateObjectToEntityTemplateForm = (
             isProfileImage: value.isProfileImage || undefined,
             comment: value.comment,
             color: value.color,
+            accountBalance: value.accountBalance,
         };
 
         if (value.format === PropertyFormat.fileId || value.items?.format === PropertyFormat.fileId) {
@@ -345,6 +346,7 @@ const buildBasePropertySchema = (property: EntityTemplateFormInputProperties, qu
         relationshipReference,
         expandedUserField,
         options,
+        accountBalance,
     } = property;
 
     const propertyType = getPropertyType(type);
@@ -385,6 +387,7 @@ const buildBasePropertySchema = (property: EntityTemplateFormInputProperties, qu
             : undefined,
         comment,
         expandedUserField,
+        accountBalance,
     };
 };
 
@@ -489,6 +492,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         propertiesTypeOrder,
         documentTemplatesIds: _documentTemplatesIds,
         fieldGroups: _fieldGroups,
+        walletTransfer,
         ...restOfProperties
     } = values;
 
@@ -549,6 +553,14 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         uniqueConstraints: [...(restOfProperties.uniqueConstraints ?? []), ...serialUniqueConstraints],
         mapSearchProperties,
         fieldGroups: updatedFieldGroups,
+        walletTransfer: walletTransfer
+            ? {
+                  from: typeof walletTransfer.from === 'string' ? walletTransfer.from : walletTransfer.from.name,
+                  to: typeof walletTransfer.to === 'string' ? walletTransfer.to : walletTransfer.to.name,
+                  description: walletTransfer.description,
+                  amount: walletTransfer.amount,
+              }
+            : null,
     };
 };
 
@@ -590,6 +602,7 @@ const appendEntityTemplateFormData = (
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
     formData.append('fieldGroups', JSON.stringify(entityTemplate.fieldGroups));
+    entityTemplate.walletTransfer && formData.append('walletTransfer', JSON.stringify(entityTemplate.walletTransfer));
 };
 
 export const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWizardValues, queryClient: QueryClient) => {

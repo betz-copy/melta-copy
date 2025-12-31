@@ -70,7 +70,7 @@ const getFieldUiSchema = (
 
         return {
             'ui:options': {
-                disabled: !isGoalUser,
+                disabled: !(propertySchema.accountBalance && !isEditMode) && !isGoalUser,
                 readonly: !isGoalUser,
                 defaultValue,
             },
@@ -148,6 +148,7 @@ const getFieldUiSchema = (
     if (propertySchema.format === 'relationshipReference')
         return {
             'ui:widget': 'TemplateReferenceWidget',
+            'ui:options': { template: values.template },
         };
     if (propertySchema.format === 'location')
         return {

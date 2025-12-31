@@ -229,7 +229,7 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
 
     Object.entries(entity.properties).forEach(([key, value]: [string, any]) => {
         if (templateProperties[key]?.format === 'signature' && value)
-            fileUploadPromises.push(urlToFile(value, templateProperties[key]!.title).then((file) => [key, file]));
+            fileUploadPromises.push(urlToFile(value, templateProperties[key]?.title).then((file) => [key, file]));
     });
     filesToUpload.push(...(await Promise.all(fileUploadPromises)));
 

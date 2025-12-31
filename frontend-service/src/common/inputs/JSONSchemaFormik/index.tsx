@@ -10,7 +10,7 @@ import { pickBy } from 'lodash';
 import React, { memo, useEffect, useState } from 'react';
 import { environment } from '../../../globals';
 import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IWalletTransfer } from '../../../interfaces/entityTemplates';
 import { matchValueAgainstFilter } from '../../../utils/filters';
 import { uiSchemaUtils } from './ utils';
 import './form.css';
@@ -68,7 +68,11 @@ const convertErrorsToNestedGroups = <T extends ErrorMessage<string> | ErrorSchem
     return finalErrors;
 };
 
-export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'], data: Record<string, any>): FormikErrors<any> => {
+export const ajvValidate = (
+    schema: IMongoEntityTemplatePopulated['properties'],
+    data: Record<string, any>,
+    walletTransfer?: IWalletTransfer | null,
+): FormikErrors<any> => {
     const ajv = new Ajv({ allErrors: true });
     addFormats(ajv);
 
@@ -124,6 +128,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         'filterByUnitUserField',
         'isFilterByUserUnit',
         'display',
+        'accountBalance',
         'isProfileImage',
     ].forEach((keyword) => ajv.addKeyword({ keyword }));
 
@@ -159,7 +164,20 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
             childTemplateFilterErrors[field] = i18next.t('validation.fieldFilterCondition');
     });
 
-    return { ...formikErrors, ...childTemplateFilterErrors };
+    const walletTemplateErrors: FormikErrors<any> = {};
+    if (walletTransfer) {
+        const { from, to } = walletTransfer;
+        const sourceWalletEntityId = data[from]?.properties?._id;
+        const destWalletEntityId = data[to]?.properties?._id;
+
+        if (sourceWalletEntityId && sourceWalletEntityId === destWalletEntityId) {
+            const error = i18next.t('validation.sameSourceAndDestWallet');
+            walletTemplateErrors[from] = error;
+            walletTemplateErrors[to] = error;
+        }
+    }
+
+    return { ...formikErrors, ...childTemplateFilterErrors, ...walletTemplateErrors };
 };
 
 const formikErrorsToRjsfExtraErrorsRec = (

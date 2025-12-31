@@ -94,6 +94,7 @@ ajv.addKeyword({
     keyword: 'serialCurrent',
     type: 'number',
 });
+ajv.addKeyword({ keyword: 'accountBalance', type: 'boolean' });
 
 export class EntityValidator extends DefaultController {
     private entityTemplateManagerService: EntityTemplateManagerService;

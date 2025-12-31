@@ -203,7 +203,7 @@ const CreateOrEditEntityDetails: React.FC<{
             }}
             validate={(values) => {
                 const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(values.template?.properties);
-                const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties);
+                const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties, values.template?.walletTransfer);
 
                 if (!Object.keys(propertiesErrors).length) return {};
 

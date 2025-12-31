@@ -454,7 +454,6 @@ const EntityTemplatesRow: React.FC = () => {
                 handleClose={() => setEntityTemplateWizardDialogState({ isWizardOpen: false, entityTemplate: null })}
                 initialValues={entityTemplateObjectToEntityTemplateForm(entityTemplateWizardDialogState.entityTemplate, queryClient)}
                 isEditMode={Boolean(entityTemplateWizardDialogState.entityTemplate?._id)}
-                initialStep={entityTemplateWizardDialogState.entityTemplate?.category._id ? 1 : 0}
                 searchEntityTemplatesQueryKey={searchEntityTemplatesQueryKey}
             />
             <AreYouSureDialog

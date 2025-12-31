@@ -6,8 +6,9 @@ import { debounce } from 'lodash';
 import React, { SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import { DndProvider, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { useQueryClient } from 'react-query';
 import { v4 as uuid } from 'uuid';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { AreYouSureDialog } from '../../../dialogs/AreYouSureDialog';
 import { PropertiesTypes } from '../AddFields';
 import { CommonFormInputProperties, FieldProperty, GroupProperty, PropertyItem } from '../commonInterfaces';
@@ -80,6 +81,10 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
     onDeleteSure,
     remove,
     userPropertiesInTemplate,
+    isAccountTemplate = false,
+    hasAccountBalanceField,
+    isAlreadyWalletTemplate,
+    setIsTransferTemplate,
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
     // copy of values of formik in order to show changes on inputs fast (formik rerenders are slow)
     // using ordered item ref because update functions (push/remove/...) are not updated for the field cards on
@@ -93,7 +98,9 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
     const orderedItemsRef = useRef(orderedItems);
     orderedItemsRef.current = orderedItems;
 
-    // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
+    const queryClient = useQueryClient();
+    const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates') || new Map();
+
     useEffect(() => {
         setFieldValue(propertiesType, orderedItems);
     }, []);
@@ -104,6 +111,28 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         orderedItemsRef.current = values[propertiesType];
     }, [values[propertiesType]]);
 
+    useEffect(() => {
+        if (!orderedItems?.length || !templates?.size) return;
+        const templateHasAccountBalance = (template: IMongoEntityTemplatePopulated) =>
+            Object.values(template?.properties?.properties ?? {}).some((property) => property.accountBalance);
+
+        const hasRelatedAccountBalance = (relatedId?: string) => {
+            if (!relatedId) return false;
+            const relatedTemplate = templates.get(relatedId);
+            return relatedTemplate ? templateHasAccountBalance(relatedTemplate) : false;
+        };
+        setIsTransferTemplate?.(
+            orderedItems.some((property) => {
+                if (property.type === 'field' && property.data?.relationshipReference)
+                    return hasRelatedAccountBalance(property.data.relationshipReference.relatedTemplateId);
+                if (property.type === 'group')
+                    return property.fields.some((field) => hasRelatedAccountBalance(field.relationshipReference?.relatedTemplateId));
+                return false;
+            }),
+        );
+    }, [orderedItems, templates, setIsTransferTemplate]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const updateFormikDebounced = useCallback(
         debounce(() => {
             setFieldValue(propertiesType, [...orderedItemsRef.current], true);
@@ -419,6 +448,8 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
             userPropertiesInTemplate,
             onDuplicateKartoffelField,
             propertiesType,
+            hasAccountBalanceField,
+            isAlreadyWalletTemplate,
             values,
         };
     };
@@ -578,6 +609,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                                                 initialValue={initialValues?.[propertiesType]?.find(
                                                     (property) => property.type === 'group' && property.id === item.id,
                                                 )}
+                                                isAccountTemplate={isAccountTemplate}
                                             />
                                         ) : (
                                             <Field
@@ -592,6 +624,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                                                 uniqueConstraints={uniqueConstraints}
                                                 setUniqueConstraints={setUniqueConstraints}
                                                 moveGroup={moveGroup}
+                                                isAccountTemplate={isAccountTemplate}
                                                 values={values}
                                             />
                                         )}
@@ -602,6 +635,11 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                                 <Attachment key={data.id} field={data} index={index} buildProps={{ ...buildProps(data, index) }} onDrop={moveField} />
                             );
                         })}
+                        <div>
+                            {errors?.[propertiesType] === i18next.t('validation.accountBalanceField') && (
+                                <div style={{ color: '#d32f2f' }}>{i18next.t('validation.accountBalanceField')}</div>
+                            )}
+                        </div>
                     </Grid>
                 </div>
                 <Grid>

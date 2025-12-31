@@ -65,6 +65,7 @@ export interface IEntitySingleProperty {
     hideFromDetailsPage?: boolean;
     filters?: any;
     defaultValue?: any;
+    accountBalance?: boolean;
 }
 export interface IProperties {
     type: 'object';
@@ -79,6 +80,13 @@ interface IFieldsGroup {
     displayName: string;
     fields: string[];
 }
+interface IWalletTransfer {
+    from: string;
+    to: string;
+    description: string;
+    amount: string;
+}
+
 export interface IEntityTemplate {
     name: string;
     displayName: string;
@@ -94,6 +102,7 @@ export interface IEntityTemplate {
     documentTemplatesIds?: string[];
     mapSearchProperties?: string[];
     fieldGroups?: IFieldsGroup[];
+    walletTransfer?: IWalletTransfer;
 }
 
 export interface IMongoEntityTemplate extends IEntityTemplate {

@@ -299,6 +299,7 @@ class EntityManager extends DefaultManagerNeo4j {
         properties: IEntity['properties'],
         entityTemplate: IMongoEntityTemplate,
         userId?: string,
+        newDestinationWallet?: IEntity,
         duplicatedFromId?: string,
     ) {
         const fixedProperties = JSON.parse(JSON.stringify(properties));
@@ -313,7 +314,18 @@ class EntityManager extends DefaultManagerNeo4j {
                         const { fixedField, relatedEntity } = await this.fixRelationshipReferenceField(relatedEntityId, transaction);
 
                         fixedProperties[name] = fixedField;
-                        relatedEntitiesByIds[relatedEntityId] = relatedEntity;
+
+                        if (entityTemplate.walletTransfer && name === entityTemplate.walletTransfer.to && newDestinationWallet) {
+                            const { properties, templateId } = newDestinationWallet;
+                            const { updatedAt, createdAt, disabled, _id } = properties;
+
+                            fixedProperties[name] = { ...fixedProperties[name], updatedAt, createdAt, disabled, _id };
+                            relatedEntitiesByIds[properties._id] = {
+                                ...relatedEntity,
+                                properties: { ...relatedEntity.properties, ...properties },
+                                templateId,
+                            };
+                        } else relatedEntitiesByIds[relatedEntityId] = relatedEntity;
                     }
                 }
             }),
@@ -703,6 +715,68 @@ class EntityManager extends DefaultManagerNeo4j {
             return action;
         });
 
+    private async createEntityPipelineInTransaction(
+        transaction: Transaction,
+        properties: IEntity['properties'],
+        template: IMongoEntityTemplate,
+        userId: string,
+        duplicatedFromId?: string,
+        childTemplate?: IChildTemplatePopulated,
+        newDestWallet?: IEntity,
+        ignoredRules: IBrokenRule[] = [],
+    ) {
+        const updatedProperties = properties;
+
+        if (template.actions && isBodyFunctionHasContent(template.actions, IEntityCrudAction.onCreateEntity)) {
+            const actions = await this.buildActionsArray(
+                IEntityCrudAction.onCreateEntity,
+                updatedProperties,
+                template,
+                userId,
+                newDestWallet,
+                duplicatedFromId,
+                childTemplate,
+            );
+
+            const bulkManager = new BulkActionManager(this.workspaceId);
+            const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
+            const createdEntity = await this.getEntityById(results.instances[0].properties._id);
+            const fixedActions = this.fixActions(actions, results.instances);
+            return { createdEntity, actions: fixedActions, emails: results.emails };
+        }
+
+        const { createdEntity, activityLogsToCreate } = await this.createEntityInTransaction(
+            transaction,
+            updatedProperties,
+            template,
+            userId,
+            newDestWallet,
+            duplicatedFromId,
+        );
+
+        const ruleFailures = await this.runRulesOnEntity(transaction, createdEntity);
+
+        const [indicatorRules, rulesToThrowError] = partition(ruleFailures, (r) => r.rule.actionOnFail === ActionOnFail.INDICATOR);
+
+        throwIfActionCausedRuleFailures(ignoredRules, [], rulesToThrowError, [{ createdEntityId: createdEntity.properties._id }], []);
+
+        const { updatedEntity } = await this.updateEntityByIdInnerTransaction(
+            createdEntity.properties._id,
+            createdEntity.properties,
+            template,
+            transaction,
+            userId,
+            indicatorRules,
+        );
+
+        return {
+            createdEntity: updatedEntity,
+            emails: indicatorRules.flatMap((r) => (r.rule.mail?.display ? r.rule.mail : [])),
+            fixedActions: [],
+            activityLogsToCreate,
+        };
+    }
+
     async createEntity(
         properties: IEntity['properties'],
         entityTemplate: IMongoEntityTemplate,
@@ -710,6 +784,7 @@ class EntityManager extends DefaultManagerNeo4j {
         userId: string,
         duplicatedFromId?: string,
         childTemplateId?: string,
+        newDestWalletData?: IEntity,
     ) {
         let template = entityTemplate;
         let childTemplate: IChildTemplatePopulated | undefined;
@@ -719,73 +794,54 @@ class EntityManager extends DefaultManagerNeo4j {
             template = { ...entityTemplate, actions: childTemplate.actions };
         }
 
-        if (template.actions && isBodyFunctionHasContent(template.actions, IEntityCrudAction.onCreateEntity)) {
-            const actions = await this.buildActionsArray(
-                IEntityCrudAction.onCreateEntity,
-                properties,
-                template,
-                userId,
-                undefined,
-                duplicatedFromId,
-                childTemplate,
-            );
-
-            const bulkManager = new BulkActionManager(this.workspaceId);
-
-            const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
-            const createdEntity = await this.getEntityById(results.instances[0].properties._id);
-            const fixedActions = this.fixActions(actions, results.instances);
-            return { createdEntity, actions: fixedActions, emails: results.emails };
-        }
-
         return this.neo4jClient
             .performComplexTransaction('writeTransaction', async (transaction) => {
-                const { createdEntity, activityLogsToCreate } = await this.createEntityInTransaction(
+                const allActivityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
+                let destWalletResult: any = null;
+                let newDestWallet: IEntity | undefined;
+
+                if (template.walletTransfer && newDestWalletData) {
+                    const destTemplate = await this.entityTemplateManagerService.getEntityTemplateById(newDestWalletData.templateId);
+
+                    destWalletResult = await this.createEntityPipelineInTransaction(
+                        transaction,
+                        newDestWalletData.properties,
+                        destTemplate,
+                        userId,
+                        undefined,
+                        undefined,
+                        undefined,
+                        ignoredRules,
+                    );
+
+                    newDestWallet = destWalletResult.createdEntity;
+                    if (destWalletResult.activityLogsToCreate) allActivityLogsToCreate.push(...destWalletResult.activityLogsToCreate);
+                    properties[template.walletTransfer.to] = newDestWallet?.properties._id;
+                }
+
+                const entityResult = await this.createEntityPipelineInTransaction(
                     transaction,
                     properties,
                     template,
                     userId,
                     duplicatedFromId,
-                );
-                const ruleFailuresAfterAction = await this.runRulesOnEntity(transaction, createdEntity);
-
-                const [indicatorRules, rulesToThrowError]: [IRuleFailure[], IRuleFailure[]] = partition(
-                    ruleFailuresAfterAction,
-                    (rule) => rule.rule.actionOnFail === ActionOnFail.INDICATOR,
-                );
-
-                const emails: IRuleMail[] = indicatorRules.flatMap((rule) => {
-                    if (!rule.rule.mail?.display) return [];
-
-                    return rule.rule.mail;
-                });
-
-                const { updatedEntity: entityWithUpdatedColors } = await this.updateEntityByIdInnerTransaction(
-                    createdEntity.properties._id,
-                    createdEntity.properties,
-                    template,
-                    transaction,
-                    userId,
-                    indicatorRules,
-                );
-
-                throwIfActionCausedRuleFailures(
+                    childTemplate,
+                    newDestWallet,
                     ignoredRules,
-                    [],
-                    rulesToThrowError,
-                    [{ createdEntityId: entityWithUpdatedColors.properties._id }],
-                    [{ actionType: ActionTypes.CreateEntity, actionMetadata: { templateId: entityTemplate._id, properties } }],
                 );
 
-                const activityLogsPromises = activityLogsToCreate.map((activityLogToCreate) =>
-                    this.activityLogProducer.createActivityLog(activityLogToCreate),
-                );
+                if (entityResult.activityLogsToCreate) {
+                    allActivityLogsToCreate.push(...entityResult.activityLogsToCreate);
+                }
 
-                await Promise.all(activityLogsPromises);
+                await Promise.all(allActivityLogsToCreate.map((l) => this.activityLogProducer.createActivityLog(l)));
 
-                return { createdEntity: entityWithUpdatedColors, emails };
+                return {
+                    createdEntity: entityResult.createdEntity,
+                    emails: [...(destWalletResult?.emails ?? []), ...entityResult.emails],
+                };
             })
-            .catch((err) => this.throwServiceErrorIfFailedConstraintsValidation(err)); // constraint validation is performed on end of transaction
+            .catch((err) => this.throwServiceErrorIfFailedConstraintsValidation(err));
     }
 
     async searchEntitiesOfTemplate(searchBody: ISearchEntitiesOfTemplateBody, entityTemplate: IMongoEntityTemplate) {

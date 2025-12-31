@@ -32,6 +32,7 @@ export interface FieldProps {
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
     setUniqueConstraints?: (uniqueConstraints: SetStateAction<IUniqueConstraintOfTemplate[]>) => void;
     moveGroup?: (group: GroupProperty, toIndex: number, toGroupId?: string | null) => void;
+    isAccountTemplate?: boolean;
 }
 
 export interface GroupProps<PropertiesType extends string, Values extends Record<PropertiesType, PropertyItem[]>> {
@@ -55,6 +56,7 @@ export interface GroupProps<PropertiesType extends string, Values extends Record
     areThereAnyInstances: boolean;
     isEditMode: boolean;
     initialValue?: PropertyItem;
+    isAccountTemplate?: boolean;
 }
 
 export interface AttachmentsProps {
@@ -109,4 +111,8 @@ export interface FieldBlockProps<PropertiesType extends string, Values extends R
         groupIndex?: number,
     ) => void;
     onDeleteSure?: (setShowAreUSureDialogForRemoveProperty: (v: boolean) => void) => void;
+    isAccountTemplate?: boolean;
+    hasAccountBalanceField?: boolean;
+    isAlreadyWalletTemplate?: boolean;
+    setIsTransferTemplate?: (val: boolean) => void;
 }

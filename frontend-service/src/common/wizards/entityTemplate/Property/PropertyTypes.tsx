@@ -297,12 +297,7 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
     };
 
     const handleUpdateEnumField = (id: string, tagIndex: number, option: string, fieldValue: CommonFormInputProperties) =>
-        updateEnumField({
-            id,
-            tagIndex,
-            option,
-            fieldValue,
-        });
+        updateEnumField({ id, tagIndex, option, fieldValue });
 
     const handleDeleteEnumField = (id: string, tagIndex: number, fieldValue: CommonFormInputProperties) => {
         if (fieldValue.options.length || initialOptionArray.length) {

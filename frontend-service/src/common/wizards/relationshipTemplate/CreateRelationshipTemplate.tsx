@@ -1,4 +1,4 @@
-import { Autocomplete, Box, TextField } from '@mui/material';
+import { Autocomplete, Grid, TextField } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useQuery, useQueryClient } from 'react-query';
@@ -49,10 +49,11 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
     );
 
     return (
-        <>
-            <Box margin={1}>
+        <Grid container spacing={3} marginBottom={5}>
+            <Grid container direction="row" spacing={2} width="100%" wrap="nowrap">
                 <TextField
                     name="name"
+                    fullWidth
                     label={i18next.t('wizard.name')}
                     value={values.name}
                     onChange={handleChange}
@@ -60,9 +61,9 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
                     helperText={touched.name && errors.name}
                     disabled={areThereRelationshipInstancesByTemplateId! > 0}
                 />
-            </Box>
-            <Box margin={1}>
+
                 <TextField
+                    fullWidth
                     name="displayName"
                     label={i18next.t('wizard.displayName')}
                     value={values.displayName}
@@ -70,9 +71,10 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
                     error={touched.displayName && Boolean(errors.displayName)}
                     helperText={touched.displayName && errors.displayName}
                 />
-            </Box>
-            <Box margin={1}>
+            </Grid>
+            <Grid container direction="row" spacing={2} width="100%" wrap="nowrap">
                 <Autocomplete
+                    fullWidth
                     id="sourceEntity"
                     options={allowedEntityTemplates}
                     onChange={(_e, value) => setFieldValue('sourceEntity', value || '')}
@@ -81,10 +83,8 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
                     disabled={areThereRelationshipInstancesByTemplateId! > 0}
                     renderInput={(params) => (
                         <TextField
-                            style={{ width: '220px' }}
                             {...params}
                             error={Boolean(touched.sourceEntity && errors.sourceEntity)}
-                            fullWidth
                             helperText={touched.sourceEntity && errors.sourceEntity?._id}
                             name="sourceEntity"
                             variant="outlined"
@@ -92,10 +92,10 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
                         />
                     )}
                 />
-            </Box>
-            <Box margin={1}>
+
                 <Autocomplete
                     id="destinationEntity"
+                    fullWidth
                     options={allowedEntityTemplates}
                     onChange={(_e, value) => setFieldValue('destinationEntity', value || '')}
                     value={values.destinationEntity._id ? values.destinationEntity : null}
@@ -103,10 +103,8 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
                     getOptionLabel={(option) => option.displayName}
                     renderInput={(params) => (
                         <TextField
-                            style={{ width: '220px' }}
                             {...params}
                             error={Boolean(touched.destinationEntity && errors.destinationEntity)}
-                            fullWidth
                             helperText={touched.sourceEntity && errors.destinationEntity?._id}
                             name="destinationEntity"
                             variant="outlined"
@@ -114,8 +112,8 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
                         />
                     )}
                 />
-            </Box>
-        </>
+            </Grid>
+        </Grid>
     );
 };
 
