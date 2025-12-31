@@ -79,7 +79,6 @@ export const initPassport = () => {
     // which causes the browser to open login dialog with username & password.
     // see their original function here: https://github.com/jaredhanson/passport-http/blob/v0.3.0/lib/passport-http/strategies/basic.js#L106
     // override to simple 401 without the header
-    // eslint-disable-next-line no-underscore-dangle
     (BasicStrategy.prototype as any)._challenge = () => 401;
     passport.use('basic', new BasicStrategy({ passReqToCallback: true }, verifyAllowedUserBasicStrategy));
 };
@@ -87,9 +86,7 @@ export const initPassport = () => {
 declare global {
     // These declaration are merged into express's Request type
     // this extends @types/passport which extends @types/express
-    // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace Express {
-        // eslint-disable-next-line @typescript-eslint/no-empty-object-type
         export interface User extends IConnectedUser {}
     }
 }

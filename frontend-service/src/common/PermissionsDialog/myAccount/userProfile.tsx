@@ -1,6 +1,7 @@
 import { Grid, IconButton } from '@mui/material';
 import i18next from 'i18next';
 import React, { useState } from 'react';
+import fileDetails from '../../../interfaces/fileDetails';
 import { IUser } from '../../../interfaces/users';
 import { defaultInputType, isProfileFile } from '../../../utils/userProfile';
 import { UserProfilePicker } from '../../inputs/userProfilePicker';
@@ -11,8 +12,8 @@ const UserProfile: React.FC<{
     darkMode: boolean;
     editProfile: boolean;
     setEditProfile: (editProfile: boolean) => void;
-    profilePreference: { profilePath?: string; icon?: any };
-    setProfilePreference: (profilePreference: { profilePath?: string; icon?: any }) => void;
+    profilePreference: { profilePath?: string; icon?: fileDetails | string };
+    setProfilePreference: (profilePreference: { profilePath?: string; icon?: fileDetails | string }) => void;
 }> = ({ existingUser, editProfile, setProfilePreference, setEditProfile }) => {
     const [userProfileImage, setUserProfileImage] = useState<string>();
     const [isDefaultProfile, setIsDefaultProfile] = useState<boolean>(!existingUser.preferences.profilePath);
@@ -42,9 +43,7 @@ const UserProfile: React.FC<{
                 <Grid marginTop={2}>
                     <UserProfilePicker
                         user={existingUser}
-                        onPick={(value?: any) => {
-                            setProfilePreference(value?.file ? { icon: value } : { profilePath: value });
-                        }}
+                        onPick={(value?: any) => setProfilePreference(value?.file ? { icon: value } : { profilePath: value })}
                         onDelete={() => setProfilePreference({})}
                         imageName={isProfileFile(existingUser.preferences.profilePath) ? existingUser.preferences.profilePath : undefined}
                         defaultInputType={defaultInputType(existingUser.preferences.profilePath)}

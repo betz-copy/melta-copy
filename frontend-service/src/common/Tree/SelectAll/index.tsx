@@ -19,11 +19,9 @@ export const SelectAll = ({
             onClick={() => {
                 const prevChecked = allOptionIds.length === selectedOptionIds.length;
 
-                if (prevChecked) {
-                    setSelectedOptionIds([]);
-                } else {
-                    setSelectedOptionIds(allOptionIds);
-                }
+                if (prevChecked) setSelectedOptionIds([]);
+                else setSelectedOptionIds(allOptionIds);
+
                 onClick?.();
             }}
         >

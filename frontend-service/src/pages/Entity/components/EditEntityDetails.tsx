@@ -4,7 +4,7 @@ import { AxiosError } from 'axios';
 import { Form, Formik } from 'formik';
 import { StatusCodes } from 'http-status-codes';
 import i18next from 'i18next';
-import pickBy from 'lodash.pickby';
+import { pickBy } from 'lodash';
 import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
@@ -184,42 +184,38 @@ const EditEntityDetails: React.FC<{
                                                                 }}
                                                             />
                                                             {externalErrors.files && (
-                                                                <p
-                                                                    id="error"
-                                                                    style={{ color: '#d32f2f', margin: 0, padding: 0, marginBottom: '12px' }}
-                                                                >
+                                                                <p id="error" style={{ color: 'error', margin: 0, padding: 0, marginBottom: '12px' }}>
                                                                     {i18next.t('errorCodes.FILES_TOO_BIG')}
                                                                 </p>
                                                             )}
-                                                            <>
-                                                                {Object.entries(templateFilesProperties).map(([key, value], index) => (
-                                                                    <Grid key={key} marginTop={index > 0 ? 5 : 0}>
-                                                                        {value.items === undefined ? (
-                                                                            <InstanceSingleFileInput
-                                                                                fileFieldName={`attachmentsProperties.${key}`}
-                                                                                fieldTemplateTitle={value.title}
-                                                                                setFieldValue={setFieldValue}
-                                                                                required={requiredFilesNames.includes(key)}
-                                                                                value={values.attachmentsProperties[key] as File | undefined}
-                                                                                error={errors.attachmentsProperties?.[key] as string}
-                                                                                setFieldTouched={setFieldTouched}
-                                                                                setExternalErrors={setExternalErrors}
-                                                                            />
-                                                                        ) : (
-                                                                            <InstanceFileInput
-                                                                                fileFieldName={`attachmentsProperties.${key}`}
-                                                                                fieldTemplateTitle={value.title}
-                                                                                setFieldValue={setFieldValue}
-                                                                                required={requiredFilesNames.includes(key)}
-                                                                                value={values.attachmentsProperties[key] as File[] | undefined}
-                                                                                error={errors.attachmentsProperties?.[key] as string}
-                                                                                setFieldTouched={setFieldTouched}
-                                                                                setExternalErrors={setExternalErrors}
-                                                                            />
-                                                                        )}
-                                                                    </Grid>
-                                                                ))}
-                                                            </>
+
+                                                            {Object.entries(templateFilesProperties).map(([key, value], index) => (
+                                                                <Grid key={key} marginTop={index > 0 ? 5 : 0}>
+                                                                    {value.items === undefined ? (
+                                                                        <InstanceSingleFileInput
+                                                                            fileFieldName={`attachmentsProperties.${key}`}
+                                                                            fieldTemplateTitle={value.title}
+                                                                            setFieldValue={setFieldValue}
+                                                                            required={requiredFilesNames.includes(key)}
+                                                                            value={values.attachmentsProperties[key] as File | undefined}
+                                                                            error={errors.attachmentsProperties?.[key] as string}
+                                                                            setFieldTouched={setFieldTouched}
+                                                                            setExternalErrors={setExternalErrors}
+                                                                        />
+                                                                    ) : (
+                                                                        <InstanceFileInput
+                                                                            fileFieldName={`attachmentsProperties.${key}`}
+                                                                            fieldTemplateTitle={value.title}
+                                                                            setFieldValue={setFieldValue}
+                                                                            required={requiredFilesNames.includes(key)}
+                                                                            value={values.attachmentsProperties[key] as File[] | undefined}
+                                                                            error={errors.attachmentsProperties?.[key] as string}
+                                                                            setFieldTouched={setFieldTouched}
+                                                                            setExternalErrors={setExternalErrors}
+                                                                        />
+                                                                    )}
+                                                                </Grid>
+                                                            ))}
                                                         </Grid>
                                                     </Grid>
                                                 </Grid>

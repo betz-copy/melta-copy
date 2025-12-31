@@ -25,8 +25,8 @@ const EditProps: React.FC<{
     errors: FormikState<EntityWizardValues>['errors'];
     touched: FormikState<EntityWizardValues>['touched'];
     setFieldTouched: FormikHelpers<EntityWizardValues>['setFieldTouched'];
-    setInitialValuePropsToFilter: Dispatch<SetStateAction<Record<string, any>>>;
     initialValuePropsToFilter: Record<string, any>;
+    setInitialValuePropsToFilter: Dispatch<SetStateAction<Record<string, any>>>;
     isMultipleSelection: boolean;
     entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
     wasDirty: boolean;
@@ -83,10 +83,12 @@ const EditProps: React.FC<{
     const isPropertiesFirst = (values.template?.propertiesTypeOrder ?? [])[0] === 'properties';
     const schema = filterFieldsFromPropertiesSchema(values.template?.properties, multipleSelectionProps?.selectedFields);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         setInitialValuePropsToFilter({ ...initialValues.properties });
     }, []);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         schema.required.forEach((field) => {
             const fieldPropertiesEnum = schema.properties[field]?.enum;
@@ -115,20 +117,20 @@ const EditProps: React.FC<{
         );
 
         return !isEqual(valuePropsToFilter, initialValuePropsToFilter);
-    }, [initialValues, values]);
+    }, [values.properties, initialValuePropsToFilter, values.template]);
 
     useEffect(() => {
         if (!absoluteDirty || !draftId || !createOrUpdateDraftDebounced) return;
         createOrUpdateDraftDebounced(values, draftId);
-    }, [absoluteDirty, values, draftId]);
+    }, [absoluteDirty, values, draftId, createOrUpdateDraftDebounced]);
 
     useEffect(() => {
         setWasDirty(absoluteDirty);
-    }, [absoluteDirty]);
+    }, [absoluteDirty, setWasDirty]);
 
     useEffect(() => {
         if (multipleSelectionProps) setWasDirty(!!Object.keys(values.attachmentsProperties).length);
-    }, [values.attachmentsProperties]);
+    }, [values.attachmentsProperties, multipleSelectionProps, setWasDirty]);
 
     if (isMultipleSelection) {
         const uniqueFields: string[] = [];

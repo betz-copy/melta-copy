@@ -48,7 +48,7 @@ const Value: React.FC<{
     else if (isNumberField && value) innerContent = getFixedNumber(Number(value));
     else innerContent = value;
 
-    let popoverText;
+    let popoverText: string | React.JSX.Element;
 
     if (containsHtmlTags) popoverText = renderHTML(value);
     else if (calculateTime) popoverText = <CalculateDateDifference date={value} />;

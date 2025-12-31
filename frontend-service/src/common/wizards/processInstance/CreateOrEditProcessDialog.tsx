@@ -24,7 +24,7 @@ interface ISimpleDialogProps {
     processInstance?: IMongoProcessInstancePopulated;
     viewMode?: boolean;
     isEditMode?: boolean;
-    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
+    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError<unknown, any>, ProcessDetailsValues, unknown>;
 }
 
 const steps = [
@@ -111,6 +111,7 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
         previousTemplate.current = values.template;
     }, [values.template]);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
     useEffect(() => {
         if (values.template && !isEditMode) {
             if (values.template.name !== previousTemplate?.current?.name) {
@@ -129,7 +130,6 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
             }
             setFieldValue('steps', setInitialStepsObject(values.template.steps));
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [values.template?._id]);
 
     return (

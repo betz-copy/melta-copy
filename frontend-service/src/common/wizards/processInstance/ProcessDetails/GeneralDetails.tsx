@@ -2,7 +2,7 @@ import { Groups2 } from '@mui/icons-material';
 import { Button, Card, CardContent, Divider, Grid, Typography } from '@mui/material';
 import { FormikProvider } from 'formik';
 import i18next from 'i18next';
-import pickBy from 'lodash.pickby';
+import { pickBy } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { environment } from '../../../../globals';
@@ -37,6 +37,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({
         ? pickBy(values.template.details.properties.properties, (value) => value.format === 'entityReference')
         : undefined;
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: render
     useEffect(() => {
         if (values.template) {
             setPreviousTemplate(values.template);
@@ -58,7 +59,6 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({
                 setFieldValue('steps', setInitialStepsObject(values.template.steps));
             }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [values.template?._id]);
 
     return (

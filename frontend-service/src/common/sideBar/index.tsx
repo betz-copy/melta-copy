@@ -41,7 +41,7 @@ import { Drawer, DrawerDivider } from './SideBar.styled';
 import { CloseDrawerButton, OpenDrawerButton } from './ToggleDrawerButtons';
 
 interface SideBarProps {
-    toggleDrawer: () => any;
+    toggleDrawer: () => void;
     isDrawerOpen: boolean;
 }
 
@@ -241,7 +241,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                     placement="left"
                                     style={{ ...iconSize }}
                                 >
-                                    <img src="/icons/search-icon.svg" style={{ alignSelf: 'center', height: '25px' }} />
+                                    <img src="/icons/search-icon.svg" alt="search-icon" style={{ alignSelf: 'center', height: '25px' }} />
                                 </IconButtonWithPopover>
                             </Grid>
                         )}
@@ -546,8 +546,8 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     </>
                 )}
                 <Grid container direction="row" justifyContent="center" gap={isDrawerOpen ? 3 : 1} mb={1}>
-                    <img src="/icons/sapir.svg" style={{ width: isDrawerOpen ? 40 : 30, height: isDrawerOpen ? 40 : 30 }} />
-                    <img src="/icons/yesodot.svg" style={{ width: isDrawerOpen ? 40 : 30, height: isDrawerOpen ? 40 : 30 }} />
+                    <img src="/icons/sapir.svg" alt="sapir" style={{ width: isDrawerOpen ? 40 : 30, height: isDrawerOpen ? 40 : 30 }} />
+                    <img src="/icons/yesodot.svg" alt="yesodot" style={{ width: isDrawerOpen ? 40 : 30, height: isDrawerOpen ? 40 : 30 }} />
                 </Grid>
                 <Grid>
                     <IconButton

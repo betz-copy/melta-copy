@@ -66,7 +66,7 @@ const OverflowWrapper = <T,>({
         }
 
         return () => {};
-    }, [items, containerRef]);
+    }, [items]);
 
     let overflowItems = items.length > visibleItems.length ? items.slice(visibleItems.length) : [];
     if (files && files.length > 0) {
@@ -81,7 +81,6 @@ const OverflowWrapper = <T,>({
     return (
         <Grid ref={containerRef} container wrap="wrap" alignItems="center" justifyItems="center" gap={`${itemsGap}px`} style={containerStyle}>
             {visibleItems.map((item, index) => (
-                // eslint-disable-next-line react/no-array-index-key
                 <Grid ref={itemRefs.current[index]} key={`${getItemKey(item)}/${index}`}>
                     {renderItem(item, index)}
                 </Grid>
@@ -90,11 +89,7 @@ const OverflowWrapper = <T,>({
                 <Grid style={{ cursor: 'pointer' }}>
                     <MeltaTooltip
                         title={overflowItems.map((item, index) => (
-                            <Typography
-                                // eslint-disable-next-line react/no-array-index-key
-                                key={`${getItemKey(item)}/${index}`}
-                                style={{ margin: '5px' }}
-                            >
+                            <Typography key={`${getItemKey(item)}/${index}`} style={{ margin: '5px' }}>
                                 <HighlightText
                                     text={propertyToDisplayInTooltip ? item[propertyToDisplayInTooltip] : (item as string)}
                                     searchedText={searchValue}

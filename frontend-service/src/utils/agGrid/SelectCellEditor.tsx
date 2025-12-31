@@ -21,7 +21,6 @@ const SelectCellEditor: React.FC<SelectCellEditorProps> = ({ options, value, onV
     }, [value, multiple]);
 
     const handleAutocompleteChange = (newValue: string | string[] | null) => {
-        // eslint-disable-next-line no-nested-ternary
         const updatedValue = newValue === null ? (multiple ? [] : '') : newValue;
         setSelectedValues(updatedValue);
         onValueChange(updatedValue);

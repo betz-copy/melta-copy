@@ -97,7 +97,7 @@ const errorResponseBuilder = (error: ServiceError) => {
 
 export const errorMiddleware = (error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
     let statusCode: number;
-    let errorResponse: any;
+    let errorResponse: { metadata: object; type: string; message: string; StatusCodes: number };
 
     switch (error.constructor) {
         case BadRequestError:

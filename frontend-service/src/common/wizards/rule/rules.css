@@ -1,13 +1,11 @@
 .group {
     background: rgb(33, 88, 166, 0.7);
-    font-family: OpenSans;
 }
 .group--actions button {
     border-radius: 10%;
     border: 1px solid gray;
     margin-right: 5px;
     height: 25px;
-    font-family: "Rubik";
     color: gray;
     font-weight: 450;
     background-color: white;
@@ -22,7 +20,6 @@
 .query-builder *::before,
 .query-builder *::after {
     box-sizing: border-box;
-    font-family: "Rubik";
     font-size: 15px;
 }
 .rule--operator,
@@ -48,7 +45,6 @@
 .toggle-buttons {
     background-color: white;
     height: 25px;
-    font-family: "Rubik";
     color: gray;
     font-weight: 450;
     border-radius: 10%;

@@ -19,8 +19,13 @@ const DateFilterComponent: React.FC<{
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return (
-        // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
-        <div onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
+        <button
+            type="button"
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+            style={{ all: 'unset', display: 'block' }}
+        >
             <LocalizationProvider
                 dateAdapter={AdapterDateFns}
                 adapterLocale={he}
@@ -53,7 +58,7 @@ const DateFilterComponent: React.FC<{
                     }}
                 />
             </LocalizationProvider>
-        </div>
+        </button>
     );
 };
 

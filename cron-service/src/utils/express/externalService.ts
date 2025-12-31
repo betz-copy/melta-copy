@@ -5,10 +5,10 @@ const {
     service: { workspaceIdHeaderName },
 } = config;
 
-export default abstract class DefaultExternalServiceApi {
+export default abstract class DefaultExternalServiceApi<T = unknown> {
     public api: AxiosInstance;
 
-    constructor(workspaceId: string, axiosConfig?: AxiosRequestConfig<any> | undefined) {
+    constructor(workspaceId: string, axiosConfig?: AxiosRequestConfig<T>) {
         this.api = axios.create(axiosConfig);
         // Add the workspace id header to axios requests
         this.api.defaults.headers[workspaceIdHeaderName] = workspaceId;

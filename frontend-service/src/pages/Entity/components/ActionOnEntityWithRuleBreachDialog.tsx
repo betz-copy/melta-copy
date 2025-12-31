@@ -1,7 +1,6 @@
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
-import mapValues from 'lodash.mapvalues';
-import pickBy from 'lodash.pickby';
+import { mapValues, pickBy } from 'lodash';
 import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';

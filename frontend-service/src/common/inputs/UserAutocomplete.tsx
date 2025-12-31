@@ -1,7 +1,7 @@
 import { ExpandMore } from '@mui/icons-material';
 import { Autocomplete, AutocompleteProps, TextField } from '@mui/material';
 import i18next from 'i18next';
-import _debounce from 'lodash.debounce';
+import { debounce } from 'lodash';
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
@@ -81,8 +81,8 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
         },
     );
 
-    const searchUsersOptionsDebounced = _debounce(searchUsersOptions, 1000);
-    const isValueExist = value && value.fullName != '';
+    const searchUsersOptionsDebounced = debounce(searchUsersOptions, 1000);
+    const isValueExist = value && value.fullName !== '';
 
     return (
         <MeltaTooltip title={value?.displayName ? '' : (value?.fullName ?? '')} sx={{ maxWidth: 'none' }}>

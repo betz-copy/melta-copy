@@ -36,7 +36,7 @@ const DashboardItemCard: React.FC<DashboardItemCardProps> = ({ onClick, title, i
 
             <Divider />
 
-            <img src={imgSrc} />
+            <img src={imgSrc} alt="imgSrc" />
         </Card>
     );
 };

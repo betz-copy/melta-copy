@@ -83,9 +83,7 @@ const childTemplatePropertySchema = (propKey: string, fieldName: string) =>
 
             const { defaultValue, filters } = value;
 
-            return filters && filters.length && defaultValue
-                ? filters.some((filterField) => checkMatchValidation(filterField, propKey, defaultValue))
-                : true;
+            return filters?.length && defaultValue ? filters.some((filterField) => checkMatchValidation(filterField, propKey, defaultValue)) : true;
         });
 
 export const childTemplateSchema = (existingNames: string[], existingDisplayNames: string[], parentTemplate: IMongoEntityTemplatePopulated) =>

@@ -9,7 +9,6 @@ export const pickSetIf = <T>(chance: Chance.Chance, array: T[], count: number, c
 
     while (set.length < count && arrayCopy.length) {
         const currItem = popRandom(chance, arrayCopy);
-        // eslint-disable-next-line no-continue
         if (!currItem || !condition(currItem)) continue;
 
         set.push(currItem);

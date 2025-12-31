@@ -115,12 +115,13 @@ const Entity: React.FC = () => {
 
     const [selectedTabId, setSelectedTabId] = useState<string | null>(null);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         if (!expandedEntity) return;
 
         setCurrentStep((currStep) => currStep + 1);
         setDisabledActions(false);
-    }, [expandedEntity]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [expandedEntity]);
 
     const isEntityDisabled = !!expandedEntity?.entity.properties.disabled;
     const currentEntityTemplate = childTemplateId
@@ -152,7 +153,7 @@ const Entity: React.FC = () => {
             expandedEntity,
             groupChildTemplate,
         );
-    }, [currentEntityTemplate, expandedEntity]);
+    }, [currentEntityTemplate, expandedEntity, childTemplateId, groupChildTemplate, entityTemplates, relationshipTemplates]);
 
     const categoriesWithConnectionsTemplates = useMemo(() => {
         if (!connectionsTemplates) return;
@@ -192,7 +193,7 @@ const Entity: React.FC = () => {
         })
             .filter((currCategory) => currCategory.connectionsTemplates?.length > 0)
             .sort((a, b) => (b?.relationshipCount ?? 0) - (a?.relationshipCount ?? 0));
-    }, [connectionsTemplates, expandedEntity]);
+    }, [connectionsTemplates, expandedEntity, categories, entityTemplates, relationshipTemplates, groupChildTemplate, currentEntityTemplate]);
 
     useEffect(() => {
         if (categoriesWithConnectionsTemplates?.length && selectedTabId === null) {
@@ -286,7 +287,7 @@ const Entity: React.FC = () => {
 
                                         return (
                                             <TabPanel key={_id} value={_id}>
-                                                {connectionsTemplatesOfCategory.map((connectionTemplate, connectedRelationshipTemplateIndex) => {
+                                                {connectionsTemplatesOfCategory.map((connectionTemplate) => {
                                                     const relationship = connectionTemplate.relationshipTemplate;
 
                                                     const relatedTemplate =
@@ -304,8 +305,7 @@ const Entity: React.FC = () => {
 
                                                     return (
                                                         <ConnectionsTable
-                                                            // eslint-disable-next-line react/no-array-index-key
-                                                            key={connectedRelationshipTemplateIndex}
+                                                            key={connectionTemplate.relationshipTemplate._id}
                                                             expandedEntity={expandedEntity}
                                                             templateIds={templateIds}
                                                             connectionTemplate={connectionTemplate}

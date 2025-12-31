@@ -29,7 +29,7 @@ const parseDefaultDate = (val: any) => {
     if (!val) return null;
 
     const date = new Date(val);
-    if (isNaN(date.getTime())) return null;
+    if (Number.isNaN(date.getTime())) return null;
     return date;
 };
 

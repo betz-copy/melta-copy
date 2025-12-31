@@ -92,7 +92,7 @@ export const UploadExcel: React.FC<{
                 />
             </Grid>
             <Grid marginTop="15px">
-                <Typography color={theme.palette.mode === 'dark' ? '#FFFFFF' : '#1E2775'} fontSize="14px" fontWeight={400}>
+                <Typography color={theme.palette.mode === 'dark' ? '#FFFFFF' : theme.palette.primary.main} fontSize="14px" fontWeight={400}>
                     {i18next.t('wizard.entity.loadEntities.preview')}
                 </Typography>
             </Grid>

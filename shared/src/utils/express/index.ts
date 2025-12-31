@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import { NextFunction, Request, Response } from 'express';
 import config from '../../config';
 import { FunctionKey } from '../../types';
@@ -16,14 +15,6 @@ export const wrapMiddleware = (func: (req: Request, res?: Response) => Promise<v
 };
 
 export const wrapValidator = wrapMiddleware;
-
-export const extendedWrapController = <ExtendedRequest extends Request<any, any, any, any> = Request, ExtendedResponse extends Response = Response>(
-    func: (req: ExtendedRequest, res: ExtendedResponse, next?: NextFunction) => Promise<void>,
-) => {
-    return (req: ExtendedRequest, res: ExtendedResponse, next: NextFunction) => {
-        func(req, res, next).catch(next);
-    };
-};
 
 export const wrapController = (func: (req: Request, res: Response, next?: NextFunction) => Promise<void>) => {
     return (req: Request, res: Response, next: NextFunction) => {

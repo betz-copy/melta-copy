@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import { ActionTypes, IAction } from '@microservices/shared';
 import * as joi from 'joi';
 import {

@@ -69,7 +69,6 @@ const GanttItem = new mongoose.Schema(
     { _id: false },
 );
 
-// eslint-disable-next-line import/prefer-default-export
 export const GanttSchema = new mongoose.Schema(
     {
         name: {

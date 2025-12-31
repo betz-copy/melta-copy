@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unstable-nested-components */
 import { Grid } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';

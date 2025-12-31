@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import { IGantt, IGanttItem, IMongoEntityTemplateWithConstraintsPopulated, IMongoRelationshipTemplate } from '@microservices/shared';
 import { pickOneIf, pickRandomSet, pickSetIf, popRandom } from '../../utils/mock';
 
@@ -15,7 +14,6 @@ const generateGanttItemEntityTemplate = (
             2,
             ([_, value]) => value.format === 'date' || value.format === 'date-time',
         );
-        // eslint-disable-next-line no-continue
         if (!startAndEndDateFields) continue;
 
         const [[startDateField], [endDateField]] = startAndEndDateFields;

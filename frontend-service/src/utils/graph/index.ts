@@ -1,7 +1,5 @@
-/* eslint-disable no-param-reassign */
-import uniqBy from 'lodash.uniqby';
+import { uniqBy } from 'lodash';
 import { GraphData, LinkObject, NodeObject } from 'react-force-graph-2d';
-
 import { environment } from '../../globals';
 import { IChildTemplateMap } from '../../interfaces/childTemplates';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';

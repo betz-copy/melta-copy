@@ -30,7 +30,7 @@ import EntityTemplateManagerService from '../../externalServices/templates/entit
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import addDefaultFieldsToTemplate from '../../utils/addDefaultsFieldsToEntityTemplate';
 import DefaultController from '../../utils/express/controller';
-import { trycatch } from '../../utils/lib';
+import { tryCatch } from '../../utils/lib';
 import { getNeo4jDate, getNeo4jDateTime, getNeo4jLocation } from '../../utils/neo4j/lib';
 import { IGetExpandedEntityBody } from './interface';
 
@@ -108,7 +108,7 @@ export class EntityValidator extends DefaultController {
     }
 
     private async getEntityTemplateByIdOrThrowValidationError(templateId: string) {
-        const { result: entityTemplate, err: getEntityTemplateByIdErr } = await trycatch(() =>
+        const { result: entityTemplate, err: getEntityTemplateByIdErr } = await tryCatch(() =>
             this.entityTemplateManagerService.getEntityTemplateById(templateId),
         );
         if (getEntityTemplateByIdErr || !entityTemplate) {
@@ -481,6 +481,26 @@ export class EntityValidator extends DefaultController {
             }
         });
         addPropertyToRequest(req, 'entityTemplatesMap', entityTemplatesMap);
+    }
+
+    async validatePrintBody(req: Request) {
+        const searchBody: IGetExpandedEntityBody['filters'] = req.body.filters;
+        const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({});
+        const relationShips = await this.relationshipsTemplateManagerService.searchRelationshipTemplates();
+
+        const entityTemplatesMap = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
+        const relationShipsMap = new Map(relationShips.map((relationship) => [relationship._id, relationship]));
+
+        const entityTemplatesForValidationMap: Map<string, IMongoEntityTemplate> = new Map(
+            entityTemplates.map((entityTemplate) => [entityTemplate._id, addDefaultFieldsToTemplate(entityTemplate)]),
+        );
+        Object.entries(searchBody).forEach(([templateId, { filter }]) => {
+            if (filter) {
+                this.validateFilter(filter, entityTemplatesForValidationMap.get(templateId)!, `filters.${templateId}.filter`);
+            }
+        });
+        addPropertyToRequest(req, 'entityTemplatesMap', entityTemplatesMap);
+        addPropertyToRequest(req, 'relationShipsMap', relationShipsMap);
     }
 }
 

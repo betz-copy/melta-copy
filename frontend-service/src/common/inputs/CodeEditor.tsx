@@ -1,6 +1,3 @@
-/* eslint-disable new-cap */
-/* eslint-disable import/no-unresolved */
-
 import { Editor, loader, Monaco } from '@monaco-editor/react';
 import * as monaco from 'monaco-editor';
 import { editor } from 'monaco-editor';
@@ -22,7 +19,6 @@ interface codeEditorProps {
     onValidate?: (markers: editor.IMarker[]) => void;
 }
 
-// eslint-disable-next-line no-restricted-globals
 self.MonacoEnvironment = {
     getWorker(_, label) {
         switch (label) {
