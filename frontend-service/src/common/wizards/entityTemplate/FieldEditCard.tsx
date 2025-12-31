@@ -150,15 +150,11 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
 
     const isRequiredWalletTransferField = React.useMemo(() => {
         if (!values?.walletTransfer) return false;
-        console.log(values.walletTransfer);
 
-        const walletTransfer = values.walletTransfer as any;
-        const from  = typeof walletTransfer.from === 'string' ? walletTransfer.from : walletTransfer.from.name;
+        const walletTransfer = (values as Record<string, any>).walletTransfer;
+        const from = typeof walletTransfer.from === 'string' ? walletTransfer.from : walletTransfer.from.name;
         const to = typeof walletTransfer.to === 'string' ? walletTransfer.to : walletTransfer.to.name;
-        return (
-            from === value.name || to === value.name || walletTransfer?.amount === value.name
-        );
-
+        return from === value.name || to === value.name || walletTransfer?.amount === value.name;
     }, [values, value.name]);
 
     const createNewUniqueGroup = (groupName) => {
