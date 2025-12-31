@@ -70,6 +70,8 @@ const App: React.FC = () => {
                 }),
             );
 
+            console.log({ mapLayers });
+
             queryClient.setQueryData('getMapLayers', mapLayers); //for EveryLayer:url(wmts_base) name(name wmts_base) [{url:'',name:''}]
         },
     });

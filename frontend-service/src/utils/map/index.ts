@@ -241,5 +241,7 @@ export const extractImageryUrl = (
 ): LayerProvider => {
     const json = xmlParser.parse(xml);
 
+    console.log({ parsedXml: json });
+
     return findLinks(json, schema, layerName, layerDisplayName, layerType, layerLinkTag);
 };
