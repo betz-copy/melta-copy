@@ -1,228 +1,30 @@
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
-import { Box, Divider, Grid, IconButton, Typography } from '@mui/material';
-import type { Property } from 'csstype';
-import i18next from 'i18next';
+import { Divider, IconButton, Typography } from '@mui/material';
 import _ from 'lodash';
 import React, { CSSProperties, JSX, useState } from 'react';
 import { pdfjs } from 'react-pdf';
 import { useQueryClient } from 'react-query';
 import { environment } from '../globals';
 import { IEntity } from '../interfaces/entities';
-import {
-    IEntitySingleProperty,
-    IEntityTemplateMap,
-    IMongoEntityTemplatePopulated,
-    PropertyFormat,
-    PropertyType,
-} from '../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IGetUnits } from '../interfaces/units';
 import { useDarkModeStore } from '../stores/darkMode';
-import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
-import OverflowWrapper from '../utils/agGrid/OverflowWrapper';
 import { HighlightText } from '../utils/HighlightText';
 import { containsHTMLTags, getFirstLine, getNumLines, renderHTML } from '../utils/HtmlTagsStringValue';
-import { extractUtmLocation, locationConverterToString } from '../utils/map/convert';
+import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
+import { formatToString, getPropertyColor, getUserAvatar } from '../utils/entityProperties';
 import { getFixedNumber, getTextDirection } from '../utils/stringValues';
-import { ColoredEnumChip } from './ColoredEnumChip';
-import OpenPreview from './FilePreview/OpenPreview';
-import { CoordinateSystem, LocationData } from './inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
 import BlueTitle from './MeltaDesigns/BlueTitle';
 import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
-import RelationshipReferenceView from './RelationshipReferenceView';
-import UserAvatar from './UserAvatar';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
-const formatDateToDDMMYYYY = (dateString: string): string => {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-    if (Number.isNaN(date.getTime())) return '-';
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-};
-
-interface FormatOptions {
-    keyEnumColors?: Record<string, string>;
-    isPrintingMode?: boolean;
-    pureString?: boolean;
-}
-
-const getUserAvatar = (
-    entityTemplate: Template,
-    imageKey: string,
-    properties: IEntityPropertiesProps['properties'],
-    iconProps: { size: number; border: number },
-) => {
-    const relatedUserField = entityTemplate?.properties?.properties?.[imageKey]?.expandedUserField?.relatedUserField;
-    const user = relatedUserField && properties?.[relatedUserField] ? JSON.parse(properties?.[relatedUserField]) : undefined;
-
-    return (
-        user && (
-            <div style={{ marginLeft: '3rem' }}>
-                <UserAvatar
-                    user={user}
-                    shouldRenderChip={false}
-                    tooltip={{ displayUserImage: false }}
-                    shouldGetKartoffelImage
-                    userIcon={{ size: iconProps.size, overrideSx: { border: `${iconProps.border}px solid #FF006B`, boxShadow: '0px' } }}
-                />
-            </div>
-        )
-    );
-};
-
-export const formatToString = ({
-    value,
-    property,
-    units,
-    key,
-    preview,
-    color,
-    options = {},
-    hideProps = [],
-    entityTemplate,
-    properties,
-    darkMode,
-}: {
-    value: any;
-    property: IEntitySingleProperty;
-    units: IGetUnits;
-    key?: string;
-    preview?: boolean;
-    color?: string;
-    options?: FormatOptions;
-    hideProps?: string[];
-    entityTemplate?: Template;
-    properties?: IEntityPropertiesProps['properties'];
-    darkMode: boolean;
-}) => {
-    const { format, type: valueType, title, expandedUserField } = property;
-    const { keyEnumColors, isPrintingMode, pureString } = options;
-
-    // If displaying an image from a kartoffel user
-    if (format === 'kartoffelUserField' && expandedUserField?.kartoffelField === 'image' && entityTemplate && properties && key)
-        return getUserAvatar(entityTemplate, key, properties, { size: 32, border: 1 });
-
-    if (value === null || value === undefined) return '-';
-
-    if (
-        format === 'kartoffelUserField' &&
-        expandedUserField?.kartoffelField &&
-        ['birthDate', 'dischargeDay', 'enlistmentDay'].includes(expandedUserField.kartoffelField) &&
-        value
-    )
-        return formatDateToDDMMYYYY(value);
-
-    if (valueType === 'number') return value >= 0 ? value : `${(value * -1).toString()}-`;
-
-    if (valueType === PropertyType.boolean) return value ? i18next.t('booleanOptions.yes') : i18next.t('booleanOptions.no');
-    if (valueType === PropertyType.string) {
-        if (format === PropertyFormat.date) return new Date(value).toLocaleDateString('en-uk');
-        if (format === PropertyFormat.comment) return property.hideFromDetailsPage || (key && hideProps.includes(key)) ? undefined : property.comment;
-        if (format === PropertyFormat['date-time']) return new Date(value).toLocaleString('en-uk');
-        if (format === PropertyFormat.fileId || format === PropertyFormat.signature) {
-            return (
-                <OpenPreview
-                    fileId={value}
-                    download={isPrintingMode}
-                    defaultFileName={format === PropertyFormat.signature ? `${title}.${environment.fileExtensions.defaultImage}` : undefined}
-                    disabled={preview}
-                    color={color}
-                />
-            );
-        }
-        if (format === 'relationshipReference') {
-            return pureString ? (
-                value.properties[property.relationshipReference!.relatedTemplateField!]
-            ) : (
-                <RelationshipReferenceView
-                    entity={value}
-                    relatedTemplateId={property.relationshipReference!.relatedTemplateId}
-                    relatedTemplateField={property.relationshipReference!.relatedTemplateField}
-                    color={color}
-                />
-            );
-        }
-        if (format === 'user') {
-            const userObject = typeof value === 'string' ? JSON.parse(value) : value;
-            return (
-                <Grid container gap={1}>
-                    <UserAvatar
-                        user={userObject}
-                        chip={{ sx: { background: darkMode ? '#1E1F2B' : '#EBEFFA', color: color ?? (darkMode ? '#D3D6E0' : '#53566E') } }}
-                    />
-                </Grid>
-            );
-        }
-        if (format === 'unitField') {
-            return units.find(({ _id }) => _id === value)?.name;
-        }
-    }
-    if (format === PropertyFormat.location) {
-        const convertLocation = (value: LocationData) =>
-            value.coordinateSystem === CoordinateSystem.UTM && !extractUtmLocation(value.location)
-                ? locationConverterToString(value.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
-                : value.location;
-
-        if (typeof value === PropertyType.string) {
-            if (value.includes(PropertyFormat.location)) return convertLocation(JSON.parse(value));
-            else return value;
-        }
-        return convertLocation(value);
-    }
-    if (keyEnumColors?.[value] && valueType === 'string')
-        return pureString ? value : <ColoredEnumChip label={value} enumColor={keyEnumColors[value] || 'default'} color={color} />;
-
-    if (valueType === 'array') {
-        if (property.items?.format === 'fileId') return value.map((val: string) => <OpenPreview fileId={val} key={val} color={color} />);
-
-        if (property.items?.format === 'user') {
-            return (
-                <Grid container>
-                    <OverflowWrapper
-                        items={value.map((val) => JSON.parse(val))}
-                        getItemKey={(item: any) => item._id}
-                        renderItem={(item) => (
-                            <Grid>
-                                <UserAvatar
-                                    key={item.id}
-                                    user={item}
-                                    tooltip={{ title: `${item.fullName} - ${item.hierarchy}` }}
-                                    chip={{
-                                        sx: { background: darkMode ? '#1E1F2B' : '#EBEFFA', color: color ?? (darkMode ? '#D3D6E0' : '#53566E') },
-                                    }}
-                                />
-                            </Grid>
-                        )}
-                        propertyToDisplayInTooltip="fullName"
-                        minVisibleItems={1}
-                    />
-                </Grid>
-            );
-        }
-
-        return pureString
-            ? value.join(', ')
-            : value.map((val: string) => (
-                  <ColoredEnumChip
-                      key={val}
-                      label={val}
-                      enumColor={keyEnumColors?.[val] || 'default'}
-                      style={{ margin: '5px 0px 0px 5px' }}
-                      color={color}
-                  />
-              ));
-    }
-    return value;
-};
-
 type Template = Pick<IMongoEntityTemplatePopulated, 'properties' | 'propertiesOrder' | 'enumPropertiesColors' | 'fieldGroups'> &
     Partial<Pick<IMongoEntityTemplatePopulated, 'propertiesPreview'>>;
-interface IEntityPropertiesProps {
+
+export interface IEntityPropertiesProps {
     entityTemplate: Template;
     properties: IEntity['properties'];
     coloredFields?: IEntity['coloredFields'];
@@ -245,22 +47,6 @@ interface IEntityPropertiesProps {
     entityTemplates?: IEntityTemplateMap;
     preview?: boolean;
 }
-
-export const getPropertyColor = (
-    propertyKey: string,
-    propertiesToHighlight: string[] | undefined,
-    highlightColor: Property.Color | undefined,
-    mode: 'normal' | 'white',
-    normalColor: Property.Color,
-    coloredFields?: IEntity['coloredFields'],
-) => {
-    if (coloredFields?.[propertyKey]) return coloredFields?.[propertyKey];
-    if (propertiesToHighlight?.includes(propertyKey)) {
-        return highlightColor;
-    }
-
-    return mode === 'white' ? 'white' : normalColor;
-};
 
 type PropertiesDetailsProps = {
     propertiesOrderedToShow: string[];
@@ -300,9 +86,18 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
     preview,
 }) => {
     const queryClient = useQueryClient();
+
     const units = queryClient.getQueryData<IGetUnits>('getUnits')!;
 
     const [hideFieldsToDisplay, setHideFieldsToDisplay] = useState(entityTemplate.properties.hide);
+
+    const handleToggleHideField = (event: React.MouseEvent, propertyKey: string) => {
+        event.stopPropagation();
+        setHideFieldsToDisplay(() => {
+            if (hideFieldsToDisplay.includes(propertyKey)) return hideFieldsToDisplay.filter((hiddenProperty) => hiddenProperty !== propertyKey);
+            return [...hideFieldsToDisplay, propertyKey];
+        });
+    };
 
     return (
         <>
@@ -350,7 +145,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                 const propertyTitleColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#9398C2', {});
 
                 let innerContent: string | JSX.Element | undefined;
-                if (hideFieldsToDisplay.includes(propertyKey)) innerContent = '••••••••';
+                if (hideFieldsToDisplay.includes(propertyKey) && !isPrintingMode) innerContent = '••••••••';
                 else if (containsHtmlTags)
                     innerContent = viewFirstLineOfLongText
                         ? `${getFirstLine(stringFormatValue)}${getNumLines(stringFormatValue) > 1 ? '...' : ''}`
@@ -373,103 +168,124 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                     getNumLines(stringFormatValue) > 1 &&
                     stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
 
-                const excludedFormats = ['text-area', 'fileId', 'relationshipReference', 'user', 'location', 'signature', 'comment'];
-
                 const textDirection =
-                    format && !excludedFormats.includes(format)
+                    format && !environment.excludedFormats.includes(format)
                         ? getTextDirection(propertyValue, {
                               type,
                               serialCurrent,
                           })
                         : 'rtl';
 
-                return (
-                    <Grid
-                        key={propertyKey}
-                        container
-                        flexDirection="row"
+                const titleTypography = (
+                    <Typography
                         style={{
+                            ...(!isPrintingMode && {
+                                textOverflow: 'ellipsis',
+                                whiteSpace: textWrap ? undefined : 'nowrap',
+                                overflow: 'hidden',
+                            }),
+                            textAlign: 'right',
+                        }}
+                        fontSize="14px"
+                        color={propertyTitleColor}
+                        fontWeight={mode === 'white' ? '800' : ''}
+                    >
+                        {title}:
+                    </Typography>
+                );
+
+                const valueTypography = (
+                    <Typography
+                        fontSize="14px"
+                        color={color ?? propertyValueColor}
+                        style={{
+                            ...(isPrintingMode
+                                ? {
+                                      overflowWrap: 'anywhere',
+                                      wordBreak: 'break-word',
+                                  }
+                                : {
+                                      textOverflow: 'ellipsis',
+                                      whiteSpace: textWrap ? undefined : 'nowrap',
+                                      overflowX: 'hidden',
+                                  }),
+                            paddingLeft: '1rem',
+                            maxHeight: isPrintingMode ? undefined : '350px',
+                            direction: type === 'number' ? 'ltr' : textDirection,
+                        }}
+                    >
+                        <HighlightText text={innerContent} searchedText={searchedText} isLink />
+                    </Typography>
+                );
+
+                return (
+                    <div
+                        key={propertyKey}
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            flexWrap: 'wrap',
                             ...(overrideStyleInLongText ? { width: '100%' } : innerStyle),
                             marginBottom: '10px',
+                            alignItems: textWrap ? 'flex-start' : 'center',
                         }}
-                        alignItems={textWrap ? 'flex-start' : 'center'}
-                        size={{ xs: 12 }}
                     >
-                        <Grid container width="100%" flexWrap="nowrap" alignItems={textWrap ? 'flex-start' : 'center'}>
+                        <div
+                            style={{
+                                display: 'flex',
+                                width: '100%',
+                                flexWrap: 'nowrap',
+                                alignItems: textWrap ? 'flex-start' : 'center',
+                                gap: '10px',
+                            }}
+                        >
                             {!comment && (
-                                <Grid
+                                <div
                                     style={{
-                                        width: overrideStyleInLongText ? '10%' : '30%',
+                                        width: isPrintingMode ? 'fit-content' : overrideStyleInLongText ? '10%' : '30%',
                                     }}
                                 >
-                                    <MeltaTooltip disableHoverListener={textWrap} placement="bottom" title={title}>
-                                        <Typography
-                                            style={{
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: textWrap ? undefined : 'nowrap',
-                                                overflow: 'hidden',
-                                                textAlign: 'right',
-                                            }}
-                                            fontSize="14px"
-                                            color={propertyTitleColor}
-                                            fontWeight={mode === 'white' ? '800' : ''}
-                                        >
-                                            {title}:
-                                        </Typography>
-                                    </MeltaTooltip>
-                                </Grid>
+                                    {isPrintingMode ? (
+                                        titleTypography
+                                    ) : (
+                                        <MeltaTooltip disableHoverListener={textWrap} placement="bottom" title={title}>
+                                            {titleTypography}
+                                        </MeltaTooltip>
+                                    )}
+                                </div>
                             )}
-                            <Grid
-                                container
-                                flexDirection="row"
-                                alignItems={textWrap ? 'flex-start' : 'center'}
-                                flexWrap="nowrap"
+                            <div
                                 style={{
+                                    display: 'flex',
+                                    flexDirection: 'row',
+                                    alignItems: textWrap ? 'flex-start' : 'center',
+                                    flexWrap: isPrintingMode ? 'wrap' : 'nowrap',
                                     direction: 'rtl',
                                     textAlign: 'right',
-                                    width: comment ? '100%' : overrideStyleInLongText ? '90%' : '70%',
+                                    width: isPrintingMode ? 'fit-content' : comment ? '100%' : overrideStyleInLongText ? '90%' : '70%',
                                 }}
                             >
-                                <MeltaTooltip
-                                    disableHoverListener={format === 'relationshipReference' ? true : textWrap}
-                                    placement="bottom"
-                                    title={<Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>{titleContent}</Grid>}
-                                >
-                                    <Typography
-                                        fontSize="14px"
-                                        color={color ?? propertyValueColor}
-                                        style={{
-                                            textOverflow: 'ellipsis',
-                                            whiteSpace: textWrap ? undefined : 'nowrap',
-                                            overflowX: 'hidden',
-                                            paddingLeft: '1rem',
-                                            maxHeight: isPrintingMode ? undefined : '350px',
-                                            direction: type === 'number' ? 'ltr' : textDirection,
-                                        }}
+                                {isPrintingMode ? (
+                                    valueTypography
+                                ) : (
+                                    <MeltaTooltip
+                                        disableHoverListener={format === 'relationshipReference' ? true : textWrap}
+                                        placement="bottom"
+                                        title={<div style={{ maxHeight: '500px', overflowY: 'auto' }}>{titleContent}</div>}
                                     >
-                                        <HighlightText text={innerContent} searchedText={searchedText} isLink />
-                                    </Typography>
-                                </MeltaTooltip>
-                                <Grid>
-                                    {hideField && (
-                                        <IconButton
-                                            onClick={(event) => {
-                                                event.stopPropagation();
-                                                setHideFieldsToDisplay(() => {
-                                                    if (hideFieldsToDisplay.includes(propertyKey))
-                                                        return hideFieldsToDisplay.filter((hiddenProperty) => hiddenProperty !== propertyKey);
-                                                    return [...hideFieldsToDisplay, propertyKey];
-                                                });
-                                            }}
-                                            size="small"
-                                        >
+                                        {valueTypography}
+                                    </MeltaTooltip>
+                                )}
+                                {hideField && !isPrintingMode && (
+                                    <div>
+                                        <IconButton onClick={(event) => handleToggleHideField(event, propertyKey)} size="small">
                                             {hideFieldsToDisplay.includes(propertyKey) ? <VisibilityOffIcon /> : <VisibilityIcon />}
                                         </IconButton>
-                                    )}
-                                </Grid>
-                            </Grid>
-                        </Grid>
-                    </Grid>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
                 );
             })}
         </>
@@ -530,12 +346,20 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     });
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-            {/* Profile image */}
+        <div style={{ display: 'flex', flexDirection: 'row' }}>
             {imageOfKartoffelKeys.map((key) => getUserAvatar(entityTemplate, key, properties, { size: 120, border: 4 }))}
             {showDivider && <Divider title={dividerTitle} sx={{ marginY: '1rem' }} />}
-            <Box sx={{ marginY: '1rem' }}>{dividerTitle && <BlueTitle title={dividerTitle} component="p" variant="subtitle1" />}</Box>
-            <Grid container width="100%" style={{ ...style, alignItems: textWrap ? 'flex-start' : 'center', alignContent: 'center' }}>
+            <div style={{ margin: '1rem 0' }}>{dividerTitle && <BlueTitle title={dividerTitle} component="p" variant="subtitle1" />}</div>
+            <div
+                style={{
+                    ...style,
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    width: '100%',
+                    alignItems: textWrap ? 'flex-start' : 'center',
+                    alignContent: 'center',
+                }}
+            >
                 {showByGroups && entityTemplate.fieldGroups ? (
                     propertiesOrderedToShow.map((propertyKey) => {
                         const group = entityTemplate.fieldGroups?.find((g) => g.fields.includes(propertyKey));
@@ -546,9 +370,11 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                             const orderedGroupFields = propertiesOrderedToShow.filter((key) => group.fields.includes(key));
 
                             return (
-                                <Grid
-                                    container
-                                    sx={{
+                                <div
+                                    key={group.name}
+                                    style={{
+                                        display: 'flex',
+                                        flexWrap: 'wrap',
                                         width: '100%',
                                         borderRadius: '10px',
                                         backgroundColor: darkMode ? '#4a4a5033' : 'rgba(240, 242, 247, 0.3)',
@@ -556,18 +382,16 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                         marginTop: '3px',
                                         marginBottom: '3px',
                                     }}
-                                    key={group.name}
                                 >
-                                    <Box
-                                        key={group.name}
-                                        sx={{
+                                    <div
+                                        style={{
                                             width: '100%',
                                         }}
                                     >
                                         <Typography fontWeight="bold" fontSize="16px" color="primary" paddingBottom={1} marginBottom="20px">
                                             {group.displayName}
                                         </Typography>
-                                        <Grid container>
+                                        <div style={{ display: 'flex', flexWrap: 'wrap' }}>
                                             <PropertiesDetails
                                                 key={group.name}
                                                 propertiesOrderedToShow={orderedGroupFields}
@@ -587,9 +411,9 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                                 textWrap={textWrap}
                                                 preview={preview}
                                             />
-                                        </Grid>
-                                    </Box>
-                                </Grid>
+                                        </div>
+                                    </div>
+                                </div>
                             );
                         }
 
@@ -639,8 +463,8 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                         preview={preview}
                     />
                 )}
-            </Grid>
-        </Box>
+            </div>
+        </div>
     );
 };
 

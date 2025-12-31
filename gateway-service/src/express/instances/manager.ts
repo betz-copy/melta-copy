@@ -648,17 +648,26 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return { succeededEntities, failedEntities, brokenRulesEntities };
     }
 
-    private convertEntities(template: IMongoEntityTemplatePopulated, key: string, property: any) {
+    private convertEntities(template: IMongoEntityTemplatePopulated, key: string, property: any, isSourceWallet = false) {
         switch (template.properties.properties[key]?.format) {
-            case 'relationshipReference':
+            case 'relationshipReference': {
                 return property?.properties._id;
+            }
             case 'location': {
                 if (!property) return undefined;
                 const location = typeof property === 'string' && property.includes('location') ? JSON.parse(property) : property;
                 return JSON.stringify(location);
             }
             case 'signature':
-                return undefined;
+                return isSourceWallet ? property : undefined;
+            case 'date': {
+                if (!property) return undefined;
+                return new Date(property).toISOString().split('T')[0];
+            }
+            case 'date-time': {
+                if (!property) return undefined;
+                return new Date(property).toISOString();
+            }
             default:
                 return property;
         }
@@ -804,12 +813,11 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             throw new Error('The transfer target is not a wallet template');
         }
 
-        const walletProperties = entityProperties.properties;
-        const { createdAt: _createdAt, updatedAt: _updatedAt, _id, disabled: _disabled, ...restWalletProperties } = walletProperties;
+        const { createdAt: _createdAt, updatedAt: _updatedAt, _id, disabled: _disabled, ...restWalletProperties } = entityProperties;
 
-        const updatedAccountBalance = (walletProperties[accountBalancePropertyKey] || 0) + amount;
+        const updatedAccountBalance = (entityProperties[accountBalancePropertyKey] || 0) + amount;
 
-        if (isSourceWallet && (walletProperties[accountBalancePropertyKey] <= 0 || walletProperties[accountBalancePropertyKey] + amount < 0)) {
+        if (isSourceWallet && (entityProperties[accountBalancePropertyKey] <= 0 || entityProperties[accountBalancePropertyKey] + amount < 0)) {
             throw new Error('Cannot transfer from a wallet with a negative balance');
         }
 
@@ -864,18 +872,33 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const { from, to, amount } = walletTransfer;
         const sourceProperty = entityTemplate.properties.properties[from];
         const destinationProperty = entityTemplate.properties.properties[to];
-        const transferAmount = createdEntity.properties[amount];
+        const { properties } = createdEntity;
+        const transferAmount = properties[amount];
 
         if (
             sourceProperty.format === 'relationshipReference' &&
             destinationProperty.format === 'relationshipReference' &&
-            createdEntity.properties[from].properties._id === createdEntity.properties[to].properties._id
+            properties[from].properties._id === properties[to].properties._id
         )
             throw new Error('Source and destination wallets in the transfer are identical');
 
+        const [sourceWalletTemplate, sourceWalletEntity, destWalletTemplate, destinationWalletEntity] = await Promise.all([
+            this.entityTemplateService.getEntityTemplateById(properties[from].templateId),
+            this.service.getEntityInstanceById(properties[from].properties._id),
+            this.entityTemplateService.getEntityTemplateById(properties[to].templateId),
+            this.service.getEntityInstanceById(properties[to].properties._id),
+        ]);
+
+        const convertedFromProperties = mapValues(sourceWalletEntity.properties, (property, key) =>
+            this.convertEntities(sourceWalletTemplate, key, property, true),
+        );
+        const convertedToProperties = mapValues(destinationWalletEntity.properties, (property, key) =>
+            this.convertEntities(destWalletTemplate, key, property),
+        );
+
         const source = await this.updateWalletBalance(
             sourceProperty,
-            createdEntity.properties[from],
+            convertedFromProperties,
             -transferAmount,
             ignoredRules,
             userId,
@@ -883,13 +906,14 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         );
         const destination = await this.updateWalletBalance(
             destinationProperty,
-            createdEntity.properties[to],
+            convertedToProperties,
             transferAmount,
             ignoredRules,
             userId,
             childTemplateId,
             false,
         );
+
         return {
             ...createdEntity,
             properties: {
@@ -897,6 +921,64 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 ...(source && { [from]: source }),
                 ...(destination && { [to]: destination }),
             },
+        };
+    }
+
+    async createNewDestWalletData(template: IMongoEntityTemplatePopulated, instanceData: IEntity) {
+        const { properties, walletTransfer } = template;
+        if (!walletTransfer) return;
+
+        const isDestinationWallet = properties.properties[walletTransfer.to].format === 'relationshipReference';
+        if (!(isDestinationWallet && instanceData.properties[walletTransfer.to] === '$twin')) return;
+
+        const sourceWallet = await this.service.getEntityInstanceById(instanceData.properties[walletTransfer.from]);
+        const destTemplateId = properties.properties[walletTransfer.to].relationshipReference?.relatedTemplateId ?? '';
+
+        const [sourceWalletTemplate, destWalletTemplate] = await Promise.all([
+            this.entityTemplateService.getEntityTemplateById(sourceWallet.templateId),
+            this.entityTemplateService.getEntityTemplateById(destTemplateId),
+        ]);
+
+        const serialKeys = Object.entries(destWalletTemplate.properties.properties)
+            .filter(([_, value]) => value.serialStarter !== undefined)
+            .map(([key]) => key);
+        const serialValues = Object.fromEntries(
+            serialKeys.map((key) => {
+                const prop = destWalletTemplate.properties.properties[key];
+                return [key, prop.serialCurrent];
+            }),
+        );
+
+        const convertedSourceWalletProperties = mapValues(sourceWallet.properties, (property, key) =>
+            this.convertEntities(sourceWalletTemplate, key, property),
+        );
+        const accountBalanceKey = Object.entries(sourceWalletTemplate.properties.properties).find(
+            ([_key, value]) => value?.accountBalance === true,
+        )![0];
+
+        const keysToOmit = ['_id', 'createdAt', 'updatedAt', accountBalanceKey ?? '', ...serialKeys];
+
+        const destWalletProperties = {
+            ...omit(convertedSourceWalletProperties, keysToOmit),
+            [accountBalanceKey]: 0,
+            ...serialValues,
+        };
+
+        const fileProperties = this.getEntityFileProperties(sourceWallet.properties, sourceWalletTemplate);
+
+        const duplicatedFileProperties = await this.duplicateFileProperties(fileProperties, sourceWallet);
+
+        const propertiesWithFiles = {
+            ...destWalletProperties,
+            ...duplicatedFileProperties,
+        };
+
+        const newDestWalletInstanceProperties = await this.setSerialPropertiesAndUpdateTemplate(propertiesWithFiles, destWalletTemplate);
+
+        return {
+            ...sourceWallet,
+            templateId: destTemplateId,
+            properties: newDestWalletInstanceProperties,
         };
     }
 
@@ -916,6 +998,14 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const childFilters = childTemplateId ? await this.instanceUtils.getChildFilters(childTemplateId, userId) : undefined;
 
         logger.info('createEntityInstance', { instanceData, files, ignoredRules, userId, serialNumbers, createAlert });
+
+        const template = await this.entityTemplateService.getEntityTemplateById(instanceData.templateId);
+
+        let newDestWalletData: IEntity | undefined;
+        if (template.walletTransfer) {
+            newDestWalletData = await this.createNewDestWalletData(template, instanceData);
+        }
+
         const { createdEntity, actions, emails } = await this.service
             .createEntityInstance(
                 { properties, templateId },
@@ -923,6 +1013,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 userId,
                 undefined,
                 childTemplateId ? { id: childTemplateId, filter: childFilters } : undefined,
+                newDestWalletData,
             )
             .catch((err) => this.handleBrokenRulesError(err));
 
@@ -942,9 +1033,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 },
                 userId,
             );
-        } else {
-            await this.rabbitManager.indexFiles(createdEntity.templateId, createdEntity.properties._id, Object.values(upserstedFiles).flat());
-        }
+        } else await this.rabbitManager.indexFiles(createdEntity.templateId, createdEntity.properties._id, Object.values(upserstedFiles).flat());
 
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(createdEntity.templateId);
 
@@ -1168,6 +1257,10 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         const childFilters = childTemplateId ? await this.instanceUtils.getChildFilters(childTemplateId, userId) : undefined;
 
+        const template = await this.entityTemplateService.getEntityTemplateById(instanceData.templateId);
+        let newDestWalletData: IEntity | undefined;
+        if (template.walletTransfer) newDestWalletData = await this.createNewDestWalletData(template, instanceData);
+
         const { createdEntity, actions } = await this.service
             .createEntityInstance(
                 newInstanceData,
@@ -1175,6 +1268,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 userId,
                 id,
                 childTemplateId ? { id: childTemplateId, filter: childFilters } : undefined,
+                newDestWalletData,
             )
             .catch((err) => this.handleBrokenRulesError(err));
 

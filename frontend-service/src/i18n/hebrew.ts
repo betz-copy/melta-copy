@@ -243,6 +243,16 @@ export default {
             showDisabled: 'הצגת יישויות מושבתות',
             showEntityDates: 'הצגת תאריך יצירה ועדכון יישות',
             showOnlyPreviewProperties: 'הדפסת תצוגה מצומצמת',
+            showEntityCheckbox: 'הצגת תיבת סימון ליישות',
+            appendSignatureField: 'הצגת חתימות בסוף',
+            signatureFields: {
+                signedByDetails: 'פרטי המחתים',
+                stampedByDetails: 'פרטי החותם',
+                fullName: 'שם מלא',
+                rank: 'דרגה',
+                personalNumber: "מס' אישי",
+                signature: 'חתימה',
+            },
             chooseRelationship: 'בחירת קשרים',
             chooseFiles: 'קבצים מצורפים להדפסה',
             printOptions: 'הגדרות הדפסה',
@@ -250,6 +260,13 @@ export default {
             relationships: 'קשרים',
             noPreviewProperties: 'אין מאפייני תצוגה מקדימה',
             title: 'כותרת הדפסה',
+            fetchingData: 'מחפש קשרים...',
+            generatingPdf: 'יוצר pdf...',
+            limits: {
+                alreadySelected: 'סך הישויות שנבחרו',
+                max: 'מקסימום',
+                warning: 'אי אפשר להוסיף ישות זו',
+            },
         },
         previewRefetch: 'קובץ בתהליך עיבוד, נסה שוב מאוחר יותר',
         walletTransfer: {
@@ -430,6 +447,7 @@ export default {
         failedToSearchEntities: 'נכשל בחיפוש ישויות',
         dependentFieldRequired: 'יש למלא את השדה התלוי "{{field}}" תחילה',
         dependentFieldsRequired: 'יש למלא את השדות התלויים "{{field}}" תחילה',
+        newDestWalletTwinEntity: 'יצירת חדש - שכפול מהמקור',
     },
     userAutocomplete: {
         label: 'משתמש',
@@ -1865,6 +1883,7 @@ export default {
             sourceFieldForColor: 'עמוד מפה-צבע תוצאות חיפוש עפ”י שדה (מקור)',
         },
         numOfRelationshipFieldsToShow: 'מספר שדות לתצוגת שדה שיוך ליישות',
+        twinTemplates: 'תבניות זהות',
     },
     childTemplate: {
         createTitle: 'יצירת תבנית בן',

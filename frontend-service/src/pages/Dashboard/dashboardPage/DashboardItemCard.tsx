@@ -20,30 +20,31 @@ interface DashboardItemCardProps {
     onEdit: () => void;
 }
 
+const DashboardItemContent = React.memo(({ itemDetails }: { itemDetails: MongoDashboardItemPopulated }) => {
+    switch (itemDetails.type) {
+        case DashboardItemType.Chart: {
+            const chartMetaData = itemDetails.metaData;
+
+            if (chartMetaData.type === IChartType.Number)
+                return <NumberChartGenerator data={chartMetaData.chart} chartDetails={chartMetaData} enableResize />;
+
+            return <HighchartGenerator generatedChart={chartMetaData.chart} chartDetails={chartMetaData} isQueryEnabled enableResize />;
+        }
+
+        case DashboardItemType.Table:
+            return <TableCard metaData={{ ...itemDetails.metaData, _id: itemDetails._id }} />;
+
+        case DashboardItemType.Iframe:
+            return <IFrameCard metaData={itemDetails.metaData} />;
+
+        default:
+            return null;
+    }
+});
+
 const DashboardItemCard: React.FC<DashboardItemCardProps> = ({ itemDetails, isHoverOnCard, indexInGrid, onDelete, onEdit }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const currentUser = useUserStore((state) => state.user);
-
-    const renderItemCard = () => {
-        switch (itemDetails.type) {
-            case DashboardItemType.Chart: {
-                const chartMetaData = itemDetails.metaData;
-
-                if (chartMetaData.type === IChartType.Number)
-                    return <NumberChartGenerator data={chartMetaData.chart} chartDetails={chartMetaData} enableResize />;
-                return <HighchartGenerator generatedChart={chartMetaData.chart} chartDetails={chartMetaData} isQueryEnabled enableResize />;
-            }
-
-            case DashboardItemType.Table:
-                return <TableCard metaData={{ ...itemDetails.metaData, _id: itemDetails._id }} />;
-
-            case DashboardItemType.Iframe:
-                return <IFrameCard metaData={itemDetails.metaData} />;
-
-            default:
-                return null;
-        }
-    };
 
     return (
         <Box style={{ width: '100%', height: '100%', position: 'relative' }}>
@@ -77,7 +78,7 @@ const DashboardItemCard: React.FC<DashboardItemCardProps> = ({ itemDetails, isHo
                     <CardMenu onDeleteClick={onDelete} onEditClick={onEdit} />
                 </Box>
             )}
-            {renderItemCard()}
+            <DashboardItemContent itemDetails={itemDetails} />
         </Box>
     );
 };
