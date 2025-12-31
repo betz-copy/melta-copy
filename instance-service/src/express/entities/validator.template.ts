@@ -482,6 +482,26 @@ export class EntityValidator extends DefaultController {
         });
         addPropertyToRequest(req, 'entityTemplatesMap', entityTemplatesMap);
     }
+
+    async validatePrintBody(req: Request) {
+        const searchBody: IGetExpandedEntityBody['filters'] = req.body.filters;
+        const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({});
+        const relationShips = await this.relationshipsTemplateManagerService.searchRelationshipTemplates();
+
+        const entityTemplatesMap = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
+        const relationShipsMap = new Map(relationShips.map((relationship) => [relationship._id, relationship]));
+
+        const entityTemplatesForValidationMap: Map<string, IMongoEntityTemplate> = new Map(
+            entityTemplates.map((entityTemplate) => [entityTemplate._id, addDefaultFieldsToTemplate(entityTemplate)]),
+        );
+        Object.entries(searchBody).forEach(([templateId, { filter }]) => {
+            if (filter) {
+                this.validateFilter(filter, entityTemplatesForValidationMap.get(templateId)!, `filters.${templateId}.filter`);
+            }
+        });
+        addPropertyToRequest(req, 'entityTemplatesMap', entityTemplatesMap);
+        addPropertyToRequest(req, 'relationShipsMap', relationShipsMap);
+    }
 }
 
 // same format as dates shown in UI

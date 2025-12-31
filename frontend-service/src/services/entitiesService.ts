@@ -26,7 +26,9 @@ import {
 } from '../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
+import { IRelationShipSelectionTree } from '../interfaces/printingTemplates';
 import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
+import { IEntityTreeNode } from '../pages/Entity/components/print/ComponentToPrint';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
 import { combineFilters } from '../utils/filters';
 import { locationConverterToString } from '../utils/map/convert';
@@ -153,16 +155,47 @@ export const getExpandedEntityByIdRequest = async (
     entityId: string,
     expandedParams: Record<string, { minLevel?: number; maxLevel: number }>,
     options?: {
-        disabled?: boolean;
         templateIds: string[];
         childTemplateId?: string;
     },
     filterRecord: IGraphFilterBodyBatch = {},
     childTemplateFilters?: ISearchFilter,
-) => {
+): Promise<IEntityExpanded> => {
     const filters = filterModelToFilterOfGraph(filterRecord);
 
     const { data } = await axios.post<IEntityExpanded>(`${entities}/expanded/${entityId}`, {
+        ...options,
+        expandedParams,
+        filters: combineFilters(filters['filter'], childTemplateFilters),
+    });
+    return data;
+};
+
+// Actual tree with entities for print
+export const getEntitiesTreeForPrint = async (id: string, relationshipIds: string[], isShowDisabled: boolean) => {
+    const { data } = await axios.post<IEntityTreeNode>(`${entities}/printEntities/${id}`, {
+        relationshipIds,
+        isShowDisabled,
+    });
+    return data;
+};
+
+// Only templateIds for select tree of what to print
+export const getRelationshipSelectTreeForPrint = async (
+    entityId: string,
+    expandedParams: Record<string, { minLevel?: number; maxLevel: number }>,
+    options?: {
+        isShowDisabled?: boolean;
+        relationshipIds?: string[];
+        templateIds: string[];
+        childTemplateId?: string;
+    },
+    filterRecord: IGraphFilterBodyBatch = {},
+    childTemplateFilters?: ISearchFilter,
+): Promise<IRelationShipSelectionTree[]> => {
+    const filters = filterModelToFilterOfGraph(filterRecord);
+
+    const { data } = await axios.post(`${entities}/templatesStructure/${entityId}`, {
         ...options,
         expandedParams,
         filters: combineFilters(filters['filter'], childTemplateFilters),
@@ -506,8 +539,8 @@ export const searchEntitiesOfTemplateRequest = async (
 export const getCountByTemplateIdsRequest = async (
     templateIds: string[],
     childTemplateIds: string[] = [],
-    textSearch: string = '',
-    shouldSemanticSearch: boolean = false,
+    textSearch = '',
+    shouldSemanticSearch = false,
 ) => {
     const { data } = await axios.post<ICountSearchResult[]>(`${entities}/count`, { templateIds, childTemplateIds, textSearch, shouldSemanticSearch });
     return data;

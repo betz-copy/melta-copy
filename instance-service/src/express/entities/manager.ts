@@ -21,6 +21,7 @@ import {
     IEntityWithDirectRelationships,
     IGetUnits,
     IMongoEntityTemplate,
+    IMongoRelationshipTemplate,
     IMongoRule,
     IMultipleSelect,
     IRelationship,
@@ -61,7 +62,7 @@ import { executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/exe
 import isBodyFunctionHasContent from '../../utils/actions/isBodyFunctionHasContent';
 import filteredMap from '../../utils/filteredMap';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
-import { expandEntityToNeoQuery, getExpandedFilteredGraphRecursively } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
+import { expandEntityToNeoQuery } from '../..//utils/neo4j/getExpandedEntityByIdRecursive';
 import {
     generateDefaultProperties,
     getNeo4jDateTime,
@@ -81,6 +82,9 @@ import {
 import closePolygon from '../../utils/neo4j/location';
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { escapeNeo4jQuerySpecialChars, searchWithRelationshipsToNeoQuery, templatesFilterToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
+import { getEntitiesForPrintByRelIds, getOnlyTemplateIdsTree } from '../../utils/print/neo4j';
+import { buildEntityTree } from '../../utils/print/printEntity';
+import { buildTemplateTree } from '../..//utils/print/printTemplatesRelationship';
 import { buildChartAggregationQuery, handleChartPropertiesTemplate, manipulateReturnedChart } from '../../utils/templateCharts';
 import BulkActionManager from '../bulkActions/manager';
 import RelationshipManager from '../relationships/manager';
@@ -89,7 +93,14 @@ import { filterDependentRulesOnEntity, filterDependentRulesViaAggregation } from
 import { IRuleFailure } from '../rules/interfaces';
 import { runRuleOnEntitiesOfTemplate, runRulesOnEntity } from '../rules/runRulesOnEntity';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
-import { EntitiesIdsRulesReasonsMap, IEntityCrudAction, IExecutionOutput, IGetExpandedEntityBody, RunRuleReason } from './interface';
+import {
+    EntitiesIdsRulesReasonsMap,
+    IEntityCrudAction,
+    IExecutionOutput,
+    IGetExpandedEntityBody,
+    IRelationShipTreeNode,
+    RunRuleReason,
+} from './interface';
 import { updateColorsForIndicatorRulesWithTodayFunc } from './updateColorsForBrokenRulesWithIndicator';
 import { addStringFieldsAndNormalizeSpecialStringValues } from './validator.template';
 
@@ -827,7 +838,7 @@ class EntityManager extends DefaultManagerNeo4j {
         return results;
     }
 
-    async getEntitiesCountByTemplates(templateIds: string[], semanticSearchResult: ISemanticSearchResult = {}, textSearch: string = '') {
+    async getEntitiesCountByTemplates(templateIds: string[], semanticSearchResult: ISemanticSearchResult = {}, textSearch = '') {
         const includeSemantic = Boolean(Object.keys(semanticSearchResult).length);
 
         const entityIdMatch = includeSemantic
@@ -1084,48 +1095,29 @@ class EntityManager extends DefaultManagerNeo4j {
         return this.neo4jClient.readTransaction(`MATCH (e) WHERE e._id IN $ids RETURN e`, normalizeReturnedEntity('multipleResponses'), { ids });
     }
 
-    async getExpandedEntityById(id: string, disabled: boolean | null, templateIds: string[], numOfConnections: number) {
-        await this.neo4jClient.readTransaction(
-            `MATCH (p {_id:'${id}'})
-             CALL apoc.path.expandConfig(p, {
-                labelFilter: '${templateIds.join('|')}',
-                minLevel: 0,
-                maxLevel: ${numOfConnections}
-             })
-             YIELD path
-             RETURN apoc.path.elements(path)`,
-            normalizeReturnedRelAndEntities(disabled),
-        );
-    }
-
-    async getExpandedGraphById(id: string, reqBody: IGetExpandedEntityBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>, userId: string) {
-        const { disabled, templateIds, expandedParams, filters } = reqBody;
-        const fixSearchBody = filters ?? {};
+    async getNestedRelationshipTemplatesForPrint(
+        id: string,
+        reqBody: Pick<IGetExpandedEntityBody, 'templateIds' | 'expandedParams' | 'relationshipIds'>,
+        entityTemplatesMap: Map<string, IMongoEntityTemplate>,
+        relationShipsMap: Map<string, IMongoRelationshipTemplate>,
+        userId: string,
+    ) {
+        const { templateIds, expandedParams, relationshipIds } = reqBody;
 
         const childTemplates = await this.childTemplateManagerService.searchChildTemplates();
         const templateIdsWithChildren = Array.from(new Set([...templateIds, ...childTemplates.map(({ parentTemplate: { _id } }) => _id)]));
 
-        const initialCypherQuery = await expandEntityToNeoQuery(fixSearchBody, id, templateIdsWithChildren, expandedParams, entityTemplatesMap, id);
+        const initialCypherQuery = getOnlyTemplateIdsTree(id, templateIdsWithChildren, relationshipIds, expandedParams);
 
-        const initialExpandedEntity = await this.neo4jClient.readTransaction(
+        const initialExpandedEntity = await this.neo4jClient.readTransaction<IRelationShipTreeNode[]>(
             initialCypherQuery.cypherQuery,
-            normalizeReturnedRelAndEntities(disabled),
+            buildTemplateTree(entityTemplatesMap, relationShipsMap),
             initialCypherQuery.parameters,
         );
 
         if (!initialExpandedEntity) throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
 
         if (JSON.stringify(expandedParams) === '{}') return initialExpandedEntity;
-
-        const filterRes = await getExpandedFilteredGraphRecursively(
-            this.neo4jClient,
-            disabled || null,
-            initialExpandedEntity,
-            fixSearchBody,
-            templateIdsWithChildren,
-            expandedParams,
-            entityTemplatesMap,
-        );
 
         await this.activityLogProducer.createActivityLog({
             action: ActionsLog.VIEW_ENTITY,
@@ -1135,7 +1127,52 @@ class EntityManager extends DefaultManagerNeo4j {
             userId,
         });
 
-        return filterRes;
+        return initialExpandedEntity;
+    }
+
+    async printEntities(rootId: string, relationshipIds: string[], isShowDisabled: boolean) {
+        const initialCypherQuery = getEntitiesForPrintByRelIds(relationshipIds, isShowDisabled);
+
+        return this.neo4jClient.readTransaction(initialCypherQuery.cypherQuery, buildEntityTree(rootId), initialCypherQuery.parameters);
+    }
+
+    async getExpandedGraphById(id: string, reqBody: IGetExpandedEntityBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>, userId: string) {
+        const { templateIds, expandedParams, filters, relationshipIds } = reqBody;
+
+        const fixSearchBody = filters ?? {};
+
+        const childTemplates = await this.childTemplateManagerService.searchChildTemplates();
+        const templateIdsWithChildren = Array.from(new Set([...templateIds, ...childTemplates.map(({ parentTemplate: { _id } }) => _id)]));
+
+        const initialCypherQuery = expandEntityToNeoQuery(
+            fixSearchBody,
+            id,
+            templateIdsWithChildren,
+            relationshipIds,
+            expandedParams,
+            entityTemplatesMap,
+            id,
+        );
+
+        const initialExpandedEntity = await this.neo4jClient.readTransaction(
+            initialCypherQuery.cypherQuery,
+            normalizeReturnedRelAndEntities(),
+            initialCypherQuery.parameters,
+        );
+
+        if (!initialExpandedEntity) throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
+
+        if (JSON.stringify(expandedParams) === '{}') return initialExpandedEntity;
+
+        await this.activityLogProducer.createActivityLog({
+            action: ActionsLog.VIEW_ENTITY,
+            entityId: id,
+            metadata: {},
+            timestamp: new Date(),
+            userId,
+        });
+
+        return initialExpandedEntity;
     }
 
     async deleteRelationshipReferenceInTransaction({
@@ -1163,7 +1200,7 @@ class EntityManager extends DefaultManagerNeo4j {
     async getSelectedEntities(
         searchBody: IMultipleSelect<boolean>,
         entityTemplate: IMongoEntityTemplate,
-        showRelationships: boolean = true,
+        showRelationships = true,
     ): Promise<IEntityWithDirectRelationships[]> {
         if (searchBody.selectAll) {
             const { idsToExclude, filter, textSearch = '' } = searchBody as IMultipleSelect<true>;
