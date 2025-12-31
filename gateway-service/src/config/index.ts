@@ -52,7 +52,7 @@ const config = {
             token: env.get('FRONTEND_MAP_TOKEN').asString(),
             layers: env.get('FRONTEND_MAP_LAYERS').asJsonArray() as Array<{ name: string; body: string }>,
             url: env.get('FRONTEND_MAP_URL').asString(),
-            params: env.get('FRONTEND_MAP_PARAMS').asString(),
+            params: env.get('FRONTEND_MAP_PARAMS').asJsonObject(),
             layerLinkTag: env.get('FRONTEND_LAYER_LINK_TAG').asString(),
             layerLinkSchema: env.get('FRONTEND_LAYER_LINK_SCHEMA').asString(),
         },
