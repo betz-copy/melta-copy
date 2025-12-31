@@ -346,6 +346,7 @@ const buildBasePropertySchema = (property: EntityTemplateFormInputProperties, qu
         relationshipReference,
         expandedUserField,
         options,
+        accountBalance,
     } = property;
 
     const propertyType = getPropertyType(type);
@@ -386,6 +387,7 @@ const buildBasePropertySchema = (property: EntityTemplateFormInputProperties, qu
             : undefined,
         comment,
         expandedUserField,
+        accountBalance,
     };
 };
 
@@ -490,7 +492,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         propertiesTypeOrder,
         documentTemplatesIds: _documentTemplatesIds,
         fieldGroups: _fieldGroups,
-          walletTransfer,
+        walletTransfer,
         ...restOfProperties
     } = values;
 

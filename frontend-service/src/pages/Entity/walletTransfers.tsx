@@ -285,6 +285,9 @@ export const WalletTransfers: React.FC<IWalletTransfers> = ({
                 if (!params.data) return '';
                 const { direction, entity, balanceAtThatTime, template } = params.data;
                 const amount = direction === 'initial' ? balanceAtThatTime : (entity?.properties?.[template.walletTransfer?.amount] ?? '');
+                const isNegative = Number(amount) < 0;
+                if (isNegative) return amount;
+
                 return direction === 'to' ? `${amount} -` : `${amount} +`;
             },
             cellStyle: (params: any) => ({
