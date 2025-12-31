@@ -5,7 +5,7 @@ import { IRelationshipTemplateMap } from '../interfaces/relationshipTemplates';
 import { INestedRelationshipTemplates } from '../pages/Entity';
 import { getFullRelationshipTemplates } from './templates';
 
-const { maxPrintLevel } = environment;
+const { print: {maxPrintLevel} } = environment;
 
 export const sortTemplatesChildrenToParents = (
     depth: number,

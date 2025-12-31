@@ -30,6 +30,7 @@ apiRouter.use('/config', (_req, res) =>
         meltaUpdates: config.frontendConfig.meltaUpdates,
         meltaUpdatesDescription: config.frontendConfig.meltaUpdatesDescription,
         isOutsideDevelopment: config.frontendConfig.isOutsideDevelopment,
+        maxEntitiesToPrint: config.frontendConfig.maxEntitiesToPrint,
     }),
 );
 

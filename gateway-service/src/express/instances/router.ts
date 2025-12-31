@@ -139,6 +139,15 @@ InstancesRouter.post(
     InstanceManagerProxy,
 );
 
+InstancesRouter.post('/entities/printEntities/:id', InstancesValidatorMiddleware.validateUserCanReadEntityInstance, InstanceManagerProxy);
+
+InstancesRouter.post(
+    '/entities/templatesStructure/:id',
+    InstancesValidatorMiddleware.validateUserCanReadEntityInstance,
+    InstancesValidatorMiddleware.validateUserCanGetExpandedEntity,
+    InstanceManagerProxy,
+);
+
 InstancesRouter.post(
     '/entities',
     busboyMiddleware,

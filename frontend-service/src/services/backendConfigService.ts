@@ -16,6 +16,7 @@ export interface BackendConfigState {
     meltaUpdates: Record<string, string>;
     meltaUpdatesDescription: string;
     isOutsideDevelopment: boolean;
+    maxEntitiesToPrint: number;
 }
 
 export const getBackendConfigRequest = async () => {

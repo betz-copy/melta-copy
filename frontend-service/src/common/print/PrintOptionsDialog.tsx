@@ -1,4 +1,5 @@
-import { CloseOutlined, PrintOutlined } from '@mui/icons-material';
+import { PrintOutlined } from '@mui/icons-material';
+import CloseOutlined from '@mui/icons-material/CloseOutlined';
 import {
     Button,
     CircularProgress,
@@ -20,7 +21,7 @@ import { IFile } from '../../interfaces/preview';
 import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 import { IMongoStepTemplatePopulated } from '../../interfaces/processes/stepTemplate';
-import RelationshipSelection, { EntityConnectionsProps } from '../../pages/Entity/components/print/RelationshipSelection';
+import RelationshipSelection from '../../pages/Entity/components/print/RelationshipSelection';
 import { getFile } from '../../utils/getFileType';
 import MultipleSelect from '../inputs/MultipleSelect';
 import BlueTitle from '../MeltaDesigns/BlueTitle';
@@ -41,7 +42,6 @@ interface IEntityPrint {
     type: PrintType.Entity;
     template: IMongoEntityTemplatePopulated;
     instance: IEntityExpanded;
-    entityConnections: EntityConnectionsProps;
     options: {
         disabled: IOption;
         entityDates: IOption;
@@ -73,7 +73,6 @@ const getFilesFromTemplate = (
         return [];
     });
 };
-
 const PrintOptionsDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
@@ -87,6 +86,9 @@ const PrintOptionsDialog: React.FC<{
     onClick: React.MouseEventHandler<HTMLButtonElement>;
     title: string | undefined;
     setTitle: React.Dispatch<React.SetStateAction<string | undefined>>;
+
+    setSelectedRelationShipIds?: React.Dispatch<React.SetStateAction<string[]>>;
+    isPrintButtonEnabled?: boolean;
 }> = ({
     open,
     handleClose,
@@ -100,6 +102,8 @@ const PrintOptionsDialog: React.FC<{
     onClick,
     title,
     setTitle,
+    setSelectedRelationShipIds,
+    isPrintButtonEnabled = true,
 }) => {
     const theme = useTheme();
     const [isLoading, setIsLoading] = useState(false);
@@ -168,8 +172,8 @@ const PrintOptionsDialog: React.FC<{
                         />
                     </Grid>
                     <Grid>
-                        {type === PrintType.Entity && !!printItem.entityConnections.connectionsTemplates.length && (
-                            <RelationshipSelection expandedEntity={instance} entityConnections={printItem.entityConnections} />
+                        {type === PrintType.Entity && setSelectedRelationShipIds && (
+                            <RelationshipSelection expandedEntity={instance} setSelectedRelationShipIds={setSelectedRelationShipIds} />
                         )}
                     </Grid>
                     <Grid marginTop={2}>
@@ -230,7 +234,7 @@ const PrintOptionsDialog: React.FC<{
                             onClick(ev);
                         }}
                         endIcon={<PrintOutlined />}
-                        disabled={isLoading}
+                        disabled={isLoading || !isPrintButtonEnabled}
                         sx={{ borderRadius: '7px', fontWeight: 400 }}
                     >
                         {i18next.t('entityPage.print.continue')}
