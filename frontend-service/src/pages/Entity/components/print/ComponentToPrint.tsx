@@ -5,6 +5,7 @@ import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import BlueTitle from '../../../../common/MeltaDesigns/BlueTitle';
 import { FileToPrint } from '../../../../common/print/FileToPrint';
+import { IPrintOptions } from '../../../../common/print/PrintOptionsDialog';
 import { environment } from '../../../../globals';
 import { IEntity } from '../../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
@@ -20,19 +21,11 @@ const ComponentToPrint = React.forwardRef<
         entityTemplate: IMongoEntityTemplatePopulated;
         entity?: IEntityTreeNode;
         filesToPrint?: IFile[];
-        setSelectedFiles?: React.Dispatch<React.SetStateAction<IFile[]>>;
-        setFilesLoadingStatus: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
-        options: {
-            showDisabled: boolean;
-            showEntityDates: boolean;
-            showEntityFiles: boolean;
-            showPreviewPropertiesOnly: boolean;
-            addEntityCheckbox?: boolean;
-            appendSignatureField?: boolean;
-        };
+        setSelectedFiles?: React.Dispatch<React.SetStateAction<(IFile & { isLoading: boolean })[]>>;
+        options: IPrintOptions & { showEntityFiles: boolean };
         printTitle?: string;
     }
->(({ entityTemplate, entity, options, filesToPrint = [], setSelectedFiles, setFilesLoadingStatus, printTitle }, ref) => {
+>(({ entityTemplate, entity, options, filesToPrint = [], setSelectedFiles, printTitle }, ref) => {
     const theme = useTheme();
     const queryClient = useQueryClient();
 
@@ -100,13 +93,14 @@ const ComponentToPrint = React.forwardRef<
                                 file={file}
                                 key={`${file.id}-${file.contentType}`}
                                 onPreviewLoadingFinished={(error?: boolean) => {
-                                    setFilesLoadingStatus?.((prev) => ({ ...prev, [file.id]: false }));
-                                    if (error) {
-                                        toast.error(i18next.t('entityPage.previewRefetch'));
-                                        setSelectedFiles?.((prevSelectedFiles) =>
-                                            prevSelectedFiles.filter((selectedFile) => selectedFile.id !== file.id),
-                                        );
-                                    }
+                                    setSelectedFiles?.((prev) => {
+                                        if (error) {
+                                            toast.error(i18next.t('entityPage.previewRefetch'));
+                                            return prev.filter((f) => f.id !== file.id);
+                                        }
+
+                                        return prev.map((f) => (f.id === file.id ? { ...f, isLoading: false } : f));
+                                    });
                                 }}
                             />
                         );

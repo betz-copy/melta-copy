@@ -3,6 +3,7 @@
 import ShortcutIcon from '@mui/icons-material/Shortcut';
 import React from 'react';
 import { EntityPropertiesInternal } from '../../../../common/EntityProperties';
+import { IPrintOptions } from '../../../../common/print/PrintOptionsDialog';
 import { IEntity } from '../../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
@@ -12,12 +13,7 @@ import { IEntityTreeNode } from './ComponentToPrint';
 interface IEntityComponentToPrintProps {
     entityTemplate: IMongoEntityTemplatePopulated;
     entity: IEntity;
-    options: {
-        showEntityDates: boolean;
-        showDisabled: boolean;
-        addEntityCheckbox?: boolean;
-        showPreviewPropertiesOnly?: boolean;
-    };
+    options: Pick<IPrintOptions, 'showEntitiesDates' | 'showEntityPrintCheckbox' | 'showPreviewPropertiesOnly'>;
     hierarchicalChildren?: IEntityTreeNode[];
     depth?: number;
     entityTemplates: IEntityTemplateMap;
@@ -57,7 +53,7 @@ const EntityComponentToPrint: React.FC<IEntityComponentToPrintProps> = React.mem
                     showByGroups
                     style={{ width: '100%', display: 'flex', flexDirection: 'row' }}
                 />
-                {options.showEntityDates && <EntityDates createdAt={entity.properties.createdAt} updatedAt={entity.properties.updatedAt} toPrint />}
+                {options.showEntitiesDates && <EntityDates createdAt={entity.properties.createdAt} updatedAt={entity.properties.updatedAt} toPrint />}
             </div>
         );
 
@@ -65,7 +61,9 @@ const EntityComponentToPrint: React.FC<IEntityComponentToPrintProps> = React.mem
             <div style={{ display: 'flex', width: '100%', gap: '10px', alignItems: 'center', flexDirection: 'row' }}>
                 <div style={{ display: 'flex', flexDirection: 'row', gap: '10px', alignItems: 'center' }}>
                     {depth > 1 && <ShortcutIcon sx={{ fontSize: 16, color: '#9398C2', transform: 'rotate(180deg)' }} />}
-                    {options.addEntityCheckbox && <div style={{ width: '20px', height: '20px', borderRadius: '6px', border: '1px solid black' }} />}
+                    {options.showEntityPrintCheckbox && (
+                        <div style={{ width: '20px', height: '20px', borderRadius: '6px', border: '1px solid black' }} />
+                    )}
                 </div>
 
                 <div

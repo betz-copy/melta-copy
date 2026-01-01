@@ -1,20 +1,8 @@
 import { PrintOutlined } from '@mui/icons-material';
 import CloseOutlined from '@mui/icons-material/CloseOutlined';
-import {
-    Button,
-    CircularProgress,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    FormControlLabel,
-    Grid,
-    IconButton,
-    TextField,
-    useTheme,
-} from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, Grid, IconButton, TextField, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IFile } from '../../interfaces/preview';
@@ -34,19 +22,23 @@ type IOption = {
     label: string;
 };
 
+export interface IPrintOptions {
+    isShowDisabled: boolean;
+    showEntitiesDates: boolean;
+    showPreviewPropertiesOnly: boolean;
+    showEntityPrintCheckbox: boolean;
+    appendSignatureField: boolean;
+}
+
 export enum PrintType {
     Entity = 'entity',
     Process = 'process',
 }
-interface IEntityPrint {
+export interface IEntityPrint {
     type: PrintType.Entity;
     template: IMongoEntityTemplatePopulated;
     instance: IEntityExpanded;
-    options: {
-        disabled: IOption;
-        entityDates: IOption;
-        previewPropertiesOnly: IOption;
-    };
+    options: { [K in keyof Pick<IPrintOptions, 'appendSignatureField' | 'isShowDisabled' | 'showPreviewPropertiesOnly'>]: IOption };
 }
 
 interface IProcessPrint {
@@ -79,34 +71,15 @@ const PrintOptionsDialog: React.FC<{
     printItem: PrintItem;
     files: IFile[];
     setFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
-    selectedFiles: IFile[];
-    setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
-    filesLoadingStatus: Record<string, boolean>;
-    setFilesLoadingStatus: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+    selectedFiles: (IFile & { isLoading: boolean })[];
+    setSelectedFiles: React.Dispatch<React.SetStateAction<(IFile & { isLoading: boolean })[]>>;
     onClick: React.MouseEventHandler<HTMLButtonElement>;
     title: string | undefined;
     setTitle: React.Dispatch<React.SetStateAction<string | undefined>>;
 
     setSelectedRelationShipIds?: React.Dispatch<React.SetStateAction<string[]>>;
-    isPrintButtonEnabled?: boolean;
-}> = ({
-    open,
-    handleClose,
-    printItem,
-    files,
-    setFiles,
-    selectedFiles,
-    setSelectedFiles,
-    filesLoadingStatus,
-    setFilesLoadingStatus,
-    onClick,
-    title,
-    setTitle,
-    setSelectedRelationShipIds,
-    isPrintButtonEnabled = true,
-}) => {
+}> = ({ open, handleClose, printItem, files, setFiles, selectedFiles, setSelectedFiles, onClick, title, setTitle, setSelectedRelationShipIds }) => {
     const theme = useTheme();
-    const [isLoading, setIsLoading] = useState(false);
     const { type, template, instance, options } = printItem;
 
     const getPropertiesFiles = useCallback((): IFile[] => {
@@ -126,23 +99,6 @@ const PrintOptionsDialog: React.FC<{
         setFiles(currFiles);
         setSelectedFiles([]);
     }, [getPropertiesFiles, getProcessStepsFiles, setFiles, setSelectedFiles]);
-
-    // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
-    useEffect(() => {
-        const status: Record<string, boolean> = {};
-        for (const file of selectedFiles) {
-            status[file.id] = true;
-        }
-        setFilesLoadingStatus(status);
-    }, [selectedFiles]);
-
-    useEffect(() => {
-        if (Object.keys(filesLoadingStatus).length === 0) {
-            setIsLoading(false);
-            return;
-        }
-        setIsLoading(Object.values(filesLoadingStatus).some((loading) => loading));
-    }, [filesLoadingStatus]);
 
     const getFile = (optionId: string) => files.find(({ id }) => id === optionId)!;
 
@@ -185,7 +141,11 @@ const PrintOptionsDialog: React.FC<{
                                 selectedValue={selectedFiles.map(({ id, name }) => ({ label: name, value: id }))}
                                 onChange={(_event, newVal) => {
                                     if (newVal === null) return;
-                                    setSelectedFiles(Array.isArray(newVal) ? newVal.map(({ value }) => getFile(value)) : [getFile(newVal.value)]);
+                                    setSelectedFiles(
+                                        Array.isArray(newVal)
+                                            ? newVal.map(({ value }) => ({ ...getFile(value), isLoading: true }))
+                                            : [{ ...getFile(newVal.value), isLoading: true }],
+                                    );
                                 }}
                                 textFieldProps={{}}
                                 onBlur={() => {}}
@@ -234,11 +194,9 @@ const PrintOptionsDialog: React.FC<{
                             onClick(ev);
                         }}
                         endIcon={<PrintOutlined />}
-                        disabled={isLoading || !isPrintButtonEnabled}
                         sx={{ borderRadius: '7px', fontWeight: 400 }}
                     >
                         {i18next.t('entityPage.print.continue')}
-                        {isLoading && <CircularProgress size={20} />}
                     </Button>
                 </Grid>
             </DialogActions>

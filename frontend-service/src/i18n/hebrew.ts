@@ -240,10 +240,10 @@ export default {
         print: {
             header: 'הדפס ישות',
             continue: 'הדפסה',
-            showDisabled: 'הצגת יישויות מושבתות',
-            showEntityDates: 'הצגת תאריך יצירה ועדכון יישות',
-            showOnlyPreviewProperties: 'הדפסת תצוגה מצומצמת',
-            showEntityCheckbox: 'הצגת תיבת סימון ליישות',
+            isShowDisabled: 'הצגת יישויות מושבתות',
+            showEntitiesDates: 'הצגת תאריך יצירה ועדכון יישות',
+            showPreviewPropertiesOnly: 'הדפסת תצוגה מצומצמת',
+            showEntityPrintCheckbox: 'הצגת תיבת סימון ליישות',
             appendSignatureField: 'הצגת חתימות בסוף',
             signatureFields: {
                 signedByDetails: 'פרטי המחתים',

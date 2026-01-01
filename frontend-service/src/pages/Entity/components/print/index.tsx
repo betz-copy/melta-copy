@@ -1,11 +1,11 @@
 import { PrintOutlined } from '@mui/icons-material';
 import { Backdrop, Button, CircularProgress, ThemeProvider } from '@mui/material';
 import i18next from 'i18next';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from 'react-query';
 import { useReactToPrint } from 'react-to-print';
 import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
-import PrintOptionsDialog, { PrintType } from '../../../../common/print/PrintOptionsDialog';
+import PrintOptionsDialog, { IEntityPrint, IPrintOptions, PrintType } from '../../../../common/print/PrintOptionsDialog';
 import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IFile } from '../../../../interfaces/preview';
@@ -24,23 +24,23 @@ const Print: React.FC<{
 
     const [openModal, setOpenModal] = useState<boolean>(false);
     const [files, setFiles] = useState<IFile[]>([]);
-    const [selectedFiles, setSelectedFiles] = useState<IFile[]>(files);
-    const [filesLoadingStatus, setFilesLoadingStatus] = useState<Record<string, boolean>>({});
+    const [selectedFiles, setSelectedFiles] = useState<(IFile & { isLoading: boolean })[]>([]);
     const [title, setTitle] = useState<string | undefined>(undefined);
 
-    const [isShowDisabled, setIsShowDisabled] = useState<boolean>(true);
-    const [showEntityDates, setShowEntityDates] = useState<boolean>(true);
-    const [showPreviewPropertiesOnly, setShowPreviewPropertiesOnly] = useState<boolean>(true);
-    const [showEntityPrintCheckbox, setShowEntityPrintCheckbox] = useState<boolean>(false);
-    const [appendSignatureField, setAppendSignatureField] = useState<boolean>(false);
+    const [printOptions, setPrintOptions] = useState<IPrintOptions>({
+        isShowDisabled: true,
+        showEntitiesDates: true,
+        showPreviewPropertiesOnly: true,
+        showEntityPrintCheckbox: false,
+        appendSignatureField: false,
+    });
 
     const [selectedRelationShipIds, setSelectedRelationShipIds] = useState<string[]>([]);
-
     const [isPreparingPdf, setIsPreparingPdf] = useState<boolean>(false);
 
-    const { data, refetch, isFetching } = useQuery({
+    const { refetch, isFetching, data } = useQuery({
         queryKey: ['getEntitiesTreeForPrint', expandedEntity.entity.properties._id, selectedRelationShipIds.join(',')],
-        queryFn: () => getEntitiesTreeForPrint(expandedEntity.entity.properties._id, selectedRelationShipIds, isShowDisabled),
+        queryFn: () => getEntitiesTreeForPrint(expandedEntity.entity.properties._id, selectedRelationShipIds, printOptions.isShowDisabled),
         enabled: false,
         onSuccess: () => {
             setIsPreparingPdf(true);
@@ -68,23 +68,23 @@ const Print: React.FC<{
         },
     });
 
-    const options = {
-        disabled: { show: isShowDisabled, set: setIsShowDisabled, label: 'entityPage.print.showDisabled' },
-        previewPropertiesOnly: {
-            show: showPreviewPropertiesOnly,
-            set: setShowPreviewPropertiesOnly,
-            label: 'entityPage.print.showOnlyPreviewProperties',
-        },
-        entityDates: { show: showEntityDates, set: setShowEntityDates, label: 'entityPage.print.showEntityDates' },
-        entityCheckbox: { show: showEntityPrintCheckbox, set: setShowEntityPrintCheckbox, label: 'entityPage.print.showEntityCheckbox' },
-        appendSignatureField: { show: appendSignatureField, set: setAppendSignatureField, label: 'entityPage.print.appendSignatureField' },
-    };
-
     useEffect(() => {
-        if (data && isPreparingPdf) {
-            handlePrint();
-        }
-    }, [data, isPreparingPdf, handlePrint]);
+        if (isPreparingPdf && selectedFiles.every(({ isLoading }) => !isLoading)) handlePrint();
+    }, [isPreparingPdf, handlePrint, selectedFiles]);
+
+    const dialogOptions = useMemo(() => {
+        const final = {} as IEntityPrint['options'];
+
+        Object.entries(printOptions).forEach(([key, value]) => {
+            final[key] = {
+                show: value,
+                set: () => setPrintOptions((prev) => ({ ...prev, [key]: !value })),
+                label: `entityPage.print.${key}`,
+            };
+        });
+
+        return final;
+    }, [printOptions]);
 
     return (
         <>
@@ -94,25 +94,23 @@ const Print: React.FC<{
                 </Button>
             </MeltaTooltip>
 
-            {(data || isPreparingPdf) && (
+            {isPreparingPdf && (
                 <div style={{ display: 'none' }}>
                     <style>{'@page { margin: 15px 10px 15px 10px !important; }'}</style>
                     <ThemeProvider theme={lightTheme}>
                         <ComponentToPrint
                             ref={componentRef}
                             entityTemplate={entityTemplate}
-                            entity={data}
+                            entity={
+                                data ?? {
+                                    ...expandedEntity.entity,
+                                    relationshipId: '',
+                                    children: [],
+                                }
+                            }
                             filesToPrint={selectedFiles}
                             setSelectedFiles={setSelectedFiles}
-                            setFilesLoadingStatus={setFilesLoadingStatus}
-                            options={{
-                                showDisabled: isShowDisabled,
-                                showEntityDates,
-                                showEntityFiles: !!selectedFiles.length,
-                                showPreviewPropertiesOnly,
-                                addEntityCheckbox: showEntityPrintCheckbox,
-                                appendSignatureField,
-                            }}
+                            options={{ ...printOptions, showEntityFiles: !!selectedFiles.length }}
                             printTitle={title}
                         />
                     </ThemeProvider>
@@ -126,23 +124,20 @@ const Print: React.FC<{
                         type: PrintType.Entity,
                         instance: expandedEntity,
                         template: entityTemplate,
-                        options,
+                        options: dialogOptions,
                     }}
                     handleClose={handleClose}
                     files={files}
                     setFiles={setFiles}
                     selectedFiles={selectedFiles}
                     setSelectedFiles={setSelectedFiles}
-                    filesLoadingStatus={filesLoadingStatus}
-                    setFilesLoadingStatus={setFilesLoadingStatus}
                     onClick={() => {
                         handleClose();
-                        refetch();
+                        selectedRelationShipIds.length ? refetch() : setIsPreparingPdf(true);
                     }}
                     title={title}
                     setTitle={setTitle}
                     setSelectedRelationShipIds={setSelectedRelationShipIds}
-                    isPrintButtonEnabled={!!selectedRelationShipIds.length}
                 />
             )}
 
