@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { ForceGraphMethods, LinkObject, NodeObject } from 'react-force-graph-2d';
 import { environment } from '../../globals';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';

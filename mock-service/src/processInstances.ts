@@ -1,6 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-/* eslint-disable no-plusplus */
-
 import { IMongoProcessTemplatePopulated } from '@microservices/shared';
 import { Axios } from 'axios';
 import { JSONSchemaFaker } from 'json-schema-faker';

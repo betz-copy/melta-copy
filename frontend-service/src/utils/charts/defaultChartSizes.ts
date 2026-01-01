@@ -5,7 +5,6 @@ const { defaultColumnSizes, cols, itemWidth } = environment.charts;
 
 export const generateLayoutDetails = <T extends { _id: string }>(items: T[]) =>
     Object.keys(defaultColumnSizes).reduce((acc, col) => {
-        // eslint-disable-next-line no-param-reassign
         acc[col] = items.map(({ _id }, index) => ({
             i: _id,
             x: cols - itemWidth - (index % (cols / itemWidth)) * itemWidth,

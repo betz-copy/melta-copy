@@ -36,11 +36,21 @@ export const environment = {
         workspaces: '/workspaces',
         dashboard: '/dashboard',
     },
+    twinWalletId: '$twin',
     unauthorizedId: 'unauthorized',
     clientSideId: 'client-side',
     defaultTitle: 'Melta',
     workspaceIdHeaderName: 'workspace-id',
     searchPath: '/search',
+    searchParams: {
+        viewModeKey: 'viewMode',
+        semanticSearchKey: 'semanticSearch',
+        searchKey: 'search',
+        viewModeOptions: {
+            templatesTables: 'templates-tables-view',
+            card: 'cards-view',
+        },
+    },
     graphSettings: {
         nodeConnectionsCountRangesToNodeSize: {
             '0-2': 3,
@@ -87,6 +97,9 @@ export const environment = {
         heightPaddingMultiplier: 0.3,
         widthPaddingMultiplier: 0.6,
     },
+    excludedFormats: ['text-area', 'fileId', 'relationshipReference', 'user', 'location', 'signature', 'comment'] as string[],
+    signatureFields: ['signedByDetails', 'stampedByDetails'],
+    signatureFieldDetails: ['fullName', 'rank', 'personalNumber', 'signature'],
     users: {
         kartoffelProfile: 'kartoffelProfile',
     },
@@ -130,6 +143,7 @@ export const environment = {
     activityLog: {
         infiniteScrollPageCount: 10,
     },
+    datePickerViews: ['year', 'month', 'day'],
     processInstances: {
         infiniteScrollPageCount: 10,
     },
@@ -350,7 +364,12 @@ export const environment = {
     dateRegex: /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/,
     dateTimeRegex: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
     objectIdRegex: /^[0-9a-fA-F]{24}$/,
-    maxPrintLevel: 5,
+    print: {
+        maxPrintLevel: 4,
+        neoIdsPathSeparator: ' ',
+        relationshipPathSeparator: '&',
+        neoRelIdsSeparator: ',',
+    },
     formats: {
         date: 'dd/MM/yyyy',
         dateTime: 'dd/MM/yyyy HH:mm',
@@ -581,7 +600,7 @@ export const environment = {
             'hrl',
             'xrl',
             'yrl',
-            'fs',
+            'node:fs',
             'fsi',
             'fsx',
             'fx',
@@ -598,7 +617,7 @@ export const environment = {
             'fy',
             'fancypack',
             'fan',
-            'fs',
+            'node:fs',
             'for',
             'eam.fs',
             'fth',
@@ -608,7 +627,7 @@ export const environment = {
             'forth',
             'fr',
             'frt',
-            'fs',
+            'node:fs',
             'ftl',
             'fr',
             'g',
@@ -627,7 +646,7 @@ export const environment = {
             'fp',
             'frag',
             'frg',
-            'fs',
+            'node:fs',
             'fsh',
             'fshader',
             'geo',
@@ -711,7 +730,7 @@ export const environment = {
             'erb',
             'erb.deface',
             'phtml',
-            'http',
+            'node:http',
             'hh',
             'php',
             'haml',
@@ -1392,7 +1411,13 @@ export const environment = {
         ],
     },
     emptyHtmlStringValues: ['<p><br/></p>', '<p><br></p>'] as string[],
-    errorColor: '#d32f2f',
+    color: {
+        error: '#d32f2f',
+        warning: '#FFAC2F',
+        enforcement: '#DD3500',
+        failed: '#A40000',
+        success: '#4FC318',
+    },
     systemManagement: {
         actions: {
             unusedPropertyErrorCodeTs: '6133',

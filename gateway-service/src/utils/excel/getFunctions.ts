@@ -27,15 +27,17 @@ import {
     isValidWGS84,
     locationConverterToString,
     logger,
+    PropertyFormat,
     ServiceError,
     stringToCoordinates,
     UploadedFile,
 } from '@microservices/shared';
 import { AxiosError } from 'axios';
-import Excel, { CellModel } from 'exceljs';
+import Excel, { Cell, CellModel } from 'exceljs';
 import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
 import UserService from '../../externalServices/userService';
+import { showRelationshipRefColumn } from './createFunctions';
 import excelConfig from './excelConfig';
 
 const { invalidDate, invalidTime, invalidLocation, invalidUnit } = config.loadExcel;
@@ -56,7 +58,7 @@ const formatExcel = (
             if (value === excelConfig.FALSE_TO_HEBREW) return false;
             break;
         case 'string':
-            if (format === 'email' && typeof value === 'object') return (value as any).text;
+            if (format === 'email' && typeof value === 'object') return (value as Cell).text;
             if (format === 'date') return new Date(value as string).toLocaleDateString('en-CA');
             if (format === 'date-time') return new Date(value as string).toISOString();
             if (format === 'fileId') return (value as CellModel).text;
@@ -84,8 +86,7 @@ const formatExcel = (
                 }
 
                 const unitId = unitsMap.get(normalizedValue as string);
-                if (!unitId) throw new BadRequestError(invalidUnit, { name: value });
-                return unitId;
+                return unitId ?? normalizedValue;
             }
             if (format === 'relationshipReference') {
                 const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId;
@@ -217,12 +218,21 @@ export const readExcelFile = async (
     workspaceId: string,
     entitiesFileLimit = config.loadExcel.entitiesFileLimit,
     oldEntities: IEntityWithDirectRelationships[] = [],
+    requiredConstraints: string[] = [],
+    userUnits?: string[],
 ) => {
     const isEditMode = oldEntities.length > 0;
+    const isChild = isChildTemplate(template);
 
     const entities: IEntityWithIgnoredRules[] = [];
     const columns = Object.fromEntries(
-        Object.entries(template.properties.properties).filter(([_propertyKey, propertyTemplate]) => isEditMode || isIncludedColumn(propertyTemplate)),
+        Object.entries(template.properties.properties).filter(([propertyKey, propertyTemplate]) => {
+            if (isEditMode) return true;
+            const showRelationshipRef = showRelationshipRefColumn(propertyKey, propertyTemplate, relatedTemplatesMap, requiredConstraints);
+            if (!showRelationshipRef) return false;
+
+            return isIncludedColumn(propertyTemplate);
+        }),
     );
 
     const identifier = Object.entries(template.properties.properties).find(([_key, value]) => value.identifier === true)?.[0];
@@ -230,7 +240,8 @@ export const readExcelFile = async (
     let isFailed = false;
 
     const units = await UserService.getUnits({ workspaceIds: [workspaceId], disabled: false });
-    const unitsMap = new Map(units.map((unit) => [unit.name, unit._id]));
+    const filteredUnits = isChild && userUnits ? units.filter((unit) => userUnits.includes(unit._id)) : units;
+    const unitsMap = new Map(filteredUnits.map((unit) => [unit.name, unit._id]));
 
     await Promise.all(
         files.map(async (file) => {
@@ -255,21 +266,21 @@ export const readExcelFile = async (
                     try {
                         const formatCellValue = formatExcel(cellValue, value, isEditMode, relatedTemplatesMap, unitsMap);
                         if (formatCellValue === invalidDate) {
-                            failedProperties.push({ key, value, cellValue, format: 'date' });
+                            failedProperties.push({ key, value, cellValue, format: PropertyFormat.date });
                             isFailed = true;
                         } else rowData[key] = formatCellValue;
                     } catch (error: any) {
                         logger.error("there's an error in the entity", { error });
                         if (error.message.includes(invalidTime)) {
-                            failedProperties.push({ key, value, cellValue, format: 'date-time' });
+                            failedProperties.push({ key, value, cellValue, format: PropertyFormat['date-time'] });
                             isFailed = true;
                         }
                         if (error.message.includes(invalidLocation)) {
-                            failedProperties.push({ key, value, cellValue, format: 'location' });
+                            failedProperties.push({ key, value, cellValue, format: PropertyFormat.location });
                             isFailed = true;
                         }
                         if (error.message.includes(invalidUnit)) {
-                            failedProperties.push({ key, value, cellValue, format: 'unitField' });
+                            failedProperties.push({ key, value, cellValue, format: PropertyFormat.unitField });
                             isFailed = true;
                         }
                     }
@@ -281,7 +292,7 @@ export const readExcelFile = async (
                     if (updatedEntity) entities.push({ ...updatedEntity, ignoredRules: [] });
                 } else {
                     entities.push({
-                        templateId: isChildTemplate(template) ? template.parentTemplate._id : template._id,
+                        templateId: isChild ? template.parentTemplate._id : template._id,
                         properties: rowData,
                         ignoredRules: [],
                     });

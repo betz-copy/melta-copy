@@ -1,8 +1,4 @@
-import { _debounce } from '@ag-grid-community/core';
-import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen';
-import OpenInFullIcon from '@mui/icons-material/OpenInFull';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { CloseFullscreen, OpenInFull, Visibility, VisibilityOff } from '@mui/icons-material';
 import { Grid, IconButton, Tooltip } from '@mui/material';
 import i18next from 'i18next';
 import React, { useMemo } from 'react';
@@ -63,7 +59,7 @@ const Header = ({ setWizardDialogState, setExpandedIds, expandedIds, onSearch, i
                 }}
             >
                 <Tooltip
-                    title={`${i18next.t(expandedIds.length ? 'wizard.unit.header.collapse' : 'wizard.unit.header.expand')} ${i18next.t('wizard.unit.unitTree')}`}
+                    title={`${i18next.t(`wizard.unit.header.${expandedIds.length ? 'collapse' : 'expand'}`)} ${i18next.t('wizard.unit.unitTree')}`}
                 >
                     <IconButton
                         onClick={() => {
@@ -71,15 +67,15 @@ const Header = ({ setWizardDialogState, setExpandedIds, expandedIds, onSearch, i
                             else setExpandedIds(flattenedTree?.map(({ _id }) => _id) ?? []);
                         }}
                     >
-                        {expandedIds.length ? <CloseFullscreenIcon color="primary" /> : <OpenInFullIcon color="primary" />}
+                        {expandedIds.length ? <CloseFullscreen color="primary" /> : <OpenInFull color="primary" />}
                     </IconButton>
                 </Tooltip>
 
                 <Tooltip
-                    title={`${i18next.t(isShowDisabled ? 'wizard.unit.header.hide' : 'wizard.unit.header.show')} ${i18next.t('wizard.unit.header.disabledUnits')}`}
+                    title={`${i18next.t(`wizard.unit.header.${isShowDisabled ? 'hide' : 'show'}`)} ${i18next.t('wizard.unit.header.disabledUnits')}`}
                 >
                     <IconButton onClick={() => setIsShowDisabled((prev) => !prev)}>
-                        {isShowDisabled ? <VisibilityIcon color="primary" /> : <VisibilityOffIcon color="primary" />}
+                        {isShowDisabled ? <Visibility color="primary" /> : <VisibilityOff color="primary" />}
                     </IconButton>
                 </Tooltip>
             </div>

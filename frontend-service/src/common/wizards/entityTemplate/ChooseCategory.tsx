@@ -2,25 +2,16 @@ import { Autocomplete, TextField } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
-import * as Yup from 'yup';
 import { ICategoryMap } from '../../../interfaces/categories';
 import { useUserStore } from '../../../stores/user';
 import { allowedCategories } from '../../../utils/permissions/templatePermissions';
 import { StepComponentProps } from '../index';
 import { EntityTemplateWizardValues } from './index';
 
-const chooseCategorySchema = Yup.object({
-    category: Yup.object({
-        _id: Yup.string().required(i18next.t('validation.required')),
-        name: Yup.string().required(i18next.t('validation.required')),
-        displayName: Yup.string().required(i18next.t('validation.required')),
-    }).required(i18next.t('validation.required')),
-});
 
-const ChooseCategory: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ values, touched, errors, setFieldValue }) => {
+const ChooseCategory: React.FC<StepComponentProps<EntityTemplateWizardValues>>  = ({ values, touched, errors, setFieldValue }) => {
     const queryClient = useQueryClient();
     const currentUser = useUserStore((state) => state.user);
-
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
     return (
@@ -31,7 +22,7 @@ const ChooseCategory: React.FC<StepComponentProps<EntityTemplateWizardValues>> =
             value={values.category._id ? values.category : null}
             getOptionLabel={(option) => option.displayName}
             isOptionEqualToValue={(option, value) => option._id === value._id}
-            sx={{ width: 300 }}
+            sx={{ width: 240 }}
             renderInput={(params) => (
                 <TextField
                     {...params}
@@ -47,4 +38,4 @@ const ChooseCategory: React.FC<StepComponentProps<EntityTemplateWizardValues>> =
     );
 };
 
-export { ChooseCategory, chooseCategorySchema };
+export { ChooseCategory };

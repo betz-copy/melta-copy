@@ -11,7 +11,6 @@ const causesOfInstanceSchema = Joi.object({
     properties: Joi.array().items(Joi.string()).required(),
 });
 
-// eslint-disable-next-line import/prefer-default-export
 export const brokenRuleSchema = Joi.object({
     ruleId: Joi.string().required(),
     failures: Joi.array()

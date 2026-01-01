@@ -23,7 +23,7 @@ const extractStringFromProperty = (
     workspaceId?: string,
     allowLink: boolean = false,
 ): string => {
-    const { format, type, ...restOfProp } = property;
+    const { format, type, ...restOfProp } = property ?? {};
     switch (format) {
         case 'comment':
             return restOfProp.comment || '';
@@ -36,14 +36,14 @@ const extractStringFromProperty = (
             if (relatedTemplates) {
                 const relatedTemplate: IMongoEntityTemplatePopulated = relatedTemplates!.get(property.relationshipReference!.relatedTemplateId)!;
                 const relatedValue = extractStringFromProperty(
-                    relatedTemplate.properties.properties[relatedFieldName],
-                    value.properties[relatedFieldName],
+                    relatedTemplate?.properties?.properties[relatedFieldName],
+                    value?.properties[relatedFieldName],
                 );
 
-                return allowLink && baseUrl ? entityLink(relatedValue, baseUrl, value.properties._id) : relatedValue;
+                return allowLink && baseUrl ? entityLink(relatedValue, baseUrl, value?.properties._id) : relatedValue;
             }
 
-            return allowLink && baseUrl ? entityLink(property.title, baseUrl, value.properties._id) : property.title;
+            return allowLink && baseUrl ? entityLink(property.title, baseUrl, value?.properties._id) : property.title;
         }
         case 'user': {
             const parsed = JSON.parse(value);

@@ -8,17 +8,14 @@ import {
     ValidationError,
 } from '@microservices/shared';
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
-import neo4j, { Node as Neo4jNode, Relationship as Neo4jRelationship, QueryResult, Transaction } from 'neo4j-driver';
+import neo4j, { Node as Neo4jNode, QueryResult, Relationship as Neo4jRelationship, Transaction } from 'neo4j-driver';
 import { v4 as uuidv4 } from 'uuid';
 import config from '../../config';
 import EntityManager from '../../express/entities/manager';
 import { IFormulaCauses } from '../../express/rules/interfaces/formulaWithCauses';
 
 const {
-    map: {
-        polygon: { polygonPrefix, polygonSuffix },
-        srid,
-    },
+    map: { polygon: { polygonPrefix, polygonSuffix }, srid },
     timezone,
     neo4j: {
         stringPropertySuffix,
@@ -33,7 +30,7 @@ const {
     },
 } = config;
 
-type Node = Neo4jNode<number>;
+export type Node = Neo4jNode<number>;
 type Relationship = Neo4jRelationship<number>;
 
 /**
@@ -55,10 +52,10 @@ export const normalizeFields = (properties: Record<string, any>): { properties: 
     const usersArrayKeys: Set<string> = new Set<string>();
     const userKeys: Set<string> = new Set<string>();
 
-    Object.entries(properties).forEach(([key, value]) => {
+    for (const [key, value] of Object.entries(properties)) {
         const suffixes = [stringPropertySuffix, booleanPropertySuffix, filePropertySuffix, locationCoordinateSystemSuffix];
 
-        if (suffixes.some((suffix) => key.endsWith(suffix))) return;
+        if (suffixes.some((suffix) => key.endsWith(suffix))) continue;
 
         if (key.endsWith(colorPropertySuffix) && properties[key] !== undefined) coloredFields[key.slice(0, -colorPropertySuffix.length)] = value;
 
@@ -68,31 +65,31 @@ export const normalizeFields = (properties: Record<string, any>): { properties: 
                 key.includes(suffixFieldName),
             )!.suffixFieldName;
             usersArrayKeys.add(key.split(currentUserField)[0]);
-            return;
+            continue;
         }
 
         if (key.includes('.') && key.endsWith(`${userFieldPropertySuffix}`)) {
             const currentUserField = userOriginalAndSuffixFieldsMap.find(({ suffixFieldName }) => key.includes(suffixFieldName))!.suffixFieldName;
             userKeys.add(key.split(currentUserField)[0]);
-            return;
+            continue;
         }
 
         if (value instanceof neo4j.types.LocalDateTime) {
             props[key] = fromZonedTime(new Date(value.toString()), timezone).toISOString();
 
-            return;
+            continue;
         }
 
         if (value instanceof neo4j.types.Date) {
             props[key] = formatDate(value.toString());
 
-            return;
+            continue;
         }
 
         if (value instanceof neo4j.types.Point) {
             props[key] = { location: `${value.x}, ${value.y}`, coordinateSystem: properties[`${key}${locationCoordinateSystemSuffix}`] };
 
-            return;
+            continue;
         }
         if (Array.isArray(value) && value.every((item) => item instanceof neo4j.types.Point)) {
             const points = value.map((point) => `${point.x} ${point.y}`);
@@ -101,43 +98,43 @@ export const normalizeFields = (properties: Record<string, any>): { properties: 
                 coordinateSystem: properties[`${key}${locationCoordinateSystemSuffix}`],
             };
 
-            return;
+            continue;
         }
 
         props[key] = value;
-    });
+    }
 
     if (usersArrayKeys.size) {
-        usersArrayKeys.forEach((userKey) => {
+        for (const userKey of usersArrayKeys) {
             props[userKey] = properties[`${userKey}${usersArrayOriginalAndSuffixFieldsMap[0].suffixFieldName}${usersFieldsPropertySuffix}`].map(
                 (_id: string, index: string | number) => {
-                    const objToReturn: any = {};
+                    const objToReturn: Record<string, unknown> = {};
 
-                    usersArrayOriginalAndSuffixFieldsMap.forEach((userField) => {
+                    for (const userField of usersArrayOriginalAndSuffixFieldsMap) {
                         objToReturn[userField.originalFieldName] =
                             properties[`${userKey}${userField.suffixFieldName}${usersFieldsPropertySuffix}`][index];
-                    });
+                    }
 
                     return JSON.stringify({
                         ...objToReturn,
                     });
                 },
             );
-        });
+        }
     }
 
     if (userKeys.size) {
-        userKeys.forEach((userKey) => {
-            const objToReturn: any = {};
+        for (const userKey of userKeys) {
+            const objToReturn: Record<string, unknown> = {};
 
-            userOriginalAndSuffixFieldsMap.forEach((userField) => {
+            for (const userField of userOriginalAndSuffixFieldsMap) {
                 objToReturn[userField.originalFieldName] = properties[`${userKey}${userField.suffixFieldName}${userFieldPropertySuffix}`];
-            });
+            }
 
             props[userKey] = JSON.stringify({
                 ...objToReturn,
             });
-        });
+        }
     }
 
     return { properties: props, coloredFields };
@@ -147,12 +144,12 @@ type ResponseType = 'singleResponse' | 'singleResponseNotNullable' | 'multipleRe
 type Response<ResType extends ResponseType, Data> = ResType extends 'singleResponse'
     ? Data | null
     : ResType extends 'singleResponseNotNullable'
-      ? Data
-      : ResType extends 'multipleResponses'
-        ? Data[]
-        : never;
+    ? Data
+    : ResType extends 'multipleResponses'
+    ? Data[]
+    : never;
 
-const nodeToEntity = (node: Node): IEntity => {
+export const nodeToEntity = (node: Node): IEntity => {
     const { properties, coloredFields } = normalizeFields(node.properties);
     return {
         templateId: node.labels[0],
@@ -248,15 +245,8 @@ export const normalizeReturnedDeletedRelationship = (result: QueryResult) => {
     };
 };
 
-const doesPathContainDisabledNode = (path: (Node | Relationship)[], disabled: boolean) => {
-    return path.slice(1).some((pathPart) => {
-        const isNode = 'labels' in pathPart;
-        return isNode && !pathPart.properties.disabled === disabled;
-    });
-};
-
 export const normalizeReturnedRelAndEntities =
-    (disabled: boolean | null) =>
+    () =>
     (result: QueryResult): IEntityExpanded | null => {
         if (!result.records.length) return null;
 
@@ -264,18 +254,10 @@ export const normalizeReturnedRelAndEntities =
 
         if (!entity) return null;
 
-        const validConnections = result.records.slice(1).filter((record) => {
-            const path = record.get(0) as (Node | Relationship)[];
-
-            if (typeof disabled === 'boolean') return !doesPathContainDisabledNode(path, disabled);
-
-            return true;
-        });
-
-        const connections = validConnections.map((record) => {
+        const connections = result.records.slice(1).map((record) => {
             const [firstEntity, relationship, secondEntity] = record.get(0).slice(-3) as [Node, Relationship, Node];
             const [sourceEntity, destinationEntity] =
-                relationship.start === firstEntity.identity ? [firstEntity, secondEntity] : [secondEntity, firstEntity];
+                firstEntity.identity === relationship.start ? [firstEntity, secondEntity] : [secondEntity, firstEntity];
 
             return {
                 sourceEntity: nodeToEntity(sourceEntity),

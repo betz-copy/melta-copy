@@ -30,7 +30,7 @@ export const groupChildTemplatesByParent = (
 ): Record<string, IChildTemplatePopulated[]> => {
     const grouped: Record<string, IChildTemplatePopulated[]> = {};
 
-    for (const childTemplate of childTemplates.values()) {
+    for (const childTemplate of Array.from(childTemplates.values())) {
         const parentId = childTemplate.parentTemplate._id.toString();
 
         if (!entityTemplates.get(parentId)) {

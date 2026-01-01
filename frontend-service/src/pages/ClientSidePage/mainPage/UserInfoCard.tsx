@@ -82,7 +82,7 @@ const UserInfoCard: React.FC<IUserInfoCardProps> = ({
                             <Grid>
                                 <Link href={`/client-side/entity/${currentUserFromClientSide.properties._id}`}>
                                     <IconButtonWithPopover popoverText={i18next.t('entitiesTableOfTemplate.navigateToEntityPage')}>
-                                        <img height="15px" src="/icons/read-more-icon.svg" />
+                                        <img height="15px" src="/icons/read-more-icon.svg" alt="read-more" />
                                     </IconButtonWithPopover>
                                 </Link>
                             </Grid>

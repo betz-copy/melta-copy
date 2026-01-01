@@ -1,7 +1,6 @@
 import * as Joi from 'joi';
 
 // GET /api/activityLog/:entityId
-// eslint-disable-next-line import/prefer-default-export
 export const getActivitySchema = Joi.object({
     query: {
         limit: Joi.number().integer().min(0).default(0),

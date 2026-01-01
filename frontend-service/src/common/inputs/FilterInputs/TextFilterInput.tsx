@@ -33,10 +33,9 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
     hideFilterType = false,
     forceEqualsType = false,
 }) => {
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
-        if (forceEqualsType && filterField && filterField.type !== 'equals') {
-            handleFilterTypeChange('equals');
-        }
+        if (forceEqualsType && filterField && filterField.type !== 'equals') handleFilterTypeChange('equals');
     }, [forceEqualsType, filterField]);
 
     return (

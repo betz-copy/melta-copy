@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/correctness/useExhaustiveDependencies: dependencies*/
 import { Grid } from '@mui/material';
 import React, { ReactNode, useEffect, useState } from 'react';
 import { ResizableBox } from 'react-resizable';
@@ -42,7 +43,6 @@ const Resizable: React.FC<ResizeBoxProps> = ({ children, id, isSideBarOpen = fal
             setDimensions(getDimensions());
             setIsDimensionsChange(false);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isDimensionsChange]);
 
     const onResizeStart = () => {

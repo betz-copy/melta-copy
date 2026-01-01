@@ -15,6 +15,7 @@ import MeltaCheckbox from '../../../common/MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
 import { RuleWizard } from '../../../common/wizards/rule';
+import { environment } from '../../../globals';
 import { ICategoryMap } from '../../../interfaces/categories';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
@@ -30,12 +31,14 @@ import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
 
+const { warning, enforcement } = environment.color;
+
 const getRuleIcon = (rule: IMongoRule) => {
     switch (rule.actionOnFail) {
         case ActionOnFail.WARNING:
-            return <WarningAmberRounded sx={{ color: '#FFAC2F' }} />;
+            return <WarningAmberRounded sx={{ color: warning }} />;
         case ActionOnFail.ENFORCEMENT:
-            return <WarningRounded sx={{ color: '#DD3500' }} />;
+            return <WarningRounded sx={{ color: enforcement }} />;
         case ActionOnFail.INDICATOR: {
             const icons = [
                 rule.mail?.display && <Email key="email" sx={{ color: '#166BD4' }} />,
@@ -70,7 +73,7 @@ const mailRecipientsToString = (sendAssociatedUsers: boolean, sendPermissionUser
     return valuesToDisplay.join(', ');
 };
 
-const showProperty = (key: string, value: string, darkMode: boolean, isColor?: boolean, isMail?: boolean) => {
+export const showProperty = (key: string, value: string, darkMode: boolean, isColor?: boolean, isMail?: boolean) => {
     const typography = (
         <Typography
             color={darkMode ? '#A5A8C7' : '#53566E'}
@@ -170,6 +173,30 @@ export const RuleCard: React.FC<{
 
     const entityTemplateColor = entityTemplate ? getEntityTemplateColor(entityTemplate) : '';
 
+    const isIndicator = rule.actionOnFail === ActionOnFail.INDICATOR;
+    const haveColor = isIndicator && rule.fieldColor?.display;
+    const haveMail = isIndicator && rule.mail?.display;
+    const getKey = (key: string) => i18next.t(`wizard.rule.${key}`);
+
+    const ruleDetails: { key: string; value: string; isColor?: boolean; isMail?: boolean; condition?: boolean }[] = [
+        { key: getKey('description'), value: rule.description },
+        { key: getKey('actionOnFail'), value: getKey(`actions.${rule.actionOnFail.toLocaleLowerCase()}`) },
+        { key: getKey('primaryEntityTemplate'), value: entityTemplate?.displayName },
+        {
+            key: getKey('fieldToColor'),
+            value: entityTemplate.properties.properties[rule.fieldColor?.field ?? '']?.title,
+            condition: haveColor,
+        },
+        { key: getKey('color'), value: rule.fieldColor?.color ?? '', isColor: true, condition: haveColor },
+        { key: getKey('mailTitle'), value: rule.mail?.title ?? '', condition: haveMail },
+        { key: getKey('mailBody'), value: htmlToString(rule.mail?.body ?? ''), isMail: true, condition: haveMail },
+        {
+            key: getKey('recipients'),
+            value: mailRecipientsToString(rule.mail?.sendAssociatedUsers ?? false, rule.mail?.sendPermissionUsers ?? false),
+            condition: haveMail,
+        },
+    ];
+
     return (
         <ViewingCard
             width={320}
@@ -227,34 +254,9 @@ export const RuleCard: React.FC<{
             }
             expendedCard={
                 <Grid container gap="2px" paddingLeft="5px" direction="column" marginTop="20px">
-                    {showProperty(i18next.t('wizard.rule.description'), rule.description, darkMode)}
-                    {showProperty(
-                        i18next.t('wizard.rule.actionOnFail'),
-                        i18next.t(`wizard.rule.actions.${rule.actionOnFail.toLocaleLowerCase()}`),
-                        darkMode,
-                    )}
-                    {showProperty(i18next.t('wizard.rule.primaryEntityTemplate'), entityTemplate?.displayName, darkMode)}
-                    {rule.actionOnFail === ActionOnFail.INDICATOR && rule.fieldColor?.display && (
-                        <>
-                            {showProperty(
-                                i18next.t('wizard.rule.fieldToColor'),
-                                entityTemplate.properties.properties[rule.fieldColor.field]?.title,
-                                darkMode,
-                            )}
-                            {showProperty(i18next.t('wizard.rule.color'), rule.fieldColor.color, darkMode, true)}
-                        </>
-                    )}
-                    {rule.actionOnFail === ActionOnFail.INDICATOR && rule.mail?.display && (
-                        <>
-                            {showProperty(i18next.t('wizard.rule.mailTitle'), rule.mail.title, darkMode)}
-                            {showProperty(i18next.t('wizard.rule.mailBody'), htmlToString(rule.mail.body), darkMode, false, true)}
-                            {showProperty(
-                                i18next.t('wizard.rule.recipients'),
-                                mailRecipientsToString(rule.mail.sendAssociatedUsers, rule.mail.sendPermissionUsers),
-                                darkMode,
-                            )}
-                        </>
-                    )}
+                    {ruleDetails
+                        .filter(({ condition }) => condition !== false)
+                        .map(({ key, value, isColor, isMail }) => showProperty(key, value, darkMode, isColor, isMail))}{' '}
                 </Grid>
             }
             onHover={(isHover: boolean) => setIsHoverOnCard(isHover)}

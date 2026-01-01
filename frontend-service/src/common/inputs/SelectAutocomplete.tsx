@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 import { Close } from '@mui/icons-material';
 import { Autocomplete, Box, FormControl, TextField } from '@mui/material';
 import React, { useEffect, useState } from 'react';

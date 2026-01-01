@@ -9,7 +9,7 @@ import { Link } from 'wouter';
 import { environment } from '../../globals';
 import { IChildTemplateMap, IChildTemplatePopulated, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { EntityData, IEntity } from '../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated, PropertyFormat } from '../../interfaces/entityTemplates';
 import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
 import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import { IGetUnits } from '../../interfaces/units';
@@ -395,7 +395,7 @@ export const getColumnDefs = <Data = EntityData>({
             ({ data }) => (data ? getEntityPropertiesData(data as Data).createdAt : undefined),
             {
                 title: i18next.t('entityPage.createdAt'),
-                format: 'date-time',
+                format: PropertyFormat['date-time'],
             },
             defaultColumnsOrder.createdAt?.order === lastColumnIndex,
             defaultColumnWidths.createdAt,
@@ -409,7 +409,7 @@ export const getColumnDefs = <Data = EntityData>({
             ({ data }) => (data ? getEntityPropertiesData(data as Data).updatedAt : undefined),
             {
                 title: i18next.t('entityPage.updatedAt'),
-                format: 'date-time',
+                format: PropertyFormat['date-time'],
             },
             defaultColumnsOrder.updatedAt?.order === lastColumnIndex,
             defaultColumnWidths.updatedAt,
@@ -496,7 +496,7 @@ export const getColumnDefs = <Data = EntityData>({
                                         )}
                                         disabled={!hasPermissionToTemplate}
                                     >
-                                        <img src="/icons/read-more-icon.svg" />
+                                        <img src="/icons/read-more-icon.svg" alt="read-more" />
                                     </IconButtonWithPopover>
                                 </Link>
                             </Grid>
@@ -521,16 +521,22 @@ export const getColumnDefs = <Data = EntityData>({
                             <Grid>
                                 <IconButtonWithPopover
                                     popoverText={
-                                        disabledEntity || template.disabled ? i18next.t('entityPage.disabledEntity') : editRowButtonProps.popoverText
+                                        disabledEntity || template.disabled
+                                            ? i18next.t('entityPage.disabledEntity')
+                                            : template.walletTransfer
+                                              ? i18next.t('entityPage.walletTransfer.editDisabled')
+                                              : editRowButtonProps.popoverText
                                     }
                                     iconButtonProps={{
                                         onClick: () => editRowButtonProps.onClick(data),
                                     }}
-                                    disabled={editRowButtonProps.disabledButton || disabledEntity || template.disabled}
+                                    disabled={editRowButtonProps.disabledButton || disabledEntity || template.disabled || !!template.walletTransfer}
                                 >
                                     <ImageWithDisable
                                         srcPath="/icons/edit-icon.svg"
-                                        disabled={editRowButtonProps.disabledButton || disabledEntity || template.disabled}
+                                        disabled={
+                                            editRowButtonProps.disabledButton || disabledEntity || template.disabled || !!template.walletTransfer
+                                        }
                                     />
                                 </IconButtonWithPopover>
                             </Grid>
@@ -552,7 +558,7 @@ export const getColumnDefs = <Data = EntityData>({
                                             disabledEntity ? i18next.t('permissions.dontHavePermissionsToCategory') : i18next.t('actions.graph')
                                         }
                                     >
-                                        <img src="/icons/graph-icon.svg" />
+                                        <img src="/icons/graph-icon.svg" alt="graph" />
                                     </IconButtonWithPopover>
                                 </Link>
                             </Grid>
@@ -576,6 +582,7 @@ export const getColumnDefs = <Data = EntityData>({
                                         isDisabled: getEntityPropertiesData(data).disabled,
                                         isEditDisabled: menuRowButtonProps,
                                         tooltipTitle: i18next.t('systemManagement.disabledEntity'),
+                                        isWalletTransferEntity: !!template.walletTransfer,
                                     }}
                                 />
                             </Grid>

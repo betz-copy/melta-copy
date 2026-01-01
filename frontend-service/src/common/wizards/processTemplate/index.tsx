@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-shadow */
-/* eslint-disable react/no-unstable-nested-components */
-
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React from 'react';
@@ -66,7 +63,7 @@ const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues
     const queryClient = useQueryClient();
     const templates = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates') || new Map();
 
-    const createTemplateNameSchema = useCreateOrEditTemplateNameSchema(templates, initialValues._id);
+    const createTemplateSettingsSchema = useCreateOrEditTemplateNameSchema(templates, initialValues._id);
 
     const { isLoading, mutateAsync } = useMutation(
         (processTemplate: ProcessTemplateWizardValues) =>
@@ -97,8 +94,10 @@ const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues
     const stepsComponents: StepType<ProcessTemplateWizardValues>[] = [
         {
             label: i18next.t('wizard.processTemplate.chooseProcessTemplateName'),
-            component: (props, { isEditMode }) => <CreateTemplateName {...props} isEditMode={isEditMode} />,
-            validationSchema: createTemplateNameSchema,
+            component: (props, { isEditMode }) => (
+                <CreateTemplateName {...props} isEditMode={isEditMode} gridProps={{ direction: 'column', alignItems: 'center', spacing: 1 }} />
+            ),
+            validationSchema: createTemplateSettingsSchema,
         },
         {
             label: i18next.t('wizard.processTemplate.otherDetails'),

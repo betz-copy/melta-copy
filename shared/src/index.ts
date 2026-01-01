@@ -35,7 +35,6 @@ export * from './utils/express';
 export {
     addPropertyToRequest,
     createController,
-    extendedWrapController,
     fetchPropertyFromRequest,
     wrapController,
     wrapMiddleware,

@@ -3,7 +3,6 @@ import {
     addPropertyToRequest,
     CoordinateSystem,
     FilterLogicalOperator,
-    getFilterFromChildTemplate,
     IEntitySingleProperty,
     IEntityTemplate,
     IFilterGroup,
@@ -27,12 +26,11 @@ import { Request } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
 import FilterValidation from '../../error';
-import ChildTemplateManagerService from '../../externalServices/templates/childTemplateManager';
 import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import addDefaultFieldsToTemplate from '../../utils/addDefaultsFieldsToEntityTemplate';
 import DefaultController from '../../utils/express/controller';
-import { trycatch } from '../../utils/lib';
+import { tryCatch } from '../../utils/lib';
 import { getNeo4jDate, getNeo4jDateTime, getNeo4jLocation } from '../../utils/neo4j/lib';
 import { IGetExpandedEntityBody } from './interface';
 
@@ -96,24 +94,22 @@ ajv.addKeyword({
     keyword: 'serialCurrent',
     type: 'number',
 });
+ajv.addKeyword({ keyword: 'accountBalance', type: 'boolean' });
 
 export class EntityValidator extends DefaultController {
     private entityTemplateManagerService: EntityTemplateManagerService;
 
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
 
-    private childTemplateManagerService: ChildTemplateManagerService;
-
     constructor(workspaceId: string) {
         super(undefined);
 
         this.entityTemplateManagerService = new EntityTemplateManagerService(workspaceId);
         this.relationshipsTemplateManagerService = new RelationshipsTemplateManagerService(workspaceId);
-        this.childTemplateManagerService = new ChildTemplateManagerService(workspaceId);
     }
 
     private async getEntityTemplateByIdOrThrowValidationError(templateId: string) {
-        const { result: entityTemplate, err: getEntityTemplateByIdErr } = await trycatch(() =>
+        const { result: entityTemplate, err: getEntityTemplateByIdErr } = await tryCatch(() =>
             this.entityTemplateManagerService.getEntityTemplateById(templateId),
         );
         if (getEntityTemplateByIdErr || !entityTemplate) {
@@ -148,11 +144,6 @@ export class EntityValidator extends DefaultController {
         }
     }
 
-    async getChildFilters(childTemplateId: string): Promise<ISearchFilter | undefined> {
-        const childTemplate = await this.childTemplateManagerService.getChildTemplateById(childTemplateId);
-        return getFilterFromChildTemplate(childTemplate);
-    }
-
     validatePropertiesMatchFilters(properties: Record<string, any>, filter?: ISearchFilter) {
         const notValidKey = matchValueAgainstFilter(properties, filter);
         if (notValidKey)
@@ -173,16 +164,14 @@ export class EntityValidator extends DefaultController {
     }
 
     async validateEntityRequest(req: Request) {
-        const { templateId, properties, childTemplateId } = req.body;
+        const { templateId, properties, childTemplate } = req.body;
 
         const entityTemplate = await this.getEntityTemplateByIdOrThrowValidationError(templateId);
 
         this.validateEntity(entityTemplate, properties);
 
-        if (childTemplateId) {
-            const filter = await this.getChildFilters(childTemplateId);
-            this.validatePropertiesMatchFilters(req.body.properties, filter);
-        }
+        if (childTemplate?.filter) this.validatePropertiesMatchFilters(req.body.properties, childTemplate.filter);
+
         addPropertyToRequest(req, 'entityTemplate', entityTemplate);
     }
 
@@ -493,6 +482,26 @@ export class EntityValidator extends DefaultController {
             }
         });
         addPropertyToRequest(req, 'entityTemplatesMap', entityTemplatesMap);
+    }
+
+    async validatePrintBody(req: Request) {
+        const searchBody: IGetExpandedEntityBody['filters'] = req.body.filters;
+        const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({});
+        const relationShips = await this.relationshipsTemplateManagerService.searchRelationshipTemplates();
+
+        const entityTemplatesMap = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
+        const relationShipsMap = new Map(relationShips.map((relationship) => [relationship._id, relationship]));
+
+        const entityTemplatesForValidationMap: Map<string, IMongoEntityTemplate> = new Map(
+            entityTemplates.map((entityTemplate) => [entityTemplate._id, addDefaultFieldsToTemplate(entityTemplate)]),
+        );
+        Object.entries(searchBody).forEach(([templateId, { filter }]) => {
+            if (filter) {
+                this.validateFilter(filter, entityTemplatesForValidationMap.get(templateId)!, `filters.${templateId}.filter`);
+            }
+        });
+        addPropertyToRequest(req, 'entityTemplatesMap', entityTemplatesMap);
+        addPropertyToRequest(req, 'relationShipsMap', relationShipsMap);
     }
 }
 

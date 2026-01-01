@@ -1,14 +1,11 @@
-/* eslint-disable no-plusplus */
-
+import { pipeline } from 'node:stream';
+import { promisify } from 'node:util';
 import { Awaited } from '@microservices/shared';
-import lodashIsEqual from 'lodash.isequal';
-import { pipeline } from 'stream';
-import { promisify } from 'util';
+import { isEqual } from 'lodash';
 
-// eslint-disable-next-line import/prefer-default-export
 export const promisePipe = promisify(pipeline);
 
-export const trycatch = async <Func extends (...args: any[]) => any>(func: Func, ...args: Parameters<Func>) => {
+export const tryCatch = async <Func extends (...args: any[]) => any>(func: Func, ...args: Parameters<Func>) => {
     try {
         return { result: (await func(...args)) as Awaited<ReturnType<Func>> };
     } catch (err) {
@@ -32,7 +29,7 @@ export const filteredMap = <T, V>(arr: T[], func: (value: T) => { include: true;
 
 export const objectContains = <T extends Object>(obj: T, subObj: any) => {
     for (const key in subObj) {
-        if (!lodashIsEqual(obj[key], subObj[key])) {
+        if (!isEqual(obj[key], subObj[key])) {
             return false;
         }
     }

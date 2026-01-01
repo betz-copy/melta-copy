@@ -22,11 +22,8 @@ const changeRelatedUserFields = (properties: IProperties['properties'], changedU
                   })
                 : undefined;
         }
-        if (value.properties) {
-            acc[key] = changeRelatedUserFields(value.properties, changedUserKey, user);
-        } else if (value.expandedUserField?.relatedUserField === changedUserKey) {
-            acc[key] = user?.[value.expandedUserField.kartoffelField];
-        }
+        if (value.properties) acc[key] = changeRelatedUserFields(value.properties, changedUserKey, user);
+        else if (value.expandedUserField?.relatedUserField === changedUserKey) acc[key] = user?.[value.expandedUserField.kartoffelField];
 
         return acc;
     }, {});
@@ -73,7 +70,7 @@ const getFieldUiSchema = (
 
         return {
             'ui:options': {
-                disabled: !isGoalUser,
+                disabled: !(propertySchema.accountBalance && !isEditMode) && !isGoalUser,
                 readonly: !isGoalUser,
                 defaultValue,
             },
@@ -151,6 +148,7 @@ const getFieldUiSchema = (
     if (propertySchema.format === 'relationshipReference')
         return {
             'ui:widget': 'TemplateReferenceWidget',
+            'ui:options': { template: values.template },
         };
     if (propertySchema.format === 'location')
         return {

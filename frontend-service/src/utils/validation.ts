@@ -9,7 +9,6 @@ export const regexSchema = Yup.string()
     .test('is-regex', (value, context) => {
         if (!value) return true;
         try {
-            // eslint-disable-next-line no-new
             new RegExp(value);
             return true;
         } catch (error) {

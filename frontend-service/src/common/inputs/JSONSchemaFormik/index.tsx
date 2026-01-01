@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import { useTheme } from '@mui/material';
 import { Form as JSONSchemaForm } from '@rjsf/mui';
 import { ErrorSchema, RegistryWidgetsType, RJSFSchema, WidgetProps } from '@rjsf/utils';
@@ -7,11 +6,11 @@ import Ajv, { ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
 import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import i18next from 'i18next';
-import pickBy from 'lodash.pickby';
+import { pickBy } from 'lodash';
 import React, { memo, useEffect, useState } from 'react';
 import { environment } from '../../../globals';
 import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IWalletTransfer } from '../../../interfaces/entityTemplates';
 import { matchValueAgainstFilter } from '../../../utils/filters';
 import { uiSchemaUtils } from './ utils';
 import './form.css';
@@ -69,7 +68,11 @@ const convertErrorsToNestedGroups = <T extends ErrorMessage<string> | ErrorSchem
     return finalErrors;
 };
 
-export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'], data: Record<string, any>): FormikErrors<any> => {
+export const ajvValidate = (
+    schema: IMongoEntityTemplatePopulated['properties'],
+    data: Record<string, any>,
+    walletTransfer?: IWalletTransfer | null,
+): FormikErrors<any> => {
     const ajv = new Ajv({ allErrors: true });
     addFormats(ajv);
 
@@ -79,7 +82,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     });
     ajv.addFormat('date-time', {
         type: 'string',
-        validate: (value: string) => value === ByCurrentDefaultValue.byCurrentDate || !isNaN(Date.parse(value)),
+        validate: (value: string) => value === ByCurrentDefaultValue.byCurrentDate || !Number.isNaN(Date.parse(value)),
     });
     ajv.addFormat('fileId', /.*/);
     ajv.addFormat('signature', /.*/);
@@ -125,6 +128,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         'filterByUnitUserField',
         'isFilterByUserUnit',
         'display',
+        'accountBalance',
         'isProfileImage',
     ].forEach((keyword) => ajv.addKeyword({ keyword }));
 
@@ -160,7 +164,20 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
             childTemplateFilterErrors[field] = i18next.t('validation.fieldFilterCondition');
     });
 
-    return { ...formikErrors, ...childTemplateFilterErrors };
+    const walletTemplateErrors: FormikErrors<any> = {};
+    if (walletTransfer) {
+        const { from, to } = walletTransfer;
+        const sourceWalletEntityId = data[from]?.properties?._id;
+        const destWalletEntityId = data[to]?.properties?._id;
+
+        if (sourceWalletEntityId && sourceWalletEntityId === destWalletEntityId) {
+            const error = i18next.t('validation.sameSourceAndDestWallet');
+            walletTemplateErrors[from] = error;
+            walletTemplateErrors[to] = error;
+        }
+    }
+
+    return { ...formikErrors, ...childTemplateFilterErrors, ...walletTemplateErrors };
 };
 
 const formikErrorsToRjsfExtraErrorsRec = (
@@ -185,16 +202,16 @@ const formikErrorsToRjsfExtraErrorsRec = (
 const formikErrorsToRjsfExtraErrors = (
     formikErrors: ErrorMessage<string> | string,
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
-): ErrorSchema<{}> => {
+): ErrorSchema<object> => {
     const nestedErrors = convertErrorsToNestedGroups(template, formikErrors);
     return formikErrorsToRjsfExtraErrorsRec(nestedErrors, template);
 };
 
 const mergeErrorSchemas = (
-    errors1: ErrorSchema<{}>,
-    errors2: ErrorSchema<{}>,
+    errors1: ErrorSchema<object>,
+    errors2: ErrorSchema<object>,
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
-): ErrorSchema<{}> => {
+): ErrorSchema<object> => {
     const merged = { ...errors1 };
     for (const key in errors2) {
         if (Object.hasOwn(errors2, key)) {
@@ -218,13 +235,14 @@ const getComponent = (
             const { label, disabled, name, value, schema, onChange } = props;
             const [checked, setChecked] = useState(checkboxProps.isFieldChecked(name));
 
-            if (schema.format === 'comment') return <Component {...props} />;
-
-            if (checked && schema.type === 'boolean' && (value === null || value === undefined)) onChange(Boolean(value));
-
+            // biome-ignore lint/correctness/useExhaustiveDependencies: important
             useEffect(() => {
                 checkboxProps.onCheckboxChange(name, checked);
             }, [checked, name]);
+
+            if (schema.format === 'comment') return <Component {...props} />;
+
+            if (checked && schema.type === 'boolean' && (value === null || value === undefined)) onChange(Boolean(value));
 
             return (
                 <InputAccordion label={label} disabled={disabled} checked={checked} setChecked={setChecked}>
@@ -276,6 +294,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
 }) => {
     const theme = useTheme();
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: important
     useEffect(() => {
         const allInnerDivs = document.querySelectorAll('#json-schema .MuiGrid-root > .MuiGrid-root');
 
@@ -297,6 +316,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     const rjsfExtraErrors = formikErrorsToRjsfExtraErrors(errors ?? {}, values.template);
     const rjsfExtraUniqueErrors = formikErrorsToRjsfExtraErrors(uniqueErrors ?? {}, values.template);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: important
     const Widgets: RegistryWidgetsType = React.useMemo(
         () => ({
             CommentWidget: getComponent(RjsfCommentWidget, checkboxProps),
@@ -319,24 +339,26 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     );
 
     const schemaWithGroups = values.template?.fieldGroups?.reduce((acc, { fields, displayName, name }) => {
-        const properties = fields.reduce((acc, field) => {
-            const propertyInSchema = schema.properties[field];
-            if (!propertyInSchema) return acc;
+        const properties = fields.reduce(
+            (propsAcc, field) => {
+                const propertyInSchema = schema.properties[field];
+                if (!propertyInSchema) return propsAcc;
 
-            propertyInSchema.default = values.properties[field] || propertyInSchema.defaultValue;
+                propertyInSchema.default = values.properties[field] || propertyInSchema.defaultValue;
+                delete schema.properties[field];
 
-            delete schema.properties[field];
-            return { ...acc, [field]: propertyInSchema };
-        }, {});
-
-        return {
-            ...acc,
-            [name]: {
-                type: 'object',
-                title: displayName,
-                properties,
+                propsAcc[field] = propertyInSchema;
+                return propsAcc;
             },
+            {} as Record<string, any>,
+        );
+
+        acc[name] = {
+            type: 'object',
+            title: displayName,
+            properties,
         };
+        return acc;
     }, {} as RJSFSchema);
 
     schema.properties = { ...schema.properties, ...(schemaWithGroups ?? {}) };

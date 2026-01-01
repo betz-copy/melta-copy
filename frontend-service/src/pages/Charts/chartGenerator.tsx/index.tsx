@@ -46,13 +46,14 @@ const ChartGenerator: React.FC<IChartGeneratorProps> = ({ template, formikValues
         },
     );
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
     useEffect(() => {
         if (isQueryEnabled) refetch();
     }, [memoizedFilter, xAxisField, yAxisField, metaData]);
 
     if (isLoading) return <CircularProgress />;
 
-    if (!data) return <img src="/icons/notFoundChart.svg" />;
+    if (!data) return <img src="/icons/notFoundChart.svg" alt="notFoundChart" />;
 
     if (type === IChartType.Number) return <NumberChartGenerator data={data[0]} chartDetails={formikValues} />;
     return <HighchartGenerator generatedChart={data[0]} isLoading={isLoading} isQueryEnabled={isQueryEnabled} chartDetails={formikValues} />;

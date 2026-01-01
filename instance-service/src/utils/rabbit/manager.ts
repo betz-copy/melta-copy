@@ -1,9 +1,7 @@
 import { menash } from 'menashmq';
 import config from '../../config';
 
-const {
-    service: { workspaceIdHeaderName },
-} = config;
+const { workspaceIdHeaderName } = config.service;
 
 class DefaultExternalServiceRabbit {
     protected workspaceId: string;

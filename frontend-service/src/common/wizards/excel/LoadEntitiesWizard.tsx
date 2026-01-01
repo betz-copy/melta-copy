@@ -1,5 +1,3 @@
-/* eslint-disable react/no-unstable-nested-components */
-
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';

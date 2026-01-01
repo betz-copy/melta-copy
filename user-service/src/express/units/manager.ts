@@ -135,15 +135,13 @@ class UnitsManager {
      */
     static async getUnitHierarchy(workspaceId: IUnit['workspaceId'], userId: string): Promise<IUnitHierarchy[]> {
         const user = await UsersManager.getUserById(userId, [workspaceId], false, true);
+        const userUnitIds = user.units?.[workspaceId]?.map((unitId) => new mongoose.Types.ObjectId(unitId)) || [];
 
-        const units = await UnitsModel.aggregate<IUnitHierarchy>([
+        let units = await UnitsModel.aggregate<IUnitHierarchy>([
             {
                 $match: {
                     workspaceId,
-                    // When user is root and has a unit assigned it won't get all of the units
-                    ...(!user.units?.[workspaceId]?.length
-                        ? { parentId: null }
-                        : { _id: { $in: user.units?.[workspaceId]?.map((unitId) => new mongoose.Types.ObjectId(unitId)) } }),
+                    ...(!userUnitIds.length ? { parentId: null } : { _id: { $in: userUnitIds } }),
                 },
             },
             {
@@ -166,12 +164,8 @@ class UnitsManager {
             {
                 $group: {
                     _id: '$_id',
-                    children: {
-                        $push: '$children',
-                    },
-                    root: {
-                        $first: '$$ROOT',
-                    },
+                    children: { $push: '$children' },
+                    root: { $first: '$$ROOT' },
                 },
             },
             {
@@ -183,6 +177,13 @@ class UnitsManager {
             },
             { $sort: { disabled: 1, name: 1 } },
         ]);
+
+        // Filter out units whose parent is also in the result set
+        // This is for when the users unit have also a child and its parent (which is the same as having just the parent)
+        if (userUnitIds.length) {
+            const allChildrenIds = new Set(units.flatMap((unit) => [unit._id.toString(), ...unit.children.map((child) => child._id.toString())]));
+            units = units.filter((unit) => !unit.parentId || !allChildrenIds.has(unit.parentId.toString()));
+        }
 
         return units.map((unit) => {
             const acc: IUnitHierarchy['children'] = [];

@@ -9,7 +9,10 @@ import React, { useEffect, useState } from 'react';
 import { CustomDateTimePickerToolbar } from '../../common/inputs/JSONSchemaFormik/Widgets/RjsfDatesWidgets';
 import { environment } from '../../globals';
 
-const { dateTime, date: dateFormat } = environment.formats;
+const {
+    formats: { dateTime, date: dateFormat },
+    datePickerViews,
+} = environment;
 
 interface DateTimeCellEditorProps {
     value: string | Date | null;
@@ -28,7 +31,6 @@ const DateTimeCellEditor: React.FC<DateTimeCellEditorProps> = ({ value, onValueC
 
     const handleDateChange = (newValue: Date | null) => {
         setSelectedValue(newValue);
-        // eslint-disable-next-line no-nested-ternary
         onValueChange(newValue === null ? null : dateOrDateTime === 'date' ? format(newValue, 'yyyy-MM-dd') : newValue);
     };
 
@@ -58,6 +60,7 @@ const DateTimeCellEditor: React.FC<DateTimeCellEditorProps> = ({ value, onValueC
                         onChange={handleDateChange}
                         format={dateFormat}
                         enableAccessibleFieldDOMStructure={false}
+                        views={datePickerViews}
                         slots={{ toolbar: CustomDateTimePickerToolbar, textField: (params) => <TextField {...params} /> }}
                         slotProps={{
                             actionBar: { actions: ['clear', 'cancel', 'accept'] },

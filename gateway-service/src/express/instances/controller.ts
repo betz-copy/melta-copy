@@ -1,6 +1,6 @@
+import { promises as fsp } from 'node:fs';
 import { IDeleteEntityBody, ISearchEntitiesByLocationBody } from '@microservices/shared';
 import { Request, Response } from 'express';
-import { promises as fsp } from 'fs';
 import { promisify } from 'util';
 import DefaultController from '../../utils/express/controller';
 import InstancesManager from './manager';
@@ -124,7 +124,7 @@ class InstancesController extends DefaultController<InstancesManager> {
     async deleteEntityInstances(req: Request, res: Response) {
         const body = req.body as IDeleteEntityBody;
 
-        res.json(await this.manager.deleteEntityInstances(body));
+        res.json(await this.manager.deleteEntityInstances(body, req.user!.id));
     }
 
     async createRelationshipInstance(req: Request, res: Response) {
@@ -164,7 +164,7 @@ class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async getChartOfTemplate(req: Request, res: Response) {
-        res.json(await this.manager.getChartOfTemplate(req.params.templateId, req.body));
+        res.json(await this.manager.getChartOfTemplate(req.params.templateId, req.body, req.user!.id));
     }
 }
 

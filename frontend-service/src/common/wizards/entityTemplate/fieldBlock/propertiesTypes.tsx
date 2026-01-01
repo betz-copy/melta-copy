@@ -44,6 +44,7 @@ export const Attachment = ({ field, index, buildProps, onDrop }: AttachmentsProp
         }),
     });
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: let's keep it that way
     useEffect(() => {
         preview(getEmptyImage(), { captureDraggingState: true });
     }, []);
@@ -77,6 +78,7 @@ export const Field = ({
     uniqueConstraints,
     setUniqueConstraints,
     moveGroup,
+    isAccountTemplate,
     values,
 }: FieldProps) => {
     const ref = React.useRef(null);
@@ -110,6 +112,7 @@ export const Field = ({
         }),
     });
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: let's keep it
     useEffect(() => {
         preview(getEmptyImage(), { captureDraggingState: true });
     }, []);
@@ -133,6 +136,7 @@ export const Field = ({
                     setValues={setValues}
                     uniqueConstraints={uniqueConstraints}
                     setUniqueConstraints={setUniqueConstraints}
+                    isAccountTemplate={isAccountTemplate}
                     values={values}
                 />
             </Grid>
@@ -161,6 +165,7 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
     areThereAnyInstances,
     isEditMode,
     initialValue,
+    isAccountTemplate,
 }: React.PropsWithChildren<GroupProps<PropertiesType, Values>>) => {
     const ref = React.useRef(null);
     const isNewProperty = !initialValue;
@@ -352,6 +357,7 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
                                 setValues={setDisplayValueWrapper(idx, group.id)}
                                 uniqueConstraints={uniqueConstraints}
                                 setUniqueConstraints={setUniqueConstraints}
+                                isAccountTemplate={isAccountTemplate}
                                 values={values}
                             />
                         ))}
@@ -378,7 +384,7 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
                             </Button>
                         </Grid>
                         {(errors?.[propertiesType]?.[index] as any)?.fields === i18next.t('validation.oneField') && (
-                            <div style={{ color: '#d32f2f' }}>{i18next.t('validation.oneField')}</div>
+                            <div style={{ color: 'error' }}>{i18next.t('validation.oneField')}</div>
                         )}
                     </AccordionDetails>
                 </FieldBlockAccordion>
