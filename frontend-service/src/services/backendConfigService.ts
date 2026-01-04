@@ -20,6 +20,7 @@ export interface BackendConfigState {
         token: string;
         layerLinkTag: string;
         layerLinkSchema: string;
+        outputSchema: string;
     };
     deleteEntitiesLimit: number;
     meltaUpdates: Record<string, string>;
