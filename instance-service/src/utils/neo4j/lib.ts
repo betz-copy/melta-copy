@@ -8,14 +8,17 @@ import {
     ValidationError,
 } from '@microservices/shared';
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
-import neo4j, { Node as Neo4jNode, QueryResult, Relationship as Neo4jRelationship, Transaction } from 'neo4j-driver';
+import neo4j, { Node as Neo4jNode, Relationship as Neo4jRelationship, QueryResult, Transaction } from 'neo4j-driver';
 import { v4 as uuidv4 } from 'uuid';
 import config from '../../config';
 import EntityManager from '../../express/entities/manager';
 import { IFormulaCauses } from '../../express/rules/interfaces/formulaWithCauses';
 
 const {
-    map: { polygon: { polygonPrefix, polygonSuffix }, srid },
+    map: {
+        polygon: { polygonPrefix, polygonSuffix },
+        srid,
+    },
     timezone,
     neo4j: {
         stringPropertySuffix,
@@ -144,10 +147,10 @@ type ResponseType = 'singleResponse' | 'singleResponseNotNullable' | 'multipleRe
 type Response<ResType extends ResponseType, Data> = ResType extends 'singleResponse'
     ? Data | null
     : ResType extends 'singleResponseNotNullable'
-    ? Data
-    : ResType extends 'multipleResponses'
-    ? Data[]
-    : never;
+      ? Data
+      : ResType extends 'multipleResponses'
+        ? Data[]
+        : never;
 
 export const nodeToEntity = (node: Node): IEntity => {
     const { properties, coloredFields } = normalizeFields(node.properties);

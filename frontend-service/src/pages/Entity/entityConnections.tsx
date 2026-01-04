@@ -1,6 +1,7 @@
 import { Hive as HiveIcon } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Grid, Tab, Typography, useTheme } from '@mui/material';
+import i18next from 'i18next';
 import { useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { CustomIcon } from '../../common/CustomIcon';
@@ -12,7 +13,6 @@ import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates
 import { INestedRelationshipTemplates } from '.';
 import { ConnectionsTable } from './ConnectionsTable';
 import { RelationshipIcon } from './RelationshipIcon';
-import i18next from 'i18next';
 
 interface EntityConnectionsProps {
     currentEntityTemplate: IMongoEntityTemplatePopulated;
