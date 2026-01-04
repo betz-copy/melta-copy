@@ -1,20 +1,13 @@
-import { CswClient } from '@map-colonies/csw-client';
-import axios, { Method } from 'axios';
+import axios from 'axios';
 
-export const getCswClient = (baseUrl: string, token: string): CswClient => {
-    const requestExecutor = async (method: string, url: string, data: any) => {
-        const response = await axios({
-            method: method as Method,
-            url: url,
-            data,
-            headers: {
-                'x-api-key': token,
-                'Content-Type': 'application/xml',
-            },
-        });
+export const getMapLayer = async (url: string, params: any, body: any, token: string) => {
+    const { data } = await axios.post<string>(url, body, {
+        headers: {
+            'x-api-key': token,
+            'Content-Type': 'application/xml',
+        },
+        params,
+    });
 
-        return response.data;
-    };
-
-    return new CswClient(baseUrl, requestExecutor);
+    return data;
 };

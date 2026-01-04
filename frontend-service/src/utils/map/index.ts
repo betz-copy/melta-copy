@@ -1,3 +1,5 @@
+import { MatrixSetLink } from '@camptocamp/ogc-client/dist/wmts/model';
+import * as Cesium from 'cesium';
 import { Cartesian3 } from 'cesium';
 import { XMLParser } from 'fast-xml-parser';
 import { environment } from '../../globals';
@@ -190,6 +192,7 @@ export const getFilteredItems = (
 const xmlParser = new XMLParser({
     ignoreAttributes: false,
     attributeNamePrefix: '',
+    removeNSPrefix: true, // 🔥 זה הפתרון
 });
 
 function findLinks(
@@ -216,7 +219,11 @@ function findLinks(
     // Check the current level
     if (paredXml[layerLinkTag]) {
         const linksList = Array.isArray(paredXml[layerLinkTag]) ? paredXml[layerLinkTag] : [paredXml[layerLinkTag]];
+        console.log({ linksList });
+
         const matchedLink = linksList.find((link) => link.scheme === schema && link.name?.startsWith(layerName));
+        console.log({ matchedLink });
+
         return matchedLink ? { id: matchedLink.name, url: matchedLink['#text'], displayName: layerDisplayName, type: layerType } : emptyResult;
     }
 
@@ -239,9 +246,25 @@ export const extractImageryUrl = (
     layerType: LayerProviderType,
     layerLinkTag: string,
 ): LayerProvider => {
-    const json = xmlParser.parse(xml);
+    try {
+        const json = xmlParser.parse(xml);
+        console.log({ json });
 
-    console.log({ parsedXml: json });
+        return findLinks(json, schema, layerName, layerDisplayName, layerType, layerLinkTag);
+    } catch (e) {
+        console.error('XML Parsing Error:', e);
+        return { url: '', id: '', type: LayerProviderType.map };
+    }
+};
 
-    return findLinks(json, schema, layerName, layerDisplayName, layerType, layerLinkTag);
+export const getMatrixSet = (matrixSets: MatrixSetLink[]) => {
+    const matrixSet =
+        matrixSets.find((m) => m.identifier === 'WorldCRS84') ??
+        matrixSets.find((m) => m.identifier === 'EPSG:4326') ??
+        matrixSets.find((m) => m.identifier === 'GoogleMapsCompatible') ??
+        matrixSets[0];
+
+    const tilingScheme = matrixSet.crs.includes('3857') ? new Cesium.WebMercatorTilingScheme() : new Cesium.GeographicTilingScheme();
+
+    return { identifier: matrixSet.identifier, tilingScheme };
 };

@@ -1,3 +1,4 @@
+import { WmtsEndpoint } from '@camptocamp/ogc-client';
 import Bowser from 'bowser';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
@@ -8,18 +9,15 @@ import { useLocation, useSearchParams } from 'wouter';
 import { LoadingAnimation } from './common/LoadingAnimation';
 import './css/index.css';
 import './css/loading.css';
-import { WmtsEndpoint } from '@camptocamp/ogc-client';
-import { CswClient } from '@map-colonies/csw-client';
 import { environment } from './globals';
 import Main from './Main';
 import { useMatomoInstance } from './matomo';
 import MatomoWrapper, { MatomoTracker } from './matomoWrapper';
 import ClientSidePage from './pages/ClientSidePage';
 import ErrorPage from './pages/ErrorPage';
-import { LayerProvider } from './pages/Map/BaseLayers';
 import { AuthService } from './services/authService';
 import { BackendConfigState, getBackendConfigRequest } from './services/backendConfigService';
-import { getCswClient } from './services/mapService';
+import { getMapLayer } from './services/mapService';
 import { getMyUserRequest } from './services/userService';
 import { getById, getWorkspaceHierarchyIds } from './services/workspacesService';
 import { useDarkModeStore } from './stores/darkMode';
@@ -62,37 +60,27 @@ const App: React.FC = () => {
             toast.error(i18next.t('error.config'));
         },
         enabled: !isLoadingUser && !isErrorMyUser,
-        onSuccess: async ({ getMapLayers: { url, params, layers, token, layerLinkSchema, layerLinkTag, outputSchema } }) => {
-            // const cswClient = getCswClient('https://csw.marine.copernicus.eu/geonetwork/srv/eng/csw', token);
-            // const layerRecord = await cswClient.GetRecordsById('http://www.opengis.net/cat/csw/2.0.2', ['f6e804f3-a749-4171-8664-899b8004f434']);
-            console.log({ layerRecord });
+        onSuccess: async ({ getMapLayers: { url, params, layers, token, layerLinkSchema, layerLinkTag } }) => {
             const mapLayers = await Promise.all(
                 layers.map(async (layer) => {
-                    const layerRecord = await cswClient.GetRecordsById('http://www.opengis.net/cat/csw/2.0.2', [
-                        'f6e804f3-a749-4171-8664-899b8004f434',
-                    ]);
-                    console.log({ layerRecord });
-
-                    const layerLink = layerRecord[0].properties[layerLinkTag];
-
                     const xml = await getMapLayer(url, params, layer.body, token);
 
                     console.log({ xmlOfLayer: xml });
 
-                    //   id: string;
-                    //     url: string;
-                    //     type: LayerProviderType;
-                    //     displayName?: string;
+                    const layerProvider = extractImageryUrl(xml, layerLinkSchema, layer.name, layer.displayName, layer.type, layerLinkTag); //layerLinkSchema=wmts_base layerLinkTag=mc:links name=othophoto-base
 
-                    const extracted: LayerProvider = extractImageryUrl(xml, layerLinkSchema, layer.name, layer.displayName, layer.type, layerLinkTag); // layerLinkSchema=wmts_base layerLinkTag=mc:links name=othophoto-base
+                    const endpoint = new WmtsEndpoint(layerProvider.url);
+                    await endpoint.isReady();
 
-                    const endpoint = new WmtsEndpoint(extracted.url);
+                    const wmtsLayer = endpoint.getLayerByName(layerProvider.id);
+
+                    return { ...layerProvider, ...wmtsLayer };
                 }),
             );
 
             console.log({ mapLayers });
 
-            queryClient.setQueryData('getMapLayers', mapLayers); // for EveryLayer:url(wmts_base) name(name wmts_base) [{url:'',name:''}]
+            queryClient.setQueryData('getMapLayers', mapLayers); //for EveryLayer:url(wmts_base) name(name wmts_base) [{url:'',name:''}]
         },
     });
 

@@ -1,3 +1,4 @@
+import { WmtsLayer } from '@camptocamp/ogc-client';
 import { LayersTwoTone } from '@mui/icons-material';
 import { Box, Divider, FormControlLabel, Grid, IconButton, Radio, RadioGroup, Typography, useTheme } from '@mui/material';
 import * as Cesium from 'cesium';
@@ -8,6 +9,7 @@ import { CesiumComponentRef } from 'resium';
 import MeltaCheckbox from '../../common/MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
 import { BackendConfigState } from '../../services/backendConfigService';
+import { getMatrixSet } from '../../utils/map';
 
 export enum LayerProviderType {
     map = 'map',
@@ -33,10 +35,10 @@ export const BaseLayers: React.FC<{
 
     const queryClient = useQueryClient();
 
-    const layers = queryClient.getQueryData<LayerProvider[]>('getMapLayers');
+    const layers = queryClient.getQueryData<(LayerProvider & WmtsLayer)[]>('getMapLayers');
 
-    const providers = useMemo<LayerProvider[]>(() => {
-        const buildLayerProvider = (outsideLayers: Record<string, string>, type: LayerProviderType): LayerProvider[] => {
+    const providers = useMemo<((LayerProvider & WmtsLayer) | LayerProvider)[]>(() => {
+        const buildLayerProvider = (outsideLayers: Record<string, string>, type: LayerProviderType) => {
             if (isOutsideDevelopment)
                 return Object.entries(outsideLayers).map(([id, url]) => ({
                     id,
@@ -89,15 +91,15 @@ export const BaseLayers: React.FC<{
                 ),
             );
         else
-            activeLayers?.forEach((layer) =>
+            (activeLayers as (LayerProvider & WmtsLayer)[])?.forEach((layer) =>
                 viewer.imageryLayers.addImageryProvider(
                     new Cesium.WebMapTileServiceImageryProvider({
                         url: new Cesium.Resource({ url: layer.url, headers: { 'x-api-key': getMapLayers.token } }),
                         layer: layer.id,
-                        style: 'default',
-                        format: 'image/png',
-                        tileMatrixSetID: 'WorldCRS84',
-                        tilingScheme: new Cesium.GeographicTilingScheme(),
+                        style: layer.defaultStyle || 'default',
+                        format: layer.resourceLinks.find((r) => r.format === 'image/jpeg')?.format ?? layer.resourceLinks[0].format,
+                        tileMatrixSetID: getMatrixSet(layer.matrixSets).identifier,
+                        tilingScheme: getMatrixSet(layer.matrixSets).tilingScheme,
                     }),
                 ),
             );
