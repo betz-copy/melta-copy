@@ -9,6 +9,7 @@ import flowCubeRouter from './flowCube/router';
 import GanttsRouter from './gantts/router';
 import iFramesRouter from './iFrames/router';
 import instancesRouter from './instances/router';
+import mapRouter from './map/router';
 import notificationsRouter from './notifications/router';
 import processesRouter from './processes/router';
 import RulesBreachesRouter from './ruleBreaches/router';
@@ -20,7 +21,10 @@ import workspaceRouter from './workspaces/router';
 
 const apiRouter = Router();
 
-apiRouter.use('/config', (_req, res) =>
+apiRouter.use('/config', (_req, res) => {
+    console.log({
+        capabilitiesUrl: config.frontendConfig.getMapLayers.capabilitiesUrl,
+    });
     res.json({
         matomoUrl: config.frontendConfig.matotmo.baseUrl,
         matomoSiteId: config.frontendConfig.matotmo.siteId,
@@ -28,18 +32,20 @@ apiRouter.use('/config', (_req, res) =>
         textLayers: config.frontendConfig.textLayers,
         getMapLayers: {
             url: config.frontendConfig.getMapLayers.url,
+            capabilitiesUrl: config.frontendConfig.getMapLayers.capabilitiesUrl,
             params: config.frontendConfig.getMapLayers.params,
             layers: config.frontendConfig.getMapLayers.layers,
             token: config.frontendConfig.getMapLayers.token,
             layerLinkTag: config.frontendConfig.getMapLayers.layerLinkTag,
-            layerLinkSchema: config.frontendConfig.getMapLayers.layerLinkSchema,
+            capabilitiesLinkSchema: config.frontendConfig.getMapLayers.capabilitiesLinkSchema,
+            cesiumLinkSchema: config.frontendConfig.getMapLayers.cesiumLinkSchema,
         },
         deleteEntitiesLimit: config.frontendConfig.agGridLimit.deleteLimit,
         meltaUpdates: config.frontendConfig.meltaUpdates,
         meltaUpdatesDescription: config.frontendConfig.meltaUpdatesDescription,
         isOutsideDevelopment: config.frontendConfig.isOutsideDevelopment,
-    }),
-);
+    });
+});
 
 apiRouter.use('/templates', templatesRouter);
 apiRouter.use('/instances', instancesRouter);
@@ -74,6 +80,8 @@ apiRouter.use('/processes', processesRouter);
 apiRouter.use('/units', unitsRouter);
 
 apiRouter.use('/users', usersRouter);
+
+apiRouter.use('/map', mapRouter);
 
 apiRouter.use('/activity-log', ActivityLogRouter);
 

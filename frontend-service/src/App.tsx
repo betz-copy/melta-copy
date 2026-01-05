@@ -9,6 +9,7 @@ import { useLocation, useSearchParams } from 'wouter';
 import { LoadingAnimation } from './common/LoadingAnimation';
 import './css/index.css';
 import './css/loading.css';
+import { enableFallbackWithoutWorker } from '@camptocamp/ogc-client';
 import { environment } from './globals';
 import Main from './Main';
 import { useMatomoInstance } from './matomo';
@@ -23,8 +24,10 @@ import { getById, getWorkspaceHierarchyIds } from './services/workspacesService'
 import { useDarkModeStore } from './stores/darkMode';
 import { useUserStore } from './stores/user';
 import { useWorkspaceStore } from './stores/workspace';
-import { extractImageryUrl } from './utils/map';
+import { extractImageryUrl, getMatrixSet } from './utils/map';
 import { getWorkspacePermissions } from './utils/permissions';
+
+enableFallbackWithoutWorker();
 
 const App: React.FC = () => {
     const [isLoadingUser, setIsLoadingUser] = useState(true);
@@ -59,20 +62,36 @@ const App: React.FC = () => {
         onError: () => {
             toast.error(i18next.t('error.config'));
         },
+
         enabled: !isLoadingUser && !isErrorMyUser,
-        onSuccess: async ({ getMapLayers: { url, params, layers, token, layerLinkSchema, layerLinkTag } }) => {
+        onSuccess: async ({
+            getMapLayers: { url, params, layers, token, capabilitiesLinkSchema, cesiumLinkSchema, layerLinkTag, capabilitiesUrl },
+        }) => {
             const mapLayers = await Promise.all(
                 layers.map(async (layer) => {
                     const xml = await getMapLayer(url, params, layer.body, token);
 
                     console.log({ xmlOfLayer: xml });
 
-                    const layerProvider = extractImageryUrl(xml, layerLinkSchema, layer.name, layer.displayName, layer.type, layerLinkTag); //layerLinkSchema=wmts_base layerLinkTag=mc:links name=othophoto-base
+                    const layerProvider = extractImageryUrl(
+                        xml,
+                        capabilitiesLinkSchema,
+                        cesiumLinkSchema,
+                        layer.name,
+                        layer.displayName,
+                        layer.type,
+                        layerLinkTag,
+                    ); //layerLinkSchema=wmts_base layerLinkTag=mc:links name=othophoto-base
 
-                    const endpoint = new WmtsEndpoint(layerProvider.url);
-                    await endpoint.isReady();
-
+                    const endpoint = await new WmtsEndpoint(`${capabilitiesUrl}?url=${layerProvider.url}`).isReady();
                     const wmtsLayer = endpoint.getLayerByName(layerProvider.id);
+
+                    console.log({
+                        style: wmtsLayer.defaultStyle || 'default',
+                        format: wmtsLayer.resourceLinks.find((r) => r.format === 'image/jpeg')?.format ?? wmtsLayer.resourceLinks[0].format,
+                        tileMatrixSetID: getMatrixSet(wmtsLayer.matrixSets).identifier,
+                        tilingScheme: getMatrixSet(wmtsLayer.matrixSets).tilingScheme,
+                    });
 
                     return { ...layerProvider, ...wmtsLayer };
                 }),

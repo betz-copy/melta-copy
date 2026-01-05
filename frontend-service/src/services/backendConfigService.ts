@@ -16,10 +16,12 @@ export interface BackendConfigState {
     getMapLayers: {
         layers: { name: string; body: string; type: LayerProviderType; displayName: string }[];
         url: string;
+        capabilitiesUrl: string;
         params: string;
         token: string;
         layerLinkTag: string;
-        layerLinkSchema: string;
+        capabilitiesLinkSchema: string;
+        cesiumLinkSchema: string;
         outputSchema: string;
     };
     deleteEntitiesLimit: number;

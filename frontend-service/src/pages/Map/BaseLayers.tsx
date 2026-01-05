@@ -19,6 +19,7 @@ export enum LayerProviderType {
 export type LayerProvider = {
     id: string;
     url: string;
+    cesiumUrl: string;
     type: LayerProviderType;
     displayName?: string;
 };
@@ -44,6 +45,7 @@ export const BaseLayers: React.FC<{
                     id,
                     url,
                     type,
+                    cesiumUrl: '',
                 }));
 
             return layers?.filter((layer) => layer.type === type) ?? [];
@@ -94,7 +96,7 @@ export const BaseLayers: React.FC<{
             (activeLayers as (LayerProvider & WmtsLayer)[])?.forEach((layer) =>
                 viewer.imageryLayers.addImageryProvider(
                     new Cesium.WebMapTileServiceImageryProvider({
-                        url: new Cesium.Resource({ url: layer.url, headers: { 'x-api-key': getMapLayers.token } }),
+                        url: new Cesium.Resource({ url: layer.cesiumUrl.split('?')[0], headers: { 'x-api-key': getMapLayers.token } }),
                         layer: layer.id,
                         style: layer.defaultStyle || 'default',
                         format: layer.resourceLinks.find((r) => r.format === 'image/jpeg')?.format ?? layer.resourceLinks[0].format,

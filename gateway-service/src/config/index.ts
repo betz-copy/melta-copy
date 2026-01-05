@@ -52,9 +52,11 @@ const config = {
             token: env.get('FRONTEND_MAP_TOKEN').asString(),
             layers: env.get('FRONTEND_MAP_LAYERS').asJsonArray() as Array<{ name: string; body: string }>,
             url: env.get('FRONTEND_MAP_URL').asString(),
+            capabilitiesUrl: env.get('FRONTEND_MAP_CAPABILITIES_URL').asString(),
             params: env.get('FRONTEND_MAP_PARAMS').asJsonObject(),
             layerLinkTag: env.get('FRONTEND_LAYER_LINK_TAG').asString(),
-            layerLinkSchema: env.get('FRONTEND_LAYER_LINK_SCHEMA').asString(),
+            capabilitiesLinkSchema: env.get('FRONTEND_LAYER_CAPABILITIES_LINK_SCHEMA').asString(),
+            cesiumLinkSchema: env.get('FRONTEND_LAYER_CESIUM_LINK_SCHEMA').asString(),
         },
         isOutsideDevelopment: env.get('FRONTEND_CONFIG_IS_OUTSIDE_DEVELOPMENT').default('true').required().asBool(),
 

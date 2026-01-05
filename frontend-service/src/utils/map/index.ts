@@ -192,25 +192,26 @@ export const getFilteredItems = (
 const xmlParser = new XMLParser({
     ignoreAttributes: false,
     attributeNamePrefix: '',
-    removeNSPrefix: true, // 🔥 זה הפתרון
+    removeNSPrefix: true,
 });
 
 function findLinks(
     paredXml: object,
-    schema: string,
+    capabilitiesLinkSchema: string,
+    cesiumLinkSchema: string,
     layerName: string,
     layerDisplayName: string,
     layerType: LayerProviderType,
     layerLinkTag: string,
 ): LayerProvider {
-    const emptyResult: LayerProvider = { url: '', id: '', type: LayerProviderType.map };
+    const emptyResult: LayerProvider = { url: '', cesiumUrl: '', id: '', type: LayerProviderType.map };
 
     if (!paredXml || typeof paredXml !== 'object') return emptyResult;
 
     // If it's an array, search each element
     if (Array.isArray(paredXml)) {
         for (const item of paredXml) {
-            const result = findLinks(item, schema, layerName, layerDisplayName, layerType, layerLinkTag);
+            const result = findLinks(item, capabilitiesLinkSchema, cesiumLinkSchema, layerName, layerDisplayName, layerType, layerLinkTag);
             if (result.url) return result;
         }
         return emptyResult;
@@ -221,16 +222,27 @@ function findLinks(
         const linksList = Array.isArray(paredXml[layerLinkTag]) ? paredXml[layerLinkTag] : [paredXml[layerLinkTag]];
         console.log({ linksList });
 
-        const matchedLink = linksList.find((link) => link.scheme === schema && link.name?.startsWith(layerName));
-        console.log({ matchedLink });
+        const matchedLinkCapabilities = linksList.find((link) => link.scheme === capabilitiesLinkSchema && link.name?.startsWith(layerName));
 
-        return matchedLink ? { id: matchedLink.name, url: matchedLink['#text'], displayName: layerDisplayName, type: layerType } : emptyResult;
+        const matchedLinkCesium = linksList.find((link) => link.scheme === cesiumLinkSchema && link.name?.startsWith(layerName));
+
+        console.log({ matchedLinkCapabilities, matchedLinkCesium });
+
+        return matchedLinkCesium && matchedLinkCapabilities
+            ? {
+                  id: matchedLinkCesium.name,
+                  url: matchedLinkCapabilities['#text'],
+                  cesiumUrl: matchedLinkCesium['#text'],
+                  displayName: layerDisplayName,
+                  type: layerType,
+              }
+            : emptyResult;
     }
 
     // Recurse deeper
     for (const key in paredXml) {
         if (typeof paredXml[key] === 'object') {
-            const result = findLinks(paredXml[key], schema, layerName, layerDisplayName, layerType, layerLinkTag);
+            const result = findLinks(paredXml[key], capabilitiesLinkSchema, cesiumLinkSchema, layerName, layerDisplayName, layerType, layerLinkTag);
             if (result.url) return result;
         }
     }
@@ -240,7 +252,8 @@ function findLinks(
 
 export const extractImageryUrl = (
     xml: string,
-    schema: string,
+    capabilitiesLinkSchema: string,
+    cesiumLinkSchema: string,
     layerName: string,
     layerDisplayName: string,
     layerType: LayerProviderType,
@@ -250,10 +263,10 @@ export const extractImageryUrl = (
         const json = xmlParser.parse(xml);
         console.log({ json });
 
-        return findLinks(json, schema, layerName, layerDisplayName, layerType, layerLinkTag);
+        return findLinks(json, capabilitiesLinkSchema, cesiumLinkSchema, layerName, layerDisplayName, layerType, layerLinkTag);
     } catch (e) {
         console.error('XML Parsing Error:', e);
-        return { url: '', id: '', type: LayerProviderType.map };
+        return { url: '', cesiumUrl: '', id: '', type: LayerProviderType.map };
     }
 };
 
