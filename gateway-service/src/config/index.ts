@@ -50,7 +50,7 @@ const config = {
             .asJsonObject(),
         getMapLayers: {
             token: env.get('FRONTEND_MAP_TOKEN').asString(),
-            layers: env.get('FRONTEND_MAP_LAYERS').asJsonArray() as Array<{ name: string; body: string }>,
+            layers: env.get('FRONTEND_MAP_LAYERS').asJsonArray() as Array<{ name: string; body: string; displayName: string; type: string }>,
             url: env.get('FRONTEND_MAP_URL').asString(),
             capabilitiesUrl: env.get('FRONTEND_MAP_CAPABILITIES_URL').asString(),
             params: env.get('FRONTEND_MAP_PARAMS').asJsonObject(),

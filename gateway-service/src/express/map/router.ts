@@ -11,8 +11,6 @@ const {
 const mapRouter: Router = Router();
 
 mapRouter.get('/wmts-capabilities', async (req, res) => {
-    console.log('enterrrr', req.query.url);
-
     const { data } = await axios.get(req.query.url as string, {
         headers: {
             'x-api-key': token,
@@ -20,7 +18,6 @@ mapRouter.get('/wmts-capabilities', async (req, res) => {
         },
     });
 
-    console.dir({ data });
     res.send(data);
 });
 

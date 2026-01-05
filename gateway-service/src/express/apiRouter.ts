@@ -22,9 +22,6 @@ import workspaceRouter from './workspaces/router';
 const apiRouter = Router();
 
 apiRouter.use('/config', (_req, res) => {
-    console.log({
-        capabilitiesUrl: config.frontendConfig.getMapLayers.capabilitiesUrl,
-    });
     res.json({
         matomoUrl: config.frontendConfig.matotmo.baseUrl,
         matomoSiteId: config.frontendConfig.matotmo.siteId,
