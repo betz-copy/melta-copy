@@ -11,13 +11,13 @@ const {
     },
 } = config;
 
-export interface RequestWithSearchRelationshipTemplateBody extends RequestWithPermissionsOfUserId {
+export type RequestWithSearchRelationshipTemplateBody = RequestWithPermissionsOfUserId & {
     searchBody: ISearchRelationshipTemplatesBody;
-}
+};
 
-export interface RequestWithSearchRuleTemplateBody extends RequestWithPermissionsOfUserId {
+export type RequestWithSearchRuleTemplateBody = RequestWithPermissionsOfUserId & {
     searchBody: ISearchRulesBody;
-}
+};
 
 class RelationshipsTemplateService extends TemplatesManagerService {
     async searchRelationshipTemplates(searchBody: ISearchRelationshipTemplatesBody = {}) {

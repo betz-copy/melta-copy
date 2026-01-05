@@ -1,4 +1,3 @@
-
 import { IEntity } from '@packages/entity';
 import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import {
@@ -24,7 +23,6 @@ import {
     IUpdateEntityStatusMetadataPopulated,
     RuleBreachRequestStatus,
 } from '@packages/rule-breach';
-import React from 'react';
 import { renderToString } from 'react-dom/server';
 import config from '../../config';
 import WorkspaceManager from '../../express/workspaces/manager';

@@ -1,3 +1,4 @@
+import { MongoIdSchema } from '@packages/utils';
 import { ConfigTypes } from '@packages/workspace-configs';
 import Joi from 'joi';
 

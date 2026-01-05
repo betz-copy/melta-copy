@@ -1,4 +1,3 @@
-
 import { DefaultManagerMongo, NotFoundError } from '@packages/utils';
 import { ConfigTypes, ICategoryOrderConfig, IMongoBaseConfig, IMongoCategoryOrderConfig } from '@packages/workspace-configs';
 import mongoose from 'mongoose';

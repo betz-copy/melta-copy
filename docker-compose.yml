@@ -13,7 +13,7 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'user-service'
-    command: ['npx', 'turbo', 'start', '--filter=user-service']
+    command: ['pnpm', '--filter', 'user-service', 'start']
     environment:
       PORT: 8000
       MONGO_URL: ${USER_SERVICE_MONGO_URL}
@@ -22,6 +22,8 @@ services:
       MONGO_UNITS_COLLECTION_NAME: ${MONGO_UNITS_COLLECTION_NAME}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
+    depends_on:
+      - mongo
 
   storage-service:
     build:
@@ -29,7 +31,7 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'storage-service'
-    command: ['npx', 'turbo', 'start', '--filter=storage-service']
+    command: ['pnpm', '--filter', 'storage-service', 'start']
     environment:
       MINIO_ENDPOINT: ${MINIO_ENDPOINT}
       MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
@@ -42,6 +44,9 @@ services:
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
       SYSTEM_MELTA_BASE_URL: ${SYSTEM_MELTA_BASE_URL}
+    depends_on:
+      - minio
+      - rabbit
 
   template-service:
     build:
@@ -49,7 +54,7 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'template-service'
-    command: ['npx', 'turbo', 'start', '--filter=template-service']
+    command: ['pnpm', '--filter', 'template-service', 'start']
     environment:
       PORT: 8000
       MONGO_URL: ${TEMPLATE_SERVICE_MONGO_URL}
@@ -65,6 +70,9 @@ services:
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
+    depends_on:
+      - mongo
+      - rabbit
 
   instance-service:
     build:
@@ -72,7 +80,7 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'instance-service'
-    command: ['npx', 'turbo', 'start', '--filter=instance-service']
+    command: ['pnpm', '--filter', 'instance-service', 'start']
     environment:
       PORT: 8000
       RABBIT_URL: ${RABBIT_URL}
@@ -85,6 +93,9 @@ services:
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
+    depends_on:
+      - neo4j
+      - rabbit
 
   global-search-service:
     build:
@@ -92,7 +103,7 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'global-search-service'
-    command: ['npx', 'turbo', 'start', '--filter=global-search-service']
+    command: ['pnpm', '--filter', 'global-search-service', 'start']
     environment:
       NEO4J_URL: ${NEO4J_URL}
       NEO4J_USERNAME: ${NEO4J_USERNAME}
@@ -104,6 +115,9 @@ services:
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
+    depends_on:
+      - neo4j
+      - rabbit
 
   activity-log-service:
     build:
@@ -111,7 +125,7 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'activity-log-service'
-    command: ['npx', 'turbo', 'start', '--filter=activity-log-service']
+    command: ['pnpm', '--filter', 'activity-log-service', 'start']
     environment:
       PORT: 8000
       MONGO_URL: ${ACTIVITY_LOG_SERVICE_MONGO_URL}
@@ -120,6 +134,9 @@ services:
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
+    depends_on:
+      - mongo
+      - rabbit
 
   notification-service:
     build:
@@ -127,7 +144,7 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'notification-service'
-    command: ['npx', 'turbo', 'start', '--filter=notification-service']
+    command: ['pnpm', '--filter', 'notification-service', 'start']
     environment:
       PORT: 8000
       MONGO_URL: ${NOTIFICATION_SERVICE_MONGO_URL}
@@ -136,6 +153,9 @@ services:
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
+    depends_on:
+      - mongo
+      - rabbit
 
   rule-breach-service:
     build:
@@ -143,7 +163,7 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'rule-breach-service'
-    command: ['npx', 'turbo', 'start', '--filter=rule-breach-service']
+    command: ['pnpm', '--filter', 'rule-breach-service', 'start']
     environment:
       PORT: 8000
       MONGO_URL: ${RULE_BREACH_SERVICE_MONGO_URL}
@@ -152,6 +172,8 @@ services:
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
+    depends_on:
+      - mongo
 
   process-service:
     build:
@@ -159,7 +181,7 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'process-service'
-    command: ['npx', 'turbo', 'start', '--filter=process-service']
+    command: ['pnpm', '--filter', 'process-service', 'start']
     environment:
       PORT: 8000
       MONGO_URL: ${PROCESS_SERVICE_MONGO_URL}
@@ -174,6 +196,9 @@ services:
       RABBIT_URL: ${RABBIT_URL}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
+    depends_on:
+      - mongo
+      - rabbit
 
   gantt-service:
     build:
@@ -181,7 +206,7 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'gantt-service'
-    command: ['npx', 'turbo', 'start', '--filter=gantt-service']
+    command: ['pnpm', '--filter', 'gantt-service', 'start']
     environment:
       PORT: 8000
       MONGO_URL: ${GANTT_SERVICE_MONGO_URL}
@@ -190,6 +215,8 @@ services:
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
+    depends_on:
+      - mongo
 
   preview-service:
     build:
@@ -197,7 +224,7 @@ services:
       dockerfile: ./preview-service/Dockerfile
       args:
         SERVICE_NAME: 'preview-service'
-    command: ['npx', 'turbo', 'start', '--filter=preview-service']
+    command: ['pnpm', '--filter', 'preview-service', 'start']
     environment:
       PORT: 8000
       MINIO_ENDPOINT: ${MINIO_ENDPOINT}
@@ -209,6 +236,9 @@ services:
       RABBIT_URL: ${RABBIT_URL}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
+    depends_on:
+      - minio
+      - rabbit
 
   workspace-service:
     build:
@@ -216,13 +246,15 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'workspace-service'
-    command: ['npx', 'turbo', 'start', '--filter=workspace-service']
+    command: ['pnpm', '--filter', 'workspace-service', 'start']
     environment:
       PORT: 8000
       MONGO_URL: ${WORKSPACE_SERVICE_MONGO_URL}
       MONGO_WORKSPACES_COLLECTION_NAME: ${MONGO_WORKSPACES_COLLECTION_NAME}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
+    depends_on:
+      - mongo
 
   dashboard-service:
     build:
@@ -230,7 +262,7 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'dashboard-service'
-    command: ['npx', 'turbo', 'start', '--filter=dashboard-service']
+    command: ['pnpm', '--filter', 'dashboard-service', 'start']
     environment:
       PORT: 8000
       MONGO_URL: ${DASHBOARD_SERVICE_MONGO_URL}
@@ -238,6 +270,8 @@ services:
       MONGO_DASHBOARD_COLLECTION_NAME: ${MONGO_DASHBOARD_COLLECTION_NAME}
       MONGO_IFRAMES_COLLECTION_NAME: ${MONGO_IFRAMES_COLLECTION_NAME}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
+    depends_on:
+      - mongo
 
   mock-service:
     build:
@@ -245,7 +279,7 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'mock-service'
-    command: ['npx', 'turbo', 'start', '--filter=mock-service']
+    command: ['pnpm', '--filter', 'mock-service', 'start']
     environment:
       TEMPLATE_SERVICE_URL: ${TEMPLATE_SERVICE_URL}
       INSTANCE_SERVICE_URL: ${INSTANCE_SERVICE_URL}
@@ -298,6 +332,8 @@ services:
       FRONTEND_CONFIG_MATOMO_BASE_URL: http://localhost:8016
       FRONTEND_CONFIG_MATOMO_SITE_ID: 1
       DASHBOARD_SERVICE_URL: ${DASHBOARD_SERVICE_URL}
+    depends_on:
+      - rabbit
 
   # frontend-service:
   #   build:
@@ -321,6 +357,9 @@ services:
       USE_AUTH: 'true'
       RABBIT_URI: ${RABBIT_URL}
       REDIS_CONNECTION_URI: ${REDIS_HOST}
+    depends_on:
+      - rabbit
+      - redis
 
   cron-service:
     build:
@@ -328,7 +367,7 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'cron-service'
-    command: ['npx', 'turbo', 'start', '--filter=cron-service']
+    command: ['pnpm', '--filter', 'cron-service', 'start']
     environment:
       PORT: 8000
       NODE_TLS_REJECT_UNAUTHORIZED: 0
@@ -341,6 +380,8 @@ services:
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
       DISPLAY_CRON_DATES: ${DISPLAY_CRON_DATES}
       KARTOFFEL_BASE_URL: ${KARTOFFEL_BASE_URL}
+    depends_on:
+      - rabbit
 
   semantic-service:
     build:
@@ -348,7 +389,7 @@ services:
       dockerfile: semantic-service/Dockerfile
       args:
         SERVICE_NAME: 'semantic-service'
-    command: ['npx', 'turbo', 'start', '--filter=semantic-service']
+    command: ['pnpm', '--filter', 'semantic-service', 'start']
     environment:
       PORT: 8000
       RABBIT_URL: ${RABBIT_URL}
@@ -361,6 +402,9 @@ services:
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
       MODEL_API_URL: ${MODEL_API_URL}
       ELASTIC_RRF_WINDOW_FIELD_NAME: ${ELASTIC_RRF_WINDOW_FIELD_NAME}
+    depends_on:
+      - minio
+      - rabbit
 
   mock-model-api:
     build:

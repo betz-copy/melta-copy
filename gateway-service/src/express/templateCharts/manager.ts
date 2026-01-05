@@ -1,4 +1,3 @@
-
 import {
     ChartsAndGenerator,
     IAxisField,
@@ -12,7 +11,7 @@ import {
 } from '@packages/chart';
 import { getDefaultFilterFromChildTemplate, IChildTemplatePopulated } from '@packages/child-template';
 import { ChartItem, DashboardItemType } from '@packages/dashboard';
-import { ISearchFilter } from '@packages/entity';
+import { getFilterModal, ISearchFilter } from '@packages/entity';
 import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import { ISubCompactPermissions, isAdmin } from '@packages/permission';
 import ChartService from '../../externalServices/dashboardService/chartService';

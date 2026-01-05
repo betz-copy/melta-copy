@@ -2,7 +2,8 @@
 import { IMongoChart } from '@packages/chart';
 import { DashboardItem, DashboardItemType, MongoDashboardItem } from '@packages/dashboard';
 import { IMongoIframe } from '@packages/iframe';
-import { DefaultManagerMongo, NotFoundError, ServiceError } from '@packages/utils';
+import { DefaultManagerMongo } from '@packages/utils';
+import { NotFoundError, ServiceError } from '@packages/utils';
 import { StatusCodes } from 'http-status-codes';
 import groupBy from 'lodash.groupby';
 import { FilterQuery, Types } from 'mongoose';

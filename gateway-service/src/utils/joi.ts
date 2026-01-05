@@ -1,3 +1,4 @@
+import { fileSchema } from '@packages/utils';
 import Joi from 'joi';
 
 export const ExtendedJoi = Joi.extend(

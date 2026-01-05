@@ -1,8 +1,8 @@
 {
     "scripts": {
-        "analyze": "npm run build && source-map-explorer 'build/static/js/*.js' --html analyzedBuild.html",
+        "analyze": "pnpm build && source-map-explorer 'build/static/js/*.js' --html analyzedBuild.html",
         "start": "vite",
-        "start:docker": "export VITE_APP_IS_DOCKER=true && npm start",
+        "start:docker": "export VITE_APP_IS_DOCKER=true && pnpm start",
         "build": "tsc && vite build",
         "postinstall": "patch-package"
     },

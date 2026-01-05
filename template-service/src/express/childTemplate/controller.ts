@@ -1,5 +1,6 @@
 import { IMongoChildTemplate } from '@packages/child-template';
-import { DefaultController, fetchPropertyFromRequest } from '@packages/utils';
+import { DefaultController } from '@packages/utils';
+import { fetchPropertyFromRequest } from '@packages/utils';
 import { Request, Response } from 'express';
 import ChildTemplateManager from './manager';
 

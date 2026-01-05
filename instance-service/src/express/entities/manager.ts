@@ -4,8 +4,9 @@
 
 import { ActionsLog, IActivityLog, IUpdatedFields } from '@packages/activity-log';
 import { IChartBody } from '@packages/chart';
-import { combineFilters, getFilterFromChildTemplate, IChildTemplatePopulated } from '@packages/child-template';
+import { getFilterFromChildTemplate, IChildTemplatePopulated } from '@packages/child-template';
 import {
+    combineFilters,
     IConstraint,
     IConstraintsOfTemplate,
     IDeleteEntityBody,

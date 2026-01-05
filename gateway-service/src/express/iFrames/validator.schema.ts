@@ -1,3 +1,4 @@
+import { iconFileSchema, MongoIdSchema } from '@packages/utils';
 import * as Joi from 'joi';
 import { ExtendedJoi } from '../../utils/joi';
 

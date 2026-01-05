@@ -10,9 +10,9 @@ const {
     },
 } = config;
 
-export interface RequestWithSearchPrintingTemplateBody extends RequestWithPermissionsOfUserId {
+export type RequestWithSearchPrintingTemplateBody = RequestWithPermissionsOfUserId & {
     searchBody: ISearchEntityTemplatesBody;
-}
+};
 
 class PrintingTemplateService extends TemplatesManagerService {
     async getAllPrintingTemplates(): Promise<IMongoPrintingTemplate[]> {

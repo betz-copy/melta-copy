@@ -1,3 +1,4 @@
+import { MongoIdSchema, variableNameValidation } from '@packages/utils';
 import Joi from 'joi';
 
 const printingTemplateBodySchema = Joi.object({

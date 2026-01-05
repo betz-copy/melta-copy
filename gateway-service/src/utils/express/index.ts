@@ -70,8 +70,6 @@ export const wrapController = <ExtendedRequest extends Request<any, any, any, an
     };
 };
 
-export type RequestWithQuery<Query> = Request<any, any, any, Query>;
-
 export const getWorkspaceId = async (req: Request) => {
     const workspaceId = req.headers[workspaceIdHeaderName];
 

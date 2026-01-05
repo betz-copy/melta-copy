@@ -1,4 +1,5 @@
 import { PermissionType } from '@packages/permission';
+import { iconFileSchema, MongoIdSchema } from '@packages/utils';
 import joi from 'joi';
 import config from '../../config';
 import { ExtendedJoi } from '../../utils/joi';

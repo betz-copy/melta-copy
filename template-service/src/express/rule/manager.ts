@@ -1,5 +1,6 @@
 import { IMongoRule, IRule } from '@packages/rule';
-import { DefaultManagerMongo, NotFoundError } from '@packages/utils';
+import { DefaultManagerMongo } from '@packages/utils';
+import { NotFoundError } from '@packages/utils';
 import { FilterQuery } from 'mongoose';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';

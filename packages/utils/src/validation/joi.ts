@@ -1,6 +1,6 @@
 import { Request } from 'express';
 import * as Joi from 'joi';
-import { wrapValidator } from './express';
+import { wrapValidator } from '../express';
 
 export const defaultValidationOptions: Joi.ValidationOptions = {
     abortEarly: false,
@@ -19,7 +19,7 @@ export const normalizeRequest = (req: any, value: any) => {
     req.params = value.params;
 };
 
-const ValidateRequest = (schema: Joi.ObjectSchema<any>, options: Joi.ValidationOptions = defaultValidationOptions) => {
+export const ValidateRequest = (schema: Joi.ObjectSchema<any>, options: Joi.ValidationOptions = defaultValidationOptions) => {
     const validator = async (req: Request) => {
         const { error, value } = schema.unknown().validate(req, options);
         if (error) throw error;
@@ -91,5 +91,3 @@ export const searchFilterSchema = Joi.object({
     $and: Joi.alternatives(filterOfTemplateSchema, Joi.array().items(filterOfTemplateSchema)),
     $or: Joi.array().items(filterOfTemplateSchema),
 });
-
-export default ValidateRequest;

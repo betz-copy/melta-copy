@@ -5,7 +5,7 @@
     "main": "",
     "scripts": {
         "start": "node --async-stack-traces ./dist/index.js",
-        "dev": "npm run build && npm start",
+        "dev": "pnpm build && pnpm start",
         "test": "jest --coverage",
         "build": "tsc",
         "build:watch": "tsc --watch",
@@ -44,7 +44,7 @@
         "cheerio": "^1.1.2",
         "cheerio-select": "^2.1.0",
         "cookie-parser": "^1.4.6",
-        "docx": "^8.5.0",
+        "docx": "8.5.0",
         "exceljs": "^4.4.0",
         "form-data": "^4.0.0",
         "handlebars": "^4.7.8",

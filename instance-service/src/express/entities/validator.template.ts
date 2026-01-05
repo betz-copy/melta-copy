@@ -1,4 +1,3 @@
-
 import { getFilterFromChildTemplate } from '@packages/child-template';
 import {
     FilterLogicalOperator,
@@ -9,6 +8,7 @@ import {
     ISearchEntitiesOfTemplateBody,
     ISearchFilter,
     IUniqueConstraintOfTemplate,
+    matchValueAgainstFilter,
 } from '@packages/entity';
 import { IEntitySingleProperty, IEntityTemplate, IMongoEntityTemplate } from '@packages/entity-template';
 import { IMongoRelationshipTemplate } from '@packages/relationship-template';

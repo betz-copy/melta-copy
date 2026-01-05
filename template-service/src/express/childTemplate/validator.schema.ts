@@ -1,5 +1,5 @@
 import { ViewType } from '@packages/child-template';
-import { searchFilterSchema } from '@packages/utils';
+import { MongoIdSchema, searchFilterSchema, variableNameValidation } from '@packages/utils';
 import Joi from 'joi';
 
 const childTemplatePropertySchema = Joi.object({

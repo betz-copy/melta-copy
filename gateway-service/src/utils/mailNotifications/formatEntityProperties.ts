@@ -1,5 +1,5 @@
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@packages/entity-template';
-import { CoordinateSystem } from '@packages/utils';
+import { CoordinateSystem, locationConverterToString } from '@packages/utils';
 import Handlebars from 'handlebars';
 import { mapValues } from 'lodash';
 import config from '../../config';

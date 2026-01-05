@@ -1,3 +1,4 @@
+import { MongoIdSchema } from '@packages/utils';
 import joi from 'joi';
 
 // GET /api/notifications/my

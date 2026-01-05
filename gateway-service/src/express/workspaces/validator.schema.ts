@@ -1,3 +1,4 @@
+import { FilePathSchema, iconFileSchema, MongoIdSchema, WorkspaceNameSchema } from '@packages/utils';
 import { WorkspaceTypes } from '@packages/workspace';
 import Joi from 'joi';
 import { ExtendedJoi } from '../../utils/joi';

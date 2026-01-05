@@ -1,3 +1,4 @@
+import { MongoIdSchema } from '@packages/utils';
 import * as Joi from 'joi';
 
 const ganttItemSchema = Joi.object({

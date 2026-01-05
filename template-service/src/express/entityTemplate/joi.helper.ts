@@ -1,5 +1,5 @@
 import { IEntityTemplate, IEnumPropertiesColors, IProperties } from '@packages/entity-template';
-import { searchFilterSchema } from '@packages/utils';
+import { ColorSchema, searchFilterSchema, variableNameValidation } from '@packages/utils';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import Joi from 'joi';

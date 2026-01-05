@@ -1,5 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 
+import { fileSchema, MongoIdSchema } from '@packages/utils';
 import Joi from 'joi';
 import { ExtendedJoi } from '../../../utils/joi';
 

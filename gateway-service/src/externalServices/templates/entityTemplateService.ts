@@ -1,4 +1,3 @@
-
 import { ICategory, IMongoCategory } from '@packages/category';
 import { IChildTemplate, IChildTemplatePopulated, IMongoChildTemplatePopulated } from '@packages/child-template';
 import { IEntityTemplate, IMongoEntityTemplate, IMongoEntityTemplatePopulated, ISearchEntityTemplatesBody } from '@packages/entity-template';
@@ -17,9 +16,9 @@ const {
     },
 } = config;
 
-export interface RequestWithSearchEntityTemplateBody extends RequestWithPermissionsOfUserId {
+export type RequestWithSearchEntityTemplateBody = RequestWithPermissionsOfUserId & {
     searchQuery: ISearchEntityTemplatesBody;
-}
+};
 
 class EntityTemplateService extends TemplatesManagerService {
     // categories

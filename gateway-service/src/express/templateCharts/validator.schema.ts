@@ -1,5 +1,5 @@
-
 import { IAggregationType, IChartPermission, IChartType } from '@packages/chart';
+import { filterOfFieldSchema as filterOfFieldSchemaShared, MongoIdSchema } from '@packages/utils';
 import Joi from 'joi';
 
 const filterOfFieldSchema = filterOfFieldSchemaShared.min(1).id('filterOfField');

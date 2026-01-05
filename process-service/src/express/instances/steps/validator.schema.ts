@@ -1,4 +1,5 @@
 import { Status } from '@packages/process';
+import { MongoIdSchema } from '@packages/utils';
 import * as Joi from 'joi';
 
 // GET /api/processes/instances/:id

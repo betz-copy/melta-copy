@@ -1,5 +1,6 @@
 import { IFrame, IMongoIframe, ISearchIFramesBody } from '@packages/iframe';
-import { DefaultManagerMongo, NotFoundError } from '@packages/utils';
+import { DefaultManagerMongo } from '@packages/utils';
+import { NotFoundError } from '@packages/utils';
 import { FilterQuery, Types } from 'mongoose';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';

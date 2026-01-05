@@ -1,5 +1,6 @@
 import { IMongoRelationshipTemplate, IRelationshipTemplate } from '@packages/relationship-template';
-import { DefaultManagerMongo, NotFoundError } from '@packages/utils';
+import { DefaultManagerMongo } from '@packages/utils';
+import { NotFoundError } from '@packages/utils';
 import { ClientSession, FilterQuery } from 'mongoose';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';

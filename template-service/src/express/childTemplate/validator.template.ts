@@ -1,7 +1,8 @@
 
 import { EntityTemplateType, getChildPropertiesFiltered, IMongoChildTemplate, TemplateItem } from '@packages/child-template';
 import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
-import { addPropertyToRequest, DefaultController } from '@packages/utils';
+import { DefaultController } from '@packages/utils';
+import { addPropertyToRequest } from '@packages/utils';
 import { Request } from 'express';
 import * as ts from 'typescript-actions';
 import { generateInterfaceWithRelationships } from '../../utils/entityTemplateActions/interfacesGenerator';
