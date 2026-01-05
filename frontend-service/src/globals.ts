@@ -351,6 +351,8 @@ export const environment = {
         wgs84: { maxLongitude: 180, maxLatitude: 90 },
         minSearchLength: 2,
         maxNumberOfSearchResults: 1000,
+        wmtsMatrixSetPriority: ['WorldCRS84', 'EPSG:4326', 'GoogleMapsCompatible'],
+        webMercatorCrsHints: ['3857', '900913'],
     },
     signaturePrefix: 'data:image/png;base64,',
     meltaUpdatesShown: 'meltaUpdatesShown',

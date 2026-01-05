@@ -220,13 +220,10 @@ function findLinks(
     // Check the current level
     if (paredXml[layerLinkTag]) {
         const linksList = Array.isArray(paredXml[layerLinkTag]) ? paredXml[layerLinkTag] : [paredXml[layerLinkTag]];
-        console.log({ linksList });
 
         const matchedLinkCapabilities = linksList.find((link) => link.scheme === capabilitiesLinkSchema && link.name?.startsWith(layerName));
 
         const matchedLinkCesium = linksList.find((link) => link.scheme === cesiumLinkSchema && link.name?.startsWith(layerName));
-
-        console.log({ matchedLinkCapabilities, matchedLinkCesium });
 
         return matchedLinkCesium && matchedLinkCapabilities
             ? {
@@ -240,12 +237,11 @@ function findLinks(
     }
 
     // Recurse deeper
-    for (const key in paredXml) {
+    for (const key in paredXml)
         if (typeof paredXml[key] === 'object') {
             const result = findLinks(paredXml[key], capabilitiesLinkSchema, cesiumLinkSchema, layerName, layerDisplayName, layerType, layerLinkTag);
             if (result.url) return result;
         }
-    }
 
     return emptyResult;
 }
@@ -261,7 +257,6 @@ export const extractImageryUrl = (
 ): LayerProvider => {
     try {
         const json = xmlParser.parse(xml);
-        console.log({ json });
 
         return findLinks(json, capabilitiesLinkSchema, cesiumLinkSchema, layerName, layerDisplayName, layerType, layerLinkTag);
     } catch (e) {

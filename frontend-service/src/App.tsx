@@ -24,7 +24,7 @@ import { getById, getWorkspaceHierarchyIds } from './services/workspacesService'
 import { useDarkModeStore } from './stores/darkMode';
 import { useUserStore } from './stores/user';
 import { useWorkspaceStore } from './stores/workspace';
-import { extractImageryUrl, getMatrixSet } from './utils/map';
+import { extractImageryUrl } from './utils/map';
 import { getWorkspacePermissions } from './utils/permissions';
 
 enableFallbackWithoutWorker();
@@ -62,7 +62,6 @@ const App: React.FC = () => {
         onError: () => {
             toast.error(i18next.t('error.config'));
         },
-
         enabled: !isLoadingUser && !isErrorMyUser,
         onSuccess: async ({
             getMapLayers: { url, params, layers, token, capabilitiesLinkSchema, cesiumLinkSchema, layerLinkTag, capabilitiesUrl },
@@ -70,8 +69,6 @@ const App: React.FC = () => {
             const mapLayers = await Promise.all(
                 layers.map(async (layer) => {
                     const xml = await getMapLayer(url, params, layer.body, token);
-
-                    console.log({ xmlOfLayer: xml });
 
                     const layerProvider = extractImageryUrl(
                         xml,
@@ -81,25 +78,16 @@ const App: React.FC = () => {
                         layer.displayName,
                         layer.type,
                         layerLinkTag,
-                    ); //layerLinkSchema=wmts_base layerLinkTag=mc:links name=othophoto-base
+                    );
 
                     const endpoint = await new WmtsEndpoint(`${capabilitiesUrl}?url=${layerProvider.url}`).isReady();
                     const wmtsLayer = endpoint.getLayerByName(layerProvider.id);
-
-                    console.log({
-                        style: wmtsLayer.defaultStyle || 'default',
-                        format: wmtsLayer.resourceLinks.find((r) => r.format === 'image/jpeg')?.format ?? wmtsLayer.resourceLinks[0].format,
-                        tileMatrixSetID: getMatrixSet(wmtsLayer.matrixSets).identifier,
-                        tilingScheme: getMatrixSet(wmtsLayer.matrixSets).tilingScheme,
-                    });
 
                     return { ...layerProvider, ...wmtsLayer };
                 }),
             );
 
-            console.log({ mapLayers });
-
-            queryClient.setQueryData('getMapLayers', mapLayers); //for EveryLayer:url(wmts_base) name(name wmts_base) [{url:'',name:''}]
+            queryClient.setQueryData('getMapLayers', mapLayers);
         },
     });
 
