@@ -1,17 +1,9 @@
 /* eslint-disable class-methods-use-this */
-import {
-    ActionsLog,
-    DefaultManagerMongo,
-    IMongoStepInstance,
-    IMongoStepTemplate,
-    IStepInstance,
-    IUpdateProcessStepMetadata,
-    NotFoundError,
-    ServiceError,
-    UpdateStepReqBody,
-    ValidationError,
-} from '@microservices/shared';
-import { ClientSession, UpdateQuery, UpdateWithAggregationPipeline } from 'mongoose';
+
+import { ActionsLog, IUpdateProcessStepMetadata } from '@packages/activity-log';
+import { IMongoStepInstance, IMongoStepTemplate, IStepInstance, UpdateStepReqBody } from '@packages/process';
+import { DefaultManagerMongo, NotFoundError, ServiceError, ValidationError } from '@packages/utils';
+import { ClientSession, Types, UpdateQuery, UpdateWithAggregationPipeline } from 'mongoose';
 import config from '../../../config';
 import { ActivityLogProducer } from '../../../externalServices/activityLog/producer';
 import ElasticSearchManager from '../../../utils/elastic/documentsOnElastic';
@@ -62,7 +54,7 @@ export default class StepInstanceManager extends DefaultManagerMongo<IStepInstan
     async updateStepsReviewers(steps: Pick<IMongoStepInstance, 'reviewers' | '_id'>[], session?: ClientSession) {
         const bulkWriteOperations = steps.map((step) => ({
             updateOne: {
-                filter: { _id: step._id },
+                filter: { _id: new Types.ObjectId(step._id) },
                 update: { $set: { reviewers: step.reviewers } },
             },
         }));

@@ -1,11 +1,10 @@
-import { ICategoryMap, IMongoCategory } from '../../interfaces/categories';
-import { IMongoChildTemplate, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { PermissionScope } from '../../interfaces/permissions';
-import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
-import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplates';
-import { IMongoRule } from '../../interfaces/rules';
-import { ICurrentUser } from '../../interfaces/users';
+import { ICategoryMap, IMongoCategory } from '@packages/category';
+import { IMongoChildTemplate, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { ISubCompactPermissions, PermissionScope } from '@packages/permission';
+import { IMongoRelationshipTemplate } from '@packages/relationship-template';
+import { IMongoRule } from '@packages/rule';
+import { ICurrentUser } from '@packages/user';
 
 export const allowedCategories = (categories: ICategoryMap, currentUser: ICurrentUser): IMongoCategory[] => {
     const allowedCategoriesToShow = currentUser.currentWorkspacePermissions?.admin
@@ -21,7 +20,7 @@ export const allowedCategories = (categories: ICategoryMap, currentUser: ICurren
 };
 
 export const allowedEntitiesOfCategory = (
-    relatedEntityTemplatesToShow: IMongoEntityTemplatePopulated[],
+    relatedEntityTemplatesToShow: IMongoEntityTemplateWithConstraintsPopulated[],
     category: IMongoCategory,
     currentUser: ICurrentUser,
 ) => {
@@ -32,7 +31,7 @@ export const allowedEntitiesOfCategory = (
     return relatedEntityTemplatesToShow.filter((entity) => entitiesKeys.includes(entity._id));
 };
 
-export const getAllAllowedEntities = (allEntityTemplates: IMongoEntityTemplatePopulated[], currentUser: ICurrentUser) => {
+export const getAllAllowedEntities = (allEntityTemplates: IMongoEntityTemplateWithConstraintsPopulated[], currentUser: ICurrentUser) => {
     return currentUser.currentWorkspacePermissions.admin
         ? allEntityTemplates
         : allEntityTemplates.filter((entity) => {
@@ -43,7 +42,10 @@ export const getAllAllowedEntities = (allEntityTemplates: IMongoEntityTemplatePo
           });
 };
 
-export const getAllWritePermissionEntityTemplates = (allEntityTemplates: IMongoEntityTemplatePopulated[], currentUser: ICurrentUser) => {
+export const getAllWritePermissionEntityTemplates = (
+    allEntityTemplates: IMongoEntityTemplateWithConstraintsPopulated[],
+    currentUser: ICurrentUser,
+) => {
     return currentUser.currentWorkspacePermissions.admin
         ? allEntityTemplates
         : allEntityTemplates.filter((entity) => {
@@ -57,7 +59,7 @@ export const getAllWritePermissionEntityTemplates = (allEntityTemplates: IMongoE
 
 export const getAllAllowedRulesAndWriteEntities = (
     rules: IMongoRule[],
-    entityTemplates: IMongoEntityTemplatePopulated[],
+    entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[],
     currentUser: ICurrentUser,
 ) => {
     if (currentUser.currentWorkspacePermissions.admin) return { allowedEntityTemplates: entityTemplates, allowedRules: rules };
@@ -78,7 +80,7 @@ export const getAllAllowedRelationships = (allRelationshipTemplates: IMongoRelat
 };
 
 export const updateUserPermissionForEntityTemplate = (
-    newEntityTemplate: IMongoEntityTemplatePopulated,
+    newEntityTemplate: IMongoEntityTemplateWithConstraintsPopulated,
     currentUser: ICurrentUser,
     workspaceId: string,
 ): ICurrentUser => {
@@ -151,7 +153,7 @@ export const updateUserPermissionForCategory = (newCategory: IMongoCategory, cur
 
 export const checkUserChildTemplatePermission = (
     userPermissions: ISubCompactPermissions,
-    childTemplate: IMongoChildTemplatePopulated,
+    childTemplate: IMongoChildTemplateWithConstraintsPopulated,
     scope: PermissionScope,
 ): boolean => {
     if (userPermissions.admin?.scope === PermissionScope.write) {

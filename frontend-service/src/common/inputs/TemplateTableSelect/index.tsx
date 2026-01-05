@@ -1,14 +1,14 @@
 import { Box, FormControl, FormHelperText, FormLabel } from '@mui/material';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { PermissionScope } from '@packages/permission';
 import React, { useEffect, useState } from 'react';
-import { IEntity } from '../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { PermissionScope } from '../../../interfaces/permissions';
 import DashedSelectBox from './dashedSelectBox';
 import DeletableEntityViewerCard from './deletableEntityViewerCard';
 import EntitiesTableOfTemplateWithQuickFilter from './EntitiesTableOfTemplateWithQuickFilter';
 
 const TemplateTableSelect: React.FC<{
-    entityTemplate?: IMongoEntityTemplatePopulated;
+    entityTemplate?: IMongoEntityTemplateWithConstraintsPopulated;
     value: IEntity | null;
     onChange: (entity: IEntity | null) => void;
     onBlur?: React.FocusEventHandler<HTMLDivElement>;

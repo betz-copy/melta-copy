@@ -5,7 +5,7 @@
     "main": "",
     "scripts": {
         "start": "node --async-stack-traces ./dist/index.js",
-        "dev": "npm run build && npm start",
+        "dev": "pnpm build && pnpm start",
         "test": "jest --coverage",
         "build": "tsc",
         "build:watch": "tsc --watch",
@@ -14,7 +14,8 @@
     "author": "Nadav Hammer",
     "license": "ISC",
     "dependencies": {
-        "@microservices/shared": "^1.0.0"
+        "@packages/utils": "workspace:*",
+        "@packages/workspace": "workspace:*"
     },
     "devDependencies": {
         "@types/winston": "^2.4.4"

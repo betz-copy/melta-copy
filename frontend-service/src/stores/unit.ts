@@ -1,6 +1,6 @@
+import { IGetUnits } from '@packages/unit';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { IGetUnits } from '../interfaces/units';
 
 interface UnitsState {
     filteredUnits: IGetUnits;

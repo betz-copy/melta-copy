@@ -1,21 +1,22 @@
 import { AddRounded } from '@mui/icons-material';
 import { Button, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
+import { ByCurrentDefaultValue, IChildTemplateProperty, ViewType } from '@packages/child-template';
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IAgGridTextFilter } from '@packages/rule-breach';
+import { IGetUnits, IMongoUnit } from '@packages/unit';
+import { IUser } from '@packages/user';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { ByCurrentDefaultValue, ChipType, IChildTemplateForm, IChildTemplateProperty, ViewType } from '../../../interfaces/childTemplates';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IGetUnits, IMongoUnit } from '../../../interfaces/units';
-import { IUser } from '../../../interfaces/users';
-import { IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
+import { ChipType, IChildTemplateForm } from '../../../interfaces/childTemplateForms';
 import { ColoredEnumChip } from '../../ColoredEnumChip';
 import { getFilterFieldReadonly } from '../../inputs/FilterInputs/ReadonlyFilterInput';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
-import { IAGGridFilter } from '../../wizards/entityTemplate/commonInterfaces';
+import { IAgGridFilter } from '../../wizards/entityTemplate/commonInterfaces';
 import AddFilterFieldDialog from './AddFieldFilterDialog';
 
-type IChip = IAGGridFilter | IChildTemplateProperty['defaultValue'];
+type IChip = IAgGridFilter | IChildTemplateProperty['defaultValue'];
 
 const getFormattedDefaultValue = (value: IChildTemplateProperty['defaultValue'], fieldSchema: IEntitySingleProperty): string => {
     if (value === null || value === undefined) return '';
@@ -59,7 +60,7 @@ const getFormattedDefaultValue = (value: IChildTemplateProperty['defaultValue'],
 
 const renderChips = (
     mode: ChipType,
-    chips: IAGGridFilter[] | IChildTemplateProperty['defaultValue'][],
+    chips: IAgGridFilter[] | IChildTemplateProperty['defaultValue'][],
     fieldSchema: IEntitySingleProperty,
     onDelete: (chip: IChip, mode: ChipType) => void,
     units: IMongoUnit[],
@@ -79,8 +80,8 @@ const renderChips = (
 
         if (fieldSchema.format === 'unitField') {
             if (mode === ChipType.Filter) {
-                const unitName = units.find((unit) => unit._id === (chip as IAGGridTextFilter).filter)?.name;
-                if (unitName) renderedChip = { ...chip, filter: unitName } as IAGGridFilter;
+                const unitName = units.find((unit) => unit._id === (chip as IAgGridTextFilter).filter)?.name;
+                if (unitName) renderedChip = { ...chip, filter: unitName } as IAgGridFilter;
             } else {
                 const unitName = units.find((unit) => unit._id === (chip as string))?.name;
                 if (unitName) renderedChip = unitName;
@@ -101,7 +102,7 @@ const renderChips = (
 
 interface IFieldsAndFiltersTableProps {
     formikProps: FormikProps<IChildTemplateForm>;
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
 }
 
 const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikProps, entityTemplate }) => {
@@ -118,7 +119,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
                 {Object.entries(entityTemplate.properties.properties).map(([fieldName, property]) => {
                     const value = values.properties.properties[fieldName] ?? {};
 
-                    const isRequired = entityTemplate.properties.required.includes(fieldName);
+                    const isRequired = (entityTemplate as IMongoEntityTemplateWithConstraintsPopulated).properties.required.includes(fieldName);
 
                     const isSerialNumberField = !!property?.serialCurrent;
                     const isRelationshipRefField = property?.format === 'relationshipReference';
@@ -141,7 +142,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
                         const prev = values.properties.properties[fieldName];
                         setFieldValue(`properties.properties.${fieldName}`, {
                             ...prev,
-                            [mode]: mode === ChipType.Default ? undefined : (prev[mode] as IAGGridFilter[] | undefined)?.filter((c) => c !== chip),
+                            [mode]: mode === ChipType.Default ? undefined : (prev[mode] as IAgGridFilter[] | undefined)?.filter((c) => c !== chip),
                         });
                     };
 

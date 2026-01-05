@@ -1,9 +1,9 @@
 import { AutoAwesome } from '@mui/icons-material';
 import { Grid, IconButton, Link, Typography } from '@mui/material';
+import { ISemanticSearchResult } from '@packages/semantic-search';
 import i18next from 'i18next';
-import React, { ReactNode, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { environment } from '../../globals';
-import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { getFileName } from '../../utils/getFileName';
 import { getFileExtension, getFileNameWithoutExtension, getPreviewContentType } from '../../utils/getFileType';
@@ -12,10 +12,12 @@ import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import FileIcon from './FileIcon';
 import { PreviewDialog } from './PreviewDialog';
 
+type PreviewImage = React.ReactElement | string | number | null | undefined;
+
 const OpenPreviewContent: React.FC<{
     fileName: string;
     onClick?: () => Promise<void>;
-    img?: ReactNode;
+    img?: PreviewImage;
     showText?: boolean;
     searchValue?: string;
     highlightAll?: boolean;
@@ -62,7 +64,7 @@ const OpenPreviewContent: React.FC<{
 
 const OpenPreview: React.FC<{
     fileId: string | File;
-    img?: ReactNode;
+    img?: PreviewImage;
     showText?: boolean;
     download?: boolean;
     onClick?: () => Promise<void>;

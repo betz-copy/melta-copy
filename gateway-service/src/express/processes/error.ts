@@ -1,5 +1,5 @@
 // eslint-disable-next-line max-classes-per-file
-import { ServiceError } from '@microservices/shared';
+import { ServiceError } from '@packages/utils';
 import { StatusCodes } from 'http-status-codes';
 
 export class StepNotPartOfProcess extends ServiceError {

@@ -1,5 +1,6 @@
 import { Add, FilterAltOff } from '@mui/icons-material';
 import { Grid, IconButton, Typography, useTheme } from '@mui/material';
+import { IMongoIframe } from '@packages/iframe';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { DropResult } from 'react-beautiful-dnd';
@@ -11,7 +12,6 @@ import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
 import { SelectCheckbox } from '../../common/SelectCheckBox';
 import { TopBarGrid } from '../../common/TopBar';
 import { environment } from '../../globals';
-import { IMongoIFrame } from '../../interfaces/iFrames';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { LocalStorage } from '../../utils/localStorage';
@@ -27,7 +27,7 @@ const IFramesPageHeadline: React.FC<{
     const theme = useTheme();
     const queryClient = useQueryClient();
 
-    const [allIFramesAllowed, setAllIFramesAllowed] = useState<IMongoIFrame[]>();
+    const [allIFramesAllowed, setAllIFramesAllowed] = useState<IMongoIframe[]>();
     const [inputValue, setInputValue] = useState('');
 
     const currentUser = useUserStore((state) => state.user);
@@ -58,9 +58,9 @@ const IFramesPageHeadline: React.FC<{
         LocalStorage.set(iFramesOrderKey, updatedItems);
         setIFramesOrder(updatedItems);
 
-        queryClient.setQueryData<IMongoIFrame[]>('allIFrames', (oldData) => {
+        queryClient.setQueryData<IMongoIframe[]>('allIFrames', (oldData) => {
             if (!oldData) return [];
-            return updatedItems.map((id) => oldData.find((iFrame: IMongoIFrame) => iFrame._id === id)) as IMongoIFrame[];
+            return updatedItems.map((id) => oldData.find((iFrame: IMongoIframe) => iFrame._id === id)) as IMongoIframe[];
         });
     };
     return (
@@ -70,7 +70,7 @@ const IFramesPageHeadline: React.FC<{
                     <BlueTitle title={i18next.t('pages.iFrames')} component="h4" variant="h4" style={{ fontSize: headlineTitleFontSize }} />
                 </Grid>
                 <Grid>
-                    <SelectCheckbox<IMongoIFrame>
+                    <SelectCheckbox<IMongoIframe>
                         title={i18next.t('iFrames.arrangementIFrames')}
                         filterIcon
                         options={allIFramesAllowed ?? []}

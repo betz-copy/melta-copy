@@ -1,6 +1,6 @@
+import { IMetadata, IWorkspace } from '@packages/workspace';
 import axios from '../axios';
 import { environment } from '../globals';
-import { IMetadata, IWorkspace } from '../interfaces/workspaces';
 import { WorkspaceWizardValues } from '../pages/DirView/Wizard';
 
 const {

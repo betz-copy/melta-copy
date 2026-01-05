@@ -1,4 +1,4 @@
-import { ConfigTypes } from '@microservices/shared';
+import { ConfigTypes } from '@packages/workspace-configs';
 import assert from 'assert';
 import { Request, Response } from 'express';
 import config from '../../config';

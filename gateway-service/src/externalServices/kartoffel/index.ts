@@ -1,4 +1,4 @@
-import { BadRequestError } from '@microservices/shared';
+import { BadRequestError } from '@packages/utils';
 import axios from 'axios';
 import config from '../../config';
 import { IKartoffelUser } from './interface';

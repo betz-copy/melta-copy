@@ -1,4 +1,6 @@
-import { createController, ISubCompactPermissions, PermissionScope, PermissionType, RelatedPermission } from '@microservices/shared';
+import { ISubCompactPermissions, PermissionScope, PermissionType } from '@packages/permission';
+import { RelatedPermission } from '@packages/user';
+import { createController } from '@packages/utils';
 import { Request } from 'express';
 import { UserIncorrectScopeError, UserNotAuthorizedError } from '../express/error';
 import WorkspaceManager from '../express/workspaces/manager';
@@ -7,7 +9,9 @@ import UserService from '../externalServices/userService';
 import { typedObjectEntries } from '.';
 import DefaultController from './express/controller';
 
-export type RequestWithPermissionsOfUserId = Request & { permissionsOfUserId: ISubCompactPermissions };
+export type RequestWithPermissionsOfUserId = Request & {
+    permissionsOfUserId: ISubCompactPermissions;
+};
 
 export class Authorizer extends DefaultController {
     constructor(private workspaceId: string) {

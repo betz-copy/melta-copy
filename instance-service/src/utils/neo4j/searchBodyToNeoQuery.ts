@@ -1,12 +1,6 @@
-import {
-    FilterLogicalOperator,
-    IEntitySingleProperty,
-    IFilterGroup,
-    IFilterOfField,
-    IFilterOfTemplate,
-    IMongoEntityTemplate,
-    ISearchBatchBody,
-} from '@microservices/shared';
+
+import { FilterLogicalOperator, IFilterGroup, IFilterOfField, IFilterOfTemplate, ISearchBatchBody } from '@packages/entity';
+import { IEntitySingleProperty, IMongoEntityTemplate } from '@packages/entity-template';
 import { fromZonedTime } from 'date-fns-tz';
 import mapValues from 'lodash.mapvalues';
 import { Date as Neo4jDate, DateTime as Neo4jDateTime } from 'neo4j-driver';

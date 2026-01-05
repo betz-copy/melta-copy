@@ -1,9 +1,8 @@
 import { Grid, Typography } from '@mui/material';
+import { ActionTypes, IActionPopulated, IRuleBreachPopulated } from '@packages/rule-breach';
+import { IUser } from '@packages/user';
 import i18next from 'i18next';
 import React from 'react';
-import { ActionTypes, IActionPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
-import { IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
-import { IUser } from '../../interfaces/users';
 import { ActionInfo } from './ActionInfo';
 import { BrokenRulesInfo } from './BrokenRulesInfo';
 

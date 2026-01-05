@@ -1,6 +1,8 @@
-/* eslint-disable no-extra-boolean-cast */
 import { Clear as ClearIcon, Done as DoneIcon, Edit as EditIcon } from '@mui/icons-material';
 import { Box, Button, CircularProgress, Grid, InputLabel, TextField, Typography } from '@mui/material';
+/* eslint-disable no-extra-boolean-cast */
+import { PermissionScope } from '@packages/permission';
+import { IMongoProcessInstanceReviewerPopulated, IMongoStepInstancePopulated, IMongoStepTemplatePopulated } from '@packages/process';
 import { AxiosError } from 'axios';
 import { Field, Form, Formik } from 'formik';
 import i18next from 'i18next';
@@ -8,10 +10,6 @@ import pickBy from 'lodash.pickby';
 import React, { FC, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { PermissionScope } from '../../../../interfaces/permissions';
-import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
-import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
-import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { updateStepRequest } from '../../../../services/processesService';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import { useUserStore } from '../../../../stores/user';
@@ -110,7 +108,7 @@ export const TextAreaProperty: FC<{
 interface ProcessStepProps {
     stepInstance: IMongoStepInstancePopulated;
     stepTemplate: IMongoStepTemplatePopulated;
-    processInstance: IMongoProcessInstancePopulated;
+    processInstance: IMongoProcessInstanceReviewerPopulated;
     isStepEditMode: boolean;
     setIsStepEditMode: React.Dispatch<React.SetStateAction<boolean>>;
     onStepUpdateSuccess: (stepInstance: IMongoStepInstancePopulated) => void;

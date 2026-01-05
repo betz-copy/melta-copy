@@ -1,4 +1,4 @@
-import { createController, ValidateRequest } from '@microservices/shared';
+import { createController, ValidateRequest } from '@packages/utils';
 import { Router } from 'express';
 import { updateTemplateByIdRequestSchema } from '../../templates/processes/validator.schema';
 import ProcessInstance from './controller';

@@ -1,4 +1,4 @@
-import { DashboardItemType } from '@microservices/shared';
+import { DashboardItemType } from '@packages/dashboard';
 import mongoose from 'mongoose';
 import config from '../../config';
 

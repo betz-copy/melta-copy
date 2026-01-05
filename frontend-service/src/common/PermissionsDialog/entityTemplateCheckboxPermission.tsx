@@ -1,10 +1,9 @@
 import { ArrowLeftRounded, FilterList } from '@mui/icons-material';
 import { Collapse, Grid, IconButton, Typography, useTheme } from '@mui/material';
+import { ViewType } from '@packages/child-template';
+import { IDefaultPermissionDetails, InstancesSubclassesPermissions, IPermissionMetadata, PermissionScope } from '@packages/permission';
 import i18next from 'i18next';
 import React, { useState } from 'react';
-import { ViewType } from '../../interfaces/childTemplates';
-import { IDefaultPermissionDetails, IPermissionMetadata, PermissionScope } from '../../interfaces/permissions';
-import { InstancesSubclassesPermissions } from '../../interfaces/permissions/permissions';
 import { entityTemplatePermissionDialog } from '../../utils/permissions/permissionOfUserDialog';
 import { ColoredEnumChip } from '../ColoredEnumChip';
 import { permissionTypeCheckboxProps } from './instancesPermissionsCard';

@@ -1,7 +1,8 @@
 /* eslint-disable class-methods-use-this */
 
-import { DefaultManagerMongo, IMongoStepTemplate, IStepTemplate, NotFoundError, ValidationError } from '@microservices/shared';
-import { ClientSession } from 'mongoose';
+import { IMongoStepTemplate, IStepTemplate } from '@packages/process';
+import { DefaultManagerMongo, NotFoundError, ValidationError } from '@packages/utils';
+import { ClientSession, Types } from 'mongoose';
 import config from '../../../config';
 import { NoMatchingStepsError, TemplateNotFoundError } from '../../error';
 import { StepTemplateSchema } from './model';
@@ -45,7 +46,7 @@ export default class StepTemplateManager extends DefaultManagerMongo<IStepTempla
 
         const bulkWriteOperations = stepsToUpdate.map((step) => ({
             updateOne: {
-                filter: { _id: step._id },
+                filter: { _id: new Types.ObjectId(step._id) },
                 update: { $set: step },
             },
         }));

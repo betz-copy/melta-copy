@@ -1,11 +1,11 @@
+import { ICategoryMap } from '@packages/category';
+import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import React, { useEffect } from 'react';
 import { useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
 import EntitiesPage from '../../common/EntitiesPage';
 import { TablePageType } from '../../common/EntitiesTableOfTemplate';
-import { ICategoryMap } from '../../interfaces/categories';
-import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useUserStore } from '../../stores/user';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 
@@ -39,7 +39,7 @@ const Category: React.FC = () => {
                 currentUser.currentWorkspacePermissions?.admin?.scope),
     );
 
-    const allAuthorizedTemplatesMap = new Map<string, IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated>();
+    const allAuthorizedTemplatesMap = new Map<string, IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated>();
 
     authorizedTemplates.forEach((template) => {
         allAuthorizedTemplatesMap.set(template._id, template);
@@ -83,15 +83,16 @@ const Category: React.FC = () => {
         categoryTemplates.map((template) => template?._id ?? ''),
     );
 
-    const templatesToShowCheckbox: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[] = templateIdsToShowCheckbox.map((id) =>
-        getParentOrChildTemplate(id),
-    );
+    const templatesToShowCheckbox: (IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated)[] =
+        templateIdsToShowCheckbox.map((id) => getParentOrChildTemplate(id));
 
-    const setTemplatesToShowCheckbox = (newTemplates: React.SetStateAction<(IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[]>) => {
+    const setTemplatesToShowCheckbox = (
+        newTemplates: React.SetStateAction<(IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated)[]>,
+    ) => {
         setTemplateIdsToShowCheckbox((prevTemplateIdsToShowCheckbox) => {
             const prevTemplates = prevTemplateIdsToShowCheckbox
                 .map((id) => getParentOrChildTemplate(id))
-                .filter((template): template is IMongoEntityTemplatePopulated => !!template);
+                .filter((template): template is IMongoEntityTemplateWithConstraintsPopulated => !!template);
             const updatedTemplates = typeof newTemplates === 'function' ? newTemplates(prevTemplates) : newTemplates;
             return updatedTemplates.map((template) => template._id);
         });
@@ -120,7 +121,7 @@ const Category: React.FC = () => {
             key={category._id}
             templates={categoryTemplates}
             setTemplates={(newTemplates) => {
-                const ids = (newTemplates as IMongoEntityTemplatePopulated[]).map((template) => template._id);
+                const ids = (newTemplates as IMongoEntityTemplateWithConstraintsPopulated[]).map((template) => template._id);
                 setCategoryTemplatesId(ids);
             }}
             templatesToShowCheckbox={templatesToShowCheckbox}

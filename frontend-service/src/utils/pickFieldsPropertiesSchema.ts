@@ -1,11 +1,9 @@
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import pickBy from 'lodash.pickby';
-import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
-import { IProcessDetails } from '../interfaces/processes/processTemplate';
-
 export const filterFieldsFromPropertiesSchema = (
-    schema: IMongoEntityTemplatePopulated['properties'] | undefined = {} as IMongoEntityTemplatePopulated['properties'],
+    schema: IMongoEntityTemplateWithConstraintsPopulated['properties'] | undefined = {} as IMongoEntityTemplateWithConstraintsPopulated['properties'],
     fieldsToFilter: Record<string, boolean> | undefined = undefined,
-): IMongoEntityTemplatePopulated['properties'] => {
+): IMongoEntityTemplateWithConstraintsPopulated['properties'] => {
     const getProperty = (key: string) => schema.properties[key];
     const formats = ['fileId', 'entityReference'];
     return {
@@ -15,7 +13,7 @@ export const filterFieldsFromPropertiesSchema = (
             (value) => !formats.includes(value.format ?? '') && value.items?.format !== 'fileId' && !value.archive && value.display !== false,
         ),
         required:
-            schema?.required?.filter(
+            schema.required.filter(
                 (requiredKey) =>
                     !formats.includes(getProperty(requiredKey)?.format ?? '') &&
                     getProperty(requiredKey)?.items?.format !== 'fileId' &&
@@ -25,7 +23,7 @@ export const filterFieldsFromPropertiesSchema = (
     };
 };
 
-export const pickProcessFieldsPropertiesSchema = (schema: IProcessDetails): IMongoEntityTemplatePopulated['properties'] => {
+export const pickProcessFieldsPropertiesSchema = (schema: any): IMongoEntityTemplateWithConstraintsPopulated['properties'] => {
     const filteredProperties = filterFieldsFromPropertiesSchema({
         ...schema.properties,
         hide: [],
@@ -38,7 +36,7 @@ export const pickProcessFieldsPropertiesSchema = (schema: IProcessDetails): IMon
 };
 
 export const pickOnlyGivenFields = (
-    schema: IMongoEntityTemplatePopulated['properties'],
+    schema: IMongoEntityTemplateWithConstraintsPopulated['properties'],
     fieldsToPick: Record<string, boolean> | undefined = undefined,
 ) => {
     return Object.fromEntries(Object.entries(schema.properties).filter(([key, _value]) => !fieldsToPick || !!fieldsToPick?.[key]));

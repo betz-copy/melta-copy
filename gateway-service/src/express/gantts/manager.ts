@@ -1,12 +1,8 @@
-import {
-    BadRequestError,
-    IGantt,
-    IGanttItem,
-    IMongoEntityTemplatePopulated,
-    IMongoGantt,
-    IRelationshipTemplate,
-    ISearchGanttsBody,
-} from '@microservices/shared';
+
+import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { IGantt, IGanttItem, IMongoGantt, ISearchGanttsBody } from '@packages/gantt';
+import { IRelationshipTemplate } from '@packages/relationship-template';
+import { BadRequestError } from '@packages/utils';
 import lodashIsEqual from 'lodash.isequal';
 import GanttsService from '../../externalServices/ganttsService';
 import InstancesService from '../../externalServices/instanceService';

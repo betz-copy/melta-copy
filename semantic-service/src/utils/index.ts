@@ -1,4 +1,4 @@
-import { Awaited } from '@microservices/shared';
+import { Awaited } from '@packages/common';
 import { pipeline } from 'stream';
 import { promisify } from 'util';
 

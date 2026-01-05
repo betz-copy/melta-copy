@@ -1,6 +1,7 @@
 import { Close } from '@mui/icons-material';
 import { Autocomplete, Divider, Grid, IconButton, useTheme } from '@mui/material';
 import { Box } from '@mui/system';
+import { IEntitySingleProperty, IEntityTemplateMap } from '@packages/entity-template';
 import { FormikErrors, FormikProps, FormikTouched, getIn } from 'formik';
 import i18next from 'i18next';
 import { useMemo, useState } from 'react';
@@ -10,7 +11,6 @@ import { handleRemoveFilter, initializedFilterField, renderFilterInput } from '.
 import { StyledFilterInput } from '../../../common/inputs/FilterInputs/StyledFilterInput';
 import { IFilterTemplate } from '../../../common/wizards/entityTemplate/commonInterfaces';
 import { ChartForm, TableForm, ViewMode } from '../../../interfaces/dashboard';
-import { IEntitySingleProperty, IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { getRelevantEntityTemplate } from '../../Dashboard/DashboardItemDetails/Chart/BodyComponent';
 

@@ -1,4 +1,4 @@
-import { ICreateProcessTemplateBody, ProcessPropertyFormats } from '@microservices/shared';
+import { ICreateProcessTemplateBody, ProcessPropertyFormats } from '@packages/process';
 
 const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) => {
     const processTemplates: ICreateProcessTemplateBody[] = [

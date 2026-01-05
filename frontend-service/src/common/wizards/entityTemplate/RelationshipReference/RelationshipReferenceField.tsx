@@ -1,10 +1,10 @@
 import { Autocomplete, Grid, MenuItem, TextField, Typography } from '@mui/material';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated, IRelationshipReference } from '@packages/entity-template';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { CommonFormInputProperties, ConvertToRelationshipFieldFormInputProperties, IRelationshipReference } from '../commonInterfaces';
+import { CommonFormInputProperties, ConvertToRelationshipFieldFormInputProperties } from '../commonInterfaces';
 
 export interface FieldEditCardProps {
     value: CommonFormInputProperties | ConvertToRelationshipFieldFormInputProperties;
@@ -14,7 +14,7 @@ export interface FieldEditCardProps {
     setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
     isDisabled?: boolean;
     convertToRelationshipField?: {
-        options: IMongoEntityTemplatePopulated[];
+        options: IMongoEntityTemplateWithConstraintsPopulated[];
         originSourceEntityId: string;
         setRelatedTemplateId: (id: string) => void;
     };
@@ -38,7 +38,8 @@ const RelationshipReferenceField: React.FC<FieldEditCardProps> = ({
     const errorRelationshipReference = errors?.relationshipReference as FormikErrors<IRelationshipReference> | undefined;
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const selectedTemplate = entityTemplates.get(value.relationshipReference?.relatedTemplateId || '') ?? null;
+    const selectedTemplate =
+        (entityTemplates.get(value.relationshipReference?.relatedTemplateId || '') as IMongoEntityTemplateWithConstraintsPopulated) ?? null;
 
     const fixedRelatedTemplateFieldOptions = Object.entries(selectedTemplate?.properties?.properties || {})
         .filter(

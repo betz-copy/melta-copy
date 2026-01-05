@@ -1,11 +1,10 @@
 import { Box } from '@mui/material';
+import { ICategoryMap } from '@packages/category';
+import { PermissionData, PermissionScope } from '@packages/permission';
+import { IMetadata, IWorkspace } from '@packages/workspace';
 import { FormikProps } from 'formik';
 import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';
-import { ICategoryMap } from '../../interfaces/categories';
-import { PermissionScope } from '../../interfaces/permissions';
-import { PermissionData } from '../../interfaces/users';
-import { IMetadata, IWorkspace } from '../../interfaces/workspaces';
 import {
     checkUserCategoryPermission,
     getChangedCategoryPermissions,

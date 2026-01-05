@@ -2,12 +2,10 @@ version: '3.8'
 
 x-common: &common
   restart: always
-  networks: [network]
   profiles: ['common']
 
 x-analytics_common: &analytics_common
   restart: unless-stopped
-  networks: [network]
   profiles: ['analytics']
 
 services:
@@ -31,8 +29,6 @@ services:
       - ./scripts:/scripts
     restart: 'no'
     entrypoint: ['bash', '/scripts/setup_mongo.sh']
-    networks:
-      - network
 
   rabbit:
     image: rabbitmq:3.13-management-alpine
@@ -277,6 +273,7 @@ services:
 
   mailer-service:
     depends_on:
+      - rabbit
       - redis
     ports:
       - 8010:8000
@@ -328,8 +325,3 @@ volumes:
   logstash_data:
   kibana_data:
   logs: {}
-
-networks:
-  network:
-    driver: bridge
-    name: infra-network

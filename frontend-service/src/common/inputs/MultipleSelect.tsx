@@ -1,12 +1,12 @@
 import { Close, ExpandMore } from '@mui/icons-material';
 import { Autocomplete, Grid, MenuItem, TextField, TextFieldProps } from '@mui/material';
+import { IMongoUnit } from '@packages/unit';
 import { RJSFSchema } from '@rjsf/utils';
 import React from 'react';
 import { useQueryClient } from 'react-query';
-import { IMongoUnit } from '../../interfaces/units';
-import { IUser } from '../../interfaces/users';
 import { useUnitStore } from '../../stores/unit';
 import { useUserStore } from '../../stores/user';
+import { useWorkspaceStore } from '../../stores/workspace';
 import OverflowWrapper from '../../utils/agGrid/OverflowWrapper';
 import { ColoredEnumChip } from '../ColoredEnumChip';
 import MeltaCheckbox from '../MeltaDesigns/MeltaCheckbox';
@@ -27,8 +27,8 @@ const MultipleSelect: React.FC<{
     onFocus: (event: React.FocusEvent<HTMLInputElement>) => void;
     variant: 'standard' | 'outlined';
     rawErrors: string[];
-    textFieldProps: any;
-    value?: any;
+    textFieldProps?: TextFieldProps;
+    value?: string[];
     multiple?: boolean;
     disabled?: boolean;
     readonly?: boolean;
@@ -58,8 +58,8 @@ const MultipleSelect: React.FC<{
     placeholder,
     required,
 }) => {
-    const currentUser = useUserStore<IUser>((state) => state.user);
-
+    const currentUser = useUserStore((state) => state.user);
+    const workspace = useWorkspaceStore((state) => state.workspace);
     const filteredUnits = useUnitStore((state) => state.filteredUnits);
 
     const queryClient = useQueryClient();
@@ -68,7 +68,7 @@ const MultipleSelect: React.FC<{
     if (schema?.format === 'unitField') {
         items = (disabled ? units : filteredUnits)?.map((unit) => ({ label: unit.name, value: unit._id })) ?? [];
 
-        if (!currentUser.isRoot) items = items.filter((unit) => currentUser.currentUnits.includes(unit.value));
+        if (!currentUser.isRoot) items = items.filter((unit) => currentUser.units?.[workspace._id]?.includes(unit.value));
     }
 
     return (

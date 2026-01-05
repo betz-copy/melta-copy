@@ -1,4 +1,6 @@
-import { DefaultManagerMongo, IFrame, IMongoIframe, ISearchIFramesBody, NotFoundError } from '@microservices/shared';
+import { IFrame, IMongoIframe, ISearchIFramesBody } from '@packages/iframe';
+import { DefaultManagerMongo } from '@packages/utils';
+import { NotFoundError } from '@packages/utils';
 import { FilterQuery, Types } from 'mongoose';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';

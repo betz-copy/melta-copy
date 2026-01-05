@@ -1,4 +1,5 @@
-import { IRerankRequest, IRerankResult, logger } from '@microservices/shared';
+import { IRerankRequest, IRerankResult } from '@packages/semantic-search';
+import { logger } from '@packages/utils';
 import axios from 'axios';
 import config from '../../config';
 

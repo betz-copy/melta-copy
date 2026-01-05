@@ -1,10 +1,10 @@
 import { Autocomplete, Grid, TextField } from '@mui/material';
+import { IGetUnits } from '@packages/unit';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import * as Yup from 'yup';
 import { StepComponentProps } from '../../../../../common/wizards';
-import { IGetUnits } from '../../../../../interfaces/units';
 import { UnitWizardValues } from '.';
 
 export const createOrEditSchema = {

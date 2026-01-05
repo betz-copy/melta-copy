@@ -1,4 +1,9 @@
 import { Box, Button, CircularProgress, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material';
+import { IChildTemplateMap } from '@packages/child-template';
+import { IEntityTemplateMap } from '@packages/entity-template';
+import { PermissionData } from '@packages/permission';
+import { IGetUnits } from '@packages/unit';
+import { IUser, RelatedPermission } from '@packages/user';
 import { Form, Formik, FormikProps } from 'formik';
 import i18next from 'i18next';
 import _ from 'lodash';
@@ -8,10 +13,6 @@ import React, { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
-import { IChildTemplateMap } from '../../interfaces/childTemplates';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import { IGetUnits } from '../../interfaces/units';
-import { IUser, PermissionData, RelatedPermission } from '../../interfaces/users';
 import { deletePermissions } from '../../pages/PermissionsManagement/components/deleteDialog';
 import {
     createUserRequest,

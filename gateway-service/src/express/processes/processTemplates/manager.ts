@@ -1,3 +1,6 @@
+
+import { UploadedFile } from '@packages/entity';
+import { PermissionScope } from '@packages/permission';
 import {
     IMongoProcessInstancePopulated,
     IMongoProcessTemplatePopulated,
@@ -7,11 +10,9 @@ import {
     IProcessTemplatePopulated,
     ISearchProcessTemplatesBody,
     IStepTemplate,
-    PermissionScope,
-    ServiceError,
     Status,
-    UploadedFile,
-} from '@microservices/shared';
+} from '@packages/process';
+import { ServiceError } from '@packages/utils';
 import { logger } from 'elastic-apm-node';
 import config from '../../../config';
 import ProcessService from '../../../externalServices/processService';

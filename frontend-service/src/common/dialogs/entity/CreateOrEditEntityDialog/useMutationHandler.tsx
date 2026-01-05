@@ -1,4 +1,8 @@
 import { Button, Grid } from '@mui/material';
+import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IEntity, IUniqueConstraint } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { ActionTypes, IRuleBreach } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import { StatusCodes } from 'http-status-codes';
 import i18next from 'i18next';
@@ -8,12 +12,7 @@ import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import { environment } from '../../../../globals';
 import { ICreateOrUpdateWithRuleBreachDialogState, IExternalErrors, IMutationProps } from '../../../../interfaces/CreateOrEditEntityDialog';
-import { IChildTemplateMapPopulated, IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
-import { IEntity, IUniqueConstraint } from '../../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IErrorResponse } from '../../../../interfaces/error';
-import { ActionTypes } from '../../../../interfaces/ruleBreaches/actionMetadata';
-import { IRuleBreach } from '../../../../interfaces/ruleBreaches/ruleBreach';
 import { createEntityClientSideRequest } from '../../../../services/clientSideService';
 import { createEntityRequest, updateEntityRequestForMultiple } from '../../../../services/entitiesService';
 import { isChildTemplate } from '../../../../utils/templates';
@@ -26,7 +25,7 @@ type MutateAsyncFn = (args: { newEntityData: EntityWizardValues; ignoredRules?: 
 const useMutationHandler = (
     externalErrors: IExternalErrors,
     shouldNavigateToEntityPage: boolean,
-    entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
     { actionType, payload, onError, onSuccess }: IMutationProps,
     setExternalErrors: Dispatch<SetStateAction<IExternalErrors>>,
     setCreateOrUpdateWithRuleBreachDialogState: Dispatch<SetStateAction<ICreateOrUpdateWithRuleBreachDialogState>>,
@@ -35,11 +34,11 @@ const useMutationHandler = (
     const [_, navigate] = useLocation();
     let isLoading = false;
     let mutateAsync: MutateAsyncFn | undefined;
-    let childTemplate: IMongoChildTemplatePopulated | undefined;
+    let childTemplate: IMongoChildTemplateWithConstraintsPopulated | undefined;
 
     const handleMutationError = (
         err: AxiosError,
-        template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+        template: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
         newEntityData?: EntityWizardValues | undefined,
     ) => {
         if (err.response?.status === StatusCodes.REQUEST_TOO_LONG) setExternalErrors((prev) => ({ ...prev, files: true }));
@@ -133,7 +132,7 @@ const useMutationHandler = (
     if (Object.keys(clientSideUserEntity || {}).length) {
         const queryClient = useQueryClient();
 
-        const childTemplates = queryClient.getQueryData<IChildTemplateMapPopulated>('getClientSideChildTemplates')!;
+        const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getClientSideChildTemplates')!;
         childTemplate = Array.from(childTemplates.values()).find((childTemplate) => childTemplate.parentTemplate._id === entityTemplate._id);
     }
     const { isLoading: isClientSideCreateLoading, mutateAsync: clientSideCreateMutation } = useMutation(

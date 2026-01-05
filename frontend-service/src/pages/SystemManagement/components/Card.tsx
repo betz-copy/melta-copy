@@ -37,7 +37,7 @@ export const ViewingCard: React.FC<{
                         if (!isDisabled && expendedCard) setOpen(true);
                     }}
                 >
-                    {!open && title}
+                    {!open && <>{title}</>}
                 </CardContent>
 
                 <Collapse in={open} style={{ transformOrigin: '0 0 0' }} {...{ timeout: 500 }} mountOnEnter unmountOnExit>

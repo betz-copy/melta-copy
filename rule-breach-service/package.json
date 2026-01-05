@@ -5,7 +5,7 @@
     "main": "",
     "scripts": {
         "start": "node --async-stack-traces ./dist/index.js",
-        "dev": "npm run build && npm start",
+        "dev": "pnpm build && pnpm start",
         "test": "jest --coverage",
         "build": "tsc",
         "build:watch": "tsc --watch",
@@ -14,7 +14,9 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "@microservices/shared": "^1.0.0"
+        "@packages/common": "workspace:*",
+        "@packages/rule-breach": "workspace:*",
+        "@packages/utils": "workspace:*"
     },
     "devDependencies": {}
 }

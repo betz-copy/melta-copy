@@ -4,11 +4,11 @@ import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { Grid, IconButton, Tooltip } from '@mui/material';
+import { IMongoUnit, IUnitHierarchy } from '@packages/unit';
 import i18next from 'i18next';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import SearchInput from '../../../../common/inputs/SearchInput';
 import { flattenTree } from '../../../../common/Tree';
-import { IMongoUnit, IUnitHierarchy } from '../../../../interfaces/units';
 import { CreateButton } from '../CreateButton';
 
 interface HeaderProps {

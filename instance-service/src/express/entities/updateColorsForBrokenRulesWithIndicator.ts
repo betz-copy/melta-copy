@@ -1,4 +1,5 @@
-import { ActionOnFail, IBrokenRule, IMongoRule } from '@microservices/shared';
+import { ActionOnFail, IMongoRule } from '@packages/rule';
+import { IBrokenRule } from '@packages/rule-breach';
 import pLimit from 'p-limit';
 import config from '../../config';
 import Neo4jClient from '../../utils/neo4j';

@@ -1,7 +1,7 @@
+import { IRelationship } from '@packages/relationship';
+import { IRuleBreach } from '@packages/rule-breach';
 import axios from '../axios';
 import { environment } from '../globals';
-import { IRelationship } from '../interfaces/relationships';
-import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 
 const { relationships } = environment.api;
 

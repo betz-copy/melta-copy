@@ -1,4 +1,7 @@
 import { FormControlLabel, Grid } from '@mui/material';
+import { ICategoryMap } from '@packages/category';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { ActionOnFail, IMongoRule, IRuleMap } from '@packages/rule';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
@@ -11,9 +14,6 @@ import SearchInput from '../../../../common/inputs/SearchInput';
 import MeltaCheckbox from '../../../../common/MeltaDesigns/MeltaCheckbox';
 import TemplatesSelectCheckbox from '../../../../common/templatesSelectCheckbox';
 import { RuleWizard } from '../../../../common/wizards/rule';
-import { ICategoryMap } from '../../../../interfaces/categories';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { ActionOnFail, IMongoRule, IRuleMap } from '../../../../interfaces/rules';
 import { deleteRuleRequest, ruleObjectToRuleForm, updateDisabledRuleRequest } from '../../../../services/templates/rulesService';
 import { useUserStore } from '../../../../stores/user';
 import { useWorkspaceStore } from '../../../../stores/workspace';
@@ -39,7 +39,7 @@ const RulesRow: React.FC = () => {
 
     const [searchText, setSearchText] = useState<string>('');
     const [actionOnFailFilter, setActionOnFailFilter] = useState<ActionOnFail[]>(Object.values(ActionOnFail)); // Rule type filter
-    const [entityTemplateFilter, setEntityTemplateFilter] = useState<IMongoEntityTemplatePopulated[]>(allowedEntityTemplates);
+    const [entityTemplateFilter, setEntityTemplateFilter] = useState<IMongoEntityTemplateWithConstraintsPopulated[]>(allowedEntityTemplates);
 
     const [ruleWizardDialogState, setRuleWizardDialogState] = useState<{
         isWizardOpen: boolean;

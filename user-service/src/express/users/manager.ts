@@ -1,6 +1,9 @@
 /* eslint-disable no-param-reassign */
 
-import { IBaseUser, IRole, ISubCompactPermissions, IUser, IUserAgGridRequest, IUserPopulated, RelatedPermission } from '@microservices/shared';
+import { ISubCompactPermissions } from '@packages/permission';
+import { IRole } from '@packages/role';
+import { IUserAgGridRequest } from '@packages/rule-breach';
+import { IBaseUser, IUser, IUserPopulated, RelatedPermission } from '@packages/user';
 import { FilterQuery } from 'mongoose';
 import { typedObjectEntries } from '../../utils';
 import { translateAgGridFilterModel, translateAgGridSortModel } from '../../utils/agGrid';

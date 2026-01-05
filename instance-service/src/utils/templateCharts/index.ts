@@ -1,4 +1,7 @@
-import { CoordinateSystem, IAggregation, IAggregationType, IAxisField, IGetUnits, IMongoEntityTemplate, locationConverterToString } from '@microservices/shared';
+import { IAggregation, IAggregationType, IAxisField } from '@packages/chart';
+import { IMongoEntityTemplate } from '@packages/entity-template';
+import { IGetUnits } from '@packages/unit';
+import { CoordinateSystem, locationConverterToString } from '@packages/utils';
 import { fromZonedTime } from 'date-fns-tz';
 import neo4j from 'neo4j-driver';
 import config from '../../config';

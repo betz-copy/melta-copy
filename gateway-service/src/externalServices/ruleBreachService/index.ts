@@ -1,3 +1,4 @@
+
 import {
     ActionTypes,
     IActionMetadata,
@@ -6,7 +7,7 @@ import {
     IRuleBreachAlert,
     IRuleBreachRequest,
     RuleBreachRequestStatus,
-} from '@microservices/shared';
+} from '@packages/rule-breach';
 import config from '../../config';
 import { IAgGridResult } from '../../utils/agGrid/interface';
 import DefaultExternalServiceApi from '../../utils/express/externalService';

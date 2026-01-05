@@ -2,15 +2,20 @@ import { ColDef, ICellRendererParams, IServerSideDatasource, ValueFormatterParam
 import { AgGridReact } from '@ag-grid-community/react';
 import { ReadMore as ReadMoreIcon } from '@mui/icons-material';
 import { Box, GlobalStyles } from '@mui/material';
+import {
+    ActionTypes,
+    BreachType,
+    IRuleBreachAlertPopulated,
+    IRuleBreachPopulated,
+    IRuleBreachRequestPopulated,
+    RuleBreachRequestStatus,
+} from '@packages/rule-breach';
 import i18next from 'i18next';
 import React, { forwardRef, memo, useImperativeHandle, useMemo, useRef } from 'react';
 import { toast } from 'react-toastify';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import '../../css/table.css';
-import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
-import { BreachType, IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
-import { IRuleBreachAlertPopulated } from '../../interfaces/ruleBreaches/ruleBreachAlert';
-import { IRuleBreachRequestPopulated, RuleBreachRequestStatus } from '../../interfaces/ruleBreaches/ruleBreachRequest';
+
 import { getRuleBreachAlertsRequest, getRuleBreachRequestsRequest } from '../../services/ruleBreachesService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useWorkspaceStore } from '../../stores/workspace';

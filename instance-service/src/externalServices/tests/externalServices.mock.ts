@@ -1,4 +1,4 @@
-import { ActionOnFail } from '@microservices/shared';
+import { ActionOnFail } from '@packages/rule';
 import MockAdapter from 'axios-mock-adapter';
 import { StatusCodes } from 'http-status-codes';
 import { v4 as uuidv4 } from 'uuid';

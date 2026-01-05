@@ -1,8 +1,8 @@
 import { Accordion, styled } from '@mui/material';
+import { IUniqueConstraintOfTemplate } from '@packages/entity';
 import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import _debounce from 'lodash.debounce';
 import React, { SetStateAction } from 'react';
-import { IUniqueConstraintOfTemplate } from '../../../../interfaces/entities';
 import { StepComponentHelpers } from '../..';
 import { PropertiesTypes } from '../AddFields';
 import { CommonFormInputProperties, GroupProperty, PropertyItem } from '../commonInterfaces';

@@ -1,24 +1,29 @@
 import { FormControlLabel, Grid } from '@mui/material';
+import { ByCurrentDefaultValue } from '@packages/child-template';
+import {
+    basicFilterOperationTypes,
+    FilterTypes,
+    IAgGridDateFilter,
+    IAgGridNumberFilter,
+    IAgGridTextFilter,
+    numberFilterOperationTypes,
+    relativeDateFilters,
+} from '@packages/rule-breach';
 import i18next from 'i18next';
 import React, { useEffect } from 'react';
-import { environment } from '../../../globals';
-import { ByCurrentDefaultValue } from '../../../interfaces/childTemplates';
 import { useDarkModeStore } from '../../../stores/darkMode';
-import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridTextFilter, IFilterDateType, RelativeDateFilters } from '../../../utils/agGrid/interfaces';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import DatePickerWrapper from '../DatePickerWrapper';
 import DateRange from '../DateRange';
 import { TypeSelectFilter } from './TypeSelectFilter';
 
-const { relativeDateFilters } = environment;
-
 interface DateFilterInputProps {
-    filterField: IAGGridDateFilter | undefined;
+    filterField: IAgGridDateFilter | undefined;
     handleFilterTypeChange: (
-        newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGridNumberFilter['type'],
+        newTypeFilter: IAgGridDateFilter['type'] | IAgGridTextFilter['type'] | IAgGridNumberFilter['type'],
         condition?: boolean,
     ) => void;
-    handleDateChange: (newValue: IFilterDateType, isStartDate: boolean) => void;
+    handleDateChange: (newValue: Date | ByCurrentDefaultValue.byCurrentDate | relativeDateFilters | null, isStartDate: boolean) => void;
     entityFilter: boolean;
     readOnly?: boolean;
     hideFilterType?: boolean;
@@ -37,12 +42,12 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
     currentDateCheckbox = false,
 }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
-    const isInRangeType = filterField?.type === 'inRange';
-    const isRelativeType = relativeDateFilters.includes(filterField?.type ?? '');
+    const isInRangeType = filterField?.type === numberFilterOperationTypes.inRange;
+    const isRelativeType = Object.values(relativeDateFilters).includes((filterField?.type ?? '') as relativeDateFilters);
 
     useEffect(() => {
-        if (forceEqualsType && filterField && filterField.type !== 'equals') {
-            handleFilterTypeChange('equals');
+        if (forceEqualsType && filterField && filterField.type !== basicFilterOperationTypes.equals) {
+            handleFilterTypeChange(basicFilterOperationTypes.equals);
         }
     }, [forceEqualsType, filterField]);
 
@@ -51,17 +56,20 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
         const { type, dateFrom, dateTo } = filterField;
 
         if (isRelativeType) {
-            handleDateChange(type as RelativeDateFilters, true);
+            handleDateChange(type as relativeDateFilters, true);
             return;
         }
 
-        if ((dateFrom && relativeDateFilters.includes(dateFrom)) || (dateTo && relativeDateFilters.includes(dateTo))) {
+        if (
+            (dateFrom && Object.values(relativeDateFilters).includes(dateFrom as relativeDateFilters)) ||
+            (dateTo && Object.values(relativeDateFilters).includes(dateTo as relativeDateFilters))
+        ) {
             handleDateChange(null, true);
             handleDateChange(null, false);
             return;
         }
 
-        if (type !== 'inRange' && dateTo !== null) {
+        if (type !== numberFilterOperationTypes.inRange && dateTo !== null) {
             handleDateChange(null, false);
             return;
         }
@@ -92,10 +100,10 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
                 {!hideFilterType && (
                     <Grid size={{ xs: isInRangeType || isRelativeType ? 12 : 5 }}>
                         <TypeSelectFilter
-                            filterField={filterField as IAGGridDateFilter}
+                            filterField={filterField as IAgGridDateFilter}
                             handleFilterTypeChange={handleFilterTypeChange}
                             readOnly={readOnly || forceEqualsType}
-                            type="date"
+                            type={FilterTypes.date}
                         />
                     </Grid>
                 )}

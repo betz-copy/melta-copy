@@ -2,17 +2,16 @@ import { ColDef, ICellRendererParams, IServerSideDatasource, IServerSideGetRowsP
 import { AgGridReact } from '@ag-grid-community/react';
 import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 import { Chip, Grid, IconButton } from '@mui/material';
+import { IMongoCategory } from '@packages/category';
+import { ICompact, IInstancesPermission, PermissionData, PermissionScope } from '@packages/permission';
+import { IRole } from '@packages/role';
+import { IUser, RelatedPermission } from '@packages/user';
+import { IWorkspace } from '@packages/workspace';
 import i18next from 'i18next';
 import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
 import ScrollContainer from 'react-indiana-drag-scroll';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
-import { IMongoCategory } from '../../../interfaces/categories';
-import { PermissionScope } from '../../../interfaces/permissions';
-import { ICompact, IInstancesPermission } from '../../../interfaces/permissions/permissions';
-import { IRole } from '../../../interfaces/roles';
-import { IUser, PermissionData, RelatedPermission } from '../../../interfaces/users';
-import { IWorkspace } from '../../../interfaces/workspaces';
 import { searchRolesRequest, searchUsersRequest } from '../../../services/userService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useWorkspaceStore } from '../../../stores/workspace';
@@ -196,7 +195,7 @@ const getDatasource = <Data = PermissionData>(
                         step: startRow! / infiniteScrollPageCount,
                         limit: endRow! - startRow!,
                         search: quickFilter || undefined,
-                        filterModel,
+                        filterModel: filterModel as Record<string, object> | undefined,
                         sortModel,
                     }),
                 );
@@ -209,7 +208,7 @@ const getDatasource = <Data = PermissionData>(
                         step: startRow! / infiniteScrollPageCount,
                         limit: endRow! - startRow!,
                         search: quickFilter || undefined,
-                        filterModel,
+                        filterModel: filterModel as Record<string, object> | undefined,
                         sortModel,
                     }),
                 );

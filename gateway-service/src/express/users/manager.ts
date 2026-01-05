@@ -1,23 +1,12 @@
 /* eslint-disable no-param-reassign */
-import {
-    BadRequestError,
-    DeepPartial,
-    IBaseRole,
-    IBaseUser,
-    ICompactNullablePermissions,
-    ICompactPermissions,
-    IExternalUser,
-    IMongoUnit,
-    IPermission,
-    IRole,
-    ISubCompactPermissions,
-    IUser,
-    IUserPopulated,
-    IUserSearchBody,
-    RecursiveNullable,
-    RelatedPermission,
-    UploadedFile,
-} from '@microservices/shared';
+
+import { DeepPartial, RecursiveNullable } from '@packages/common';
+import { UploadedFile } from '@packages/entity';
+import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '@packages/permission';
+import { IBaseRole, IRole } from '@packages/role';
+import { IMongoUnit } from '@packages/unit';
+import { IBaseUser, IExternalUser, IUser, IUserPopulated, IUserSearchBody, RelatedPermission } from '@packages/user';
+import { BadRequestError } from '@packages/utils';
 import { menash } from 'menashmq';
 import config from '../../config';
 import Kartoffel from '../../externalServices/kartoffel';

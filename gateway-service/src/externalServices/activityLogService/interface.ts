@@ -1,3 +1,5 @@
+import { ActionsLog } from '@packages/activity-log';
+
 interface IBaseActivityLog {
     _id: string;
     timestamp: Date;
@@ -12,27 +14,27 @@ export enum Status {
 }
 
 interface IEmptyMetadata extends IBaseActivityLog {
-    action: 'CREATE_ENTITY' | 'DISABLE_ENTITY' | 'ACTIVATE_ENTITY' | 'VIEW_ENTITY' | 'CREATE_PROCESS';
+    action: ActionsLog.CREATE_ENTITY | ActionsLog.DISABLE_ENTITY | ActionsLog.ACTIVATE_ENTITY | ActionsLog.VIEW_ENTITY | ActionsLog.CREATE_PROCESS;
     metadata: object;
 }
 
 interface IRelationshipMetadata extends IBaseActivityLog {
-    action: 'DELETE_RELATIONSHIP' | 'CREATE_RELATIONSHIP';
+    action: ActionsLog.DELETE_RELATIONSHIP | ActionsLog.CREATE_RELATIONSHIP;
     metadata: { relationshipId: string; relationshipTemplateId: string; entityId: string };
 }
 
 interface IDuplicateEntityMetadata extends IBaseActivityLog {
-    action: 'DUPLICATE_ENTITY';
+    action: ActionsLog.DUPLICATE_ENTITY;
     metadata: { entityIdDuplicatedFrom: string };
 }
 
 interface IUpdateEntityMetadata extends IBaseActivityLog {
-    action: 'UPDATE_ENTITY' | 'UPDATE_PROCESS';
+    action: ActionsLog.UPDATE_ENTITY | ActionsLog.UPDATE_PROCESS;
     metadata: { updatedFields: [{ fieldName: string; oldValue: any; newValue: any }] };
 }
 
 export interface IUpdateProcessStepMetadata extends IBaseActivityLog {
-    action: 'UPDATE_PROCESS_STEP';
+    action: ActionsLog.UPDATE_PROCESS_STEP;
     metadata: { updatedFields?: [{ fieldName: string; oldValue: any; newValue: any }]; comments?: string; status?: Status };
 }
 

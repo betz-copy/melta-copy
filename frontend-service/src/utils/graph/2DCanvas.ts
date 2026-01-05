@@ -1,7 +1,7 @@
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 /* eslint-disable no-param-reassign */
 import { ForceGraphMethods, LinkObject, NodeObject } from 'react-force-graph-2d';
 import { environment } from '../../globals';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getLineAngle } from '../canvas';
 import { PartialRequired } from '../typeHelpers';
 import { drawLabel, drawNodeIcon } from '.';
@@ -16,7 +16,7 @@ const getNodeRadius = (node: NodeObject) => {
 export const drawNode = (
     ctx: CanvasRenderingContext2D,
     node: PartialRequired<NodeObject, 'x' | 'y' | 'nodeSize'>,
-    entityTemplate: IMongoEntityTemplatePopulated,
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated,
 ) => {
     const nodeRadius = getNodeRadius(node);
 

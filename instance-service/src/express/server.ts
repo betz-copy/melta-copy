@@ -1,4 +1,4 @@
-import { errorMiddleware } from '@microservices/shared';
+import { errorMiddleware } from '@packages/utils';
 import { once } from 'events';
 import express from 'express';
 import helmet from 'helmet';

@@ -3,7 +3,7 @@ import i18next from 'i18next';
 import React, { ReactElement, useEffect } from 'react';
 import MeltaTabs from '../../common/MeltaDesigns/MeltaTabs';
 import '../../css/pages.css';
-import { PermissionScope } from '../../interfaces/permissions';
+import { PermissionScope } from '@packages/permission';
 import { useUserStore } from '../../stores/user';
 import CategoriesRow from './components/CategoriesRow';
 import ConfigurationManagement from './components/ConfigurationManagement';

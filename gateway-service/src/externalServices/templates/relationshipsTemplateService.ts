@@ -1,4 +1,5 @@
-import { IMongoRelationshipTemplate, IMongoRule, IRule, ISearchRelationshipTemplatesBody, ISearchRulesBody } from '@microservices/shared';
+import { IMongoRelationshipTemplate, ISearchRelationshipTemplatesBody } from '@packages/relationship-template';
+import { IMongoRule, IRule, ISearchRulesBody } from '@packages/rule';
 
 import config from '../../config';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
@@ -10,13 +11,13 @@ const {
     },
 } = config;
 
-export interface RequestWithSearchRelationshipTemplateBody extends RequestWithPermissionsOfUserId {
+export type RequestWithSearchRelationshipTemplateBody = RequestWithPermissionsOfUserId & {
     searchBody: ISearchRelationshipTemplatesBody;
-}
+};
 
-export interface RequestWithSearchRuleTemplateBody extends RequestWithPermissionsOfUserId {
+export type RequestWithSearchRuleTemplateBody = RequestWithPermissionsOfUserId & {
     searchBody: ISearchRulesBody;
-}
+};
 
 class RelationshipsTemplateService extends TemplatesManagerService {
     async searchRelationshipTemplates(searchBody: ISearchRelationshipTemplatesBody = {}) {

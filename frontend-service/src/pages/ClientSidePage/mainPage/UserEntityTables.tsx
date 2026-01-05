@@ -1,22 +1,22 @@
 import { CircularProgress, Grid, Typography } from '@mui/material';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IEntity } from '@packages/entity';
+import { IEntitySingleProperty, IEntityTemplateMap } from '@packages/entity-template';
 import i18next from 'i18next';
 import { forwardRef, useImperativeHandle, useRef } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import TemplateTable, { TemplateTableRef } from '../../../common/EntitiesPage/TemplateTable';
 import { TemplateTablesViewResultsRef } from '../../../common/EntitiesPage/TemplateTablesView';
 import { TablePageType } from '../../../common/EntitiesTableOfTemplate';
-import { IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
-import { IEntity } from '../../../interfaces/entities';
-import { IEntitySingleProperty, IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { countEntitiesOfTemplatesByUserEntityId } from '../../../services/clientSideService';
 
 interface IUserEntityTablesProps {
-    childTemplates: IMongoChildTemplatePopulated[];
+    childTemplates: IMongoChildTemplateWithConstraintsPopulated[];
     currentUserFromClientSide: IEntity;
-    usersInfoChildTemplate: IMongoChildTemplatePopulated;
+    usersInfoChildTemplate: IMongoChildTemplateWithConstraintsPopulated;
 }
 
-const filterEmptyTemplateTablesOnClientSidePage = async (templates: IMongoChildTemplatePopulated[], userEntityId: string) => {
+const filterEmptyTemplateTablesOnClientSidePage = async (templates: IMongoChildTemplateWithConstraintsPopulated[], userEntityId: string) => {
     const entitiesCountByTemplates = await countEntitiesOfTemplatesByUserEntityId(
         templates.map(({ parentTemplate }) => parentTemplate._id),
         userEntityId,

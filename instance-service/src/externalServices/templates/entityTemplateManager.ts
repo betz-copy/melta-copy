@@ -1,4 +1,4 @@
-import { IMongoEntityTemplate, ISearchEntityTemplatesBody } from '@microservices/shared';
+import { IMongoEntityTemplate, ISearchEntityTemplatesBody } from '@packages/entity-template';
 import config from '../../config';
 import TemplatesManagerService from '.';
 

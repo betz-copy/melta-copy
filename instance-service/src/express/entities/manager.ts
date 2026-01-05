@@ -1,52 +1,42 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-continue */
 /* eslint-disable no-await-in-loop */
+
+import { ActionsLog, IActivityLog, IUpdatedFields } from '@packages/activity-log';
+import { IChartBody } from '@packages/chart';
+import { getFilterFromChildTemplate, IChildTemplatePopulated } from '@packages/child-template';
 import {
-    ActionOnFail,
-    ActionsLog,
-    ActionTypes,
-    BadRequestError,
     combineFilters,
-    getFilterFromChildTemplate,
-    IAction,
-    IActivityLog,
-    IBrokenRule,
-    ICausesOfInstance,
-    IChartBody,
-    IChildTemplatePopulated,
     IConstraint,
     IConstraintsOfTemplate,
-    ICreateEntityMetadata,
     IDeleteEntityBody,
-    IDeleteRelationshipReference,
-    IDuplicateEntityMetadata,
     IEntity,
-    IEntitySingleProperty,
-    IEntityTemplate,
     IEntityWithDirectRelationships,
-    IGetUnits,
-    IMongoEntityTemplate,
-    IMongoRule,
     IMultipleSelect,
-    IRelationship,
-    IRelationshipReference,
     IRequiredConstraint,
-    IRuleMail,
     ISearchBatchBody,
     ISearchEntitiesByLocationBody,
     ISearchEntitiesByTemplatesBody,
     ISearchEntitiesOfTemplateBody,
-    ISemanticSearchResult,
     IUniqueConstraint,
     IUniqueConstraintOfTemplate,
-    IUpdatedFields,
-    IUpdateEntityMetadata,
-    logger,
-    NotFoundError,
     Polygon,
-    ServiceError,
-    ValidationError,
-} from '@microservices/shared';
+} from '@packages/entity';
+import { IEntitySingleProperty, IEntityTemplate, IMongoEntityTemplate, IRelationshipReference } from '@packages/entity-template';
+import { IDeleteRelationshipReference, IRelationship } from '@packages/relationship';
+import { ActionOnFail, IMongoRule, IRuleMail } from '@packages/rule';
+import {
+    ActionTypes,
+    IAction,
+    IBrokenRule,
+    ICausesOfInstance,
+    ICreateEntityMetadata,
+    IDuplicateEntityMetadata,
+    IUpdateEntityMetadata,
+} from '@packages/rule-breach';
+import { ISemanticSearchResult } from '@packages/semantic-search';
+import { IGetUnits } from '@packages/unit';
+import { BadRequestError, logger, NotFoundError, ServiceError, ValidationError } from '@packages/utils';
 import { booleanPointInPolygon, featureCollection, intersect, point as turfPoint, polygon as turfPolygon } from '@turf/turf';
 import { startOfToday, startOfYesterday } from 'date-fns';
 import { flatten, unflatten } from 'flatley';
@@ -523,7 +513,12 @@ class EntityManager extends DefaultManagerNeo4j {
                 const actionHandlers: Record<
                     Exclude<
                         ActionTypes,
-                        ActionTypes.UpdateStatus | ActionTypes.CreateRelationship | ActionTypes.DeleteRelationship | ActionTypes.CronjobRun
+                        | ActionTypes.UpdateStatus
+                        | ActionTypes.CreateRelationship
+                        | ActionTypes.DeleteRelationship
+                        | ActionTypes.UpdateMultipleEntities
+                        | ActionTypes.CreateClientSideEntity
+                        | ActionTypes.CronjobRun
                     >,
                     () => Promise<IEntity | undefined>
                 > = {

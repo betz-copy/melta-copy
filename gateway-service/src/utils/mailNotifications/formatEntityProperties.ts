@@ -1,4 +1,5 @@
-import { CoordinateSystem, IEntitySingleProperty, IMongoEntityTemplatePopulated, locationConverterToString } from '@microservices/shared';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { CoordinateSystem, locationConverterToString } from '@packages/utils';
 import Handlebars from 'handlebars';
 import { mapValues } from 'lodash';
 import config from '../../config';

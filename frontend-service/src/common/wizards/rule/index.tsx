@@ -1,10 +1,10 @@
+import { ActionOnFail, IRule, IRuleMap } from '@packages/rule';
 import { ImmutableTree, Utils as QbUtils } from '@react-awesome-query-builder/mui';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { ActionOnFail, IRule, IRuleMap } from '../../../interfaces/rules';
 import { createRuleRequest, updateRuleRequest } from '../../../services/templates/rulesService';
 import { ErrorToast } from '../../ErrorToast';
 import { StepType, Wizard, WizardBaseType } from '../index';

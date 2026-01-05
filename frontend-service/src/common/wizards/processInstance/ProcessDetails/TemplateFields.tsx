@@ -1,7 +1,7 @@
 import { Grid } from '@mui/material';
+import { IProcessSingleProperty } from '@packages/process';
 import i18next from 'i18next';
 import { Dictionary } from 'lodash';
-import { IProcessSingleProperty } from '../../../../interfaces/processes/processTemplate';
 import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import BlueTitle from '../../../MeltaDesigns/BlueTitle';
 import { FileAttachments } from './FileAttachmentFields';

@@ -1,55 +1,55 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: properties need to be of type any */
 
 import { promises as fsp } from 'node:fs';
+import { IChartBody } from '@packages/chart';
 import {
-    ActionTypes,
-    BadRequestError,
-    combineFilters,
     EntityTemplateType,
-    FilterLogicalOperator,
-    getDashboardFilters,
     getDefaultFilterFromChildTemplate,
     getFilterFromChildTemplate,
+    IMongoChildTemplatePopulated,
+    TemplateItem,
+} from '@packages/child-template';
+import { getDashboardFilters } from '@packages/dashboard';
+import {
+    combineFilters,
+    FilterLogicalOperator,
     getFilterModal,
-    IAction,
-    IBrokenRule,
-    IBrokenRuleEntity,
     IBulkOfActions,
-    IBulkRuleMail,
-    IChartBody,
     ICountSearchResult,
-    ICreateEntityMetadata,
-    ICreateRelationshipMetadata,
     IDeleteEntityBody,
     IEntity,
-    IEntityTemplatePopulated,
     IEntityWithDirectRelationships,
     IEntityWithIgnoredRules,
     IExportEntitiesBody,
-    IFailedEntity,
-    IFullMongoEntityTemplate,
-    IMongoChildTemplatePopulated,
-    IMongoEntityTemplatePopulated,
     IMultipleSelect,
-    IRelationship,
-    IRuleMail,
     ISearchBatchBody,
     ISearchEntitiesByLocationBody,
     ISearchEntitiesOfTemplateBody,
     ISearchFilter,
     ISearchResult,
     ISearchSort,
-    ISemanticSearchResult,
     ITemplateSearchBody,
-    IUpdateEntityMetadata,
-    isAdmin,
-    logger,
     matchValueAgainstFilter,
-    NotFoundError,
     NotFoundErrorTypes,
-    TemplateItem,
     UploadedFile,
-} from '@microservices/shared';
+} from '@packages/entity';
+import { IEntityTemplatePopulated, IFullMongoEntityTemplate, IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { isAdmin } from '@packages/permission';
+import { IRelationship } from '@packages/relationship';
+import { IBulkRuleMail, IRuleMail } from '@packages/rule';
+import {
+    ActionTypes,
+    IAction,
+    IBrokenRule,
+    IBrokenRuleEntity,
+    ICreateEntityMetadata,
+    ICreateRelationshipMetadata,
+    IFailedEntity,
+    IUpdateEntityMetadata,
+} from '@packages/rule-breach';
+import { ISemanticSearchResult } from '@packages/semantic-search';
+import { BadRequestError, logger, NotFoundError } from '@packages/utils';
+
 import axios from 'axios';
 import { stream } from 'exceljs';
 import { keyBy, mapValues, omit } from 'lodash';

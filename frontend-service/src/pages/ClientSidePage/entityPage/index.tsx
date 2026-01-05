@@ -1,15 +1,15 @@
 import { Hive as HiveIcon } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, CircularProgress, Grid, Tab, Typography, useTheme } from '@mui/material';
+import { ICategoryMap } from '@packages/category';
+import { IEntityTemplateMap } from '@packages/entity-template';
+import { IMongoRelationshipTemplate, IRelationshipTemplateMap } from '@packages/relationship-template';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
 import { CustomIcon } from '../../../common/CustomIcon';
 import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
-import { ICategoryMap } from '../../../interfaces/categories';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplate, IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { getClientSideExpandedEntityByIdRequest } from '../../../services/clientSideService';
 import { populateRelationshipTemplate } from '../../../utils/templates';
 import { INestedRelationshipTemplates } from '../../Entity';

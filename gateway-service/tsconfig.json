@@ -1,11 +1,9 @@
 {
     "extends": "../tsconfig.json",
     "compilerOptions": {
-        "jsx": "react",
-        "outDir": "./dist/",
-        "paths": {
-            "@microservices/shared/*": ["./*/src"]
-        }
+        "outDir": "./dist",
+        "skipLibCheck": true,
+        "jsx": "react-jsx"
     },
     "include": ["src/**/*"]
 }

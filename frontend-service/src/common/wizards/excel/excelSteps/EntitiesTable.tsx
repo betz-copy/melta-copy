@@ -1,10 +1,10 @@
 import { Download, ExpandMore } from '@mui/icons-material';
 import { Accordion, AccordionDetails, AccordionSummary, CircularProgress, Grid, Typography, useTheme } from '@mui/material';
+import { IEntity, ISearchFilter } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { v4 as uuid } from 'uuid';
-import { IEntity, ISearchFilter } from '../../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IFailedEntity } from '../../../../interfaces/excel';
 import { useWorkspaceStore } from '../../../../stores/workspace';
 import EntitiesTableOfTemplate, { ExternalIdType, TablePageType } from '../../../EntitiesTableOfTemplate';
@@ -13,7 +13,7 @@ import { TableButton } from '../../../TableButton';
 export const EntitiesTable: React.FC<{
     rowData?: IEntity[] | IFailedEntity[];
     rowModelType?: 'serverSide' | 'clientSide' | 'infinite';
-    template: IMongoEntityTemplatePopulated;
+    template: IMongoEntityTemplateWithConstraintsPopulated;
     defaultExpanded: boolean;
     icon?: React.JSX.Element;
     title: string;

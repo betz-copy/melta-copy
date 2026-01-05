@@ -1,4 +1,6 @@
-import { DefaultController, fetchPropertyFromRequest, IMongoEntityTemplate } from '@microservices/shared';
+import { IMongoEntityTemplate } from '@packages/entity-template';
+import { DefaultController } from '@packages/utils';
+import { fetchPropertyFromRequest } from '@packages/utils';
 import { Request, Response } from 'express';
 import { EntityTemplateManager } from './manager';
 
@@ -53,6 +55,9 @@ class EntityTemplateController extends DefaultController<IMongoEntityTemplate, E
     async updateEntityTemplateAction(req: Request, res: Response) {
         const { templateId: id } = req.params;
         const actionToUpsert = fetchPropertyFromRequest<string>(req, 'actions');
+        if (!actionToUpsert) {
+            throw new Error('Actions property not found in request');
+        }
         res.json(await this.manager.updateEntityTemplateAction(id, actionToUpsert));
     }
 

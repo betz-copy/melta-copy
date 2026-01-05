@@ -1,4 +1,5 @@
 import { Box, Divider, Grid, Typography, useTheme } from '@mui/material';
+import { IMongoProcessInstanceReviewerPopulated, IMongoProcessTemplateReviewerPopulated } from '@packages/process';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import { noop } from 'lodash';
@@ -11,8 +12,6 @@ import { ProcessDetailsValues } from '../../../common/wizards/processInstance/Pr
 import ProcessSummary from '../../../common/wizards/processInstance/ProcessSummaryStep';
 import ProcessStatus, { ReviewedAtProcessStatus } from '../../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
 import { IFile } from '../../../interfaces/preview';
-import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
-import { IMongoProcessTemplatePopulated } from '../../../interfaces/processes/processTemplate';
 import { getProcessByIdRequest } from '../../../services/processesService';
 import { useUserStore } from '../../../stores/user';
 import { getStepTemplateByStepInstance } from '../../../utils/processWizard/steps';
@@ -21,10 +20,10 @@ import { ProcessComponentToPrint, StepComponentToPrint } from './ProcessComponen
 const ComponentToPrint = React.forwardRef<
     HTMLDivElement,
     {
-        processTemplate: IMongoProcessTemplatePopulated;
-        processInstance: IMongoProcessInstancePopulated;
-        mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
-        setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstancePopulated>>;
+        processTemplate: IMongoProcessTemplateReviewerPopulated;
+        processInstance: IMongoProcessInstanceReviewerPopulated;
+        mutateAsync: UseMutateAsyncFunction<IMongoProcessInstanceReviewerPopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
+        setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstanceReviewerPopulated>>;
         setIsProcessChanged: React.Dispatch<React.SetStateAction<boolean>>;
         filesToPrint: IFile[];
         setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;

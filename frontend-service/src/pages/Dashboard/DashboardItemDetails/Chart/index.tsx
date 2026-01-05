@@ -1,5 +1,9 @@
 /* eslint-disable react/no-unstable-nested-components */
 import { CircularProgress } from '@mui/material';
+import { IChartPermission, IMongoChart } from '@packages/chart';
+import { IChildTemplateMap } from '@packages/child-template';
+import { DashboardItemType } from '@packages/dashboard';
+import { IEntityTemplateMap } from '@packages/entity-template';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
@@ -11,10 +15,7 @@ import { ErrorToast } from '../../../../common/ErrorToast';
 import { filtersSchema } from '../../../../common/wizards/entityTemplate/AddFields';
 import { FilterModelToFilterRecord } from '../../../../common/wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
 import { environment } from '../../../../globals';
-import { IMongoChart, IPermission } from '../../../../interfaces/charts';
-import { IChildTemplateMap } from '../../../../interfaces/childTemplates';
-import { ChartForm, DashboardItemType, TabStepComponent, ViewMode } from '../../../../interfaces/dashboard';
-import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import { ChartForm, TabStepComponent, ViewMode } from '../../../../interfaces/dashboard';
 import { createChart, deleteChart, editChart, getChartById } from '../../../../services/chartsService';
 import { createDashboardItem, deleteDashboardItem } from '../../../../services/dashboardService';
 import { parseFilters } from '../../../../services/templates/entityTemplatesService';
@@ -134,7 +135,7 @@ const Chart: React.FC = () => {
             return {
                 ...baseValues,
                 filter: undefined,
-                permission: IPermission.Protected,
+                permission: IChartPermission.Protected,
                 childTemplateId: childTemplate?._id,
             };
 

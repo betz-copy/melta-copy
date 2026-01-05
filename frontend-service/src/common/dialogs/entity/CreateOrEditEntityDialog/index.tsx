@@ -1,5 +1,9 @@
 import { Clear as ClearIcon, Done as DoneIcon } from '@mui/icons-material';
 import { Button, Card, CardContent, CircularProgress, Divider, Grid } from '@mui/material';
+import { ByCurrentDefaultValue, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { ActionTypes } from '@packages/rule-breach';
 import { format } from 'date-fns';
 import { Form, Formik } from 'formik';
 import i18next from 'i18next';
@@ -7,10 +11,6 @@ import pickBy from 'lodash.pickby';
 import React, { useEffect, useMemo, useState } from 'react';
 import { environment } from '../../../../globals';
 import { ICreateOrUpdateWithRuleBreachDialogState, IExternalErrors, IMutationProps } from '../../../../interfaces/CreateOrEditEntityDialog';
-import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
-import { IEntity } from '../../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { ActionTypes } from '../../../../interfaces/ruleBreaches/actionMetadata';
 import ActionOnEntityWithRuleBreachDialog from '../../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { useClientSideUserStore } from '../../../../stores/clientSideUser';
 import { UserState, useUserStore } from '../../../../stores/user';
@@ -25,7 +25,9 @@ import EditProps from './EditProps';
 import useDraftEntityDialogHook from './useDraft';
 import useMutationHandler from './useMutationHandler';
 
-export const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => {
+export const getEntityTemplateFilesFieldsInfo = (
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
+) => {
     const templateFilesProperties = pickBy(
         entityTemplate.properties.properties,
         (value) => ((value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId') && value.display !== false,
@@ -38,7 +40,7 @@ export const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTem
 
 const convertIEntityToEntityWizardValues = (
     entityToUpdate: IEntity,
-    entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
     initialTemplateFileKeys: string[],
 ): EntityWizardValues => {
     const { _id, createdAt, updatedAt, disabled, ...entityToUpdateData } = entityToUpdate.properties;
@@ -98,7 +100,7 @@ export const getInitialValuesWithDefaults = (initialCurrValues: EntityWizardValu
 
 const CreateOrEditEntityDetails: React.FC<{
     mutationProps: IMutationProps;
-    entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated;
     initialCurrValues?: EntityWizardValues;
     handleClose: () => void;
     externalErrors: IExternalErrors;
@@ -108,7 +110,9 @@ const CreateOrEditEntityDetails: React.FC<{
     showActionButtons?: boolean;
     chooseMode?: IChooseTemplateMode;
     parentId?: string;
-    getInitialProperties?: (newTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => Record<string, any>;
+    getInitialProperties?: (
+        newTemplate: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
+    ) => Record<string, any>;
 }> = ({
     mutationProps,
     entityTemplate,
@@ -138,7 +142,8 @@ const CreateOrEditEntityDetails: React.FC<{
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
 
     const initialValues = useMemo(() => {
-        if (isEditMode) return getInitialValuesWithDefaults(convertIEntityToEntityWizardValues(payload!, entityTemplate, initialTemplateFileKeys), currentUser);
+        if (isEditMode)
+            return getInitialValuesWithDefaults(convertIEntityToEntityWizardValues(payload!, entityTemplate, initialTemplateFileKeys), currentUser);
 
         return getInitialValuesWithDefaults(
             initialCurrValues ?? {

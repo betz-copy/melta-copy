@@ -1,13 +1,10 @@
+import { IEntitySingleProperty, IEntityTemplatePopulated } from '@packages/entity-template';
+import { IMongoRelationshipTemplate } from '@packages/relationship-template';
 import {
-    DefaultController,
-    defaultValidationOptions,
     IAggregationGroup,
     IConstant,
     ICountAggFunction,
-    IEntitySingleProperty,
-    IEntityTemplatePopulated,
     IFormula,
-    IMongoRelationshipTemplate,
     IPropertyOfVariable,
     IRegularFunction,
     IRelevantTemplates,
@@ -15,7 +12,8 @@ import {
     ISumAggFunction,
     IVariable,
     isConstant,
-} from '@microservices/shared';
+} from '@packages/rule';
+import { DefaultController, defaultValidationOptions } from '@packages/utils';
 import assert from 'assert';
 import { isValid as isValidDate, parse } from 'date-fns';
 import { Request } from 'express';

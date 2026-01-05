@@ -1,7 +1,7 @@
+import { IEntityExpanded } from '@packages/entity';
+import { IEntityTemplateMap } from '@packages/entity-template';
+import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import { environment } from '../globals';
-import { IEntityExpanded } from '../interfaces/entities';
-import { IEntityTemplateMap } from '../interfaces/entityTemplates';
-import { IRelationshipTemplateMap } from '../interfaces/relationshipTemplates';
 import { INestedRelationshipTemplates } from '../pages/Entity';
 import { getFullRelationshipTemplates } from './templates';
 

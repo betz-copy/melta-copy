@@ -1,15 +1,15 @@
 import { ExpandMore, InfoOutlined } from '@mui/icons-material';
 import { Autocomplete, AutocompleteInputChangeReason, AutocompleteProps, Grid, TextField, Typography } from '@mui/material';
+import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IEntity, ISearchEntitiesOfTemplateBody, ISearchFilter } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IWorkspace } from '@packages/workspace';
 import i18next from 'i18next';
 import _debounce from 'lodash.debounce';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useInfiniteQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
-import { IChildTemplateMap, IChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { AndFilter, IEntity, ISearchEntitiesOfTemplateBody, ISearchFilter } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IWorkspace } from '../../interfaces/workspaces';
 import { searchEntitiesOfTemplateClientSideRequest } from '../../services/clientSideService';
 import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
 import { useClientSideUserStore } from '../../stores/clientSideUser';
@@ -27,7 +27,7 @@ import { CoordinateSystem } from './JSONSchemaFormik/RjsfLocationWidget';
 const { fieldFilterPrefix } = environment;
 
 export const getChildTemplatesFilter = (
-    childTemplatesOfRelatedTemplate: IChildTemplatePopulated[],
+    childTemplatesOfRelatedTemplate: IMongoChildTemplateWithConstraintsPopulated[],
     workspace: IWorkspace,
     currentUser: UserState['user'],
     isChildTemplate?: boolean,
@@ -40,7 +40,7 @@ export const getChildTemplatesFilter = (
                 childTemplate,
                 true,
                 currentUserKartoffelId,
-                currentUser?.currentUnits,
+                currentUser?.units?.[workspace._id] ?? [],
                 isWorkspaceAdmin(currentUser?.permissions?.[workspace._id] ?? {}),
             ),
         )
@@ -50,7 +50,7 @@ export const getChildTemplatesFilter = (
 };
 
 const TemplateEntitiesAutocomplete: React.FC<{
-    template: IMongoEntityTemplatePopulated | undefined;
+    template: IMongoEntityTemplateWithConstraintsPopulated | undefined;
     showField: string;
     value: IEntity | null;
     currentEntity: EntityWizardValues['properties'];
@@ -137,7 +137,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
                     newFilter[key] = newCondition;
                 }
             }
-            newFilters.push(newFilter as AndFilter);
+            newFilters.push(newFilter as ISearchFilter);
         }
         return { dependentFields, newFilters };
     };
@@ -185,6 +185,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
                 limit: cacheBlockSize,
                 filter: parseAndAddDisabled(relationFilters),
                 textSearch: inputValue,
+                showRelationships: false,
             });
         },
         {

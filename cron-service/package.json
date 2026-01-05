@@ -5,7 +5,7 @@
     "main": "",
     "scripts": {
         "start": "node --async-stack-traces ./dist/index.js",
-        "dev": "npm run build && npm start",
+        "dev": "pnpm build && pnpm start",
         "test": "jest --coverage",
         "build": "tsc",
         "build:watch": "tsc --watch",
@@ -15,7 +15,14 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "@microservices/shared": "^1.0.0",
+        "@packages/entity": "workspace:*",
+        "@packages/entity-template": "workspace:*",
+        "@packages/notification": "workspace:*",
+        "@packages/permission": "workspace:*",
+        "@packages/rule-breach": "workspace:*",
+        "@packages/user": "workspace:*",
+        "@packages/utils": "workspace:*",
+        "@packages/workspace": "workspace:*",
         "lodash": "^4.17.21",
         "menashmq": "^0.1.6",
         "node-schedule": "^2.1.1"

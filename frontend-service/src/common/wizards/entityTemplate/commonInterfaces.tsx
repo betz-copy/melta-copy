@@ -1,17 +1,5 @@
-import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridSetFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
-
-export interface IRelationshipReference {
-    relationshipTemplateId?: string;
-    relationshipTemplateDirection: 'outgoing' | 'incoming';
-    relatedTemplateId: string;
-    relatedTemplateField: string;
-    filters?: IFilterTemplate[];
-}
-export interface FieldGroupData {
-    name: string;
-    displayName: string;
-    id: string;
-}
+import { FieldGroupData, IRelationshipReference } from '@packages/entity-template';
+import { IAgGridDateFilter, IAgGridNumberFilter, IAgGridSetFilter, IAgGridTextFilter } from '@packages/rule-breach';
 
 export interface CommonFormInputProperties {
     name: string;
@@ -27,7 +15,7 @@ export interface CommonFormInputProperties {
     isDatePastAlert?: boolean | null;
     calculateTime?: boolean | null;
     serialStarter?: number;
-    relationshipReference?: IRelationshipReference;
+    relationshipReference?: IRelationshipReferenceForm;
     required?: boolean;
     preview?: boolean;
     hide?: boolean;
@@ -47,6 +35,10 @@ export interface CommonFormInputProperties {
     hideFromDetailsPage?: boolean;
     color?: string;
     isProfileImage?: boolean;
+}
+
+export interface IRelationshipReferenceForm extends Omit<IRelationshipReference, 'filters'> {
+    filters?: IFilterTemplate[];
 }
 
 export interface FieldProperty {
@@ -80,7 +72,7 @@ export enum FilterType {
 export interface IFilterTemplate {
     filterProperty: string;
     filterType?: FilterType;
-    filterField?: IAGGridFilter;
+    filterField?: IAgGridFilter;
 }
 
-export type IAGGridFilter = IAGGridTextFilter | IAGGridNumberFilter | IAGGridDateFilter | IAGGridSetFilter;
+export type IAgGridFilter = IAgGridTextFilter | IAgGridNumberFilter | IAgGridDateFilter | IAgGridSetFilter;

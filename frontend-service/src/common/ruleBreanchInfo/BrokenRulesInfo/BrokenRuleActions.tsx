@@ -1,10 +1,10 @@
+import { IActionPopulated } from '@packages/rule-breach';
 /* eslint-disable react/no-array-index-key */
 
 import { ExpandLess as ExpandLessIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { Collapse, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { useState } from 'react';
-import { IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { ActionInfo } from '../ActionInfo';
 
 export const BrokenRuleActions: React.FC<{

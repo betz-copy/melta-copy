@@ -1,6 +1,6 @@
 /* eslint-disable no-new */
 import 'elastic-apm-node/start';
-import { logger } from '@microservices/shared';
+import { logger } from '@packages/utils';
 import * as http from 'http';
 import menash from 'menashmq';
 import { Client } from 'minio';

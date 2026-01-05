@@ -1,13 +1,13 @@
 import { Chip, Grid, ListItemText, MenuItem } from '@mui/material';
+import { IAgGridSetFilter } from '@packages/rule-breach';
 import i18next from 'i18next';
 import React from 'react';
-import { IAGGridSetFilter } from '../../../utils/agGrid/interfaces';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import { FieldOption } from '../../wizards/entityTemplate/RelationshipReference/filterEntitiesByCriteria';
 import { StyledFilterInput } from './StyledFilterInput';
 
 interface MultipleSelectFilterInputProps {
-    filterField: IAGGridSetFilter | undefined;
+    filterField: IAgGridSetFilter | undefined;
     readOnly: boolean;
     handleCheckboxChange: (option: (string | null)[], checked: boolean) => void;
     enumOptions: FieldOption[];

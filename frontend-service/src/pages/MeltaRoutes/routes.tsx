@@ -1,5 +1,8 @@
 import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { Box, Button, debounce, useScrollTrigger } from '@mui/material';
+import { IChildTemplateMap } from '@packages/child-template';
+import { DashboardItemType } from '@packages/dashboard';
+import { IEntityTemplateMap } from '@packages/entity-template';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
@@ -9,9 +12,6 @@ import { Redirect, Route, Switch, useLocation, useRoute } from 'wouter';
 import { SideBar } from '../../common/sideBar';
 import { TopBar } from '../../common/TopBar';
 import { environment } from '../../globals';
-import { IChildTemplateMap } from '../../interfaces/childTemplates';
-import { DashboardItemType } from '../../interfaces/dashboard';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { MainBox } from '../../Main.styled';
 import { MeltaUpdates } from '../../MeltaUpdates';
 import ScrollToTop from '../../ScrollToTop';

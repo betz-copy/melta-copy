@@ -1,5 +1,8 @@
 import { Download } from '@mui/icons-material';
 import { Box, CircularProgress, Grid, Typography, useTheme } from '@mui/material';
+import { TableMetaData } from '@packages/dashboard';
+import { IEntity } from '@packages/entity';
+import { IEntityTemplateMap } from '@packages/entity-template';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -10,9 +13,6 @@ import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef, ExternalIdType } f
 import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
 import { TableButton } from '../../../common/TableButton';
 import { environment } from '../../../globals';
-import { TableMetaData } from '../../../interfaces/dashboard';
-import { IEntity } from '../../../interfaces/entities';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { exportEntitiesRequest } from '../../../services/entitiesService';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { filterModelToFilterOfTemplate, getFilterModal } from '../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';

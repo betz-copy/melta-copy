@@ -1,3 +1,5 @@
+
+import { IMongoEntityTemplate } from '@packages/entity-template';
 import {
     IAggregationGroup,
     IArgument,
@@ -6,7 +8,6 @@ import {
     IEquation,
     IFormula,
     IGroup,
-    IMongoEntityTemplate,
     IMongoRule,
     IOperatorBool,
     IPropertyOfVariable,
@@ -21,7 +22,7 @@ import {
     isPropertyOfVariable,
     isRegularFunction,
     isSumAggFunction,
-} from '@microservices/shared';
+} from '@packages/rule';
 import config from '../../config';
 import { getNeo4jDate } from '../../utils/neo4j/lib';
 import { CypherQuery } from './interfaces';

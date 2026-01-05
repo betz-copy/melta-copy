@@ -1,19 +1,24 @@
 import { MenuItem } from '@mui/material';
+import {
+    basicFilterOperationTypes,
+    IAgGridDateFilter,
+    IAgGridNumberFilter,
+    IAgGridTextFilter,
+    numberFilterOperationTypes,
+    relativeDateFilters,
+    textFilterOperationTypes,
+} from '@packages/rule-breach';
 import i18next from 'i18next';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
-import { environment } from '../../../globals';
-import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
 import { StyledFilterInput } from './StyledFilterInput';
 
-const { filterOptions } = environment;
-
-type IAGGridFilter = IAGGridNumberFilter | IAGGridDateFilter | IAGGridTextFilter;
+type IAgGridFilter = IAgGridNumberFilter | IAgGridDateFilter | IAgGridTextFilter;
 
 interface TypeSelectFilterProps {
-    filterField: IAGGridFilter;
+    filterField: IAgGridFilter;
     handleFilterTypeChange: (
-        newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGridNumberFilter['type'],
+        newTypeFilter: IAgGridDateFilter['type'] | IAgGridTextFilter['type'] | IAgGridNumberFilter['type'],
         condition?: boolean,
     ) => void;
     readOnly?: boolean;
@@ -22,11 +27,37 @@ interface TypeSelectFilterProps {
 }
 
 const TypeSelectFilter: React.FC<TypeSelectFilterProps> = ({ filterField, handleFilterTypeChange, readOnly, type, filterType }) => {
-    const options = !filterType
-        ? filterOptions[type]
-        : filterOptions[type].filter(
-              (option: string) => !['inRange', 'thisWeek', 'thisMonth', 'thisYear', 'untilToday', 'fromToday'].includes(option),
-          );
+    const options = useMemo(() => {
+        const basicFilters = Object.values(basicFilterOperationTypes);
+        const numberFilters = Object.values(numberFilterOperationTypes);
+        const textFilters = Object.values(textFilterOperationTypes);
+        const dateRelativeFilters = Object.values(relativeDateFilters);
+
+        let allOptions: string[];
+        switch (type) {
+            case 'text':
+            case 'string':
+                allOptions = [...basicFilters, ...textFilters];
+                break;
+            case 'number':
+                allOptions = [...basicFilters, ...numberFilters];
+                break;
+            case 'date':
+                allOptions = [...basicFilters, ...numberFilters, ...dateRelativeFilters];
+                break;
+            default:
+                allOptions = basicFilters;
+        }
+
+        // Filter out inRange and relative date filters if filterType is true
+        if (filterType && type === 'date') {
+            return allOptions.filter(
+                (option) => option !== numberFilterOperationTypes.inRange && !dateRelativeFilters.includes(option as relativeDateFilters),
+            );
+        }
+
+        return allOptions;
+    }, [type, filterType]);
 
     return (
         <StyledFilterInput
@@ -45,7 +76,7 @@ const TypeSelectFilter: React.FC<TypeSelectFilterProps> = ({ filterField, handle
             }}
             onChange={(e) =>
                 handleFilterTypeChange(
-                    e.target.value as IAGGridNumberFilter['type'] | IAGGridTextFilter['type'],
+                    e.target.value as IAgGridNumberFilter['type'] | IAgGridTextFilter['type'],
                     Boolean(filterField.filterType === 'date' ? filterField?.dateFrom : filterField?.filter),
                 )
             }

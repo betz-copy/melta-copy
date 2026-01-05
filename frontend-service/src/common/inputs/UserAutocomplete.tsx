@@ -1,11 +1,11 @@
 import { ExpandMore } from '@mui/icons-material';
 import { Autocomplete, AutocompleteProps, TextField } from '@mui/material';
+import { IUser } from '@packages/user';
 import i18next from 'i18next';
 import _debounce from 'lodash.debounce';
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
-import { IUser } from '../../interfaces/users';
 import { searchExternalUsersRequest, searchUsersRequest } from '../../services/userService';
 import { useWorkspaceStore } from '../../stores/workspace';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';

@@ -1,12 +1,13 @@
+
 import {
-    DefaultManagerMongo,
     IChildTemplate,
     IChildTemplatePopulated,
     IChildTemplatePopulatedFromDb,
     IMongoChildTemplate,
     IMongoChildTemplatePopulated,
-    NotFoundError,
-} from '@microservices/shared';
+} from '@packages/child-template';
+import { DefaultManagerMongo } from '@packages/utils';
+import { NotFoundError } from '@packages/utils';
 import { FilterQuery } from 'mongoose';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';

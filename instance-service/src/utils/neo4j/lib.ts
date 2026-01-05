@@ -1,12 +1,9 @@
-import {
-    ActionErrors,
-    IEntity,
-    IEntityExpanded,
-    IEntityWithDirectRelationships,
-    IRelationship,
-    SplitBy,
-    ValidationError,
-} from '@microservices/shared';
+
+import { SplitBy } from '@packages/common';
+import { IEntity, IEntityExpanded, IEntityWithDirectRelationships } from '@packages/entity';
+import { IRelationship } from '@packages/relationship';
+import { ActionErrors } from '@packages/rule-breach';
+import { ValidationError } from '@packages/utils';
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
 import neo4j, { Node as Neo4jNode, Relationship as Neo4jRelationship, QueryResult, Transaction } from 'neo4j-driver';
 import { v4 as uuidv4 } from 'uuid';

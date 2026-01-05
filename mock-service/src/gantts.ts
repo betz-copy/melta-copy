@@ -1,4 +1,6 @@
-import { IMongoEntityTemplateWithConstraintsPopulated, IMongoGantt, IMongoRelationshipTemplate } from '@microservices/shared';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoGantt } from '@packages/gantt';
+import { IMongoRelationshipTemplate } from '@packages/relationship-template';
 import axios from 'axios';
 import config from './config';
 import { getRandomGantts } from './mocks/gantts/generate';

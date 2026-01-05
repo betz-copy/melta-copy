@@ -1,4 +1,4 @@
-import { ActionOnFail } from '@microservices/shared';
+import { ActionOnFail } from '@packages/rule';
 import { EntityTemplateManagerService } from '../../src/express/externalServices/entityTemplateManager';
 import { RelationshipTemplateManager } from '../../src/express/relationshipTemplate/manager';
 import { IRelationshipTemplateRule } from '../../src/express/rule/interfaces';

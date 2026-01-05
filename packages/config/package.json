@@ -1,0 +1,25 @@
+{
+    "name": "@packages/config",
+    "version": "1.0.0",
+    "description": "config package",
+    "type": "commonjs",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "require": "./dist/index.js"
+        }
+    },
+    "scripts": {
+        "build": "tsup",
+        "clean": "rimraf dist"
+    },
+    "dependencies": {
+        "dotenv": "^16.4.7"
+    },
+    "devDependencies": {
+        "tsup": "^8.5.1",
+        "typescript": "^5.6.2"
+    }
+}

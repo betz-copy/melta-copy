@@ -1,6 +1,6 @@
+import { ISubCompactPermissions } from '@packages/permission';
+import { IUser } from '@packages/user';
 import { create } from 'zustand';
-import { ISubCompactPermissions } from '../interfaces/permissions/permissions';
-import { IUser } from '../interfaces/users';
 
 export interface UserState {
     user: {

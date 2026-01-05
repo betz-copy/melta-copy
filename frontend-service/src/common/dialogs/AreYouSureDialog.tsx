@@ -32,7 +32,11 @@ const AreYouSureDialog: React.FC<{
             <DialogTitle fontWeight={600} fontSize={20} color={theme.palette.primary.main}>
                 {title}
             </DialogTitle>
-            {body && <DialogContent>{body}</DialogContent>}
+            {!!body && (
+                <DialogContent>
+                    <>{body}</>
+                </DialogContent>
+            )}
             <DialogActions sx={{ display: 'flex', justifyContent: 'space-between', padding: '20px' }}>
                 <Button variant="outlined" sx={{ borderRadius: '7px' }} onClick={onNo ?? handleClose}>
                     {noTitle}

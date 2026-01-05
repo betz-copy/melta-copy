@@ -1,5 +1,10 @@
 import { AddCircle, CloseFullscreenRounded, Expand, TableRowsOutlined } from '@mui/icons-material';
 import { Box, Grid, useTheme } from '@mui/material';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IConnection, IEntity, IEntityExpanded } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { ISubCompactPermissions, PermissionScope } from '@packages/permission';
+import { IRelationship } from '@packages/relationship';
 import i18next from 'i18next';
 import React, { useRef, useState } from 'react';
 import { useQueryClient } from 'react-query';
@@ -7,18 +12,13 @@ import CreateRelationshipDialog from '../../common/dialogs/createRelationshipDia
 import { AddEntityButton } from '../../common/EntitiesPage/Buttons/AddEntity';
 import { ResetFilterButton } from '../../common/EntitiesPage/ResetFilterButton';
 import { isUserHasWritePermissions } from '../../common/EntitiesPage/TemplateTable';
-import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef, IConnection } from '../../common/EntitiesTableOfTemplate';
+import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../common/EntitiesTableOfTemplate';
 import { EntityLink } from '../../common/EntityLink';
 import { EntityTemplateTextComponent, RelationshipTitle } from '../../common/RelationshipTitle';
 import { TableButton } from '../../common/TableButton';
 import '../../css/pages.css';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
-import { IChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { IEntity, IEntityExpanded } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { PermissionScope } from '../../interfaces/permissions';
-import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
-import { IRelationship } from '../../interfaces/relationships';
+
 import { useClientSideUserStore } from '../../stores/clientSideUser';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
@@ -28,8 +28,8 @@ import DeleteRelationshipDialog from './DeleteRelationshipDialog';
 export const getButtonState = (
     isEntityDisabled: boolean,
     hasWritePermissionToCurrTemplate: boolean,
-    relatedTemplate: IMongoEntityTemplatePopulated,
-    groupChildTemplate: Record<string, IChildTemplatePopulated[]>,
+    relatedTemplate: IMongoEntityTemplateWithConstraintsPopulated,
+    groupChildTemplate: Record<string, IMongoChildTemplateWithConstraintsPopulated[]>,
     permissions?: ISubCompactPermissions,
 ) => {
     let isEditButtonsDisabled = false;
@@ -92,7 +92,7 @@ export const ConnectionsTable: React.FC<{
     isEditButtonsDisabled: boolean;
     disabledButtonText: string;
     hasPermissionToTemplate: boolean;
-    groupChildTemplate?: Record<string, IChildTemplatePopulated[]>;
+    groupChildTemplate?: Record<string, IMongoChildTemplateWithConstraintsPopulated[]>;
 }> = ({
     expandedEntity,
     connectionTemplate: { relationshipTemplate, isExpandedEntityRelationshipSource, hasInstances },

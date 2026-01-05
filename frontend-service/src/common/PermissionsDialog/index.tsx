@@ -2,14 +2,15 @@
 import { Close as CloseIcon } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Button, Dialog, Grid, IconButton, Tab } from '@mui/material';
+import { PermissionData } from '@packages/permission';
+import { IRole } from '@packages/role';
+import { IUser, RelatedPermission } from '@packages/user';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
-import React, { ReactElement, useState } from 'react';
+import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
 import { environment } from '../../globals';
-import { IRole } from '../../interfaces/roles';
-import { IUser, PermissionData, RelatedPermission } from '../../interfaces/users';
 import { MeltaUpdates } from '../../MeltaUpdates';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { useDarkModeStore } from '../../stores/darkMode';
@@ -21,7 +22,7 @@ import RoleDialog from './RoleDialog';
 
 const PermissionsDialog: React.FC<{
     isOpen: boolean;
-    handleClose: () => any;
+    handleClose: () => void;
     mode: 'create' | 'edit' | 'view';
     roleOrUser?: PermissionData;
     onSuccess?: (roleOrUser?: PermissionData) => void;
@@ -41,7 +42,7 @@ const PermissionsDialog: React.FC<{
     const queryClient = useQueryClient();
     const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
 
-    const tabsComponentsMapping: Record<string, ReactElement> = {
+    const tabsComponentsMapping: Record<string, JSX.Element> = {
         ...(mode === 'view' && {
             myAccount: (
                 <MyAccount

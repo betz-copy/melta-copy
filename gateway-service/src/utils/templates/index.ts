@@ -1,14 +1,10 @@
-import {
-    BadRequestError,
-    childTemplateKeys,
-    dePopulateChildProperties,
-    IConstraintsOfTemplate,
-    IEntitySingleProperty,
-    IMongoEntityTemplatePopulated,
-    IMongoRule,
-    IRelationship,
-    ServiceError,
-} from '@microservices/shared';
+
+import { childTemplateKeys, dePopulateChildProperties } from '@packages/child-template';
+import { IConstraintsOfTemplate } from '@packages/entity';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { IRelationship } from '@packages/relationship';
+import { IMongoRule } from '@packages/rule';
+import { BadRequestError, ServiceError } from '@packages/utils';
 import { StatusCodes } from 'http-status-codes';
 import _, { cloneDeep } from 'lodash';
 import config from '../../config';

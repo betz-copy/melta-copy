@@ -1,17 +1,17 @@
 import { Grid } from '@mui/material';
+import { IGraphFilterBody } from '@packages/entity';
+import { basicFilterOperationTypes, FilterTypes, IAgGridDateFilter, IAgGridNumberFilter, IAgGridTextFilter } from '@packages/rule-breach';
 import React, { useEffect } from 'react';
-import { IGraphFilterBody } from '../../../interfaces/entities';
-import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
 import { StyledFilterInput } from './StyledFilterInput';
 import { TypeSelectFilter } from './TypeSelectFilter';
 
 interface TextFilterProps {
     entityFilter: boolean;
     readOnly: boolean;
-    filterField: IAGGridNumberFilter | IAGGridTextFilter | undefined;
+    filterField: IAgGridNumberFilter | IAgGridTextFilter | undefined;
     type: string;
     handleFilterTypeChange: (
-        newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGridNumberFilter['type'],
+        newTypeFilter: IAgGridDateFilter['type'] | IAgGridTextFilter['type'] | IAgGridNumberFilter['type'],
         condition?: boolean,
     ) => void;
     handleFilterFieldChange: (value: IGraphFilterBody['filterField'], condition?: boolean) => void;
@@ -34,8 +34,8 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
     forceEqualsType = false,
 }) => {
     useEffect(() => {
-        if (forceEqualsType && filterField && filterField.type !== 'equals') {
-            handleFilterTypeChange('equals');
+        if (forceEqualsType && filterField && filterField.type !== basicFilterOperationTypes.equals) {
+            handleFilterTypeChange(basicFilterOperationTypes.equals);
         }
     }, [forceEqualsType, filterField]);
 
@@ -50,7 +50,7 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
             {!hideFilterType && (
                 <Grid size={{ xs: entityFilter ? 5 : 12 }}>
                     <TypeSelectFilter
-                        filterField={filterField as IAGGridNumberFilter | IAGGridTextFilter}
+                        filterField={filterField as IAgGridNumberFilter | IAgGridTextFilter}
                         handleFilterTypeChange={handleFilterTypeChange}
                         readOnly={readOnly || forceEqualsType}
                         type={type}
@@ -70,17 +70,17 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
                     onChange={(e) => {
                         const { value } = e.target;
                         const updatedFilter =
-                            type === 'number'
+                            type === FilterTypes.number
                                 ? ({
                                       ...filterField,
                                       filter: value ? Number(value) : undefined,
-                                      type: forceEqualsType ? 'equals' : filterField?.type,
-                                  } as IAGGridNumberFilter)
+                                      type: forceEqualsType ? basicFilterOperationTypes.equals : filterField?.type,
+                                  } as IAgGridNumberFilter)
                                 : ({
                                       ...filterField,
                                       filter: value || undefined,
-                                      type: forceEqualsType ? 'equals' : filterField?.type,
-                                  } as IAGGridTextFilter);
+                                      type: forceEqualsType ? basicFilterOperationTypes.equals : filterField?.type,
+                                  } as IAgGridTextFilter);
 
                         handleFilterFieldChange(updatedFilter);
                     }}

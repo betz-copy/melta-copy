@@ -1,28 +1,28 @@
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import {
-    ActionTypes,
     IArchiveProcessNotificationMetadataPopulated,
-    ICreateOrDuplicateEntityMetadataPopulated,
-    ICreateRelationshipMetadataPopulated,
     IDateAboutToExpireMetadataPopulated,
     IDeleteProcessNotificationMetadata,
-    IDeleteRelationshipMetadataPopulated,
-    IEntity,
-    IMongoEntityTemplatePopulated,
-    IMongoStepTemplate,
     INewProcessNotificationMetadataPopulated,
-    IRule,
     IRuleBreachAlertNotificationMetadataPopulated,
-    IRuleBreachAlertPopulated,
     IRuleBreachRequestNotificationMetadataPopulated,
-    IRuleBreachRequestPopulated,
     IRuleBreachResponseNotificationMetadataPopulated,
-    IRuleMail,
+    NotificationType,
+} from '@packages/notification';
+import { IMongoStepTemplate } from '@packages/process';
+import { IRule, IRuleMail } from '@packages/rule';
+import {
+    ActionTypes,
+    ICreateOrDuplicateEntityMetadataPopulated,
+    ICreateRelationshipMetadataPopulated,
+    IDeleteRelationshipMetadataPopulated,
+    IRuleBreachAlertPopulated,
+    IRuleBreachRequestPopulated,
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadataPopulated,
-    NotificationType,
     RuleBreachRequestStatus,
-} from '@microservices/shared';
-import React from 'react';
+} from '@packages/rule-breach';
 import { renderToString } from 'react-dom/server';
 import config from '../../config';
 import WorkspaceManager from '../../express/workspaces/manager';

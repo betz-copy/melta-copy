@@ -1,7 +1,7 @@
 import { Box } from '@mui/material';
+import { IChartType } from '@packages/chart';
+import { DashboardItemType, MongoDashboardItemPopulated } from '@packages/dashboard';
 import React from 'react';
-import { IChartType } from '../../../interfaces/charts';
-import { DashboardItemType, MongoDashboardItemPopulated } from '../../../interfaces/dashboard';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';
 import { GripVertical } from '../../../utils/icons/fontAwesome';

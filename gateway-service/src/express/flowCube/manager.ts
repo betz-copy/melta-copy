@@ -1,4 +1,6 @@
-import { IFilterOfTemplate, ISearchEntitiesOfTemplateBody, ISearchEntityTemplatesBody, RelatedPermission } from '@microservices/shared';
+import { IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '@packages/entity';
+import { ISearchEntityTemplatesBody } from '@packages/entity-template';
+import { RelatedPermission } from '@packages/user';
 import config from '../../config';
 import InstancesService from '../../externalServices/instanceService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';

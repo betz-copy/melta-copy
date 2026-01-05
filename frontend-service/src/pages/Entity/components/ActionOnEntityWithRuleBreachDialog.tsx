@@ -1,3 +1,21 @@
+import { IEntity } from '@packages/entity';
+import { ActionOnFail, IRuleMap } from '@packages/rule';
+import {
+    ActionTypes,
+    IAction,
+    IActionPopulated,
+    ICreateEntityMetadata,
+    ICreateEntityMetadataPopulated,
+    IDuplicateEntityMetadata,
+    IDuplicateEntityMetadataPopulated,
+    IRuleBreach,
+    IRuleBreachPopulated,
+    IRuleBreachRequestPopulated,
+    IUpdateEntityMetadata,
+    IUpdateEntityMetadataPopulated,
+    IUpdateMultipleEntitiesMetadata,
+    IUpdateMultipleEntitiesMetadataPopulated,
+} from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import mapValues from 'lodash.mapvalues';
@@ -9,25 +27,8 @@ import { EntityWizardValues } from '../../../common/dialogs/entity';
 import ExecWithRuleBreachDialog from '../../../common/dialogs/execWithRuleBreachDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { environment } from '../../../globals';
-import { IEntity } from '../../../interfaces/entities';
 import { IErrorResponse } from '../../../interfaces/error';
 import { IBrokenRuleEntity } from '../../../interfaces/excel';
-import {
-    ActionTypes,
-    IAction,
-    IActionPopulated,
-    ICreateEntityMetadata,
-    ICreateEntityMetadataPopulated,
-    IDuplicateEntityMetadata,
-    IDuplicateEntityMetadataPopulated,
-    IUpdateEntityMetadata,
-    IUpdateEntityMetadataPopulated,
-    IUpdateMultipleEntitiesMetadata,
-    IUpdateMultipleEntitiesMetadataPopulated,
-} from '../../../interfaces/ruleBreaches/actionMetadata';
-import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
-import { IRuleBreachRequestPopulated } from '../../../interfaces/ruleBreaches/ruleBreachRequest';
-import { ActionOnFail, IRuleMap } from '../../../interfaces/rules';
 import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesService';
 import { groupActionsByEntityId, groupBrokenRulesByEntity } from '../../../utils/loadEntities';
 

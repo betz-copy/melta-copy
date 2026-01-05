@@ -1,5 +1,6 @@
 /* eslint-disable no-param-reassign */
-import { IEntity, IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@microservices/shared';
+import { IEntity } from '@packages/entity';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import Excel from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
 import config from '../../config/index';

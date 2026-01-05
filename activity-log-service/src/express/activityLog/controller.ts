@@ -1,4 +1,5 @@
-import { DefaultController, IActivityLog } from '@microservices/shared';
+import { IActivityLog } from '@packages/activity-log';
+import { DefaultController } from '@packages/utils';
 import { Request, Response } from 'express';
 import ActivityLogManager from './manager';
 

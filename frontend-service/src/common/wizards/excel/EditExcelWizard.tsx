@@ -1,5 +1,7 @@
 /* eslint-disable react/no-unstable-nested-components */
 import { Grid } from '@mui/material';
+import { IEntityWithIgnoredRules } from '@packages/entity';
+import { ActionTypes } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
@@ -8,9 +10,7 @@ import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
-import { IEntityWithIgnoredRules } from '../../../interfaces/entities';
 import { EntitiesWizardValues, ExcelStepStatus, IExcelSteps } from '../../../interfaces/excel';
-import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { editManyEntitiesByExcelRequest, exportEntitiesRequest, getChangedEntitiesFromExcelRequest } from '../../../services/entitiesService';
 import { useWorkspaceStore } from '../../../stores/workspace';

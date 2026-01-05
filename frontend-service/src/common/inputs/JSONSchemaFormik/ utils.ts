@@ -1,13 +1,13 @@
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated, IProperties } from '@packages/entity-template';
+import { IMongoUnit } from '@packages/unit';
+import { IKartoffelUser } from '@packages/user';
 import { UiSchema } from '@rjsf/utils';
 import { flatten } from 'flat';
 import { FormikHelpers } from 'formik';
 import i18next from 'i18next';
 import _ from 'lodash';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IProperties } from '../../../interfaces/entityTemplates';
-import { IKartoffelUser } from '../../../interfaces/users';
 import { EntityWizardValues } from '../../dialogs/entity';
 import { kartoffelPersonalDataFields } from '../../wizards/entityTemplate/KartoffelUserField';
-import { IMongoUnit } from '../../../interfaces/units';
 
 const changeRelatedUserFields = (properties: IProperties['properties'], changedUserKey: string, user: IKartoffelUser | null) => {
     return Object.entries(properties).reduce((acc, [key, value]) => {
@@ -34,7 +34,7 @@ const changeRelatedUserFields = (properties: IProperties['properties'], changedU
 };
 
 const getFieldUiSchema = (
-    schema: IMongoEntityTemplatePopulated['properties'],
+    schema: IMongoEntityTemplateWithConstraintsPopulated['properties'],
     values: EntityWizardValues,
     setValues: FormikHelpers<any>['setValues'],
     isEditMode: boolean,
@@ -172,7 +172,7 @@ const getFieldUiSchema = (
 };
 
 export const uiSchemaUtils = (
-    schema: IMongoEntityTemplatePopulated['properties'],
+    schema: IMongoEntityTemplateWithConstraintsPopulated['properties'],
     values: EntityWizardValues,
     setValues: FormikHelpers<any>['setValues'],
     isEditMode: boolean,

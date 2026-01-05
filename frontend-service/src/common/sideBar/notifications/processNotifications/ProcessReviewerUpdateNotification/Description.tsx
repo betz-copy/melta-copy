@@ -1,7 +1,7 @@
 import { Grid, Typography } from '@mui/material';
+import { IProcessReviewerUpdateNotificationMetadataPopulated } from '@packages/notification';
 import i18next from 'i18next';
 import React from 'react';
-import { IProcessReviewerUpdateNotificationMetadataPopulated } from '../../../../../interfaces/notifications';
 import { ProcessName } from '../ProcessName';
 import { StepName } from '../StepName';
 

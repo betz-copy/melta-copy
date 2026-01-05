@@ -1,14 +1,14 @@
 import { Grid, MenuItem } from '@mui/material';
+import { IGraphFilterBody } from '@packages/entity';
+import { IAgGridDateFilter, IAgGridNumberFilter, IAgGridTextFilter } from '@packages/rule-breach';
 import i18next from 'i18next';
 import React from 'react';
-import { IGraphFilterBody } from '../../../interfaces/entities';
-import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
 import { FieldOption } from '../../wizards/entityTemplate/RelationshipReference/filterEntitiesByCriteria';
 import { StyledFilterInput } from './StyledFilterInput';
 import { TypeSelectFilter } from './TypeSelectFilter';
 
 interface SelectFilterInputProps {
-    filterField?: IAGGridNumberFilter | IAGGridDateFilter | IAGGridTextFilter;
+    filterField?: IAgGridNumberFilter | IAgGridDateFilter | IAgGridTextFilter;
     handleFilterFieldChange: (value: IGraphFilterBody['filterField'], condition?: boolean) => void;
     readOnly?: boolean;
     isBooleanSelect?: boolean;
@@ -18,7 +18,7 @@ interface SelectFilterInputProps {
     filterType?: {
         type: string;
         handleFilterTypeChange: (
-            newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGridNumberFilter['type'],
+            newTypeFilter: IAgGridDateFilter['type'] | IAgGridTextFilter['type'] | IAgGridNumberFilter['type'],
             condition?: boolean,
         ) => void;
     };
@@ -49,7 +49,7 @@ const SelectFilterInput: React.FC<SelectFilterInputProps> = ({
             {!!filterType && (
                 <Grid size={{ xs: entityFilter ? 4.85 : 12 }}>
                     <TypeSelectFilter
-                        filterField={filterField as IAGGridNumberFilter | IAGGridTextFilter}
+                        filterField={filterField as IAgGridNumberFilter | IAgGridTextFilter}
                         handleFilterTypeChange={filterType.handleFilterTypeChange}
                         readOnly={readOnly}
                         type={filterType.type ?? ''}
@@ -66,9 +66,9 @@ const SelectFilterInput: React.FC<SelectFilterInputProps> = ({
                     value={filterField?.[key]}
                     onChange={(e) =>
                         handleFilterFieldChange({ ...filterField, [key]: e.target.value } as
-                            | IAGGridNumberFilter
-                            | IAGGridDateFilter
-                            | IAGGridTextFilter)
+                            | IAgGridNumberFilter
+                            | IAgGridDateFilter
+                            | IAgGridTextFilter)
                     }
                     disabled={readOnly}
                     error={error}

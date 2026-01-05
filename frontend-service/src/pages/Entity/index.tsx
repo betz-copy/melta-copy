@@ -1,6 +1,12 @@
 import { Hive as HiveIcon } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, CircularProgress, Grid, Tab, Typography, useTheme } from '@mui/material';
+import { ICategoryMap } from '@packages/category';
+import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { ISearchFilter } from '@packages/entity';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { ISubCompactPermissions, PermissionScope } from '@packages/permission';
+import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '@packages/relationship-template';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -10,18 +16,12 @@ import { CustomIcon } from '../../common/CustomIcon';
 import { getChildTemplatesFilter } from '../../common/inputs/TemplateEntitiesAutocomplete';
 import BlueTitle from '../../common/MeltaDesigns/BlueTitle';
 import '../../css/pages.css';
-import { ICategoryMap } from '../../interfaces/categories';
-import { IChildTemplateMap, IChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { ISearchFilter } from '../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { PermissionScope } from '../../interfaces/permissions';
-import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
-import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
+
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { checkUserTemplatePermission } from '../../utils/permissions/instancePermissions';
-import { getFullRelationshipTemplates, groupChildTemplatesByParent } from '../../utils/templates';
+import { getFullRelationshipTemplates, groupChildTemplatesByParent, isChildTemplate } from '../../utils/templates';
 import { ConnectionsTable } from './ConnectionsTable';
 import { EntityDetails } from './components/EntityDetails';
 import { EntityTopBar } from './components/TopBar';
@@ -30,8 +30,8 @@ import { RelationshipIcon } from './RelationshipIcon';
 export const getButtonState = (
     isEntityDisabled: boolean,
     hasWritePermissionToCurrTemplate: boolean,
-    relatedTemplate: IMongoEntityTemplatePopulated,
-    groupChildTemplate: Record<string, IChildTemplatePopulated[]>,
+    relatedTemplate: IMongoEntityTemplateWithConstraintsPopulated,
+    groupChildTemplate: Record<string, IMongoChildTemplateWithConstraintsPopulated[]>,
     permissions?: ISubCompactPermissions,
 ) => {
     let isEditButtonsDisabled = false;
@@ -137,22 +137,23 @@ const Entity: React.FC = () => {
     const connectionsTemplates = useMemo(() => {
         if (!currentEntityTemplate) return;
 
+        const templateForRelationships =
+            childTemplateId && isChildTemplate(currentEntityTemplate)
+                ? (entityTemplates.get(currentEntityTemplate.parentTemplate._id) ?? undefined)
+                : currentEntityTemplate;
+
+        if (!templateForRelationships) return;
+
         return getFullRelationshipTemplates(
             relationshipTemplates,
             entityTemplates,
-            {
-                ...currentEntityTemplate,
-                _id: childTemplateId ? (currentEntityTemplate as IChildTemplatePopulated).parentTemplate._id : currentEntityTemplate._id,
-                displayName: childTemplateId
-                    ? (currentEntityTemplate as IChildTemplatePopulated).parentTemplate.displayName
-                    : currentEntityTemplate.displayName,
-            },
+            templateForRelationships,
             1,
             undefined,
             expandedEntity,
             groupChildTemplate,
         );
-    }, [currentEntityTemplate, expandedEntity]);
+    }, [childTemplateId, currentEntityTemplate, expandedEntity]);
 
     const categoriesWithConnectionsTemplates = useMemo(() => {
         if (!connectionsTemplates) return;
@@ -214,7 +215,10 @@ const Entity: React.FC = () => {
             />
             <Grid className="pageMargin">
                 <Grid marginTop="20px" data-tour="entity-details">
-                    <EntityDetails entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} />
+                    <EntityDetails
+                        entityTemplate={currentEntityTemplate as IMongoEntityTemplateWithConstraintsPopulated}
+                        expandedEntity={expandedEntity}
+                    />
                 </Grid>
                 {!!categoriesWithConnectionsTemplates?.length && (
                     <Grid data-tour="connected-entities" style={{ marginTop: '2rem' }}>

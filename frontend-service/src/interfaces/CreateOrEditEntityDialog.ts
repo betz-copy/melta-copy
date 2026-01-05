@@ -1,7 +1,6 @@
+import { IEntity } from '@packages/entity';
+import { ActionTypes, IAction, IActionPopulated, IRuleBreach, IRuleBreachPopulated } from '@packages/rule-breach';
 import { EntityWizardValues } from '../common/dialogs/entity';
-import { IEntity } from './entities';
-import { ActionTypes, IAction, IActionPopulated } from './ruleBreaches/actionMetadata';
-import { IRuleBreach, IRuleBreachPopulated } from './ruleBreaches/ruleBreach';
 
 export type ICreateOrUpdateWithRuleBreachDialogState = {
     isOpen: boolean;

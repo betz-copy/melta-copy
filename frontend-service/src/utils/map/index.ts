@@ -1,8 +1,10 @@
+import { SplitBy } from '@packages/common';
+import { IEntity, IFilterOfField } from '@packages/entity';
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { Cartesian3 } from 'cesium';
 import { environment } from '../../globals';
-import { IEntity, IFilterOfField, SplitBy } from '../../interfaces/entities';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { CoordinatesResult, ICoordinateSearchResult, IPolygonSearchResult, MapItemType } from '../../interfaces/location';
+import { ICoordinateSearchResult, IPolygonSearchResult } from '../../interfaces/location';
+import { CoordinatesResult, MapItemType } from '../../interfaces/map';
 import { convertECEFToWGS84, convertWGS94ToECEF, isValidWGS84 } from './convert';
 
 const { polygonPrefix, polygonSuffix } = environment.map.polygon;
@@ -113,7 +115,7 @@ export const isValidPolygonPoint = (polygonPoints: Cartesian3[], newPoint: Carte
     return true;
 };
 
-export const getLocationProperties = (entity: IEntity, selectedTemplates: IMongoEntityTemplatePopulated[]) => {
+export const getLocationProperties = (entity: IEntity, selectedTemplates: IMongoEntityTemplateWithConstraintsPopulated[]) => {
     const template = selectedTemplates.find(({ _id }) => _id === entity.templateId);
 
     if (!template) return { template: undefined, locationTemplateProperties: undefined, locationProperties: undefined };

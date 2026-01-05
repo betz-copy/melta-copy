@@ -3,6 +3,8 @@ import { FilterList } from '@mui/icons-material';
 import { Box, Button, Grid, SxProps, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { TreeViewBaseItem } from '@mui/x-tree-view-pro';
+import { IMongoCategory } from '@packages/category';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React, { Dispatch, useState } from 'react';
 import { IoIosArrowBack, IoIosArrowDown } from 'react-icons/io';
@@ -10,8 +12,6 @@ import { getOptionsAndGroupsMiniFiltered, SelectCheckboxGroupProps, SelectCheckb
 import { Search } from '../../common/SelectCheckBox/Search';
 import Tree from '../../common/Tree';
 import { SelectAll } from '../../common/Tree/SelectAll';
-import { IMongoCategory } from '../../interfaces/categories';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { groupTemplatesByCategory } from '../../utils/hooks/useTreeUtils';
 
@@ -26,14 +26,14 @@ const useStyles = makeStyles(() => ({
 }));
 
 type ISplitTree = {
-    tree: TreeViewBaseItem<IMongoEntityTemplatePopulated | IMongoCategory>[];
-    flattenedTree: (IMongoEntityTemplatePopulated | IMongoCategory)[];
-    filteredTree: (IMongoEntityTemplatePopulated | IMongoCategory)[];
+    tree: TreeViewBaseItem<IMongoEntityTemplateWithConstraintsPopulated | IMongoCategory>[];
+    flattenedTree: (IMongoEntityTemplateWithConstraintsPopulated | IMongoCategory)[];
+    filteredTree: (IMongoEntityTemplateWithConstraintsPopulated | IMongoCategory)[];
 };
 
 export const getCategoriesSelectCheckboxGroupProps = (
     categories: IMongoCategory[] | undefined,
-): SelectCheckboxProps<IMongoEntityTemplatePopulated, IMongoCategory>['groupsProps'] => {
+): SelectCheckboxProps<IMongoEntityTemplateWithConstraintsPopulated, IMongoCategory>['groupsProps'] => {
     if (!categories) {
         return {
             useGroups: false,
@@ -49,17 +49,19 @@ export const getCategoriesSelectCheckboxGroupProps = (
     };
 };
 
-const getOptionId: SelectCheckboxProps<IMongoEntityTemplatePopulated | IMongoCategory, IMongoCategory>['getOptionId'] = ({ _id }) => _id;
-const getOptionLabel: SelectCheckboxProps<IMongoEntityTemplatePopulated | IMongoCategory, IMongoCategory>['getOptionLabel'] = ({ displayName }) =>
-    displayName;
+const getOptionId: SelectCheckboxProps<IMongoEntityTemplateWithConstraintsPopulated | IMongoCategory, IMongoCategory>['getOptionId'] = ({ _id }) =>
+    _id;
+const getOptionLabel: SelectCheckboxProps<IMongoEntityTemplateWithConstraintsPopulated | IMongoCategory, IMongoCategory>['getOptionLabel'] = ({
+    displayName,
+}) => displayName;
 
-const getTreeOnSplittedTemplates = (splitTemplates: IMongoEntityTemplatePopulated[], searchValue: string): ISplitTree => {
+const getTreeOnSplittedTemplates = (splitTemplates: IMongoEntityTemplateWithConstraintsPopulated[], searchValue: string): ISplitTree => {
     const categories = splitTemplates.map(({ category }) => category);
 
     const filteredCategories = categories?.filter((category) => splitTemplates.some((template) => template.category._id === category._id));
 
     const groupsProps = getCategoriesSelectCheckboxGroupProps(filteredCategories) as { useGroups: true } & SelectCheckboxGroupProps<
-        IMongoEntityTemplatePopulated,
+        IMongoEntityTemplateWithConstraintsPopulated,
         IMongoCategory
     >;
 
@@ -77,12 +79,12 @@ const getTreeOnSplittedTemplates = (splitTemplates: IMongoEntityTemplatePopulate
     return { tree, flattenedTree: splitTemplates, filteredTree };
 };
 
-const splitCategories = (templates: IMongoEntityTemplatePopulated[], categories?: IMongoCategory[], splitIndex = 3) => {
+const splitCategories = (templates: IMongoEntityTemplateWithConstraintsPopulated[], categories?: IMongoCategory[], splitIndex = 3) => {
     if (!categories?.length) return { firstSplittedTemplates: templates.slice(0, splitIndex), secondSplittedTemplates: templates.slice(splitIndex) };
 
     const firstSplittedCategoryIds = categories?.slice(0, splitIndex).map(({ _id }) => _id);
-    const firstSplittedTemplates: IMongoEntityTemplatePopulated[] = [];
-    const secondSplittedTemplates: IMongoEntityTemplatePopulated[] = [];
+    const firstSplittedTemplates: IMongoEntityTemplateWithConstraintsPopulated[] = [];
+    const secondSplittedTemplates: IMongoEntityTemplateWithConstraintsPopulated[] = [];
 
     templates.forEach((template) => {
         if (firstSplittedCategoryIds?.includes(template.category._id)) {
@@ -98,8 +100,8 @@ const splitCategories = (templates: IMongoEntityTemplatePopulated[], categories?
 const singleTree = (
     firstTree: ISplitTree,
     secondTree: ISplitTree,
-    selectedTemplates: IMongoEntityTemplatePopulated[],
-    setSelectedTemplates: React.Dispatch<React.SetStateAction<(IMongoEntityTemplatePopulated | IMongoCategory)[]>>,
+    selectedTemplates: IMongoEntityTemplateWithConstraintsPopulated[],
+    setSelectedTemplates: React.Dispatch<React.SetStateAction<(IMongoEntityTemplateWithConstraintsPopulated | IMongoCategory)[]>>,
     onClick: () => void,
 ) => (
     <Tree
@@ -119,11 +121,11 @@ const singleTree = (
 );
 
 const TemplatesSelectGrid: React.FC<{
-    templates: IMongoEntityTemplatePopulated[];
-    selectedTemplates: IMongoEntityTemplatePopulated[];
-    setSelectedTemplates: React.Dispatch<React.SetStateAction<(IMongoEntityTemplatePopulated | IMongoCategory)[]>>;
+    templates: IMongoEntityTemplateWithConstraintsPopulated[];
+    selectedTemplates: IMongoEntityTemplateWithConstraintsPopulated[];
+    setSelectedTemplates: React.Dispatch<React.SetStateAction<(IMongoEntityTemplateWithConstraintsPopulated | IMongoCategory)[]>>;
     categories?: IMongoCategory[];
-    setTemplates?: Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
+    setTemplates?: Dispatch<React.SetStateAction<IMongoEntityTemplateWithConstraintsPopulated[]>>;
     setOpenFilter: React.Dispatch<React.SetStateAction<boolean>>;
     openFilter: boolean;
     onClick: () => void;

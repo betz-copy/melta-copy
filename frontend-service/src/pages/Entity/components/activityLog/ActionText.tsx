@@ -1,5 +1,9 @@
-/* eslint-disable no-nested-ternary */
 import { Grid, styled, Typography, useTheme } from '@mui/material';
+/* eslint-disable no-nested-ternary */
+import { ActionsLog } from '@packages/activity-log';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoStepTemplatePopulated, IProcessDetails, IProcessSingleProperty } from '@packages/process';
+import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
@@ -10,10 +14,6 @@ import { NotificationColor } from '../../../../common/notificationColor';
 import RelationshipReferenceView from '../../../../common/RelationshipReferenceView';
 import UserAvatar from '../../../../common/UserAvatar';
 import { StatusDisplay } from '../../../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { IProcessDetails, IProcessSingleProperty } from '../../../../interfaces/processes/processTemplate';
-import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
-import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { IActivityLog, IUpdateProcessStepMetadata } from '../../../../services/activityLogService';
 import { getFilesName } from '../../../../utils/getFileName';
 import { containsHTMLTags, getFirstLine, getNumLines } from '../../../../utils/HtmlTagsStringValue';
@@ -58,27 +58,27 @@ const StyledTypography = styled(Typography)(({ theme }) => ({
 })) as typeof Typography;
 
 const EmptyMetadataActionText: React.FC<{
-    action: 'CREATE_ENTITY' | 'DISABLE_ENTITY' | 'ACTIVATE_ENTITY' | 'VIEW_ENTITY' | 'CREATE_PROCESS';
+    action: ActionsLog;
 }> = ({ action }) => {
     const logTexts = {
-        ACTIVATE_ENTITY: i18next.t('entityPage.activityLog.activateEntity'),
-        DISABLE_ENTITY: i18next.t('entityPage.activityLog.disableEntity'),
-        CREATE_ENTITY: i18next.t('entityPage.activityLog.createEntity'),
-        CREATE_PROCESS: i18next.t('entityPage.activityLog.createProcess'),
+        [ActionsLog.ACTIVATE_ENTITY]: i18next.t('entityPage.activityLog.activateEntity'),
+        [ActionsLog.DISABLE_ENTITY]: i18next.t('entityPage.activityLog.disableEntity'),
+        [ActionsLog.CREATE_ENTITY]: i18next.t('entityPage.activityLog.createEntity'),
+        [ActionsLog.CREATE_PROCESS]: i18next.t('entityPage.activityLog.createProcess'),
     };
 
     return (
         <Grid minWidth="190px">
             {TitleWithIcon(action)}
-            <StyledTypography variant="body2">{logTexts[action]}</StyledTypography>
+            <StyledTypography variant="body2">{logTexts[action as ActionsLog]}</StyledTypography>
         </Grid>
     );
 };
 
 const RelationshipMetadataActionText: React.FC<{
-    action: 'DELETE_RELATIONSHIP' | 'CREATE_RELATIONSHIP';
+    action: ActionsLog.DELETE_RELATIONSHIP | ActionsLog.CREATE_RELATIONSHIP;
     actionMetadata: { relationshipId: string; relationshipTemplateId: string; entityId: string };
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
 }> = ({ action, actionMetadata, entityTemplate }) => {
     const theme = useTheme();
 
@@ -100,7 +100,7 @@ const RelationshipMetadataActionText: React.FC<{
         <Grid container>
             {TitleWithIcon(action)}
             <StyledTypography variant="body2" component="span">
-                {action === 'CREATE_RELATIONSHIP'
+                {action === ActionsLog.CREATE_RELATIONSHIP
                     ? i18next.t('entityPage.activityLog.createRelationship')
                     : i18next.t('entityPage.activityLog.deleteRelationship')}
                 <StyledTypography component="span" display="inline" variant="body2" style={{ color: theme.palette.primary.main }}>
@@ -129,14 +129,14 @@ const RelationshipMetadataActionText: React.FC<{
 
 const DuplicateEntityMetadataActionText: React.FC<{
     actionMetadata: { entityIdDuplicatedFrom: string };
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
 }> = ({ actionMetadata, entityTemplate }) => {
     const theme = useTheme();
     const [_, navigate] = useLocation();
 
     return (
         <Grid minWidth="190px">
-            {TitleWithIcon('DUPLICATE_ENTITY')}
+            {TitleWithIcon(ActionsLog.DUPLICATE_ENTITY)}
             <StyledTypography variant="body2" component="span">
                 {i18next.t('entityPage.activityLog.duplicateEntityFrom')}
                 <StyledTypography
@@ -264,7 +264,7 @@ const UpdateTextValue: React.FC<{
     ) : (
         <StyledTypography variant="body2" style={{ ...ellipsisStyle, display: 'flex' }}>
             {old ? i18next.t('entityPage.activityLog.from') : i18next.t('entityPage.activityLog.to')}{' '}
-            {value ? innerContent : i18next.t('entityPage.activityLog.emptyField')}
+            <>{value ? innerContent : i18next.t('entityPage.activityLog.emptyField')}</>
         </StyledTypography>
     );
 };
@@ -276,7 +276,7 @@ const UpdateEntityMetadataActionText: React.FC<{
     const theme = useTheme();
     return (
         <Grid container flexDirection="column">
-            {TitleWithIcon('UPDATE_FIELDS')}
+            {TitleWithIcon(ActionsLog.UPDATE_FIELDS)}
             <Grid minWidth="190px">
                 <StyledTypography variant="body2" marginBottom="5px">
                     {actionMetadata.updatedFields.length === 1
@@ -369,17 +369,17 @@ const UpdateStepProcessMetadataActionText: React.FC<{
 
 const ActionText: React.FC<{
     log: IActivityLog;
-    entityTemplate: IMongoEntityTemplatePopulated | IProcessDetails | IMongoStepTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | IProcessDetails | IMongoStepTemplatePopulated;
 }> = ({ log: { metadata, action }, entityTemplate }) => {
-    if (action === 'CREATE_RELATIONSHIP' || action === 'DELETE_RELATIONSHIP')
+    if (action === ActionsLog.CREATE_RELATIONSHIP || action === ActionsLog.DELETE_RELATIONSHIP)
         return (
             <RelationshipMetadataActionText
-                entityTemplate={entityTemplate as IMongoEntityTemplatePopulated}
+                entityTemplate={entityTemplate as IMongoEntityTemplateWithConstraintsPopulated}
                 action={action}
                 actionMetadata={metadata as { relationshipId: string; relationshipTemplateId: string; entityId: string }}
             />
         );
-    if (action === 'UPDATE_ENTITY' || action === 'UPDATE_PROCESS')
+    if (action === ActionsLog.UPDATE_ENTITY || action === ActionsLog.UPDATE_PROCESS)
         return (
             <UpdateEntityMetadataActionText
                 entityTemplateProperties={entityTemplate.properties.properties}
@@ -387,7 +387,7 @@ const ActionText: React.FC<{
             />
         );
 
-    if (action === 'UPDATE_PROCESS_STEP')
+    if (action === ActionsLog.UPDATE_PROCESS_STEP)
         return (
             <UpdateStepProcessMetadataActionText
                 entityTemplate={entityTemplate as IMongoStepTemplatePopulated}
@@ -395,10 +395,10 @@ const ActionText: React.FC<{
             />
         );
 
-    if (action === 'DUPLICATE_ENTITY')
+    if (action === ActionsLog.DUPLICATE_ENTITY)
         return (
             <DuplicateEntityMetadataActionText
-                entityTemplate={entityTemplate as IMongoEntityTemplatePopulated}
+                entityTemplate={entityTemplate as IMongoEntityTemplateWithConstraintsPopulated}
                 actionMetadata={metadata as { entityIdDuplicatedFrom: string }}
             />
         );

@@ -1,10 +1,9 @@
+import { IMongoCategory } from '@packages/category';
+import { IMongoChildTemplateWithConstraintsPopulated, ViewType } from '@packages/child-template';
+import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { ISubCompactPermissions, PermissionScope } from '@packages/permission';
+import { IUser } from '@packages/user';
 import isEqualWith from 'lodash.isequalwith';
-import { IMongoCategory } from '../../interfaces/categories';
-import { IMongoChildTemplatePopulated, ViewType } from '../../interfaces/childTemplates';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { PermissionScope } from '../../interfaces/permissions';
-import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
-import { IUser } from '../../interfaces/users';
 
 export const userHasNoPermissions = (permissions: ISubCompactPermissions) => {
     return (
@@ -41,7 +40,7 @@ export type CategoryWithTemplates = IMongoCategory & {
 
 export const createDialogCategories = (
     entityTemplates: (IMongoEntityTemplatePopulated & { isParentTemplateInDifferentCategory?: boolean })[],
-    childTemplates: IMongoChildTemplatePopulated[],
+    childTemplates: IMongoChildTemplateWithConstraintsPopulated[],
     searchText?: string,
 ): Map<string, CategoryWithTemplates> => {
     const dialogPermissionData: Map<string, CategoryWithTemplates> = new Map();

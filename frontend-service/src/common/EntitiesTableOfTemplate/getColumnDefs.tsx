@@ -1,19 +1,19 @@
 import { ColDef, ValueGetterFunc } from '@ag-grid-community/core';
 import { Add as AddIcon } from '@mui/icons-material';
 import { Grid, Typography } from '@mui/material';
+import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { EntityData, IEntity } from '@packages/entity';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IRuleBreach } from '@packages/rule-breach';
+import { ISemanticSearchResult } from '@packages/semantic-search';
+import { IGetUnits } from '@packages/unit';
+import { IWorkspace } from '@packages/workspace';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { memo } from 'react';
 import { UseMutateAsyncFunction } from 'react-query';
 import { Link } from 'wouter';
 import { environment } from '../../globals';
-import { IChildTemplateMap, IChildTemplatePopulated, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { EntityData, IEntity } from '../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
-import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
-import { IGetUnits } from '../../interfaces/units';
-import { IWorkspace } from '../../interfaces/workspaces';
 import { CardMenu } from '../../pages/SystemManagement/components/CardMenu';
 import { UserState } from '../../stores/user';
 import {
@@ -44,7 +44,9 @@ import { ImageWithDisable } from '../ImageWithDisable';
 import { IButtonPopoverProps } from '.';
 
 export interface IGetColumnDefsOptions<Data> {
-    template: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) & { entitiesWithFiles?: ISemanticSearchResult[string] };
+    template: (IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated) & {
+        entitiesWithFiles?: ISemanticSearchResult[string];
+    };
     getRowId: (data: Data) => string;
     getEntityPropertiesData: (data: Data) => Partial<IEntity['properties']>;
     onNavigateToRow?: (entity: Data) => void;
@@ -80,7 +82,7 @@ export interface IGetColumnDefsOptions<Data> {
     actionsColumnWidth?: number;
     darkMode: boolean;
     workspace: IWorkspace;
-    childTemplatesOfParent?: IChildTemplatePopulated[];
+    childTemplatesOfParent?: IMongoChildTemplateWithConstraintsPopulated[];
     units: IGetUnits;
 }
 
@@ -135,7 +137,7 @@ export const getColumnDefs = <Data = EntityData>({
                 !template,
                 entityId,
                 currentUser?.kartoffelId,
-                currentUser?.currentUnits,
+                currentUser?.units?.[workspace._id] || [],
                 isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
             ),
         );
@@ -457,7 +459,9 @@ export const getColumnDefs = <Data = EntityData>({
                       entityTemplateMap?.get(addRelationshipReferenceButtonProps))
                     : undefined;
 
-                const getInitialProperties = (relatedTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated): Record<string, any> => {
+                const getInitialProperties = (
+                    relatedTemplate: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
+                ): Record<string, any> => {
                     const relatedProperties = relatedTemplate.properties.properties ?? {};
 
                     return Object.entries(relatedProperties).reduce(

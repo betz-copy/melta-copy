@@ -4,6 +4,9 @@ coverage/
 .turbo/
 halbana-**
 npm_token_secret.txt
+pnpm-lock.yaml
+logs/
+.vscode/
 
 # ignore all .env, except in current directory (used for docker-compose)
 # in services directories we upload to git only .env.dev, and not .env

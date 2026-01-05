@@ -1,4 +1,4 @@
-import { ActionOnFail } from '@microservices/shared';
+import { ActionOnFail } from '@packages/rule';
 import { ICategory, IEntityTemplatePopulated } from '../../src/express/externalServices/entityTemplateManager';
 import { IMongoRelationshipTemplate } from '../../src/express/relationshipTemplate/interface';
 import { IRule } from '../../src/express/rule/interfaces';

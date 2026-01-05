@@ -1,13 +1,13 @@
 import { Grid } from '@mui/material';
+import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IEntityWithDirectConnections } from '@packages/entity';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { ISemanticSearchResult } from '@packages/semantic-search';
 import i18next from 'i18next';
 import { forwardRef, useImperativeHandle, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
-import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { IEntityWithDirectConnections } from '../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import EntityCard from '../../pages/GlobalSearch/components/entityCard';
 import { getEntitiesWithDirectConnections } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
@@ -28,7 +28,7 @@ export interface CardsViewRef {
 export interface CardsViewProps {
     templateIds: string[];
     searchInput: string;
-    templates: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[];
+    templates: (IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated)[];
 }
 
 const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searchInput, templates }, ref) => {
@@ -89,7 +89,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                                     template,
                                     true,
                                     currentUserKartoffelId,
-                                    currentUser.currentUnits,
+                                    currentUser?.units?.[workspace._id] || [],
                                     isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
                                 );
 
@@ -98,7 +98,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                                     limit: infiniteScrollPageCount,
                                     textSearch: searchInput,
                                     templates: {
-                                        [template.parentTemplate._id!]: {
+                                        [(template as IMongoChildTemplateWithConstraintsPopulated).parentTemplate._id!]: {
                                             showRelationships: false,
                                             filter,
                                             childTemplateId: template._id,

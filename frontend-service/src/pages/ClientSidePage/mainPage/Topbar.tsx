@@ -1,4 +1,6 @@
 import { Divider, Grid, Typography } from '@mui/material';
+import { INotificationCountGroups } from '@packages/notification';
+import { IKartoffelUser } from '@packages/user';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
@@ -7,8 +9,6 @@ import { NotificationsButton } from '../../../common/sideBar/notifications/Notif
 import { NotificationsScreen } from '../../../common/sideBar/notifications/NotificationsScreen';
 import UserAvatar from '../../../common/UserAvatar';
 import { environment } from '../../../globals';
-import { INotificationCountGroups } from '../../../interfaces/notifications';
-import { IKartoffelUser } from '../../../interfaces/users';
 import {
     getMyClientSideNotificationGroupCountRequest,
     getMyNotificationsClientSideRequest,

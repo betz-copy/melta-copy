@@ -1,6 +1,6 @@
 import { Client } from '@elastic/elasticsearch';
 import type { DeleteRequest, ExistsRequest, IndexRequest, SearchRequest, UpdateRequest } from '@elastic/elasticsearch/lib/api/types';
-import { logger } from '@microservices/shared';
+import { logger } from '@packages/utils';
 import config from '../../config';
 
 const {

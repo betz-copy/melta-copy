@@ -1,6 +1,7 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-await-in-loop */
-import { IEntityExpanded, IMongoEntityTemplate } from '@microservices/shared';
+import { IEntityExpanded } from '@packages/entity';
+import { IMongoEntityTemplate } from '@packages/entity-template';
 import { IGetExpandedEntityBody } from '../../express/entities/interface';
 import Neo4jClient from '.';
 import { normalizeReturnedRelAndEntities } from './lib';

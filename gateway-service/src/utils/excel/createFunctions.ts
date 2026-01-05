@@ -1,13 +1,9 @@
 /* eslint-disable no-param-reassign */
-import {
-    CoordinateSystem,
-    EntityTemplateType,
-    IEntity,
-    IEntitySingleProperty,
-    IMongoEntityTemplatePopulated,
-    locationConverterToString,
-    TemplateItem,
-} from '@microservices/shared';
+
+import { EntityTemplateType, TemplateItem } from '@packages/child-template';
+import { IEntity } from '@packages/entity';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { CoordinateSystem, locationConverterToString } from '@packages/utils';
 import Excel, { Cell } from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
 import config from '../../config/index';

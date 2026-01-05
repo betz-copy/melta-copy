@@ -1,12 +1,12 @@
 import { Done as DoneIcon } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 import { Card, CardContent, Grid, Typography } from '@mui/material';
+import { INotificationPopulated, NotificationType } from '@packages/notification';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import {
-    INotificationPopulated,
     isArchiveProcessNotification,
     isDateAboutToExpireNotification,
     isDeleteProcessNotification,
@@ -16,7 +16,6 @@ import {
     isRuleBreachAlertNotification,
     isRuleBreachRequestNotification,
     isRuleBreachResponseNotification,
-    NotificationType,
 } from '../../../interfaces/notifications';
 import { notificationSeenRequest } from '../../../services/notificationService';
 import { useDarkModeStore } from '../../../stores/darkMode';

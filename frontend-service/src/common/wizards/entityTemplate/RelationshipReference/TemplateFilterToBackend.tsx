@@ -1,6 +1,6 @@
+import { FilterLogicalOperator, IFilterOfField, ISearchFilter } from '@packages/entity';
+import { IEntityTemplateMap } from '@packages/entity-template';
 import { QueryClient } from 'react-query';
-import { FilterLogicalOperator, IFilterOfField, ISearchFilter } from '../../../../interfaces/entities';
-import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { translateFieldFilter } from '../../../../pages/Graph/GraphFilterToBackend';
 import { filterModelToFilterOfTemplatePerField } from '../../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { IFilterTemplate } from '../commonInterfaces';

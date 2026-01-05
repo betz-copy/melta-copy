@@ -1,9 +1,25 @@
 /* eslint-disable no-plusplus */
+
+import { IEntity, UploadedFile } from '@packages/entity';
+import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import {
+    INotificationMetadata,
+    INotificationMetadataPopulated,
+    IRuleBreachAlertNotificationMetadata,
+    IRuleBreachAlertNotificationMetadataPopulated,
+    IRuleBreachRequestNotificationMetadata,
+    IRuleBreachRequestNotificationMetadataPopulated,
+    IRuleBreachResponseNotificationMetadata,
+    IRuleBreachResponseNotificationMetadataPopulated,
+    NotificationType,
+} from '@packages/notification';
+import { InstancesSubclassesPermissions, PermissionScope, PermissionType } from '@packages/permission';
+import { IRelationship } from '@packages/relationship';
+import { IRuleMail } from '@packages/rule';
 import {
     ActionTypes,
-    BadRequestError,
     basicFilterOperationTypes,
-    ForbiddenError,
+    FilterTypes,
     IAction,
     IActionMetadataPopulated,
     IAgGridRequest,
@@ -21,40 +37,22 @@ import {
     IDeleteRelationshipMetadataPopulated,
     IDuplicateEntityMetadata,
     IDuplicateEntityMetadataPopulated,
-    IEntity,
     IEntityForBrokenRules,
-    IKartoffelUser,
-    IMongoEntityTemplatePopulated,
-    INotificationMetadata,
-    INotificationMetadataPopulated,
-    InstancesSubclassesPermissions,
-    IRelationship,
     IRelationshipForBrokenRules,
     IRuleBreach,
     IRuleBreachAlert,
-    IRuleBreachAlertNotificationMetadata,
-    IRuleBreachAlertNotificationMetadataPopulated,
     IRuleBreachAlertPopulated,
     IRuleBreachPopulated,
     IRuleBreachRequest,
-    IRuleBreachRequestNotificationMetadata,
-    IRuleBreachRequestNotificationMetadataPopulated,
     IRuleBreachRequestPopulated,
-    IRuleBreachResponseNotificationMetadata,
-    IRuleBreachResponseNotificationMetadataPopulated,
-    IRuleMail,
     IUpdateEntityMetadata,
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadata,
     IUpdateEntityStatusMetadataPopulated,
-    IUser,
-    logger,
-    NotificationType,
-    PermissionScope,
-    PermissionType,
     RuleBreachRequestStatus,
-    UploadedFile,
-} from '@microservices/shared';
+} from '@packages/rule-breach';
+import { IKartoffelUser, IUser } from '@packages/user';
+import { BadRequestError, ForbiddenError, logger } from '@packages/utils';
 import pickBy from 'lodash.pickby';
 import config from '../../config';
 import InstancesService from '../../externalServices/instanceService';
@@ -845,7 +843,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         const updatedAgGridRequest: IAgGridRequest = { ...agGridRequest };
 
         updatedAgGridRequest.filterModel.originUserId = {
-            filterType: 'text',
+            filterType: FilterTypes.text,
             type: basicFilterOperationTypes.equals,
             filter: user.id,
         };

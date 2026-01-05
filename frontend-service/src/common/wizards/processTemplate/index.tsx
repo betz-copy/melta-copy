@@ -1,3 +1,7 @@
+import { FileDetails } from '@packages/common';
+import { IMongoProcessTemplateReviewerPopulated, IProcessTemplateMap } from '@packages/process';
+import { IUser } from '@packages/user';
+
 /* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable react/no-unstable-nested-components */
 
@@ -7,9 +11,6 @@ import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { v4 as uuid } from 'uuid';
-import fileDetails from '../../../interfaces/fileDetails';
-import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
-import { IUser } from '../../../interfaces/users';
 import { createProcessTemplateRequest, updateProcessTemplateRequest } from '../../../services/templates/processTemplatesService';
 import { ErrorToast } from '../../ErrorToast';
 import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from '../entityTemplate/CreateTemplateName'; // Import the schema
@@ -31,7 +32,7 @@ export interface ProcessTemplateFormInputProperties {
 
 export type ProcessTemplatePropertyByType = { type: 'field'; data: ProcessTemplateFormInputProperties };
 
-export interface ProcessTemplateWizardValues extends Omit<IMongoProcessTemplatePopulated, 'details' | 'steps' | 'createdAt' | 'updatedAt'> {
+export interface ProcessTemplateWizardValues extends Omit<IMongoProcessTemplateReviewerPopulated, 'details' | 'steps' | 'createdAt' | 'updatedAt'> {
     detailsProperties: ProcessTemplatePropertyByType[];
     detailsAttachmentProperties: ProcessTemplatePropertyByType[];
     steps: Array<{
@@ -43,7 +44,7 @@ export interface ProcessTemplateWizardValues extends Omit<IMongoProcessTemplateP
         attachmentProperties: ProcessTemplatePropertyByType[];
         reviewers: IUser[];
         disableAddingReviewers?: boolean;
-        icon?: fileDetails;
+        icon?: FileDetails;
     }>;
 }
 

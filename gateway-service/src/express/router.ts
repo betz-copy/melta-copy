@@ -1,4 +1,4 @@
-import { wrapMiddleware } from '@microservices/shared';
+import { wrapMiddleware } from '@packages/utils';
 import { Router } from 'express';
 import passport from 'passport';
 import config from '../config';

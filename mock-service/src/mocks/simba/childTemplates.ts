@@ -1,4 +1,4 @@
-import { IChildTemplate, ViewType } from '@microservices/shared';
+import { IChildTemplate, ViewType } from '@packages/child-template';
 
 const driverChildTemplate: IChildTemplate = {
     name: 'driver_view',

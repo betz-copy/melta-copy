@@ -1,14 +1,10 @@
 /* eslint-disable no-await-in-loop */
 
-import {
-    ActionsLog,
-    BadRequestError,
-    IActivityLog,
-    IBrokenRule,
-    IMongoRelationshipTemplate,
-    IRelationship,
-    NotFoundError,
-} from '@microservices/shared';
+import { ActionsLog, IActivityLog } from '@packages/activity-log';
+import { IRelationship } from '@packages/relationship';
+import { IMongoRelationshipTemplate } from '@packages/relationship-template';
+import { IBrokenRule } from '@packages/rule-breach';
+import { BadRequestError, NotFoundError } from '@packages/utils';
 import { Transaction } from 'neo4j-driver';
 import config from '../../config';
 import ActivityLogProducer from '../../externalServices/activityLog/producer';

@@ -1,5 +1,6 @@
 /* eslint-disable import/prefer-default-export */
-import { IChildTemplate, IMongoChildTemplate, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
+import { IChildTemplate, IMongoChildTemplate } from '@packages/child-template';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import config from '../config';
 import createAxiosInstance from '../utils/axios';
 

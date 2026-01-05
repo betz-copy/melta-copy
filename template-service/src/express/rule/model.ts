@@ -1,4 +1,4 @@
-import { ActionOnFail } from '@microservices/shared';
+import { ActionOnFail } from '@packages/rule';
 import mongoose from 'mongoose';
 import { transformResultDocsObjectIdKeysToString } from '../../utils/mongoose';
 

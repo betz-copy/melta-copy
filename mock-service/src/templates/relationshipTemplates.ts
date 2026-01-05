@@ -1,9 +1,6 @@
-import {
-    IMongoEntityTemplate,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IMongoRelationshipTemplate,
-    IRelationshipTemplate,
-} from '@microservices/shared';
+
+import { IMongoEntityTemplate, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoRelationshipTemplate, IRelationshipTemplate } from '@packages/relationship-template';
 import config from '../config';
 import createAxiosInstance from '../utils/axios';
 

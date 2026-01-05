@@ -1,22 +1,22 @@
 import { Grid, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { FileDetails } from '@packages/common';
 import i18next from 'i18next';
 import React, { useState } from 'react';
-import fileDetails from '../../interfaces/fileDetails';
 import IconPicker from './IconPicker';
 import FileInput from './ImageFileInput';
 
 type InputSelectType = 'chooseFile' | 'chooseFromOptions';
 interface ImagePickerProps {
-    image?: fileDetails;
-    onPick: (image: fileDetails) => void;
+    image?: FileDetails;
+    onPick: (image: FileDetails) => void;
     onDelete: () => void;
     defaultInputType?: InputSelectType;
 }
 
 const ImagePicker: React.FC<ImagePickerProps> = ({ image, onPick, onDelete, defaultInputType }) => {
     const [inputType, setInputType] = useState(defaultInputType);
-    const [fileInputValue, setFileInputValue] = useState<fileDetails | undefined>(image);
-    const [iconPickerValue, setIconPickerValue] = useState<fileDetails>();
+    const [fileInputValue, setFileInputValue] = useState<FileDetails | undefined>(image);
+    const [iconPickerValue, setIconPickerValue] = useState<FileDetails>();
 
     const onToggle = (_event: React.MouseEvent<HTMLElement>, selected: InputSelectType | null) => {
         if (!selected) return;

@@ -1,4 +1,4 @@
-import { UploadedFile } from '@microservices/shared';
+import { UploadedFile } from '@packages/entity';
 
 declare global {
     namespace Express {

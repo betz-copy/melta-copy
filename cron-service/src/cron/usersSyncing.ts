@@ -1,6 +1,9 @@
 /* eslint-disable import/prefer-default-export */
 
-import { IEntity, IMongoEntityTemplatePopulated, logger, WorkspaceTypes } from '@microservices/shared';
+import { IEntity } from '@packages/entity';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { logger } from '@packages/utils';
+import { WorkspaceTypes } from '@packages/workspace';
 import { keyBy } from 'lodash';
 import schedule from 'node-schedule';
 import config from '../config';
@@ -12,6 +15,11 @@ import WorkspaceManager from '../workspaces/manager';
 
 const { userFieldsSync } = config;
 
+// Helper to get typed entries from Record<string, IEntitySingleProperty>
+const getTypedPropertyEntries = (properties: Record<string, IEntitySingleProperty>) => {
+    return Object.entries(properties) as [string, IEntitySingleProperty][];
+};
+
 const checkForEntityToUpdate = (
     entity: IEntity,
     entityTemplate: IMongoEntityTemplatePopulated,
@@ -20,14 +28,14 @@ const checkForEntityToUpdate = (
     const userKeysKartoffelIdsMap: Record<string, string> = {};
     const propertiesToUpdate = {};
 
-    Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
+    getTypedPropertyEntries(entityTemplate.properties.properties).forEach(([key, value]) => {
         const fieldValue = entity.properties[key];
-        if (value.format === 'user' && fieldValue) userKeysKartoffelIdsMap[key] = JSON.parse(fieldValue)._id;
+        if (value.format === 'user' && fieldValue) userKeysKartoffelIdsMap[key] = (JSON.parse(fieldValue) as { _id: string })._id;
     });
 
     if (Object.keys(userKeysKartoffelIdsMap).length === 0) return {};
 
-    Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
+    getTypedPropertyEntries(entityTemplate.properties.properties).forEach(([key, value]) => {
         if (value.format === 'kartoffelUserField') {
             const kartoffelId = userKeysKartoffelIdsMap[value.expandedUserField?.relatedUserField || ''];
 
@@ -98,10 +106,10 @@ export const updateKartoffelFields = async () => {
 
                         entitiesIds.push(properties._id);
 
-                        Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
+                        getTypedPropertyEntries(entityTemplate.properties.properties).forEach(([key, value]) => {
                             const fieldValue = properties[key];
 
-                            if (value.format === 'user' && fieldValue) usersIds.add(JSON.parse(fieldValue)._id);
+                            if (value.format === 'user' && fieldValue) usersIds.add((JSON.parse(fieldValue) as { _id: string })._id);
                         });
                     });
 

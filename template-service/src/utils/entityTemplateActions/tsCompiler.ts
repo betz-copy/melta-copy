@@ -1,6 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 
-import { BadRequestError } from '@microservices/shared';
+import { BadRequestError } from '@packages/utils';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as ts from 'typescript-actions';

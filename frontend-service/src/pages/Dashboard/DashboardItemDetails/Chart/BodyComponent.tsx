@@ -1,12 +1,12 @@
 import { Grid } from '@mui/material';
+import { IChildTemplateMap } from '@packages/child-template';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import { StepComponentProps } from '../../../../common/wizards';
 import { EntitiesTable } from '../../../../common/wizards/excel/excelSteps/EntitiesTable';
-import { IChildTemplateMap, IChildTemplatePopulated } from '../../../../interfaces/childTemplates';
 import { ChartForm } from '../../../../interfaces/dashboard';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { useDebouncedFilter } from '../../../../utils/dashboard/useDebouncedFilter';
 import { ChartGenerator } from '../../../Charts/chartGenerator.tsx';
 
@@ -14,7 +14,7 @@ export const getRelevantEntityTemplate = (
     entityTemplates: IEntityTemplateMap,
     templateId: string,
     childTemplateId?: string,
-): IChildTemplatePopulated | IMongoEntityTemplatePopulated => {
+): IMongoEntityTemplateWithConstraintsPopulated => {
     const queryClient = useQueryClient();
     const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 

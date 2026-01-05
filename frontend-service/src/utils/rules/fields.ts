@@ -1,13 +1,12 @@
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '@packages/relationship-template';
+import { ActionOnFail, IVariable } from '@packages/rule';
+import { ICurrentUser } from '@packages/user';
 import { Field, Fields, ImmutableTree } from '@react-awesome-query-builder/mui';
 import i18next from 'i18next';
 import lodashFindLast from 'lodash.findlast';
 import lodashIsEqual from 'lodash.isequal';
 import { environment } from '../../globals';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
-import { ActionOnFail } from '../../interfaces/rules';
-import { IVariable } from '../../interfaces/rules/formula/argument';
-import { ICurrentUser } from '../../interfaces/users';
 import { getAllAllowedEntities, getAllAllowedRelationships } from '../permissions/templatePermissions';
 import {
     addDefaultFieldsToTemplate,
@@ -22,7 +21,7 @@ const { formulaGetTodayVarName } = environment;
 const formatField = (
     key: string,
     value: IEntitySingleProperty,
-    entityTemplate: IMongoEntityTemplatePopulated,
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated,
     fieldEntries: [string, Field][],
     options: { hideForCompare?: boolean },
     initials?: { key: string; label: string },
@@ -75,7 +74,7 @@ const formatField = (
 };
 
 const entityTemplateToFieldsConfig = (
-    entityTemplate: IMongoEntityTemplatePopulated,
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated,
     entityTemplates: IEntityTemplateMap,
     options: { hideForCompare?: boolean },
     initials?: { key: string; label: string },
@@ -99,11 +98,11 @@ const entityTemplateToFieldsConfig = (
 };
 
 const getRelationshipFieldsConfigOfRule = (
-    entityTemplate: IMongoEntityTemplatePopulated,
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated,
     entityTemplates: IEntityTemplateMap,
     connectedTemplatesWithRelationship: {
         relationshipTemplate: IMongoRelationshipTemplatePopulated;
-        otherEntityTemplate: IMongoEntityTemplatePopulated;
+        otherEntityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
     }[],
     aggregationsContext: { existingAggregationVariables: Required<IVariable>[]; existingFieldsInUpperScopes: Record<string, Field> },
     existingAggregationVariablesInTree: Required<IVariable>[],

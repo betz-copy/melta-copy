@@ -1,12 +1,12 @@
 import { Dialog, useTheme } from '@mui/material';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { ActionTypes } from '@packages/rule-breach';
 import i18next from 'i18next';
 import React, { CSSProperties, ReactNode, useState } from 'react';
 import { toast } from 'react-toastify';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
-import { IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
-import { IEntity } from '../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useDraftIdStore } from '../../../stores/drafts';
 import { EntityWizardValues, emptyEntityTemplate } from '../../dialogs/entity';
@@ -26,7 +26,9 @@ const AddEntityButton: React.FC<{
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
     chooseMode?: IChooseTemplateMode;
     parentId?: string;
-    getInitialProperties?: (newTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => Record<string, any>;
+    getInitialProperties?: (
+        newTemplate: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
+    ) => Record<string, any>;
     children?: ReactNode;
 }> = ({
     style,

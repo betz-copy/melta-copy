@@ -1,13 +1,14 @@
 import { Add, Clear } from '@mui/icons-material';
 import { Autocomplete, Button, Grid, IconButton, TextField, Typography } from '@mui/material';
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { FilterTypes } from '@packages/rule-breach';
 import { FormikErrors, FormikTouched, getIn } from 'formik';
 import i18next from 'i18next';
 import { isEqual } from 'lodash';
 import React, { useMemo, useState } from 'react';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { getPropertyType } from '../../../../services/templates/entityTemplatesService';
 import { handleRemoveFilter, initializedFilterField, renderFilterInput } from '../../../FilterComponent';
-import { CommonFormInputProperties, FilterType, IAGGridFilter, IFilterTemplate, PropertyItem } from '../commonInterfaces';
+import { CommonFormInputProperties, FilterType, IAgGridFilter, IFilterTemplate, PropertyItem } from '../commonInterfaces';
 
 export interface FieldOption {
     option: string;
@@ -19,7 +20,7 @@ interface FilterEntitiesByCriteriaProps {
     value: CommonFormInputProperties;
     values: Record<string, PropertyItem[]>;
     setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
-    selectedEntityTemplate: IMongoEntityTemplatePopulated | undefined;
+    selectedEntityTemplate: IMongoEntityTemplateWithConstraintsPopulated | undefined;
     initialValue: CommonFormInputProperties | undefined;
     touched?: FormikTouched<CommonFormInputProperties>;
     errors?: FormikErrors<CommonFormInputProperties>;
@@ -46,7 +47,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
         const { required, properties } = selectedEntityTemplate.properties;
 
         return Object.entries(properties)
-            .filter(([key, prop]) => required.includes(key) && !notIncludedFormats.includes(prop.format ?? ''))
+            .filter(([key, prop]) => required?.includes(key) && !notIncludedFormats.includes(prop.format ?? ''))
             .map(([key, prop]) => ({
                 key,
                 title: prop.title,
@@ -55,7 +56,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
 
     const filterInitialValues: IFilterTemplate = {
         filterProperty: '',
-        filterField: {} as IAGGridFilter,
+        filterField: {} as IAgGridFilter,
     };
 
     const handleAddFilter = () => {
@@ -129,16 +130,16 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                                 }));
                             });
 
-                        const getFilterType = (): IAGGridFilter['filterType'] => {
+                        const getFilterType = (): IAgGridFilter['filterType'] => {
                             switch (selectedProperty.type) {
                                 case 'string':
                                 case 'boolean':
-                                    if (['date-time', 'date'].includes(selectedProperty.format ?? '')) return 'date';
-                                    return 'text';
+                                    if (['date-time', 'date'].includes(selectedProperty.format ?? '')) return FilterTypes.date;
+                                    return FilterTypes.text;
                                 case 'array':
-                                    return 'set';
+                                    return FilterTypes.set;
                                 default:
-                                    return selectedProperty.type;
+                                    return selectedProperty.type as FilterTypes;
                             }
                         };
 

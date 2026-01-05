@@ -1,5 +1,6 @@
 import { Print as PrintIcon } from '@mui/icons-material';
 import { IconButton, ThemeProvider } from '@mui/material';
+import { IMongoProcessInstanceReviewerPopulated, IMongoProcessTemplateReviewerPopulated } from '@packages/process';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useRef, useState } from 'react';
@@ -10,17 +11,15 @@ import { MenuButton } from '../../../common/MenuButton';
 import PrintOptionsDialog, { PrintType } from '../../../common/print/PrintOptionsDialog';
 import { ProcessDetailsValues } from '../../../common/wizards/processInstance/ProcessDetails';
 import { IFile } from '../../../interfaces/preview';
-import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
-import { IMongoProcessTemplatePopulated } from '../../../interfaces/processes/processTemplate';
 import { lightTheme } from '../../../theme';
 import '../../Entity/components/print/print.css';
 import { ComponentToPrint } from './ComponentToPrint';
 
 const Print: React.FC<{
-    processTemplate: IMongoProcessTemplatePopulated;
-    processInstance: IMongoProcessInstancePopulated;
-    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
-    setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstancePopulated>>;
+    processTemplate: IMongoProcessTemplateReviewerPopulated;
+    processInstance: IMongoProcessInstanceReviewerPopulated;
+    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstanceReviewerPopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
+    setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstanceReviewerPopulated>>;
     setIsProcessChanged: React.Dispatch<React.SetStateAction<boolean>>;
     isProcessCard?: boolean;
 }> = ({ processTemplate, processInstance, mutateAsync, setCurrProcessInstance, setIsProcessChanged, isProcessCard }) => {

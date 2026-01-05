@@ -1,0 +1,24 @@
+{
+    "name": "@packages/unit",
+    "version": "1.0.0",
+    "description": "unit package",
+    "type": "commonjs",
+    "main": "dist/index.js",
+    "module": "dist/index.mjs",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.mjs",
+            "require": "./dist/index.js"
+        }
+    },
+    "scripts": {
+        "build": "tsup",
+        "clean": "rimraf dist"
+    },
+    "devDependencies": {
+        "tsup": "^8.5.1",
+        "typescript": "^5.6.2"
+    }
+}

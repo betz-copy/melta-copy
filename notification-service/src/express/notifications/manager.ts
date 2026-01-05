@@ -1,11 +1,12 @@
+
 import {
-    DefaultManagerMongo,
     IBasicNotificationQuery,
     IDateAboutToExpireNotificationMetadata,
     INotification,
     INotificationCountGroups,
     INotificationGroupCountDetails,
-} from '@microservices/shared';
+} from '@packages/notification';
+import { DefaultManagerMongo } from '@packages/utils';
 import { FilterQuery } from 'mongoose';
 import config from '../../config';
 import { transaction, UPDATE_CREATED_AT } from '../../utils/mongo';

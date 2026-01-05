@@ -5,7 +5,7 @@
     "main": "",
     "scripts": {
         "start": "node --async-stack-traces ./dist/index.js",
-        "dev": "npm run build && npm start",
+        "dev": "pnpm build && pnpm start",
         "build": "tsc",
         "build:watch": "tsc --watch",
         "clean": "rimraf dist"
@@ -13,10 +13,13 @@
     "author": "Alexander Gurevich",
     "license": "ISC",
     "dependencies": {
-        "@microservices/shared": "^1.0.0",
+        "@packages/chart": "workspace:*",
+        "@packages/dashboard": "workspace:*",
+        "@packages/iframe": "workspace:*",
+        "@packages/utils": "workspace:*",
         "glob": "^11.0.0",
-        "typescript-actions": "npm:typescript@^5.5.4",
-        "lodash.groupby": "^4.6.0"
+        "lodash.groupby": "^4.6.0",
+        "typescript-actions": "npm:typescript@^5.5.4"
     },
     "devDependencies": {
         "@types/lodash.groupby": "^4.6.9"

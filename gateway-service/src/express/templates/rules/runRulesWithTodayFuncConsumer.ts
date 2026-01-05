@@ -1,4 +1,5 @@
-import { ActionTypes, IBrokenRule, logger } from '@microservices/shared';
+import { ActionTypes, IBrokenRule } from '@packages/rule-breach';
+import { logger } from '@packages/utils';
 import { ConsumerMessage } from 'menashmq';
 import config from '../../../config';
 import InstancesService from '../../../externalServices/instanceService';

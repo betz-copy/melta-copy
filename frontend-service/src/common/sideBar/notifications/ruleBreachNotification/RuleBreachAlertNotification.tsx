@@ -1,8 +1,8 @@
 import { Grid, Typography } from '@mui/material';
+import { IRuleBreachAlertNotificationMetadataPopulated, NotificationType } from '@packages/notification';
 import i18next from 'i18next';
 import React from 'react';
 import { environment } from '../../../../globals';
-import { IRuleBreachAlertNotificationMetadataPopulated, NotificationType } from '../../../../interfaces/notifications';
 import { NotificationColor } from '../../../notificationColor';
 import RuleBreachInfo from '../../../ruleBreanchInfo/RuleBreachInfo';
 

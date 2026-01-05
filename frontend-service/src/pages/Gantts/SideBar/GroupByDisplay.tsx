@@ -1,4 +1,6 @@
 import { Grid, Typography } from '@mui/material';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IGantt, IGanttGroupBy } from '@packages/gantt';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import lodashIsEqual from 'lodash.isequal';
@@ -6,15 +8,13 @@ import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';
 import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { IBasicGantt, IGanttGroupBy } from '../../../interfaces/gantts';
 import { filteredMap } from '../../../utils/filteredMap';
 import { EntityTemplateDisplay } from '../GanttItemDisplay/EntityTemplateDisplay';
 import { RemoveFromArrayButton } from '../GanttItemDisplay/GanttItemEdit/RemoveFromArrayButton';
 
 interface GroupByDisplayProps {
     groupBy: IGanttGroupBy;
-    formik: FormikProps<IBasicGantt>;
+    formik: FormikProps<IGantt>;
     expanded?: boolean;
     edit?: boolean;
 }
@@ -23,7 +23,7 @@ export const GroupByDisplay: React.FC<GroupByDisplayProps> = ({ groupBy, formik,
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const groupByEntityTemplate = entityTemplates.get(groupBy.entityTemplateId);
+    const groupByEntityTemplate = entityTemplates.get(groupBy.entityTemplateId) as IMongoEntityTemplateWithConstraintsPopulated;
 
     const uniqueGroupByEntityTemplateProperties = useMemo(
         () =>

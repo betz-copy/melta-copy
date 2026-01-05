@@ -1,13 +1,13 @@
 import { Grid } from '@mui/material';
+import { IEntityTemplateMap } from '@packages/entity-template';
+import { IGantt, IGanttItem } from '@packages/gantt';
+import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import { FieldArray, FormikProps } from 'formik';
 import i18next from 'i18next';
 import { pickBy } from 'lodash';
 import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';
 import { FormikAutoComplete } from '../../../../common/inputs/FormikAutoComplete';
-import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
-import { IBasicGantt, IGanttItem } from '../../../../interfaces/gantts';
-import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import { getGanttItemEditDetails, getRelationshipString } from '../../../../utils/gantts';
 import { EditConnectedEntityTemplates } from './EditConnectedEntityTemplates.tsx';
@@ -16,7 +16,7 @@ import { RemoveFromArrayButton } from './RemoveFromArrayButton';
 interface IGanttItemEditProps {
     ganttItem: IGanttItem;
     index: number;
-    formik: FormikProps<IBasicGantt>;
+    formik: FormikProps<IGantt>;
 }
 
 export const GanttItemEdit: React.FC<IGanttItemEditProps> = ({ ganttItem, index, formik }) => {

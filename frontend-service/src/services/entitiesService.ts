@@ -1,14 +1,7 @@
 /* eslint-disable no-param-reassign */
-import { mapValues } from 'lodash';
-import axios from '../axios';
-import { EntityWizardValues } from '../common/dialogs/entity';
-import { IUpdateMultipleEntitiesResponse } from '../common/EntitiesPage/MultiSelectStatusBar';
-import { IExternalId } from '../common/EntitiesTableOfTemplate';
-import urlToFile from '../common/fileConversions';
-import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
-import { environment } from '../globals';
-import { IAxisField } from '../interfaces/charts';
-import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
+
+import { IAxisField } from '@packages/chart';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import {
     ICountSearchResult,
     IDeleteEntityBody,
@@ -24,10 +17,18 @@ import {
     ISearchEntitiesOfTemplateBody,
     ISearchFilter,
     ISearchResult,
-} from '../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+} from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IBrokenRule, IRuleBreach } from '@packages/rule-breach';
+import { mapValues } from 'lodash';
+import axios from '../axios';
+import { EntityWizardValues } from '../common/dialogs/entity';
+import { IUpdateMultipleEntitiesResponse } from '../common/EntitiesPage/MultiSelectStatusBar';
+import { IExternalId } from '../common/EntitiesTableOfTemplate';
+import urlToFile from '../common/fileConversions';
+import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
+import { environment } from '../globals';
 import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
-import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
 import { combineFilters } from '../utils/filters';
 import { locationConverterToString } from '../utils/map/convert';
@@ -42,7 +43,7 @@ export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
 };
 
 export const loadEntitiesRequest = async (
-    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+    template: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
     files?: Record<string, File>,
     insertBrokenEntities?: IEntityWithIgnoredRules[],
 ): Promise<ITablesResults> => {
@@ -111,7 +112,7 @@ export const getChangedEntitiesFromExcelRequest = async (
 };
 
 export const editManyEntitiesByExcelRequest = async (
-    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+    template: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
     entitiesToUpdate: IEntityWithIgnoredRules[],
 ): Promise<ITablesResults> => {
     const formData = new FormData();

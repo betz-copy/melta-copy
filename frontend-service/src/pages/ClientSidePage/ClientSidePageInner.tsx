@@ -1,13 +1,13 @@
 import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { Box, debounce, Grid, useScrollTrigger } from '@mui/material';
+import { IChildTemplateMap } from '@packages/child-template';
+import { IKartoffelUser } from '@packages/user';
 import i18next from 'i18next';
 import React, { lazy, Suspense, useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { Route, Switch, useLocation, useRoute } from 'wouter';
 import { LoadingAnimation } from '../../common/LoadingAnimation';
 import { environment } from '../../globals';
-import { IChildTemplateMapPopulated } from '../../interfaces/childTemplates';
-import { IKartoffelUser } from '../../interfaces/users';
 import { MainBox } from '../../Main.styled';
 import ScrollToTop from '../../ScrollToTop';
 import { AuthService } from '../../services/authService';
@@ -33,7 +33,7 @@ const ClientSidePageInner: React.FC = () => {
     const [location, navigate] = useLocation();
     const [entityMatch, entityParams] = useRoute('/entity/:entityId');
 
-    const childTemplates = queryClient.getQueryData<IChildTemplateMapPopulated>('getClientSideChildTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getClientSideChildTemplates')!;
     const usersInfoChildTemplate = childTemplates.get(usersInfoChildTemplateId);
 
     const {

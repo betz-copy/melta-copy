@@ -1,4 +1,4 @@
-import { ActionTypes } from '@microservices/shared';
+import { ActionTypes } from '@packages/rule-breach';
 import * as joi from 'joi';
 import { validateActionMetadata } from '../validateActionMetadata';
 import { mongoIdSchema } from '.';

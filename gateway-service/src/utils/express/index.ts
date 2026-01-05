@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 
-import { dataLogger, FunctionKey } from '@microservices/shared';
+import { FunctionKey } from '@packages/common';
+import { dataLogger } from '@packages/utils';
 import { NextFunction, Request, Response } from 'express';
 import { get } from 'lodash';
 import config from '../../config';
@@ -68,8 +69,6 @@ export const wrapController = <ExtendedRequest extends Request<any, any, any, an
         });
     };
 };
-
-export type RequestWithQuery<Query> = Request<any, any, any, Query>;
 
 export const getWorkspaceId = async (req: Request) => {
     const workspaceId = req.headers[workspaceIdHeaderName];

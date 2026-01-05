@@ -1,4 +1,5 @@
-import { PermissionScope, ServiceError } from '@microservices/shared';
+import { PermissionScope } from '@packages/permission';
+import { ServiceError } from '@packages/utils';
 import { StatusCodes } from 'http-status-codes';
 
 export class InvalidWorkspaceHeaderError extends ServiceError {

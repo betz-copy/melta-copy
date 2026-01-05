@@ -1,7 +1,7 @@
 import { Divider, Grid, Typography } from '@mui/material';
+import { IUserPopulated } from '@packages/user';
 import i18next from 'i18next';
 import React from 'react';
-import { IUserPopulated } from '../../../interfaces/users';
 import { useWorkspaceStore } from '../../../stores/workspace';
 
 const UserDetails: React.FC<{ existingUser: IUserPopulated; editProfile: boolean }> = ({ existingUser, editProfile }) => {

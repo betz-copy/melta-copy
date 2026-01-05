@@ -1,4 +1,4 @@
-import { ServiceError } from '@microservices/shared';
+import { ServiceError } from '@packages/utils';
 import * as archiver from 'archiver';
 import express from 'express';
 import { StatusCodes } from 'http-status-codes';

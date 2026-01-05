@@ -1,4 +1,5 @@
-import { FileTypes, logger } from '@microservices/shared';
+import { FileTypes } from '@packages/semantic-search';
+import { logger } from '@packages/utils';
 import http from 'http';
 import mammoth from 'mammoth';
 import { Client } from 'minio';

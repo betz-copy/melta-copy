@@ -1,4 +1,5 @@
-import { DefaultController, MongoDashboardItem } from '@microservices/shared';
+import { MongoDashboardItem } from '@packages/dashboard';
+import { DefaultController } from '@packages/utils';
 import { Request, Response } from 'express';
 import DashboardManager from './manager';
 

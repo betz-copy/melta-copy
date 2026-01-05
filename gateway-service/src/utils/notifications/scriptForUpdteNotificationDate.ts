@@ -1,4 +1,6 @@
-import { IEntityTemplate, IMongoEntityTemplatePopulated, logger, ServiceError, WorkspaceTypes } from '@microservices/shared';
+import { IEntityTemplate, IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { logger, ServiceError } from '@packages/utils';
+import { WorkspaceTypes } from '@packages/workspace';
 import WorkspaceManager from '../../express/workspaces/manager';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 

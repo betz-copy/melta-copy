@@ -1,4 +1,5 @@
-import { DefaultController, IRuleBreachAlert } from '@microservices/shared';
+import { IRuleBreachAlert } from '@packages/rule-breach';
+import { DefaultController } from '@packages/utils';
 import { Request, Response } from 'express';
 import RuleBreachAlertsManager from './manager';
 

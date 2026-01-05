@@ -5,7 +5,7 @@
     "main": "",
     "scripts": {
         "start": "node --async-stack-traces ./dist/index.js",
-        "dev": "npm run build && npm start",
+        "dev": "pnpm build && pnpm start",
         "test": "jest --coverage",
         "build": "tsc",
         "build:watch": "tsc --watch",
@@ -14,7 +14,9 @@
     "author": "Alexander Gurevich",
     "license": "ISC",
     "dependencies": {
-        "@microservices/shared": "^1.0.0",
+        "@packages/entity-template": "workspace:*",
+        "@packages/global-search": "workspace:*",
+        "@packages/utils": "workspace:*",
         "menashmq": "^0.1.6",
         "neo4j-driver": "^5.23.0",
         "ts-retry-promise": "^0.8.1"

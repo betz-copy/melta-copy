@@ -1,12 +1,12 @@
 import { Close as CloseIcon } from '@mui/icons-material';
 import { Box, Divider, Grid, IconButton, Typography, useTheme } from '@mui/material';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { FormikComputedProps, FormikHelpers, FormikState } from 'formik';
 import i18next from 'i18next';
 import { DebouncedFunc, isEqual } from 'lodash';
 import React, { Dispatch, SetStateAction, useEffect, useMemo } from 'react';
 import { IExternalErrors } from '../../../../interfaces/CreateOrEditEntityDialog';
-import { IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import { filterFieldsFromPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
@@ -28,7 +28,7 @@ const EditProps: React.FC<{
     setInitialValuePropsToFilter: Dispatch<SetStateAction<Record<string, any>>>;
     initialValuePropsToFilter: Record<string, any>;
     isMultipleSelection: boolean;
-    entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated;
     wasDirty: boolean;
     setWasDirty: Dispatch<React.SetStateAction<boolean>>;
     externalErrors: IExternalErrors;
@@ -47,7 +47,9 @@ const EditProps: React.FC<{
     showTitle?: boolean;
     chooseMode?: IChooseTemplateMode;
     parentId?: string;
-    getInitialProperties?: (newTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => Record<string, any>;
+    getInitialProperties?: (
+        newTemplate: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
+    ) => Record<string, any>;
 }> = ({
     setFieldValue,
     values,
@@ -81,7 +83,13 @@ const EditProps: React.FC<{
 
     const { templateFilesProperties, templateFileKeys, requiredFilesNames } = getEntityTemplateFilesFieldsInfo(values.template || entityTemplate);
     const isPropertiesFirst = (values.template?.propertiesTypeOrder ?? [])[0] === 'properties';
-    const schema = filterFieldsFromPropertiesSchema(values.template?.properties, multipleSelectionProps?.selectedFields);
+
+    const templatePropertiesWithRequired = {
+        ...values.template?.properties,
+        required: (values.template.properties as { required?: string[] }).required ?? [],
+    };
+
+    const schema = filterFieldsFromPropertiesSchema(templatePropertiesWithRequired, multipleSelectionProps?.selectedFields);
 
     useEffect(() => {
         setInitialValuePropsToFilter({ ...initialValues.properties });
@@ -132,7 +140,10 @@ const EditProps: React.FC<{
 
     if (isMultipleSelection) {
         const uniqueFields: string[] = [];
-        values.template.uniqueConstraints.forEach((groupField) => uniqueFields.push(...groupField.properties));
+        (values.template as IMongoEntityTemplateWithConstraintsPopulated).uniqueConstraints.forEach((groupField) =>
+            uniqueFields.push(...groupField.properties),
+        );
+
         uniqueFields.forEach((uniqueField) => {
             schema.properties[uniqueField].readOnly = true;
         });
