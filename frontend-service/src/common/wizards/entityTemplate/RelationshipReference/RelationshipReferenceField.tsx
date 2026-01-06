@@ -38,9 +38,8 @@ const RelationshipReferenceField: React.FC<FieldEditCardProps> = ({
     const errorRelationshipReference = errors?.relationshipReference as FormikErrors<IRelationshipReference> | undefined;
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const selectedTemplate =
-        (entityTemplates.get(value.relationshipReference?.relatedTemplateId || '') as IMongoEntityTemplateWithConstraintsPopulated) ?? null;
-
+    const selectedTemplate = entityTemplates.get(value.relationshipReference?.relatedTemplateId || '') ?? null;
+    
     const fixedRelatedTemplateFieldOptions = Object.entries(selectedTemplate?.properties?.properties || {})
         .filter(
             ([key, _property]) =>

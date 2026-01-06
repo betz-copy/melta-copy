@@ -119,8 +119,8 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
                 {Object.entries(entityTemplate.properties.properties).map(([fieldName, property]) => {
                     const value = values.properties.properties[fieldName] ?? {};
 
-                    const isRequired = (entityTemplate as IMongoEntityTemplateWithConstraintsPopulated).properties.required.includes(fieldName);
-
+                    const isRequired = entityTemplate.properties.required.includes(fieldName);
+                    
                     const isSerialNumberField = !!property?.serialCurrent;
                     const isRelationshipRefField = property?.format === 'relationshipReference';
                     const isFilterByUser = property?.format === 'user' && values.filterByCurrentUserField === fieldName;

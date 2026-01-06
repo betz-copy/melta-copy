@@ -2,7 +2,7 @@
 /* eslint-disable no-param-reassign */
 
 import { ICategory, IMongoCategory } from '@packages/category';
-import { IAxisField, IChartType, IColumnOrLineMetaData, INUmberMetaData, IPieMetaData } from '@packages/chart';
+import { IAxisField, IChartType, IColumnOrLineMetaData, INumberMetaData, IPieMetaData } from '@packages/chart';
 import { IChildTemplate, IChildTemplatePopulated, IChildTemplateWithConstraintsPopulated, isChildTemplate } from '@packages/child-template';
 import { DashboardItemType, MongoBaseFields, TableItem } from '@packages/dashboard';
 import { IConstraintsOfTemplate, IEntity, IUniqueConstraintOfTemplate, UploadedFile } from '@packages/entity';
@@ -821,7 +821,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                 }
 
                 case IChartType.Number: {
-                    const { accumulator } = chart.metaData as INUmberMetaData;
+                    const { accumulator } = chart.metaData as INumberMetaData;
                     foundProperty = isPropertyUsed(accumulator);
                     break;
                 }

@@ -1,5 +1,5 @@
 import { Grid } from '@mui/material';
-import { IChildTemplateMap } from '@packages/child-template';
+import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React from 'react';
@@ -14,7 +14,7 @@ export const getRelevantEntityTemplate = (
     entityTemplates: IEntityTemplateMap,
     templateId: string,
     childTemplateId?: string,
-): IMongoEntityTemplateWithConstraintsPopulated => {
+): IMongoChildTemplateWithConstraintsPopulated | IMongoEntityTemplateWithConstraintsPopulated => {
     const queryClient = useQueryClient();
     const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 

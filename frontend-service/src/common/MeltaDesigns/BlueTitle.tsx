@@ -18,7 +18,7 @@ const BlueTitle: React.FC<BlueTitleProps> = ({ title, component, variant, style 
                 fontWeight: '700',
                 ...style,
             }}
-            component={component as any}
+            component={component}
             variant={variant}
         >
             {title}

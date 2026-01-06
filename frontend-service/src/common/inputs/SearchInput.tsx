@@ -87,7 +87,7 @@ const SearchInput: React.FC<{
                                     backgroundColor: theme.palette.primary.main,
                                 }}
                             />
-                            <>{endAdornmentChildren}</>
+                            {endAdornmentChildren}
                         </InputAdornment>
                     ),
                     startAdornment: <InputAdornment position="start" />,

@@ -2,7 +2,7 @@ import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-materia
 import { Card, CardContent, Grid, useTheme } from '@mui/material';
 import { IChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IEntity } from '@packages/entity';
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import {  IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React from 'react';
 import { Link } from 'wouter';
@@ -33,6 +33,7 @@ const UserInfoCard: React.FC<IUserInfoCardProps> = ({
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
 
+    // TODO: CHECK IF THIS IS CORRECT
     const usersInfoTemplate = usersInfoChildTemplate.parentTemplate as unknown as IMongoEntityTemplateWithConstraintsPopulated;
     const entityTemplateColor = getEntityTemplateColor(usersInfoTemplate);
     const { height, width } = workspace!.metadata!.iconSize!;

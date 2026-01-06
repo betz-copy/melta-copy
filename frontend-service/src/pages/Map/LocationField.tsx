@@ -8,7 +8,6 @@ import { useQueryClient } from 'react-query';
 import { CesiumComponentRef, CesiumMovementEvent, Viewer } from 'resium';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
-import { MapItemType } from '../../interfaces/map';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import {
@@ -22,6 +21,7 @@ import {
 import { convertWGS94ToECEF, isValidWGS84 } from '../../utils/map/convert';
 import { BaseLayers } from './BaseLayers';
 import { MeltaCoordinate, MeltaPolygon } from './LocationEntities';
+import { MapItemType } from '@packages/utils';
 
 type Props = {
     defaultLocation?: string;

@@ -6,6 +6,7 @@ import {
     IAgGridNumberFilter,
     IAgGridSetFilter,
     IAgGridTextFilter,
+    isRelativeDateFilter,
     numberFilterOperationTypes,
     relativeDateFilters,
     textFilterOperationTypes,
@@ -83,7 +84,7 @@ export const handleDateFilter = (
         const [dateFromVal, dateTo] = filterKeys;
         const dateFrom = isFieldType ? dateFromVal.slice(fieldFilterPrefix.length) : dateFromVal;
 
-        if (Object.values(relativeDateFilters).includes(fieldFilter[dateFrom] as relativeDateFilters)) {
+        if (isRelativeDateFilter(fieldFilter[dateFrom])) {
             return {
                 filterType: FilterTypes.date,
                 type: fieldFilter[dateFrom],

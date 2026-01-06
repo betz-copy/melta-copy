@@ -28,7 +28,7 @@ const IconButtonWithPopover: React.FC<{
         <MeltaTooltip title={popoverText} disableHoverListener={disabledToolTip} placement={placement}>
             <span>
                 <IconButton {...iconButtonProps} style={style} disabled={disabled} sx={buttonStyle}>
-                    <>{children}</>
+                    {children}
                 </IconButton>
             </span>
         </MeltaTooltip>

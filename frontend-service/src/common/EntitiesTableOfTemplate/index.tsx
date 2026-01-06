@@ -225,7 +225,6 @@ const LoadingCellRenderer = () => <CircularProgress size={20} sx={{ marginLeft: 
 export type EntitiesTableOfTemplateProps<Data> = {
     template: (
         | IMongoEntityTemplateWithConstraintsPopulated
-        | IMongoEntityTemplateWithConstraintsPopulated
         | IMongoChildTemplateWithConstraintsPopulated
     ) & {
         entitiesWithFiles?: ISemanticSearchResult[string];
@@ -977,9 +976,7 @@ const EntitiesTableOfTemplate = forwardRef(
                             if (params.valueChanged === false) return;
                             const isEmpty = params.newValue === '' || params.newValue === null || params.newValue.length === 0;
                             const isEmptyArray = params.newValue.length === 0;
-                            const isRequired = (template as IMongoEntityTemplateWithConstraintsPopulated).properties.required.includes(
-                                params.colDef.field!,
-                            );
+                            const isRequired = template.properties.required.includes(params.colDef.field!);
                             const updatedProperties = {
                                 ...params.data?.properties,
                                 // eslint-disable-next-line no-nested-ternary

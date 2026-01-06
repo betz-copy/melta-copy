@@ -47,7 +47,7 @@ const UnknownEntityCard: React.FC<EntityCardProps> = ({ customActionButton, cust
                                     }}
                                     size="large"
                                 >
-                                    <>{customActionButton.icon}</>
+                                    {customActionButton.icon}
                                 </IconButton>
                             ))}
                     </Grid>

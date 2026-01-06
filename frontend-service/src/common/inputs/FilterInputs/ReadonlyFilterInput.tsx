@@ -1,6 +1,6 @@
 import { Grid } from '@mui/material';
 import { IGraphFilterBody } from '@packages/entity';
-import { relativeDateFilters } from '@packages/rule-breach';
+import { isRelativeDateFilter } from '@packages/rule-breach';
 import i18next from 'i18next';
 import React from 'react';
 import { ViewModeTextField } from '../ViewModeTextField';
@@ -8,7 +8,7 @@ import { ViewModeTextField } from '../ViewModeTextField';
 export const getFilterFieldReadonly = (filter: IGraphFilterBody['filterField'], fieldTemplateType: string) => {
     switch (filter?.filterType) {
         case 'date':
-            if (Object.values(relativeDateFilters).includes(filter.type as relativeDateFilters)) return `${i18next.t(`filters.date.${filter.type}`)}`;
+            if (isRelativeDateFilter(filter.type)) return `${i18next.t(`filters.date.${filter.type}`)}`;
 
             return `${i18next.t(`filters.${filter.filterType}.${filter.type}`)} ${
                 filter.dateFrom ? new Date(filter.dateFrom).toLocaleDateString('he-IL') : ''

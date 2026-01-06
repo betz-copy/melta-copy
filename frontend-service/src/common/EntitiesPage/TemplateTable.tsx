@@ -15,7 +15,7 @@ import {
 import { Box, CircularProgress, Dialog, Grid, useTheme } from '@mui/material';
 import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IEntity } from '@packages/entity';
-import { IEntityTemplateMap, IEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { PermissionScope } from '@packages/permission';
 import { ActionTypes } from '@packages/rule-breach';
 import { IKartoffelUser } from '@packages/user';
@@ -58,7 +58,7 @@ export type TemplateTableRef = EntitiesTableOfTemplateRef<IEntity>;
 export const isUserHasWritePermissions = (
     currentClientSideUser: IKartoffelUser | IEntity,
     currentUser: UserState['user'],
-    template: IEntityTemplatePopulated | IMongoChildTemplateWithConstraintsPopulated,
+    template: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
 ) =>
     !!Object.keys(currentClientSideUser).length ||
     checkUserTemplatePermission(currentUser.currentWorkspacePermissions, template.category._id, template._id, PermissionScope.write);

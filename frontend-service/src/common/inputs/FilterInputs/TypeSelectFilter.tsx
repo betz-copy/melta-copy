@@ -27,6 +27,7 @@ interface TypeSelectFilterProps {
 }
 
 const TypeSelectFilter: React.FC<TypeSelectFilterProps> = ({ filterField, handleFilterTypeChange, readOnly, type, filterType }) => {
+    // TODO: CHECK IF THIS IS CORRECT
     const options = useMemo(() => {
         const basicFilters = Object.values(basicFilterOperationTypes);
         const numberFilters = Object.values(numberFilterOperationTypes);

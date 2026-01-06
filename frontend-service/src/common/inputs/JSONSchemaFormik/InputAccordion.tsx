@@ -31,7 +31,7 @@ const InputAccordion: React.FC<{
                 </Box>
                 <Collapse in={checked}>
                     <Box marginX="30px" marginBottom="10px">
-                        <>{children}</>
+                        {children}
                     </Box>
                 </Collapse>
             </Box>

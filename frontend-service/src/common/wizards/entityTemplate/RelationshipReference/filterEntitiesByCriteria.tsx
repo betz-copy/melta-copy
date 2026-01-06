@@ -47,7 +47,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
         const { required, properties } = selectedEntityTemplate.properties;
 
         return Object.entries(properties)
-            .filter(([key, prop]) => required?.includes(key) && !notIncludedFormats.includes(prop.format ?? ''))
+            .filter(([key, prop]) => required.includes(key) && !notIncludedFormats.includes(prop.format ?? ''))
             .map(([key, prop]) => ({
                 key,
                 title: prop.title,

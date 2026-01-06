@@ -18,7 +18,7 @@ import { Topbar } from './mainPage/Topbar';
 
 const UserNotExistsPage = lazy(() => import('./userNotExistsPage'));
 const ClientSideMainPage = lazy(() => import('./mainPage'));
-const ErrorPage = lazy(() => import('../ErrorPage'));
+import ErrorPage from '../ErrorPage';
 const ClientSideEntityPage = lazy(() => import('./entityPage'));
 
 const ClientSidePageInner: React.FC = () => {

@@ -137,6 +137,7 @@ const Entity: React.FC = () => {
     const connectionsTemplates = useMemo(() => {
         if (!currentEntityTemplate) return;
 
+        // TODO: CHECK IF THIS IS CORRECT
         const templateForRelationships =
             childTemplateId && isChildTemplate(currentEntityTemplate)
                 ? (entityTemplates.get(currentEntityTemplate.parentTemplate._id) ?? undefined)
@@ -216,7 +217,7 @@ const Entity: React.FC = () => {
             <Grid className="pageMargin">
                 <Grid marginTop="20px" data-tour="entity-details">
                     <EntityDetails
-                        entityTemplate={currentEntityTemplate as IMongoEntityTemplateWithConstraintsPopulated}
+                        entityTemplate={currentEntityTemplate}
                         expandedEntity={expandedEntity}
                     />
                 </Grid>

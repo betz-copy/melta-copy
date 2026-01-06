@@ -1,6 +1,6 @@
 import { InfoOutlined } from '@mui/icons-material';
 import { Autocomplete, Grid, TextField, Typography } from '@mui/material';
-import { IAggregation, IChartType, IColumnOrLineMetaData, IMongoChart, INUmberMetaData, IPieMetaData } from '@packages/chart';
+import { IAggregation, IChartType, IColumnOrLineMetaData, IMongoChart, INumberMetaData, IPieMetaData } from '@packages/chart';
 import { IEntityTemplateMap } from '@packages/entity-template';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
@@ -44,7 +44,7 @@ const renderMetaDtaChartByType = (option: IMongoChart) => {
             );
         }
         case IChartType.Number: {
-            const numberData = option.metaData as INUmberMetaData;
+            const numberData = option.metaData as INumberMetaData;
             const { type } = numberData.accumulator as IAggregation;
             return (
                 <Grid>

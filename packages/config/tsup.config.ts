@@ -1,11 +1,7 @@
 import { defineConfig } from 'tsup';
+import baseConfig from '../tsup.config';
 
-// Backend-only package - CJS only
 export default defineConfig({
-    entry: ['src/index.ts'],
-    format: ['cjs'],
-    dts: true,
-    outDir: 'dist',
-    target: 'esnext',
-    clean: true,
+    ...baseConfig,
+    external: [/^@packages\//, 'dotenv'],
 });

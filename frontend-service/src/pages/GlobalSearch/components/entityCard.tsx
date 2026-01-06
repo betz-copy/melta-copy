@@ -294,7 +294,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                     }}
                                     size="large"
                                 >
-                                    <>{customActionButton.icon}</>
+                                    {customActionButton.icon}
                                 </IconButton>
                             ))}
                     </Grid>

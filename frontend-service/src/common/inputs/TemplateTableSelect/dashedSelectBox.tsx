@@ -34,8 +34,7 @@ const DashedSelectBox: React.FC<{
     const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 
     const isChildTemplate = entityTemplate ? !entityTemplates.get(entityTemplate._id) : false;
-    const childTemplatesOfParent = childTemplates.values().filter(({ parentTemplate }) => entityTemplate?._id === parentTemplate._id);
-
+    const childTemplatesOfParent = childTemplates.values().filter(({ parentTemplate: { _id } }) => entityTemplate?._id === _id);
     const userHasPermissions = !entityTemplate
         ? undefined
         : isChildTemplate

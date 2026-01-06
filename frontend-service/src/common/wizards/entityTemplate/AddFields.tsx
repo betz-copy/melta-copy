@@ -2,6 +2,7 @@ import { Grid } from '@mui/material';
 import {
     basicFilterOperationTypes,
     FilterTypes,
+    isRelativeDateFilter,
     numberFilterOperationTypes,
     relativeDateFilters,
     textFilterOperationTypes,
@@ -103,7 +104,7 @@ const agGridNumberFilterSchema = (parentFilterType: FilterType = FilterType.valu
 
 const validateRelativeDate = (value?: string) => {
     if (!value) return false;
-    return Object.values(relativeDateFilters).includes(value as relativeDateFilters);
+    return isRelativeDateFilter(value);
 };
 
 const validateExactDate = (value?: string) => {
@@ -122,7 +123,7 @@ const agGridDateFilterSchema = (parentFilterType: FilterType = FilterType.value)
                 ? Yup.string().required(i18next.t('validation.required'))
                 : Yup.string()
                       .when('type', {
-                          is: (type: string) => Object.values(relativeDateFilters).includes(type as relativeDateFilters),
+                          is: (type: string) => isRelativeDateFilter(type),
                           then: (schema) => schema.test('valid-relative-date', i18next.t('validation.invalidRelativeDate'), validateRelativeDate),
                           otherwise: (schema) =>
                               schema.test('valid-date-format', 'must be YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss.sssZ', validateExactDate),

@@ -8,8 +8,8 @@ import {
     IAgGridNumberFilter,
     IAgGridSetFilter,
     IAgGridTextFilter,
+    isRelativeDateFilter,
     numberFilterOperationTypes,
-    relativeDateFilters,
     textFilterOperationTypes,
 } from '@packages/rule-breach';
 import { IGetUnits } from '@packages/unit';
@@ -55,7 +55,7 @@ export const isValidAGGridFilter = (filter: IAgGridFilter | undefined): boolean 
         case FilterTypes.date: {
             if (!filter.dateFrom) return false;
             if (
-                Object.values(relativeDateFilters).includes(filter.type as relativeDateFilters) ||
+                isRelativeDateFilter(filter.type) ||
                 filter.dateFrom === ByCurrentDefaultValue.byCurrentDate
             )
                 return true;

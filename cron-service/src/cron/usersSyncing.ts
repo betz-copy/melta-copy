@@ -30,7 +30,7 @@ const checkForEntityToUpdate = (
 
     getTypedPropertyEntries(entityTemplate.properties.properties).forEach(([key, value]) => {
         const fieldValue = entity.properties[key];
-        if (value.format === 'user' && fieldValue) userKeysKartoffelIdsMap[key] = (JSON.parse(fieldValue) as { _id: string })._id;
+        if (value.format === 'user' && fieldValue) userKeysKartoffelIdsMap[key] = (JSON.parse(fieldValue))._id;
     });
 
     if (Object.keys(userKeysKartoffelIdsMap).length === 0) return {};
@@ -109,7 +109,7 @@ export const updateKartoffelFields = async () => {
                         getTypedPropertyEntries(entityTemplate.properties.properties).forEach(([key, value]) => {
                             const fieldValue = properties[key];
 
-                            if (value.format === 'user' && fieldValue) usersIds.add((JSON.parse(fieldValue) as { _id: string })._id);
+                            if (value.format === 'user' && fieldValue) usersIds.add((JSON.parse(fieldValue))._id);
                         });
                     });
 

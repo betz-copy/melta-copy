@@ -7,7 +7,7 @@ import {
     IChartType,
     IChartTypeMetaData,
     IColumnOrLineMetaData,
-    INUmberMetaData,
+    INumberMetaData,
     IPieMetaData,
 } from '@packages/chart';
 import i18next from 'i18next';
@@ -32,7 +32,7 @@ export const getChartAxes = (type: IChartType, metaData: IChartTypeMetaData, inc
             break;
         }
         case IChartType.Number: {
-            const { accumulator } = metaData as INUmberMetaData;
+            const { accumulator } = metaData as INumberMetaData;
             xAxis = accumulator;
             break;
         }
@@ -59,7 +59,7 @@ export const initializeChartMetaData = (type: IChartType): IChartTypeMetaData =>
         } as IPieMetaData,
         [IChartType.Number]: {
             accumulator: { type: 'countAll' },
-        } as INUmberMetaData,
+        } as INumberMetaData,
     };
 
     const metaData = chartMetadataMap[type];

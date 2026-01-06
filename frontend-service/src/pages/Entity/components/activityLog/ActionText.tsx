@@ -264,7 +264,7 @@ const UpdateTextValue: React.FC<{
     ) : (
         <StyledTypography variant="body2" style={{ ...ellipsisStyle, display: 'flex' }}>
             {old ? i18next.t('entityPage.activityLog.from') : i18next.t('entityPage.activityLog.to')}{' '}
-            <>{value ? innerContent : i18next.t('entityPage.activityLog.emptyField')}</>
+            {value ? innerContent : i18next.t('entityPage.activityLog.emptyField')}
         </StyledTypography>
     );
 };

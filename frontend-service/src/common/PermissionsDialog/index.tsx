@@ -7,7 +7,7 @@ import { IRole } from '@packages/role';
 import { IUser, RelatedPermission } from '@packages/user';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
-import React, { useState } from 'react';
+import React, { ReactElement, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
 import { environment } from '../../globals';
@@ -42,7 +42,7 @@ const PermissionsDialog: React.FC<{
     const queryClient = useQueryClient();
     const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
 
-    const tabsComponentsMapping: Record<string, JSX.Element> = {
+    const tabsComponentsMapping: Record<string, ReactElement> = {
         ...(mode === 'view' && {
             myAccount: (
                 <MyAccount

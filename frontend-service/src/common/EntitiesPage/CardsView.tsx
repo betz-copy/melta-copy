@@ -98,7 +98,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                                     limit: infiniteScrollPageCount,
                                     textSearch: searchInput,
                                     templates: {
-                                        [(template as IMongoChildTemplateWithConstraintsPopulated).parentTemplate._id!]: {
+                                        [template.parentTemplate._id!]: {
                                             showRelationships: false,
                                             filter,
                                             childTemplateId: template._id,

@@ -1,4 +1,4 @@
-import { IAxisField, IChartType, IChartTypeMetaData, IColumnOrLineMetaData, INUmberMetaData, IPieMetaData } from '@packages/chart';
+import { IAxisField, IChartType, IChartTypeMetaData, IColumnOrLineMetaData, INumberMetaData, IPieMetaData } from '@packages/chart';
 
 // eslint-disable-next-line import/prefer-default-export
 export const getMetaDataAxes = (type: IChartType, metaData: IChartTypeMetaData, filter?: string) => {
@@ -20,7 +20,7 @@ export const getMetaDataAxes = (type: IChartType, metaData: IChartTypeMetaData, 
             break;
         }
         case IChartType.Number: {
-            const { accumulator } = metaData as INUmberMetaData;
+            const { accumulator } = metaData as INumberMetaData;
             xAxis = accumulator;
             break;
         }

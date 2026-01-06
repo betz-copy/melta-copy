@@ -74,7 +74,7 @@ const ChildTemplateDialog: React.FC<{
     mutationProps?: IMutationProps;
     open: boolean;
     handleClose: () => void;
-    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | IMongoEntityTemplateWithConstraintsPopulated | null;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | null;
 }> = ({ mutationProps, open, handleClose, entityTemplate }) => {
     if (!entityTemplate || !mutationProps) return null;
 
@@ -112,8 +112,7 @@ const ChildTemplateDialog: React.FC<{
         ...rest
     }: IMongoChildTemplateWithConstraintsPopulated): IChildTemplateForm => {
         const newProperties: IChildTemplateForm['properties']['properties'] = Object.fromEntries([
-            ...((entityTemplate as IMongoEntityTemplateWithConstraintsPopulated).properties.required.map((reqKey) => [reqKey, { display: true }]) ??
-                []),
+            ...entityTemplate.properties.required.map((reqKey) => [reqKey, { display: true }]),
             ...Object.entries(properties.properties).map(([key, prop]) => [key, normalizeProperty(prop, rest?.parentTemplate._id)]),
         ]);
 
@@ -213,6 +212,7 @@ const ChildTemplateDialog: React.FC<{
                                 ...rest,
                                 filters: filters
                                     ? filterDocumentToFilterBackend(
+                                        // TODO: CHECK IF WORKS
                                           values.parentTemplateId._id || entityTemplate._id,
                                           filters.map((filter) => ({ filterProperty: key, filterField: filter })),
                                           queryClient,

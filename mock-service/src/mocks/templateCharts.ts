@@ -1,5 +1,5 @@
 /* eslint-disable import/prefer-default-export */
-import { IAggregationType, IChart, IChartPermission, IChartType, IColumnOrLineMetaData, INUmberMetaData, IPieMetaData } from '@packages/chart';
+import { IAggregationType, IChart, IChartPermission, IChartType, IColumnOrLineMetaData, INumberMetaData, IPieMetaData } from '@packages/chart';
 
 export const chartsCreator = (
     travelAgentId: string,
@@ -40,7 +40,7 @@ export const chartsCreator = (
         type: IChartType.Number,
         metaData: {
             accumulator: { type: IAggregationType.Maximum, byField: 'age' },
-        } as INUmberMetaData,
+        } as INumberMetaData,
         createdBy: userId,
         permission: IChartPermission.Protected,
         templateId: travelAgentId,
@@ -133,7 +133,7 @@ export const chartsCreator = (
             accumulator: {
                 type: 'countAll',
             },
-        } as INUmberMetaData,
+        } as INumberMetaData,
         createdBy: userId,
         permission: IChartPermission.Protected,
         templateId: phoneId,

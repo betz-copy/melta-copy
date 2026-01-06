@@ -75,7 +75,8 @@ const MapFilters = ({
                       }
                     : undefined;
 
-            return [templateId, { filter, showRelationships: false }];
+            // TODO: CHECK IF THIS IS CORRECT
+            return [templateId, filter ? { filter, showRelationships: false } : { showRelationships: false }] as const;
         }),
     );
 

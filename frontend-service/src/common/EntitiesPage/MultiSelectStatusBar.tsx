@@ -215,12 +215,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                 );
             },
             validate: (values) => {
-                const templatePropertiesWithRequired = {
-                    ...values.template.properties,
-                    required: (values.template.properties as { required?: string[] }).required ?? [],
-                };
-
-                const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(templatePropertiesWithRequired, selectedFields);
+                const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(values.template.properties, selectedFields);
                 const filteredProperties = pickOnlyGivenFields(nonAttachmentsSchema, selectedFields);
                 const propertiesErrors = ajvValidate({ ...nonAttachmentsSchema, properties: filteredProperties }, values.properties);
 

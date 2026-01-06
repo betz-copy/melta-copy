@@ -10,6 +10,7 @@ import {
     IAgGridRequest,
     IAgGridSort,
     IAgGridTextFilter,
+    isRelativeDateFilter,
     numberFilterOperationTypes,
     relativeDateFilters,
     textFilterOperationTypes,
@@ -136,7 +137,7 @@ export const dateFilterToFilterOfTemplate = (
     { type, dateFrom: dateFromString, dateTo: dateToString }: IAgGridDateFilter,
     filterType?: FilterType,
 ): IFilterOfTemplate => {
-    if (Object.values(relativeDateFilters).includes(type as relativeDateFilters)) return getRelativeDateFilter(field, type);
+    if (isRelativeDateFilter(type)) return getRelativeDateFilter(field, type);
 
     if (!dateFromString) {
         switch (type) {
@@ -185,7 +186,7 @@ export const dateTimeFilterToFilterOfTemplate = (
     { type, dateFrom: dateFromString, dateTo: dateToString }: IAgGridDateFilter,
     filterType?: FilterType,
 ): IFilterOfTemplate => {
-    if (Object.values(relativeDateFilters).includes(type as relativeDateFilters)) return getRelativeDateFilter(field, type);
+    if (isRelativeDateFilter(type)) return getRelativeDateFilter(field, type);
 
     if (!dateFromString) {
         switch (type) {

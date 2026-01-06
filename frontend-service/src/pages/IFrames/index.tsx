@@ -95,8 +95,6 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
                                 return searchIFrames({
                                     search: searchInput,
                                     ids: currentOrder.map((iFrameId) => iFrameId),
-                                    limit: infiniteScrollPageCount,
-                                    skip: index * infiniteScrollPageCount,
                                 });
                             }
 

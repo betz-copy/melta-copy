@@ -39,11 +39,11 @@ export interface IPieMetaData {
     aggregationType: IAggregation;
 }
 
-export interface INUmberMetaData {
+export interface INumberMetaData {
     accumulator: IAxisField;
 }
 
-export type IChartTypeMetaData = IColumnOrLineMetaData | IPieMetaData | INUmberMetaData;
+export type IChartTypeMetaData = IColumnOrLineMetaData | IPieMetaData | INumberMetaData;
 
 export enum IChartPermission {
     Protected = 'protected',

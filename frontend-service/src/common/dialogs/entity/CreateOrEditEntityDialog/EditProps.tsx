@@ -84,12 +84,7 @@ const EditProps: React.FC<{
     const { templateFilesProperties, templateFileKeys, requiredFilesNames } = getEntityTemplateFilesFieldsInfo(values.template || entityTemplate);
     const isPropertiesFirst = (values.template?.propertiesTypeOrder ?? [])[0] === 'properties';
 
-    const templatePropertiesWithRequired = {
-        ...values.template?.properties,
-        required: (values.template.properties as { required?: string[] }).required ?? [],
-    };
-
-    const schema = filterFieldsFromPropertiesSchema(templatePropertiesWithRequired, multipleSelectionProps?.selectedFields);
+    const schema = filterFieldsFromPropertiesSchema(values.template?.properties, multipleSelectionProps?.selectedFields);
 
     useEffect(() => {
         setInitialValuePropsToFilter({ ...initialValues.properties });
@@ -140,9 +135,7 @@ const EditProps: React.FC<{
 
     if (isMultipleSelection) {
         const uniqueFields: string[] = [];
-        (values.template as IMongoEntityTemplateWithConstraintsPopulated).uniqueConstraints.forEach((groupField) =>
-            uniqueFields.push(...groupField.properties),
-        );
+        values.template.uniqueConstraints.forEach((groupField) => uniqueFields.push(...groupField.properties));
 
         uniqueFields.forEach((uniqueField) => {
             schema.properties[uniqueField].readOnly = true;

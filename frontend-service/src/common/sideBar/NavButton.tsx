@@ -51,8 +51,7 @@ const NavButton: React.FC<NavButtonProps> = ({
     return (
         <Link href={to} onClick={(e) => handleClick(e)} className="nav-button" style={{ textDecoration: 'none', color: 'inherit' }}>
             <MeltaTooltip
-                title={<>{disabled ? i18next.t('permissions.dontHavePermissionsToCategory') : (extension ?? text)}</>}
-                placement="left-start"
+                title={disabled ? (i18next.t('permissions.dontHavePermissionsToCategory') as string) : (extension ?? text)}                placement="left-start"
                 disableHoverListener={!disabled && isDrawerOpen && !extension}
             >
                 <div>
@@ -68,7 +67,7 @@ const NavButton: React.FC<NavButtonProps> = ({
                         }}
                         className="child"
                     >
-                        <>{children}</>
+                        {children}
                         {isDrawerOpen && (
                             <StyledListItemText
                                 primary={text}

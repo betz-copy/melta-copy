@@ -1,5 +1,5 @@
 import { Grid, Typography } from '@mui/material';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IEntityTemplateMap } from '@packages/entity-template';
 import { IGantt, IGanttGroupBy } from '@packages/gantt';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
@@ -23,7 +23,7 @@ export const GroupByDisplay: React.FC<GroupByDisplayProps> = ({ groupBy, formik,
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const groupByEntityTemplate = entityTemplates.get(groupBy.entityTemplateId) as IMongoEntityTemplateWithConstraintsPopulated;
+    const groupByEntityTemplate = entityTemplates.get(groupBy.entityTemplateId);
 
     const uniqueGroupByEntityTemplateProperties = useMemo(
         () =>

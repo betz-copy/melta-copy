@@ -1,6 +1,7 @@
 import * as Cesium from 'cesium';
 import { Cartesian3 } from 'cesium';
 import proj4 from 'proj4';
+import { Hemisphere, UTM } from '@packages/utils';
 import { CoordinateSystem } from '../../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
 import { environment } from '../../globals';
 import { stringToCoordinates } from '.';
@@ -11,17 +12,6 @@ const {
     wgs84: { maxLongitude, maxLatitude },
 } = environment.map;
 
-enum Hemisphere {
-    N = 'N',
-    S = 'S',
-}
-
-export type UTM = {
-    zone: number; // UTM Zone (1-60)
-    hemi: Hemisphere; // Hemisphere (North or South)
-    east: number; // Easting (6-digit)
-    north: number; // Northing (7-digit)
-};
 
 const utm = (zone: UTM['zone'], hemi: Hemisphere) => `${epsg}:${hemi === Hemisphere.N ? northHemiUTM : southHemiUTM}${zone}`;
 

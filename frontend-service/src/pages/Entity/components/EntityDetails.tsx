@@ -85,7 +85,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
     };
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const currentEntityTemplate = entityTemplates.get(expandedEntity?.entity.templateId) as IMongoEntityTemplateWithConstraintsPopulated;
+    const currentEntityTemplate = entityTemplates.get(expandedEntity?.entity.templateId);
     const templateIds = Array.from(entityTemplates.keys());
 
     const isChildEntityTemplate = isChildTemplate(entityTemplate);
@@ -335,6 +335,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
 
                             {entityTemplate.documentTemplatesIds?.length ? (
                                 <Grid>
+                                    {/* TODO: CHECK IF THIS IS CORRECT */}
                                     <ExportFormats
                                         properties={{ ...expandedEntity.entity.properties, disabled: isEntityDisabled }}
                                         documentTemplateIds={entityTemplate.documentTemplatesIds}

@@ -39,6 +39,7 @@ const ClientSideMainPage: React.FC = () => {
                     <Grid width="70%">
                         <UserInfoCard
                             currentUserFromClientSide={clientSideUserEntity}
+                            // TODO: CHECK IF THIS IS CORRECT
                             usersInfoChildTemplate={usersInfoChildTemplate as unknown as IChildTemplateWithConstraintsPopulated}
                             overridePropertiesToShow={firstXPropsKeys}
                         />

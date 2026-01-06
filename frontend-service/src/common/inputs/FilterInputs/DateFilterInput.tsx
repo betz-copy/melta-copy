@@ -6,6 +6,7 @@ import {
     IAgGridDateFilter,
     IAgGridNumberFilter,
     IAgGridTextFilter,
+    isRelativeDateFilter,
     numberFilterOperationTypes,
     relativeDateFilters,
 } from '@packages/rule-breach';
@@ -16,6 +17,7 @@ import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import DatePickerWrapper from '../DatePickerWrapper';
 import DateRange from '../DateRange';
 import { TypeSelectFilter } from './TypeSelectFilter';
+import { IFilterDateType } from '../../../interfaces/childTemplateForms';
 
 interface DateFilterInputProps {
     filterField: IAgGridDateFilter | undefined;
@@ -23,7 +25,7 @@ interface DateFilterInputProps {
         newTypeFilter: IAgGridDateFilter['type'] | IAgGridTextFilter['type'] | IAgGridNumberFilter['type'],
         condition?: boolean,
     ) => void;
-    handleDateChange: (newValue: Date | ByCurrentDefaultValue.byCurrentDate | relativeDateFilters | null, isStartDate: boolean) => void;
+    handleDateChange: (newValue: IFilterDateType, isStartDate: boolean) => void;
     entityFilter: boolean;
     readOnly?: boolean;
     hideFilterType?: boolean;
@@ -43,7 +45,7 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
 }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const isInRangeType = filterField?.type === numberFilterOperationTypes.inRange;
-    const isRelativeType = Object.values(relativeDateFilters).includes((filterField?.type ?? '') as relativeDateFilters);
+    const isRelativeType = isRelativeDateFilter(filterField?.type);
 
     useEffect(() => {
         if (forceEqualsType && filterField && filterField.type !== basicFilterOperationTypes.equals) {
@@ -61,8 +63,8 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
         }
 
         if (
-            (dateFrom && Object.values(relativeDateFilters).includes(dateFrom as relativeDateFilters)) ||
-            (dateTo && Object.values(relativeDateFilters).includes(dateTo as relativeDateFilters))
+            (dateFrom && isRelativeDateFilter(dateFrom)) ||
+            (dateTo && isRelativeDateFilter(dateTo))
         ) {
             handleDateChange(null, true);
             handleDateChange(null, false);
