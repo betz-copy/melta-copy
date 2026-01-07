@@ -93,7 +93,7 @@ const Stepper = <T extends object>({
                 container
                 direction="column"
                 justifyContent="space-between"
-                alignItems="center"
+                alignItems={steps[activeStep].alignItems ?? 'center'}
                 height="100%"
                 marginBottom="0.5rem"
                 marginTop="2rem"

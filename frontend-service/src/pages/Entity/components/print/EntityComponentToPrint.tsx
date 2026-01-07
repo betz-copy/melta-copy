@@ -1,105 +1,136 @@
-import { Box, SxProps, Typography, useTheme } from '@mui/material';
-import i18next from 'i18next';
+// !This whole page is written without mui - in order to render a large scale tree fast
+
+import ShortcutIcon from '@mui/icons-material/Shortcut';
 import React from 'react';
-import { useQueryClient } from 'react-query';
 import { EntityPropertiesInternal } from '../../../../common/EntityProperties';
-import BlueTitle from '../../../../common/MeltaDesigns/BlueTitle';
-import { IConnection, IEntity } from '../../../../interfaces/entities';
+import { IPrintOptions } from '../../../../common/print/PrintOptionsDialog';
+import { IEntity } from '../../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplatePopulated } from '../../../../interfaces/relationshipTemplates';
-import { INestedRelationshipTemplates } from '../..';
+import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { EntityDates } from '../EntityDates';
-import { EntityDisableCheckbox } from '../EntityDisableCheckbox';
-import { renderConnectionTree } from './ComponentToPrint';
+import { IEntityTreeNode } from './ComponentToPrint';
 
-interface RelationshipPrintTitleProps {
-    relationshipTemplate: IMongoRelationshipTemplatePopulated;
-    isExpandedEntityRelationshipSource: boolean;
-    fontSize?: string;
-    index?: number;
-    sxOverride?: SxProps;
-}
-
-export const RelationshipPrintTitle: React.FC<RelationshipPrintTitleProps> = ({
-    relationshipTemplate,
-    isExpandedEntityRelationshipSource,
-    fontSize,
-    index,
-    sxOverride,
-}) => {
-    const { destinationEntity, sourceEntity, displayName } = relationshipTemplate;
-
-    return (
-        <Box display="flex" alignItems="center" sx={{ ...sxOverride, gap: '7px' }}>
-            {index && (
-                <Typography variant="h6" fontSize={fontSize ?? '26px'} color="gray">
-                    {`${index}.`}
-                </Typography>
-            )}
-            <Typography variant="h6" fontSize={fontSize ?? '26px'} color="gray" fontWeight={isExpandedEntityRelationshipSource ? '900' : undefined}>
-                {sourceEntity.displayName}
-            </Typography>
-
-            <Typography fontWeight="800" color="primary" component="h5" variant="h6" fontSize={fontSize ?? '26px'}>
-                {displayName}
-            </Typography>
-
-            <Typography variant="h6" fontSize={fontSize ?? '26px'} color="gray" fontWeight={isExpandedEntityRelationshipSource ? undefined : '900'}>
-                {destinationEntity.displayName}
-            </Typography>
-        </Box>
-    );
-};
-
-const EntityComponentToPrint: React.FC<{
+interface IEntityComponentToPrintProps {
     entityTemplate: IMongoEntityTemplatePopulated;
     entity: IEntity;
-    options: {
-        showEntityDates: boolean;
-        showDisabled: boolean;
-    };
-    showPreviewPropertiesOnly?: boolean;
-    expandedRelationships?: { instances: IConnection[]; templates: INestedRelationshipTemplates[] };
-}> = ({ entityTemplate, entity, options, showPreviewPropertiesOnly, expandedRelationships }) => {
-    const theme = useTheme();
-    const queryClient = useQueryClient();
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    options: Pick<IPrintOptions, 'showEntitiesDates' | 'showEntityPrintCheckbox' | 'showPreviewPropertiesOnly'>;
+    hierarchicalChildren?: IEntityTreeNode[];
+    depth?: number;
+    entityTemplates: IEntityTemplateMap;
+    relationships: IRelationshipTemplateMap;
+}
 
-    return (
-        <Box border={`2px solid ${theme.palette.primary.main}`} borderRadius="20px" padding="1rem">
-            <Box padding="0.2rem">
+const EntityComponentToPrint: React.FC<IEntityComponentToPrintProps> = React.memo(
+    ({ entityTemplate, entity, options, hierarchicalChildren, depth = 0, entityTemplates, relationships }) => {
+        const rowStyle: React.CSSProperties = {
+            display: 'flex',
+            flexDirection: 'column',
+            padding: depth > 0 ? '10px 0px 0px 20px' : '20px 0px',
+            width: '100%',
+        };
+
+        const containerStyle: React.CSSProperties = {
+            display: 'flex',
+            flexDirection: 'column',
+            backgroundColor: depth === 1 ? '#CCCFE526' : 'transparent',
+            marginTop: depth === 0 ? '10px' : '0px',
+            paddingBottom: '10px',
+            borderRadius: '8px',
+            width: '100%',
+        };
+
+        const rootEntityComponent = (
+            <div style={{ backgroundColor: '#CCCFE526', border: '1px solid #CCCFE5', borderRadius: '12px', width: '100%', padding: '1rem' }}>
                 <EntityPropertiesInternal
                     properties={entity.properties}
                     coloredFields={entity.coloredFields}
                     entityTemplate={entityTemplate}
                     darkMode={false}
-                    showPreviewPropertiesOnly={showPreviewPropertiesOnly}
+                    showPreviewPropertiesOnly={options.showPreviewPropertiesOnly}
                     mode="normal"
                     textWrap
                     isPrintingMode
                     showByGroups
+                    style={{ width: '100%', display: 'flex', flexDirection: 'row' }}
                 />
-            </Box>
-            <EntityDisableCheckbox isEntityDisabled={entity.properties.disabled} />
-            {options.showEntityDates && <EntityDates createdAt={entity.properties.createdAt} updatedAt={entity.properties.updatedAt} toPrint />}
+                {options.showEntitiesDates && <EntityDates createdAt={entity.properties.createdAt} updatedAt={entity.properties.updatedAt} toPrint />}
+            </div>
+        );
 
-            {expandedRelationships?.instances.some((_outerInstance) =>
-                expandedRelationships?.templates.some((expandedTemplate) => {
-                    const expandedRelationship = expandedRelationships.instances.find(
-                        (innerInstance) =>
-                            (expandedTemplate.relationshipTemplate._id === innerInstance.relationship.templateId &&
-                                entity.properties._id === innerInstance.sourceEntity.properties._id) ||
-                            entity.properties._id === innerInstance.destinationEntity.properties._id,
-                    );
-                    return expandedRelationship !== undefined;
-                }),
-            ) && (
-                <div>
-                    <BlueTitle title={i18next.t('entityPage.print.relationships')} component="p" variant="h6" style={{ marginTop: '5px' }} />
-                    {renderConnectionTree(entity, expandedRelationships.templates, expandedRelationships.instances, options, entityTemplates)}
+        const connectionRow = (
+            <div style={{ display: 'flex', width: '100%', gap: '10px', alignItems: 'center', flexDirection: 'row' }}>
+                <div style={{ display: 'flex', flexDirection: 'row', gap: '10px', alignItems: 'center' }}>
+                    {depth > 1 && <ShortcutIcon sx={{ fontSize: 16, color: '#9398C2', transform: 'rotate(180deg)' }} />}
+                    {options.showEntityPrintCheckbox && (
+                        <div style={{ width: '20px', height: '20px', borderRadius: '6px', border: '1px solid black' }} />
+                    )}
                 </div>
-            )}
-        </Box>
-    );
-};
+
+                <div
+                    style={{
+                        display: 'flex',
+                        border: '1px solid #CCCFE5',
+                        borderRadius: '8px',
+                        padding: '0 10px',
+                        alignItems: 'center',
+                        gap: '10px',
+                        backgroundColor: 'white',
+                        minWidth: 0,
+                        width: '100%',
+                        flexWrap: 'nowrap',
+                    }}
+                >
+                    <span style={{ fontWeight: '600', fontSize: '14px', whiteSpace: 'nowrap' }}>{entityTemplate.displayName}</span>
+                    <span style={{ color: '#CCCFE580' }}>|</span>
+                    <div style={{ flexGrow: 1, minWidth: 0 }}>
+                        <EntityPropertiesInternal
+                            properties={entity.properties}
+                            coloredFields={entity.coloredFields}
+                            entityTemplate={entityTemplate}
+                            darkMode={false}
+                            showPreviewPropertiesOnly={options.showPreviewPropertiesOnly}
+                            mode="normal"
+                            isPrintingMode
+                            showByGroups
+                            textWrap
+                            style={{ width: '100%', display: 'flex', flexDirection: 'row', alignItems: 'center' }}
+                        />
+                    </div>
+                </div>
+            </div>
+        );
+
+        return (
+            <div style={rowStyle}>
+                {depth === 0 ? rootEntityComponent : connectionRow}
+                {hierarchicalChildren?.length ? (
+                    <div style={containerStyle}>
+                        {hierarchicalChildren.map((child) => {
+                            const template = entityTemplates.get(child.templateId);
+                            const relationship = relationships.get(child.relationshipId);
+                            if (!template || !relationship) return null;
+
+                            return (
+                                <div key={child.properties._id} style={{ paddingRight: depth > 0 ? '30px' : '0px' }}>
+                                    <EntityComponentToPrint
+                                        depth={depth + 1}
+                                        entityTemplate={template}
+                                        entity={child}
+                                        options={options}
+                                        hierarchicalChildren={child.children}
+                                        entityTemplates={entityTemplates}
+                                        relationships={relationships}
+                                    />
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <div style={{ marginTop: '10px' }} />
+                )}
+            </div>
+        );
+    },
+);
+
 export { EntityComponentToPrint };

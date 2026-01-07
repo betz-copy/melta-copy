@@ -1,6 +1,6 @@
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
@@ -10,6 +10,8 @@ import { IConstraint, IUniqueConstraintOfTemplate } from '../../../interfaces/en
 import {
     IEntityTemplateMap,
     IEntityTemplatePopulated,
+    IWalletTransfer,
+    IWalletTransferPopulated,
     PropertyExternalWizardType,
     PropertyFormat,
     PropertyType,
@@ -27,11 +29,12 @@ import { mapTemplates } from '../../../utils/templates';
 import { ErrorToast } from '../../ErrorToast';
 import { StepType, Wizard, WizardBaseType } from '../index';
 import { AddFields, addFieldsSchema } from './AddFields';
-import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
 import { ChooseIcon } from './ChooseIcon';
-import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
+import { useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
+import { CreateTemplateSettings } from './CreateTemplateSettings';
 import { FieldGroupData, IFilterTemplate, PropertyItem } from './commonInterfaces';
 import { UploadExportFormats } from './UploadExportFormats';
+import { WalletTransferSettings, walletTransferSettingsSchema } from './WalletTransferSettings';
 
 const { errorCodes } = environment;
 
@@ -76,6 +79,7 @@ export interface EntityTemplateFormInputProperties {
     hideFromDetailsPage?: boolean;
     comment?: string;
     color?: string;
+    accountBalance?: boolean;
     isProfileImage?: boolean;
 }
 
@@ -84,16 +88,28 @@ type EntityTemplatePropertyByType = { type: 'field'; data: EntityTemplateFormInp
 export interface EntityTemplateWizardValues
     extends Omit<
         IEntityTemplatePopulated,
-        'properties' | 'iconFileId' | 'propertiesOrder' | 'propertiesPreview' | 'enumPropertiesColors' | 'uniqueConstraints' | 'documentTemplatesIds'
+        | 'properties'
+        | 'iconFileId'
+        | 'propertiesOrder'
+        | 'propertiesPreview'
+        | 'enumPropertiesColors'
+        | 'uniqueConstraints'
+        | 'documentTemplatesIds'
+        | 'walletTransfer'
     > {
     properties: PropertyItem[];
     attachmentProperties: EntityTemplatePropertyByType[];
     archiveProperties: EntityTemplatePropertyByType[];
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
-    icon?: fileDetails;
     documentTemplatesIds?: File[];
     enumPropertiesColors?: string[];
+    icon?: fileDetails;
+    walletTransfer?: IWalletTransferPopulated | IWalletTransfer | null;
+    _id?: string;
 }
+
+export const hasAccountBalanceField = (properties) =>
+    properties.some((property) => (property.type === 'field' ? !!property.data?.accountBalance : property.fields?.some((f) => !!f.accountBalance)));
 
 const EntityTemplateWizard: React.FC<
     WizardBaseType<EntityTemplateWizardValues> & { searchEntityTemplatesQueryKey: (string | IMongoCategory[])[] }
@@ -122,11 +138,26 @@ const EntityTemplateWizard: React.FC<
     const currentUser = useUserStore((state) => state.user);
     const setUser = useUserStore((state) => state.setUser);
     const currentWorkspace = useWorkspaceStore((state) => state.workspace);
+    const [exportFormats, setExportFormats] = useState(false);
+    const [isAccountTemplate, setIsAccountTemplate] = useState<boolean>(false);
+    const [isTransferTemplate, setIsTransferTemplate] = useState<boolean>(false);
+
+    useEffect(() => {
+        const isWalletTemplate = hasAccountBalanceField(initialValues.properties);
+        setIsAccountTemplate(isWalletTemplate ?? false);
+    }, [initialValues.properties, open]);
+
+    useEffect(() => {
+        setExportFormats((initialValues.documentTemplatesIds?.length ?? 0) > 0);
+        setIsTransferTemplate(!!initialValues.walletTransfer || false);
+    }, [open]);
 
     const currentTemplateId = isEditMode ? (initialValues as EntityTemplateWizardValues & { _id: string })._id : undefined;
     const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates') || new Map();
 
-    const createTemplateNameSchema = useCreateOrEditTemplateNameSchema(templates, currentTemplateId);
+    const createTemplateSettingsSchema = useCreateOrEditTemplateNameSchema(templates, currentTemplateId);
+    const walletTransferSchema = walletTransferSettingsSchema();
+    const addFieldsSettingsSchema = addFieldsSchema(isAccountTemplate);
 
     const { isLoading, mutateAsync } = useMutation(
         async (entityTemplate: EntityTemplateWizardValues) => {
@@ -246,14 +277,17 @@ const EntityTemplateWizard: React.FC<
 
     const steps: StepType<EntityTemplateWizardValues>[] = [
         {
-            label: i18next.t('wizard.entityTemplate.chooseCategory'),
-            component: (props) => <ChooseCategory {...props} />,
-            validationSchema: chooseCategorySchema,
-        },
-        {
-            label: i18next.t('wizard.entityTemplate.chooseEntityTemplateName'),
-            component: (props, { isEditMode }) => <CreateTemplateName {...props} isEditMode={isEditMode} />,
-            validationSchema: createTemplateNameSchema,
+            label: i18next.t('wizard.entityTemplate.entitySettings'),
+            component: (props, { isEditMode }) => (
+                <CreateTemplateSettings
+                    {...props}
+                    isEditMode={isEditMode}
+                    exportFormats={{ value: exportFormats, set: setExportFormats }}
+                    isAccountTemplate={{ value: isAccountTemplate, set: setIsAccountTemplate }}
+                />
+            ),
+            alignItems: 'start',
+            validationSchema: createTemplateSettingsSchema,
         },
         {
             label: i18next.t('wizard.entityTemplate.chooseIcon'),
@@ -261,13 +295,41 @@ const EntityTemplateWizard: React.FC<
         },
         {
             label: i18next.t('wizard.entityTemplate.properties'),
-            component: (props, { isEditMode, setBlock }) => <AddFields {...props} isEditMode={isEditMode} setBlock={setBlock} />,
-            validationSchema: addFieldsSchema,
+            component: (props, { isEditMode, setBlock }) => (
+                <AddFields
+                    {...props}
+                    isEditMode={isEditMode}
+                    setBlock={setBlock}
+                    isAccountTemplate={isAccountTemplate}
+                    setIsTransferTemplate={setIsTransferTemplate}
+                />
+            ),
+            validationSchema: addFieldsSettingsSchema,
         },
-        {
-            label: i18next.t('wizard.entityTemplate.exportDocuments'),
-            component: (props) => <UploadExportFormats {...props} />,
-        },
+        ...(isTransferTemplate && !isAccountTemplate
+            ? [
+                  {
+                      label: i18next.t('wizard.entityTemplate.walletTransfer.walletTransferSettings'),
+                      component: (props) => (
+                          <WalletTransferSettings
+                              {...props}
+                              isAccountTemplate={isAccountTemplate}
+                              isEditMode={isEditMode}
+                          />
+                      ),
+                      alignItems: 'start',
+                      validationSchema: walletTransferSchema,
+                  },
+              ]
+            : []),
+        ...(exportFormats
+            ? [
+                  {
+                      label: i18next.t('wizard.entityTemplate.exportDocuments'),
+                      component: (props) => <UploadExportFormats {...props} />,
+                  } satisfies StepType<EntityTemplateWizardValues>,
+              ]
+            : []),
     ];
 
     return (

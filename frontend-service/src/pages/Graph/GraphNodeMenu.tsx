@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import { MenuItem, Menu as MuiMenu } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
@@ -51,7 +52,6 @@ const GraphNodeMenu: React.FC<{
                     [node.id]: { maxLevel: node.numberOfConnectionsExpanded + 1 },
                 },
                 {
-                    disabled: false,
                     templateIds: filteredEntityTemplates.map((entityTemplate) => entityTemplate._id),
                     childTemplateId,
                 },

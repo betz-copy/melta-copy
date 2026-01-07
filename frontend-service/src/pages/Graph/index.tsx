@@ -162,7 +162,6 @@ const Graph: React.FC = () => {
                 entityId,
                 expandedParams,
                 {
-                    disabled: false,
                     templateIds: filteredEntityTemplates.map((entityTemplate) => entityTemplate._id),
                     childTemplateId,
                 },

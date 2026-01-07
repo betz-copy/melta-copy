@@ -335,6 +335,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                         actionMetadata.properties,
                         entitiesTemplatesByIds.get(actionMetadata.templateId)!,
                         userId,
+                        undefined,
                         actionMetadata.entityIdToDuplicate,
                     );
 

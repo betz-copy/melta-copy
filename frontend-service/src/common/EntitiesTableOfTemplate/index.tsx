@@ -471,7 +471,7 @@ const EntitiesTableOfTemplate = forwardRef(
             setOpenDeleteDialog,
             updateEntityStatus,
             searchValue: quickFilterText,
-            disableEditCell: !editable || editRowButtonProps?.disabledButton,
+            disableEditCell: !editable || editRowButtonProps?.disabledButton || !!template.walletTransfer,
             entityTemplates,
             pageType: saveStorageProps.pageType,
             columnsToShow,

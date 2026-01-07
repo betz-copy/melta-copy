@@ -1,18 +1,28 @@
 import { Dialog, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties, ReactNode, useState } from 'react';
+import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
 import { IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { IEntity } from '../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useDraftIdStore } from '../../../stores/drafts';
+import { useWorkspaceStore } from '../../../stores/workspace';
 import { EntityWizardValues, emptyEntityTemplate } from '../../dialogs/entity';
 import { IChooseTemplateMode } from '../../dialogs/entity/ChooseTemplate';
 import { CreateOrEditEntityDetails } from '../../dialogs/entity/CreateOrEditEntityDialog';
 import { TableButton } from '../../TableButton';
+
+const isTwinWalletsInTransferTemplate = (properties: Record<string, any>, template: IMongoEntityTemplatePopulated, twinTemplates: string[]) => {
+    if (!template.walletTransfer) return false;
+    const sourceWalletTemplateId = properties[template.walletTransfer?.from].templateId;
+    const destWalletTemplateId = properties[template.walletTransfer?.to].templateId;
+
+    return twinTemplates.includes(sourceWalletTemplateId) && twinTemplates.includes(destWalletTemplateId);
+};
 
 const AddEntityButton: React.FC<{
     style?: CSSProperties;
@@ -43,6 +53,9 @@ const AddEntityButton: React.FC<{
     parentId,
     getInitialProperties,
 }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { twinTemplates } = workspace.metadata;
+
     const [addEntityWizardState, setAddEntityWizardState] = useState<{
         isOpen: boolean;
         initialStep?: number;
@@ -63,12 +76,20 @@ const AddEntityButton: React.FC<{
     const disabledColor = darkMode ? 'rgba(255, 255, 255, 0.26)' : 'rgba(0, 0, 0, 0.26)';
 
     const template = addEntityWizardState.initialValues?.template;
+    const queryClient = useQueryClient();
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const handleSuccess = (entity: IEntity) => {
+    const handleSuccess = async (entity: IEntity) => {
+        const entityTemplate = entityTemplates.get(entity.templateId)!;
+        const isTwinWallets = isTwinWalletsInTransferTemplate(entity.properties, entityTemplate, twinTemplates);
+
         onSuccessCreate?.(entity);
         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
         setExternalErrors({ files: false, unique: {}, action: '' });
-        setUpdatedTemplateIds?.([entity.templateId]);
+        setUpdatedTemplateIds?.([
+            entity.templateId,
+            isTwinWallets && !!entityTemplate.walletTransfer ? entity.properties[entityTemplate.walletTransfer?.to]?.templateId : undefined,
+        ]);
         setUpdatedEntities?.(
             Object.values(entity.properties).filter(
                 (property): property is IEntity => typeof property === 'object' && 'templateId' in property && 'properties' in property,

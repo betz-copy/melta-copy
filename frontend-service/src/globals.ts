@@ -36,6 +36,7 @@ export const environment = {
         workspaces: '/workspaces',
         dashboard: '/dashboard',
     },
+    twinWalletId: '$twin',
     unauthorizedId: 'unauthorized',
     clientSideId: 'client-side',
     defaultTitle: 'Melta',
@@ -96,6 +97,9 @@ export const environment = {
         heightPaddingMultiplier: 0.3,
         widthPaddingMultiplier: 0.6,
     },
+    excludedFormats: ['text-area', 'fileId', 'relationshipReference', 'user', 'location', 'signature', 'comment'] as string[],
+    signatureFields: ['signedByDetails', 'stampedByDetails'],
+    signatureFieldDetails: ['fullName', 'rank', 'personalNumber', 'signature'],
     users: {
         kartoffelProfile: 'kartoffelProfile',
     },
@@ -363,7 +367,12 @@ export const environment = {
     dateRegex: /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/,
     dateTimeRegex: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
     objectIdRegex: /^[0-9a-fA-F]{24}$/,
-    maxPrintLevel: 5,
+    print: {
+        maxPrintLevel: 4,
+        neoIdsPathSeparator: ' ',
+        relationshipPathSeparator: '&',
+        neoRelIdsSeparator: ',',
+    },
     formats: {
         date: 'dd/MM/yyyy',
         dateTime: 'dd/MM/yyyy HH:mm',

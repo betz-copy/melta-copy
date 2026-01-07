@@ -8,9 +8,9 @@ import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulate
 import { IUpdateEntityMetadataPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
 import { IGetUnits } from '../../interfaces/units';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { formatToString } from '../../utils/entityProperties';
 import { getFileName } from '../../utils/getFileName';
 import { containsHTMLTags } from '../../utils/HtmlTagsStringValue';
-import { formatToString } from '../EntityProperties';
 
 const getEntityPropertyString = (
     value: any,

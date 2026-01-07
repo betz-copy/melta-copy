@@ -19,6 +19,8 @@ import {
     getEntityByIdRequestSchema,
     getExpandedGraphByIdRequestSchema,
     getIfValueFieldIsUsedRequestSchema,
+    getPrintEntitiesByIdRequestSchema,
+    getPrintTemplatesByIdRequestSchema,
     getSelectedEntitiesRequestSchema,
     runRulesWithTodayFuncRequestSchema,
     searchEntitiesBatchRequestSchema,
@@ -83,12 +85,24 @@ entityRouter.get('/get-is-field-used/:id', ValidateRequest(getIfValueFieldIsUsed
 
 entityRouter.post('/rules/dependant', ValidateRequest(getDependentRulesRequestSchema), entityController.getDependentRules);
 
+// Print
+entityRouter.post(
+    '/templatesStructure/:id',
+    ValidateRequest(getPrintTemplatesByIdRequestSchema),
+    entityValidatorController.validatePrintBody,
+    entityController.printTemplates,
+);
+
+entityRouter.post('/printEntities/:id', ValidateRequest(getPrintEntitiesByIdRequestSchema), entityController.printEntities);
+
+// Graph
 entityRouter.post(
     '/expanded/:id',
     ValidateRequest(getExpandedGraphByIdRequestSchema),
     entityValidatorController.validateFilterBatchBody,
     entityController.getExpandedGraphById,
 );
+
 entityRouter.post('/chart/:templateId', ValidateRequest(chartSchema), entityController.getChartOfTemplate);
 entityRouter.post('/', ValidateRequest(createEntityRequestSchema), entityValidatorController.validateEntityRequest, entityController.createEntity);
 entityRouter.get('/:id', ValidateRequest(getEntityByIdRequestSchema), entityController.getEntityById);

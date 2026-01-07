@@ -172,6 +172,10 @@ const useMutationHandler = (
 
         toast.dismiss();
 
+        const accountBalancePropertyKey = Object.entries(values.template.properties.properties).find(([_key, value]) => value?.accountBalance)?.[0];
+
+        if (accountBalancePropertyKey && !values.properties[accountBalancePropertyKey]) values.properties[accountBalancePropertyKey] = 0;
+
         const mutationPromise = mutateAsync({ newEntityData: values, ignoredRules });
         const isUpdate = actionType === ActionTypes.UpdateEntity;
 

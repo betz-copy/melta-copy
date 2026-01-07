@@ -258,8 +258,15 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
             entityTemplateToUpdate = await this.upsertRelationshipsProperties(entityTemplateToUpdate, session, true);
         }
 
+        const updateData: any = { ...entityTemplateToUpdate };
+
+        if (entityTemplateToUpdate.walletTransfer === null) {
+            updateData.$unset = { walletTransfer: '' };
+            delete updateData.walletTransfer;
+        }
+
         const updatedEntityTemplate = await this.model
-            .findByIdAndUpdate(id, entityTemplateToUpdate, {
+            .findByIdAndUpdate(id, updateData, {
                 new: true,
                 overwrite: true,
                 session,
