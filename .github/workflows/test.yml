@@ -15,7 +15,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
-
+# 
       - name: Configure npm for GitLab registry
         run: |
           echo "@yesodot:registry=https://gitlab.com/api/v4/projects/29372887/packages/npm/" >> ~/.npmrc
