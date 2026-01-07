@@ -355,6 +355,7 @@ const buildBasePropertySchema = (property: EntityTemplateFormInputProperties, qu
     return {
         title,
         type: propertyType,
+        // biome-ignore lint/suspicious/noExplicitAny: fixed after the refactor
         format: stringFormats.includes(type as any) ? (type as PropertyFormat) : undefined,
         enum: type === 'enum' ? options : undefined,
         items:

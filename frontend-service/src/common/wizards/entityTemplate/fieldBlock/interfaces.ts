@@ -1,7 +1,7 @@
 import { Accordion, styled } from '@mui/material';
 import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import React, { SetStateAction } from 'react';
-import { IUniqueConstraintOfTemplate } from '../../../../interfaces/entities';
+import { IPropertyValue, IUniqueConstraintOfTemplate } from '../../../../interfaces/entities';
 import { StepComponentHelpers } from '../..';
 import { PropertiesTypes } from '../AddFields';
 import { CommonFormInputProperties, GroupProperty, PropertyItem } from '../commonInterfaces';
@@ -25,9 +25,9 @@ export interface FieldProps {
     values: Record<string, PropertyItem[]>;
     index: number;
     parentId: string | null;
-    onDrop: (item: any, toIndex: number, toGroupId: string | null) => void;
+    onDrop: (item: IPropertyValue, toIndex: number, toGroupId: string | null) => void;
     buildProps: Omit<FieldEditCardProps, 'setFieldValue'>;
-    setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
+    setFieldValue: (field: keyof CommonFormInputProperties, value: IPropertyValue) => void;
     setValues: (value: SetStateAction<CommonFormInputProperties>) => void;
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
     setUniqueConstraints?: (uniqueConstraints: SetStateAction<IUniqueConstraintOfTemplate[]>) => void;
@@ -48,8 +48,9 @@ export interface GroupProps<PropertiesType extends string, Values extends Record
     remove: (index: number) => void;
     uniqueConstraints: IUniqueConstraintOfTemplate[] | undefined;
     setUniqueConstraints: ((uniqueConstraints: SetStateAction<IUniqueConstraintOfTemplate[]>) => void) | undefined;
-    setFieldDisplayValueWrapper: (index: number, groupIndex?: number) => (field: keyof Values, value: any) => void;
+    setFieldDisplayValueWrapper: (index: number, groupIndex?: number) => (field: keyof Values, value: IPropertyValue) => void;
     setDisplayValueWrapper: (index: number, groupId?: string) => (value: SetStateAction<CommonFormInputProperties>) => void;
+    // biome-ignore lint/suspicious/noExplicitAny: lol
     buildProps: any;
     addFieldToGroup: (item: GroupProperty) => void;
     addPropertyButtonLabel: string;
@@ -62,6 +63,7 @@ export interface GroupProps<PropertiesType extends string, Values extends Record
 export interface AttachmentsProps {
     field: CommonFormInputProperties;
     index: number;
+    // biome-ignore lint/suspicious/noExplicitAny: lol
     buildProps: any;
     onDrop: (item: CommonFormInputProperties, toIndex: number, toGroupId: string | null) => void;
 }

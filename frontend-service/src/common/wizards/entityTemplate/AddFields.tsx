@@ -206,11 +206,11 @@ const groupSchema = Yup.object({
         .min(1, i18next.t('validation.oneField'))
         .test('hasNonArchivedFields', i18next.t('validation.oneField'), (entries) => {
             if (!entries) return false;
-            return entries.some((item: any) => item.archive !== true);
+            return entries.some((item) => (item as CommonFormInputProperties).archive !== true);
         })
         .test('hasNonDeletedFields', i18next.t('validation.oneField'), (entries) => {
             if (!entries) return false;
-            return entries.some((item: any) => item.deleted !== true);
+            return entries.some((item) => (item as CommonFormInputProperties).deleted !== true);
         }),
 });
 const fieldByTypeSchema = Yup.lazy((item: PropertyItem) => {
@@ -316,13 +316,12 @@ export const FieldBlockWrapper = ({
 
     const isWalletTemplate = hasAccountBalanceField(Object.values(values.properties) as PropertyItem[]);
 
-    const countMapSearchProperties = Object.values(values.properties).flatMap((property: any) => {
-        if (property.type === 'field' && property.data?.mapSearch) return [property];
+    const propertyValues = Object.values(values.properties) as PropertyItem[];
 
-        if (property.type === 'group' && Array.isArray(property.fields)) return property.fields.filter((field) => field.mapSearch);
-
-        return [];
-    }).length;
+    const countMapSearchProperties = propertyValues.reduce((count, property) => {
+        if (property.type === 'field' && property.data?.mapSearch) return count + 1;
+        return count;
+    }, 0);
 
     if (countMapSearchProperties > mapSearchPropertiesLimit) setBlock(true);
     const { data: areThereInstancesByTemplateIdResponse } = useQuery(
@@ -347,7 +346,7 @@ export const FieldBlockWrapper = ({
         indexesInTypes: { index: number; type: PropertiesTypes; groupIndex?: number }[],
         field: 'deleted' | 'archive',
         value: boolean,
-        currentValues: any,
+        currentValues: EntityTemplateWizardValues,
     ) => {
         const displayValuesCopy = { ...currentValues };
 

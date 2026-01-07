@@ -5,8 +5,8 @@ import { useQuery, useQueryClient } from 'react-query';
 import TemplateTable, { TemplateTableRef } from '../../../common/EntitiesPage/TemplateTable';
 import { TemplateTablesViewResultsRef } from '../../../common/EntitiesPage/TemplateTablesView';
 import { TablePageType } from '../../../common/EntitiesTableOfTemplate';
-import { IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
-import { IEntity } from '../../../interfaces/entities';
+import { IFilter, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
+import { IEntity, IPropertyValue } from '../../../interfaces/entities';
 import { IEntitySingleProperty, IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { countEntitiesOfTemplatesByUserEntityId } from '../../../services/clientSideService';
 
@@ -77,7 +77,7 @@ const UserEntityTables = forwardRef<UserEntityTablesRef, IUserEntityTablesProps>
                             const childTemplatePropertiesList = Object.keys(properties);
                             const childTemplateProperties = Object.fromEntries(
                                 Object.entries(parentTemplate.properties.properties).filter(([key]) => childTemplatePropertiesList.includes(key)),
-                            ) as Record<string, IEntitySingleProperty & { defaultValue?: any; isEditableByUser?: boolean }>;
+                            ) as Record<string, IEntitySingleProperty & { defaultValue?: IPropertyValue; isEditableByUser?: boolean }>;
 
                             for (const propertyKey of Object.keys(childTemplateProperties)) {
                                 childTemplateProperties[propertyKey] = {
@@ -94,7 +94,7 @@ const UserEntityTables = forwardRef<UserEntityTablesRef, IUserEntityTablesProps>
                                               const filters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
                                               if (filters.$and) {
                                                   const transformedFilters = filters.$and
-                                                      .map((filter: any) => {
+                                                      .map((filter: IFilter) => {
                                                           const fieldFilter = filter[key];
                                                           if (fieldFilter) return { [key]: fieldFilter };
 

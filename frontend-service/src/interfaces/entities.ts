@@ -2,7 +2,7 @@ import { Readable } from 'node:stream';
 import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridSetFilter, IAGGridTextFilter } from '../utils/agGrid/interfaces';
 import { IMongoEntityTemplatePopulated } from './entityTemplates';
 import { IFailedEntity } from './excel';
-import { IRelationship } from './relationships';
+import { IMongoRelationship, IRelationship } from './relationships';
 import { IMongoRelationshipTemplate } from './relationshipTemplates';
 import { ICreateEntityMetadata } from './ruleBreaches/actionMetadata';
 import { IBrokenRule } from './ruleBreaches/ruleBreach';
@@ -24,7 +24,7 @@ export interface IEntity {
 }
 
 export type IConnection = {
-    relationship: Pick<IRelationship, 'templateId' | 'properties'>;
+    relationship: Pick<IMongoRelationship, 'templateId' | 'properties'>;
     sourceEntity: IEntity;
     destinationEntity: IEntity;
 };

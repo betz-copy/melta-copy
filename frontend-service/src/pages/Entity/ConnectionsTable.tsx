@@ -18,7 +18,7 @@ import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { PermissionScope } from '../../interfaces/permissions';
 import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
-import { IRelationship } from '../../interfaces/relationships';
+import { IMongoRelationship, IRelationship } from '../../interfaces/relationships';
 import { useClientSideUserStore } from '../../stores/clientSideUser';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
@@ -148,7 +148,9 @@ export const ConnectionsTable: React.FC<{
 
     const userHasWritePermissions = isUserHasWritePermissions(currentClientSideUser, currentUser, template);
 
-    const onCreateRelationship = (createdRelationship: IRelationship, sourceEntity: IEntity, destinationEntity: IEntity) => {
+    const onCreateRelationship = (createdRelationship: IMongoRelationship, sourceEntity: IEntity, destinationEntity: IEntity) => {
+        console.log({ createdRelationship });
+
         const doesCreatedRelationshipWithCurrEntity = [createdRelationship.sourceEntityId, createdRelationship.destinationEntityId].includes(
             expandedEntity.entity.properties._id!,
         );

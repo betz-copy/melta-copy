@@ -2,6 +2,7 @@ import {
     IChildTemplate,
     IChildTemplatePopulated,
     IChildTemplateProperty,
+    IFilter,
     IMongoChildTemplateWithConstraintsPopulated,
 } from '../interfaces/childTemplate';
 import { IFilterGroup, IFilterOfTemplate, ISearchFilter } from '../interfaces/entity';
@@ -26,9 +27,9 @@ const parseFilterObject = (filters: string | ISearchFilter | null): ISearchFilte
     return typeof filters === 'object' && filters !== null ? filters : null;
 };
 
-const getFilteredEnum = (enumVals: string[], filterObj: any): string[] | undefined => {
+const getFilteredEnum = (enumVals: string[], filterObj: IFilter): string[] | undefined => {
     const enumEquals = filterObj.$or
-        .map((condition) => (Object.values(condition) as any)[0]?.$in)
+        .map((condition) => (Object.values(condition) as IFilter)[0]?.$in)
         .filter((val): val is string[] => Array.isArray(val))
         .flat();
 

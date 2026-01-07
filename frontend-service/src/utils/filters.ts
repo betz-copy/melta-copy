@@ -1,3 +1,4 @@
+import { IFilter } from '../interfaces/childTemplates';
 import { IPropertyValue, ISearchEntitiesOfTemplateBody, ISearchFilter } from '../interfaces/entities';
 
 const evaluateOperator = (operator: string, actual: IPropertyValue, expected: IPropertyValue): boolean => {
@@ -37,9 +38,9 @@ const evaluateOperator = (operator: string, actual: IPropertyValue, expected: IP
     }
 };
 
-const matchValueAgainstFilter = (data: Record<string, IPropertyValue>, filter: any): boolean => {
-    if ('$and' in filter) return filter.$and.every((f: any) => matchValueAgainstFilter(data, f));
-    if ('$or' in filter) return filter.$or.some((f: any) => matchValueAgainstFilter(data, f));
+const matchValueAgainstFilter = (data: Record<string, IPropertyValue>, filter: IFilter): boolean => {
+    if ('$and' in filter) return filter.$and.every((f: IFilter) => matchValueAgainstFilter(data, f));
+    if ('$or' in filter) return filter.$or.some((f: IFilter) => matchValueAgainstFilter(data, f));
 
     const [field, condition] = Object.entries(filter)[0];
     const actual = data[field];

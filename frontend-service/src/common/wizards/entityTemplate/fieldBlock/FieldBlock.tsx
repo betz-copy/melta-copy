@@ -8,6 +8,7 @@ import { DndProvider, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useQueryClient } from 'react-query';
 import { v4 as uuid } from 'uuid';
+import { IPropertyValue } from '../../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { AreYouSureDialog } from '../../../dialogs/AreYouSureDialog';
 import { PropertiesTypes } from '../AddFields';
@@ -147,7 +148,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         updateFormikDebounced();
     };
 
-    const setFieldDisplayValue = (indexesToUpdate: { index: number; groupIndex?: number }[], field: keyof Values, value: any) => {
+    const setFieldDisplayValue = (indexesToUpdate: { index: number; groupIndex?: number }[], field: keyof Values, value: IPropertyValue) => {
         const displayValuesCopy = [...orderedItemsRef.current] as Values[PropertiesType];
         indexesToUpdate.forEach(({ index, groupIndex }) => {
             if (groupIndex !== undefined) {
@@ -350,7 +351,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
     const onChangeWrapper = (index: number, groupIndex?: number) => (event: React.ChangeEvent<HTMLInputElement>) =>
         onChange(index, event, groupIndex);
 
-    const setFieldDisplayValueWrapper = (index: number, groupIndex?: number) => (field: keyof Values, value: any) =>
+    const setFieldDisplayValueWrapper = (index: number, groupIndex?: number) => (field: keyof Values, value: IPropertyValue) =>
         setFieldDisplayValue([{ index, groupIndex }], field, value);
     const setDisplayValueWrapper = (index: number, groupId?: string) => (value: SetStateAction<CommonFormInputProperties>) =>
         setDisplayValue(index, value, groupId);
@@ -416,6 +417,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         const initialVal = findInitialValue();
 
         return {
+            // biome-ignore lint/suspicious/noExplicitAny: types are shit in this page
             entity: (values as any).displayName,
             value: propertyProp,
             index,
@@ -431,6 +433,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
             supportUserType,
             supportEntityReferenceType,
             supportChangeToRequiredWithInstances,
+            // biome-ignore lint/suspicious/noExplicitAny: types are shit in this page
             templateId: (values as any)._id,
             supportArrayFields,
             supportDeleteForExistingInstances,

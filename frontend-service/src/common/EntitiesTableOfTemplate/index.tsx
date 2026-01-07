@@ -206,7 +206,7 @@ export const getRowModelProps = <Data extends EntityData>(
 
     return {
         rowModelType: 'serverSide',
-        serverSideDatasource: getDatasource<IConnection>(
+        serverSideDatasource: getDatasource(
             template,
             quickFilterText,
             datasourceOnFail,

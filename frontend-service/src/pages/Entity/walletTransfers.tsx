@@ -85,7 +85,7 @@ export const WalletTransfers = ({ templateId, connectionsTemplates, expandedEnti
             const nonCurrentWalletEntity = sourceIsWallet ? destinationEntity : sourceEntity;
             const nonCurrentWalletTemplate = sourceIsWallet ? relationshipTemplate.destinationEntity : relationshipTemplate.sourceEntity;
 
-            const createdAt = new Date((connection.relationship.properties as any).createdAt).getTime();
+            const createdAt = new Date(connection.relationship.properties.createdAt).getTime();
             const direction = sourceIsWallet ? Direction.to : Direction.from;
 
             const relatedTemplate = sourceIsWallet ? connection.destinationEntity : connection.sourceEntity;
@@ -290,6 +290,7 @@ export const WalletTransfers = ({ templateId, connectionsTemplates, expandedEnti
             <Grid container sx={{ marginTop: 2 }}>
                 <AgGridTable
                     defaultColDef={defaultColDef as ColDef<WalletTransferData>}
+                    // biome-ignore lint/suspicious/noExplicitAny: shirel will fix that
                     getRowId={(params: any) => params.data.entity.properties._id}
                     rowModelProps={rowModelProps}
                     columnDefs={columnDefs}

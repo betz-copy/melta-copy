@@ -4,7 +4,8 @@ import { CSSProperties } from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
 
 interface IFormikAutoCompleteProps<T> {
-    formik: FormikProps<T>;
+    // biome-ignore lint/suspicious/noExplicitAny: generic
+    formik: FormikProps<any>;
     formikField: string;
     options: T[];
     label: string;
