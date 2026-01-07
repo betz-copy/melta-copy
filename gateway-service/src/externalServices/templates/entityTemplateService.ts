@@ -3,7 +3,7 @@ import { IChildTemplate, IChildTemplatePopulated, IMongoChildTemplatePopulated }
 import { IEntityTemplate, IMongoEntityTemplate, IMongoEntityTemplatePopulated, ISearchEntityTemplatesBody } from '@packages/entity-template';
 import { ISubCompactPermissions } from '@packages/permission';
 import { IMongoRelationshipTemplate } from '@packages/relationship-template';
-import { ConfigTypes, ICategoryOrderConfig, IMongoBaseConfig, IMongoCategoryOrderConfig } from '@packages/workspace-configs';
+import { ConfigTypes, ICategoryOrderConfig, IMongoBaseConfig, IMongoCategoryOrderConfig } from '@packages/workspace';
 import config from '../../config';
 import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import TemplatesManagerService from '.';

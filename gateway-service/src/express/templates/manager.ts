@@ -25,7 +25,7 @@ import { IMongoRelationshipTemplate, ISearchRelationshipTemplatesBody } from '@p
 import { IFormula, IMongoRule, IRule, ISearchRulesBody } from '@packages/rule';
 import { RelatedPermission } from '@packages/user';
 import { BadRequestError, logger, NotFoundError, ServiceError, ValidationError } from '@packages/utils';
-import { ConfigTypes, ICategoryOrderConfig, IMongoBaseConfig, IMongoCategoryOrderConfig } from '@packages/workspace-configs';
+import { ConfigTypes, ICategoryOrderConfig, IMongoBaseConfig, IMongoCategoryOrderConfig } from '@packages/workspace';
 import { AxiosError, AxiosResponse } from 'axios';
 import { StatusCodes } from 'http-status-codes';
 import _, { groupBy } from 'lodash';

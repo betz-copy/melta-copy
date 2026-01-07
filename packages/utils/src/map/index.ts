@@ -1,6 +1,7 @@
 import { SplitBy } from '@packages/common';
 import config from '@packages/config';
 import proj4 from 'proj4';
+import type { Cartesian3 } from 'cesium';
 import { BadRequestError } from '../express/error';
 
 const locationFormatError = 'location format not valid';
@@ -27,11 +28,6 @@ export type UTM = {
     hemi: Hemisphere; // Hemisphere (North or South)
     east: number; // Easting (6-digit)
     north: number; // Northing (7-digit)
-};
-
-export type Cartesian3 = {
-    x: number;
-    y: number;
 };
 
 export enum MapItemType {

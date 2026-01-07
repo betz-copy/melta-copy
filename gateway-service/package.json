@@ -38,7 +38,6 @@
         "@packages/user": "workspace:*",
         "@packages/utils": "workspace:*",
         "@packages/workspace": "workspace:*",
-        "@packages/workspace-configs": "workspace:*",
         "@yesodot/passport-shraga": "^1.5.2",
         "busboy": "^1.6.0",
         "cheerio": "^1.1.2",

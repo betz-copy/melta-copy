@@ -1,5 +1,5 @@
 import { DefaultManagerMongo, NotFoundError } from '@packages/utils';
-import { ConfigTypes, ICategoryOrderConfig, IMongoBaseConfig, IMongoCategoryOrderConfig } from '@packages/workspace-configs';
+import { ConfigTypes, ICategoryOrderConfig, IMongoBaseConfig, IMongoCategoryOrderConfig } from '@packages/workspace';
 import mongoose from 'mongoose';
 import config from '../../config';
 import { ConfigSchema, orderConfigSchema } from './model';

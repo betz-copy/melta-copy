@@ -1,5 +1,5 @@
 import { DefaultController } from '@packages/utils';
-import { ConfigTypes, IMongoBaseConfig } from '@packages/workspace-configs';
+import { ConfigTypes, IMongoBaseConfig } from '@packages/workspace';
 import { Request, Response } from 'express';
 import ConfigManager from './manager';
 

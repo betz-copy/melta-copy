@@ -76,7 +76,7 @@ const getFakeParentByChildren = (id: string, groupChildTemplate?: Record<string,
         propertiesOrder,
         _id: id,
         displayName: relevantGroup[0].parentTemplate.displayName,
-    } as IMongoChildTemplateWithConstraintsPopulated;
+    };
 };
 
 export const getFullRelationshipTemplates = (

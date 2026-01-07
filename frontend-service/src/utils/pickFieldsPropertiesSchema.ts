@@ -1,4 +1,5 @@
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IProcessDetails } from '@packages/process';
 import pickBy from 'lodash.pickby';
 export const filterFieldsFromPropertiesSchema = (
     schema: IMongoEntityTemplateWithConstraintsPopulated['properties'] | undefined = {} as IMongoEntityTemplateWithConstraintsPopulated['properties'],
@@ -23,10 +24,11 @@ export const filterFieldsFromPropertiesSchema = (
     };
 };
 
-export const pickProcessFieldsPropertiesSchema = (schema: any): IMongoEntityTemplateWithConstraintsPopulated['properties'] => {
+export const pickProcessFieldsPropertiesSchema = (schema: IProcessDetails): IMongoEntityTemplateWithConstraintsPopulated['properties'] => {
     const filteredProperties = filterFieldsFromPropertiesSchema({
-        ...schema.properties,
+        type: 'object',
         hide: [],
+        properties: schema.properties.properties as unknown as Record<string, IEntitySingleProperty>,
         required: schema.properties.required,
     });
 

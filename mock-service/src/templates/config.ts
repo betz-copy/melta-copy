@@ -1,6 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 import { IMongoCategory } from '@packages/category';
-import { ConfigTypes, ICategoryOrderConfig, IMongoCategoryOrderConfig } from '@packages/workspace-configs';
+import { ConfigTypes, ICategoryOrderConfig, IMongoCategoryOrderConfig } from '@packages/workspace';
 import config from '../config';
 import createAxiosInstance from '../utils/axios';
 

@@ -1,4 +1,4 @@
-import { ConfigTypes } from '@packages/workspace-configs';
+import { ConfigTypes } from '@packages/workspace';
 import assert from 'assert';
 import { Request, Response } from 'express';
 import config from '../../config';

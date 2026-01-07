@@ -1,6 +1,6 @@
 import { ViewType } from '@packages/child-template';
 import { ColorSchema, fileSchema, filterOfTemplateSchema, iconFileSchema, MongoIdSchema } from '@packages/utils';
-import { ConfigTypes } from '@packages/workspace-configs';
+import { ConfigTypes } from '@packages/workspace';
 import Joi from 'joi';
 import { ExtendedJoi } from '../../utils/joi';
 

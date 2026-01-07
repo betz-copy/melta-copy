@@ -148,7 +148,7 @@ export const locationConverterToString = (
     }
 
     const wgs84Location = stringToCoordinates(location, false);
-    const utmLocation = convertWGS84ToUTM(wgs84Location.value as Cartesian3 | Cartesian3[]);
+    const utmLocation = convertWGS84ToUTM(wgs84Location.value);
     if (!Array.isArray(utmLocation)) return `${utmLocation.zone}${utmLocation.hemi} ${utmLocation.east} ${utmLocation.north}`;
 
     const points = utmLocation.map((point) => {
