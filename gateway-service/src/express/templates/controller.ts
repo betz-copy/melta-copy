@@ -142,7 +142,7 @@ export default class TemplatesController extends DefaultController<TemplatesMana
         const { user, permissionsOfUserId, searchQuery } = req as RequestWithSearchEntityTemplateBody;
         assert(user, userDoesntExistUnderReq);
 
-        res.json(await this.manager.searchEntityTemplates(permissionsOfUserId, searchQuery, user.id));
+        res.json(await this.manager.searchEntityTemplates(permissionsOfUserId, searchQuery || req.body, user.id));
     }
 
     // childTemplates
