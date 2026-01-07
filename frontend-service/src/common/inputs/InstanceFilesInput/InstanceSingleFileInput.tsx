@@ -3,6 +3,7 @@ import { Field, FormikProps } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
 import { Accept } from 'react-dropzone';
+import { IExternalErrors } from '../../../interfaces/CreateOrEditEntityDialog';
 import { ProcessDetailsValues } from '../../wizards/processInstance/ProcessDetails';
 import { ProcessStepValues } from '../../wizards/processInstance/ProcessSteps';
 import FileInput from '../ImageFileInput';
@@ -18,13 +19,7 @@ interface InstanceFileInputProps {
     error: string | undefined;
     acceptedFilesTypes?: Accept;
     setFieldTouched: FormikProps<ProcessFormikProps>['setFieldTouched'];
-    setExternalErrors?: React.Dispatch<
-        React.SetStateAction<{
-            files: boolean;
-            unique: {};
-            action: string;
-        }>
-    >;
+    setExternalErrors?: React.Dispatch<React.SetStateAction<IExternalErrors>>;
     onDrop?: (file: File) => Promise<void>;
     isLoading?: boolean;
     disableCamera?: boolean;

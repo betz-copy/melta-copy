@@ -10,7 +10,7 @@ import { ErrorToast } from '../../../common/ErrorToast';
 import { environment } from '../../../globals';
 import { IEntity } from '../../../interfaces/entities';
 import { IErrorResponse } from '../../../interfaces/error';
-import { IBrokenRuleEntity } from '../../../interfaces/excel';
+import { IBrokenRuleEntity, ITablesResults } from '../../../interfaces/excel';
 import {
     ActionTypes,
     IAction,
@@ -75,7 +75,7 @@ const getUpdateEntityActionMetadata = (currEntity: IEntity, updateEntityFormData
 type BaseActionProps = {
     isLoadingActionOnEntity: boolean;
     handleClose: () => void;
-    doActionEntity: () => Promise<any>;
+    doActionEntity: () => Promise<void> | Promise<IEntity> | Promise<ITablesResults>;
     currEntity?: IEntity;
     entityFormData: EntityWizardValues;
     onUpdatedRuleBlock: (brokenRules: IRuleBreachPopulated['brokenRules'], rawBrokenRules: IRuleBreach['brokenRules']) => void;

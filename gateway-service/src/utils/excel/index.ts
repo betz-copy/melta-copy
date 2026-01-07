@@ -63,6 +63,7 @@ export const getSerialStarters = (template: IMongoEntityTemplatePopulated | IChi
 };
 
 export const classifyEntityErrors = (
+    // biome-ignore lint/suspicious/noExplicitAny: error any type
     error: any,
     failedEntities: IFailedEntity[],
     entity: IEntity,

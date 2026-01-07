@@ -147,11 +147,7 @@ const PrintOptionsDialog: React.FC<{
                                             : [{ ...getFile(newVal.value), isLoading: true }],
                                     );
                                 }}
-                                textFieldProps={{}}
-                                onBlur={() => {}}
-                                onFocus={() => {}}
                                 variant="outlined"
-                                rawErrors={[]}
                                 label={i18next.t('entityPage.print.chooseFiles')}
                             />
                         )}

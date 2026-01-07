@@ -290,7 +290,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                 </Box>
                                             ) : (
                                                 templateFileProperties && (
-                                                    <>
+                                                    <div>
                                                         {Object.entries(templateFileProperties).map(([fieldName, { title }]) => {
                                                             let attachments: React.JSX.Element | React.JSX.Element[] = (
                                                                 <Typography display="inline" variant="h6">
@@ -330,7 +330,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                                 </Grid>
                                                             );
                                                         })}
-                                                    </>
+                                                    </div>
                                                 )
                                             )}
                                         </Grid>

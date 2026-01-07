@@ -56,7 +56,7 @@ const testFields = (
         properties2.forEach((field2) => {
             if (field1.id === field2.id) return;
 
-            const isDeleted = (field: any) => field.deleted === true;
+            const isDeleted = (field) => field.deleted === true;
 
             const shouldCompare = groupTest || (!isDeleted(field1) && !isDeleted(field2));
 

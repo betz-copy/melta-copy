@@ -7,7 +7,7 @@ import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
-import { IEntityWithIgnoredRules } from '../../../interfaces/entities';
+import { IEntityWithIgnoredRules, IPropertyValue } from '../../../interfaces/entities';
 import { EntitiesWizardValues, ExcelStepStatus, IExcelSteps } from '../../../interfaces/excel';
 import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
@@ -75,6 +75,7 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                 return data;
             },
             onError(error: AxiosError) {
+                // biome-ignore lint/suspicious/noExplicitAny: error is any
                 const { message } = error.response?.data as any;
                 if (message === 'Invalid excel') toast.error(i18next.t('wizard.entity.loadEntities.filesWrongTemplate'));
                 else if (message.includes('file limit')) toast.error(i18next.t('wizard.entity.loadEntities.limitNumberEntities') + entitiesFileLimit);
@@ -120,7 +121,15 @@ const EditExcelWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     );
 
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
-        async ({ fileName, headersOnly, insertEntities }: { fileName: string; headersOnly?: boolean; insertEntities?: Record<string, any>[] }) => {
+        async ({
+            fileName,
+            headersOnly,
+            insertEntities,
+        }: {
+            fileName: string;
+            headersOnly?: boolean;
+            insertEntities?: Record<string, IPropertyValue>[];
+        }) => {
             return exportEntitiesRequest({
                 fileName,
                 templates: {

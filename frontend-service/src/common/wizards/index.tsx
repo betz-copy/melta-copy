@@ -27,6 +27,7 @@ export type StepType<T extends object> = {
     label: string;
     description?: string;
     component: (formikProps: FormikProps<T>, helpers: StepComponentHelpers) => JSX.Element;
+    // biome-ignore lint/suspicious/noExplicitAny: generic
     validationSchema?: any;
     validate?: FormikConfig<T>['validate'];
     stepperActions?: {
@@ -57,6 +58,7 @@ const Wizard = <T extends object>({
         title: string;
         steps: StepType<T>[];
         isLoading: boolean;
+        // biome-ignore lint/suspicious/noExplicitAny: generic
         submitFunction: (values: T) => Promise<any>;
         direction?: 'row' | 'column';
         showPrevSteps?: boolean;

@@ -1,5 +1,5 @@
 import { IMongoCategory } from './category';
-import { ISearchFilter, IUniqueConstraintOfTemplate } from './entity';
+import { IPropertyValue, ISearchFilter, IUniqueConstraintOfTemplate } from './entity';
 
 export enum PropertyType {
     string = 'string',
@@ -64,7 +64,7 @@ export interface IEntitySingleProperty {
     color?: string;
     hideFromDetailsPage?: boolean;
     filters?: any;
-    defaultValue?: any;
+    defaultValue?: IPropertyValue;
     accountBalance?: boolean;
 }
 export interface IProperties {

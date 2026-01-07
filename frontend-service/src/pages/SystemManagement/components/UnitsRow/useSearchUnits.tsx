@@ -1,10 +1,11 @@
 import _ from 'lodash';
 import { useCallback, useEffect, useState } from 'react';
+import { IPropertyValue } from '../../../../interfaces/entities';
 import { IUnitHierarchy } from '../../../../interfaces/units';
 
 const filterNodes = (
     node: IUnitHierarchy,
-    filterObject: Record<string, { value: any; mode: 'includes' | 'equals' }>,
+    filterObject: Record<string, { value: IPropertyValue; mode: 'includes' | 'equals' }>,
     flattenedTree: IUnitHierarchy[] = [],
 ): { node: IUnitHierarchy; flattenTree: IUnitHierarchy[] } | null => {
     const matches = Object.entries(filterObject).every(([prop, rule]) => {

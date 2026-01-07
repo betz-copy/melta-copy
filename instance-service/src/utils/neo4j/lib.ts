@@ -3,6 +3,7 @@ import {
     IEntity,
     IEntityExpanded,
     IEntityWithDirectRelationships,
+    IPropertyValue,
     IRelationship,
     SplitBy,
     ValidationError,
@@ -48,7 +49,9 @@ export const formatDate = (date: string) => {
  * Fix the values of an entity that is saved in neo4j to its original values.
  * For example dates and fixing the user fields to be without the suffix.
  */
-export const normalizeFields = (properties: Record<string, any>): { properties: Record<string, any>; coloredFields: Record<string, string> } => {
+export const normalizeFields = (
+    properties: Record<string, IPropertyValue>,
+): { properties: Record<string, IPropertyValue>; coloredFields: Record<string, string> } => {
     const props = {};
     const coloredFields = {};
 
@@ -326,6 +329,7 @@ export const runInTransactionAndNormalize = async <T>(
     transaction: Transaction,
     cypherQuery: string,
     normalizeFunction: (queryResult: QueryResult) => T,
+    // biome-ignore lint/suspicious/noExplicitAny: never doubt Noam
     parameters?: Record<string, any>,
 ): Promise<T> => {
     const result = await transaction.run(cypherQuery, parameters);
@@ -355,7 +359,7 @@ export const generateDefaultProperties = () => {
     };
 };
 
-const getLocationPoint = (pointString: string, splitBy: SplitBy, entityProperties: Record<string, any>, key: string) => {
+const getLocationPoint = (pointString: string, splitBy: SplitBy, entityProperties: Record<string, IPropertyValue>, key: string) => {
     const [longitude, latitude] = pointString.split(splitBy).map(Number);
     if (Number.isNaN(longitude) || Number.isNaN(latitude)) {
         throw new ValidationError('Invalid format. Expected format: "number, number".', {
@@ -377,7 +381,7 @@ const getLocationPoint = (pointString: string, splitBy: SplitBy, entityPropertie
     return new neo4j.types.Point(srid, longitude, latitude);
 };
 
-export const getNeo4jLocation = (locationString: string, entityProperties: Record<string, any>, key: string) => {
+export const getNeo4jLocation = (locationString: string, entityProperties: Record<string, IPropertyValue>, key: string) => {
     if (!locationString.startsWith('POLYGON')) return getLocationPoint(locationString, SplitBy.comma, entityProperties, key);
 
     if (!locationString.startsWith(polygonPrefix) || !locationString.endsWith(polygonSuffix)) {

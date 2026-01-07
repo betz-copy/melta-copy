@@ -15,7 +15,7 @@ const isChildTemplate = (
     return 'parentTemplate' in template && Boolean(template.parentTemplate);
 };
 
-const parseFilterObject = (filters: any): any | null => {
+const parseFilterObject = (filters: string | ISearchFilter | null): ISearchFilter | null => {
     if (typeof filters === 'string') {
         try {
             return JSON.parse(filters);
@@ -28,8 +28,8 @@ const parseFilterObject = (filters: any): any | null => {
 
 const getFilteredEnum = (enumVals: string[], filterObj: any): string[] | undefined => {
     const enumEquals = filterObj.$or
-        .map((condition: any) => (Object.values(condition) as any)[0]?.$in)
-        .filter((val: any): val is string[] => Array.isArray(val))
+        .map((condition) => (Object.values(condition) as any)[0]?.$in)
+        .filter((val): val is string[] => Array.isArray(val))
         .flat();
 
     return enumEquals.length > 0 ? enumVals.filter((val) => enumEquals.includes(val)) : enumVals;
@@ -45,9 +45,7 @@ const getChildPropertiesFiltered = (
 
         const newValue = { ...value };
 
-        if (value.enum && filterObj) {
-            newValue.enum = getFilteredEnum(value.enum, filterObj);
-        }
+        if (value.enum && filterObj) newValue.enum = getFilteredEnum(value.enum, filterObj);
 
         properties[key] = newValue;
     }

@@ -101,6 +101,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
     const queryClient = useQueryClient();
     const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates') || new Map();
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
     useEffect(() => {
         setFieldValue(propertiesType, orderedItems);
     }, []);
@@ -530,23 +531,25 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         updateFormik();
     }, []);
 
-    const [, drop] = useDrop(() => ({
+    type DragFieldItem = CommonFormInputProperties & {
+        index: number;
+    };
+
+    type DragGroupItem = GroupProperty & {
+        index: number;
+    };
+
+    type DragItem = DragFieldItem | DragGroupItem;
+
+    const [, drop] = useDrop<DragItem, void, unknown>(() => ({
         accept: [ItemTypes.FIELD, ItemTypes.GROUP],
-        drop: (item: any, monitor) => {
+        drop: (item, monitor) => {
             if (monitor.didDrop()) return;
 
-            const isGroup = Array.isArray(item.fields);
+            if ('fields' in item) return;
 
-            const dropIndex = item.index ?? 0;
-
-            if (!isGroup) {
-                const toGroupId = null;
-                moveField(item, dropIndex, toGroupId);
-            }
+            moveField(item, item.index, null);
         },
-        collect: (m) => ({
-            isOver: m.isOver({ shallow: true }),
-        }),
     }));
 
     return (
@@ -567,6 +570,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                 <div
                     key={propertiesType}
                     ref={(node) => {
+                        // biome-ignore lint/suspicious/noExplicitAny: lol
                         drop(node as any);
                     }}
                     style={{

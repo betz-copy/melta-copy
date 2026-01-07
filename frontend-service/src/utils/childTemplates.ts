@@ -34,9 +34,7 @@ export const getChildPropertiesFiltered = (childTemplate: IMongoChildTemplatePop
 
         const newValue = { ...value };
 
-        if (value.enum && filterObj) {
-            newValue.enum = getFilteredEnum(value.enum, filterObj);
-        }
+        if (value.enum && filterObj) newValue.enum = getFilteredEnum(value.enum, filterObj);
 
         properties[key] = newValue;
     }

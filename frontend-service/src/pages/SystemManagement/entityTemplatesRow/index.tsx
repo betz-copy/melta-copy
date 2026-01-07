@@ -178,6 +178,7 @@ const EntityTemplatesRow: React.FC = () => {
                 if (!disabled && !isChild) toast.warn(i18next.t('childTemplate.enableChildren'));
             },
             onError: (err, { disabled, isChild }) => {
+                // biome-ignore lint/suspicious/noExplicitAny: error is any
                 if (((err as AxiosError).response?.data as any).message === 'Cannot enable child template under a disabled parent template')
                     toast.error(i18next.t('childTemplate.enableUnderDisabledParent'));
                 else if (disabled) toast.error(i18next.t(`${isChild ? 'child' : 'wizard.entity'}Template.failedToDisable`));

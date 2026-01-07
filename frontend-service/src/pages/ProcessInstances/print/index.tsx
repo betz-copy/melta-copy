@@ -19,7 +19,7 @@ import { ComponentToPrint } from './ComponentToPrint';
 const Print: React.FC<{
     processTemplate: IMongoProcessTemplatePopulated;
     processInstance: IMongoProcessInstancePopulated;
-    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
+    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError, ProcessDetailsValues, unknown>;
     setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstancePopulated>>;
     setIsProcessChanged: React.Dispatch<React.SetStateAction<boolean>>;
     isProcessCard?: boolean;

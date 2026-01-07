@@ -1,5 +1,5 @@
+import assert from 'node:assert';
 import { ConfigTypes } from '@microservices/shared';
-import assert from 'assert';
 import { Request, Response } from 'express';
 import config from '../../config';
 import { RequestWithSearchEntityTemplateBody } from '../../externalServices/templates/entityTemplateService';

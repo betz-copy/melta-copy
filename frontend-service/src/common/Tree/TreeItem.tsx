@@ -16,6 +16,7 @@ import {
     useTreeItem,
 } from '@mui/x-tree-view-pro';
 import React, { useMemo } from 'react';
+import { IPropertyValue } from '../../interfaces/entities';
 import { CustomIcon } from '../CustomIcon';
 import MeltaCheckbox from '../MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
@@ -71,7 +72,7 @@ const draggableHandle = (
     </TreeItemIconContainer>
 );
 
-const TreeItem = React.forwardRef(function CustomTreeItem<T extends Record<string, any>>(
+const TreeItem = React.forwardRef(function CustomTreeItem<T extends Record<string, IPropertyValue>>(
     props: TreeItemProps & {
         node: T;
         additionalOptions?: TreeProps<T>['additionalOptions'];

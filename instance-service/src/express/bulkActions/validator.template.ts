@@ -8,6 +8,7 @@ import {
     IEntity,
     IMongoEntityTemplate,
     IMongoRelationshipTemplate,
+    IPropertyValue,
     ValidationError,
 } from '@microservices/shared';
 import Ajv from 'ajv';
@@ -109,10 +110,8 @@ class BulkActionValidator extends DefaultController {
         }
     }
 
-    private validateEntity(entityTemplate: IMongoEntityTemplate, metadataProperties: Record<string, any>) {
-        if (!entityTemplate) {
-            throw new ValidationError(`Entity template doesnt exist`, metadataProperties);
-        }
+    private validateEntity(entityTemplate: IMongoEntityTemplate, metadataProperties: Record<string, IPropertyValue>) {
+        if (!entityTemplate) throw new ValidationError(`Entity template doesnt exist`, metadataProperties);
 
         const validateFunction = ajv.compile(entityTemplate.properties);
         const valid = validateFunction(metadataProperties);

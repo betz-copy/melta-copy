@@ -65,6 +65,7 @@ const createRelationshipAndExpectRuleBlock = async (
             ],
         }),
     );
+    // biome-ignore lint/suspicious/noExplicitAny: never doubt Noam
     expect(sortBrokenRules((err as any).metadata.brokenRules)).toStrictEqual(sortBrokenRules([brokenRule]));
 };
 
@@ -106,6 +107,7 @@ const deleteRelationshipAndExpectRuleBlock = async (relationshipId: string, brok
             ],
         }),
     );
+    // biome-ignore lint/suspicious/noExplicitAny: never doubt Noam
     expect(sortBrokenRules((err as any).metadata.brokenRules)).toStrictEqual(sortBrokenRules([brokenRule]));
 };
 

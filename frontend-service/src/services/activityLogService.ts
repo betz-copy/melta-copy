@@ -1,5 +1,6 @@
 import axios from '../axios';
 import { environment } from '../globals';
+import { IPropertyValue } from '../interfaces/entities';
 import { IEntitySingleProperty } from '../interfaces/entityTemplates';
 import { Status } from '../interfaces/processes/processInstance';
 import { IProcessSingleProperty } from '../interfaces/processes/processTemplate';
@@ -15,6 +16,7 @@ interface IBaseActivityLog {
 
 interface IEmptyMetadata extends IBaseActivityLog {
     action: 'CREATE_ENTITY' | 'DISABLE_ENTITY' | 'ACTIVATE_ENTITY' | 'VIEW_ENTITY' | 'CREATE_PROCESS';
+    // biome-ignore lint/complexity/noBannedTypes: old code
     metadata: {};
 }
 
@@ -30,12 +32,12 @@ interface IDuplicateEntityMetadata extends IBaseActivityLog {
 
 interface IUpdateEntityMetadata extends IBaseActivityLog {
     action: 'UPDATE_ENTITY' | 'UPDATE_PROCESS';
-    metadata: { updatedFields: [{ fieldName: string; oldValue: any; newValue: any }] };
+    metadata: { updatedFields: [{ fieldName: string; oldValue: IPropertyValue; newValue: IPropertyValue }] };
 }
 
 export interface IUpdateProcessStepMetadata extends IBaseActivityLog {
     action: 'UPDATE_PROCESS_STEP';
-    metadata: { updatedFields?: [{ fieldName: string; oldValue: any; newValue: any }]; comments?: string; status?: Status };
+    metadata: { updatedFields?: [{ fieldName: string; oldValue: IPropertyValue; newValue: IPropertyValue }]; comments?: string; status?: Status };
 }
 
 export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IDuplicateEntityMetadata | IUpdateEntityMetadata | IUpdateProcessStepMetadata;

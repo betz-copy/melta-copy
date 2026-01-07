@@ -37,7 +37,7 @@ const ComponentToPrint = React.forwardRef<
         [queryClient],
     );
 
-    if (!entity) return <></>;
+    if (!entity) return <div />;
 
     const signatureFields = (
         <Grid container flexDirection="column" marginTop="2.5rem" width="100%" rowGap="1.25rem">

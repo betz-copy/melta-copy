@@ -13,6 +13,7 @@ const { warning, success, failed } = environment.color;
 export const StatusEntitiesTables: React.FC<{
     tablesData: IStatusEntitiesTables;
     template: IMongoEntityTemplatePopulated;
+    // biome-ignore lint/suspicious/noExplicitAny: lol
     onDownload?: (brokenRulesEntities?: boolean) => Promise<any>;
     isLoadingDownload?: boolean;
     isLoadingTables?: boolean;

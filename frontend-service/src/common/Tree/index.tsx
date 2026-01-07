@@ -96,6 +96,7 @@ const Tree = <T extends {}>({
                 removeDivider={removeDivider}
                 node={getItemById(props.itemId)}
                 showIcon={showIcon}
+                // biome-ignore lint/suspicious/noExplicitAny: blame Itay
                 getStyles={getStyles as any}
                 additionalOptions={additionalOptions as ((node: unknown) => ReactNode)[]}
             />

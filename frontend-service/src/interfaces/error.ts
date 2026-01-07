@@ -1,4 +1,4 @@
-export interface IErrorResponse<T = any> {
+export interface IErrorResponse<T> {
     message?: string;
     metadata?: T;
 }

@@ -8,8 +8,7 @@ import { allowedCategories } from '../../../utils/permissions/templatePermission
 import { StepComponentProps } from '../index';
 import { EntityTemplateWizardValues } from './index';
 
-
-const ChooseCategory: React.FC<StepComponentProps<EntityTemplateWizardValues>>  = ({ values, touched, errors, setFieldValue }) => {
+const ChooseCategory: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ values, touched, errors, setFieldValue }) => {
     const queryClient = useQueryClient();
     const currentUser = useUserStore((state) => state.user);
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;

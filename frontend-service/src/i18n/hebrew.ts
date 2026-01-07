@@ -278,7 +278,7 @@ export default {
             amount: 'כמות',
             accountBalance: 'יתרת חשבון',
             actions: 'פעולות',
-            initialBalanceDescription:'יתרה התחלתית',
+            initialBalanceDescription: 'יתרה התחלתית',
         },
     },
     categoryPage: {
@@ -1164,7 +1164,7 @@ export default {
         eitherFromOrToRelationshipReference: 'נדרש לבחור קשר לתבנית ארנק כמקור או כיעד (או בשניהם)',
         isProfileImage: 'תמונת פרופיל',
         sameSourceAndDestWallet: 'לא ניתן לבצע העברה באותו ארנק',
-        accountBalanceField:'בתבנית ארנק חובה לבחור שדה מספרי אחד כערך יתרה'
+        accountBalanceField: 'בתבנית ארנק חובה לבחור שדה מספרי אחד כערך יתרה',
     },
     propertyTypes: {
         string: 'טקסט',

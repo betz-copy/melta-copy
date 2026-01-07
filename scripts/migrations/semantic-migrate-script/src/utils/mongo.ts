@@ -12,7 +12,7 @@ export const initializeMongo = async () => {
     console.log('Mongo connection established');
 };
 
-export const transformObjectIdKeysToString = (doc: any) => {
+export const transformObjectIdKeysToString = (doc: Record<string, unknown>) => {
     forEach(doc, (val, key) => {
         if (val instanceof Types.ObjectId) {
             doc[key] = val.toString();
@@ -20,7 +20,7 @@ export const transformObjectIdKeysToString = (doc: any) => {
     });
 };
 
-export const transformResultDocsObjectIdKeysToString = (res: any | any[]) => {
+export const transformResultDocsObjectIdKeysToString = (res: Record<string, unknown> | Record<string, unknown>[]) => {
     if (Array.isArray(res)) {
         res.forEach((doc) => transformObjectIdKeysToString(doc));
         return;

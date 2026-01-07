@@ -43,6 +43,7 @@ const UserProfile: React.FC<{
                 <Grid marginTop={2}>
                     <UserProfilePicker
                         user={existingUser}
+                        // biome-ignore lint/suspicious/noExplicitAny: this code is bad
                         onPick={(value?: any) => setProfilePreference(value?.file ? { icon: value } : { profilePath: value })}
                         onDelete={() => setProfilePreference({})}
                         imageName={isProfileFile(existingUser.preferences.profilePath) ? existingUser.preferences.profilePath : undefined}

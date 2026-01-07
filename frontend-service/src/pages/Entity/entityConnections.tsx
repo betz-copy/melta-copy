@@ -82,13 +82,14 @@ export const EntityConnections: React.FC<EntityConnectionsProps> = ({
         })
             .filter((currCategory) => currCategory.connectionsTemplates?.length > 0)
             .sort((a, b) => (b?.relationshipCount ?? 0) - (a?.relationshipCount ?? 0));
-    }, [connectionsTemplates, expandedEntity]);
+    }, [connectionsTemplates, expandedEntity, categories, entityTemplates, relationshipTemplates, groupChildTemplate, currentEntityTemplate]);
 
     useEffect(() => {
         if (categoriesWithConnectionsTemplates?.length && selectedTabId === null) {
             setSelectedTabId(categoriesWithConnectionsTemplates[0].category._id);
         }
     }, [categoriesWithConnectionsTemplates, selectedTabId]);
+
     return (
         <>
             {categoriesWithConnectionsTemplates && categoriesWithConnectionsTemplates.length > 0 && (
@@ -181,7 +182,7 @@ export const EntityConnections: React.FC<EntityConnectionsProps> = ({
                             {categoriesWithConnectionsTemplates.map(({ category: { _id }, connectionsTemplates: connectionsTemplatesOfCategory }) => {
                                 return (
                                     <TabPanel key={_id} value={_id}>
-                                        {connectionsTemplatesOfCategory.map((connectionTemplate, connectedRelationshipTemplateIndex) => {
+                                        {connectionsTemplatesOfCategory.map((connectionTemplate) => {
                                             const relationship = connectionTemplate.relationshipTemplate;
                                             const relatedTemplate =
                                                 relationship.destinationEntity._id !== currentEntityTemplate?._id
@@ -194,7 +195,7 @@ export const EntityConnections: React.FC<EntityConnectionsProps> = ({
                                             return (
                                                 <ConnectionsTable
                                                     // eslint-disable-next-line react/no-array-index-key
-                                                    key={connectedRelationshipTemplateIndex}
+                                                    key={connectionTemplate.relationshipTemplate._id}
                                                     expandedEntity={expandedEntity}
                                                     templateIds={templateIds}
                                                     connectionTemplate={connectionTemplate}

@@ -1,6 +1,6 @@
+import { Readable } from 'node:stream';
 import { logger } from '@microservices/shared';
 import * as minio from 'minio';
-import { Readable } from 'stream';
 import config from '../../config';
 
 const { url: endPoint, port, accessKey, secretKey, useSSL } = config.minio;
@@ -21,6 +21,7 @@ class MinIOClient {
     private async wrapDBNotExistsError<T>(func: () => Promise<T>) {
         try {
             return func();
+            // biome-ignore lint/suspicious/noExplicitAny: error is any
         } catch (err: any) {
             // Check if the error is caused by non-existing bucket
             if (err.code !== 'NoSuchBucket') throw err;

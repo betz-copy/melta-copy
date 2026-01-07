@@ -28,6 +28,7 @@ import {
     IMongoChildTemplatePopulated,
     IMongoEntityTemplatePopulated,
     IMultipleSelect,
+    IPropertyValue,
     IRelationship,
     IRuleMail,
     ISearchBatchBody,
@@ -116,10 +117,10 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         this.instanceUtils = new InstancesUtils(workspaceId);
     }
 
-    async uploadInstanceFiles<TProps = Record<string, any>>(
+    async uploadInstanceFiles<TProps = Record<string, IPropertyValue>>(
         files: UploadedFile[],
         props: TProps = {} as TProps,
-    ): Promise<{ props: TProps; files: Record<string, any> }> {
+    ): Promise<{ props: TProps; files: Record<string, IPropertyValue> }> {
         if (files.length === 0) {
             return { props, files: {} };
         }
@@ -128,7 +129,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             return [file.fieldname, fileIds[index]];
         });
 
-        const filesToUpload: Record<string, any> = {};
+        const filesToUpload: Record<string, IPropertyValue> = {};
         // not for image picker
         Object.entries(Object.fromEntries(filePropertiesEntries)).forEach(([key, value]) => {
             const [group, _index] = key.split('.');
@@ -302,7 +303,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     private fixInsertEntities(
         template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
-        insertEntities: Record<string, any>[],
+        insertEntities: Record<string, IPropertyValue>[],
         displayColumns?: string[],
     ) {
         let newDisplayColumns = displayColumns;
@@ -331,7 +332,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         userId: string,
         displayColumns?: string[],
         headersOnly?: boolean,
-        insertEntities?: Record<string, any>[],
+        insertEntities?: Record<string, IPropertyValue>[],
     ) {
         const { type, metaData: template } = templateItem;
         const parentTemplate = type === EntityTemplateType.Child ? template.parentTemplate : template;
@@ -648,7 +649,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return { succeededEntities, failedEntities, brokenRulesEntities };
     }
 
-    private convertEntities(template: IMongoEntityTemplatePopulated, key: string, property: any, isSourceWallet = false) {
+    private convertEntities(template: IMongoEntityTemplatePopulated, key: string, property: IPropertyValue, isSourceWallet = false) {
         switch (template.properties.properties[key]?.format) {
             case 'relationshipReference': {
                 return property?.properties._id;
@@ -1370,14 +1371,14 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             logger.error(`failed to delete files of instanceId ${id}`, { error }),
         );
 
-        const updatedFields: Record<string, any> = {};
+        const updatedFields: Record<string, IPropertyValue> = {};
 
         const fields = Object.keys(entityTemplate.properties.properties);
         for (let i = 0; i < fields.length; i++) {
             const field = fields[i];
             const propertyTemplate = entityTemplate.properties.properties[field];
 
-            let newValue: any;
+            let newValue: IPropertyValue;
             if (propertyTemplate?.format === 'fileId' || propertyTemplate?.items?.format === 'fileId')
                 newValue = uploadedFilesAndProperties[field] ?? updatedEntity.properties[field];
             else if (propertyTemplate?.format === 'relationshipReference') {
@@ -1519,6 +1520,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return relationship;
     }
 
+    // biome-ignore lint/suspicious/noExplicitAny: error is any
     async handleBrokenRulesError(error: any): Promise<never> {
         if (axios.isAxiosError(error) && error.response?.data.metadata?.errorCode === errorCodes.ruleBlock) {
             const { brokenRules, actions } = error.response.data.metadata;

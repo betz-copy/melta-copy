@@ -4,7 +4,7 @@ import { CSSProperties } from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
 
 interface IFormikAutoCompleteProps<T> {
-    formik: FormikProps<any>;
+    formik: FormikProps<T>;
     formikField: string;
     options: T[];
     label: string;
