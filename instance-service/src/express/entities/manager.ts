@@ -910,7 +910,7 @@ class EntityManager extends DefaultManagerNeo4j {
         `
             : '';
 
-        const textSearchFixed = `*${escapeNeo4jQuerySpecialChars(textSearch || '')}*`;
+        const textSearchFixed = `*${escapeNeo4jQuerySpecialChars((textSearch || '').toLowerCase())}*`;
 
         const query = `
             UNWIND $templateIds AS templateId
