@@ -351,6 +351,9 @@ export const environment = {
         wgs84: { maxLongitude: 180, maxLatitude: 90 },
         minSearchLength: 2,
         maxNumberOfSearchResults: 1000,
+        textValueOfLinkTag: '#text',
+        tileMatrixSetIdentifiers: ['WorldCRS84', 'EPSG:4326', 'GoogleMapsCompatible'],
+        tilingSchemeId:'3857'
     },
     signaturePrefix: 'data:image/png;base64,',
     meltaUpdatesShown: 'meltaUpdatesShown',

@@ -64,10 +64,13 @@ const App: React.FC = () => {
         },
         enabled: !isLoadingUser && !isErrorMyUser,
         onSuccess: async ({
+            isOutsideDevelopment,
             getMapLayers: { url, params, layers, token, capabilitiesLinkSchema, cesiumLinkSchema, layerLinkTag, capabilitiesUrl },
         }) => {
+            if (isOutsideDevelopment) return;
+
             const mapLayers = await Promise.all(
-                layers.map(async (layer) => {
+                layers?.map(async (layer) => {
                     const xml = await getMapLayer(url, params, layer.body, token);
 
                     const layerProvider = extractImageryUrl(

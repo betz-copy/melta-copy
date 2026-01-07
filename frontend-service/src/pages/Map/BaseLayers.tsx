@@ -27,12 +27,10 @@ export type LayerProvider = {
 export const BaseLayers: React.FC<{
     viewerRef: RefObject<CesiumComponentRef<Cesium.Viewer> | null>;
     config: BackendConfigState;
-}> = ({ viewerRef, config }) => {
+}> = ({ viewerRef, config: { mapLayers, textLayers, isOutsideDevelopment, getMapLayers } }) => {
     const theme = useTheme();
 
     const [isOpen, setIsOpen] = useState<boolean>(false);
-
-    const { mapLayers, textLayers, isOutsideDevelopment, getMapLayers } = config;
 
     const queryClient = useQueryClient();
 
@@ -53,8 +51,6 @@ export const BaseLayers: React.FC<{
 
         return [...buildLayerProvider(mapLayers, LayerProviderType.map), ...buildLayerProvider(textLayers, LayerProviderType.text)];
     }, [mapLayers, textLayers, layers, isOutsideDevelopment]);
-
-    console.log({ layers, providers });
 
     const [activeMapLayer, setActiveMapLayer] = useState<string>(providers.find((p) => p.type === LayerProviderType.map)?.id || '');
     const [activeTextLayers, setActiveTextLayers] = useState<Set<string>>(new Set());

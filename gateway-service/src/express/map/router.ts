@@ -2,11 +2,7 @@ import axios from 'axios';
 import { Router } from 'express';
 import config from '../../config';
 
-const {
-    frontendConfig: {
-        getMapLayers: { token },
-    },
-} = config;
+const { token } = config.frontendConfig.getMapLayers;
 
 const mapRouter: Router = Router();
 

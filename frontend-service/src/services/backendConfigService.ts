@@ -17,7 +17,7 @@ export interface BackendConfigState {
         layers: { name: string; body: string; type: LayerProviderType; displayName: string }[];
         url: string;
         capabilitiesUrl: string;
-        params: string;
+        params: Record<string, string>;
         token: string;
         layerLinkTag: string;
         capabilitiesLinkSchema: string;

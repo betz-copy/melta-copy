@@ -9,7 +9,12 @@ import { CoordinatesResult, ICoordinateSearchResult, IPolygonSearchResult, MapIt
 import { LayerProvider, LayerProviderType } from '../../pages/Map/BaseLayers';
 import { convertECEFToWGS84, convertWGS94ToECEF, isValidWGS84 } from './convert';
 
-const { polygonPrefix, polygonSuffix } = environment.map.polygon;
+const {
+    polygon: { polygonPrefix, polygonSuffix },
+    textValueOfLinkTag,
+    tileMatrixSetIdentifiers,
+    tilingSchemeId,
+} = environment.map;
 
 export const zoomNumber = 300000;
 
@@ -195,7 +200,9 @@ const xmlParser = new XMLParser({
     removeNSPrefix: true,
 });
 
-function findLinks(
+const emptyResult: LayerProvider = { url: '', cesiumUrl: '', id: '', type: LayerProviderType.map };
+
+const findLinks = (
     paredXml: object,
     capabilitiesLinkSchema: string,
     cesiumLinkSchema: string,
@@ -203,9 +210,7 @@ function findLinks(
     layerDisplayName: string,
     layerType: LayerProviderType,
     layerLinkTag: string,
-): LayerProvider {
-    const emptyResult: LayerProvider = { url: '', cesiumUrl: '', id: '', type: LayerProviderType.map };
-
+): LayerProvider => {
     if (!paredXml || typeof paredXml !== 'object') return emptyResult;
 
     // If it's an array, search each element
@@ -225,15 +230,15 @@ function findLinks(
 
         const matchedLinkCesium = linksList.find((link) => link.scheme === cesiumLinkSchema && link.name?.startsWith(layerName));
 
-        return matchedLinkCesium && matchedLinkCapabilities
-            ? {
-                  id: matchedLinkCesium.name,
-                  url: matchedLinkCapabilities['#text'],
-                  cesiumUrl: matchedLinkCesium['#text'],
-                  displayName: layerDisplayName,
-                  type: layerType,
-              }
-            : emptyResult;
+        if (!matchedLinkCesium || !matchedLinkCapabilities) return emptyResult;
+
+        return {
+            id: matchedLinkCesium.name,
+            url: matchedLinkCapabilities[textValueOfLinkTag],
+            cesiumUrl: matchedLinkCesium[textValueOfLinkTag],
+            displayName: layerDisplayName,
+            type: layerType,
+        };
     }
 
     // Recurse deeper
@@ -244,7 +249,7 @@ function findLinks(
         }
 
     return emptyResult;
-}
+};
 
 export const extractImageryUrl = (
     xml: string,
@@ -261,18 +266,14 @@ export const extractImageryUrl = (
         return findLinks(json, capabilitiesLinkSchema, cesiumLinkSchema, layerName, layerDisplayName, layerType, layerLinkTag);
     } catch (e) {
         console.error('XML Parsing Error:', e);
-        return { url: '', cesiumUrl: '', id: '', type: LayerProviderType.map };
+        return emptyResult;
     }
 };
 
 export const getMatrixSet = (matrixSets: MatrixSetLink[]) => {
-    const matrixSet =
-        matrixSets.find((m) => m.identifier === 'WorldCRS84') ??
-        matrixSets.find((m) => m.identifier === 'EPSG:4326') ??
-        matrixSets.find((m) => m.identifier === 'GoogleMapsCompatible') ??
-        matrixSets[0];
+    const matrixSet = tileMatrixSetIdentifiers.map((id) => matrixSets.find((m) => m.identifier === id)).find(Boolean) ?? matrixSets[0];
 
-    const tilingScheme = matrixSet.crs.includes('3857') ? new Cesium.WebMercatorTilingScheme() : new Cesium.GeographicTilingScheme();
+    const tilingScheme = matrixSet.crs.includes(tilingSchemeId) ? new Cesium.WebMercatorTilingScheme() : new Cesium.GeographicTilingScheme();
 
     return { identifier: matrixSet.identifier, tilingScheme };
 };
