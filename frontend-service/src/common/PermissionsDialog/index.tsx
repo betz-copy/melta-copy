@@ -134,7 +134,7 @@ const PermissionsDialog: React.FC<{
                                 {i18next.t('showTour')}
                             </Button>
                         )}
-                        {!!config?.meltaUpdates.shouldShow && (
+                        {!!config?.meltaUpdates.display && (
                             <Button onClick={() => setOpenMeltaUpdates(true)} disabled={!config?.meltaUpdates}>
                                 {i18next.t('meltaUpdates.btn')}
                             </Button>
@@ -156,7 +156,7 @@ const PermissionsDialog: React.FC<{
                 handleClose={() => setIsUnsavedChangesDialogOpen(false)}
                 body={i18next.t('user.areYouSure')}
             />
-            {config?.meltaUpdates && !!config?.meltaUpdates.shouldShow && (
+            {config?.meltaUpdates && !!config?.meltaUpdates.display && (
                 <MeltaUpdates open={openMeltaUpdates} handleClose={handleCloseMeltaUpdates} meltaUpdates={config?.meltaUpdates} />
             )}
         </Dialog>

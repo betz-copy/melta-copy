@@ -6,7 +6,7 @@ const { config } = environment.api;
 export interface MeltaUpdatesConfig {
     details: Record<string, string>;
     description: string;
-    shouldShow: boolean;
+    display: boolean;
 }
 
 export interface BackendConfigState {

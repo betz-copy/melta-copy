@@ -56,7 +56,7 @@ const config = {
         meltaUpdates: {
             details: env.get('FRONTEND_CONFIG_MELTA_UPDATES').default({ אא: 'בב', גג: 'דד' }).asJsonObject(),
             description: env.get('FRONTEND_CONFIG_MELTA_UPDATES_DESCRIPTION').default('תיאור').asString(),
-            shouldShow: env.get('FRONTEND_CONFIG_MELTA_UPDATES_SHOULD_SHOW').default('false').asBool(),
+            display: env.get('FRONTEND_CONFIG_MELTA_UPDATES_DISPLAY').default('false').asBool(),
         },
         maxEntitiesToPrint: env.get('FRONT_END_MAX_ENTITIES_TO_PRINT').default(2700).asIntPositive(),
         clientSideWorkspaceId: env.get('CLIENT_SIDE_WORKSPACE_ID').default('68347c4b1652e05582afa8b8').asString(),
