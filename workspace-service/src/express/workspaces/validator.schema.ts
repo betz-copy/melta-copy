@@ -78,7 +78,7 @@ export const getWorkspaceIds = Joi.object({
 export const getDirSchema = Joi.object({
     query: {},
     body: {
-        path: workspaceSchema.extract('node:path'),
+        path: workspaceSchema.extract('path'),
     },
     params: {},
 });
@@ -87,7 +87,7 @@ export const getDirSchema = Joi.object({
 export const getFileSchema = Joi.object({
     query: {},
     body: {
-        path: workspaceSchema.extract('node:path'),
+        path: workspaceSchema.extract('path'),
     },
     params: {},
 });
