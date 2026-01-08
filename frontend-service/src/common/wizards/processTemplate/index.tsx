@@ -97,7 +97,7 @@ const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues
             component: (props, { isEditMode }) => (
                 <CreateTemplateName {...props} isEditMode={isEditMode} gridProps={{ direction: 'column', alignItems: 'center', spacing: 1 }} />
             ),
-            validationSchema: createTemplateSettingsSchema,
+            validationSchema: createTemplateSettingsSchema.omit(['category']),
         },
         {
             label: i18next.t('wizard.processTemplate.otherDetails'),

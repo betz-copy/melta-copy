@@ -58,17 +58,20 @@ const UnitSelect = ({
     });
 
     const flattenedTreeMap = useMemo(
-        () => new Map(flattenTree(unitHierarchies, ({ _id }) => _id, true).map((item) => [item._id, item])),
+        () => new Map(flattenTree(unitHierarchies, ({ _id }) => _id, true, true).map((item) => [item._id, item])),
         [unitHierarchies],
     );
 
-    const { expandedIds, searchedUnits, setExpandedIds, search, setSearch } = useSearchUnits(unitHierarchies);
+    const { expandedIds, searchedUnits, setExpandedIds, search, setSearch } = useSearchUnits(
+        unitHierarchies,
+        ({ _id }) => _id,
+        (item, search, isShowDisabled) => item.name.toLowerCase().includes(search?.toLowerCase() ?? '') && (isShowDisabled || !item.disabled),
+    );
 
     const chips: IChip[] = useMemo(() => {
         if (!value) return [];
 
         const valueAsArray = Array.isArray(value) ? value : [value];
-
         return valueAsArray.map((singleValue) => {
             const found = flattenedTreeMap.get(singleValue);
             if (!found) return EMPTY_CHIP;

@@ -22,16 +22,22 @@ import MeltaCheckbox from '../MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import { TreeProps } from '.';
 
-const LabelWithToolTip = ({ children, className }) => (
+const LabelWithToolTip: React.FC<{
+    className?: string;
+    tooltipTitle: string;
+    children: React.ReactNode;
+}> = ({ children, className, tooltipTitle }) => (
     <Box
         className={className}
         sx={{
             display: 'inline-block',
             position: 'relative',
             overflow: 'hidden',
+            minWidth: 0,
+            flex: 1,
         }}
     >
-        <MeltaTooltip title={children}>
+        <MeltaTooltip title={tooltipTitle}>
             <Typography
                 sx={{
                     fontSize: '14px',
@@ -79,6 +85,7 @@ const TreeItem = React.forwardRef(function CustomTreeItem<T extends Record<strin
         getStyles?: TreeProps<T>['getStyles'];
         removeDivider?: TreeProps<T>['removeDivider'];
         showIcon?: TreeProps<T>['showIcon'];
+        renderItemLabel?: TreeProps<T>['renderItemLabel'];
     },
     ref: React.Ref<HTMLLIElement>,
 ) {
@@ -122,6 +129,9 @@ const TreeItem = React.forwardRef(function CustomTreeItem<T extends Record<strin
 
     const styles = getStyles?.({ node, status, itemDepth });
 
+    const labelText = String(label ?? '');
+    const labelNode = props.renderItemLabel ? props.renderItemLabel(node) : labelText;
+
     return (
         // @ts-ignore
         <TreeItemProvider {...props} ref={ref} itemId={itemId}>
@@ -164,7 +174,9 @@ const TreeItem = React.forwardRef(function CustomTreeItem<T extends Record<strin
                             </Box>
                         )}
 
-                        <LabelWithToolTip {...getLabelProps()} />
+                        <LabelWithToolTip {...getLabelProps()} tooltipTitle={labelText}>
+                            {labelNode}
+                        </LabelWithToolTip>
 
                         {additionalRowIcon}
 

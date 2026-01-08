@@ -107,7 +107,7 @@ const MultipleSelect: React.FC<{
                         onBlur={onBlur}
                         onFocus={onFocus}
                         variant={variant}
-                        error={!!rawErrors.length}
+                        error={!!rawErrors?.length}
                         label={label}
                         placeholder={placeholder}
                         slotProps={{

@@ -289,49 +289,40 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                     })}
                                                 </Box>
                                             ) : (
-                                                templateFileProperties && (
-                                                    <div>
-                                                        {Object.entries(templateFileProperties).map(([fieldName, { title }]) => {
-                                                            let attachments: React.JSX.Element | React.JSX.Element[] = (
-                                                                <Typography display="inline" variant="h6">
-                                                                    -
-                                                                </Typography>
+                                                templateFileProperties &&
+                                                Object.entries(templateFileProperties).map(([fieldName, { title }]) => {
+                                                    let attachments: React.JSX.Element | React.JSX.Element[] = (
+                                                        <Typography display="inline" variant="h6">
+                                                            -
+                                                        </Typography>
+                                                    );
+                                                    if (values.attachmentsProperties[fieldName] !== undefined) {
+                                                        if (Array.isArray(values.attachmentsProperties[fieldName])) {
+                                                            attachments = values.attachmentsProperties[fieldName].map((file) => (
+                                                                <OpenPreview fileId={file.name} key={file.name} download={toPrint} />
+                                                            ));
+                                                        } else {
+                                                            attachments = (
+                                                                <OpenPreview
+                                                                    fileId={values.attachmentsProperties[fieldName].name}
+                                                                    key={`${fieldName} - 1`}
+                                                                    download={toPrint}
+                                                                />
                                                             );
-                                                            if (values.attachmentsProperties[fieldName] !== undefined) {
-                                                                if (Array.isArray(values.attachmentsProperties[fieldName])) {
-                                                                    attachments = values.attachmentsProperties[fieldName].map((file) => (
-                                                                        <OpenPreview fileId={file.name} key={file.name} download={toPrint} />
-                                                                    ));
-                                                                } else {
-                                                                    attachments = (
-                                                                        <OpenPreview
-                                                                            fileId={values.attachmentsProperties[fieldName].name}
-                                                                            key={`${fieldName} - 1`}
-                                                                            download={toPrint}
-                                                                        />
-                                                                    );
-                                                                }
-                                                            }
+                                                        }
+                                                    }
 
-                                                            return (
-                                                                <Grid
-                                                                    container
-                                                                    spacing={1}
-                                                                    key={`${fieldName} - 2`}
-                                                                    display="flex"
-                                                                    flexDirection="column"
-                                                                >
-                                                                    <Grid>
-                                                                        <Typography display="inline" variant="body1">
-                                                                            {title}:
-                                                                        </Typography>
-                                                                    </Grid>
-                                                                    <Grid sx={{ overflowY: 'auto', maxHeight: '90px' }}>{attachments}</Grid>
-                                                                </Grid>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                )
+                                                    return (
+                                                        <Grid container spacing={1} key={`${fieldName} - 2`} display="flex" flexDirection="column">
+                                                            <Grid>
+                                                                <Typography display="inline" variant="body1">
+                                                                    {title}:
+                                                                </Typography>
+                                                            </Grid>
+                                                            <Grid sx={{ overflowY: 'auto', maxHeight: '90px' }}>{attachments}</Grid>
+                                                        </Grid>
+                                                    );
+                                                })
                                             )}
                                         </Grid>
                                     )}

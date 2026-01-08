@@ -12,7 +12,6 @@ interface HeaderProps {
     setExpandedIds: React.Dispatch<React.SetStateAction<string[]>>;
 
     hierarchy: IUnitHierarchy[];
-    setFilteredUnits: React.Dispatch<React.SetStateAction<IUnitHierarchy[] | undefined>>;
 
     setWizardDialogState: React.Dispatch<
         React.SetStateAction<{

@@ -8,11 +8,15 @@ import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'rea
 import { SelectAll } from './SelectAll';
 import TreeItem from './TreeItem';
 
+type IFlattenedTree<T extends {}, K extends boolean> = Omit<TreeViewBaseItem<T>, 'children'> & (K extends true ? { path: string } : object);
+
 export interface TreeProps<T extends {}> extends Omit<RichTreeViewProProps<T, true>, 'onDragEnd' | 'items'> {
     // All of the treeItems that the tree has.
     treeItems: TreeViewBaseItem<T>[];
     getItemId: (item: T) => string;
     getItemLabel: (item: T) => string;
+    // Custom render for the item label
+    renderItemLabel?: (node: T) => React.ReactNode;
     // Display a selectAll checkbox
     selectAll?: boolean;
     onSelectItems?: (itemIds: string | string[]) => void;
@@ -36,23 +40,25 @@ export interface TreeProps<T extends {}> extends Omit<RichTreeViewProProps<T, tr
     };
 }
 
-export const flattenTree = <T extends {}>(
+export const flattenTree = <T extends {}, K extends boolean>(
     treeItems: TreeViewBaseItem<T>[],
     getItemId: (item: TreeViewBaseItem<T>) => string,
     shouldCountParents: boolean,
-    flattenedNodes: (Omit<TreeViewBaseItem<T>, 'children'> & { path: string })[] = [],
+    includePath: K = true as K,
+    flattenedNodes: IFlattenedTree<T, K>[] = [],
     parentPath = '',
-): (Omit<TreeViewBaseItem<T>, 'children'> & { path: string })[] => {
+): IFlattenedTree<T, K>[] => {
     treeItems.forEach((treeItem) => {
         const { children, ...rest } = treeItem;
         const currentId = getItemId(rest as T);
         const path = parentPath ? `${parentPath}/${currentId}` : currentId;
+        const newNode = { ...rest, ...(includePath && { path }) };
 
         if (children?.length) {
-            flattenTree(children, getItemId, shouldCountParents, flattenedNodes, path);
+            flattenTree(children, getItemId, shouldCountParents, includePath, flattenedNodes, path);
 
-            if (shouldCountParents) flattenedNodes.push({ ...rest, path });
-        } else flattenedNodes.push({ ...rest, path });
+            if (shouldCountParents) flattenedNodes.push(newNode);
+        } else flattenedNodes.push(newNode);
     });
 
     return flattenedNodes;
@@ -80,6 +86,7 @@ const Tree = <T extends {}>({
     onKeyUp,
     selectionPropagation = { descendants: true, parents: true }, // In order to auto select children
     multiSelect = true,
+    renderItemLabel,
     ...restOfProps
 }: TreeProps<T>): React.ReactElement => {
     const [expandedItemsIds, setExpandedItemsIds] = useState<string[]>(preExpandedItemIds ?? []);
@@ -98,6 +105,7 @@ const Tree = <T extends {}>({
                 showIcon={showIcon}
                 // biome-ignore lint/suspicious/noExplicitAny: blame Itay
                 getStyles={getStyles as any}
+                renderItemLabel={renderItemLabel as (node: unknown) => ReactNode}
                 additionalOptions={additionalOptions as ((node: unknown) => ReactNode)[]}
             />
         ),
