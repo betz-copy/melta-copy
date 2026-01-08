@@ -75,7 +75,8 @@ const getUpdateEntityActionMetadata = (currEntity: IEntity, updateEntityFormData
 type BaseActionProps = {
     isLoadingActionOnEntity: boolean;
     handleClose: () => void;
-    doActionEntity: () => Promise<void> | Promise<IEntity> | Promise<ITablesResults>;
+    // biome-ignore lint/suspicious/noConfusingVoidType: lol
+    doActionEntity: () => Promise<void | IEntity | ITablesResults>;
     currEntity?: IEntity;
     entityFormData: EntityWizardValues;
     onUpdatedRuleBlock: (brokenRules: IRuleBreachPopulated['brokenRules'], rawBrokenRules: IRuleBreach['brokenRules']) => void;

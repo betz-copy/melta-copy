@@ -149,8 +149,6 @@ export const ConnectionsTable: React.FC<{
     const userHasWritePermissions = isUserHasWritePermissions(currentClientSideUser, currentUser, template);
 
     const onCreateRelationship = (createdRelationship: IMongoRelationship, sourceEntity: IEntity, destinationEntity: IEntity) => {
-        console.log({ createdRelationship });
-
         const doesCreatedRelationshipWithCurrEntity = [createdRelationship.sourceEntityId, createdRelationship.destinationEntityId].includes(
             expandedEntity.entity.properties._id!,
         );

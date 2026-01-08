@@ -29,7 +29,7 @@ export interface IRoleAutocomplete {
     size?: 'small' | 'medium';
     enableClear?: boolean;
     required?: boolean;
-    autoFocus?: boolean | undefined;
+    autoFocus?: boolean;
     textFieldProps?: TextFieldProps;
     overrideSx?: object;
 }

@@ -290,8 +290,7 @@ export const WalletTransfers = ({ templateId, connectionsTemplates, expandedEnti
             <Grid container sx={{ marginTop: 2 }}>
                 <AgGridTable
                     defaultColDef={defaultColDef as ColDef<WalletTransferData>}
-                    // biome-ignore lint/suspicious/noExplicitAny: shirel will fix that
-                    getRowId={(params: any) => params.data.entity.properties._id}
+                    getRowId={(data) => data.entity.properties._id}
                     rowModelProps={rowModelProps}
                     columnDefs={columnDefs}
                     ref={walletTransferTableRef}

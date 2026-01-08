@@ -2,11 +2,12 @@ import { CircularProgress, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { forwardRef, useImperativeHandle, useRef } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
+import { IDefaultValue } from '../../../common/dialogs/ChildTemplateDialog/AddFieldFilterDialog';
 import TemplateTable, { TemplateTableRef } from '../../../common/EntitiesPage/TemplateTable';
 import { TemplateTablesViewResultsRef } from '../../../common/EntitiesPage/TemplateTablesView';
 import { TablePageType } from '../../../common/EntitiesTableOfTemplate';
 import { IFilter, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
-import { IEntity, IPropertyValue } from '../../../interfaces/entities';
+import { IEntity } from '../../../interfaces/entities';
 import { IEntitySingleProperty, IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { countEntitiesOfTemplatesByUserEntityId } from '../../../services/clientSideService';
 
@@ -77,7 +78,7 @@ const UserEntityTables = forwardRef<UserEntityTablesRef, IUserEntityTablesProps>
                             const childTemplatePropertiesList = Object.keys(properties);
                             const childTemplateProperties = Object.fromEntries(
                                 Object.entries(parentTemplate.properties.properties).filter(([key]) => childTemplatePropertiesList.includes(key)),
-                            ) as Record<string, IEntitySingleProperty & { defaultValue?: IPropertyValue; isEditableByUser?: boolean }>;
+                            ) as Record<string, IEntitySingleProperty & { defaultValue?: IDefaultValue; isEditableByUser?: boolean }>;
 
                             for (const propertyKey of Object.keys(childTemplateProperties)) {
                                 childTemplateProperties[propertyKey] = {
