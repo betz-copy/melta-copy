@@ -240,6 +240,9 @@ export default {
         print: {
             header: 'הדפס ישות',
             continue: 'הדפסה',
+            relationshipsToDisplay: 'קשרים להצגה',
+            search: 'חיפוש',
+            noRelationshipsToDisplay: 'לא נמצאו קשרים להצגה',
             isShowDisabled: 'הצגת יישויות מושבתות',
             showEntitiesDates: 'הצגת תאריך יצירה ועדכון יישות',
             showPreviewPropertiesOnly: 'הדפסת תצוגה מצומצמת',
@@ -253,6 +256,10 @@ export default {
                 personalNumber: "מס' אישי",
                 signature: 'חתימה',
             },
+            warning: {
+                payAttention: 'שים לב!',
+                previewWarning: 'תבניות יישות אשר לא הוגדרו בתבנית הנבחרת יודפסו בהתאם להגדרת התצוגה המצומצמת',
+            },
             chooseRelationship: 'בחירת קשרים',
             chooseFiles: 'קבצים מצורפים להדפסה',
             printOptions: 'הגדרות הדפסה',
@@ -260,11 +267,12 @@ export default {
             relationships: 'קשרים',
             noPreviewProperties: 'אין מאפייני תצוגה מקדימה',
             title: 'כותרת הדפסה',
+            template: 'תבנית הדפסה',
             fetchingData: 'מחפש קשרים...',
             generatingPdf: 'יוצר pdf...',
             limits: {
-                alreadySelected: 'סך הישויות שנבחרו',
-                max: 'מקסימום',
+                selected: 'נבחרו',
+                entities: 'ישויות',
                 warning: 'אי אפשר להוסיף ישות זו',
             },
         },
@@ -278,7 +286,7 @@ export default {
             amount: 'כמות',
             accountBalance: 'יתרת חשבון',
             actions: 'פעולות',
-            initialBalanceDescription:'יתרה התחלתית',
+            initialBalanceDescription: 'יתרה התחלתית',
         },
     },
     categoryPage: {
@@ -887,7 +895,7 @@ export default {
             compactView: 'תצוגה קומפקטית',
             appendSignatureField: 'הוספת שדה החתמה בסוף',
             addEntityCheckbox: 'הוספת תיבת סימון לכל ישות',
-            note: 'שימו לב! טבלאות אשר לא יוגדרו במסך זה יודפסו עם עמודות התצוגה המקדימה שלהן בלבד',
+            note: 'שימו לב! תבניות ישות אשר לא יוגדרו במסך זה יודפסו עם שדות התצוגה המקדימה שלהן בלבד',
             mustAddAtLeastOneTemplateToPrint: 'יש להוסיף לפחות תבנית אחת להדפסה',
             category: 'קטגוריה',
             entityTemplate: 'תבנית ישות',
@@ -1164,7 +1172,7 @@ export default {
         eitherFromOrToRelationshipReference: 'נדרש לבחור קשר לתבנית ארנק כמקור או כיעד (או בשניהם)',
         isProfileImage: 'תמונת פרופיל',
         sameSourceAndDestWallet: 'לא ניתן לבצע העברה באותו ארנק',
-        accountBalanceField:'בתבנית ארנק חובה לבחור שדה מספרי אחד כערך יתרה'
+        accountBalanceField: 'בתבנית ארנק חובה לבחור שדה מספרי אחד כערך יתרה',
     },
     propertyTypes: {
         string: 'טקסט',

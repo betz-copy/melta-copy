@@ -28,12 +28,12 @@ const ComponentToPrint = React.forwardRef<
         setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstancePopulated>>;
         setIsProcessChanged: React.Dispatch<React.SetStateAction<boolean>>;
         filesToPrint: IFile[];
-        setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
-        setFilesLoadingStatus: React.Dispatch<React.SetStateAction<{}>>;
+        setSelectedFiles?: React.Dispatch<React.SetStateAction<(IFile & { isLoading: boolean })[]>>;
         options: {
             showSummary: boolean;
             showFiles: boolean;
         };
+        printTitle?: string;
     }
 >(
     (
@@ -46,16 +46,18 @@ const ComponentToPrint = React.forwardRef<
             mutateAsync,
             setCurrProcessInstance,
             setIsProcessChanged,
-            setFilesLoadingStatus,
+            printTitle,
         },
         ref,
     ) => {
         const theme = useTheme();
-
         const currentUser = useUserStore((state) => state.user);
 
         return (
             <Box ref={ref} margin="20px" width="750px" style={{ direction: 'rtl', color: '#000' }}>
+                <Typography color={theme.palette.primary.main} fontWeight={500} fontSize={'1.25rem'} marginBottom={'1rem'}>
+                    {printTitle}
+                </Typography>
                 {options.showSummary && (
                     <>
                         <Box sx={{ minHeight: '1000px' }}>
@@ -66,9 +68,7 @@ const ComponentToPrint = React.forwardRef<
                 )}
                 <Grid style={{ pageBreakInside: 'avoid' }}>
                     <Grid style={{ textAlign: 'left', padding: '15px' }}>
-                        <Typography>{`${i18next.t('wizard.processInstance.summary.printedAt')} : ${new Date().toLocaleDateString(
-                            'en-UK',
-                        )}`}</Typography>
+                        <Typography>{`${i18next.t('wizard.processInstance.summary.printedAt')} : ${new Date().toLocaleDateString('en-UK')}`}</Typography>
                         <Typography>{`${i18next.t('wizard.processInstance.summary.printedBy')} : ${currentUser.fullName}`}</Typography>
                     </Grid>
                     <Box paddingBottom="0.4rem" display="flex" justifyContent="space-between" alignItems="center" marginBottom={1}>
@@ -167,13 +167,14 @@ const ComponentToPrint = React.forwardRef<
                                     file={file}
                                     key={`${file.id}-${file.contentType}`}
                                     onPreviewLoadingFinished={(error?: boolean) => {
-                                        setFilesLoadingStatus((prev) => ({ ...prev, [file.id]: false }));
-                                        if (error) {
-                                            toast.error(i18next.t('entityPage.previewRefetch'));
-                                            setSelectedFiles((prevSelectedFiles) =>
-                                                prevSelectedFiles.filter((selectedFile) => selectedFile.id !== file.id),
-                                            );
-                                        }
+                                        setSelectedFiles?.((prev) => {
+                                            if (error) {
+                                                toast.error(i18next.t('entityPage.previewRefetch'));
+                                                return prev.filter((f) => f.id !== file.id);
+                                            }
+
+                                            return prev.map((f) => (f.id === file.id ? { ...f, isLoading: false } : f));
+                                        });
                                     }}
                                 />
                             );

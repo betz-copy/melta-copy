@@ -167,7 +167,7 @@ export const PrintingTemplateCard: React.FC<PrintingTemplateCardProps> = ({ prin
                         {['compactView', 'addEntityCheckbox', 'appendSignatureField'].map((key) =>
                             showProperty(i18next.t(`wizard.printingTemplate.${key}`), getPropValue(key), darkMode),
                         )}
-                        {showProperty(i18next.t('entityPage.updatedAt'), new Date(printingTemplate.updatedAt).toLocaleDateString(), darkMode)}
+                        {showProperty(i18next.t('entityPage.updatedAt'), new Date(printingTemplate.updatedAt).toLocaleDateString('en-GB'), darkMode)}
                     </Grid>
                 </Grid>
             }

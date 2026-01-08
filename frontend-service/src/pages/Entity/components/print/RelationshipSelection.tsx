@@ -1,9 +1,11 @@
-import { CircularProgress, Typography } from '@mui/material';
+import { Box, CircularProgress, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { FC, useMemo, useState } from 'react';
+import React, { FC, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import Tree from '../../../../common/Tree';
+import SearchInput from '../../../../common/inputs/SearchInput';
+import { ArrowTail } from '../../../../common/RelationshipTitle';
+import Tree, { flattenTree } from '../../../../common/Tree';
 import { environment } from '../../../../globals';
 import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
@@ -12,6 +14,7 @@ import { BackendConfigState } from '../../../../services/backendConfigService';
 import { getRelationshipSelectTreeForPrint } from '../../../../services/entitiesService';
 import { useUserStore } from '../../../../stores/user';
 import { getAllAllowedEntities } from '../../../../utils/permissions/templatePermissions';
+import { useSearchUnits } from '../../../SystemManagement/components/UnitsRow/useSearchUnits';
 
 const { maxPrintLevel, neoIdsPathSeparator, relationshipPathSeparator, neoRelIdsSeparator } = environment.print;
 
@@ -21,19 +24,36 @@ interface ITreeNode extends Omit<IRelationShipSelectionTree, 'children'> {
 
 interface RelationshipSelectionProps {
     expandedEntity: IEntityExpanded;
-    setSelectedRelationShipIds: (ids: string[]) => void;
+    setSelectedRelationShipIds: React.Dispatch<React.SetStateAction<string[]>>;
+    setSelectedEntitiesCount: React.Dispatch<React.SetStateAction<number>>;
 }
 
-const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity, setSelectedRelationShipIds }) => {
+const getItemLabelComponent = (item: ITreeNode) => (
+    <Grid container flexWrap="nowrap" alignItems="center" gap="5px">
+        {item.sourceEntity.displayName}
+        {<ArrowTail width={11} height={1} color="#9398C2" />}
+        <span style={{ color: '#4752B6' }}>{item.displayName}</span>
+        <img src="/icons/arrow-head.svg" alt="" />
+        {item.destinationEntity.displayName}
+    </Grid>
+);
+
+const getItemLabelText = (item: ITreeNode) => `${item.sourceEntity.displayName} - ${item.displayName} -> ${item.destinationEntity.displayName}`;
+
+const getItemId = (item: ITreeNode) => `${item.neoRelIds.join(neoRelIdsSeparator)}${neoIdsPathSeparator}${item.path}`;
+
+const calculateSelectedEntitiesCount = (selectedRelationshipIds: string[], entitiesCountByRelationshipId: Map<string, number>) =>
+    selectedRelationshipIds.reduce((sum, id) => sum + (entitiesCountByRelationshipId.get(id) ?? 0), 0);
+
+const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity, setSelectedRelationShipIds, setSelectedEntitiesCount }) => {
     const [selectedTreeItemIds, setSelectedTreeItemIds] = useState<string[]>([]);
-    const [selectedEntitiesCount, setSelectedEntitiesCount] = useState<number>(0);
 
     const rootEntityId = expandedEntity.entity.properties._id;
 
-    const queryClient = useQueryClient();
     const currentUser = useUserStore((s) => s.user);
-    const { maxEntitiesToPrint } = queryClient.getQueryData<BackendConfigState>('getBackendConfig')!;
 
+    const queryClient = useQueryClient();
+    const { maxEntitiesToPrint } = queryClient.getQueryData<BackendConfigState>('getBackendConfig')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const allowedEntityTemplatesIds = useMemo(
@@ -51,7 +71,14 @@ const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity,
             ),
 
         enabled: !!rootEntityId,
+        initialData: [],
     });
+
+    const { expandedIds, onSearch, searchedUnits, setExpandedIds } = useSearchUnits(relationShips ?? [], getItemId, (item, search) =>
+        getItemLabelText(item)
+            .toLowerCase()
+            .includes(search?.toLowerCase() ?? ''),
+    );
 
     const getSelectedEntitiesCountById = useMemo(() => {
         const map = new Map<string, number>();
@@ -79,58 +106,68 @@ const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity,
         }
     };
 
-    const calculateSelectedEntitiesCount = (selectedRelationshipIds: string[], entitiesCountByRelationshipId: Map<string, number>) =>
-        selectedRelationshipIds.reduce((sum, id) => sum + (entitiesCountByRelationshipId.get(id) ?? 0), 0);
-
-    const allNodes = useMemo(
-        () =>
-            relationShips?.flatMap(function flat(n): ITreeNode[] {
-                return [n, ...(n.children?.flatMap(flat) ?? [])];
-            }) ?? [],
-        [relationShips],
-    );
+    const allNodes = useMemo(() => flattenTree(relationShips ?? [], getItemId, true, false), [relationShips]);
 
     if (isLoading) return <CircularProgress size={20} />;
-    if (!relationShips?.length) return null;
+    if (!relationShips?.length)
+        return (
+            <Box sx={{ color: '#6B6F9A', px: 1 }}>
+                <Typography sx={{ fontSize: '14px' }}>{i18next.t('entityPage.print.noRelationshipsToDisplay')}</Typography>
+            </Box>
+        );
 
     return (
         <>
-            <Typography fontSize={'12px'}>
-                {`${i18next.t('entityPage.print.limits.alreadySelected')}: ${selectedEntitiesCount} (${i18next.t(
-                    'entityPage.print.limits.max',
-                )} ${maxEntitiesToPrint})`}
-            </Typography>
-
-            <Tree
-                treeItems={relationShips}
-                getItemId={(item) => `${item.neoRelIds.join(neoRelIdsSeparator)}${neoIdsPathSeparator}${item.path}`}
-                getItemLabel={(item) =>
-                    `${item.displayName} (${item.sourceEntity.displayName} > ${item.destinationEntity.displayName}) – ${item.entitiesCount}`
-                }
-                removeDivider
-                selectedItems={selectedTreeItemIds}
-                selectionPropagation={{ descendants: true, parents: false }}
-                onSelectItems={(itemIds) => {
-                    const selectedRelationshipIds = new Set(itemIds as string[]);
-
-                    if (selectedRelationshipIds.size > selectedTreeItemIds.length) {
-                        includeParentRelationshipsInSelection(selectedRelationshipIds, allNodes);
-                    }
-
-                    const finalSelectedIds = [...selectedRelationshipIds];
-                    const totalEntitiesCount = calculateSelectedEntitiesCount(finalSelectedIds, getSelectedEntitiesCountById);
-
-                    if (totalEntitiesCount > maxEntitiesToPrint) {
-                        toast.error(i18next.t('entityPage.print.limits.warning'));
-                    } else {
-                        setSelectedEntitiesCount(totalEntitiesCount);
-                        setSelectedTreeItemIds(finalSelectedIds);
-                        setSelectedRelationShipIds([
-                            ...new Set(finalSelectedIds.flatMap((id) => id.split(neoIdsPathSeparator)[0]?.split(neoRelIdsSeparator) ?? [])),
-                        ]);
-                    }
+            <Box
+                sx={{
+                    border: '1px solid #D0D4E8',
+                    borderRadius: '10px',
+                    backgroundColor: '#fff',
+                    overflow: 'hidden',
                 }}
-            />
+            >
+                <SearchInput width="100%" onChange={onSearch} borderRadius="7px" placeholder={i18next.t('entityPage.print.search')} clearButton />
+            </Box>
+            <Box
+                sx={{
+                    marginTop: '10px',
+                    maxHeight: '230px',
+                    overflowY: 'auto',
+                }}
+            >
+                <Tree
+                    treeItems={relationShips}
+                    getItemId={getItemId}
+                    getItemLabel={getItemLabelText}
+                    renderItemLabel={getItemLabelComponent}
+                    removeDivider
+                    selectedItems={selectedTreeItemIds}
+                    filteredTreeItems={searchedUnits}
+                    selectionPropagation={{ descendants: true, parents: false }}
+                    preExpandedItemIds={expandedIds}
+                    onExpandedItemsChange={(_e, items) => setExpandedIds(items)}
+                    onSelectItems={(itemIds) => {
+                        const selectedRelationshipIds = new Set(itemIds as string[]);
+
+                        if (selectedRelationshipIds.size > selectedTreeItemIds.length) {
+                            includeParentRelationshipsInSelection(selectedRelationshipIds, allNodes);
+                        }
+
+                        const finalSelectedIds = [...selectedRelationshipIds];
+                        const totalEntitiesCount = calculateSelectedEntitiesCount(finalSelectedIds, getSelectedEntitiesCountById);
+
+                        if (totalEntitiesCount > maxEntitiesToPrint) {
+                            toast.error(i18next.t('entityPage.print.limits.warning'));
+                        } else {
+                            setSelectedEntitiesCount(totalEntitiesCount);
+                            setSelectedTreeItemIds(finalSelectedIds);
+                            setSelectedRelationShipIds([
+                                ...new Set(finalSelectedIds.flatMap((id) => id.split(neoIdsPathSeparator)[0]?.split(neoRelIdsSeparator) ?? [])),
+                            ]);
+                        }
+                    }}
+                />
+            </Box>
         </>
     );
 };

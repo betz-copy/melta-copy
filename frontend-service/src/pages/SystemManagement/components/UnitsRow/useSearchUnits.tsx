@@ -1,43 +1,41 @@
 import _ from 'lodash';
 import { useCallback, useEffect, useState } from 'react';
-import { IUnitHierarchy } from '../../../../interfaces/units';
 
-const filterNodes = (
-    node: IUnitHierarchy,
-    filterObject: Record<string, { value: any; mode: 'includes' | 'equals' }>,
-    flattenedTree: IUnitHierarchy[] = [],
-): { node: IUnitHierarchy; flattenTree: IUnitHierarchy[] } | null => {
-    const matches = Object.entries(filterObject).every(([prop, rule]) => {
-        const val = node[prop as keyof IUnitHierarchy];
-        if (rule.value == null) return true;
-        return rule.mode === 'includes' ? val?.toString().toLowerCase().includes(String(rule.value).toLowerCase()) : val === rule.value;
-    });
+export type IMuiTreeItem = object & {
+    children?: IMuiTreeItem[];
+};
 
-    const children = node.children?.flatMap((child) => filterNodes(child, filterObject, flattenedTree)?.node ?? []);
+export type IFilterResult<T> = { node: T; flattenTree: T[] } | null;
 
-    if (!matches && !children.length) return null;
-    if (filterObject.disabled && node.disabled && !matches && !children.length) return null;
+type ConditionFunction<T> = (item: T, search: string | undefined, isShowDisabled: boolean) => boolean;
 
-    const newNode = { ...node, children };
+export const filterNodes = <T extends IMuiTreeItem>(
+    node: T,
+    condition: ConditionFunction<T>,
+    search: string | undefined,
+    isShowDisabled: boolean,
+    flattenedTree: T[] = [],
+): IFilterResult<T> => {
+    const matches = condition(node, search, isShowDisabled);
+
+    const children = node.children?.flatMap((child) => filterNodes(child as T, condition, search, isShowDisabled, flattenedTree)?.node ?? []) ?? [];
+
+    if (!matches && children.length === 0) return null;
+
+    const newNode = { ...node, children } as T;
     flattenedTree.push(newNode);
 
     return { node: newNode, flattenTree: flattenedTree };
 };
 
-export const useSearchUnits = (hierarchy: IUnitHierarchy[]) => {
-    const [searchedUnits, setSearchedUnits] = useState<IUnitHierarchy[] | undefined>([]);
+export const useSearchUnits = <T extends IMuiTreeItem>(hierarchy: T[], getItemId: (item: T) => string, condition: ConditionFunction<T>) => {
+    const [searchedUnits, setSearchedUnits] = useState<T[] | undefined>([]);
     const [search, setSearch] = useState<string>();
     const [expandedIds, setExpandedIds] = useState<string[]>([]);
     const [isShowDisabled, setIsShowDisabled] = useState<boolean>(false);
 
     const filterUnitsOnSearchAndDisabled = useCallback(() => {
-        const filteredUnits = hierarchy.flatMap(
-            (singleHierarchy) =>
-                filterNodes(singleHierarchy, {
-                    name: { value: search, mode: 'includes' },
-                    ...(isShowDisabled ? {} : { disabled: { value: false, mode: 'equals' } }),
-                }) ?? [],
-        );
+        const filteredUnits = hierarchy.flatMap((singleHierarchy) => filterNodes(singleHierarchy, condition, search, isShowDisabled) ?? []);
 
         setSearchedUnits(filteredUnits.flatMap((unit) => unit?.node ?? []));
 
@@ -47,7 +45,7 @@ export const useSearchUnits = (hierarchy: IUnitHierarchy[]) => {
     useEffect(() => {
         const filteredUnits = filterUnitsOnSearchAndDisabled();
 
-        if (search?.trim()) setExpandedIds(filteredUnits.flatMap((singleHierarchy) => singleHierarchy?.flattenTree.map(({ _id }) => _id) ?? []));
+        if (search?.trim()) setExpandedIds(filteredUnits.flatMap((singleHierarchy) => singleHierarchy?.flattenTree.map(getItemId) ?? []));
     }, [search, filterUnitsOnSearchAndDisabled]);
 
     const onSearch = useCallback(

@@ -75,7 +75,7 @@ const PrintingTemplatesRow: React.FC = () => {
                     />
                 </Grid>
             </Grid>
-            <Grid direction="column" width="100%">
+            <Grid direction="column" width="100%" sx={{ gap: '1rem' }} container>
                 {filteredTemplates.map((printingTemplate) => (
                     <Grid key={printingTemplate._id}>
                         <PrintingTemplateCard
