@@ -30,7 +30,6 @@ apiRouter.use('/config', (_req, res) => {
         getMapLayers: config.frontendConfig.getMapLayers,
         deleteEntitiesLimit: config.frontendConfig.agGridLimit.deleteLimit,
         meltaUpdates: config.frontendConfig.meltaUpdates,
-        meltaUpdatesDescription: config.frontendConfig.meltaUpdatesDescription,
         isOutsideDevelopment: config.frontendConfig.isOutsideDevelopment,
         maxEntitiesToPrint: config.frontendConfig.maxEntitiesToPrint,
     });

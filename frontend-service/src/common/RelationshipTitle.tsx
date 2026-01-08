@@ -9,16 +9,26 @@ import { getEntityTemplateColor } from '../utils/colors';
 import { EntityTemplateColor } from './EntityTemplateColor';
 import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
 
-const ArrowTail: React.FC = () => {
+type ArrowProps = {
+    width?: number;
+    height?: number;
+    color?: string;
+};
+
+export const ArrowTail: React.FC<ArrowProps> = ({ width = 42, height = 2, color }) => {
     const theme = useTheme();
 
     return (
-        <svg width="42" height="2" viewBox="0 0 42 2" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <title>Arrow tail</title>
-            <path
-                d="M0.0677948 0C0.089447 0.23989 0.10051 0.482835 0.10051 0.728363C0.10051 1.16113 0.0661469 1.58587 0 2H40.1005C40.6528 2 41.1005 1.55228 41.1005 1C41.1005 0.447715 40.6528 0 40.1005 0H0.0677948Z"
-                fill={theme.palette.primary.main}
-            />
+        <svg
+            aria-hidden="true"
+            role="presentation"
+            width={width}
+            height={height}
+            viewBox={`0 0 ${width} ${height}`}
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path d={`M${width - 0.5} ${height / 2}L0.5 ${height / 2}`} stroke={color ?? theme.palette.primary.main} strokeLinecap="round" />
         </svg>
     );
 };

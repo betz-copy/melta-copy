@@ -4,6 +4,12 @@ import { LayerProviderType } from '../pages/Map/BaseLayers';
 
 const { config } = environment.api;
 
+export interface MeltaUpdatesConfig {
+    details: Record<string, string>;
+    description: string;
+    display: boolean;
+}
+
 export interface BackendConfigState {
     matomoUrl: string;
     matomoSiteId: number;
@@ -25,8 +31,7 @@ export interface BackendConfigState {
         outputSchema: string;
     };
     deleteEntitiesLimit: number;
-    meltaUpdates: Record<string, string>;
-    meltaUpdatesDescription: string;
+    meltaUpdates: MeltaUpdatesConfig;
     isOutsideDevelopment: boolean;
     maxEntitiesToPrint: number;
 }

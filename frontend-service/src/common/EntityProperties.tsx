@@ -7,12 +7,13 @@ import { useQueryClient } from 'react-query';
 import { environment } from '../globals';
 import { IEntity } from '../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { IPrintSection } from '../interfaces/printingTemplates';
 import { IGetUnits } from '../interfaces/units';
 import { useDarkModeStore } from '../stores/darkMode';
-import { HighlightText } from '../utils/HighlightText';
-import { containsHTMLTags, getFirstLine, getNumLines, renderHTML } from '../utils/HtmlTagsStringValue';
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
 import { formatToString, getPropertyColor, getUserAvatar } from '../utils/entityProperties';
+import { HighlightText } from '../utils/HighlightText';
+import { containsHTMLTags, getFirstLine, getNumLines, renderHTML } from '../utils/HtmlTagsStringValue';
 import { getFixedNumber, getTextDirection } from '../utils/stringValues';
 import BlueTitle from './MeltaDesigns/BlueTitle';
 import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
@@ -46,6 +47,7 @@ export interface IEntityPropertiesProps {
     dividerTitle?: string;
     entityTemplates?: IEntityTemplateMap;
     preview?: boolean;
+    printingTemplateSection?: IPrintSection;
 }
 
 type PropertiesDetailsProps = {
@@ -226,7 +228,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                             flexDirection: 'row',
                             flexWrap: 'wrap',
                             ...(overrideStyleInLongText ? { width: '100%' } : innerStyle),
-                            marginBottom: '10px',
+                            padding: '5px',
                             alignItems: textWrap ? 'flex-start' : 'center',
                         }}
                     >
@@ -316,33 +318,45 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     entityTemplates,
     showByGroups = false,
     preview = false,
+    printingTemplateSection,
 }) => {
-    const getCurrProperty = (propertyKey: string) => entityTemplate.properties.properties[propertyKey];
+    const propsMap = entityTemplate.properties.properties;
+    const propertiesOrderSet = new Set(entityTemplate.propertiesOrder);
 
-    let propertiesOrderedToShow: string[];
-    if (overridePropertiesToShow) {
-        propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => overridePropertiesToShow.includes(propertyKey));
-    } else if (showPreviewPropertiesOnly) {
-        propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.propertiesPreview!.includes(propertyKey));
-    } else if (removeFiles) {
-        const formats = ['fileId', 'signature'];
-        propertiesOrderedToShow = entityTemplate.propertiesOrder.filter(
-            (propertyKey) => formats.includes(getCurrProperty(propertyKey).format ?? '') && getCurrProperty(propertyKey).items?.format !== 'fileId',
-        );
-    } else
-        propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) =>
-            (getCurrProperty(propertyKey).comment && getCurrProperty(propertyKey).hideFromDetailsPage) || displayArchiveProperties
-                ? getCurrProperty(propertyKey).archive
-                : !getCurrProperty(propertyKey).archive,
-        );
+    const baseOrderFromTemplate = printingTemplateSection?.selectedColumns?.filter((k) => propertiesOrderSet.has(k)) ?? [];
 
-    propertiesOrderedToShow = propertiesOrderedToShow.filter((propertyKey) => getCurrProperty(propertyKey).display !== false);
+    const baseOrder = baseOrderFromTemplate.length ? baseOrderFromTemplate : entityTemplate.propertiesOrder;
+
+    const formatsToRemove = new Set(['fileId', 'signature']);
+
+    const previewProperties = showPreviewPropertiesOnly
+        ? entityTemplate.propertiesPreview?.length
+            ? entityTemplate.propertiesPreview
+            : entityTemplate.propertiesOrder.slice(0, 5)
+        : null;
+
+    const propertiesToEvaluate = previewProperties ?? (overridePropertiesToShow?.length ? overridePropertiesToShow : baseOrder);
+
+    const shouldShow = (key: string) => {
+        if (removeFiles) {
+            const propertyConfig = propsMap[key];
+            const propertyFormat = propertyConfig?.format ?? '';
+            return formatsToRemove.has(propertyFormat) && propertyConfig?.items?.format !== 'fileId';
+        }
+
+        const propertyConfig = propsMap[key];
+        const useArchive = !!((propertyConfig?.comment && propertyConfig?.hideFromDetailsPage) || displayArchiveProperties);
+
+        return useArchive ? !!propertyConfig?.archive : !propertyConfig?.archive;
+    };
+
+    const propertiesOrderedToShow = propertiesToEvaluate.filter(shouldShow).filter((key) => propsMap[key]?.display !== false);
 
     const alreadyRenderedGroups = new Set<string>();
 
     const imageOfKartoffelKeys = _.remove(propertiesOrderedToShow, (propertyKey) => {
-        const propertyValue = entityTemplate.properties.properties[propertyKey];
-        return propertyValue?.expandedUserField?.kartoffelField === 'image' && propertyValue.isProfileImage;
+        const propertyConfig = propsMap[propertyKey];
+        return propertyConfig?.expandedUserField?.kartoffelField === 'image' && propertyConfig?.isProfileImage;
     });
 
     return (
@@ -356,7 +370,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     display: 'flex',
                     flexWrap: 'wrap',
                     width: '100%',
-                    alignItems: textWrap ? 'flex-start' : 'center',
+                    alignItems: 'center',
                     alignContent: 'center',
                 }}
             >
