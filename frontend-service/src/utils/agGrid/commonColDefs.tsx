@@ -39,7 +39,7 @@ import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import { IGetUnits, IMongoUnit } from '../../interfaces/units';
 import { IUser, PermissionData } from '../../interfaces/users';
 import OpenMap from '../../pages/Map/OpenMap';
-import { PropertyWizardType } from '../../services/templates/entityTemplatesService';
+import { PropertyWizardTypes } from '../../services/templates/entityTemplatesService';
 import { getDateWithoutTime, getLongDate } from '../date';
 import { getFileName } from '../getFileName';
 import { convertToPlainText } from '../HtmlTagsStringValue';
@@ -634,7 +634,7 @@ export const userArrayColDef = <Data extends IEntity>(
             if (error) {
                 const errorValue = Array.isArray(props.value) ? props.value.join(', ') : props.value;
 
-                return errorColDef({ ...props, value: errorValue }, error, { ...value, format: PropertyWizardType.users as any });
+                return errorColDef({ ...props, value: errorValue }, error, { ...value, format: PropertyWizardTypes.users as any });
             }
 
             if (!props.value) return '';

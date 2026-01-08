@@ -80,7 +80,7 @@ const FilterCompetent = <T extends TableForm | ChartForm>({
                                                 const selectedProp = entityTemplate?.properties.properties[selectedKey];
                                                 const { format, type, enum: enumValues } = selectedProp || {};
                                                 const newFilterField =
-                                                    (enumValues && initializedFilterField['array']) ||
+                                                    (enumValues && initializedFilterField.array) ||
                                                     (format && initializedFilterField[format]) ||
                                                     (type && initializedFilterField[type]);
 

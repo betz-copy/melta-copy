@@ -12,10 +12,11 @@ import BlueTitle from '../../../MeltaDesigns/BlueTitle';
 import MeltaTooltip from '../../../MeltaDesigns/MeltaTooltip';
 import { ProcessStep } from './processStep';
 import './processStep.css';
+import { IPropertyValue } from '../../../../interfaces/entities';
 
 export interface ProcessStepValues {
-    properties: object;
-    attachmentsProperties: object;
+    properties: Record<string, IPropertyValue>;
+    attachmentsProperties: Record<string, IPropertyValue>;
     entityReferences: Record<string, IReferencedEntityForProcess>;
     status: Status;
     comments: string;

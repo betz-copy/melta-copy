@@ -357,7 +357,7 @@ export const environment = {
         maxNumberOfSearchResults: 1000,
         textValueOfLinkTag: '#text',
         tileMatrixSetIdentifiers: ['WorldCRS84', 'EPSG:4326', 'GoogleMapsCompatible'],
-        tilingSchemeId:'3857'
+        tilingSchemeId: '3857',
     },
     signaturePrefix: 'data:image/png;base64,',
     meltaUpdatesShown: 'meltaUpdatesShown',

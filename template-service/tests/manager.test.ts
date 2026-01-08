@@ -42,14 +42,14 @@ const exampleRelation: IRelationshipTemplate = {
     destinationEntityId: '123451234512345123451234',
 };
 
-const mockMongooseFindOneWithChainingResolveValue = (resolveValue: any) =>
+const mockMongooseFindOneWithChainingResolveValue = (resolveValue: IRelationshipTemplate) =>
     ({
         orFail: jest.fn().mockReturnThis(),
         lean: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue(resolveValue),
     }) as Query<IRelationshipTemplate & Document, IRelationshipTemplate & Document>;
 
-const mockMongooseFindManyWithChainingResolveValue = (resolveValue: any) =>
+const mockMongooseFindManyWithChainingResolveValue = (resolveValue: IRelationshipTemplate[]) =>
     ({
         lean: jest.fn().mockReturnThis(),
         skip: jest.fn().mockReturnThis(),

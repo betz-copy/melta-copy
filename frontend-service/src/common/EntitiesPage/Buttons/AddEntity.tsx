@@ -5,7 +5,7 @@ import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
 import { IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
-import { IEntity } from '../../../interfaces/entities';
+import { IEntity, IPropertyValue } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { useDarkModeStore } from '../../../stores/darkMode';
@@ -16,7 +16,7 @@ import { IChooseTemplateMode } from '../../dialogs/entity/ChooseTemplate';
 import { CreateOrEditEntityDetails } from '../../dialogs/entity/CreateOrEditEntityDialog';
 import { TableButton } from '../../TableButton';
 
-const isTwinWalletsInTransferTemplate = (properties: Record<string, any>, template: IMongoEntityTemplatePopulated, twinTemplates: string[]) => {
+const isTwinWalletsInTransferTemplate = (properties: IEntity['properties'], template: IMongoEntityTemplatePopulated, twinTemplates: string[]) => {
     if (!template.walletTransfer) return false;
     const sourceWalletTemplateId = properties[template.walletTransfer?.from].templateId;
     const destWalletTemplateId = properties[template.walletTransfer?.to].templateId;
@@ -36,7 +36,7 @@ const AddEntityButton: React.FC<{
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
     chooseMode?: IChooseTemplateMode;
     parentId?: string;
-    getInitialProperties?: (newTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => Record<string, any>;
+    getInitialProperties?: (newTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => Record<string, IPropertyValue>;
     children?: ReactNode;
 }> = ({
     style,

@@ -8,16 +8,17 @@ import { CoordinateSystem, LocationData } from '../common/inputs/JSONSchemaFormi
 import RelationshipReferenceView from '../common/RelationshipReferenceView';
 import UserAvatar from '../common/UserAvatar';
 import { environment } from '../globals';
-import { IEntity } from '../interfaces/entities';
+import { IEntity, IPropertyValue } from '../interfaces/entities';
 import { IEntitySingleProperty } from '../interfaces/entityTemplates';
 import { IGetUnits } from '../interfaces/units';
+import { IUser } from '../interfaces/users';
 import OverflowWrapper from './agGrid/OverflowWrapper';
 import { extractUtmLocation, locationConverterToString } from './map/convert';
 
 function formatDateToDDMMYYYY(dateString: string): string {
     if (!dateString) return '-';
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return '-';
+    if (Number.isNaN(date.getTime())) return '-';
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
@@ -55,7 +56,7 @@ export const getUserAvatar = (
 };
 
 export const formatToString = (data: {
-    value: any;
+    value: IPropertyValue;
     property: IEntitySingleProperty;
     units: IGetUnits;
     key?: string;
@@ -156,11 +157,11 @@ export const formatToString = (data: {
                 <Grid container>
                     <OverflowWrapper
                         items={value.map((val) => JSON.parse(val))}
-                        getItemKey={(item: any) => item._id}
+                        getItemKey={(item: IUser) => item._id}
                         renderItem={(item) => (
                             <Grid>
                                 <UserAvatar
-                                    key={item.id}
+                                    key={item._id}
                                     user={item}
                                     tooltip={{ title: `${item.fullName} - ${item.hierarchy}` }}
                                     chip={{

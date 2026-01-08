@@ -6,6 +6,7 @@ import { DebouncedFunc, isEqual } from 'lodash';
 import React, { Dispatch, SetStateAction, useEffect, useMemo } from 'react';
 import { IExternalErrors } from '../../../../interfaces/CreateOrEditEntityDialog';
 import { IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
+import { IPropertyValue } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import { filterFieldsFromPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
@@ -25,8 +26,8 @@ const EditProps: React.FC<{
     errors: FormikState<EntityWizardValues>['errors'];
     touched: FormikState<EntityWizardValues>['touched'];
     setFieldTouched: FormikHelpers<EntityWizardValues>['setFieldTouched'];
-    initialValuePropsToFilter: Record<string, any>;
-    setInitialValuePropsToFilter: Dispatch<SetStateAction<Record<string, any>>>;
+    initialValuePropsToFilter: Record<string, IPropertyValue>;
+    setInitialValuePropsToFilter: Dispatch<SetStateAction<Record<string, IPropertyValue>>>;
     isMultipleSelection: boolean;
     entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
     wasDirty: boolean;
@@ -47,7 +48,7 @@ const EditProps: React.FC<{
     showTitle?: boolean;
     chooseMode?: IChooseTemplateMode;
     parentId?: string;
-    getInitialProperties?: (newTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => Record<string, any>;
+    getInitialProperties?: (newTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => Record<string, IPropertyValue>;
 }> = ({
     setFieldValue,
     values,

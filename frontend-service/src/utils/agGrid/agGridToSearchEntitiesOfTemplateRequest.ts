@@ -256,7 +256,7 @@ export const filterModelToFilterOfTemplate = (
         const filter = filterModelToFilterOfTemplatePerField(fieldTemplate, field, fieldFilter);
 
         if (filter[field] && typeof filter[field] === 'object' && '$and' in (filter[field] as object)) {
-            return (filter[field] as { $and: IFilterOfField[] })['$and'].map((condition) => ({ [field]: condition }));
+            return (filter[field] as { $and: IFilterOfField[] }).$and.map((condition) => ({ [field]: condition }));
         }
 
         return [filter];

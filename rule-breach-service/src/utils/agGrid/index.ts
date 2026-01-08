@@ -3,6 +3,7 @@ import {
     filterTypes,
     IAgGridRequest,
     IAgGridSort,
+    IPropertyValue,
     numberFilterOperationTypes,
     textFilterOperationTypes,
 } from '@microservices/shared';
@@ -10,8 +11,8 @@ import { RuleBreachSearchFilterTypeError } from '../../express/error';
 
 const translateAgGridFilter = (
     type: basicFilterOperationTypes | numberFilterOperationTypes | textFilterOperationTypes,
-    filterValue: any,
-    other?: any,
+    filterValue: IPropertyValue,
+    other?: IPropertyValue,
 ) => {
     switch (type) {
         case basicFilterOperationTypes.equals:

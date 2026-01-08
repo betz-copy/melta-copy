@@ -138,47 +138,6 @@ export const webGLFluidSimulation = (canvas) => {
         return status === gl.FRAMEBUFFER_COMPLETE;
     }
 
-    function framebufferToTexture(target) {
-        gl.bindFramebuffer(gl.FRAMEBUFFER, target.fbo);
-        const length = target.width * target.height * 4;
-        const texture = new Float32Array(length);
-        gl.readPixels(0, 0, target.width, target.height, gl.RGBA, gl.FLOAT, texture);
-        return texture;
-    }
-
-    function normalizeTexture(texture, width, height) {
-        const result = new Uint8Array(texture.length);
-        let id = 0;
-        for (let i = height - 1; i >= 0; i--) {
-            for (let j = 0; j < width; j++) {
-                const nid = i * width * 4 + j * 4;
-                result[nid + 0] = clamp01(texture[id + 0]) * 255;
-                result[nid + 1] = clamp01(texture[id + 1]) * 255;
-                result[nid + 2] = clamp01(texture[id + 2]) * 255;
-                result[nid + 3] = clamp01(texture[id + 3]) * 255;
-                id += 4;
-            }
-        }
-        return result;
-    }
-
-    function clamp01(input) {
-        return Math.min(Math.max(input, 0), 1);
-    }
-
-    function textureToCanvas(texture, width, height) {
-        const captureCanvas = document.createElement('canvas');
-        const ctx = captureCanvas.getContext('2d');
-        captureCanvas.width = width;
-        captureCanvas.height = height;
-
-        const imageData = ctx.createImageData(width, height);
-        imageData.data.set(texture);
-        ctx.putImageData(imageData, 0, 0);
-
-        return captureCanvas;
-    }
-
     class Material {
         constructor(vertexShader, fragmentShaderSource) {
             this.vertexShader = vertexShader;
@@ -820,11 +779,6 @@ export const webGLFluidSimulation = (canvas) => {
         };
     })();
 
-    function CHECK_FRAMEBUFFER_STATUS() {
-        const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-        if (status !== gl.FRAMEBUFFER_COMPLETE) console.trace(`Framebuffer error: ${status}`);
-    }
-
     let dye;
     let velocity;
     let divergence;
@@ -1371,43 +1325,51 @@ export const webGLFluidSimulation = (canvas) => {
         let r;
         let g;
         let b;
-        let i;
-        let f;
-        let p;
-        let q;
-        let t;
-        i = Math.floor(h * 6);
-        f = h * 6 - i;
-        p = v * (1 - s);
-        q = v * (1 - f * s);
-        t = v * (1 - (1 - f) * s);
+
+        const i = Math.floor(h * 6);
+        const f = h * 6 - i;
+        const p = v * (1 - s);
+        const q = v * (1 - f * s);
+        const t = v * (1 - (1 - f) * s);
 
         switch (i % 6) {
             case 0:
-                (r = v), (g = t), (b = p);
+                r = v;
+                g = t;
+                b = p;
                 break;
             case 1:
-                (r = q), (g = v), (b = p);
+                r = q;
+                g = v;
+                b = p;
                 break;
             case 2:
-                (r = p), (g = v), (b = t);
+                r = p;
+                g = v;
+                b = t;
                 break;
             case 3:
-                (r = p), (g = q), (b = v);
+                r = p;
+                g = q;
+                b = v;
                 break;
             case 4:
-                (r = t), (g = p), (b = v);
+                r = t;
+                g = p;
+                b = v;
                 break;
             case 5:
-                (r = v), (g = p), (b = q);
+                r = v;
+                g = p;
+                b = q;
                 break;
+            default:
+                r = 0;
+                g = 0;
+                b = 0;
         }
 
-        return {
-            r,
-            g,
-            b,
-        };
+        return { r, g, b };
     }
 
     function normalizeColor(input) {

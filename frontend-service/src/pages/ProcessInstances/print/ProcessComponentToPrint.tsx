@@ -4,7 +4,6 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { UseMutateAsyncFunction, useQueryClient } from 'react-query';
 import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
-import { ErrorResponseData } from '../../../common/PermissionsDialog/RoleDialog';
 import { ProcessDetailsValues } from '../../../common/wizards/processInstance/ProcessDetails';
 import { getInitialDetailsValues, useProcessDetailsFormik } from '../../../common/wizards/processInstance/ProcessDetails/detailsFormik';
 import GeneralDetails from '../../../common/wizards/processInstance/ProcessDetails/GeneralDetails';
@@ -18,7 +17,7 @@ import { EntityDates } from '../../Entity/components/EntityDates';
 
 const ProcessComponentToPrint: React.FC<{
     processInstance: IMongoProcessInstancePopulated;
-    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError<ErrorResponseData>, ProcessDetailsValues, unknown>;
+    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError, ProcessDetailsValues, unknown>;
 }> = ({ processInstance, mutateAsync }) => {
     const theme = useTheme();
 

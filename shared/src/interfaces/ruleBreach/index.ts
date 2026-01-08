@@ -1,4 +1,4 @@
-import { IEntityWithIgnoredRules, IExcelNotFoundError, IRequiredConstraint, IUniqueConstraint, IValidationError } from '../entity';
+import { IEntityWithIgnoredRules, IExcelNotFoundError, IPropertyValue, IRequiredConstraint, IUniqueConstraint, IValidationError } from '../entity';
 import { IUser } from '../user';
 import { ActionErrors, ActionTypes, IActionMetadataPopulated, ICreateEntityMetadata } from './actionMetadata';
 import { IAction, IBrokenRule, IBrokenRulePopulated, IRuleBreach, IRuleBreachPopulated } from './ruleBreach';
@@ -43,7 +43,7 @@ export type IFailedEntityError = {
 };
 
 export type IFailedEntity = {
-    properties: Record<string, any>;
+    properties: Record<string, IPropertyValue>;
     errors: IFailedEntityError[];
 };
 
@@ -57,7 +57,7 @@ export type IBrokenRuleEntity = {
     brokenRules: IBrokenRulePopulated[];
     actions: IActionPopulated[];
     rawActions: IAction[];
-    entities: { properties: Record<string, any> }[];
+    entities: { properties: Record<string, IPropertyValue> }[];
 };
 
 export interface ITablesResults {

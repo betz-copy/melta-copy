@@ -8,7 +8,7 @@ import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridSetFilter, IAGGridTextFi
 const { relativeDateFilters, fieldFilterPrefix } = environment;
 
 export interface IGraphFilterToBackendBody {
-    [templateId: string]: { filter: ISearchFilter } | {};
+    [templateId: string]: { filter: ISearchFilter };
 }
 
 export const filterModelToFilterOfGraph = (filterModel: IGraphFilterBodyBatch): IGraphFilterToBackendBody['filter'] => {

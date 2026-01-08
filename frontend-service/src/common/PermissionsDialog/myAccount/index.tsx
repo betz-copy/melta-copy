@@ -32,6 +32,7 @@ const MyAccount: React.FC<{
         allNotifications.filter((notification) => existingUser?.preferences.mailsNotificationsTypes?.includes(notification.type)),
     );
     const [editProfile, setEditProfile] = useState(false);
+    // biome-ignore lint/suspicious/noExplicitAny: this code is bad
     const [profilePreference, setProfilePreference] = useState<{ profilePath?: string; icon?: any }>({
         profilePath: existingUser?.preferences.profilePath,
     });

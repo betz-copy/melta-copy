@@ -1,9 +1,8 @@
 import { IValue } from '../../pages/SystemManagement/components/Field';
 
-export const deepClone = (obj: any) => {
-    return JSON.parse(JSON.stringify(obj));
-};
+export const deepClone = <T>(obj: T): T => JSON.parse(JSON.stringify(obj));
 
+// biome-ignore lint/suspicious/noExplicitAny: generic function
 export const getDefaultValue = (path: string, defaultObj: any) => {
     const keys = path.split('.');
     let obj = defaultObj;
@@ -15,6 +14,7 @@ export const getDefaultValue = (path: string, defaultObj: any) => {
     return obj;
 };
 
+// biome-ignore lint/suspicious/noExplicitAny: generic function
 export const setNestedValue = (obj: any, path: string, value: IValue) => {
     const keys = path.split('.');
     let current = obj;
@@ -26,6 +26,7 @@ export const setNestedValue = (obj: any, path: string, value: IValue) => {
     current[keys[keys.length - 1]] = value;
 };
 
+// biome-ignore lint/suspicious/noExplicitAny: generic function
 export const getValueByPath = (obj: any, path: string) => {
     const keys = path.split('.');
     let current = obj;

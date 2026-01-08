@@ -10,7 +10,7 @@ import { environment } from '../../../globals';
 import { IEntity } from '../../../interfaces/entities';
 import { IErrorResponse } from '../../../interfaces/error';
 import { PermissionScope } from '../../../interfaces/permissions';
-import { IRelationship } from '../../../interfaces/relationships';
+import { IMongoRelationship } from '../../../interfaces/relationships';
 import { IMongoRelationshipTemplatePopulated } from '../../../interfaces/relationshipTemplates';
 import { ICreateRelationshipMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IBrokenRule, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
@@ -164,7 +164,7 @@ interface ICreateRelationshipBodyPopulated {
 const CreateRelationshipDialog: React.FC<{
     isOpen: boolean;
     handleClose: () => void;
-    onSubmitSuccess: (createdRelationship: IRelationship, sourceEntity: IEntity, destinationEntity: IEntity) => void;
+    onSubmitSuccess: (createdRelationship: IMongoRelationship, sourceEntity: IEntity, destinationEntity: IEntity) => void;
     initialValues?: Partial<ICreateRelationshipValues>;
 }> = ({ isOpen, handleClose, onSubmitSuccess = () => {}, initialValues: parentInitialValues }) => {
     const initialValues = { ...defaultInitialValues, ...parentInitialValues };

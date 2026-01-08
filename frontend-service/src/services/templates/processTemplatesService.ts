@@ -129,19 +129,19 @@ const processTemplateObjectToProcessTemplateForm = (
     };
 };
 
-const createFileAttachmentProperty = (type: string, required: boolean): any => {
+const createFileAttachmentProperty = (type: string, required: boolean): Omit<IProcessSingleProperty, 'title'> & { required?: boolean } => {
     if (type === 'multipleFiles') {
         return {
-            type: 'array',
+            type: PropertyType.array,
             items: {
-                type: 'string',
+                type: PropertyType.string,
                 format: 'fileId',
             },
             ...(required && { required: true }),
         };
     }
     return {
-        type: 'string',
+        type: PropertyType.string,
         format: 'fileId',
         ...(required && { required: true }),
     };
@@ -159,7 +159,7 @@ const addAttachmentProperties = (
 ) => {
     attachmentProperties.forEach(({ name, title, type, required, deleted }) => {
         if (!deleted) {
-            const { required: requiredFile, ...attachmentProperty } = createFileAttachmentProperty(type, required);
+            const { required: _requiredFile, ...attachmentProperty } = createFileAttachmentProperty(type, required);
             properties[name] = {
                 title,
                 ...attachmentProperty,

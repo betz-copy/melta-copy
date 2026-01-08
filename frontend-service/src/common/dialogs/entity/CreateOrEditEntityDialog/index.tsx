@@ -8,7 +8,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { environment } from '../../../../globals';
 import { ICreateOrUpdateWithRuleBreachDialogState, IExternalErrors, IMutationProps } from '../../../../interfaces/CreateOrEditEntityDialog';
 import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
-import { IEntity } from '../../../../interfaces/entities';
+import { IEntity, IPropertyValue } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { ActionTypes } from '../../../../interfaces/ruleBreaches/actionMetadata';
 import ActionOnEntityWithRuleBreachDialog from '../../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
@@ -108,7 +108,7 @@ const CreateOrEditEntityDetails: React.FC<{
     showActionButtons?: boolean;
     chooseMode?: IChooseTemplateMode;
     parentId?: string;
-    getInitialProperties?: (newTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => Record<string, any>;
+    getInitialProperties?: (newTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => Record<string, IPropertyValue>;
 }> = ({
     mutationProps,
     entityTemplate,
@@ -127,7 +127,7 @@ const CreateOrEditEntityDetails: React.FC<{
     const [isDraftDialogOpen, setIsDraftDialogOpen] = useState(false);
     const [wasDirty, setWasDirty] = useState(false);
     const [isSubmitPressed, setIsSubmitPressed] = useState(false);
-    const [initialValuePropsToFilter, setInitialValuePropsToFilter] = useState<Record<string, any>>({});
+    const [initialValuePropsToFilter, setInitialValuePropsToFilter] = useState<Record<string, IPropertyValue>>({});
 
     const isEditMode = actionType === ActionTypes.UpdateEntity;
 

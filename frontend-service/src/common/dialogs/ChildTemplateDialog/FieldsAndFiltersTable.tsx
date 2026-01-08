@@ -13,7 +13,7 @@ import { ColoredEnumChip } from '../../ColoredEnumChip';
 import { getFilterFieldReadonly } from '../../inputs/FilterInputs/ReadonlyFilterInput';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import { IAGGridFilter } from '../../wizards/entityTemplate/commonInterfaces';
-import AddFilterFieldDialog from './AddFieldFilterDialog';
+import AddFilterFieldDialog, { IDefaultValue } from './AddFieldFilterDialog';
 
 type IChip = IAGGridFilter | IChildTemplateProperty['defaultValue'];
 
@@ -272,7 +272,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
                     formikProps={formikProps}
                     entityTemplate={entityTemplate}
                     onClose={() => setAddFilterField(undefined)}
-                    onSubmit={(fieldValue: any) => {
+                    onSubmit={(fieldValue: IAGGridFilter | IDefaultValue) => {
                         const value = values.properties.properties[addFilterField.fieldName];
                         setFieldValue(`properties.properties.${addFilterField.fieldName}`, {
                             ...value,

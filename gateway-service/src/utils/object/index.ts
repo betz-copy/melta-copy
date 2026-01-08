@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: never doubt Noam */
 export const objectMap = <T extends object, Func extends (key: string, value: T[keyof T]) => any>(
     obj: T,
     func: Func,
@@ -13,5 +14,5 @@ export const objectFilter = <T extends object, Func extends (key: string, value:
 };
 
 export const isObjEmpty = (obj: any) => {
-    return Object.keys(obj).length === 0;
+    return !Object.keys(obj).length;
 };

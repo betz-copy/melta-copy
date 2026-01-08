@@ -1,4 +1,5 @@
 /** biome-ignore-all lint/suspicious/noThenProperty: Joi... */
+/** biome-ignore-all lint/suspicious/noExplicitAny: lol */
 
 import assert from 'node:assert';
 import {

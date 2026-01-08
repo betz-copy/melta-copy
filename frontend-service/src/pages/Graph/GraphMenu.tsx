@@ -9,8 +9,8 @@ const GraphMenu: React.FC<{
     onCloseMenu: () => void;
     onCenterMain: () => void;
 }> = ({ graphData, location, onCloseMenu, onCenterMain }) => {
-    const areThereLockedNodes = graphData.nodes.some((node: any) => node.locked);
-    const areThereHighlightedNodes = graphData.nodes.some((node: any) => node.highlighted || node.mainHighlighted);
+    const areThereLockedNodes = graphData.nodes.some((node) => node.locked);
+    const areThereHighlightedNodes = graphData.nodes.some((node) => node.highlighted || node.mainHighlighted);
 
     return (
         <MuiMenu
@@ -25,7 +25,7 @@ const GraphMenu: React.FC<{
         >
             <MenuItem
                 onClick={() => {
-                    graphData.nodes.forEach((node: any) => {
+                    graphData.nodes.forEach((node) => {
                         node.fx = undefined;
                         node.fy = undefined;
                         node.fz = undefined;
@@ -40,11 +40,11 @@ const GraphMenu: React.FC<{
             </MenuItem>
             <MenuItem
                 onClick={() => {
-                    graphData.nodes.forEach((node: any) => {
+                    graphData.nodes.forEach((node) => {
                         node.mainHighlighted = false;
                         node.highlighted = 0;
                     });
-                    graphData.links.forEach((links: any) => {
+                    graphData.links.forEach((links) => {
                         links.highlighted = 0;
                     });
 

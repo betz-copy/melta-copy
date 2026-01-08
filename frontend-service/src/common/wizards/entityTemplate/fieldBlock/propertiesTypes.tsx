@@ -1,7 +1,7 @@
 import { Delete as DeleteIcon, DragHandle as DragHandleIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { AccordionDetails, AccordionSummary, Box, Button, Divider, Grid, IconButton, TextField, Typography } from '@mui/material';
 import i18next from 'i18next';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
 import { useDarkModeStore } from '../../../../stores/darkMode';
@@ -11,13 +11,14 @@ import { CommonFormInputProperties, FieldProperty, GroupProperty, PropertyItem }
 import { FieldEditCardProps, MemoFieldEditCard } from '../FieldEditCard';
 import { AttachmentsProps, FieldBlockAccordion, FieldProps, GroupProps, ItemTypes } from './interfaces';
 
+// biome-ignore lint/suspicious/noExplicitAny: too complicated
 export const getFieldData = (displayValuesCopy: any, fieldIndex: number, groupIndex?: number) => {
     if (typeof groupIndex === 'number') return (displayValuesCopy[groupIndex] as GroupProperty)?.fields?.[fieldIndex];
     return (displayValuesCopy[fieldIndex] as FieldProperty)?.data;
 };
 
 export const Attachment = ({ field, index, buildProps, onDrop }: AttachmentsProps) => {
-    const ref = React.useRef(null);
+    const ref = useRef<HTMLDivElement>(null);
 
     const [, drop] = useDrop({
         accept: ItemTypes.FIELD,
@@ -338,13 +339,13 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
 
                     <AccordionDetails
                         ref={(node) => {
+                            // biome-ignore lint/suspicious/noExplicitAny: lol
                             drop(node as any);
                         }}
                     >
                         <Grid marginBottom={3}>
                             <Divider />
                         </Grid>
-
                         {group.fields?.map((field, idx) => (
                             <Field
                                 field={field}
@@ -361,7 +362,6 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
                                 values={values}
                             />
                         ))}
-
                         <Grid
                             sx={{
                                 display: 'flex',
@@ -383,6 +383,7 @@ export const Group = <PropertiesType extends string, Values extends Record<Prope
                                 <Typography>{addPropertyButtonLabel}</Typography>
                             </Button>
                         </Grid>
+                        {/** biome-ignore lint/suspicious/noExplicitAny: error is any */}
                         {(errors?.[propertiesType]?.[index] as any)?.fields === i18next.t('validation.oneField') && (
                             <div style={{ color: 'error' }}>{i18next.t('validation.oneField')}</div>
                         )}

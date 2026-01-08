@@ -19,6 +19,7 @@ export const EntitiesTable: React.FC<{
     icon?: React.JSX.Element;
     title: string;
     description?: string;
+    // biome-ignore lint/suspicious/noExplicitAny: lol
     download?: { onDownload: (brokenRulesEntities?: boolean) => Promise<any>; isLoading: boolean };
     defaultFilter?: ISearchFilter;
     overrideSx?: object;
