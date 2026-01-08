@@ -39,7 +39,7 @@ const ComponentToPrint = React.forwardRef<
         [queryClient],
     );
 
-    if (!entity) return <></>;
+    if (!entity) return <div />;
 
     const signatureFields = (
         <Grid

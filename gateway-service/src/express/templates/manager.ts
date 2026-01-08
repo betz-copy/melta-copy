@@ -1493,6 +1493,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const index = values.options.indexOf(fieldValue);
         try {
             await this.instancesService.updateEnumFieldOfEntity(id, field, fieldValue, { name: values.name, type: values.type });
+            // biome-ignore lint/suspicious/noExplicitAny: error is any
         } catch (neoError: any) {
             if (neoError.response?.status === notFoundStatus) throw new NotFoundError('Neo4j update failed: Node not found', { error: neoError });
 

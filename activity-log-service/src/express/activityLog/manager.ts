@@ -75,10 +75,11 @@ export default class ActivityLogManager extends DefaultManagerMongo<IActivityLog
         let createValue: IActivityLog;
         try {
             createValue = await this.model.create(activityLog);
+            // biome-ignore lint/suspicious/noExplicitAny: error is any
         } catch (error: any) {
-            if (error.name === 'MongoServerError' && (error as any).code === 11000) {
+            if (error.name === 'MongoServerError' && error.code === 11000)
                 return this.model.findOne({ entityId: activityLog.entityId, action: new RegExp(activityLog.action) });
-            }
+
             throw error;
         }
         return createValue;

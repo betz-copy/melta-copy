@@ -1,7 +1,7 @@
 import { QueryClient } from 'react-query';
 import { v4 as uuid } from 'uuid';
 import axios from '../../axios';
-import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from '../../common/wizards/entityTemplate';
+import { EntityTemplateFormInputProperties, EntityTemplateWizardValues, PropertyWizardType } from '../../common/wizards/entityTemplate';
 import { CommonFormInputProperties, FieldGroupData, GroupProperty, PropertyItem } from '../../common/wizards/entityTemplate/commonInterfaces';
 import {
     FilterModelToFilterRecord,
@@ -9,6 +9,7 @@ import {
 } from '../../common/wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
 import { environment } from '../../globals';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { ISearchFilter } from '../../interfaces/entities';
 import {
     IEntitySingleProperty,
     IEntityTemplate,
@@ -23,7 +24,7 @@ import { getFileName } from '../../utils/getFileName';
 
 const { entityTemplates } = environment.api;
 
-export const PropertyWizardType = {
+export const PropertyWizardTypes = {
     ...PropertyType,
     ...PropertyFormat,
     ...PropertyExternalWizardType,
@@ -33,7 +34,7 @@ export const basePropertyTypes = [PropertyType.string, PropertyType.number, Prop
 export const stringFormats = Object.values(PropertyFormat);
 export const arrayTypes = [PropertyExternalWizardType.multipleFiles, PropertyExternalWizardType.enumArray, PropertyExternalWizardType.users];
 
-export const parseFilters = (filters: any) => (typeof filters === 'string' ? JSON.parse(filters) : filters);
+export const parseFilters = (filters: string | ISearchFilter) => (typeof filters === 'string' ? JSON.parse(filters) : filters);
 type ExtractedProps<T> = {
     properties: T[];
     propertiesPath: Record<string, string>;
@@ -77,14 +78,14 @@ export const entityTemplateObjectToEntityTemplateForm = (
 
     const propertyData = (key: string, fieldGroup?: FieldGroupData) => {
         const value = properties.properties[key];
-        let type: any = value.format || value.type;
+        let type: PropertyWizardType = value.format || value.type;
 
-        if (value.serialStarter !== undefined) type = PropertyWizardType.serialNumber;
-        else if (value.enum) type = PropertyWizardType.enum;
-        else if (value.pattern) type = PropertyWizardType.pattern;
-        else if (value.items?.enum) type = PropertyWizardType.enumArray;
-        else if (value.items?.format === PropertyFormat.fileId) type = PropertyWizardType.multipleFiles;
-        else if (value.items?.format === PropertyFormat.user) type = PropertyWizardType.users;
+        if (value.serialStarter !== undefined) type = PropertyWizardTypes.serialNumber;
+        else if (value.enum) type = PropertyWizardTypes.enum;
+        else if (value.pattern) type = PropertyWizardTypes.pattern;
+        else if (value.items?.enum) type = PropertyWizardTypes.enumArray;
+        else if (value.items?.format === PropertyFormat.fileId) type = PropertyWizardTypes.multipleFiles;
+        else if (value.items?.format === PropertyFormat.user) type = PropertyWizardTypes.users;
         else if (value.format) {
             switch (value.format) {
                 case PropertyFormat.unitField:
@@ -354,6 +355,7 @@ const buildBasePropertySchema = (property: EntityTemplateFormInputProperties, qu
     return {
         title,
         type: propertyType,
+        // biome-ignore lint/suspicious/noExplicitAny: fixed after the refactor
         format: stringFormats.includes(type as any) ? (type as PropertyFormat) : undefined,
         enum: type === 'enum' ? options : undefined,
         items:

@@ -2,11 +2,13 @@ import { Grid, TextField } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import * as Yup from 'yup';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
 import { variableNameValidation } from '../../../utils/validation';
 import { StepComponentProps } from '../index';
 
-export const useCreateOrEditTemplateNameSchema = (templates: Map<any, any>, currentTemplateId?: string) => {
-    const otherTemplates = Array.from(templates.values()).filter((template) => template._id !== currentTemplateId);
+export const useCreateOrEditTemplateNameSchema = (templates: IEntityTemplateMap | IProcessTemplateMap, currentTemplateId?: string) => {
+    const otherTemplates = [...templates.values()].filter((template) => template._id !== currentTemplateId);
 
     const existingTemplateNames = otherTemplates.map((template) => template.name);
     const existingTemplateDisplayNames = otherTemplates.map((template) => template.displayName);

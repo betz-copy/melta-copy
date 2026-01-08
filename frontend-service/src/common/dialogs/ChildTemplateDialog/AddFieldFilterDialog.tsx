@@ -25,12 +25,14 @@ import { IAGGridFilter } from '../../wizards/entityTemplate/commonInterfaces';
 
 const { loggingDate, loggingDateTime } = environment.formats;
 
+export type IDefaultValue = string | number | boolean | string[] | Date | (string | IUser | null)[] | null | undefined;
+
 interface IAddFilterFieldDialogProps {
     addFilterField: { dialogType: ChipType; fieldName: string };
     formikProps: FormikProps<IChildTemplateForm>;
     entityTemplate: IMongoEntityTemplatePopulated;
     onClose: () => void;
-    onSubmit: (fieldValue: any) => void;
+    onSubmit: (fieldValue: IAGGridFilter | IDefaultValue) => void;
 }
 
 const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
@@ -44,7 +46,7 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
 
     const property = entityTemplate.properties.properties[fieldName];
     const initializedFilter =
-        (property.enum && initializedFilterField['array']) ||
+        (property.enum && initializedFilterField.array) ||
         (property.format && initializedFilterField[property.format]) ||
         (property.type && initializedFilterField[property.type]);
 
@@ -65,7 +67,7 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
 
     const handleFilterTypeChange = (newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGridNumberFilter['type']) => {
         setCurrentFieldError(undefined);
-        setLocalFilterField({ ...localFilterField, type: newTypeFilter } as any);
+        setLocalFilterField({ ...localFilterField, type: newTypeFilter } as IAGGridFilter);
     };
 
     const handleFilterFieldChange = (value: IGraphFilterBody['filterField']) => {
@@ -111,7 +113,7 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
             return;
         }
 
-        let defaultValue: string | number | boolean | Date | string[] | (string | IUser | null)[] | null | undefined;
+        let defaultValue: IDefaultValue;
 
         if (localFilterField.filterType === 'text' || localFilterField.filterType === 'number') defaultValue = localFilterField.filter;
         else if (localFilterField.filterType === 'set') defaultValue = localFilterField.values;

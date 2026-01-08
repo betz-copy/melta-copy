@@ -1,14 +1,13 @@
 import { ClientSession, connection } from 'mongoose';
 
-export const transaction = async <Func extends (session: ClientSession) => Promise<any>>(func: Func): Promise<Awaited<ReturnType<Func>>> => {
-    // biome-ignore lint/suspicious/noImplicitAnyLet: to avoid build error
-    let ret;
+export const transaction = async <T, Func extends (session: ClientSession) => Promise<T>>(func: Func): Promise<T> => {
+    let ret: T | undefined;
 
     await connection.transaction(async (session) => {
         ret = await func(session);
     });
 
-    return ret;
+    return ret!;
 };
 
 export const UPDATE_CREATED_AT = [

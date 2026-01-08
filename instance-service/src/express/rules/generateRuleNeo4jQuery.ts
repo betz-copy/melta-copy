@@ -361,7 +361,12 @@ const generateNeo4jQueryFromGroup = (
         resultCausesVariableName,
         parameters: subFormulasQueries
             .map(({ parameters }) => parameters)
-            .reduce((prevParameters, currParameters) => ({ ...prevParameters, ...currParameters })),
+            .reduce((acc, curr) => {
+                for (const key in curr) {
+                    acc[key] = curr[key];
+                }
+                return acc;
+            }, {}),
     };
 };
 

@@ -34,6 +34,7 @@ export const useSearchUnits = <T extends IMuiTreeItem>(hierarchy: T[], getItemId
     const [expandedIds, setExpandedIds] = useState<string[]>([]);
     const [isShowDisabled, setIsShowDisabled] = useState<boolean>(false);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: blame Itay
     const filterUnitsOnSearchAndDisabled = useCallback(() => {
         const filteredUnits = hierarchy.flatMap((singleHierarchy) => filterNodes(singleHierarchy, condition, search, isShowDisabled) ?? []);
 
@@ -42,6 +43,7 @@ export const useSearchUnits = <T extends IMuiTreeItem>(hierarchy: T[], getItemId
         return filteredUnits;
     }, [hierarchy, isShowDisabled, search]);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: blame Itay
     useEffect(() => {
         const filteredUnits = filterUnitsOnSearchAndDisabled();
 

@@ -1,5 +1,5 @@
 import * as fs from 'node:fs';
-import * as path from 'path';
+import * as path from 'node:path';
 
 import FormData = require('form-data'); // TODO: yona - Check if could replace with es6 import
 

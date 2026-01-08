@@ -8,7 +8,7 @@ import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'rea
 import { SelectAll } from './SelectAll';
 import TreeItem from './TreeItem';
 
-type IFlattenedTree<T extends {}, K extends boolean> = Omit<TreeViewBaseItem<T>, 'children'> & (K extends true ? { path: string } : {});
+type IFlattenedTree<T extends {}, K extends boolean> = Omit<TreeViewBaseItem<T>, 'children'> & (K extends true ? { path: string } : object);
 
 export interface TreeProps<T extends {}> extends Omit<RichTreeViewProProps<T, true>, 'onDragEnd' | 'items'> {
     // All of the treeItems that the tree has.
@@ -103,6 +103,7 @@ const Tree = <T extends {}>({
                 removeDivider={removeDivider}
                 node={getItemById(props.itemId)}
                 showIcon={showIcon}
+                // biome-ignore lint/suspicious/noExplicitAny: blame Itay
                 getStyles={getStyles as any}
                 renderItemLabel={renderItemLabel as (node: unknown) => ReactNode}
                 additionalOptions={additionalOptions as ((node: unknown) => ReactNode)[]}

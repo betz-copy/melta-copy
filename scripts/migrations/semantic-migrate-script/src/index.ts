@@ -1,6 +1,6 @@
+import path from 'node:path';
 import { IMongoEntityTemplate } from '@microservices/shared';
 import { Driver } from 'neo4j-driver';
-import path from 'path';
 import { getTemplatesWithFiles } from './clients/mongo/repository';
 import { listFilesInDB } from './clients/neo4j';
 import { sendToQueue } from './clients/rabbit/manager';

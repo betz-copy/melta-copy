@@ -493,12 +493,12 @@ class MailManager {
                 from: mailerService.mailUser,
                 to: viewersMail,
                 title: emailTemplate!.title,
-                html: renderToString(this.ruleIndicatorAlertMailBody(emailTemplate!.body)) || <></>,
+                html: renderToString(this.ruleIndicatorAlertMailBody(emailTemplate!.body)) || <div />,
             };
         }
 
         const title = mailTitle[type];
-        const html = renderToString((await this.getMailHtml(type, populatedMetaData)) || <></>);
+        const html = renderToString((await this.getMailHtml(type, populatedMetaData)) || <div />);
 
         return {
             from: mailerService.mailUser,

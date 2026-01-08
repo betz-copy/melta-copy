@@ -23,38 +23,36 @@ const ClientSideMainPage: React.FC = () => {
     const firstXPropsKeys: string[] = getFirstXPropsKeys(numOfPropsToShow, usersInfoChildTemplate.parentTemplate);
 
     return (
-        <>
-            <Box
-                sx={{
-                    width: '100%',
-                    height: '100%',
-                    paddingRight: '30px',
-                    paddingLeft: '30px',
-                }}
-            >
-                <Grid container paddingY="20px" alignItems="top" justifyContent="space-between" width="100%">
-                    <Grid width="70%">
-                        <UserInfoCard
-                            currentUserFromClientSide={clientSideUserEntity}
-                            usersInfoChildTemplate={usersInfoChildTemplate}
-                            overridePropertiesToShow={firstXPropsKeys}
-                        />
-                    </Grid>
-                    <Grid width="28%">
-                        <ContactInfoCard />
-                    </Grid>
-                    <Grid container size={{ xs: 12 }} justifyContent="center"></Grid>
-                </Grid>
-                <Grid container size={{ xs: 12 }} justifyContent="center">
-                    <UserEntityTables
-                        childTemplates={Array.from(childTemplates.values())}
+        <Box
+            sx={{
+                width: '100%',
+                height: '100%',
+                paddingRight: '30px',
+                paddingLeft: '30px',
+            }}
+        >
+            <Grid container paddingY="20px" alignItems="top" justifyContent="space-between" width="100%">
+                <Grid width="70%">
+                    <UserInfoCard
                         currentUserFromClientSide={clientSideUserEntity}
                         usersInfoChildTemplate={usersInfoChildTemplate}
-                        ref={userEntityTablesRef}
+                        overridePropertiesToShow={firstXPropsKeys}
                     />
                 </Grid>
-            </Box>
-        </>
+                <Grid width="28%">
+                    <ContactInfoCard />
+                </Grid>
+                <Grid container size={{ xs: 12 }} justifyContent="center"></Grid>
+            </Grid>
+            <Grid container size={{ xs: 12 }} justifyContent="center">
+                <UserEntityTables
+                    childTemplates={Array.from(childTemplates.values())}
+                    currentUserFromClientSide={clientSideUserEntity}
+                    usersInfoChildTemplate={usersInfoChildTemplate}
+                    ref={userEntityTablesRef}
+                />
+            </Grid>
+        </Box>
     );
 };
 

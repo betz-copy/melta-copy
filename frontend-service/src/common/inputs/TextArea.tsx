@@ -23,7 +23,7 @@ const TextArea = ({
     value?: string;
     label: string;
     readonly?: boolean;
-    onChange: (value: any, es?: ErrorSchema<any> | undefined, id?: string) => void;
+    onChange: (value: string, es?: ErrorSchema<object> | undefined, id?: string) => void;
     placeholder?: string;
     defaultValue?: string;
     toPrint?: boolean;

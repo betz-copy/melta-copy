@@ -1,10 +1,10 @@
 import { Transaction } from 'neo4j-driver';
-import { IEntity } from './entity';
+import { IEntity, IPropertyValue } from './entity';
 import { IRelationshipReference } from './entityTemplate';
 
 export interface IRelationship {
     templateId: string;
-    properties: Record<string, any>;
+    properties: Record<string, IPropertyValue>;
     sourceEntityId: string;
     destinationEntityId: string;
 }

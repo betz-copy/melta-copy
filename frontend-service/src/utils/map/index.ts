@@ -1,6 +1,6 @@
 import { Cartesian3 } from 'cesium';
 import { environment } from '../../globals';
-import { IEntity, IFilterOfField, SplitBy } from '../../interfaces/entities';
+import { IEntity, IFilterOfField, IPropertyValue, SplitBy } from '../../interfaces/entities';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { CoordinatesResult, ICoordinateSearchResult, IPolygonSearchResult, MapItemType } from '../../interfaces/location';
 import { convertECEFToWGS84, convertWGS94ToECEF, isValidWGS84 } from './convert';
@@ -135,7 +135,7 @@ export const getLocationProperties = (entity: IEntity, selectedTemplates: IMongo
                 acc[key] = value;
                 return acc;
             },
-            {} as { [x: string]: any },
+            {} as { [x: string]: IPropertyValue },
         );
 
     return { template, locationTemplateProperties, locationProperties };

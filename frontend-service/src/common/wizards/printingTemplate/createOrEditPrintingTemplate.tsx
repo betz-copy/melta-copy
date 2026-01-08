@@ -62,7 +62,7 @@ const CreateOrEditPrintTemplate: React.FC<PrintingTemplateCardProps> = ({ onClos
     const getColumnsForEntityTemplate = (entityTemplateId: string) => {
         const entityTemplate = entityTemplates.find((entityTemplate) => entityTemplate._id === entityTemplateId);
         if (!entityTemplate) return [];
-        return Object.entries(entityTemplate.properties.properties).map(([key, value]: [string, any]) => ({ id: key, name: value.title || key }));
+        return Object.entries(entityTemplate.properties.properties).map(([key, value]) => ({ id: key, name: value.title || key }));
     };
 
     return (

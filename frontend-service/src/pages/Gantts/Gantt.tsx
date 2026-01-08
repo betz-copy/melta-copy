@@ -203,6 +203,7 @@ export const Gantt: React.FC<IGanttProps> = ({ gantt }) => {
                         const entityTemplateResource = entityTemplateResources.find((resource) => resource.Id === event.data.entityTemplateId);
                         if (entityTemplateResource?.Color) event.element.style.backgroundColor = entityTemplateResource.Color;
                     }}
+                    // biome-ignore lint/suspicious/noExplicitAny: never doubt Yahalom
                     quickInfoTemplates={{ header: GanttQuickInfo as any }} // 'header' type should be `string | Function`
                     group={{ resources: gantt.groupBy ? ['groupByEntity'] : [] }}
                     enableAdaptiveUI

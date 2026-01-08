@@ -1,4 +1,10 @@
-import { CoordinateSystem, IEntitySingleProperty, IMongoEntityTemplatePopulated, locationConverterToString } from '@microservices/shared';
+import {
+    CoordinateSystem,
+    IEntitySingleProperty,
+    IMongoEntityTemplatePopulated,
+    IPropertyValue,
+    locationConverterToString,
+} from '@microservices/shared';
 import Handlebars from 'handlebars';
 import { mapValues } from 'lodash';
 import config from '../../config';
@@ -17,7 +23,7 @@ const fileLink = (fileName: string, fileId: string, workspaceId: string): string
 
 const extractStringFromProperty = (
     property: IEntitySingleProperty,
-    value: any,
+    value: IPropertyValue,
     relatedTemplates?: Map<string, IMongoEntityTemplatePopulated>,
     baseUrl?: string,
     workspaceId?: string,
@@ -79,12 +85,12 @@ const extractStringFromProperty = (
 
 const formatEntityPropertiesToString = (
     entityTemplate: IMongoEntityTemplatePopulated,
-    properties: Record<string, any>,
+    properties: Record<string, IPropertyValue>,
     relatedTemplates?: Map<string, IMongoEntityTemplatePopulated>,
     baseUrl?: string,
     workspaceId?: string,
     allowLink: boolean = false,
-): Record<string, any> => {
+): Record<string, IPropertyValue> => {
     return mapValues(properties, (value, key) => {
         const property = entityTemplate.properties.properties[key];
         if (!property) return value;

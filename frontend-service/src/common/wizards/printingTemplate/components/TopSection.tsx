@@ -1,6 +1,7 @@
 import { FormControlLabel, Grid, TextField, Typography } from '@mui/material';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
+import { IPropertyValue } from '../../../../interfaces/entities';
 import { IMongoPrintingTemplate } from '../../../../interfaces/printingTemplates';
 import MeltaCheckbox from '../../../MeltaDesigns/MeltaCheckbox';
 
@@ -10,7 +11,7 @@ interface ITopSectionProps {
     handleBlur: (event: React.FocusEvent<HTMLInputElement>) => void;
     touched: FormikTouched<IMongoPrintingTemplate>;
     errors: FormikErrors<IMongoPrintingTemplate>;
-    setFieldValue: (field: string, value: any, shouldValidate?: boolean | undefined) => void;
+    setFieldValue: (field: string, value: IPropertyValue, shouldValidate?: boolean | undefined) => void;
 }
 
 const TopSection: React.FC<ITopSectionProps> = ({ values, handleChange, handleBlur, touched, errors, setFieldValue }) => (

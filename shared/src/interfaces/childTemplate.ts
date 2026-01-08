@@ -20,6 +20,9 @@ export enum ByCurrentDefaultValue {
     byCurrentDate = 'byCurrentDate',
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: filter is any in a lot of cases
+export type IFilter = any;
+
 export interface IChildTemplateProperty {
     defaultValue?: string | number | boolean | Date | string[] | ByCurrentDefaultValue;
     filters?: Record<string, unknown>;

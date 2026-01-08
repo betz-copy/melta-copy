@@ -163,7 +163,6 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
             }
             break;
 
-        case 'number':
         default:
             inputElement = (
                 <TextField

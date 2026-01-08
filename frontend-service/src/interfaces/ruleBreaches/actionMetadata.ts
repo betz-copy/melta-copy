@@ -1,4 +1,4 @@
-import { IEntity } from '../entities';
+import { IEntity, IPropertyValue } from '../entities';
 
 export interface ICreateRelationshipMetadata {
     relationshipTemplateId: string;
@@ -28,19 +28,19 @@ export interface IDeleteRelationshipMetadataPopulated {
 
 export interface ICreateEntityMetadata {
     templateId: string;
-    properties: Record<string, any>;
+    properties: Record<string, IPropertyValue>;
 }
 
 export interface IDuplicateEntityMetadata {
     templateId: string;
-    properties: Record<string, any>;
+    properties: Record<string, IPropertyValue>;
     entityIdToDuplicate: string;
 }
 
 export interface IUpdateEntityMetadata {
     entityId: string;
-    before?: Record<string, any>;
-    updatedFields: Record<string, any>;
+    before?: Record<string, IPropertyValue>;
+    updatedFields: Record<string, IPropertyValue>;
 }
 
 export interface IUpdateMultipleEntitiesMetadata extends Array<IUpdateEntityMetadata> {}
@@ -66,8 +66,8 @@ export interface IUpdateEntityStatusMetadataPopulated {
 }
 export interface IUpdateEntityMetadataPopulated {
     entity: IEntity | null;
-    before?: Record<string, any>;
-    updatedFields: Record<string, any>;
+    before?: Record<string, IPropertyValue>;
+    updatedFields: Record<string, IPropertyValue>;
 }
 
 export interface IUpdateMultipleEntitiesMetadataPopulated extends Array<IUpdateEntityMetadataPopulated> {}

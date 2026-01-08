@@ -1,9 +1,10 @@
+import { IPropertyValue } from './entity';
 import { Status } from './process';
 
 export interface IUpdatedFields {
     fieldName: string;
-    oldValue: any;
-    newValue: any;
+    oldValue: IPropertyValue;
+    newValue: IPropertyValue;
 }
 
 interface IBaseActivityLog {

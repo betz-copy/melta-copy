@@ -7,7 +7,7 @@ import React, { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { IChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { IDeleteEntityBody, IMultipleSelect } from '../../interfaces/entities';
+import { IDeleteEntityBody, IMultipleSelect, IPropertyValue } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IBrokenRuleEntity, IFailedEntity } from '../../interfaces/excel';
 import { ActionTypes, ICreateEntityMetadata } from '../../interfaces/ruleBreaches/actionMetadata';
@@ -72,7 +72,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
     const [selectedFields, setSelectedFields] = useState<Record<string, boolean>>({});
     const isBrokenRules = !!(stepsData.brokenRulesEntities ?? []).length;
     const [wasDirty, setWasDirty] = useState(false);
-    const [initialValuePropsToFilter, setInitialValuePropsToFilter] = useState<Record<string, any>>(initialValues);
+    const [initialValuePropsToFilter, setInitialValuePropsToFilter] = useState<Record<string, IPropertyValue>>(initialValues);
     const [entityData, setEntityData] = useState<{ propertiesToChange: EntityWizardValues; propertiesToRemove: string[] } | undefined>(undefined);
 
     const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(

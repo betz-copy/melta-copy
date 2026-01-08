@@ -1,6 +1,6 @@
 import { CommonFormInputProperties, FieldGroupData } from '../common/wizards/entityTemplate/commonInterfaces';
 import { IMongoCategory } from './categories';
-import { IFieldsGroup, ISearchFilter, IUniqueConstraintOfTemplate } from './entities';
+import { IFieldsGroup, IPropertyValue, ISearchFilter, IUniqueConstraintOfTemplate } from './entities';
 
 export enum PropertyType {
     string = 'string',
@@ -75,8 +75,8 @@ export interface IEntitySingleProperty {
     comment?: string;
     color?: string;
     filters?: string;
-    defaultValue?: any;
-    default?: any; // Acts as defaultValue in rjsf. Added because defaultValue doesn't work in nested properties (group)
+    defaultValue?: IPropertyValue;
+    default?: IPropertyValue; // Acts as defaultValue in rjsf. Added because defaultValue doesn't work in nested properties (group)
     isFilterByCurrentUser?: boolean;
     isFilterByUserUnit?: boolean;
     isProfileImage?: boolean;

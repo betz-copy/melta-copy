@@ -1,3 +1,4 @@
+import { AxiosError } from 'axios';
 import { StatusCodes } from 'http-status-codes';
 import React from 'react';
 import { useQuery } from 'react-query';
@@ -25,7 +26,7 @@ export const useFilePreview = (
             refetchOnWindowFocus: false,
             refetchOnMount: false,
             retry: false,
-            onError: (error: any) => {
+            onError: (error: AxiosError) => {
                 setNoSuchKeyError(error?.response?.status === StatusCodes.NOT_FOUND);
             },
         },

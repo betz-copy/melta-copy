@@ -52,7 +52,7 @@ export const createOne = async (workspaceValues: WorkspaceWizardValues) => {
 };
 
 export const updateOne = async (id: string, workspaceValues: WorkspaceWizardValues & { path: string }) => {
-    const { icon, logo, metadata, ...workspace } = workspaceValues;
+    const { icon, logo, metadata: _m, ...workspace } = workspaceValues;
 
     const formData = generateFormData(workspace, (currentFormData) => {
         if (icon) currentFormData.append('iconFileId', icon.file instanceof File ? icon.file : icon.file.name!);

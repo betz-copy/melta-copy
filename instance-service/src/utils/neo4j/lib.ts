@@ -3,19 +3,23 @@ import {
     IEntity,
     IEntityExpanded,
     IEntityWithDirectRelationships,
+    IPropertyValue,
     IRelationship,
     SplitBy,
     ValidationError,
 } from '@microservices/shared';
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
-import neo4j, { Node as Neo4jNode, QueryResult, Relationship as Neo4jRelationship, Transaction } from 'neo4j-driver';
+import neo4j, { Node as Neo4jNode, Relationship as Neo4jRelationship, QueryResult, Transaction } from 'neo4j-driver';
 import { v4 as uuidv4 } from 'uuid';
 import config from '../../config';
 import EntityManager from '../../express/entities/manager';
 import { IFormulaCauses } from '../../express/rules/interfaces/formulaWithCauses';
 
 const {
-    map: { polygon: { polygonPrefix, polygonSuffix }, srid },
+    map: {
+        polygon: { polygonPrefix, polygonSuffix },
+        srid,
+    },
     timezone,
     neo4j: {
         stringPropertySuffix,
@@ -45,7 +49,9 @@ export const formatDate = (date: string) => {
  * Fix the values of an entity that is saved in neo4j to its original values.
  * For example dates and fixing the user fields to be without the suffix.
  */
-export const normalizeFields = (properties: Record<string, any>): { properties: Record<string, any>; coloredFields: Record<string, string> } => {
+export const normalizeFields = (
+    properties: Record<string, IPropertyValue>,
+): { properties: Record<string, IPropertyValue>; coloredFields: Record<string, string> } => {
     const props = {};
     const coloredFields = {};
 
@@ -144,10 +150,10 @@ type ResponseType = 'singleResponse' | 'singleResponseNotNullable' | 'multipleRe
 type Response<ResType extends ResponseType, Data> = ResType extends 'singleResponse'
     ? Data | null
     : ResType extends 'singleResponseNotNullable'
-    ? Data
-    : ResType extends 'multipleResponses'
-    ? Data[]
-    : never;
+      ? Data
+      : ResType extends 'multipleResponses'
+        ? Data[]
+        : never;
 
 export const nodeToEntity = (node: Node): IEntity => {
     const { properties, coloredFields } = normalizeFields(node.properties);
@@ -323,6 +329,7 @@ export const runInTransactionAndNormalize = async <T>(
     transaction: Transaction,
     cypherQuery: string,
     normalizeFunction: (queryResult: QueryResult) => T,
+    // biome-ignore lint/suspicious/noExplicitAny: never doubt Noam
     parameters?: Record<string, any>,
 ): Promise<T> => {
     const result = await transaction.run(cypherQuery, parameters);
@@ -352,7 +359,7 @@ export const generateDefaultProperties = () => {
     };
 };
 
-const getLocationPoint = (pointString: string, splitBy: SplitBy, entityProperties: Record<string, any>, key: string) => {
+const getLocationPoint = (pointString: string, splitBy: SplitBy, entityProperties: Record<string, IPropertyValue>, key: string) => {
     const [longitude, latitude] = pointString.split(splitBy).map(Number);
     if (Number.isNaN(longitude) || Number.isNaN(latitude)) {
         throw new ValidationError('Invalid format. Expected format: "number, number".', {
@@ -374,7 +381,7 @@ const getLocationPoint = (pointString: string, splitBy: SplitBy, entityPropertie
     return new neo4j.types.Point(srid, longitude, latitude);
 };
 
-export const getNeo4jLocation = (locationString: string, entityProperties: Record<string, any>, key: string) => {
+export const getNeo4jLocation = (locationString: string, entityProperties: Record<string, IPropertyValue>, key: string) => {
     if (!locationString.startsWith('POLYGON')) return getLocationPoint(locationString, SplitBy.comma, entityProperties, key);
 
     if (!locationString.startsWith(polygonPrefix) || !locationString.endsWith(polygonSuffix)) {
