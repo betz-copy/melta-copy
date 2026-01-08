@@ -18,11 +18,11 @@ const MultipleSelect: React.FC<{
     schema?: RJSFSchema;
     selectedValue: ISelectOption | ISelectOption[] | null;
     onChange: (event: React.SyntheticEvent, newVal: ISelectOption | ISelectOption[] | null) => void;
-    onBlur: (event: React.FocusEvent<HTMLInputElement>) => void;
-    onFocus: (event: React.FocusEvent<HTMLInputElement>) => void;
+    onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
+    onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void;
     variant: 'standard' | 'outlined';
-    rawErrors: string[];
-    textFieldProps: any;
+    rawErrors?: string[];
+    textFieldProps?: any;
     value?: any;
     multiple?: boolean;
     disabled?: boolean;
@@ -105,7 +105,7 @@ const MultipleSelect: React.FC<{
                         onBlur={onBlur}
                         onFocus={onFocus}
                         variant={variant}
-                        error={!!rawErrors.length}
+                        error={!!rawErrors?.length}
                         label={label}
                         placeholder={placeholder}
                         slotProps={{

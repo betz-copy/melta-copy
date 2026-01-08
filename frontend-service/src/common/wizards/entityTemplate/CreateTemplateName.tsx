@@ -23,6 +23,9 @@ export const useCreateOrEditTemplateNameSchema = (templates: Map<any, any>, curr
             .test('unique-displayName', i18next.t('validation.existingDisplayName'), (value) => {
                 return !existingTemplateDisplayNames.includes(value || '');
             }),
+        category: Yup.object({
+            displayName: Yup.string().required(i18next.t('validation.required')),
+        }).required(i18next.t('validation.required')),
     });
 };
 
@@ -32,9 +35,10 @@ const CreateTemplateName = <Values extends { name: string; displayName: string }
     errors,
     handleChange,
     isEditMode,
-}: React.PropsWithChildren<StepComponentProps<Values, 'isEditMode'>>) => {
+    gridProps,
+}: React.PropsWithChildren<StepComponentProps<Values, 'isEditMode'>> & { gridProps?: object }) => {
     return (
-        <Grid container direction="column" alignItems="center" spacing={1}>
+        <Grid container sx={gridProps ? { ...gridProps } : { direction: 'column', alignItems: 'center' }} spacing={2}>
             <Grid>
                 <TextField
                     name="name"
@@ -43,6 +47,7 @@ const CreateTemplateName = <Values extends { name: string; displayName: string }
                     value={values.name}
                     onChange={handleChange}
                     error={touched.name && Boolean(errors.name)}
+                    sx={{ width: '240px' }}
                     helperText={touched.name && errors.name ? String(errors.name) : undefined}
                 />
             </Grid>
@@ -53,6 +58,7 @@ const CreateTemplateName = <Values extends { name: string; displayName: string }
                     value={values.displayName}
                     onChange={handleChange}
                     error={touched.displayName && Boolean(errors.displayName)}
+                    sx={{ width: '240px' }}
                     helperText={touched.displayName && errors.displayName ? String(errors.displayName) : undefined}
                 />
             </Grid>

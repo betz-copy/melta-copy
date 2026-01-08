@@ -1,5 +1,3 @@
-/* eslint-disable consistent-return */
-/* eslint-disable no-underscore-dangle */
 import { styled, TextField, TextFieldProps } from '@mui/material';
 import { DateTimePickerToolbar, dateTimePickerToolbarClasses, LocalizationProvider, PickersLocaleText } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -14,7 +12,10 @@ import i18next from 'i18next';
 import React, { JSX } from 'react';
 import { environment } from '../../../../globals';
 
-const { date, dateTime } = environment.formats;
+const {
+    formats: { date, dateTime },
+    datePickerViews,
+} = environment;
 
 export const CustomDateTimePickerToolbar = styled(DateTimePickerToolbar)({
     [`& .${dateTimePickerToolbarClasses.timeContainer}`]: {
@@ -26,7 +27,7 @@ const parseDefaultDate = (val: any) => {
     if (!val) return null;
 
     const date = new Date(val);
-    if (isNaN(date.getTime())) return null;
+    if (Number.isNaN(date.getTime())) return null;
     return date;
 };
 
@@ -85,6 +86,7 @@ const getRjsfDateOrDateTimeWidget =
                 <MuiDatePicker
                     value={parseDefaultDate(value)}
                     enableAccessibleFieldDOMStructure={false}
+                    views={datePickerViews}
                     onChange={(val) => onChangeDateWidget(val)}
                     slots={{
                         textField: (params) => <TextField {...params} style={{ textAlign: 'right' }} inputformat={inputFormat} />,

@@ -20,6 +20,7 @@ const FluidSimulation: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<
         });
     };
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: setEventListeners changes on every re-render and should not be used as a hook dependency.
     useEffect(() => {
         if (!canvasRef.current) return;
 
@@ -27,7 +28,6 @@ const FluidSimulation: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<
 
         setEventListeners(eventListeners, true);
 
-        // eslint-disable-next-line consistent-return
         return () => setEventListeners(eventListeners, false);
     }, [canvasRef]);
 

@@ -1,8 +1,7 @@
-/* eslint-disable react/no-array-index-key */
 import { ExpandLess as ExpandLessIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { Box, Collapse, Grid, List, ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material';
 import i18next from 'i18next';
-import isEqual from 'lodash.isequal';
+import { isEqual } from 'lodash';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
@@ -58,7 +57,7 @@ export const BrokenRuleFull: React.FC<{
             <Collapse in={openRule} timeout="auto" unmountOnExit>
                 <Grid>
                     <List dense component="div" disablePadding>
-                        {brokenRule.failures.map(({ entity, causes }, i) => {
+                        {brokenRule.failures.map(({ entity, causes }) => {
                             const causeOfMainEntityIndex = causes.findIndex(({ instance }) => {
                                 const currEntityOfCause = instance.aggregatedRelationship
                                     ? instance.aggregatedRelationship.otherEntity
@@ -70,7 +69,7 @@ export const BrokenRuleFull: React.FC<{
                             if (causeOfMainEntityIndex > -1) causesWithoutMainEntity.splice(causeOfMainEntityIndex, 1);
 
                             return (
-                                <Grid key={i}>
+                                <Grid key={entity?.toString()}>
                                     <Grid>
                                         {causesWithoutMainEntity.length === 0 && (
                                             <>
@@ -96,13 +95,13 @@ export const BrokenRuleFull: React.FC<{
                                                 {causesWithoutMainEntity.length > 1 && (
                                                     <Typography paddingLeft="15px">{i18next.t('ruleBreachInfo.relationshipsCombination')}</Typography>
                                                 )}
-                                                {causesWithoutMainEntity.map(({ instance }, j) => {
+                                                {causesWithoutMainEntity.map(({ instance }) => {
                                                     const relationship = instance.aggregatedRelationship
                                                         ? instance.aggregatedRelationship.relationship
                                                         : null;
 
                                                     return (
-                                                        <Grid key={j} paddingBottom="10px">
+                                                        <Grid key={instance.entity?.toString()} paddingBottom="10px">
                                                             <Grid style={{ width: 'fit-content', cursor: 'pointer' }}>
                                                                 <RelationshipInfo
                                                                     relationship={getRelationshipForRelationshipInfo(

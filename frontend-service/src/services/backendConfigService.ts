@@ -3,6 +3,12 @@ import { environment } from '../globals';
 
 const { config } = environment.api;
 
+export interface MeltaUpdatesConfig {
+    details: Record<string, string>;
+    description: string;
+    display: boolean;
+}
+
 export interface BackendConfigState {
     matomoUrl: string;
     matomoSiteId: number;
@@ -13,9 +19,9 @@ export interface BackendConfigState {
     mapLayers: Record<string, string>;
     textLayers: Record<string, string>;
     deleteEntitiesLimit: number;
-    meltaUpdates: Record<string, string>;
-    meltaUpdatesDescription: string;
+    meltaUpdates: MeltaUpdatesConfig;
     isOutsideDevelopment: boolean;
+    maxEntitiesToPrint: number;
 }
 
 export const getBackendConfigRequest = async () => {

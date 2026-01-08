@@ -21,7 +21,7 @@ export interface FieldEditCardProps {
     index: number;
     touched?: FormikTouched<CommonFormInputProperties>;
     errors?: FormikErrors<CommonFormInputProperties>;
-    setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
+    setFieldValue: (field: keyof CommonFormInputProperties, value: { kartoffelField?: string; relatedUserField?: string }) => void;
     isDisabled?: boolean;
     userPropertiesInTemplate?: string[];
 }

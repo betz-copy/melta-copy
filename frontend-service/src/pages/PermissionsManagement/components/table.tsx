@@ -3,10 +3,11 @@ import { AgGridReact } from '@ag-grid-community/react';
 import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 import { Chip, Grid, IconButton } from '@mui/material';
 import i18next from 'i18next';
-import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
+import React, { ForwardedRef, forwardRef, useMemo } from 'react';
 import ScrollContainer from 'react-indiana-drag-scroll';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import AgGridTable from '../../../common/agGridTable';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { environment } from '../../../globals';
 import { IMongoCategory } from '../../../interfaces/categories';
@@ -17,11 +18,10 @@ import { IGetUnits } from '../../../interfaces/units';
 import { IUser, PermissionData, RelatedPermission } from '../../../interfaces/users';
 import { IWorkspace } from '../../../interfaces/workspaces';
 import { searchRolesRequest, searchUsersRequest } from '../../../services/userService';
-import { useDarkModeStore } from '../../../stores/darkMode';
 import { useWorkspaceStore } from '../../../stores/workspace';
-import { agGridLocaleText } from '../../../utils/agGrid/agGridLocaleText';
 import { translatedEnumColDef } from '../../../utils/agGrid/commonColDefs';
-import { trycatch } from '../../../utils/trycatch';
+import { WalletTransferData } from '../../Entity/walletTransfers';
+import { tryCatch } from '../../../utils/tryCatch';
 
 const { infiniteScrollPageCount } = environment.permission;
 
@@ -41,7 +41,7 @@ const getChipsFromArray = (chips: { key: string; label: string }[]) => (
     </ScrollContainer>
 );
 
-const defaultColDef: ColDef<PermissionData> = {
+export const defaultColDef: ColDef<PermissionData | WalletTransferData> = {
     editable: false,
     sortable: false,
     flex: 1,
@@ -60,8 +60,8 @@ const columnDefs = (
     workspaceId: string,
     permissionType: RelatedPermission,
     categories: IMongoCategory[],
-    onDeletePermissions: (permissions: PermissionData) => any,
-    onEditPermissions: (permissions: PermissionData) => any,
+    onDeletePermissions: (permissions: PermissionData) => void,
+    onEditPermissions: (permissions: PermissionData) => void,
     units: IGetUnits,
 ): ColDef[] => [
     {
@@ -198,10 +198,10 @@ const columnDefs = (
     },
 ];
 
-const getDatasource = <Data = PermissionData>(
+const getDatasource = <Data extends PermissionData>(
     { _id }: IWorkspace,
     quickFilter: string | undefined,
-    onFail: (err: unknown) => void | undefined,
+    onFail: (err: unknown) => void,
     permissionType: RelatedPermission,
 ): IServerSideDatasource => {
     return {
@@ -209,7 +209,7 @@ const getDatasource = <Data = PermissionData>(
             const { startRow, endRow, filterModel, sortModel } = request;
             let data: { dataArray?: IUser[] | IRole[]; count?: number }, error: unknown; //TODO: add types :)
             if (permissionType === RelatedPermission.User) {
-                const { result, err } = await trycatch(() =>
+                const { result, err } = await tryCatch(() =>
                     searchUsersRequest({
                         workspaceIds: [_id],
                         step: startRow! / infiniteScrollPageCount,
@@ -222,7 +222,7 @@ const getDatasource = <Data = PermissionData>(
                 data = { dataArray: result?.users, count: result?.count };
                 error = err;
             } else {
-                const { result, err } = await trycatch(() =>
+                const { result, err } = await tryCatch(() =>
                     searchRolesRequest({
                         workspaceIds: [_id],
                         step: startRow! / infiniteScrollPageCount,
@@ -249,7 +249,7 @@ const getDatasource = <Data = PermissionData>(
     };
 };
 
-const getRowModelProps = <Data = PermissionData>(
+const getRowModelProps = <Data extends PermissionData>(
     workspace: IWorkspace,
     paginationPageSize: number,
     quickFilterText: string | undefined,
@@ -268,8 +268,8 @@ const getRowModelProps = <Data = PermissionData>(
 
 type PermissionsTableProps<PermissionData> = {
     categories: IMongoCategory[];
-    onDeletePermissions: (permissionsOfUser: PermissionData) => any;
-    onEditPermissions: (permissionsOfUser: PermissionData) => any;
+    onDeletePermissions: (permissionsOfUser: PermissionData) => void;
+    onEditPermissions: (permissionsOfUser: PermissionData) => void;
     quickFilterText: string;
     permissionType: RelatedPermission;
     getRowId: (data: PermissionData) => string;
@@ -285,84 +285,34 @@ const PermissionsTable = forwardRef<PermissionsTableRef<PermissionData>, Permiss
         { permissionType, categories, onDeletePermissions, onEditPermissions, quickFilterText, getRowId },
         ref: ForwardedRef<PermissionsTableRef<PermissionData>>,
     ) => {
-        const darkMode = useDarkModeStore((state) => state.darkMode);
         const workspace = useWorkspaceStore((state) => state.workspace);
-        const gridRef = useRef<AgGridReact<PermissionData>>(null);
-
         const queryClient = useQueryClient();
         const units = queryClient.getQueryData<IGetUnits>('getUnits')!;
-
-        const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
-
-        useImperativeHandle(ref, () => ({
-            refreshServerSide() {
-                gridRef.current?.api.refreshServerSide({ purge: true });
-            },
-            updateRowDataClientSide(data: PermissionData) {
-                gridRef.current?.api.forEachNode((rowNode) => {
-                    if (rowNode.data && getRowId(data) === getRowId(rowNode.data)) {
-                        rowNode.updateData(data);
-                    }
-                });
-            },
-        }));
 
         const datasourceOnFail = (error: unknown) => {
             console.error('failed loading all users:', error);
             toast.error(i18next.t('permissions.failedToLoadAllPermissions'));
         };
 
+        // biome-ignore lint/correctness/useExhaustiveDependencies: datasourceOnFail changes on every re-render and should not be used as a hook dependency.
         const rowModelProps = useMemo(
             () => getRowModelProps(workspace, infiniteScrollPageCount, quickFilterText, datasourceOnFail, permissionType),
-            [quickFilterText, workspace],
+            [quickFilterText, workspace, permissionType],
         );
 
         return (
-            <AgGridReact<PermissionData>
-                ref={gridRef}
-                className={`ag-theme-material${darkMode ? '-dark' : ''}`}
-                containerStyle={{
-                    height: '780px',
-                    width: '100%',
-                    marginBottom: '30px',
-                    fontFamily: 'Rubik',
-                    fontSize: `${defaultFontSize}px`,
-                    borderRadius: '70px',
-                }}
-                defaultColDef={defaultColDef}
-                columnDefs={columnDefs(workspace._id, permissionType, categories, onDeletePermissions, onEditPermissions, units)}
-                getRowId={({ data }) => getRowId(data)}
-                {...rowModelProps}
-                paginationAutoPageSize
-                rowHeight={defaultRowHeight}
-                rowStyle={{ alignItems: 'center' }}
-                enableRtl
-                enableCellTextSelection
-                suppressMovableColumns
-                suppressCsvExport
-                suppressExcelExport
-                suppressContextMenu
-                sideBar={{
-                    toolPanels: [
-                        {
-                            id: 'columns',
-                            labelDefault: 'Columns',
-                            labelKey: 'columns',
-                            iconKey: 'columns',
-                            toolPanel: 'agColumnsToolPanel',
-                            toolPanelParams: { suppressRowGroups: true, suppressValues: true, suppressPivotMode: true },
-                        },
-                    ],
-                    position: 'left',
-                }}
+            <AgGridTable
+                defaultColDef={defaultColDef as ColDef<PermissionData>}
+                getRowId={getRowId}
                 quickFilterText={quickFilterText}
-                localeText={agGridLocaleText}
-                animateRows
+                rowModelProps={rowModelProps}
+                columnDefs={columnDefs(workspace._id, permissionType, categories, onDeletePermissions, onEditPermissions, units)}
+                ref={ref}
             />
         );
     },
 );
 
-export default PermissionsTable as <Data = PermissionData>(
+export default PermissionsTable as <Data extends PermissionData>(
     props: PermissionsTableProps<Data> & { ref?: React.ForwardedRef<PermissionsTableRef<Data>> },
 ) => ReturnType<typeof PermissionsTable>;

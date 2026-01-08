@@ -2,12 +2,13 @@ import { DragHandle as DragHandleIcon, ExpandMore as ExpandMoreIcon } from '@mui
 import { AccordionDetails, AccordionSummary, Box, Button, Grid, Typography } from '@mui/material';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
-import _debounce from 'lodash.debounce';
+import { debounce } from 'lodash';
 import React, { SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import { DndProvider, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { useQueryClient } from 'react-query';
 import { v4 as uuid } from 'uuid';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { AreYouSureDialog } from '../../../dialogs/AreYouSureDialog';
 import { PropertiesTypes } from '../AddFields';
 import { CommonFormInputProperties, FieldProperty, GroupProperty, PropertyItem } from '../commonInterfaces';
@@ -80,6 +81,10 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
     onDeleteSure,
     remove,
     userPropertiesInTemplate,
+    isAccountTemplate = false,
+    hasAccountBalanceField,
+    isAlreadyWalletTemplate,
+    setIsTransferTemplate,
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
     // copy of values of formik in order to show changes on inputs fast (formik rerenders are slow)
     // using ordered item ref because update functions (push/remove/...) are not updated for the field cards on
@@ -87,24 +92,49 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
     // therefore using a reference for them to always use the current orderedItems.
     const [orderedItems, setOrderedItems] = useState(values[propertiesType]);
 
-    const [showAreUSureDialogForRemoveProperty, setShowAreUSureDialogForRemoveProperty] = useState(false);
+    const [showAreUSureDialogForRemoveProperty, setShowAreUSureDialogForRemoveProperty] = useState<boolean>(false);
     const [selectedIndexesToRemove, setSelectedIndexesForRemove] = useState<{ index: number; groupIndex?: number }[]>([]);
 
     const orderedItemsRef = useRef(orderedItems);
     orderedItemsRef.current = orderedItems;
 
+    const queryClient = useQueryClient();
+    const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates') || new Map();
+
     useEffect(() => {
         setFieldValue(propertiesType, orderedItems);
     }, []);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
     useEffect(() => {
         setOrderedItems(values[propertiesType]);
         orderedItemsRef.current = values[propertiesType];
     }, [values[propertiesType]]);
 
+    useEffect(() => {
+        if (!orderedItems?.length || !templates?.size) return;
+        const templateHasAccountBalance = (template: IMongoEntityTemplatePopulated) =>
+            Object.values(template?.properties?.properties ?? {}).some((property) => property.accountBalance);
+
+        const hasRelatedAccountBalance = (relatedId?: string) => {
+            if (!relatedId) return false;
+            const relatedTemplate = templates.get(relatedId);
+            return relatedTemplate ? templateHasAccountBalance(relatedTemplate) : false;
+        };
+        setIsTransferTemplate?.(
+            orderedItems.some((property) => {
+                if (property.type === 'field' && property.data?.relationshipReference)
+                    return hasRelatedAccountBalance(property.data.relationshipReference.relatedTemplateId);
+                if (property.type === 'group')
+                    return property.fields.some((field) => hasRelatedAccountBalance(field.relationshipReference?.relatedTemplateId));
+                return false;
+            }),
+        );
+    }, [orderedItems, templates, setIsTransferTemplate]);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const updateFormikDebounced = useCallback(
-        _debounce(() => {
+        debounce(() => {
             setFieldValue(propertiesType, [...orderedItemsRef.current], true);
             setBlock(false);
         }, 1000),
@@ -228,13 +258,11 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                     displayValuesCopy.forEach((item, idx) => {
                         if (item.type === 'group') {
                             item.fields.forEach((nestedField, nestedIndex) => {
-                                if (nestedField.type === 'user' && nestedField.name === relatedUserFieldName && nestedField.deleted) {
+                                if (nestedField.type === 'user' && nestedField.name === relatedUserFieldName && nestedField.deleted)
                                     indexesToUpdate.push({ index: nestedIndex, groupIndex: idx });
-                                }
                             });
-                        } else if (item.data.type === 'user' && item.data.name === relatedUserFieldName && item.data.deleted) {
+                        } else if (item.data.type === 'user' && item.data.name === relatedUserFieldName && item.data.deleted)
                             indexesToUpdate.push({ index: idx });
-                        }
                     });
                 }
             }
@@ -420,6 +448,8 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
             userPropertiesInTemplate,
             onDuplicateKartoffelField,
             propertiesType,
+            hasAccountBalanceField,
+            isAlreadyWalletTemplate,
             values,
         };
     };
@@ -441,68 +471,64 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         updateFormik();
     };
 
-    const moveGroup = useCallback(
-        (group: GroupProperty, toIndex: number, toGroupId: string | null = null) => {
-            if (toGroupId) {
-                console.warn('Groups cannot be moved into other groups.');
-                return;
-            }
+    // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
+    const moveGroup = useCallback((group: GroupProperty, toIndex: number, toGroupId: string | null = null) => {
+        if (toGroupId) {
+            console.warn('Groups cannot be moved into other groups.');
+            return;
+        }
 
-            const orderedItemsCopy = [...orderedItemsRef.current] as Values[PropertiesType];
-            const fromIndex = orderedItemsCopy.findIndex((el) => el.type === 'group' && el.id === group.id);
-            if (fromIndex === -1) return;
+        const orderedItemsCopy = [...orderedItemsRef.current] as Values[PropertiesType];
+        const fromIndex = orderedItemsCopy.findIndex((el) => el.type === 'group' && el.id === group.id);
+        if (fromIndex === -1) return;
 
-            const movedGroup = orderedItemsCopy.splice(fromIndex, 1)[0];
-            orderedItemsCopy.splice(toIndex, 0, movedGroup);
+        const movedGroup = orderedItemsCopy.splice(fromIndex, 1)[0];
+        orderedItemsCopy.splice(toIndex, 0, movedGroup);
 
-            setOrderedItems(orderedItemsCopy);
-            updateFormik();
-        },
-        [setOrderedItems, updateFormik],
-    );
+        setOrderedItems(orderedItemsCopy);
+        updateFormik();
+    }, []);
 
-    const moveField = useCallback(
-        (item: CommonFormInputProperties, toIndex: number, toGroupId: string | null) => {
-            const orderedItemsCopy = [...orderedItemsRef.current] as Values[PropertiesType];
-            let movedField: CommonFormInputProperties | null = null;
+    // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
+    const moveField = useCallback((item: CommonFormInputProperties, toIndex: number, toGroupId: string | null) => {
+        const orderedItemsCopy = [...orderedItemsRef.current] as Values[PropertiesType];
+        let movedField: CommonFormInputProperties | null = null;
 
-            if (item.fieldGroup) {
-                const fromGroupIndex = orderedItemsCopy.findIndex((el) => el.type === 'group' && el.id === item.fieldGroup?.id);
-                if (fromGroupIndex === -1) return;
+        if (item.fieldGroup) {
+            const fromGroupIndex = orderedItemsCopy.findIndex((el) => el.type === 'group' && el.id === item.fieldGroup?.id);
+            if (fromGroupIndex === -1) return;
 
-                const fromGroup = orderedItemsCopy[fromGroupIndex] as GroupProperty;
-                const fieldIndex = fromGroup.fields.findIndex((f) => f.id === item.id);
-                if (fieldIndex === -1) return;
+            const fromGroup = orderedItemsCopy[fromGroupIndex] as GroupProperty;
+            const fieldIndex = fromGroup.fields.findIndex((f) => f.id === item.id);
+            if (fieldIndex === -1) return;
 
-                movedField = fromGroup.fields.splice(fieldIndex, 1)[0];
-            } else {
-                const index = orderedItemsCopy.findIndex((el) => el.type === 'field' && el.data.id === item.id);
-                if (index === -1) return;
+            movedField = fromGroup.fields.splice(fieldIndex, 1)[0];
+        } else {
+            const index = orderedItemsCopy.findIndex((el) => el.type === 'field' && el.data.id === item.id);
+            if (index === -1) return;
 
-                movedField = (orderedItemsCopy.splice(index, 1)[0] as FieldProperty).data;
-            }
+            movedField = (orderedItemsCopy.splice(index, 1)[0] as FieldProperty).data;
+        }
 
-            if (toGroupId) {
-                const toGroupIndex = orderedItemsCopy.findIndex((el) => el.type === 'group' && el.id === toGroupId);
-                if (toGroupIndex === -1) return;
+        if (toGroupId) {
+            const toGroupIndex = orderedItemsCopy.findIndex((el) => el.type === 'group' && el.id === toGroupId);
+            if (toGroupIndex === -1) return;
 
-                const group = orderedItemsCopy[toGroupIndex] as GroupProperty;
-                const { name, displayName } = group;
+            const group = orderedItemsCopy[toGroupIndex] as GroupProperty;
+            const { name, displayName } = group;
 
-                group.fields.splice(toIndex, 0, {
-                    ...movedField,
-                    fieldGroup: { name, displayName, id: toGroupId },
-                });
-            } else {
-                const { fieldGroup, ...movedGroupData } = movedField;
-                orderedItemsCopy.splice(toIndex, 0, { type: 'field', data: movedGroupData });
-            }
+            group.fields.splice(toIndex, 0, {
+                ...movedField,
+                fieldGroup: { name, displayName, id: toGroupId },
+            });
+        } else {
+            const { fieldGroup: _f, ...movedGroupData } = movedField;
+            orderedItemsCopy.splice(toIndex, 0, { type: 'field', data: movedGroupData });
+        }
 
-            setOrderedItems(orderedItemsCopy);
-            updateFormik();
-        },
-        [setOrderedItems, updateFormik],
-    );
+        setOrderedItems(orderedItemsCopy);
+        updateFormik();
+    }, []);
 
     const [, drop] = useDrop(() => ({
         accept: [ItemTypes.FIELD, ItemTypes.GROUP],
@@ -583,6 +609,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                                                 initialValue={initialValues?.[propertiesType]?.find(
                                                     (property) => property.type === 'group' && property.id === item.id,
                                                 )}
+                                                isAccountTemplate={isAccountTemplate}
                                             />
                                         ) : (
                                             <Field
@@ -597,6 +624,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                                                 uniqueConstraints={uniqueConstraints}
                                                 setUniqueConstraints={setUniqueConstraints}
                                                 moveGroup={moveGroup}
+                                                isAccountTemplate={isAccountTemplate}
                                                 values={values}
                                             />
                                         )}
@@ -607,6 +635,11 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                                 <Attachment key={data.id} field={data} index={index} buildProps={{ ...buildProps(data, index) }} onDrop={moveField} />
                             );
                         })}
+                        <div>
+                            {errors?.[propertiesType] === i18next.t('validation.accountBalanceField') && (
+                                <div style={{ color: '#d32f2f' }}>{i18next.t('validation.accountBalanceField')}</div>
+                            )}
+                        </div>
                     </Grid>
                 </div>
                 <Grid>

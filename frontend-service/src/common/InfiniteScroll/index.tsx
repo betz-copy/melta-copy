@@ -18,20 +18,17 @@ export const InfiniteScroll = <T,>({
     style = {},
     ...innerInfiniteScrollProps
 }: InfiniteScrollProps<T>) => {
-    if (!useContainer) return <PureInfiniteScroll {...innerInfiniteScrollProps} />;
-
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const overflow = useMemo(() => {
         switch (direction) {
             case 'row':
             case 'row-reverse':
                 return { overflowX: 'overlay', overflowY: 'hidden' };
-            case 'column':
-            case 'column-reverse':
             default:
                 return { overflowX: 'hidden', overflowY: 'overlay' };
         }
     }, [direction]);
+
+    if (!useContainer) return <PureInfiniteScroll {...innerInfiniteScrollProps} />;
 
     return (
         <Grid container direction={direction} wrap={wrap} spacing={spacing} marginBottom="3%" sx={{ ...overflow, ...style }}>

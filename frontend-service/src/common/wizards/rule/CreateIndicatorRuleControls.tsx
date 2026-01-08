@@ -2,13 +2,10 @@ import { Autocomplete, FormControl, FormControlLabel, FormHelperText, Grid, Text
 import { FormikErrors, FormikTouched, getIn } from 'formik';
 import i18next from 'i18next';
 import React, { useEffect } from 'react';
-import { environment } from '../../../globals';
 import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
 import TextArea from '../../inputs/TextArea';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import { RuleWizardValues } from '.';
-
-const { errorColor } = environment;
 
 interface CreateRuleEmailNotificationProps {
     mail: RuleWizardValues['mail'];
@@ -19,6 +16,7 @@ interface CreateRuleEmailNotificationProps {
 }
 
 export const CreateRuleEmailNotification: React.FC<CreateRuleEmailNotificationProps> = ({ mail, touched, errors, hasUserFields, setFieldValue }) => {
+    // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
     useEffect(() => {
         // set checkboxes to default on change
         if (mail && !hasUserFields) setFieldValue('mail.sendPermissionUsers', true);
@@ -74,7 +72,7 @@ export const CreateRuleEmailNotification: React.FC<CreateRuleEmailNotificationPr
                             error={touched && Boolean(getIn(errors, 'body'))}
                         />
                         {touched && Boolean(getIn(errors, 'body')) && (
-                            <FormHelperText sx={{ color: errorColor, fontSize: '12px', marginLeft: 2 }}>{getIn(errors, 'body')}</FormHelperText>
+                            <FormHelperText sx={{ color: 'error', fontSize: '12px', marginLeft: 2 }}>{getIn(errors, 'body')}</FormHelperText>
                         )}
                     </Grid>
                     <Grid container direction="column">
@@ -82,7 +80,7 @@ export const CreateRuleEmailNotification: React.FC<CreateRuleEmailNotificationPr
                             <FormControl sx={{ fontSize: '14px', margin: 0 }}>{i18next.t('wizard.rule.sendMailTo')}</FormControl>
                             <FormHelperText
                                 sx={{
-                                    color: mailCheckError ? errorColor : '#9398C2',
+                                    color: mailCheckError ? 'error' : '#9398C2',
                                     fontSize: '14px',
                                     margin: 0,
                                 }}

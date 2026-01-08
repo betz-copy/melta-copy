@@ -19,7 +19,7 @@ class ActivityLogConsumer {
             await manager.createActivity(value);
 
             msg.ack();
-        } catch (err: any) {
+        } catch (err) {
             msg.nack(false);
             throw new ServiceError(undefined, `Rabbit consumer error`, { error: err });
         }

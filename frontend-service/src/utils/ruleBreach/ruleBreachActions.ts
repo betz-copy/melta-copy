@@ -1,4 +1,4 @@
-import isEqual from 'lodash.isequal';
+import { isEqual } from 'lodash';
 import { environment } from '../../globals';
 import { IEntity } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';

@@ -8,6 +8,7 @@ import {
     orderPropertiesTypeSchema,
     previewPropertiesSchema,
     stringFormats,
+    innerWalletTransferSchema,
 } from './joi.helper';
 
 const entityTemplateSchema = {
@@ -23,6 +24,7 @@ const entityTemplateSchema = {
     documentTemplatesIds: Joi.array().items(Joi.string()),
     mapSearchProperties: Joi.array().items(Joi.string()),
     fieldGroups: innerFieldGroupsSchema,
+    walletTransfer: innerWalletTransferSchema,
 };
 
 // POST /api/entities/templates/searchByFormat

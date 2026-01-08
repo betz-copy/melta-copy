@@ -111,7 +111,7 @@ const ProcessSummary: React.FC<ProcessSummaryProp> = ({ processInstance, process
                                                 <Grid>
                                                     <MeltaTooltip title={<CommentsDetails values={stepInstance} />}>
                                                         <Grid>
-                                                            <img src="/icons/comment-icon.svg" />
+                                                            <img src="/icons/comment-icon.svg" alt="comment" />
                                                         </Grid>
                                                     </MeltaTooltip>
                                                 </Grid>

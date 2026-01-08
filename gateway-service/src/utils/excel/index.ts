@@ -29,6 +29,7 @@ export const getAllEntitiesFromExcel = async (
     failedEntities: IFailedEntity[],
     workspace: IWorkspace,
     relatedTemplatesMap: Record<string, IMongoEntityTemplatePopulated>,
+    requiredConstraints: string[] = [],
     userUnits?: string[],
 ) => {
     const workspaceFilesLimit = workspace.metadata?.excel?.filesLimit;
@@ -43,6 +44,8 @@ export const getAllEntitiesFromExcel = async (
         relatedTemplatesMap,
         workspace._id,
         workspace.metadata?.excel?.entitiesFileLimit,
+        [],
+        requiredConstraints,
         userUnits,
     );
 };

@@ -40,12 +40,12 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
     const isInRangeType = filterField?.type === 'inRange';
     const isRelativeType = relativeDateFilters.includes(filterField?.type ?? '');
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
-        if (forceEqualsType && filterField && filterField.type !== 'equals') {
-            handleFilterTypeChange('equals');
-        }
+        if (forceEqualsType && filterField && filterField.type !== 'equals') handleFilterTypeChange('equals');
     }, [forceEqualsType, filterField]);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         if (!filterField) return;
         const { type, dateFrom, dateTo } = filterField;

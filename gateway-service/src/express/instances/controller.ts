@@ -1,6 +1,6 @@
+import { promises as fsp } from 'node:fs';
 import { IDeleteEntityBody, ISearchEntitiesByLocationBody } from '@microservices/shared';
 import { Request, Response } from 'express';
-import { promises as fsp } from 'fs';
 import { promisify } from 'util';
 import DefaultController from '../../utils/express/controller';
 import InstancesManager from './manager';

@@ -1,4 +1,3 @@
-/* eslint-disable default-case */
 import {
     basicFilterOperationTypes,
     filterTypes,
@@ -50,7 +49,7 @@ const translateAgGridFilter = (
 };
 
 export const translateAgGridFilterModel = (filterModel: IAgGridRequest['filterModel']) => {
-    const query: any = {};
+    const query: object = {};
 
     Object.entries(filterModel).forEach(([field, filter]) => {
         switch (filter.filterType) {
@@ -73,7 +72,7 @@ export const translateAgGridFilterModel = (filterModel: IAgGridRequest['filterMo
 };
 
 export const translateAgGridSortModel = (sortModel: IAgGridSort[]) => {
-    const sort: any = {};
+    const sort: object = {};
 
     sortModel.forEach(({ colId, sort: sortType }) => {
         sort[colId] = sortType === 'asc' ? 1 : -1;

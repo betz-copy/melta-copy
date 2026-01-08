@@ -32,6 +32,8 @@ const useMutationHandler = (
     setCreateOrUpdateWithRuleBreachDialogState: Dispatch<SetStateAction<ICreateOrUpdateWithRuleBreachDialogState>>,
     clientSideUserEntity?: IEntity,
 ) => {
+    const queryClient = useQueryClient();
+
     const [_, navigate] = useLocation();
     let isLoading = false;
     let mutateAsync: MutateAsyncFn | undefined;
@@ -131,8 +133,6 @@ const useMutationHandler = (
     );
 
     if (Object.keys(clientSideUserEntity || {}).length) {
-        const queryClient = useQueryClient();
-
         const childTemplates = queryClient.getQueryData<IChildTemplateMapPopulated>('getClientSideChildTemplates')!;
         childTemplate = Array.from(childTemplates.values()).find((childTemplate) => childTemplate.parentTemplate._id === entityTemplate._id);
     }
@@ -171,6 +171,10 @@ const useMutationHandler = (
         if (!mutateAsync) return;
 
         toast.dismiss();
+
+        const accountBalancePropertyKey = Object.entries(values.template.properties.properties).find(([_key, value]) => value?.accountBalance)?.[0];
+
+        if (accountBalancePropertyKey && !values.properties[accountBalancePropertyKey]) values.properties[accountBalancePropertyKey] = 0;
 
         const mutationPromise = mutateAsync({ newEntityData: values, ignoredRules });
         const isUpdate = actionType === ActionTypes.UpdateEntity;

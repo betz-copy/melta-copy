@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import { ActionTypes, RuleBreachRequestStatus } from '@microservices/shared';
 import * as joi from 'joi';
 import { mongoIdSchema } from '../../utils/joi/schemas';

@@ -1,9 +1,7 @@
-/* eslint-disable no-nested-ternary */
-
 import { ExpandMore, FilterList } from '@mui/icons-material';
 import { Box, FormControl, Grid, Select, Typography, useTheme } from '@mui/material';
 import { TreeViewBaseItem } from '@mui/x-tree-view-pro';
-import lodashUniqby from 'lodash.uniqby';
+import { uniqBy } from 'lodash';
 import { Dispatch, Key, PropsWithChildren, SetStateAction, useCallback, useState } from 'react';
 import { DropResult } from 'react-beautiful-dnd';
 import { useDarkModeStore } from '../../stores/darkMode';
@@ -65,7 +63,7 @@ export const getOptionsAndGroupsMiniFiltered = <Option extends {}, Group = Optio
         return isGroupMatchedByLabel; // if group matched by label, show all of its option
     });
 
-    const optionsFiltered = lodashUniqby([...optionsFilteredByLabel, ...optionsFilteredByGroupLabel], getOptionId);
+    const optionsFiltered = uniqBy([...optionsFilteredByLabel, ...optionsFilteredByGroupLabel], getOptionId);
 
     const groupsFilteredBySomeOptionOfGroupLabel = groups.filter((group) => {
         const isSomeOptionOfGroupMatched = optionsFilteredByLabel.some(
@@ -73,7 +71,7 @@ export const getOptionsAndGroupsMiniFiltered = <Option extends {}, Group = Optio
         );
         return isSomeOptionOfGroupMatched; // if some option in group is shown, show it's group too
     });
-    const groupsFiltered = lodashUniqby([...groupsFilteredByLabel, ...groupsFilteredBySomeOptionOfGroupLabel], getGroupId);
+    const groupsFiltered = uniqBy([...groupsFilteredByLabel, ...groupsFilteredBySomeOptionOfGroupLabel], getGroupId);
 
     return { optionsFiltered, groupsFiltered };
 };
@@ -152,8 +150,7 @@ const SelectCheckbox = <Option extends {}, Group = Option>({
 
     const treeItems = useCallback(
         () => (groupsProps.useGroups && treeFunc ? treeFunc(groupsProps.groups, options, getOptionId) : options),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [getOptionId, JSON.stringify(groupsProps), options, treeFunc],
+        [getOptionId, groupsProps, options, treeFunc],
     );
 
     const borderRadiusStyle = overrideSx ? (isOpen ? '12px 12px 12px 0' : '12px') : isOpen ? '7px 7px 0 0' : '7px';
@@ -222,13 +219,13 @@ const SelectCheckbox = <Option extends {}, Group = Option>({
                         : {
                               '& .MuiOutlinedInput-notchedOutline': { display: 'none' },
                               background: toTopBar ? '#EBEFFA' : '#FFFFFF',
-                              color: toTopBar ? '#1E2775' : '#787C9E',
+                              color: toTopBar ? theme.palette.primary.main : '#787C9E',
                           }),
                     maxWidth: !overrideSx ? (toTopBar ? '130px' : '131px') : undefined,
                     maxHeight: toTopBar ? '35px' : '34px',
                     padding: toTopBar ? '6.99px, 13.98px' : '0px, 8px',
                     '& .MuiSvgIcon-root': {
-                        color: filterIcon ? (darkMode ? '#9398C2' : '#1E2775') : '',
+                        color: filterIcon ? theme.palette.primary.main : '',
                         transform: filterIcon ? 'none' : '',
                     },
                 }}

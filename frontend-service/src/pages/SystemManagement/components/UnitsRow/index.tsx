@@ -36,8 +36,11 @@ const UnitsRow: React.FC = () => {
         initialData: [],
     });
 
-    const { expandedIds, onSearch, searchedUnits, setExpandedIds, setIsShowDisabled, setSearchedUnits, isShowDisabled } =
-        useSearchUnits(unitHierarchies);
+    const { expandedIds, onSearch, searchedUnits, setExpandedIds, setIsShowDisabled, isShowDisabled } = useSearchUnits(
+        unitHierarchies,
+        ({ _id }) => _id,
+        (item, search, isShowDisabled) => item.name.toLowerCase().includes(search?.toLowerCase() ?? '') && (isShowDisabled || !item.disabled),
+    );
 
     const handleClose = () => {
         setUnitToDisable(undefined);
@@ -93,7 +96,6 @@ const UnitsRow: React.FC = () => {
                 expandedIds={expandedIds}
                 setExpandedIds={setExpandedIds}
                 hierarchy={unitHierarchies}
-                setFilteredUnits={setSearchedUnits}
                 setWizardDialogState={setWizardDialogState}
                 isShowDisabled={isShowDisabled}
                 setIsShowDisabled={setIsShowDisabled}

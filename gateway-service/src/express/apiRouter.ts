@@ -28,8 +28,8 @@ apiRouter.use('/config', (_req, res) =>
         textLayers: config.frontendConfig.textLayers,
         deleteEntitiesLimit: config.frontendConfig.agGridLimit.deleteLimit,
         meltaUpdates: config.frontendConfig.meltaUpdates,
-        meltaUpdatesDescription: config.frontendConfig.meltaUpdatesDescription,
         isOutsideDevelopment: config.frontendConfig.isOutsideDevelopment,
+        maxEntitiesToPrint: config.frontendConfig.maxEntitiesToPrint,
     }),
 );
 

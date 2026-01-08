@@ -2,7 +2,7 @@ import { Delete as DeleteIcon, DeleteForever as DeleteOff, DragHandle as DragHan
 import { Box, Card, CardContent, FormControlLabel, Grid, IconButton, MenuItem, TextField } from '@mui/material';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
-import isEqual from 'lodash.isequal';
+import { isEqual } from 'lodash';
 import React, { memo } from 'react';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
