@@ -1,44 +1,58 @@
+import { WmtsLayer } from '@camptocamp/ogc-client';
 import { LayersTwoTone } from '@mui/icons-material';
 import { Box, Divider, FormControlLabel, Grid, IconButton, Radio, RadioGroup, Typography, useTheme } from '@mui/material';
 import * as Cesium from 'cesium';
 import i18next from 'i18next';
 import React, { RefObject, useCallback, useEffect, useMemo, useState } from 'react';
+import { useQueryClient } from 'react-query';
 import { CesiumComponentRef } from 'resium';
 import MeltaCheckbox from '../../common/MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
 import { BackendConfigState } from '../../services/backendConfigService';
+import { getMatrixSet } from '../../utils/map';
 
-type LayerProvider = {
+export enum LayerProviderType {
+    map = 'map',
+    text = 'text',
+}
+
+export type LayerProvider = {
     id: string;
     url: string;
-    type: 'map' | 'text';
+    cesiumUrl: string;
+    type: LayerProviderType;
+    displayName?: string;
 };
 
 export const BaseLayers: React.FC<{
     viewerRef: RefObject<CesiumComponentRef<Cesium.Viewer> | null>;
     config: BackendConfigState;
-}> = ({ viewerRef, config }) => {
+}> = ({ viewerRef, config: { mapLayers, textLayers, isOutsideDevelopment, getMapLayers } }) => {
     const theme = useTheme();
 
     const [isOpen, setIsOpen] = useState<boolean>(false);
 
-    const { mapLayers, textLayers } = config;
+    const queryClient = useQueryClient();
 
-    const providers = useMemo<LayerProvider[]>(() => {
-        const mapLayerArray = Object.entries(mapLayers).map(([name, url]) => ({
-            id: name,
-            url,
-            type: 'map' as const,
-        }));
-        const textLayerArray = Object.entries(textLayers).map(([name, url]) => ({
-            id: name,
-            url,
-            type: 'text' as const,
-        }));
-        return [...mapLayerArray, ...textLayerArray];
-    }, [mapLayers, textLayers]);
+    const layers = queryClient.getQueryData<(LayerProvider & WmtsLayer)[]>('getMapLayers');
 
-    const [activeMapLayer, setActiveMapLayer] = useState<string>(providers.find((p) => p.type === 'map')?.id || '');
+    const providers = useMemo<((LayerProvider & WmtsLayer) | LayerProvider)[]>(() => {
+        const buildLayerProvider = (outsideLayers: Record<string, string>, type: LayerProviderType) => {
+            if (isOutsideDevelopment)
+                return Object.entries(outsideLayers).map(([id, url]) => ({
+                    id,
+                    url,
+                    type,
+                    cesiumUrl: '',
+                }));
+
+            return layers?.filter((layer) => layer.type === type) ?? [];
+        };
+
+        return [...buildLayerProvider(mapLayers, LayerProviderType.map), ...buildLayerProvider(textLayers, LayerProviderType.text)];
+    }, [mapLayers, textLayers, layers, isOutsideDevelopment]);
+
+    const [activeMapLayer, setActiveMapLayer] = useState<string>(providers.find((p) => p.type === LayerProviderType.map)?.id || '');
     const [activeTextLayers, setActiveTextLayers] = useState<Set<string>>(new Set());
 
     const handleTextLayerToggle = useCallback((layerId: string) => {
@@ -60,18 +74,34 @@ export const BaseLayers: React.FC<{
         viewer.imageryLayers.removeAll();
 
         const activeLayers = providers.filter(
-            (layer) => (layer.type === 'map' && layer.id === activeMapLayer) || (layer.type === 'text' && activeTextLayers.has(layer.id)),
+            (layer) =>
+                (layer.type === LayerProviderType.map && layer.id === activeMapLayer) ||
+                (layer.type === LayerProviderType.text && activeTextLayers.has(layer.id)),
         );
 
-        activeLayers.forEach((layer) => {
-            viewer.imageryLayers.addImageryProvider(
-                new Cesium.UrlTemplateImageryProvider({
-                    url: layer.url,
-                    tilingScheme: config.isOutsideDevelopment ? undefined : new Cesium.GeographicTilingScheme(),
-                }),
+        if (isOutsideDevelopment)
+            activeLayers.forEach((layer) =>
+                viewer.imageryLayers.addImageryProvider(
+                    new Cesium.UrlTemplateImageryProvider({
+                        url: layer.url,
+                        tilingScheme: undefined,
+                    }),
+                ),
             );
-        });
-    }, [activeMapLayer, activeTextLayers, providers, viewerRef, config.isOutsideDevelopment]);
+        else
+            (activeLayers as (LayerProvider & WmtsLayer)[])?.forEach((layer) =>
+                viewer.imageryLayers.addImageryProvider(
+                    new Cesium.WebMapTileServiceImageryProvider({
+                        url: new Cesium.Resource({ url: layer.cesiumUrl.split('?')[0], headers: { 'x-api-key': getMapLayers.token } }),
+                        layer: layer.id,
+                        style: layer.defaultStyle || 'default',
+                        format: layer.resourceLinks.find((r) => r.format === 'image/jpeg')?.format ?? layer.resourceLinks[0].format,
+                        tileMatrixSetID: getMatrixSet(layer.matrixSets).identifier,
+                        tilingScheme: getMatrixSet(layer.matrixSets).tilingScheme,
+                    }),
+                ),
+            );
+    }, [activeMapLayer, activeTextLayers, providers, viewerRef, isOutsideDevelopment, getMapLayers]);
 
     return (
         <Box
@@ -127,7 +157,7 @@ export const BaseLayers: React.FC<{
                                     <FormControlLabel
                                         key={layer.id}
                                         control={<Radio checked={activeMapLayer === layer.id} value={layer.id} />}
-                                        label={layer.id}
+                                        label={layer.displayName || layer.id}
                                         sx={{ display: 'flex', alignItems: 'center' }}
                                     />
                                 ))}
@@ -144,7 +174,7 @@ export const BaseLayers: React.FC<{
                                     control={
                                         <MeltaCheckbox checked={activeTextLayers.has(layer.id)} onChange={() => handleTextLayerToggle(layer.id)} />
                                     }
-                                    label={layer.id}
+                                    label={layer.displayName || layer.id}
                                     sx={{ display: 'flex', alignItems: 'center' }}
                                 />
                             ))}
