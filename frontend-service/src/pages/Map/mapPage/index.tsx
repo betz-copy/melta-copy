@@ -78,7 +78,6 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
         coordinates: ICoordinateSearchResult[];
         polygons: IPolygonSearchResult[];
     }>({ coordinates: [], polygons: [] });
-    console.log("🚀 ~ MapPage ~ polygons:", polygons)
 
     const [{ coordinates: filteredCoordinates, polygons: filteredPolygons }, setFilteredResults] = useState<{
         coordinates: ICoordinateSearchResult[];
@@ -487,7 +486,6 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                                     setFilterResult([]);
                                     setCameraFocus(null);
                                 }}
-                                hasShapeResults={filteredCoordinates.length > 0 || filteredPolygons.length > 0}
                                 sourceTemplate={sourceTemplate}
                                 filters={{ value: { autoSearch, listFields, dirty }, set: setFilters }}
                                 isSearchShape={isSearchShape}
