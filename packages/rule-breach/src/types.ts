@@ -4,7 +4,6 @@ import { ISubCompactPermissions } from '@packages/permission';
 import { IRelationshipPopulated } from '@packages/relationship';
 import { IUser } from '@packages/user';
 
-// ========== Action Metadata Types ==========
 export interface ICreateRelationshipMetadata {
     relationshipTemplateId: string;
     sourceEntityId: string;
@@ -13,6 +12,7 @@ export interface ICreateRelationshipMetadata {
 
 export interface IDeleteRelationshipMetadata {
     relationshipId: string;
+    
     relationshipTemplateId: string;
     sourceEntityId: string;
     destinationEntityId: string;
@@ -124,7 +124,6 @@ export enum ActionErrors {
     notFound = 'NOT_FOUND',
 }
 
-// ========== AgGrid Filter Types ==========
 export enum basicFilterOperationTypes {
     equals = 'equals',
     notEqual = 'notEqual',
@@ -223,7 +222,6 @@ export type FilterQuery =
     | { $in: (string | null)[] }
     | { $gte: number; $lte: number };
 
-// ========== Rule Breach Types ==========
 export interface ICauseInstance {
     // same format of IVariable in Formula interfaces, but with instance ids
     entityId: string;

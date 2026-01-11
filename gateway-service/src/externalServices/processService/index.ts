@@ -1,4 +1,3 @@
-
 import { PermissionScope } from '@packages/permission';
 import {
     IMongoProcessInstancePopulated,

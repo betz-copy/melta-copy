@@ -1,4 +1,3 @@
-
 import { IEntity } from '@packages/entity';
 import { IMongoEntityTemplate } from '@packages/entity-template';
 import { IMongoRelationshipTemplate } from '@packages/relationship-template';

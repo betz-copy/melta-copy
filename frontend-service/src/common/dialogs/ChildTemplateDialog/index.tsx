@@ -212,7 +212,7 @@ const ChildTemplateDialog: React.FC<{
                                 ...rest,
                                 filters: filters
                                     ? filterDocumentToFilterBackend(
-                                        // TODO: CHECK IF WORKS
+                                          // TODO: CHECK IF WORKS
                                           values.parentTemplateId._id || entityTemplate._id,
                                           filters.map((filter) => ({ filterProperty: key, filterField: filter })),
                                           queryClient,

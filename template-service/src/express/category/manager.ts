@@ -1,6 +1,5 @@
 import { ICategory, IMongoCategory } from '@packages/category';
-import { DefaultManagerMongo } from '@packages/utils';
-import { NotFoundError } from '@packages/utils';
+import { DefaultManagerMongo, NotFoundError } from '@packages/utils';
 import { ConfigTypes, IMongoCategoryOrderConfig } from '@packages/workspace';
 import { ClientSession } from 'mongoose';
 import config from '../../config';

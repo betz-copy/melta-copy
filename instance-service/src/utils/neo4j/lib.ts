@@ -1,4 +1,3 @@
-
 import { SplitBy } from '@packages/common';
 import { IEntity, IEntityExpanded, IEntityWithDirectRelationships } from '@packages/entity';
 import { IRelationship } from '@packages/relationship';

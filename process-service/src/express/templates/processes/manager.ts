@@ -8,8 +8,7 @@ import {
     IProcessTemplatePopulated,
     IProcessTemplateSearchProperties,
 } from '@packages/process';
-import { DefaultManagerMongo } from '@packages/utils';
-import { ServiceError } from '@packages/utils';
+import { DefaultManagerMongo, ServiceError } from '@packages/utils';
 import { StatusCodes } from 'http-status-codes';
 import { ClientSession, FilterQuery, Types } from 'mongoose';
 import config from '../../../config';

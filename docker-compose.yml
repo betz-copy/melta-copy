@@ -22,8 +22,6 @@ services:
       MONGO_UNITS_COLLECTION_NAME: ${MONGO_UNITS_COLLECTION_NAME}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
-    depends_on:
-      - mongo
 
   storage-service:
     build:
@@ -44,9 +42,6 @@ services:
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
       SYSTEM_MELTA_BASE_URL: ${SYSTEM_MELTA_BASE_URL}
-    depends_on:
-      - minio
-      - rabbit
 
   template-service:
     build:
@@ -70,9 +65,6 @@ services:
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
-    depends_on:
-      - mongo
-      - rabbit
 
   instance-service:
     build:
@@ -93,9 +85,6 @@ services:
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
-    depends_on:
-      - neo4j
-      - rabbit
 
   global-search-service:
     build:
@@ -115,9 +104,6 @@ services:
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
-    depends_on:
-      - neo4j
-      - rabbit
 
   activity-log-service:
     build:
@@ -134,9 +120,6 @@ services:
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
-    depends_on:
-      - mongo
-      - rabbit
 
   notification-service:
     build:
@@ -153,9 +136,6 @@ services:
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
-    depends_on:
-      - mongo
-      - rabbit
 
   rule-breach-service:
     build:
@@ -172,8 +152,6 @@ services:
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
-    depends_on:
-      - mongo
 
   process-service:
     build:
@@ -196,9 +174,6 @@ services:
       RABBIT_URL: ${RABBIT_URL}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
-    depends_on:
-      - mongo
-      - rabbit
 
   gantt-service:
     build:
@@ -215,8 +190,6 @@ services:
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
-    depends_on:
-      - mongo
 
   preview-service:
     build:
@@ -236,9 +209,6 @@ services:
       RABBIT_URL: ${RABBIT_URL}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
-    depends_on:
-      - minio
-      - rabbit
 
   workspace-service:
     build:
@@ -253,8 +223,6 @@ services:
       MONGO_WORKSPACES_COLLECTION_NAME: ${MONGO_WORKSPACES_COLLECTION_NAME}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
-    depends_on:
-      - mongo
 
   dashboard-service:
     build:
@@ -270,8 +238,6 @@ services:
       MONGO_DASHBOARD_COLLECTION_NAME: ${MONGO_DASHBOARD_COLLECTION_NAME}
       MONGO_IFRAMES_COLLECTION_NAME: ${MONGO_IFRAMES_COLLECTION_NAME}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
-    depends_on:
-      - mongo
 
   mock-service:
     build:
@@ -332,8 +298,6 @@ services:
       FRONTEND_CONFIG_MATOMO_BASE_URL: http://localhost:8016
       FRONTEND_CONFIG_MATOMO_SITE_ID: 1
       DASHBOARD_SERVICE_URL: ${DASHBOARD_SERVICE_URL}
-    depends_on:
-      - rabbit
 
   # frontend-service:
   #   build:
@@ -357,9 +321,6 @@ services:
       USE_AUTH: 'true'
       RABBIT_URI: ${RABBIT_URL}
       REDIS_CONNECTION_URI: ${REDIS_HOST}
-    depends_on:
-      - rabbit
-      - redis
 
   cron-service:
     build:
@@ -380,8 +341,6 @@ services:
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
       DISPLAY_CRON_DATES: ${DISPLAY_CRON_DATES}
       KARTOFFEL_BASE_URL: ${KARTOFFEL_BASE_URL}
-    depends_on:
-      - rabbit
 
   semantic-service:
     build:
@@ -402,9 +361,6 @@ services:
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
       MODEL_API_URL: ${MODEL_API_URL}
       ELASTIC_RRF_WINDOW_FIELD_NAME: ${ELASTIC_RRF_WINDOW_FIELD_NAME}
-    depends_on:
-      - minio
-      - rabbit
 
   mock-model-api:
     build:

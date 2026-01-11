@@ -80,8 +80,8 @@ export const environment = {
     cesium: {
         activationKey:
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjZWI5M2EyNC1lODE3LTQwYTQtYTUxZi00NDlhODAyZDM0NTMiLCJpZCI6MjcwNDM5LCJpYXQiOjE3Mzc0NDk3MzN9.WLi4Zcm4D_PMstHcM3YNMJsw1xPhiNGuJyizwg_4nbg',
-            cesiumSource: 'node_modules/cesium/Build/Cesium',
-            cesiumBaseUrl: 'cesiumStatic',
+        cesiumSource: 'node_modules/cesium/Build/Cesium',
+        cesiumBaseUrl: 'cesiumStatic',
     },
     canvasSettings: {
         heightPaddingMultiplier: 0.3,

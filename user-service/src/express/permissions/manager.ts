@@ -1,4 +1,3 @@
-
 import { RecursiveNullable } from '@packages/common';
 import {
     ICompactNullablePermissions,

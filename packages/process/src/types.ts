@@ -2,7 +2,6 @@ import { IEntity } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IUser } from '@packages/user';
 
-// ========== Process Instances ==========
 export enum Status {
     Pending = 'pending',
     Approved = 'approved',
@@ -114,7 +113,6 @@ export interface IReferencedEntityForProcess {
 
 export type StepsObjectPopulated = Record<string, IUser[]>;
 
-// ========== Step Instances ==========
 export interface IStepInstance {
     templateId: string;
     properties?: Record<string, any>;
@@ -149,7 +147,6 @@ export interface UpdateStepReqBody {
 export type IGenericStep = Pick<IMongoStepInstance, '_id' | 'reviewers'>;
 export type IGenericStepPopulated = Pick<IMongoStepInstancePopulated, '_id' | 'reviewers'>;
 
-// ========== Process Templates ==========
 export enum ProcessPropertyFormats {
     Date = 'date',
     DateTime = 'date-time',
@@ -232,7 +229,6 @@ export interface ISearchProcessTemplatesBody extends Partial<IBaseSearchProperti
     displayName?: string;
 }
 
-// ========== Step Templates ==========
 export interface IStepTemplate extends IProcessDetails {
     name: string;
     displayName: string;

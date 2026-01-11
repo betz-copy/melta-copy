@@ -223,10 +223,7 @@ export const getRowModelProps = <Data extends EntityData>(
 const LoadingCellRenderer = () => <CircularProgress size={20} sx={{ marginLeft: 1 }} />;
 
 export type EntitiesTableOfTemplateProps<Data> = {
-    template: (
-        | IMongoEntityTemplateWithConstraintsPopulated
-        | IMongoChildTemplateWithConstraintsPopulated
-    ) & {
+    template: (IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated) & {
         entitiesWithFiles?: ISemanticSearchResult[string];
     };
     entities?: Data[];

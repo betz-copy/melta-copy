@@ -1,5 +1,6 @@
 import { Close, DeleteTwoTone, PentagonTwoTone, PlaceTwoTone } from '@mui/icons-material';
 import { ToggleButton, ToggleButtonGroup, useTheme } from '@mui/material';
+import { MapItemType } from '@packages/utils';
 import * as Cesium from 'cesium';
 import { Cartesian3 } from 'cesium';
 import i18next from 'i18next';
@@ -21,7 +22,6 @@ import {
 import { convertWGS94ToECEF, isValidWGS84 } from '../../utils/map/convert';
 import { BaseLayers } from './BaseLayers';
 import { MeltaCoordinate, MeltaPolygon } from './LocationEntities';
-import { MapItemType } from '@packages/utils';
 
 type Props = {
     defaultLocation?: string;

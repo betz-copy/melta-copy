@@ -216,10 +216,7 @@ const Entity: React.FC = () => {
             />
             <Grid className="pageMargin">
                 <Grid marginTop="20px" data-tour="entity-details">
-                    <EntityDetails
-                        entityTemplate={currentEntityTemplate}
-                        expandedEntity={expandedEntity}
-                    />
+                    <EntityDetails entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} />
                 </Grid>
                 {!!categoriesWithConnectionsTemplates?.length && (
                     <Grid data-tour="connected-entities" style={{ marginTop: '2rem' }}>

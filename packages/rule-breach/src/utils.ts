@@ -6,7 +6,5 @@ import { relativeDateFilters } from './types';
  * @returns True if the value is a valid relativeDateFilters enum value
  */
 export function isRelativeDateFilter(value: unknown): value is relativeDateFilters {
-	return Object.values(relativeDateFilters).includes(value as relativeDateFilters);
+    return Object.values(relativeDateFilters).includes(value as relativeDateFilters);
 }
-
-

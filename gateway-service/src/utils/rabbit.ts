@@ -1,4 +1,3 @@
-
 import { INotificationMetadata, IRuleIndicatorAlertNotificationMetadata, NotificationType } from '@packages/notification';
 import { IKartoffelUser, IUser } from '@packages/user';
 import { logger } from '@packages/utils';

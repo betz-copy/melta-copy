@@ -39,7 +39,7 @@ const RelationshipReferenceField: React.FC<FieldEditCardProps> = ({
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const selectedTemplate = entityTemplates.get(value.relationshipReference?.relatedTemplateId || '') ?? null;
-    
+
     const fixedRelatedTemplateFieldOptions = Object.entries(selectedTemplate?.properties?.properties || {})
         .filter(
             ([key, _property]) =>

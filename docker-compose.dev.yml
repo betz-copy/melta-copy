@@ -226,9 +226,7 @@ services:
     volumes:
       - logs:/usr/src/app/logs
 
-  # frontend-service:
-  #   networks:
-  #     - network
+  # frontend-service
 
   nginx:
     ports:

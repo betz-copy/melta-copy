@@ -1,4 +1,3 @@
-
 import {
     IArgument,
     IEquation,

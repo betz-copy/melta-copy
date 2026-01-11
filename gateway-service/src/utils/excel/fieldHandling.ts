@@ -1,4 +1,3 @@
-
 import { IChildTemplateProperty, IMongoChildTemplatePopulated } from '@packages/child-template';
 import { NotFoundErrorTypes } from '@packages/entity';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IProperties } from '@packages/entity-template';

@@ -2,7 +2,6 @@ import { IEntity } from '@packages/entity';
 import { IEntityTemplatePopulated } from '@packages/entity-template';
 import { IMongoRelationshipTemplate } from '@packages/relationship-template';
 
-// ========== Rule Formula Types ==========
 export type IConstant = {
     isConstant: true;
     type: 'number' | 'string' | 'boolean' | 'date' | 'dateTime' | 'dateDuration' | 'dateTimeDuration' | 'relationshipReference';
@@ -103,7 +102,6 @@ export const isGroup = (group: any): group is IGroup => {
 
 export type IFormula = IGroup | IEquation | IAggregationGroup;
 
-// ========== Rule Types ==========
 export enum ActionOnFail {
     WARNING = 'WARNING',
     ENFORCEMENT = 'ENFORCEMENT',

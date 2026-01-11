@@ -120,7 +120,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
                     const value = values.properties.properties[fieldName] ?? {};
 
                     const isRequired = entityTemplate.properties.required.includes(fieldName);
-                    
+
                     const isSerialNumberField = !!property?.serialCurrent;
                     const isRelationshipRefField = property?.format === 'relationshipReference';
                     const isFilterByUser = property?.format === 'user' && values.filterByCurrentUserField === fieldName;

@@ -1,4 +1,3 @@
-
 import { DeepPartial, RecursiveNullable } from '@packages/common';
 import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '@packages/permission';
 import { IBaseRole, IRole } from '@packages/role';

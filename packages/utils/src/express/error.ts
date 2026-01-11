@@ -157,5 +157,3 @@ export const errorMiddleware = (error: Error, req: express.Request, res: express
     res.status(statusCode).send(errorResponse);
     next();
 };
-
-

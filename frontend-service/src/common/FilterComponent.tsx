@@ -54,11 +54,7 @@ export const isValidAGGridFilter = (filter: IAgGridFilter | undefined): boolean 
             return filter.filter !== undefined || (filter.type === numberFilterOperationTypes.inRange && filter.filterTo !== undefined);
         case FilterTypes.date: {
             if (!filter.dateFrom) return false;
-            if (
-                isRelativeDateFilter(filter.type) ||
-                filter.dateFrom === ByCurrentDefaultValue.byCurrentDate
-            )
-                return true;
+            if (isRelativeDateFilter(filter.type) || filter.dateFrom === ByCurrentDefaultValue.byCurrentDate) return true;
 
             const isDateFromValid = isValidDate(parse(filter.dateFrom, loggingDate, new Date()));
 

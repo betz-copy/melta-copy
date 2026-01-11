@@ -190,10 +190,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
         condition: boolean = true,
     ) => {
         if (filterField?.filterType === FilterTypes.date) {
-            if (
-                isRelativeDateFilter(filterField.type) &&
-                !isRelativeDateFilter(newTypeFilter)
-            ) {
+            if (isRelativeDateFilter(filterField.type) && !isRelativeDateFilter(newTypeFilter)) {
                 setFilterField({ ...filterField, type: newTypeFilter, dateFrom: null, dateTo: null } as IAgGridDateFilter);
                 return;
             }

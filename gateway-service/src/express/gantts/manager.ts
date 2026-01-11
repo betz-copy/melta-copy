@@ -1,4 +1,3 @@
-
 import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import { IGantt, IGanttItem, IMongoGantt, ISearchGanttsBody } from '@packages/gantt';
 import { IRelationshipTemplate } from '@packages/relationship-template';

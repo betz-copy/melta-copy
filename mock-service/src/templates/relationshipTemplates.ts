@@ -1,4 +1,3 @@
-
 import { IMongoEntityTemplate, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IMongoRelationshipTemplate, IRelationshipTemplate } from '@packages/relationship-template';
 import config from '../config';

@@ -9,8 +9,7 @@ import {
     IProcessInstance,
     UpdateProcessReqBody,
 } from '@packages/process';
-import { DefaultController } from '@packages/utils';
-import { ValidationError } from '@packages/utils';
+import { DefaultController, ValidationError } from '@packages/utils';
 import { Request } from 'express';
 import ajv from '../../../utils/ajv';
 import { InstancePropertiesValidationError } from '../../error';

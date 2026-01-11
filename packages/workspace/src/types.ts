@@ -65,7 +65,6 @@ export interface IWorkspace {
     metadata?: Partial<IMetadata>;
 }
 
-// ========== Workspace Configs ==========
 export enum ConfigTypes {
     BASE = 'base',
     CATEGORY_ORDER = 'categoryOrder',

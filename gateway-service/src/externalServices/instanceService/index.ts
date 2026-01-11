@@ -1,4 +1,3 @@
-
 import { IChartBody } from '@packages/chart';
 import {
     IBulkOfActions,

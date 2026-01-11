@@ -1,7 +1,7 @@
 import { SplitBy } from '@packages/common';
 import config from '@packages/config';
-import proj4 from 'proj4';
 import type { Cartesian3 } from 'cesium';
+import proj4 from 'proj4';
 import { BadRequestError } from '../express/error';
 
 const locationFormatError = 'location format not valid';

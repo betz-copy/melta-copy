@@ -12,12 +12,12 @@ import {
 } from '@packages/rule-breach';
 import i18next from 'i18next';
 import React, { useEffect } from 'react';
+import { IFilterDateType } from '../../../interfaces/childTemplateForms';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import DatePickerWrapper from '../DatePickerWrapper';
 import DateRange from '../DateRange';
 import { TypeSelectFilter } from './TypeSelectFilter';
-import { IFilterDateType } from '../../../interfaces/childTemplateForms';
 
 interface DateFilterInputProps {
     filterField: IAgGridDateFilter | undefined;
@@ -62,10 +62,7 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
             return;
         }
 
-        if (
-            (dateFrom && isRelativeDateFilter(dateFrom)) ||
-            (dateTo && isRelativeDateFilter(dateTo))
-        ) {
+        if ((dateFrom && isRelativeDateFilter(dateFrom)) || (dateTo && isRelativeDateFilter(dateTo))) {
             handleDateChange(null, true);
             handleDateChange(null, false);
             return;

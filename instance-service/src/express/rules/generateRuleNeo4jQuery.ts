@@ -1,4 +1,3 @@
-
 import { IMongoEntityTemplate } from '@packages/entity-template';
 import {
     IAggregationGroup,

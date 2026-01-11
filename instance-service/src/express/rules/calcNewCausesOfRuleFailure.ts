@@ -1,4 +1,3 @@
-
 import {
     IAggregationGroup,
     IArgument,

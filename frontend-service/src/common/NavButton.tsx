@@ -10,9 +10,7 @@ interface NavButtonProps {
 export const NavButton: React.FC<NavButtonProps> = ({ to, children }) => {
     return (
         <Link href={to} style={{ textDecoration: 'none' }}>
-            <Button sx={{ ':hover': { backdropFilter: 'brightness(1.15)', bgcolor: 'transparent' } }}>
-                {children}
-            </Button>
+            <Button sx={{ ':hover': { backdropFilter: 'brightness(1.15)', bgcolor: 'transparent' } }}>{children}</Button>
         </Link>
     );
 };

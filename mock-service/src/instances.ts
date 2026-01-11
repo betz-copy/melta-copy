@@ -1,4 +1,3 @@
-
 import { IUniqueConstraintOfTemplate } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IRelationship } from '@packages/relationship';

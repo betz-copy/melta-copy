@@ -1,4 +1,3 @@
-
 import { IFilterDatesRange } from '@packages/entity';
 import { IEntityTemplatePopulated } from '@packages/entity-template';
 import { IDateAboutToExpireNotificationMetadata, NotificationType } from '@packages/notification';
@@ -17,6 +16,7 @@ const { notifications } = config;
 
 const checkNotificationDateInCustomAlert = (datePropertyValue: Date, dateNotification: number) => {
     const today = new Date();
+    
     today.setHours(0, 0, 0, 0);
 
     const dateNotificationOptions = notifications.dateAlertOptions;

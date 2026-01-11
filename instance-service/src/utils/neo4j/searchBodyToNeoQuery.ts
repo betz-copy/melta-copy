@@ -1,4 +1,3 @@
-
 import { FilterLogicalOperator, IFilterGroup, IFilterOfField, IFilterOfTemplate, ISearchBatchBody } from '@packages/entity';
 import { IEntitySingleProperty, IMongoEntityTemplate } from '@packages/entity-template';
 import { fromZonedTime } from 'date-fns-tz';
