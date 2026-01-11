@@ -156,7 +156,8 @@ export const MeltaRoutesInner: React.FC = () => {
     useEffect(() => {
         const meltaUpdatesShown = LocalStorage.get<string>(environment.meltaUpdatesShown);
 
-        if (config?.meltaUpdates && meltaUpdatesShown !== JSON.stringify(config.meltaUpdates.details) && !!config?.meltaUpdates.display) setOpenMeltaUpdates(true);
+        if (config?.meltaUpdates && meltaUpdatesShown !== JSON.stringify(config.meltaUpdates.details) && !!config?.meltaUpdates.display)
+            setOpenMeltaUpdates(true);
     }, [config?.meltaUpdates]);
 
     const handleClose = () => {

@@ -333,8 +333,13 @@ const filterOfFieldToNeoQuery = (
     return {
         cypherQuery: queries.map((query) => `(${query.cypherQuery})`).join(' AND '),
         parameters: queries
-            .map(({ parameters }) => parameters)
-            .reduce((prevParameters, currParameters) => ({ ...prevParameters, ...currParameters }), {}),
+            .map((q) => q.parameters)
+            .reduce<Record<string, unknown>>((acc, curr) => {
+                for (const key in curr) {
+                    if (Object.hasOwn(curr, key)) acc[key] = curr[key];
+                }
+                return acc;
+            }, {}),
     };
 };
 

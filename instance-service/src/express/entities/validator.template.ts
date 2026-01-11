@@ -9,6 +9,7 @@ import {
     IFilterOfField,
     IMongoEntityTemplate,
     IMongoRelationshipTemplate,
+    IPropertyValue,
     ISearchBatchBody,
     ISearchEntitiesByTemplatesBody,
     ISearchEntitiesOfTemplateBody,
@@ -122,7 +123,7 @@ export class EntityValidator extends DefaultController {
         return entityTemplate;
     }
 
-    validateEntity(entityTemplate: IMongoEntityTemplate, properties: Record<string, any>) {
+    validateEntity(entityTemplate: IMongoEntityTemplate, properties: Record<string, IPropertyValue>) {
         const validateFunction = ajv.compile(entityTemplate.properties);
         const valid = validateFunction(properties);
 
@@ -144,7 +145,7 @@ export class EntityValidator extends DefaultController {
         }
     }
 
-    validatePropertiesMatchFilters(properties: Record<string, any>, filter?: ISearchFilter) {
+    validatePropertiesMatchFilters(properties: Record<string, IPropertyValue>, filter?: ISearchFilter) {
         const notValidKey = matchValueAgainstFilter(properties, filter);
         if (notValidKey)
             throw new FilterValidation(`Property ${notValidKey} do not match the filter`, {
@@ -532,13 +533,13 @@ export const getFilesName = (files: string[]): string => {
  * @returns flattened entity (i.e. an object with no nested properties, using key paths as keys).
  */
 export const addStringFieldsAndNormalizeSpecialStringValues = async (
-    entityProperties: Record<string, any>,
+    entityProperties: Record<string, IPropertyValue>,
     entityTemplate: IMongoEntityTemplate | IEntityTemplate,
     entityTemplateService: EntityTemplateManagerService,
     coloredFields?: Record<string, string>,
     recursiveRelationshipReference = false,
-): Promise<Record<string, any>> => {
-    const normalizedEntity: Record<string, any> = {};
+): Promise<Record<string, IPropertyValue>> => {
+    const normalizedEntity: Record<string, IPropertyValue> = {};
 
     await Promise.all(
         Object.entries(entityTemplate.properties.properties).map(async ([key, value]) => {
@@ -605,7 +606,7 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
             }
 
             if (type === 'string' && format === 'relationshipReference' && typeof propertyValue === 'object') {
-                let relationShipPropValue: Record<string, any> = 'properties' in propertyValue ? propertyValue.properties : propertyValue;
+                let relationShipPropValue: Record<string, IPropertyValue> = 'properties' in propertyValue ? propertyValue.properties : propertyValue;
 
                 if (recursiveRelationshipReference) {
                     const relatedEntityTemplate = await entityTemplateService.getEntityTemplateById(propertyValue.templateId);

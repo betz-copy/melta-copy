@@ -1,5 +1,6 @@
 import {
     BodyScrollEvent,
+    CellClickedEvent,
     CellEditingStoppedEvent,
     ColumnMovedEvent,
     ColumnResizedEvent,
@@ -205,7 +206,7 @@ export const getRowModelProps = <Data extends EntityData>(
 
     return {
         rowModelType: 'serverSide',
-        serverSideDatasource: getDatasource<IConnection>(
+        serverSideDatasource: getDatasource(
             template,
             quickFilterText,
             datasourceOnFail,
@@ -358,7 +359,7 @@ const EntitiesTableOfTemplate = forwardRef(
         );
         const [selectedRow, setSelectedRow] = useState('');
         const [currEntity, setCurrEntity] = useState<IEntity>();
-        const [currEditingCell, setCurrEditingCell] = useState<any>();
+        const [currEditingCell, setCurrEditingCell] = useState<CellClickedEvent<Data> | undefined>();
 
         const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
             isOpen: boolean;
@@ -431,13 +432,11 @@ const EntitiesTableOfTemplate = forwardRef(
             }) => updateEntityStatusRequest(currentEntity.properties._id, disabled, JSON.stringify(ignoredRules), childTemplateId),
             {
                 onSuccess: (data) => {
-                    if (data.properties.disabled) toast.success(i18next.t('entityPage.disabledSuccessfully'));
-                    else toast.success(i18next.t('entityPage.activatedSuccessfully'));
+                    toast.success(i18next.t(`entityPage.${data.properties.disabled ? 'disabled' : 'activated'}Successfully`));
                     setUpdatedTemplateIds?.([data.templateId]);
                 },
                 onError: (_err: AxiosError, { disabled }) => {
-                    if (disabled) toast.error(i18next.t('entityPage.failedToDisable'));
-                    else toast.error(i18next.t('entityPage.failedToActivate'));
+                    toast.error(i18next.t(`entityPage.failedTo${disabled ? 'Disable' : 'Activate'}`));
                 },
             },
         );
@@ -511,7 +510,7 @@ const EntitiesTableOfTemplate = forwardRef(
             },
         };
 
-        const updateVisibleColumns = (params: ColumnVisibleEvent<Data, any> | GridReadyEvent<Data, any>) => {
+        const updateVisibleColumns = (params: ColumnVisibleEvent<Data> | GridReadyEvent<Data>) => {
             const columnState = params.api.getColumnState();
 
             const updatedVisibleColumns = columnState.reduce<Record<string, boolean>>((acc, col) => {
@@ -537,7 +536,7 @@ const EntitiesTableOfTemplate = forwardRef(
         };
 
         const handleColumnsOrder = (
-            params: ColumnMovedEvent<Data> | GridReadyEvent<Data, any> | FirstDataRenderedEvent<Data, any> | RowDataUpdatedEvent<Data, any>,
+            params: ColumnMovedEvent<Data> | GridReadyEvent<Data> | FirstDataRenderedEvent<Data> | RowDataUpdatedEvent<Data>,
         ) => {
             if (!saveStorageProps.shouldSaveColumnOrder) return;
             const columnState = params.api.getColumnState();
@@ -584,7 +583,7 @@ const EntitiesTableOfTemplate = forwardRef(
             return totalGridWidth - usedWidth - widthConsumed - (hasActions ? actionsWidth : 0);
         };
 
-        const autoSizeAll = (params: GridReadyEvent<Data, any> | RowDataUpdatedEvent<Data, any>, visibleKeys: string[]) => {
+        const autoSizeAll = (params: GridReadyEvent<Data> | RowDataUpdatedEvent<Data>, visibleKeys: string[]) => {
             const { api } = params;
 
             const hasActions = visibleKeys.some((key) => key.startsWith(actionPrefix));
@@ -597,9 +596,9 @@ const EntitiesTableOfTemplate = forwardRef(
 
             handleColumnsOrder(params);
 
-            const shouldIncludeKey = (key) => key !== `${actionPrefix}${template._id}` && (isRemovedFields || !defaultColumnWidths[key]);
+            const shouldIncludeKey = (key: string) => key !== `${actionPrefix}${template._id}` && (isRemovedFields || !defaultColumnWidths[key]);
             const columnsKeys = visibleKeys.filter(shouldIncludeKey);
-            if (columnsKeys.length === 0) return;
+            if (!columnsKeys.length) return;
 
             api.refreshHeader();
             api.sizeColumnsToFit();
@@ -991,8 +990,8 @@ const EntitiesTableOfTemplate = forwardRef(
                         onCellEditingStopped={(params: CellEditingStoppedEvent) => {
                             setCurrEditingCell(undefined);
                             if (params.valueChanged === false) return;
-                            const isEmpty = params.newValue === '' || params.newValue === null || params.newValue.length === 0;
-                            const isEmptyArray = params.newValue.length === 0;
+                            const isEmptyArray = !params.newValue.length;
+                            const isEmpty = params.newValue === '' || params.newValue === null || isEmptyArray;
                             const isRequired = template.properties.required.includes(params.colDef.field!);
                             const updatedProperties = {
                                 ...params.data?.properties,
@@ -1000,11 +999,9 @@ const EntitiesTableOfTemplate = forwardRef(
                             };
                             setCurrEntity({ templateId: template._id, properties: params.data?.properties });
 
-                            const properties: any = { properties: updatedProperties };
+                            const properties = { properties: updatedProperties };
                             gridRef.current?.api.forEachNode((rowNode) => {
-                                if (rowNode.data && getRowId(properties) === getRowId(rowNode.data)) {
-                                    rowNode.updateData(properties);
-                                }
+                                if (rowNode.data && getRowId(properties as Data) === getRowId(rowNode.data)) rowNode.updateData(properties as Data);
                             });
 
                             updateMutation({

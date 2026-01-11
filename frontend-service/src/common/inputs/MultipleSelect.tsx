@@ -2,6 +2,7 @@ import { Close, ExpandMore } from '@mui/icons-material';
 import { Autocomplete, Grid, MenuItem, TextField, TextFieldProps } from '@mui/material';
 import { RJSFSchema } from '@rjsf/utils';
 import React from 'react';
+import { IPropertyValue } from '../../interfaces/entities';
 import OverflowWrapper from '../../utils/agGrid/OverflowWrapper';
 import { ColoredEnumChip } from '../ColoredEnumChip';
 import MeltaCheckbox from '../MeltaDesigns/MeltaCheckbox';
@@ -22,8 +23,8 @@ const MultipleSelect: React.FC<{
     onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void;
     variant: 'standard' | 'outlined';
     rawErrors?: string[];
-    textFieldProps?: any;
-    value?: any;
+    textFieldProps?: Partial<TextFieldProps>;
+    value?: IPropertyValue;
     multiple?: boolean;
     disabled?: boolean;
     readonly?: boolean;
@@ -40,7 +41,7 @@ const MultipleSelect: React.FC<{
     onBlur,
     onFocus,
     variant,
-    rawErrors,
+    rawErrors = [],
     textFieldProps,
     value,
     multiple,

@@ -28,6 +28,7 @@ import i18next from 'i18next';
 import React, { SetStateAction, useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import { IPropertyValue } from '../../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../../services/templates/entityTemplatesService';
 import { AreYouSureDialog } from '../../../dialogs/AreYouSureDialog';
@@ -65,7 +66,7 @@ export interface PropertiesTypesProps {
     index: number;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     templateId: string;
-    setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
+    setFieldValue: (field: keyof CommonFormInputProperties, value: IPropertyValue) => void;
     touched?: FormikTouched<CommonFormInputProperties>;
     errors?: FormikErrors<CommonFormInputProperties>;
     isDisabled: boolean;
@@ -189,7 +190,7 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
     );
 
     const { mutate: deleteEnumField, isLoading: isDeleteLoading } = useMutation(
-        (mutationArgs: { id: string; tagIndex: number; fieldValue: any }) => {
+        (mutationArgs: { id: string; tagIndex: number; fieldValue: IPropertyValue }) => {
             const { id, tagIndex, fieldValue } = mutationArgs;
             return deleteEnumFieldRequest(id, fieldValue.options[tagIndex], fieldValue);
         },

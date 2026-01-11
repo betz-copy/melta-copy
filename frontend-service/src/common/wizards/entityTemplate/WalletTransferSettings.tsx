@@ -133,6 +133,7 @@ export const WalletTransferSettings: React.FC<
     const showDestInfo = !!values.walletTransfer && allFields.some((f) => f.name === destKeyName && f.type === 'relationshipReference');
     const walletTransferInfo = i18next.t('wizard.entityTemplate.walletTransfer.walletTransferInfo', { returnObjects: true }) as string[];
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
     useEffect(() => {
         if (!values.walletTransfer) setFieldValue('walletTransfer', null);
     }, []);

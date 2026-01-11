@@ -1,18 +1,24 @@
-import { Autocomplete, AutocompleteProps, TextField } from '@mui/material';
+import { Autocomplete, AutocompleteProps, TextField, TextFieldProps } from '@mui/material';
 import i18next from 'i18next';
+import { DebouncedFunc } from 'lodash';
 import React from 'react';
+import { QueryObserverResult, RefetchOptions, RefetchQueryFilters } from 'react-query';
 import { IRole } from '../../interfaces/roles';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 
 export interface IRoleAutocomplete {
     value?: IRole;
     options?: IRole[];
-    refetch: any;
+    refetch: DebouncedFunc<
+        <TPageData>(options?: (RefetchOptions & RefetchQueryFilters<TPageData>) | undefined) => Promise<QueryObserverResult<IRole[], unknown>>
+    >;
     isLoading: boolean;
     displayValue?: string;
     onChange: AutocompleteProps<IRole, undefined, undefined, undefined>['onChange'];
     onDisplayValueChange?: AutocompleteProps<IRole, undefined, undefined, undefined>['onInputChange'];
+    // biome-ignore lint/suspicious/noExplicitAny: lol
     onBlur?: any;
+    // biome-ignore lint/suspicious/noExplicitAny: lol
     onFocus?: any;
     isOptionDisabled?: AutocompleteProps<IRole, undefined, undefined, undefined>['getOptionDisabled'];
     disabled?: boolean;
@@ -23,9 +29,9 @@ export interface IRoleAutocomplete {
     size?: 'small' | 'medium';
     enableClear?: boolean;
     required?: boolean;
-    autoFocus?: any;
-    textFieldProps?: any;
-    overrideSx?: Object;
+    autoFocus?: boolean;
+    textFieldProps?: TextFieldProps;
+    overrideSx?: object;
 }
 
 const RoleAutocomplete: React.FC<IRoleAutocomplete> = ({

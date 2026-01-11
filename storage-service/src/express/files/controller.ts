@@ -97,6 +97,6 @@ export const workspaceIdInHeader = async (req: express.Request, res: express.Res
         if (req.originalUrl.includes('zip')) await filesController.downloadZip(req, res);
         else await filesController.downloadFile(req, res);
     } catch (error) {
-        throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Error in workspaceIdInHeader', error as Record<string, any>);
+        throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Error in workspaceIdInHeader', error as Error);
     }
 };

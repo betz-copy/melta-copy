@@ -1,5 +1,5 @@
 import { ICategoryMap, IMongoCategory } from '../../interfaces/categories';
-import { IMongoChildTemplate, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { PermissionScope } from '../../interfaces/permissions';
 import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
@@ -154,36 +154,13 @@ export const checkUserChildTemplatePermission = (
     childTemplate: IMongoChildTemplatePopulated,
     scope: PermissionScope,
 ): boolean => {
-    if (userPermissions.admin?.scope === PermissionScope.write) {
-        return true;
-    }
+    if (userPermissions.admin?.scope === PermissionScope.write) return true;
 
     const category = childTemplate.category;
-    if (userPermissions.instances?.categories[category._id]?.scope === scope) {
-        return true;
-    }
+    if (userPermissions.instances?.categories[category._id]?.scope === scope) return true;
 
     const categoryPermissions = userPermissions.instances?.categories[category._id];
-    if (categoryPermissions && (categoryPermissions as any)?.childTemplates?.[childTemplate._id]?.scope === scope) {
-        return true;
-    }
-
-    return false;
-};
-
-export const checkUserChildTemplateAnyPermission = (userPermissions: ISubCompactPermissions, childTemplate: IMongoChildTemplate): boolean => {
-    if (userPermissions.admin?.scope === PermissionScope.write) {
-        return true;
-    }
-
-    if (userPermissions.instances?.categories[childTemplate.category]?.scope) {
-        return true;
-    }
-
-    const categoryPermissions = userPermissions.instances?.categories[childTemplate.category];
-    if (categoryPermissions && (categoryPermissions as any)?.childTemplates?.[childTemplate._id]?.scope) {
-        return true;
-    }
+    if (categoryPermissions?.[childTemplate._id]?.scope === scope) return true;
 
     return false;
 };

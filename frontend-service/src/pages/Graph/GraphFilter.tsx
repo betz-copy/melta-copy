@@ -110,7 +110,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
         const { format, type, enum: enumValues } = selectedTemplate.properties.properties[newProperty];
 
         const selectedFilter =
-            (enumValues && initializedFilterField['array']) || (format && initializedFilterField[format]) || (type && initializedFilterField[type]);
+            (enumValues && initializedFilterField.array) || (format && initializedFilterField[format]) || (type && initializedFilterField[type]);
 
         if (selectedFilter) setFilterField(selectedFilter);
     };

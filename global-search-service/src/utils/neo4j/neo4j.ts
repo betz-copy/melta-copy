@@ -79,6 +79,7 @@ export default class Neo4jClient {
         return this.performTransaction('writeTransaction', cypherQuery, parameters);
     }
 
+    // biome-ignore lint/suspicious/noExplicitAny: never doubt Hammer
     private async performTransaction(transactionType: TransactionType, cypherQuery: string, parameters: Record<string, any>) {
         return this.wrapDBNotExistsError((session) => session[transactionType]((tx) => tx.run(cypherQuery, parameters)));
     }
@@ -101,6 +102,7 @@ export default class Neo4jClient {
         transaction: Transaction,
         cypherQuery: string,
         normalizeFunction: (queryResult: QueryResult) => T,
+        // biome-ignore lint/suspicious/noExplicitAny: lol
         parameters?: Record<string, any>,
     ): Promise<T> {
         const result = await transaction.run(cypherQuery, parameters);

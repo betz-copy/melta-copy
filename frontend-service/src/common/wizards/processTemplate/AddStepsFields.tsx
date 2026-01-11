@@ -7,6 +7,7 @@ import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { getEmptyImage, HTML5Backend } from 'react-dnd-html5-backend';
 import { v4 as uuid } from 'uuid';
 import * as Yup from 'yup';
+import { IPropertyValue } from '../../../interfaces/entities';
 import { processTemplateUniquePropertiesSteps, variableNameValidation } from '../../../utils/validation';
 import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
 import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
@@ -19,7 +20,7 @@ import StepsApproversBlock from './StepsApproversBlock';
 import StepsIconBlock from './StepsIconBlock';
 import { StepsNameBlock } from './StepsNameBlock';
 
-const stepTemplateUniqueNames = (value: any, context: Yup.TestContext) => {
+const stepTemplateUniqueNames = (value: IPropertyValue, context: Yup.TestContext) => {
     if (!value) return true;
     const steps = value.steps as ProcessTemplateWizardValues['steps'];
     const errors: Yup.ValidationError[] = [];

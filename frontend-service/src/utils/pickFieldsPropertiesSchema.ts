@@ -1,5 +1,5 @@
 import { pickBy } from 'lodash';
-import { IMongoEntityTemplatePopulated, PropertyFormat } from '../interfaces/entityTemplates';
+import { IMongoEntityTemplatePopulated, IProperties, PropertyFormat } from '../interfaces/entityTemplates';
 import { IProcessDetails } from '../interfaces/processes/processTemplate';
 
 export const filterFieldsFromPropertiesSchema = (
@@ -31,7 +31,7 @@ export const pickProcessFieldsPropertiesSchema = (schema: IProcessDetails): IMon
         ...schema.properties,
         hide: [],
         required: schema.properties.required,
-    } as any);
+    } as IProperties & { required: string[] });
 
     return {
         ...filteredProperties,

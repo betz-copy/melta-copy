@@ -6,7 +6,6 @@ import React from 'react';
 import { UseMutateAsyncFunction } from 'react-query';
 import { toast } from 'react-toastify';
 import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
-import { ErrorResponseData } from '../../../common/PermissionsDialog/RoleDialog';
 import { FileToPrint } from '../../../common/print/FileToPrint';
 import { ProcessDetailsValues } from '../../../common/wizards/processInstance/ProcessDetails';
 import ProcessSummary from '../../../common/wizards/processInstance/ProcessSummaryStep';
@@ -24,7 +23,7 @@ const ComponentToPrint = React.forwardRef<
     {
         processTemplate: IMongoProcessTemplatePopulated;
         processInstance: IMongoProcessInstancePopulated;
-        mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError<ErrorResponseData>, ProcessDetailsValues, unknown>;
+        mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError, ProcessDetailsValues, unknown>;
         setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstancePopulated>>;
         setIsProcessChanged: React.Dispatch<React.SetStateAction<boolean>>;
         filesToPrint: IFile[];

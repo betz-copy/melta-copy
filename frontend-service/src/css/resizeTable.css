@@ -19,13 +19,20 @@
     bottom: 0;
 }
 
-.resizing .box-content {
-    opacity: 0;
-    transition: opacity 0.2s ease;
-}
+/* ===============================
+   Box content (base state FIRST)
+   =============================== */
 
 .box-content {
     transition: opacity 0.2s ease;
     background-color: #194aeb0a;
     border-radius: 10px;
+}
+
+/* ===============================
+   Resizing state (more specific AFTER)
+   =============================== */
+
+.resizing .box-content {
+    opacity: 0;
 }

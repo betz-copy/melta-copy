@@ -8,7 +8,7 @@ import {
     IRelationshipTemplate,
     NotFoundError,
 } from '@microservices/shared';
-import { ClientSession, FilterQuery } from 'mongoose';
+import { ClientSession, FilterQuery, UpdateQuery } from 'mongoose';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
 import { withTransaction } from '../../utils/mongoose';
@@ -258,7 +258,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
             entityTemplateToUpdate = await this.upsertRelationshipsProperties(entityTemplateToUpdate, session, true);
         }
 
-        const updateData: any = { ...entityTemplateToUpdate };
+        const updateData: UpdateQuery<IEntityTemplatePopulated> = { ...entityTemplateToUpdate };
 
         if (entityTemplateToUpdate.walletTransfer === null) {
             updateData.$unset = { walletTransfer: '' };

@@ -18,7 +18,7 @@ import {
 import CircularProgress from '@mui/material/CircularProgress';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { CustomIcon } from '../../common/CustomIcon';
@@ -90,8 +90,8 @@ export const StepIcon: React.FC<{
     >;
     displayTitle?: boolean;
 }> = ({ step, stepTemplate, iconColor, setOpen, displayTitle = true }) => {
-    const stageNameRef = React.useRef<any>(null);
-    const [isOverflowing, setIsOverflowing] = useState(false);
+    const stageNameRef = useRef<HTMLSpanElement>(null);
+    const [isOverflowing, setIsOverflowing] = useState<boolean>(false);
 
     useEffect(() => {
         const stageName = stageNameRef.current;
@@ -162,7 +162,12 @@ export const StepIcon: React.FC<{
 const StepIconComponent = (
     stepInstance: IMongoStepInstancePopulated,
     stepTemplate: IMongoStepTemplatePopulated,
-    setOpen: (x: any) => any,
+    setOpen: React.Dispatch<
+        React.SetStateAction<{
+            isOpen: boolean;
+            defaultStepTemplate?: IMongoStepTemplatePopulated;
+        }>
+    >,
     stepStatus: Status,
     stepId: string,
 ) => (

@@ -4,11 +4,11 @@ import {
     enumPropertiesColorsSchema,
     innerFieldGroupsSchema,
     innerPropertiesSchema,
+    innerWalletTransferSchema,
     orderPropertiesSchema,
     orderPropertiesTypeSchema,
     previewPropertiesSchema,
     stringFormats,
-    innerWalletTransferSchema,
 } from './joi.helper';
 
 const entityTemplateSchema = {

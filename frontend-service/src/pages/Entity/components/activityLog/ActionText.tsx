@@ -9,6 +9,7 @@ import { NotificationColor } from '../../../../common/notificationColor';
 import RelationshipReferenceView from '../../../../common/RelationshipReferenceView';
 import UserAvatar from '../../../../common/UserAvatar';
 import { StatusDisplay } from '../../../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
+import { IPropertyValue } from '../../../../interfaces/entities';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IProcessDetails, IProcessSingleProperty } from '../../../../interfaces/processes/processTemplate';
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
@@ -172,9 +173,8 @@ const popperProps = {
     ],
 };
 
-const isLocationData = (value: any): value is LocationData => {
-    return value && typeof value === 'object' && 'location' in value && 'coordinateSystem' in value;
-};
+const isLocationData = (value: IPropertyValue): value is LocationData =>
+    value && typeof value === 'object' && 'location' in value && 'coordinateSystem' in value;
 
 const UpdateTextValue: React.FC<{
     value: string;
@@ -269,7 +269,7 @@ const UpdateTextValue: React.FC<{
 };
 
 const UpdateEntityMetadataActionText: React.FC<{
-    actionMetadata: { updatedFields: [{ fieldName: string; oldValue: any; newValue: any }] };
+    actionMetadata: { updatedFields: [{ fieldName: string; oldValue: IPropertyValue; newValue: IPropertyValue }] };
     entityTemplateProperties: Record<string, IEntitySingleProperty> | Record<string, IProcessSingleProperty>;
 }> = ({ actionMetadata, entityTemplateProperties }) => {
     const theme = useTheme();
@@ -382,7 +382,7 @@ const ActionText: React.FC<{
         return (
             <UpdateEntityMetadataActionText
                 entityTemplateProperties={entityTemplate.properties.properties}
-                actionMetadata={metadata as { updatedFields: [{ fieldName: string; oldValue: any; newValue: any }] }}
+                actionMetadata={metadata as { updatedFields: [{ fieldName: string; oldValue: IPropertyValue; newValue: IPropertyValue }] }}
             />
         );
 

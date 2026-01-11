@@ -12,7 +12,7 @@ export default class DefaultExternalServiceRabbit {
         this.workspaceId = workspaceId;
     }
 
-    protected sendToQueue(queueName: string, content: string | Object | Buffer) {
+    protected sendToQueue(queueName: string, content: string | object | Buffer) {
         return menash.send(queueName, content, { headers: { [workspaceIdHeaderName]: this.workspaceId } });
     }
 }

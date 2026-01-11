@@ -2,7 +2,6 @@ import { UiSchema } from '@rjsf/utils';
 import { flatten } from 'flat';
 import { FormikHelpers } from 'formik';
 import i18next from 'i18next';
-import _ from 'lodash';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IProperties } from '../../../interfaces/entityTemplates';
 import { IKartoffelUser } from '../../../interfaces/users';
 import { EntityWizardValues } from '../../dialogs/entity';
@@ -32,7 +31,7 @@ const changeRelatedUserFields = (properties: IProperties['properties'], changedU
 const getFieldUiSchema = (
     schema: IMongoEntityTemplatePopulated['properties'],
     values: EntityWizardValues,
-    setValues: FormikHelpers<any>['setValues'],
+    setValues: FormikHelpers<EntityWizardValues>['setValues'],
     isEditMode: boolean,
     toPrint: boolean,
     propertyKey: string,
@@ -117,12 +116,12 @@ const getFieldUiSchema = (
             'ui:widget': 'UserWidget',
             'ui:options': {
                 globalValues: values,
-                updateExpandedUserFields: (user: IKartoffelUser | null, curValues: any) => {
+                updateExpandedUserFields: (user: IKartoffelUser | null, curValues: EntityWizardValues['properties']) => {
                     // TODO: refactor - this code gets the fields that need to be modified so the displayed fields will be set in a nested way..
                     const changedPropertiesOfUser = changeRelatedUserFields(schema.properties, propertyKey, user);
 
                     // in order to set the values in the backend, we need to send the updated fields flatten
-                    const flattenChangedPropertiesOfUser: Object = flatten(changedPropertiesOfUser, { maxDepth: Infinity });
+                    const flattenChangedPropertiesOfUser: object = flatten(changedPropertiesOfUser, { maxDepth: Infinity });
 
                     const updatedFlattenFields = {};
 
@@ -163,7 +162,7 @@ const getFieldUiSchema = (
 export const uiSchemaUtils = (
     schema: IMongoEntityTemplatePopulated['properties'],
     values: EntityWizardValues,
-    setValues: FormikHelpers<any>['setValues'],
+    setValues: FormikHelpers<EntityWizardValues>['setValues'],
     isEditMode: boolean,
     toPrint: boolean,
     groupTitleColor: string,

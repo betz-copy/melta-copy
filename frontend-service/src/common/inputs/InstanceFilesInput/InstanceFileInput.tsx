@@ -4,6 +4,7 @@ import i18next from 'i18next';
 import React from 'react';
 import { Accept } from 'react-dropzone';
 import { toast } from 'react-toastify';
+import { IExternalErrors } from '../../../interfaces/CreateOrEditEntityDialog';
 import { ProcessDetailsValues } from '../../wizards/processInstance/ProcessDetails';
 import { ProcessStepValues } from '../../wizards/processInstance/ProcessSteps';
 import FilesInput from '../FilesInput';
@@ -20,13 +21,7 @@ interface InstanceFileInputProps {
     error: string | undefined;
     setErrorText?: React.Dispatch<React.SetStateAction<string | undefined>>;
     setFieldTouched: FormikProps<ProcessFormikProps>['setFieldTouched'];
-    setExternalErrors?: React.Dispatch<
-        React.SetStateAction<{
-            files: boolean;
-            unique: {};
-            action: string;
-        }>
-    >;
+    setExternalErrors?: React.Dispatch<React.SetStateAction<IExternalErrors>>;
     onDrop?: (files: File[]) => Promise<void>;
     isLoading?: boolean;
     comment?: string;

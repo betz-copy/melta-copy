@@ -100,19 +100,21 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({
         linkable = !entityForLink.properties._id?.startsWith(environment.brokenRulesFakeEntityIdPrefix);
     } else {
         const updatedProperties = actions.reduce(
-            (previousUpdatedProperties, currentAction) => {
+            (acc, currentAction) => {
                 if (
                     currentAction.actionType === ActionTypes.UpdateEntity &&
                     (currentAction.actionMetadata as IUpdateEntityMetadataPopulated).entity?.properties._id === (entity as IEntity).properties._id
                 ) {
-                    return {
-                        ...previousUpdatedProperties,
-                        ...(currentAction.actionMetadata as IUpdateEntityMetadataPopulated).updatedFields,
-                    };
+                    const updatedFields = (currentAction.actionMetadata as IUpdateEntityMetadataPopulated).updatedFields;
+
+                    for (const key in updatedFields) {
+                        acc[key] = updatedFields[key];
+                    }
                 }
-                return previousUpdatedProperties;
+
+                return acc;
             },
-            (entity as IEntity).properties,
+            { ...(entity as IEntity).properties },
         );
 
         entityForLink = {
@@ -325,7 +327,7 @@ const UpdateEntityActionInfo: React.FC<{
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const entityTemplate = !entity ? entityTemplates.get(actionMetadata.updatedFields.templateId) : entityTemplates.get(entity.templateId);
 
-    const { templateId, ...restFields } = actionMetadata.updatedFields;
+    const { templateId: _tempId, ...restFields } = actionMetadata.updatedFields;
     // TODO get properties of causes
 
     return (

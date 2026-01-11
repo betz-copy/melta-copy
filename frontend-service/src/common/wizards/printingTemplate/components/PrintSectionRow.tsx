@@ -4,6 +4,7 @@ import { getIn } from 'formik';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
 import { ICategoryMap } from '../../../../interfaces/categories';
+import { IPropertyValue } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IPrintSection } from '../../../../interfaces/printingTemplates';
 
@@ -15,7 +16,7 @@ type IPrintSectionRowProps = {
         name: string;
     }[];
     idx: number;
-    setFieldValue: (field: string, value: any) => void;
+    setFieldValue: (field: string, value: IPropertyValue) => void;
     remove: (index: number) => void;
     sectionTouched: Record<string, boolean>;
     sectionError: Record<string, string>;

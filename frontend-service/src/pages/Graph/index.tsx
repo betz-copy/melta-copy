@@ -44,17 +44,16 @@ const { graphSettings } = environment;
 const { BatchSize, limit3DConnections } = graphSettings;
 
 const Graph: React.FC = () => {
-    const ref = useRef<any>(null);
+    const ref = useRef<HTMLDivElement>(null);
     const forceRef = useRef<ForceGraphMethods | ForceGraphMethods3D | undefined>(undefined);
 
     const [graphData, setGraphData] = useState<GraphData>({ nodes: [], links: [] });
 
-    const [width, setWidth] = useState(0);
-    const [height, setHeight] = useState(0);
+    const [width, setWidth] = useState<number>(0);
+    const [height, setHeight] = useState<number>(0);
 
-    const [shouldZoomToFit, setShouldZoomToFit] = useState(true);
-    const [shouldUpdateHighlighted, setShouldUpdateHighlighted] = useState(false);
-
+    const [shouldZoomToFit, setShouldZoomToFit] = useState<boolean>(true);
+    const [shouldUpdateHighlighted, setShouldUpdateHighlighted] = useState<boolean>(false);
     const { entityId } = useParams<{ entityId: string }>();
     const [searchParams, setSearchParams] = useSearchParams();
     const childTemplateId = searchParams.get('childTemplateId') ?? undefined;
@@ -131,9 +130,7 @@ const Graph: React.FC = () => {
     const expandedParams: Record<string, { minLevel?: number; maxLevel: number }> = {
         ...Object.fromEntries(
             Object.entries(JSON.parse(searchParams.get('expandedEntities') || '{}')).map(([key, val]) => {
-                if (typeof val === 'number') {
-                    return [key, { maxLevel: val }];
-                }
+                if (typeof val === 'number') return [key, { maxLevel: val }];
 
                 return [key, val as { minLevel?: number; maxLevel: number }];
             }),
@@ -454,7 +451,7 @@ const Graph: React.FC = () => {
                             }
                             onRemoveFilter={(filterKey: number) => {
                                 setFilterRecord((prev) => {
-                                    const { [filterKey]: deletedFilter, ...restFilters } = prev;
+                                    const { [filterKey]: _deletedFilter, ...restFilters } = prev;
                                     return restFilters;
                                 });
                             }}

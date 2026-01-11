@@ -46,7 +46,7 @@ const MetadataSchema = new mongoose.Schema<IMetadata>(
             sourceFieldForColor: { type: String },
         },
         numOfRelationshipFieldsToShow: { type: Number },
-        twinTemplates:{ type: [String]},
+        twinTemplates: { type: [String] },
     },
     { _id: false },
 );

@@ -29,7 +29,7 @@ import { DuplicateTopBar } from './DuplicateTopBar';
 
 const { errorCodes } = environment;
 
-const DuplicateEntity: React.FC<{}> = () => {
+const DuplicateEntity: React.FC = () => {
     const { state } = window.history;
 
     const {

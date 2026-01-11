@@ -30,7 +30,8 @@
         "clean": "rimraf ./**/dist",
         "clean:all": "rimraf ./**/dist ./**/node_modules ./node_modules ./**/package-lock.json ./package-lock.json",
         "start-ui": "npm run -w frontend-service start:docker",
-        "migrate": "npm run clean:all && npm install && npm run build -w shared && npm run start-ui"
+        "migrate": "npm run clean:all && npm install && npm run build -w shared && npm run start-ui",
+        "biome": "biome check ."
     },
     "repository": {
         "type": "git",
