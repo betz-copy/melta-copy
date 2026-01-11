@@ -8,7 +8,7 @@ const {
 export default abstract class DefaultExternalServiceApi {
     public api: AxiosInstance;
 
-    constructor(workspaceId: string, axiosConfig?: AxiosRequestConfig<any> | undefined) {
+    constructor(workspaceId: string, axiosConfig?: AxiosRequestConfig<unknown> | undefined) {
         this.api = axios.create(axiosConfig);
         // Add the workspace id header to axios requests
         this.api.defaults.headers[workspaceIdHeaderName] = workspaceId;

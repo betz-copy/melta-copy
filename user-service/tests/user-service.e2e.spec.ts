@@ -1,21 +1,16 @@
-/* eslint-disable no-await-in-loop */
-/* eslint-disable no-restricted-syntax */
-
+import { IUser } from '@microservices/shared';
 import { Express } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import * as mongoose from 'mongoose';
-import * as request from 'supertest';
-import { config } from '../src/config';
+import request from 'supertest';
+import config from '../src/config';
 import Server from '../src/express/server';
-import { IUser } from '../src/express/users/interface';
 
 const { mongo } = config;
 
 const { OK: okStatus, NOT_FOUND: notFoundStatus } = StatusCodes;
 
 const fakeObjectId = '111111111111111111111111';
-const fakeObjectId2 = '222222222222222222222222';
-const fakeObjectId3 = '333333333333333333333333';
 
 const userData1: Omit<IUser, '_id'> = {
     fullName: 'a a',
@@ -25,41 +20,10 @@ const userData1: Omit<IUser, '_id'> = {
     preferences: {
         darkMode: true,
     },
-    externalMetadata: {
-        kartoffelId: fakeObjectId,
-        digitalIdentitySource: '?',
-    },
-    permissions: {},
-};
+    kartoffelId: fakeObjectId,
 
-const userData2: Omit<IUser, '_id'> = {
-    fullName: 'b b',
-    jobTitle: 'b',
-    hierarchy: 'b/b/b/b',
-    mail: 'b@gmail.com',
-    preferences: {
-        darkMode: false,
-    },
-    externalMetadata: {
-        kartoffelId: fakeObjectId2,
-        digitalIdentitySource: '?',
-    },
     permissions: {},
-};
-
-const userData3: Omit<IUser, '_id'> = {
-    fullName: 'c c',
-    jobTitle: 'c',
-    hierarchy: 'c/c/c/c',
-    mail: 'c@gmail.com',
-    preferences: {
-        darkMode: true,
-    },
-    externalMetadata: {
-        kartoffelId: fakeObjectId3,
-        digitalIdentitySource: '?',
-    },
-    permissions: {},
+    displayName: 'aaa',
 };
 
 const removeAllCollections = async () => {

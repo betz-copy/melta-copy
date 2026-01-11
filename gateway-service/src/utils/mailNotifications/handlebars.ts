@@ -1,10 +1,10 @@
-import { IEntity, IMongoEntityTemplatePopulated, IRuleMail } from '@microservices/shared';
+import { IEntity, IMongoEntityTemplatePopulated, IPropertyValue, IRuleMail } from '@microservices/shared';
 import Handlebars from 'handlebars';
 import formatEntityPropertiesToString from './formatEntityProperties';
 
 export const injectValuesToString = (
     template: string,
-    properties: Record<string, any>,
+    properties: Record<string, IPropertyValue>,
     entityTemplate: IMongoEntityTemplatePopulated,
     relatedTemplates?: Map<string, IMongoEntityTemplatePopulated>,
     baseUrl?: string,

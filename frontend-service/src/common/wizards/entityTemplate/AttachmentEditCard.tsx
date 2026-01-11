@@ -2,7 +2,7 @@ import { Delete as DeleteIcon, DeleteForever as DeleteOff, DragHandle as DragHan
 import { Box, Card, CardContent, FormControlLabel, Grid, IconButton, MenuItem, TextField } from '@mui/material';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
-import isEqual from 'lodash.isequal';
+import { isEqual } from 'lodash';
 import React, { memo } from 'react';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
@@ -19,12 +19,12 @@ interface AttachmentEditCardProps {
     touched?: FormikTouched<CommonFormInputProperties>;
     errors?: FormikErrors<CommonFormInputProperties>;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    remove: (index: number, isNewProperty: boolean) => any;
+    remove: (index: number, isNewProperty: boolean) => void;
     supportChangeToRequiredWithInstances: boolean;
     supportDeleteForExistingInstances: boolean;
     hasActions?: boolean;
     supportConvertingToMultipleFields?: boolean;
-    dragRef?: any;
+    dragRef?: React.RefObject<null>;
 }
 
 export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({

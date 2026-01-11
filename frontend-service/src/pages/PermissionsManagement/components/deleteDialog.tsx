@@ -30,6 +30,7 @@ const DeletePermissionsDialog: React.FC<{
     const { mutateAsync: deleteAllPermissionsOfUser, isLoading: isLoadingDeleteAllPermissionsOfUser } = useMutation(
         () => syncPermissionsRequest(roleOrUser!._id, permissionType, { [workspace._id]: deletePermissions }),
         {
+            // biome-ignore lint/suspicious/noExplicitAny: error is any
             onError: (error: any) => {
                 console.error('failed to delete permission. error:', error);
                 const isUserConnected = error.response.data.metadata.code.includes(`can't remove role: user connected`);
@@ -46,6 +47,7 @@ const DeletePermissionsDialog: React.FC<{
         (payload: { userId: string; updatedRoleIds: string[] }) =>
             updateUserRoleIdsRequest(payload.userId, workspace._id, { [workspace._id]: deletePermissions }, payload.updatedRoleIds),
         {
+            // biome-ignore lint/suspicious/noExplicitAny: error is any
             onError: (error: any) => {
                 const isUserConnected = error.response?.data?.metadata?.code?.includes(`can't remove role: user connected`);
                 toast.error(i18next.t(`permissions.failedToDelete${uppercasePermissionType}${isUserConnected ? 'CauseConnectedToUsers' : ''}`));

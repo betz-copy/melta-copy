@@ -1,12 +1,12 @@
 import { isUserHasWritePermissions } from '../common/EntitiesPage/TemplateTable';
-import { IChildTemplate, IChildTemplateMap, IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
+import { IChildTemplate, IChildTemplateMap, IFilter, IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
 import { IEntity } from '../interfaces/entities';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IKartoffelUser } from '../interfaces/users';
 import { UserState } from '../stores/user';
 import { matchValueAgainstFilter } from './filters';
 
-const parseFilterObject = (filters: any): any | null => {
+const parseFilterObject = (filters: (string & Record<string, unknown>) | undefined): (string & Record<string, unknown>) | undefined | null => {
     if (typeof filters === 'string') {
         try {
             return JSON.parse(filters);
@@ -17,10 +17,10 @@ const parseFilterObject = (filters: any): any | null => {
     return typeof filters === 'object' && filters !== null ? filters : null;
 };
 
-const getFilteredEnum = (enumVals: string[], filterObj: any): string[] | undefined => {
+const getFilteredEnum = (enumVals: string[], filterObj: IFilter): string[] | undefined => {
     const enumEquals = filterObj.$or
-        .map((condition: any) => (Object.values(condition) as any)[0]?.$in)
-        .filter((val: any): val is string[] => Array.isArray(val))
+        .map((condition: IFilter) => (Object.values(condition) as IFilter)[0]?.$in)
+        .filter((val: IFilter): val is string[] => Array.isArray(val))
         .flat();
 
     return enumEquals.length > 0 ? enumVals.filter((val) => enumEquals.includes(val)) : enumVals;
@@ -34,9 +34,7 @@ export const getChildPropertiesFiltered = (childTemplate: IMongoChildTemplatePop
 
         const newValue = { ...value };
 
-        if (value.enum && filterObj) {
-            newValue.enum = getFilteredEnum(value.enum, filterObj);
-        }
+        if (value.enum && filterObj) newValue.enum = getFilteredEnum(value.enum, filterObj);
 
         properties[key] = newValue;
     }

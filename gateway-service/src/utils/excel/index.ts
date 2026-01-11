@@ -10,9 +10,11 @@ import {
     IFailedEntity,
     IFailedEntityError,
     IMongoEntityTemplatePopulated,
+    IValidationError,
     IWorkspace,
     ServiceError,
     UploadedFile,
+    ValidationError,
 } from '@microservices/shared';
 import { AxiosError } from 'axios';
 import { StatusCodes } from 'http-status-codes';
@@ -27,13 +29,25 @@ export const getAllEntitiesFromExcel = async (
     failedEntities: IFailedEntity[],
     workspace: IWorkspace,
     relatedTemplatesMap: Record<string, IMongoEntityTemplatePopulated>,
+    requiredConstraints: string[] = [],
+    userUnits?: string[],
 ) => {
     const workspaceFilesLimit = workspace.metadata?.excel?.filesLimit;
 
     const effectiveFilesLimit = workspaceFilesLimit ?? loadExcel.filesLimit;
     if (files.length > effectiveFilesLimit) throw new BadRequestError(`files limit: more than ${effectiveFilesLimit} files`, {});
 
-    return readExcelFile(files, template, failedEntities, relatedTemplatesMap, workspace._id, workspace.metadata?.excel?.entitiesFileLimit);
+    return readExcelFile(
+        files,
+        template,
+        failedEntities,
+        relatedTemplatesMap,
+        workspace._id,
+        workspace.metadata?.excel?.entitiesFileLimit,
+        [],
+        requiredConstraints,
+        userUnits,
+    );
 };
 
 export const generateSerialNumbers = (index: number, serialStarters: Record<string, number>) =>
@@ -49,6 +63,7 @@ export const getSerialStarters = (template: IMongoEntityTemplatePopulated | IChi
 };
 
 export const classifyEntityErrors = (
+    // biome-ignore lint/suspicious/noExplicitAny: error any type
     error: any,
     failedEntities: IFailedEntity[],
     entity: IEntity,
@@ -67,13 +82,31 @@ export const classifyEntityErrors = (
             properties,
             errors: fixedErrors,
         });
+        return;
     }
 
-    if (error instanceof ServiceError && error.code === StatusCodes.NOT_FOUND)
+    if (error instanceof ServiceError && error.code === StatusCodes.NOT_FOUND) {
         failedEntities.push({
             properties,
             errors: [{ type: ActionErrors.notFound, metadata: error.metadata as IExcelNotFoundError }],
         });
+        return;
+    }
+
+    if (error instanceof ValidationError) {
+        failedEntities.push({
+            properties,
+            errors: [{ type: ActionErrors.validation, metadata: error.metadata as IValidationError }],
+        });
+        return;
+    }
+
+    if (error instanceof ValidationError && error?.metadata && (error.metadata as IValidationError).path) {
+        failedEntities.push({
+            properties,
+            errors: [{ type: ActionErrors.validation, metadata: error.metadata as IValidationError }],
+        });
+    }
 
     if (error instanceof AxiosError) {
         if (!error.response) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'no error. response in axiosError', error);
@@ -117,10 +150,13 @@ export const classifyEntityErrors = (
                 default:
                     break;
             }
+            return;
         }
 
-        if (data.type === errorCodes.templateValidationError || data.type === 'FilterValidationError')
+        if (data.type === errorCodes.templateValidationError || data.type === 'FilterValidationError') {
             getValidationErrorEntities(error as AxiosError, failedEntities, originalEntity);
+            return;
+        }
     } else if ((error as IBrokenRulesError).metadata?.errorCode === errorCodes.ruleBlock) {
         allBrokenRulesEntities.push({
             brokenRules: error.metadata.brokenRules,
@@ -143,5 +179,12 @@ export const classifyEntityErrors = (
                 },
             ],
         });
+
+        return;
     }
+
+    failedEntities.push({
+        properties,
+        errors: [{ type: ActionErrors.validation, metadata: error.metadata }],
+    });
 };

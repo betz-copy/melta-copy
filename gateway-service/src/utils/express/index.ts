@@ -1,11 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unsafe-function-type */
-
+/** biome-ignore-all lint/suspicious/noExplicitAny: never doubt Noam */
 import { dataLogger, FunctionKey } from '@microservices/shared';
 import { NextFunction, Request, Response } from 'express';
 import { get } from 'lodash';
 import config from '../../config';
 import { InvalidWorkspaceHeaderError } from '../../express/error';
 import WorkspaceService from '../../express/workspaces/service';
+import DefaultExternalServiceApi from './externalService';
 import DefaultManagerProxy from './manager';
 
 const { workspaceIdHeaderName } = config.service;
@@ -42,7 +42,7 @@ export const wrapController = <ExtendedRequest extends Request<any, any, any, an
             loggedRequestData[key] = get(req, path);
         });
 
-        res.json = (body: any) => {
+        res.json = (body) => {
             const loggedResponseData = JSON.parse(JSON.stringify(responseDataExtractor ? responseDataExtractor(body) : body));
 
             if (loggedResponseData?._id) {
@@ -93,7 +93,7 @@ export const translateWorkspaceParameterFlowColumns = async (req: Request) => {
     req.headers[config.service.workspaceIdHeaderName] = workspaceId;
 };
 
-export default abstract class DefaultProxyController<Manager extends DefaultManagerProxy<any> | null = null> {
+export default abstract class DefaultProxyController<Manager extends DefaultManagerProxy<DefaultExternalServiceApi> | null = null> {
     public manager: Manager;
 
     constructor(manager: Manager) {
@@ -101,7 +101,9 @@ export default abstract class DefaultProxyController<Manager extends DefaultMana
     }
 }
 
-export const createWorkspacesController = <T extends InstanceType<typeof DefaultProxyController<any>>>(
+export const createWorkspacesController = <
+    T extends InstanceType<typeof DefaultProxyController<DefaultManagerProxy<DefaultExternalServiceApi> | null>>,
+>(
     Controller: { new (workspaceId: string): T },
     isMiddleware = false,
 ) => {
@@ -115,11 +117,11 @@ export const createWorkspacesController = <T extends InstanceType<typeof Default
                     if (!workspaceId) return;
 
                     if (isMiddleware) {
-                        (new Controller(workspaceId)[funcName] as Function)(req, res, next).then(next).catch(next);
+                        new Controller(workspaceId)[funcName](req, res, next).then(next).catch(next);
                         return;
                     }
 
-                    (new Controller(workspaceId)[funcName] as Function)(req, res, next).catch(next);
+                    new Controller(workspaceId)[funcName](req, res, next).catch(next);
                 };
             },
         },

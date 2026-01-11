@@ -26,7 +26,6 @@ const Stepper = <T extends object>({
         return (
             <Grid container justifyContent="start" alignItems="center">
                 {steps.map((step, index) => {
-                    // eslint-disable-next-line no-nested-ternary
                     const type = activeStep < index ? 'futureStep' : activeStep === index ? 'currentStep' : 'finishedStep';
                     if (step.invisibleBeforeStep && type === 'futureStep') return undefined;
 
@@ -68,7 +67,6 @@ const Stepper = <T extends object>({
         <Grid container direction={direction} justifyContent="space-around" alignItems="center">
             {steps.length > 1 &&
                 steps.map((step, index) => {
-                    // eslint-disable-next-line no-nested-ternary
                     const type = activeStep < index ? 'futureStep' : activeStep === index ? 'currentStep' : 'finishedStep';
 
                     return (
@@ -95,7 +93,7 @@ const Stepper = <T extends object>({
                 container
                 direction="column"
                 justifyContent="space-between"
-                alignItems="center"
+                alignItems={steps[activeStep].alignItems ?? 'center'}
                 height="100%"
                 marginBottom="0.5rem"
                 marginTop="2rem"

@@ -1,5 +1,3 @@
-/* eslint-disable react/no-unstable-nested-components */
-
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
@@ -8,7 +6,7 @@ import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
-import { IEntityWithIgnoredRules } from '../../../interfaces/entities';
+import { IEntityWithIgnoredRules, IPropertyValue } from '../../../interfaces/entities';
 import { EntitiesWizardValues, ExcelStepStatus, IExcelSteps } from '../../../interfaces/excel';
 import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
@@ -87,7 +85,15 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     );
 
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
-        async ({ fileName, headersOnly, insertEntities }: { fileName: string; headersOnly?: boolean; insertEntities?: Record<string, any>[] }) => {
+        async ({
+            fileName,
+            headersOnly,
+            insertEntities,
+        }: {
+            fileName: string;
+            headersOnly?: boolean;
+            insertEntities?: Record<string, IPropertyValue>[];
+        }) => {
             return exportEntitiesRequest({
                 fileName,
                 templates: {

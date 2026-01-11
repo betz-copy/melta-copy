@@ -42,14 +42,14 @@ const exampleRelation: IRelationshipTemplate = {
     destinationEntityId: '123451234512345123451234',
 };
 
-const mockMongooseFindOneWithChainingResolveValue = (resolveValue: any) =>
+const mockMongooseFindOneWithChainingResolveValue = (resolveValue: IRelationshipTemplate) =>
     ({
         orFail: jest.fn().mockReturnThis(),
         lean: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue(resolveValue),
     }) as Query<IRelationshipTemplate & Document, IRelationshipTemplate & Document>;
 
-const mockMongooseFindManyWithChainingResolveValue = (resolveValue: any) =>
+const mockMongooseFindManyWithChainingResolveValue = (resolveValue: IRelationshipTemplate[]) =>
     ({
         lean: jest.fn().mockReturnThis(),
         skip: jest.fn().mockReturnThis(),
@@ -185,9 +185,7 @@ describe('manager logic', () => {
         });
         it.each(['source', 'dest'] as ['source', 'dest'])('throw 403 when %s doesnt exist', async (sourceOrDest: 'source' | 'dest') => {
             entityTemplateManagerMocked.getEntityTemplatebyId.mockImplementation(async (templateId: string) => {
-                // eslint-disable-next-line no-throw-literal
                 if (sourceOrDest === 'source' && templateId === exampleRelation.sourceEntityId) throw { response: { status: notFoundStatus } };
-                // eslint-disable-next-line no-throw-literal
                 if (sourceOrDest === 'dest' && templateId === exampleRelation.destinationEntityId) throw { response: { status: notFoundStatus } };
 
                 return exampleEntity;
@@ -202,9 +200,7 @@ describe('manager logic', () => {
             'throw unknown error when %s getById throw unknown error',
             async (sourceOrDest: 'source' | 'dest') => {
                 entityTemplateManagerMocked.getEntityTemplatebyId.mockImplementation(async (templateId: string) => {
-                    // eslint-disable-next-line no-throw-literal
                     if (sourceOrDest === 'source' && templateId === exampleRelation.sourceEntityId) throw new Error('unknown error');
-                    // eslint-disable-next-line no-throw-literal
                     if (sourceOrDest === 'dest' && templateId === exampleRelation.destinationEntityId) throw new Error('unknown error');
 
                     return exampleEntity;

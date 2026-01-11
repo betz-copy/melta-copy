@@ -1,5 +1,4 @@
-/* eslint-disable import/prefer-default-export */
-import { pipeline } from 'stream';
-import { promisify } from 'util';
+import { pipeline } from 'node:stream';
+import { promisify } from 'node:util';
 
 export const promisePipe = promisify(pipeline);

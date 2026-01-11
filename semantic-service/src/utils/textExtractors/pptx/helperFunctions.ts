@@ -1,5 +1,5 @@
+import { posix as path } from 'node:path';
 import JSZip from 'jszip';
-import { posix as path } from 'path';
 import { parseStringPromise } from 'xml2js';
 import config from '../../../config';
 
@@ -20,7 +20,7 @@ export interface RelsObject {
     Relationships?: RelationshipsObject;
 }
 export interface XMLObject {
-    [key: string]: any;
+    [key: string]: string;
 }
 
 /**

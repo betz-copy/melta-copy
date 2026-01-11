@@ -1,7 +1,6 @@
-/* eslint-disable no-param-reassign */
-/* eslint-disable no-case-declarations */
 import {
     BodyScrollEvent,
+    CellClickedEvent,
     CellEditingStoppedEvent,
     ColumnMovedEvent,
     ColumnResizedEvent,
@@ -24,9 +23,7 @@ import { AgGridReact } from '@ag-grid-community/react';
 import { Box, CircularProgress, debounce } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
-import { pickBy } from 'lodash';
-import isEqual from 'lodash.isequal';
-import sortBy from 'lodash.sortby';
+import { isEqual, pickBy, sortBy } from 'lodash';
 import React, { ForwardedRef, forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -62,7 +59,7 @@ import { IAGGridRequest } from '../../utils/agGrid/interfaces';
 import useDeepCompareMemo from '../../utils/hooks/useDeepCompareMemo';
 import { LocalStorage } from '../../utils/localStorage';
 import { isChildTemplate } from '../../utils/templates';
-import { trycatch } from '../../utils/trycatch';
+import { tryCatch } from '../../utils/tryCatch';
 import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
 import { EntityWizardValues } from '../dialogs/entity';
 import { MultiSelectStatusBar } from '../EntitiesPage/MultiSelectStatusBar';
@@ -138,7 +135,7 @@ export const getDatasource = <Data extends EntityData>(
 
             const agGridRequest = { ...params.request, filterModel: { ...params.request.filterModel } };
 
-            const { result: data, err } = await trycatch(() =>
+            const { result: data, err } = await tryCatch(() =>
                 pageType === 'client-side'
                     ? searchEntitiesOfTemplateClientSideRequest(
                           parentTemplateId,
@@ -209,7 +206,7 @@ export const getRowModelProps = <Data extends EntityData>(
 
     return {
         rowModelType: 'serverSide',
-        serverSideDatasource: getDatasource<IConnection>(
+        serverSideDatasource: getDatasource(
             template,
             quickFilterText,
             datasourceOnFail,
@@ -362,7 +359,7 @@ const EntitiesTableOfTemplate = forwardRef(
         );
         const [selectedRow, setSelectedRow] = useState('');
         const [currEntity, setCurrEntity] = useState<IEntity>();
-        const [currEditingCell, setCurrEditingCell] = useState<any>();
+        const [currEditingCell, setCurrEditingCell] = useState<CellClickedEvent<Data> | undefined>();
 
         const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
             isOpen: boolean;
@@ -435,13 +432,11 @@ const EntitiesTableOfTemplate = forwardRef(
             }) => updateEntityStatusRequest(currentEntity.properties._id, disabled, JSON.stringify(ignoredRules), childTemplateId),
             {
                 onSuccess: (data) => {
-                    if (data.properties.disabled) toast.success(i18next.t('entityPage.disabledSuccessfully'));
-                    else toast.success(i18next.t('entityPage.activatedSuccessfully'));
+                    toast.success(i18next.t(`entityPage.${data.properties.disabled ? 'disabled' : 'activated'}Successfully`));
                     setUpdatedTemplateIds?.([data.templateId]);
                 },
                 onError: (_err: AxiosError, { disabled }) => {
-                    if (disabled) toast.error(i18next.t('entityPage.failedToDisable'));
-                    else toast.error(i18next.t('entityPage.failedToActivate'));
+                    toast.error(i18next.t(`entityPage.failedTo${disabled ? 'Disable' : 'Activate'}`));
                 },
             },
         );
@@ -475,7 +470,7 @@ const EntitiesTableOfTemplate = forwardRef(
             setOpenDeleteDialog,
             updateEntityStatus,
             searchValue: quickFilterText,
-            disableEditCell: !editable || editRowButtonProps?.disabledButton,
+            disableEditCell: !editable || editRowButtonProps?.disabledButton || !!template.walletTransfer,
             entityTemplates,
             pageType: saveStorageProps.pageType,
             columnsToShow,
@@ -515,7 +510,7 @@ const EntitiesTableOfTemplate = forwardRef(
             },
         };
 
-        const updateVisibleColumns = (params: ColumnVisibleEvent<Data, any> | GridReadyEvent<Data, any>) => {
+        const updateVisibleColumns = (params: ColumnVisibleEvent<Data> | GridReadyEvent<Data>) => {
             const columnState = params.api.getColumnState();
 
             const updatedVisibleColumns = columnState.reduce<Record<string, boolean>>((acc, col) => {
@@ -541,7 +536,7 @@ const EntitiesTableOfTemplate = forwardRef(
         };
 
         const handleColumnsOrder = (
-            params: ColumnMovedEvent<Data> | GridReadyEvent<Data, any> | FirstDataRenderedEvent<Data, any> | RowDataUpdatedEvent<Data, any>,
+            params: ColumnMovedEvent<Data> | GridReadyEvent<Data> | FirstDataRenderedEvent<Data> | RowDataUpdatedEvent<Data>,
         ) => {
             if (!saveStorageProps.shouldSaveColumnOrder) return;
             const columnState = params.api.getColumnState();
@@ -588,7 +583,7 @@ const EntitiesTableOfTemplate = forwardRef(
             return totalGridWidth - usedWidth - widthConsumed - (hasActions ? actionsWidth : 0);
         };
 
-        const autoSizeAll = (params: GridReadyEvent<Data, any> | RowDataUpdatedEvent<Data, any>, visibleKeys: string[]) => {
+        const autoSizeAll = (params: GridReadyEvent<Data> | RowDataUpdatedEvent<Data>, visibleKeys: string[]) => {
             const { api } = params;
 
             const hasActions = visibleKeys.some((key) => key.startsWith(actionPrefix));
@@ -601,13 +596,12 @@ const EntitiesTableOfTemplate = forwardRef(
 
             handleColumnsOrder(params);
 
-            const shouldIncludeKey = (key) => key !== `${actionPrefix}${template._id}` && (isRemovedFields || !defaultColumnWidths[key]);
+            const shouldIncludeKey = (key: string) => key !== `${actionPrefix}${template._id}` && (isRemovedFields || !defaultColumnWidths[key]);
             const columnsKeys = visibleKeys.filter(shouldIncludeKey);
-            if (columnsKeys.length === 0) return;
+            if (!columnsKeys.length) return;
 
             api.refreshHeader();
             api.sizeColumnsToFit();
-            // eslint-disable-next-line no-unused-expressions
             Object.keys(defaultColumnWidths).length ? api.autoSizeColumns(columnsKeys) : api.autoSizeColumns(filteredColumns);
 
             const columnStates = api.getColumnState().filter((col) => columnsKeys.includes(col.colId));
@@ -758,6 +752,7 @@ const EntitiesTableOfTemplate = forwardRef(
             resizeTableHeight: (newHeight: number) => setGridHeight(newHeight),
         }));
 
+        // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
         const rowModelProps = useMemo(
             () =>
                 getRowModelProps(
@@ -775,7 +770,20 @@ const EntitiesTableOfTemplate = forwardRef(
                     externalId,
                     usePagination,
                 ),
-            [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances, defaultFilter, childTemplatesOfParentIds, usePagination],
+            [
+                rowModelType,
+                saveStorageProps.pageType,
+                template,
+                clientSideUserEntity?.properties?._id,
+                externalId,
+                rowData,
+                pageRowCount,
+                quickFilterText,
+                hasInstances,
+                defaultFilter,
+                childTemplatesOfParentIds,
+                usePagination,
+            ],
         );
 
         const statusPanels = useMemo(() => {
@@ -793,7 +801,7 @@ const EntitiesTableOfTemplate = forwardRef(
                 });
 
             return panels;
-        }, [multipleSelect, quickFilterText, template]);
+        }, [multipleSelect, quickFilterText, setUpdatedTemplateIds, template]);
 
         const rowSelection = useMemo<RowSelectionOptions | 'single' | 'multiple' | undefined>(() => {
             if (onRowSelected) return 'single';
@@ -982,21 +990,18 @@ const EntitiesTableOfTemplate = forwardRef(
                         onCellEditingStopped={(params: CellEditingStoppedEvent) => {
                             setCurrEditingCell(undefined);
                             if (params.valueChanged === false) return;
-                            const isEmpty = params.newValue === '' || params.newValue === null || params.newValue.length === 0;
-                            const isEmptyArray = params.newValue.length === 0;
+                            const isEmptyArray = !params.newValue.length;
+                            const isEmpty = params.newValue === '' || params.newValue === null || isEmptyArray;
                             const isRequired = template.properties.required.includes(params.colDef.field!);
                             const updatedProperties = {
                                 ...params.data?.properties,
-                                // eslint-disable-next-line no-nested-ternary
                                 [params.column.getColId()]: isEmpty ? (isRequired || isEmptyArray ? undefined : '') : params.newValue,
                             };
                             setCurrEntity({ templateId: template._id, properties: params.data?.properties });
 
-                            const properties: any = { properties: updatedProperties };
+                            const properties = { properties: updatedProperties };
                             gridRef.current?.api.forEachNode((rowNode) => {
-                                if (rowNode.data && getRowId(properties) === getRowId(rowNode.data)) {
-                                    rowNode.updateData(properties);
-                                }
+                                if (rowNode.data && getRowId(properties as Data) === getRowId(rowNode.data)) rowNode.updateData(properties as Data);
                             });
 
                             updateMutation({

@@ -1,38 +1,33 @@
-/* eslint-disable no-param-reassign */
-
-import { ServiceError } from '@microservices/shared';
-import _forEach from 'lodash.foreach';
+import { forEach } from 'lodash';
 import { ClientSession, startSession, Types } from 'mongoose';
-import { trycatch } from '.';
+import { tryCatch } from '.';
 
+// biome-ignore lint/suspicious/noExplicitAny: lol
 export const withTransaction = async <Func extends (session: ClientSession) => Promise<any>>(func: Func): Promise<Awaited<ReturnType<Func>>> => {
     const session = await startSession();
+    // biome-ignore lint/suspicious/noImplicitAnyLet: to avoid build errors
+    let ret;
 
     try {
-        let ret;
         await session.withTransaction(async () => {
             ret = await func(session);
         });
         return ret;
     } finally {
-        const { err: endSessionErr } = await trycatch(() => session.endSession());
-        if (endSessionErr) {
-            // eslint-disable-next-line no-unsafe-finally
-            throw new ServiceError(undefined, 'failed to end session. possible resource leak', { error: endSessionErr });
-        }
+        const { err: endSessionErr } = await tryCatch(() => session.endSession());
+        if (endSessionErr) console.error('Failed to end session. Possible resource leak', endSessionErr);
     }
 };
 
-export const transformObjectIdKeysToString = (doc: any) => {
-    _forEach(doc, (val, key) => {
+export const transformObjectIdKeysToString = (doc: Record<string, unknown>) => {
+    forEach(doc, (val, key) => {
         if (val instanceof Types.ObjectId) {
-            // eslint-disable-next-line no-param-reassign
             doc[key] = val.toString();
         }
     });
 };
 
-export const transformResultDocsObjectIdKeysToString = (res: any | any[]) => {
+export const transformResultDocsObjectIdKeysToString = (res: Record<string, unknown> | Record<string, unknown>[]) => {
     if (Array.isArray(res)) {
         res.forEach((doc) => transformObjectIdKeysToString(doc));
         return;

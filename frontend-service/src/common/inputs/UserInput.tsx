@@ -3,9 +3,9 @@ import { IKartoffelUser, IKartoffelUserStringFields, IUser } from '../../interfa
 import UserAutocomplete, { IUserAutocomplete } from './UserAutocomplete';
 
 interface UserInputProps extends Omit<IUserAutocomplete, 'mode' | 'onChange'> {
-    handleOnChange: (user: IKartoffelUserStringFields | null, values?: any) => void;
+    handleOnChange: (user: IKartoffelUserStringFields | null, values?: { _id: string; displayName: string }) => void;
     currentUser: { value: IKartoffelUserStringFields | undefined; set: React.Dispatch<IKartoffelUserStringFields | undefined> };
-    values?: any;
+    values?: { _id: string; displayName: string };
 }
 
 const UserInput: React.FC<UserInputProps> = ({

@@ -1,162 +1,127 @@
-import { Box, Grid, Typography } from '@mui/material';
+import { Box, Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import React, { JSX } from 'react';
+import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import BlueTitle from '../../../../common/MeltaDesigns/BlueTitle';
 import { FileToPrint } from '../../../../common/print/FileToPrint';
-import { IConnection, IEntity, IEntityExpanded } from '../../../../interfaces/entities';
+import { IPrintOptions } from '../../../../common/print/PrintOptionsDialog';
+import { environment } from '../../../../globals';
+import { IEntity } from '../../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IFile } from '../../../../interfaces/preview';
-import { INestedRelationshipTemplates } from '../..';
-import { EntityComponentToPrint, RelationshipPrintTitle } from './EntityComponentToPrint';
+import { IMongoPrintingTemplate } from '../../../../interfaces/printingTemplates';
+import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
+import { EntityComponentToPrint } from './EntityComponentToPrint';
 
-export const renderConnectionTree = (
-    entity: IEntity,
-    connectionsTemplates: INestedRelationshipTemplates[],
-    connectionsInstances: IConnection[],
-    options: {
-        showEntityDates: boolean;
-        showDisabled: boolean;
-    },
-): JSX.Element[] => {
-    const queryClient = useQueryClient();
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-
-    return connectionsTemplates.flatMap(({ relationshipTemplate, isExpandedEntityRelationshipSource, children }) => {
-        const entityType = isExpandedEntityRelationshipSource ? 'sourceEntity' : 'destinationEntity';
-
-        const connectedEntities: Map<string, IEntity> = new Map();
-
-        for (const connection of connectionsInstances) {
-            if (connection.relationship.templateId === relationshipTemplate._id && connection[entityType].properties._id === entity.properties._id) {
-                const connectedEntity =
-                    connection.sourceEntity.properties._id === entity.properties._id ? connection.destinationEntity : connection.sourceEntity;
-
-                if (options.showDisabled || !connectedEntity.properties.disabled)
-                    connectedEntities.set(connectedEntity.properties._id, connectedEntity);
-            }
-        }
-
-        if (!connectedEntities.size) return [];
-
-        return (
-            <div key={relationshipTemplate._id}>
-                <RelationshipPrintTitle
-                    relationshipTemplate={relationshipTemplate}
-                    isExpandedEntityRelationshipSource={isExpandedEntityRelationshipSource}
-                    sxOverride={{ marginTop: '2rem', marginBottom: '0.5rem' }}
-                />
-
-                {[...connectedEntities.values()].map((connectedEntity) => (
-                    <div key={connectedEntity.properties._id} style={{ marginBottom: '0.5rem' }}>
-                        <EntityComponentToPrint
-                            entityTemplate={entityTemplates.get(connectedEntity.templateId)!}
-                            entity={connectedEntity}
-                            options={options}
-                            showPreviewPropertiesOnly
-                            expandedRelationships={{
-                                instances: connectionsInstances,
-                                templates: children,
-                            }}
-                        />
-                    </div>
-                ))}
-            </div>
-        );
-    });
-};
+export type IEntityTreeNode = IEntity & { relationshipId: string; children: IEntityTreeNode[] };
 
 const ComponentToPrint = React.forwardRef<
     HTMLDivElement,
     {
         entityTemplate: IMongoEntityTemplatePopulated;
-        expandedEntity: IEntityExpanded;
-        connectionsTemplates: INestedRelationshipTemplates[];
-        connectionsInstances: IConnection[];
-        filesToPrint: IFile[];
-        setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
-        setFilesLoadingStatus: React.Dispatch<React.SetStateAction<{}>>;
-        options: {
-            showDisabled: boolean;
-            showEntityDates: boolean;
-            showEntityFiles: boolean;
-            showPreviewPropertiesOnly: boolean;
-        };
+        entity?: IEntityTreeNode;
+        filesToPrint?: IFile[];
+        setSelectedFiles?: React.Dispatch<React.SetStateAction<(IFile & { isLoading: boolean })[]>>;
+        options: IPrintOptions & { showEntityFiles: boolean };
+        printTitle?: string;
+        printingTemplate?: IMongoPrintingTemplate;
     }
->(
-    (
-        {
-            entityTemplate,
-            expandedEntity,
-            connectionsTemplates,
-            connectionsInstances,
-            options,
-            filesToPrint,
-            setSelectedFiles,
-            setFilesLoadingStatus,
-        },
-        ref,
-    ) => {
-        return (
-            <Box ref={ref} margin="20px" style={{ direction: 'rtl', color: '#000' }}>
-                <Grid style={{ pageBreakInside: 'avoid' }}>
-                    <Box paddingBottom="0.4rem" display="flex" justifyContent="space-between" alignItems="center">
-                        <Box display="flex" alignItems="center">
-                            <Typography component="h4" variant="h4" color="primary" fontWeight="800">
-                                {entityTemplate.category.displayName}
-                            </Typography>
+>(({ entityTemplate, entity, options, filesToPrint = [], setSelectedFiles, printTitle, printingTemplate }, ref) => {
+    const theme = useTheme();
+    const queryClient = useQueryClient();
 
-                            <Typography variant="h4" fontSize="30px" color="#d3d8df" marginLeft="5px" marginRight="5px">
-                                /
-                            </Typography>
+    const { entityTemplates, relationships } = useMemo(
+        () => ({
+            entityTemplates: queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!,
+            relationships: queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!,
+        }),
+        [queryClient],
+    );
 
-                            <Typography paddingBottom="2px" variant="h4" fontSize="28px" color="primary">
-                                {entityTemplate.displayName}
+    if (!entity) return <div />;
+
+    const signatureFields = (
+        <Grid
+            container
+            flexDirection="column"
+            marginTop="2.5rem"
+            width="100%"
+            rowGap="1.25rem"
+            sx={{
+                pageBreakInside: 'avoid',
+                breakInside: 'avoid',
+            }}
+        >
+            {environment.signatureFields.map((role) => (
+                <Grid key={role} container width="100%" justifyContent="space-around">
+                    <Grid width="6.25rem">
+                        <Typography fontSize="0.875rem" fontWeight="600">
+                            {i18next.t(`entityPage.print.signatureFields.${role}`)}
+                        </Typography>
+                    </Grid>
+                    {environment.signatureFieldDetails.map((field) => (
+                        <Grid key={field} borderTop="1px solid #9398C2" width="7.5rem" marginTop="0.9375rem">
+                            <Typography fontSize="0.875rem" textAlign="center" color="#787C9E">
+                                {i18next.t(`entityPage.print.signatureFields.${field}`)}
                             </Typography>
-                        </Box>
-                        {<Box>{new Date().toLocaleDateString('en-uk')}</Box>}
-                    </Box>
-                    <EntityComponentToPrint entityTemplate={entityTemplate} entity={expandedEntity.entity} options={options} />
-                </Grid>
-                {connectionsTemplates.length > 0 && (
-                    <>
-                        <BlueTitle title={i18next.t('entityPage.relationshipTitle')} component="h4" variant="h4" style={{ marginTop: '2rem' }} />
-                        {renderConnectionTree(expandedEntity.entity, connectionsTemplates, connectionsInstances, options)}
-                    </>
-                )}
-                {options.showEntityFiles && (
-                    <>
-                        <Grid sx={{ width: '100%', height: '100%', paddingY: '55%', paddingX: '27%' }}>
-                            <BlueTitle
-                                title={i18next.t('entityPage.print.accompanyingFiles')}
-                                component="h2"
-                                variant="h2"
-                                style={{ marginTop: '2rem' }}
-                            />
                         </Grid>
-                        {filesToPrint.map((file) => {
-                            return (
-                                <FileToPrint
-                                    file={file}
-                                    key={`${file.id}-${file.contentType}`}
-                                    onPreviewLoadingFinished={(error?: boolean) => {
-                                        setFilesLoadingStatus((prev) => ({ ...prev, [file.id]: false }));
-                                        if (error) {
-                                            toast.error(i18next.t('entityPage.previewRefetch'));
-                                            setSelectedFiles((prevSelectedFiles) =>
-                                                prevSelectedFiles.filter((selectedFile) => selectedFile.id !== file.id),
-                                            );
-                                        }
-                                    }}
-                                />
-                            );
-                        })}
-                    </>
-                )}
-            </Box>
-        );
-    },
-);
+                    ))}
+                </Grid>
+            ))}
+        </Grid>
+    );
+
+    return (
+        <Box ref={ref} margin="1.25rem" style={{ direction: 'rtl', color: '#000' }}>
+            <Grid style={{ pageBreakInside: 'avoid' }}>
+                <Typography color={theme.palette.primary.main} fontWeight={700} fontSize={'1.25rem'} marginBottom={'2rem'}>
+                    {printTitle}
+                </Typography>
+
+                <EntityComponentToPrint
+                    entityTemplates={entityTemplates}
+                    relationships={relationships}
+                    entityTemplate={entityTemplate}
+                    entity={entity}
+                    options={options}
+                    hierarchicalChildren={entity.children}
+                    printingTemplate={printingTemplate}
+                />
+            </Grid>
+
+            {options?.appendSignatureField && signatureFields}
+
+            {options.showEntityFiles && filesToPrint.length > 0 && (
+                <>
+                    <Grid sx={{ width: '100%', height: '100%', paddingY: '27.5rem', paddingX: '13.5rem' }}>
+                        <BlueTitle
+                            title={i18next.t('entityPage.print.accompanyingFiles')}
+                            component="h2"
+                            variant="h2"
+                            style={{ marginTop: '2rem' }}
+                        />
+                    </Grid>
+                    {filesToPrint.map((file) => (
+                        <FileToPrint
+                            file={file}
+                            key={`${file.id}-${file.contentType}`}
+                            onPreviewLoadingFinished={(error?: boolean) => {
+                                setSelectedFiles?.((prev) => {
+                                    if (error) {
+                                        toast.error(i18next.t('entityPage.previewRefetch'));
+                                        return prev.filter((f) => f.id !== file.id);
+                                    }
+
+                                    return prev.map((f) => (f.id === file.id ? { ...f, isLoading: false } : f));
+                                });
+                            }}
+                        />
+                    ))}
+                </>
+            )}
+        </Box>
+    );
+});
 
 export { ComponentToPrint };

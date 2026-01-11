@@ -8,12 +8,13 @@ import {
     IEntity,
     IMongoEntityTemplate,
     IMongoRelationshipTemplate,
+    IPropertyValue,
     ValidationError,
 } from '@microservices/shared';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { Request } from 'express';
-import groupBy from 'lodash.groupby';
+import { groupBy } from 'lodash';
 import config from '../../config';
 import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
@@ -80,6 +81,7 @@ ajv.addKeyword({
     keyword: 'serialCurrent',
     type: 'number',
 });
+ajv.addKeyword({ keyword: 'accountBalance', type: 'boolean' });
 
 class BulkActionValidator extends DefaultController {
     private entityManager: EntityManager;
@@ -108,10 +110,8 @@ class BulkActionValidator extends DefaultController {
         }
     }
 
-    private validateEntity(entityTemplate: IMongoEntityTemplate, metadataProperties: Record<string, any>) {
-        if (!entityTemplate) {
-            throw new ValidationError(`Entity template doesnt exist`, metadataProperties);
-        }
+    private validateEntity(entityTemplate: IMongoEntityTemplate, metadataProperties: Record<string, IPropertyValue>) {
+        if (!entityTemplate) throw new ValidationError(`Entity template doesnt exist`, metadataProperties);
 
         const validateFunction = ajv.compile(entityTemplate.properties);
         const valid = validateFunction(metadataProperties);

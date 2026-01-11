@@ -1,18 +1,20 @@
+import { PropertyType } from '../entityTemplates';
 import { IMongoStepTemplate, IMongoStepTemplatePopulated, IStepTemplate } from './stepTemplate';
 
 export interface IProcessSingleProperty {
     title: string;
-    type: 'string' | 'number' | 'boolean' | 'array';
+    type: PropertyType;
     format?: 'date' | 'date-time' | 'email' | 'fileId' | 'entityReference' | 'text-area' | 'signature';
     enum?: string[];
     items?: {
-        type: 'string';
+        type: PropertyType.string;
         enum?: string[];
         format?: 'fileId';
     };
     pattern?: string;
     patternCustomErrorMessage?: string;
 }
+
 export interface IProcessDetails {
     properties: {
         type: 'object';

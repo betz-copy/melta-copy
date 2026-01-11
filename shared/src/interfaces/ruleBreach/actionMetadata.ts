@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-empty-object-type */
-import { IEntity } from '../entity';
+import { IEntity, IPropertyValue } from '../entity';
 
 export interface ICreateRelationshipMetadata {
     relationshipTemplateId: string;
@@ -16,19 +15,19 @@ export interface IDeleteRelationshipMetadata {
 
 export interface ICreateEntityMetadata {
     templateId: string;
-    properties: Record<string, any>;
+    properties: Record<string, IPropertyValue>;
 }
 
 export interface IDuplicateEntityMetadata {
     templateId: string;
-    properties: Record<string, any>;
+    properties: Record<string, IPropertyValue>;
     entityIdToDuplicate: string;
 }
 
 export interface IUpdateEntityMetadata {
     entityId: string;
-    before?: Record<string, any>;
-    updatedFields: Record<string, any>;
+    before?: Record<string, IPropertyValue>;
+    updatedFields: Record<string, IPropertyValue>;
 }
 
 export interface IUpdateEntityStatusMetadata {
@@ -64,7 +63,7 @@ export interface IUpdateEntityMetadataPopulated extends Omit<IUpdateEntityMetada
 }
 export interface ICreateOrDuplicateEntityMetadataPopulated {
     templateId: string;
-    properties: Record<string, any>;
+    properties: Record<string, IPropertyValue>;
 }
 
 export interface ICronjobRunMetadataPopulated {

@@ -1,15 +1,13 @@
-/* eslint-disable no-param-reassign */
 import { Backdrop, Box, Button, CircularProgress } from '@mui/material';
 import { forceManyBody } from 'd3-force';
 import i18next from 'i18next';
-import uniqBy from 'lodash.uniqby';
-import uniqWith from 'lodash.uniqwith';
+import { uniqBy, uniqWith } from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
 import ForceGraph, { ForceGraphMethods, ForceGraphProps, GraphData, NodeObject } from 'react-force-graph-2d';
 import ForceGraph3D, { ForceGraphMethods as ForceGraphMethods3D, ForceGraphProps as ForceGraphProps3D } from 'react-force-graph-3d';
 import { BsFillPlusCircleFill } from 'react-icons/bs';
-import { useQuery, useQueryClient } from 'react-query';
+import { QueryClientProvider, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useParams } from 'wouter';
 import { ILinkObject, INodeObject } from '../../customTypes';
@@ -46,17 +44,16 @@ const { graphSettings } = environment;
 const { BatchSize, limit3DConnections } = graphSettings;
 
 const Graph: React.FC = () => {
-    const ref = useRef<any>(null);
+    const ref = useRef<HTMLDivElement>(null);
     const forceRef = useRef<ForceGraphMethods | ForceGraphMethods3D | undefined>(undefined);
 
     const [graphData, setGraphData] = useState<GraphData>({ nodes: [], links: [] });
 
-    const [width, setWidth] = useState(0);
-    const [height, setHeight] = useState(0);
+    const [width, setWidth] = useState<number>(0);
+    const [height, setHeight] = useState<number>(0);
 
-    const [shouldZoomToFit, setShouldZoomToFit] = useState(true);
-    const [shouldUpdateHighlighted, setShouldUpdateHighlighted] = useState(false);
-
+    const [shouldZoomToFit, setShouldZoomToFit] = useState<boolean>(true);
+    const [shouldUpdateHighlighted, setShouldUpdateHighlighted] = useState<boolean>(false);
     const { entityId } = useParams<{ entityId: string }>();
     const [searchParams, setSearchParams] = useSearchParams();
     const childTemplateId = searchParams.get('childTemplateId') ?? undefined;
@@ -100,6 +97,7 @@ const Graph: React.FC = () => {
     };
 
     window.addEventListener('resize', updateGraphSize);
+    // biome-ignore lint/correctness/useExhaustiveDependencies: dependencies
     useEffect(() => {
         return updateGraphSize();
     }, []);
@@ -132,9 +130,7 @@ const Graph: React.FC = () => {
     const expandedParams: Record<string, { minLevel?: number; maxLevel: number }> = {
         ...Object.fromEntries(
             Object.entries(JSON.parse(searchParams.get('expandedEntities') || '{}')).map(([key, val]) => {
-                if (typeof val === 'number') {
-                    return [key, { maxLevel: val }];
-                }
+                if (typeof val === 'number') return [key, { maxLevel: val }];
 
                 return [key, val as { minLevel?: number; maxLevel: number }];
             }),
@@ -163,7 +159,6 @@ const Graph: React.FC = () => {
                 entityId,
                 expandedParams,
                 {
-                    disabled: false,
                     templateIds: filteredEntityTemplates.map((entityTemplate) => entityTemplate._id),
                     childTemplateId,
                 },
@@ -232,21 +227,26 @@ const Graph: React.FC = () => {
         }
     };
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: dependencies
     useEffect(() => {
         loadNextBatch();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentBatchIndex, initialExpandedEntity, is3DGraph, entityId, filteredEntityTemplates, load, filterRecord]);
 
     const renderTooltip = (node: NodeObject) => {
         const entityTemplate = entityTemplates.get(node.templateId)!;
 
+        // Because this is Server-Side Rendering, the QueryClientProvider needs to be set again.
         return ReactDOMServer.renderToString(
-            <NodeTooltip
-                node={node}
-                entityTemplate={entityTemplate ?? [...childTemplates.values()].find(({ parentTemplate }) => parentTemplate._id === node.templateId)}
-                darkMode={darkMode}
-                entityTemplates={entityTemplate ? entityTemplates : childTemplates}
-            />,
+            <QueryClientProvider client={queryClient}>
+                <NodeTooltip
+                    node={node}
+                    entityTemplate={
+                        entityTemplate ?? [...childTemplates.values()].find(({ parentTemplate }) => parentTemplate._id === node.templateId)
+                    }
+                    darkMode={darkMode}
+                    entityTemplates={entityTemplate ? entityTemplates : childTemplates}
+                />
+            </QueryClientProvider>,
         );
     };
 
@@ -307,7 +307,7 @@ const Graph: React.FC = () => {
             return (
                 <ForceGraph3D
                     {...commonGraphProps}
-                    ref={forceRef as React.MutableRefObject<ForceGraphMethods3D>}
+                    ref={forceRef as React.RefObject<ForceGraphMethods3D>}
                     rendererConfig={{ powerPreference: 'low-power', precision: 'lowp' }}
                     linkDirectionalArrowLength={4}
                     linkDirectionalParticleWidth={(link) => ((link as ILinkObject).highlighted ? 2.5 : 0)}
@@ -346,7 +346,7 @@ const Graph: React.FC = () => {
         return (
             <ForceGraph
                 {...(commonGraphProps as ForceGraphProps)}
-                ref={forceRef as React.MutableRefObject<ForceGraphMethods>}
+                ref={forceRef as React.RefObject<ForceGraphMethods>}
                 nodeCanvasObjectMode={() => 'after'}
                 nodeCanvasObject={(node, ctx) => {
                     const entityTemplate =
@@ -451,7 +451,7 @@ const Graph: React.FC = () => {
                             }
                             onRemoveFilter={(filterKey: number) => {
                                 setFilterRecord((prev) => {
-                                    const { [filterKey]: deletedFilter, ...restFilters } = prev;
+                                    const { [filterKey]: _deletedFilter, ...restFilters } = prev;
                                     return restFilters;
                                 });
                             }}

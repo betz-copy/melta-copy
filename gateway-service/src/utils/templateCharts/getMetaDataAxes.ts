@@ -1,6 +1,5 @@
 import { IAxisField, IChartType, IChartTypeMetaData, IColumnOrLineMetaData, INUmberMetaData, IPieMetaData } from '@microservices/shared';
 
-// eslint-disable-next-line import/prefer-default-export
 export const getMetaDataAxes = (type: IChartType, metaData: IChartTypeMetaData, filter?: string) => {
     let xAxis: IAxisField;
     let yAxis: IAxisField | undefined;

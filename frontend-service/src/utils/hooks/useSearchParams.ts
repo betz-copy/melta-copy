@@ -17,9 +17,10 @@ export const useSearchParams = <T extends Record<string, string>>(defaultValue?:
         navigate(navigationLocation, { replace: isDefault });
     };
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: set will re-render every time
     useEffect(() => {
         if (!searchString && defaultValue) setSearchParams(defaultValue, true);
-    }, [searchString]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [searchString, defaultValue]);
 
     return [new URLSearchParams((searchString || defaultValue) ?? {}), setSearchParams] as const;
 };

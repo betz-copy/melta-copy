@@ -111,6 +111,7 @@ const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setO
             <div style={{ overflow: 'auto', height: '95vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <img
                     src={data}
+                    alt="Preview of workspace content"
                     onLoad={(event) => {
                         const img = event.target as HTMLImageElement;
                         const aspectRatio = img.naturalWidth / img.naturalHeight;

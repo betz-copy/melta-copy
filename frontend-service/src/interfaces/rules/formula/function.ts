@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: never doubt Noam */
 import { IArgument, IVariable } from './argument';
 
 export interface IRegularFunction {

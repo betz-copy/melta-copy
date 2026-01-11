@@ -1,9 +1,9 @@
-/* eslint-disable default-case */
 import {
     basicFilterOperationTypes,
     filterTypes,
     IAgGridRequest,
     IAgGridSort,
+    IPropertyValue,
     numberFilterOperationTypes,
     textFilterOperationTypes,
 } from '@microservices/shared';
@@ -11,8 +11,8 @@ import { RuleBreachSearchFilterTypeError } from '../../express/error';
 
 const translateAgGridFilter = (
     type: basicFilterOperationTypes | numberFilterOperationTypes | textFilterOperationTypes,
-    filterValue: any,
-    other?: any,
+    filterValue: IPropertyValue,
+    other?: IPropertyValue,
 ) => {
     switch (type) {
         case basicFilterOperationTypes.equals:
@@ -50,7 +50,7 @@ const translateAgGridFilter = (
 };
 
 export const translateAgGridFilterModel = (filterModel: IAgGridRequest['filterModel']) => {
-    const query: any = {};
+    const query: object = {};
 
     Object.entries(filterModel).forEach(([field, filter]) => {
         switch (filter.filterType) {
@@ -73,7 +73,7 @@ export const translateAgGridFilterModel = (filterModel: IAgGridRequest['filterMo
 };
 
 export const translateAgGridSortModel = (sortModel: IAgGridSort[]) => {
-    const sort: any = {};
+    const sort: object = {};
 
     sortModel.forEach(({ colId, sort: sortType }) => {
         sort[colId] = sortType === 'asc' ? 1 : -1;

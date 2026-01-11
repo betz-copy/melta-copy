@@ -1,5 +1,6 @@
 import { Strategy as ShragaStrategy } from '@yesodot/passport-shraga';
 import { Request } from 'express';
+import { StatusCodes } from 'http-status-codes';
 import passport from 'passport';
 import { BasicStrategy, BasicVerifyFunctionWithRequest } from 'passport-http';
 import { Strategy as JWTStrategy, VerifiedCallback } from 'passport-jwt';
@@ -24,7 +25,7 @@ export interface ShragaUser {
     job: string;
     phoneNumbers: string[];
     address: string;
-    photo: any;
+    photo: unknown;
     RelayState?: string;
     exp: number;
     iat: number;
@@ -50,6 +51,10 @@ const verifyAllowedUserBasicStrategy: BasicVerifyFunctionWithRequest = (_req, us
     done(null, { id: userId } as IConnectedUser);
 };
 
+interface BasicStrategyWithChallenge extends BasicStrategy {
+    _challenge: () => number;
+}
+
 export const initPassport = () => {
     passport.use(
         'jwt',
@@ -61,16 +66,15 @@ export const initPassport = () => {
                 secretOrKey: tokenSecret,
             },
             (payload: IConnectedUser, next: VerifiedCallback) => {
-                if (payload) {
-                    return next(null, payload);
-                }
+                if (payload) return next(null, payload);
+
                 return next(null, false);
             },
         ),
     );
 
     passport.use(
-        new ShragaStrategy({ shragaURL, callbackURL, useEnrichId }, (user: ShragaUser, next: any) => {
+        new ShragaStrategy({ shragaURL, callbackURL, useEnrichId }, (user: ShragaUser, next: VerifiedCallback) => {
             next(null, user);
         }),
     );
@@ -79,17 +83,14 @@ export const initPassport = () => {
     // which causes the browser to open login dialog with username & password.
     // see their original function here: https://github.com/jaredhanson/passport-http/blob/v0.3.0/lib/passport-http/strategies/basic.js#L106
     // override to simple 401 without the header
-    // eslint-disable-next-line no-underscore-dangle
-    (BasicStrategy.prototype as any)._challenge = () => 401;
+    (BasicStrategy.prototype as BasicStrategyWithChallenge)._challenge = () => StatusCodes.UNAUTHORIZED;
     passport.use('basic', new BasicStrategy({ passReqToCallback: true }, verifyAllowedUserBasicStrategy));
 };
 
 declare global {
     // These declaration are merged into express's Request type
     // this extends @types/passport which extends @types/express
-    // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace Express {
-        // eslint-disable-next-line @typescript-eslint/no-empty-object-type
         export interface User extends IConnectedUser {}
     }
 }

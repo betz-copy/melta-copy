@@ -10,18 +10,18 @@ import { environment } from '../../../globals';
 import { IEntity } from '../../../interfaces/entities';
 import { IErrorResponse } from '../../../interfaces/error';
 import { PermissionScope } from '../../../interfaces/permissions';
-import { IRelationship } from '../../../interfaces/relationships';
+import { IMongoRelationship } from '../../../interfaces/relationships';
 import { IMongoRelationshipTemplatePopulated } from '../../../interfaces/relationshipTemplates';
 import { ICreateRelationshipMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IBrokenRule, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { createRelationshipRequest } from '../../../services/relationshipsService';
 import { useDarkModeStore } from '../../../stores/darkMode';
-import { trycatch } from '../../../utils/trycatch';
+import { tryCatch } from '../../../utils/tryCatch';
 import { ErrorToast } from '../../ErrorToast';
 import RelationshipTemplateAutocomplete from '../../inputs/RelationshipTemplateAutocomplete';
 import TemplateTableSelect from '../../inputs/TemplateTableSelect';
 import CreateWithRuleBreachDialog from './CreateWithRuleBreachDialog';
-import StrechableArrowRight from './strechableArrowRight';
+import StretchableArrowRight from './strechableArrowRight';
 
 const { errorCodes } = environment;
 
@@ -52,7 +52,7 @@ const validationSchema = Yup.object({
 });
 
 const validateForm = async (values: ICreateRelationshipValues): Promise<FormikErrors<ICreateRelationshipValues>> => {
-    const { err: validationSchemaErr } = await trycatch(() => validationSchema.validate(values, { abortEarly: false }));
+    const { err: validationSchemaErr } = await tryCatch(() => validationSchema.validate(values, { abortEarly: false }));
     const validationSchemaErrors = !validationSchemaErr ? {} : yupToFormErrors<ICreateRelationshipValues>(validationSchemaErr);
 
     const nonSchemaErrors: FormikErrors<ICreateRelationshipValues> = {};
@@ -164,7 +164,7 @@ interface ICreateRelationshipBodyPopulated {
 const CreateRelationshipDialog: React.FC<{
     isOpen: boolean;
     handleClose: () => void;
-    onSubmitSuccess: (createdRelationship: IRelationship, sourceEntity: IEntity, destinationEntity: IEntity) => void;
+    onSubmitSuccess: (createdRelationship: IMongoRelationship, sourceEntity: IEntity, destinationEntity: IEntity) => void;
     initialValues?: Partial<ICreateRelationshipValues>;
 }> = ({ isOpen, handleClose, onSubmitSuccess = () => {}, initialValues: parentInitialValues }) => {
     const initialValues = { ...defaultInitialValues, ...parentInitialValues };
@@ -254,7 +254,7 @@ const CreateRelationshipDialog: React.FC<{
                                         </Grid>
                                         <Grid container justifyContent="center">
                                             <Grid size={{ xs: 8 }}>
-                                                <StrechableArrowRight />
+                                                <StretchableArrowRight />
                                             </Grid>
                                         </Grid>
                                     </Grid>

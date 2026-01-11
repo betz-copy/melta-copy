@@ -18,7 +18,6 @@ const hexToARGB = (hex?: string): string => {
         b = parseInt(normalizedHex[2] + normalizedHex[2], 16);
     } else logger.error('Invalid hex color format');
 
-    // eslint-disable-next-line no-bitwise
     return `FF${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
 };
 

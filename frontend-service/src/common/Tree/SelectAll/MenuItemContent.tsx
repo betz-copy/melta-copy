@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 import { Hive as HiveIcon, Menu } from '@mui/icons-material';
 import { Grid, ListItemText, Typography, useTheme } from '@mui/material';
 import React from 'react';
@@ -6,7 +5,7 @@ import { CustomIcon } from '../../CustomIcon';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
 
-export type MenuItemContentProps<Option = any> = {
+export type MenuItemContentProps<Option = { iconFileId?: string }> = {
     checked?: boolean;
     indeterminate?: boolean;
     label: string;
@@ -49,7 +48,7 @@ export const MenuItemContent: React.FC<MenuItemContentProps> = ({
                 </Grid>
             )}
             {showIcon ? (
-                option.iconFileId?.length ? (
+                option?.iconFileId?.length ? (
                     <CustomIcon color={theme.palette.primary.main} iconUrl={option.iconFileId!} height="15px" width="15px" />
                 ) : (
                     <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="inherit" />
