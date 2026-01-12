@@ -1,5 +1,6 @@
 import { IMongoChildTemplateWithConstraintsPopulated, ViewType } from '@packages/child-template';
-import { IFullMongoEntityTemplate, IMongoEntityTemplateWithConstraintsPopulated, IPropertyValue } from '@packages/entity-template';
+import { IPropertyValue } from '@packages/entity';
+import { IFullMongoEntityTemplate, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 
 export const emptyEntityTemplate: IMongoEntityTemplateWithConstraintsPopulated = {
     _id: '',

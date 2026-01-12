@@ -2,8 +2,8 @@ import { IServerSideSelectionState, IStatusPanelParams } from '@ag-grid-communit
 import { Delete, Edit } from '@mui/icons-material';
 import { Box, CircularProgress, Grid, Typography } from '@mui/material';
 import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
-import { IDeleteEntityBody, IMultipleSelect } from '@packages/entity';
-import { IMongoEntityTemplateWithConstraintsPopulated, IPropertyValue } from '@packages/entity-template';
+import { IDeleteEntityBody, IMultipleSelect, IPropertyValue } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { ActionTypes, IBrokenRule, ICreateEntityMetadata } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';

@@ -286,7 +286,9 @@ const EntityTemplatesRow: React.FC = () => {
                     entityTemplateMap!.set(data._id, data as IMongoEntityTemplateWithConstraintsPopulated),
                 );
                 queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) => {
-                    childTemplates.forEach((child) => childTemplateMap!.set(child._id, child as IMongoChildTemplateWithConstraintsPopulated));
+                    childTemplates.forEach((child) => {
+                        childTemplateMap!.set(child._id, child as IMongoChildTemplateWithConstraintsPopulated);
+                    });
                     return childTemplateMap!;
                 });
 

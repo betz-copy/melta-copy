@@ -1,5 +1,5 @@
-import { IMongoEntityTemplate } from './entityTemplates';
-import { IMongoRelationshipTemplate } from './relationshipTemplates';
+import { IMongoEntityTemplate } from '@packages/entity-template';
+import { IMongoRelationshipTemplate } from '@packages/relationship-template';
 
 export interface IPrintSection {
     categoryId: string;

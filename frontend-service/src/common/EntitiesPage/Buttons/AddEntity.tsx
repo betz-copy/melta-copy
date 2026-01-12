@@ -1,7 +1,7 @@
 import { Dialog, useTheme } from '@mui/material';
 import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
-import { IEntity } from '@packages/entity';
-import { IMongoEntityTemplateWithConstraintsPopulated, IPropertyValue } from '@packages/entity-template';
+import { IEntity, IPropertyValue } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { ActionTypes } from '@packages/rule-breach';
 import i18next from 'i18next';
 import React, { CSSProperties, ReactNode, useState } from 'react';

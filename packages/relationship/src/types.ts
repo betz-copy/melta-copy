@@ -16,6 +16,14 @@ export interface IDeleteRelationshipReference {
     transaction: Transaction;
 }
 
+export interface IMongoRelationship extends Omit<IRelationship, 'properties'> {
+    properties: Record<string, IPropertyValue> & {
+        _id: string;
+        createdAt: Date;
+        updatedAt: Date;
+    };
+}
+
 export interface IRelationshipPopulated extends Omit<IRelationship, 'sourceEntityId' | 'destinationEntityId'> {
     sourceEntity: IEntity;
     destinationEntity: IEntity;

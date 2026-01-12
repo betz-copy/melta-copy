@@ -8,6 +8,7 @@ export type IConstant = {
     value: number | string | boolean;
 };
 
+// biome-ignore lint/suspicious/noExplicitAny: prop value is any
 export const isConstant = (constant: any): constant is IConstant => {
     return constant.isConstant;
 };
@@ -27,6 +28,7 @@ export interface IPropertyOfVariable {
     property: string;
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: prop value is any
 export const isPropertyOfVariable = (propertyOfVariable: any): propertyOfVariable is IPropertyOfVariable => {
     return propertyOfVariable.isPropertyOfVariable;
 };
@@ -74,6 +76,7 @@ export interface IEquation {
     rhsArgument: IArgument;
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: prop value is any
 export const isEquation = (equation: any): equation is IEquation => {
     return equation.isEquation;
 };
@@ -86,6 +89,7 @@ export interface IAggregationGroup {
     subFormulas: IFormula[]; // formulas inside aggregation group may use the aggregated variable
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: prop value is any
 export const isAggregationGroup = (aggregationGroup: any): aggregationGroup is IAggregationGroup => {
     return aggregationGroup.isAggregationGroup;
 };
@@ -96,6 +100,7 @@ export interface IGroup {
     subFormulas: IFormula[];
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: prop value is any
 export const isGroup = (group: any): group is IGroup => {
     return group.isGroup;
 };

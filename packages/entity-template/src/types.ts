@@ -24,6 +24,15 @@ export enum PropertyFormat {
     unitField = 'unitField',
 }
 
+export enum PropertyExternalWizardType {
+    users = 'users',
+    serialNumber = 'serialNumber',
+    enum = 'enum',
+    pattern = 'pattern',
+    multipleFiles = 'multipleFiles',
+    enumArray = 'enumArray',
+}
+
 export interface IRelationshipReference {
     relationshipTemplateId?: string;
     relationshipTemplateDirection: 'outgoing' | 'incoming';
@@ -72,6 +81,7 @@ export interface IEntitySingleProperty {
     hideFromDetailsPage?: boolean;
     filters?: IFilter;
     defaultValue?: IPropertyValue;
+    default?: IPropertyValue; // Acts as defaultValue in rjsf. Added because defaultValue doesn't work in nested properties (group)
     accountBalance?: boolean;
 }
 export interface IProperties {
@@ -92,6 +102,11 @@ interface IWalletTransfer {
     to: string;
     description: string;
     amount: string;
+}
+
+export interface IWalletTransferPopulated extends Omit<IWalletTransfer, 'from' | 'to'> {
+    from: CommonFormInputProperties;
+    to: CommonFormInputProperties;
 }
 
 export interface IEntityTemplate {

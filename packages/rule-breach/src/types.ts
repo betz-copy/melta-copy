@@ -1,5 +1,13 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
-import { IEntity, IEntityWithIgnoredRules, IExcelNotFoundError, IRequiredConstraint, IUniqueConstraint, IValidationError } from '@packages/entity';
+import {
+    IEntity,
+    IEntityWithIgnoredRules,
+    IExcelNotFoundError,
+    IPropertyValue,
+    IRequiredConstraint,
+    IUniqueConstraint,
+    IValidationError,
+} from '@packages/entity';
 import { ISubCompactPermissions } from '@packages/permission';
 import { IRelationshipPopulated } from '@packages/relationship';
 import { IUser } from '@packages/user';
@@ -12,7 +20,7 @@ export interface ICreateRelationshipMetadata {
 
 export interface IDeleteRelationshipMetadata {
     relationshipId: string;
-    
+
     relationshipTemplateId: string;
     sourceEntityId: string;
     destinationEntityId: string;
@@ -20,19 +28,19 @@ export interface IDeleteRelationshipMetadata {
 
 export interface ICreateEntityMetadata {
     templateId: string;
-    properties: Record<string, any>;
+    properties: Record<string, IPropertyValue>;
 }
 
 export interface IDuplicateEntityMetadata {
     templateId: string;
-    properties: Record<string, any>;
+    properties: Record<string, IPropertyValue>;
     entityIdToDuplicate: string;
 }
 
 export interface IUpdateEntityMetadata {
     entityId: string;
-    before?: Record<string, any>;
-    updatedFields: Record<string, any>;
+    before?: Record<string, IPropertyValue>;
+    updatedFields: Record<string, IPropertyValue>;
 }
 
 export interface IUpdateMultipleEntitiesMetadata extends Array<IUpdateEntityMetadata> {}
@@ -70,7 +78,7 @@ export interface IUpdateEntityMetadataPopulated extends Omit<IUpdateEntityMetada
 }
 export interface ICreateOrDuplicateEntityMetadataPopulated {
     templateId: string;
-    properties: Record<string, any>;
+    properties: Record<string, IPropertyValue>;
 }
 
 export interface IUpdateMultipleEntitiesMetadataPopulated extends Array<IUpdateEntityMetadataPopulated> {}
@@ -329,7 +337,7 @@ export type IFailedEntityError = {
 };
 
 export type IFailedEntity = {
-    properties: Record<string, any>;
+    properties: Record<string, IPropertyValue>;
     errors: IFailedEntityError[];
 };
 
@@ -338,7 +346,7 @@ export type IBrokenRuleEntity = {
     brokenRules: IBrokenRulePopulated[];
     actions: IActionPopulated[];
     rawActions: IAction[];
-    entities: { properties: Record<string, any> }[];
+    entities: { properties: Record<string, IPropertyValue> }[];
 };
 
 export interface ITablesResults {

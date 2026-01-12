@@ -1,5 +1,6 @@
 import { IAggregation, IAggregationType, IAxisField } from '@packages/chart';
-import { IMongoEntityTemplate, IPropertyValue } from '@packages/entity-template';
+import { IPropertyValue } from '@packages/entity';
+import { IMongoEntityTemplate } from '@packages/entity-template';
 import { IGetUnits } from '@packages/unit';
 import { CoordinateSystem, locationConverterToString } from '@packages/utils';
 import { fromZonedTime } from 'date-fns-tz';

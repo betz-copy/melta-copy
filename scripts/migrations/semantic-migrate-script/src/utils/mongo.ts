@@ -22,7 +22,9 @@ export const transformObjectIdKeysToString = (doc: Record<string, unknown>) => {
 
 export const transformResultDocsObjectIdKeysToString = (res: Record<string, unknown> | Record<string, unknown>[]) => {
     if (Array.isArray(res)) {
-        res.forEach((doc) => transformObjectIdKeysToString(doc));
+        res.forEach((doc) => {
+            transformObjectIdKeysToString(doc);
+        });
         return;
     }
 

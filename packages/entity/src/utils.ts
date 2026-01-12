@@ -1,4 +1,4 @@
-import { FilterLogicalOperator, IFilterGroup, IFilterOfField, ISearchEntitiesOfTemplateBody, ISearchFilter } from './types';
+import { FilterLogicalOperator, IEntity, IFilterGroup, IFilterOfField, IPropertyValue, ISearchEntitiesOfTemplateBody, ISearchFilter } from './types';
 
 const filterFieldToValue: Record<keyof IFilterOfField, string> = {
     $eq: 'equals',

@@ -1,4 +1,4 @@
-import { ISearchFilter } from '@packages/entity';
+import { IPropertyValue, ISearchFilter } from '@packages/entity';
 
 export enum IChartType {
     Column = 'column',

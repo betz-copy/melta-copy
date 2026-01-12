@@ -17,6 +17,7 @@
         "noEmit": true,
         "typeRoots": ["./node_modules/@types", "./src/customTypes"],
         "jsx": "react-jsx",
+        "jsxImportSource": "react",
         "sourceMap": true,
         "removeComments": true,
         "noImplicitAny": false,

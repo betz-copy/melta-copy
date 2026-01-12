@@ -52,7 +52,9 @@ export const extractTextByTags = (obj: XMLObject, tags: string[]): string => {
             const child = node[key];
 
             if (Array.isArray(child)) {
-                child.forEach((c) => traverse(c));
+                child.forEach((c) => {
+                    traverse(c);
+                });
             } else if (typeof child === 'object') {
                 traverse(child);
             }

@@ -24,6 +24,8 @@
     "dependencies": {
         "@packages/category": "workspace:*",
         "@packages/entity": "workspace:*",
-        "@packages/entity-template": "workspace:*"
+        "@packages/entity-template": "workspace:*",
+        "@packages/user": "workspace:*",
+        "@packages/permission": "workspace:*"
     }
 }

@@ -1,6 +1,8 @@
 import { IFilterGroup, IFilterOfTemplate, ISearchFilter } from '@packages/entity';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@packages/entity-template';
-import { IChildTemplate, IChildTemplatePopulated, IChildTemplateProperty, IMongoChildTemplateWithConstraintsPopulated } from './types';
+import { isAdmin } from '@packages/permission';
+import { IUser } from '@packages/user';
+import { IChildTemplate, IChildTemplatePopulated, IChildTemplateProperty, IFilter, IMongoChildTemplateWithConstraintsPopulated } from './types';
 
 const isChildTemplate = (
     template: IMongoEntityTemplatePopulated | IMongoChildTemplateWithConstraintsPopulated | IChildTemplatePopulated,

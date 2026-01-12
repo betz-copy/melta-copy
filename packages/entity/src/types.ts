@@ -1,5 +1,5 @@
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
-import { IRelationship } from '@packages/relationship';
+import { IMongoRelationship, IRelationship } from '@packages/relationship';
 import { IMongoRelationshipTemplate } from '@packages/relationship-template';
 import { IBulkRuleMail } from '@packages/rule';
 import {
@@ -31,7 +31,7 @@ export interface IEntityWithChildTemplate extends IEntity {
 }
 
 export type IConnection = {
-    relationship: Pick<IRelationship, 'templateId' | 'properties'>;
+    relationship: Pick<IMongoRelationship, 'templateId' | 'properties'>;
     sourceEntity: IEntity;
     destinationEntity: IEntity;
 };

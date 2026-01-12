@@ -1,7 +1,7 @@
 import { useTheme } from '@mui/material';
 import { ByCurrentDefaultValue, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
-import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated, IPropertyValue } from '@packages/entity-template';
-import { IGetUnits } from '@packages/unit';
+import { IEntitySingleProperty, IPropertyValue } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { Form as JSONSchemaForm } from '@rjsf/mui';
 import { ErrorSchema, RegistryWidgetsType, RJSFSchema, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
