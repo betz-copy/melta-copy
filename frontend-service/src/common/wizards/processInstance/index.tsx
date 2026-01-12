@@ -34,8 +34,8 @@ interface IProcessInstanceWizard {
     processTemplate: IMongoProcessTemplateReviewerPopulated;
     currProcessInstance: IMongoProcessInstanceReviewerPopulated;
     setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstanceReviewerPopulated>>;
-    isLoading: any;
-    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstanceReviewerPopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
+    isLoading: boolean;
+    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstanceReviewerPopulated, AxiosError, ProcessDetailsValues, unknown>;
     isProcessChanged: boolean;
     setIsProcessChanged: React.Dispatch<React.SetStateAction<boolean>>;
     isEditMode: boolean;

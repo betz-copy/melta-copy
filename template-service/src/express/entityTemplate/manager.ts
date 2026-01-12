@@ -5,7 +5,7 @@ import { DefaultManagerMongo, NotFoundError } from '@packages/utils';
 import { ClientSession, FilterQuery } from 'mongoose';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
-import { withTransaction } from '../../utils/mongoose';
+import { withTransaction } from '../../utils/mongo/mongoose';
 import CategoryManager from '../category/manager';
 import ChildTemplateManager from '../childTemplate/manager';
 import GlobalSearchIndexCreator from '../externalServices/globalSearchIndexCreator';
@@ -93,7 +93,6 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
 
         Object.entries(targetTemplate.properties.properties).forEach(([_name, value]) => {
             if (value.relationshipReference?.filters && typeof value.relationshipReference.filters === 'string') {
-                // eslint-disable-next-line no-param-reassign
                 value.relationshipReference.filters = JSON.parse(value.relationshipReference.filters);
             }
         });
@@ -137,7 +136,6 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
                             session,
                         );
 
-                        // eslint-disable-next-line no-param-reassign
                         fixedEntityTemplate.properties.properties[propertyName].relationshipReference!.relationshipTemplateId =
                             upsertedRelationshipTemplate._id.toString();
                     }
@@ -151,7 +149,6 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
     async createTemplate(templateData: Omit<IEntityTemplate, 'disabled'>) {
         Object.entries(templateData.properties.properties).forEach(([_name, value]) => {
             if (value.relationshipReference?.filters && typeof value.relationshipReference.filters === 'object') {
-                // eslint-disable-next-line no-param-reassign
                 value.relationshipReference.filters = JSON.stringify(value.relationshipReference.filters);
             }
         });
@@ -199,18 +196,15 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
 
             await Promise.all(
                 Object.values(deletedEntityTemplate.properties.properties).map(async (property) => {
-                    if (property.relationshipReference) {
+                    if (property.relationshipReference)
                         await this.relationshipTemplateManager.deleteTemplateById(property.relationshipReference.relationshipTemplateId!, session);
-                    }
                 }),
             );
 
             const category: IMongoCategory = await this.categoryManager.getCategoryById(deletedEntityTemplate.category);
             const index: number = category.templatesOrder.indexOf(id);
 
-            if (index !== -1) {
-                category.templatesOrder.splice(index, 1);
-            }
+            if (index !== -1) category.templatesOrder.splice(index, 1);
 
             await this.categoryManager.updateCategory(category._id, { templatesOrder: category.templatesOrder });
         });
@@ -258,8 +252,15 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
             entityTemplateToUpdate = await this.upsertRelationshipsProperties(entityTemplateToUpdate, session, true);
         }
 
+        const updateData: UpdateQuery<IEntityTemplatePopulated> = { ...entityTemplateToUpdate };
+
+        if (entityTemplateToUpdate.walletTransfer === null) {
+            updateData.$unset = { walletTransfer: '' };
+            delete updateData.walletTransfer;
+        }
+
         const updatedEntityTemplate = await this.model
-            .findByIdAndUpdate(id, entityTemplateToUpdate, {
+            .findByIdAndUpdate(id, updateData, {
                 new: true,
                 overwrite: true,
                 session,
@@ -304,7 +305,6 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
     ) {
         Object.entries(updatedTemplateData.properties.properties).forEach(([_name, value]) => {
             if (value.relationshipReference?.filters && typeof value.relationshipReference.filters === 'object') {
-                // eslint-disable-next-line no-param-reassign
                 value.relationshipReference.filters = JSON.stringify(value.relationshipReference.filters);
             }
         });

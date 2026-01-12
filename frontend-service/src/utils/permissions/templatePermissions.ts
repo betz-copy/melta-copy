@@ -1,5 +1,5 @@
 import { ICategoryMap, IMongoCategory } from '@packages/category';
-import { IMongoChildTemplate, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { ISubCompactPermissions, PermissionScope } from '@packages/permission';
 import { IMongoRelationshipTemplate } from '@packages/relationship-template';
@@ -16,7 +16,7 @@ export const allowedCategories = (categories: ICategoryMap, currentUser: ICurren
               return (categoryIds.get(a) ?? Infinity) - (categoryIds.get(b) ?? Infinity);
           });
 
-    return allowedCategoriesToShow.map((categoryId) => categories?.get(categoryId)!).filter((category) => category !== undefined);
+    return allowedCategoriesToShow.map((categoryId) => categories?.get(categoryId)).filter((category) => category !== undefined);
 };
 
 export const allowedEntitiesOfCategory = (
@@ -156,36 +156,13 @@ export const checkUserChildTemplatePermission = (
     childTemplate: IMongoChildTemplateWithConstraintsPopulated,
     scope: PermissionScope,
 ): boolean => {
-    if (userPermissions.admin?.scope === PermissionScope.write) {
-        return true;
-    }
+    if (userPermissions.admin?.scope === PermissionScope.write) return true;
 
     const category = childTemplate.category;
-    if (userPermissions.instances?.categories[category._id]?.scope === scope) {
-        return true;
-    }
+    if (userPermissions.instances?.categories[category._id]?.scope === scope) return true;
 
     const categoryPermissions = userPermissions.instances?.categories[category._id];
-    if (categoryPermissions && (categoryPermissions as any)?.childTemplates?.[childTemplate._id]?.scope === scope) {
-        return true;
-    }
-
-    return false;
-};
-
-export const checkUserChildTemplateAnyPermission = (userPermissions: ISubCompactPermissions, childTemplate: IMongoChildTemplate): boolean => {
-    if (userPermissions.admin?.scope === PermissionScope.write) {
-        return true;
-    }
-
-    if (userPermissions.instances?.categories[childTemplate.category]?.scope) {
-        return true;
-    }
-
-    const categoryPermissions = userPermissions.instances?.categories[childTemplate.category];
-    if (categoryPermissions && (categoryPermissions as any)?.childTemplates?.[childTemplate._id]?.scope) {
-        return true;
-    }
+    if (categoryPermissions?.[childTemplate._id]?.scope === scope) return true;
 
     return false;
 };

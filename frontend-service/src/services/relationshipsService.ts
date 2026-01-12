@@ -1,4 +1,4 @@
-import { IRelationship } from '@packages/relationship';
+import { IMongoRelationship, IRelationship } from '@packages/relationship';
 import { IRuleBreach } from '@packages/rule-breach';
 import axios from '../axios';
 import { environment } from '../globals';
@@ -9,7 +9,7 @@ const createRelationshipRequest = async (requestBody: {
     relationshipInstance: Omit<IRelationship, 'properties'> & { properties: Omit<IRelationship['properties'], '_id'> };
     ignoredRules?: IRuleBreach['brokenRules'];
 }) => {
-    const { data } = await axios.post<IRelationship>(relationships, requestBody);
+    const { data } = await axios.post<IMongoRelationship>(relationships, requestBody);
     return data;
 };
 

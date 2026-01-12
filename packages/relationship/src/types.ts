@@ -1,11 +1,10 @@
-import { IEntity } from '@packages/entity';
+import { IEntity, IPropertyValue } from '@packages/entity';
 import { IRelationshipReference } from '@packages/entity-template';
 import { Transaction } from 'neo4j-driver';
 
-/* eslint-disable no-shadow */
 export interface IRelationship {
     templateId: string;
-    properties: Record<string, any>;
+    properties: Record<string, IPropertyValue>;
     sourceEntityId: string;
     destinationEntityId: string;
 }

@@ -26,7 +26,7 @@ const DeletableEntityViewerCard: React.FC<{ entity: IEntityWithChildTemplate; on
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
-    const childTemplatesOfParent = childTemplates.values().filter(({ parentTemplate: { _id } }) => entity.templateId === _id);
+    const childTemplatesOfParent = Array.from(childTemplates.values()).filter(({ parentTemplate: { _id } }) => entity.templateId === _id);
 
     const childTemplate = entity.childTemplateId
         ? childTemplates.get(entity.childTemplateId)
@@ -36,7 +36,7 @@ const DeletableEntityViewerCard: React.FC<{ entity: IEntityWithChildTemplate; on
                   !entityTemplates.get(entity.templateId),
                   entity.properties._id,
                   currentUserKartoffelId,
-                  currentUser?.units?.[workspace._id] || [],
+                  currentUser?.usersUnitsWithInheritance,
                   isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
               ),
           );

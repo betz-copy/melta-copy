@@ -31,7 +31,7 @@ export type IBrokenRuleEntity = {
         actionMetadata: IActionMetadataPopulated;
     }[];
     rawActions: IAction[];
-    entities: { properties: Record<string, any> | IEntity['properties'] }[];
+    entities: { properties: Record<string, IPropertyValue> | IEntity['properties'] }[];
 };
 
 export interface IError {
@@ -40,7 +40,7 @@ export interface IError {
 }
 
 export interface IFailedEntity {
-    properties: Record<string, any>;
+    properties: Record<string, IPropertyValue>;
     errors: IError[];
     coloredFields?: Record<string, string>;
 }

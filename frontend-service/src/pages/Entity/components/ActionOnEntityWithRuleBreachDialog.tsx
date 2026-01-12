@@ -18,8 +18,7 @@ import {
 } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
-import mapValues from 'lodash.mapvalues';
-import pickBy from 'lodash.pickby';
+import { mapValues, pickBy } from 'lodash';
 import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -28,7 +27,7 @@ import ExecWithRuleBreachDialog from '../../../common/dialogs/execWithRuleBreach
 import { ErrorToast } from '../../../common/ErrorToast';
 import { environment } from '../../../globals';
 import { IErrorResponse } from '../../../interfaces/error';
-import { IBrokenRuleEntity } from '../../../interfaces/excel';
+import { IBrokenRuleEntity, ITablesResults } from '../../../interfaces/excel';
 import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesService';
 import { groupActionsByEntityId, groupBrokenRulesByEntity } from '../../../utils/loadEntities';
 
@@ -77,7 +76,8 @@ const getUpdateEntityActionMetadata = (currEntity: IEntity, updateEntityFormData
 type BaseActionProps = {
     isLoadingActionOnEntity: boolean;
     handleClose: () => void;
-    doActionEntity: () => Promise<any>;
+    // biome-ignore lint/suspicious/noConfusingVoidType: lol
+    doActionEntity: () => Promise<void | IEntity | ITablesResults>;
     currEntity?: IEntity;
     entityFormData: EntityWizardValues;
     onUpdatedRuleBlock: (brokenRules: IRuleBreachPopulated['brokenRules'], rawBrokenRules: IRuleBreach['brokenRules']) => void;

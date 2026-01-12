@@ -71,13 +71,11 @@ export type IMutationProps = IMutationWithPayload & {
 };
 
 const ChildTemplateDialog: React.FC<{
-    mutationProps?: IMutationProps;
+    mutationProps: IMutationProps;
     open: boolean;
     handleClose: () => void;
-    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | null;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
 }> = ({ mutationProps, open, handleClose, entityTemplate }) => {
-    if (!entityTemplate || !mutationProps) return null;
-
     const { actionType, payload: childTemplate } = mutationProps;
 
     const queryClient = useQueryClient();
@@ -294,14 +292,16 @@ const ChildTemplateDialog: React.FC<{
                                                     onChange={(e) => handleChange({ target: { name: title, value: e.target.value.trimStart() } })}
                                                     error={touched[title] && Boolean(errors[title])}
                                                     helperText={touched[title] && errors[title]}
-                                                    InputProps={{
-                                                        startAdornment: startAdornment && (
-                                                            <InputAdornment position="start">
-                                                                <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>
-                                                                    {startAdornment}
-                                                                </Typography>
-                                                            </InputAdornment>
-                                                        ),
+                                                    slotProps={{
+                                                        input: {
+                                                            startAdornment: startAdornment && (
+                                                                <InputAdornment position="start">
+                                                                    <Typography variant="body1" sx={{ fontSize: '0.875rem' }}>
+                                                                        {startAdornment}
+                                                                    </Typography>
+                                                                </InputAdornment>
+                                                            ),
+                                                        },
                                                     }}
                                                     disabled={disableInUpdate && actionType === ActionMode.Update}
                                                 />

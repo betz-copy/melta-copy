@@ -1,7 +1,4 @@
-/* eslint-disable import/prefer-default-export */
-/* eslint-disable no-plusplus */
-
-import { IMongoProcessTemplatePopulated } from '@packages/process';
+import { IMongoProcessTemplatePopulated, IPropertyValue } from '@packages/process';
 import { Axios } from 'axios';
 import { JSONSchemaFaker } from 'json-schema-faker';
 import pLimit from 'p-limit';
@@ -54,7 +51,7 @@ const createProcessInstance = (
     const requestBody = {
         name: generateUniqueName(generatedNames),
         templateId: processTemplate._id,
-        details: JSONSchemaFaker.generate(processTemplate.details.properties) as Record<string, any>,
+        details: JSONSchemaFaker.generate(processTemplate.details.properties) as Record<string, IPropertyValue>,
         startDate: randomStartDate,
         endDate: randomEndDate,
         steps: processTemplate.steps.reduce((acc, step) => {

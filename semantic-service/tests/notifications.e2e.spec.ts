@@ -1,11 +1,6 @@
-/* eslint-disable no-underscore-dangle */
-/* eslint-disable no-plusplus */
-/* eslint-disable no-await-in-loop */
-/* eslint-disable no-restricted-syntax */
-
-import { INotification, NotificationType } from '@packages/notification';
+import { INotification, NotificationType, Status } from '@packages/notification';
 import { Express } from 'express';
-import * as request from 'supertest';
+import request from 'supertest';
 import Server from '../src/express/server';
 
 const fakeObjectId = '111111111111111111111111';
@@ -300,7 +295,7 @@ describe('e2e notifications api testing', () => {
                     .send({
                         viewers: [fakeObjectId],
                         type: NotificationType.processStatusUpdate,
-                        metadata: { processId: fakeObjectId2, status: ProcessStatus.Approved },
+                        metadata: { processId: fakeObjectId2, status: Status.Approved },
                     })
                     .expect(200);
                 await request(app)

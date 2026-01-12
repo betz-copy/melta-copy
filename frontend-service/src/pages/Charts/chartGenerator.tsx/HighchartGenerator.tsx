@@ -61,11 +61,13 @@ const HighchartGenerator: React.FC<HighchartGeneratorProps> = ({
         chartRef.current.chart.setSize(undefined, newHeight);
     };
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
     useEffect(() => {
         window.addEventListener('resize', resizeChart);
         return () => window.removeEventListener('resize', resizeChart);
     }, []);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
     useEffect(() => {
         const observer = new ResizeObserver(resizeChart);
         if (containerRef.current) observer.observe(containerRef.current);

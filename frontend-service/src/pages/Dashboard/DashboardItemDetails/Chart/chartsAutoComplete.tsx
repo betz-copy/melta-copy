@@ -71,6 +71,7 @@ const ChartAutoComplete: React.FC<{ formikProps: FormikProps<ChartForm> }> = ({ 
 
         const translatedFilter = translateFieldFilter(filter);
         return Object.values(translatedFilter).map((filter, index) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: lol
             <span key={index}>
                 {getFilterFieldReadonly(filter.filterField, entityTemplate?.properties.properties[filter.filterProperty!].type!)}
                 {index < Object.values(translatedFilter).length - 1 ? ', ' : ''}

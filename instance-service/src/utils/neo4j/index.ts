@@ -106,7 +106,7 @@ export default class Neo4jClient {
         transactionType: TransactionType,
         normalizeResultFunction: (queryResult: QueryResult) => T,
         cypherQuery: string,
-        parameters: Record<string, any>,
+        parameters: object,
     ): Promise<T> {
         return this.wrapDBNotExistsError(async (session) =>
             normalizeResultFunction(await session[transactionType]((tx) => tx.run(cypherQuery, parameters))),

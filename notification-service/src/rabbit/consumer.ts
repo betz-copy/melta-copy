@@ -4,9 +4,7 @@ import config from '../config';
 import NotificationsManager from '../express/notifications/manager';
 import { notificationSchema } from '../utils/joi/schemas/notification';
 
-const {
-    service: { workspaceIdHeaderName },
-} = config;
+const { workspaceIdHeaderName } = config.service;
 
 class NotificationsConsumer {
     static async createNotification(msg: ConsumerMessage) {
@@ -19,7 +17,7 @@ class NotificationsConsumer {
             await manager.createNotification(value);
 
             msg.ack();
-        } catch (err: any) {
+        } catch (err: unknown) {
             msg.nack(false);
             logger.error('Rabbit consumer error', { error: err });
         }

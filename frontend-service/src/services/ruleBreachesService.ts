@@ -1,4 +1,5 @@
 import { IServerSideGetRowsRequest } from '@ag-grid-community/core';
+import { IPropertyValue } from '@packages/entity';
 import { IRuleBreach, IRuleBreachAlertPopulated, IRuleBreachRequestPopulated } from '@packages/rule-breach';
 import axios from '../axios';
 import { environment } from '../globals';
@@ -7,7 +8,7 @@ const { ruleBreachesRequests, ruleBreachesAlerts } = environment.api;
 
 export const createRuleBreachRequestRequest = async (
     ruleBreachRequest: Omit<IRuleBreach, '_id' | 'createdAt' | 'originUserId'>,
-    attachmentsProperties: Record<string, any> = {},
+    attachmentsProperties: Record<string, IPropertyValue> = {},
 ) => {
     const formData = new FormData();
 

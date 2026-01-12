@@ -1,8 +1,8 @@
 import { Grid } from '@mui/material';
-import { DashboardItemType } from '@packages/dashboard';
+import { DashboardItemType, MongoDashboardItem } from '@packages/dashboard';
 import { Form, Formik, FormikHelpers, FormikProps } from 'formik';
 import React, { JSX } from 'react';
-import { isSchema } from 'yup';
+import { isSchema, Schema } from 'yup';
 import { StepComponentHelpers } from '../../../common/wizards';
 import { DashboardItemForm, TabStepComponent, ViewMode } from '../../../interfaces/dashboard';
 import DashboardItemDetailsHeader from './DashboardItemDetailsHeader';
@@ -10,7 +10,7 @@ import DashboardItemDetailsSideBar from './DashboardItemDetailsSideBar';
 
 interface DashboardItemDetailsProps<T extends DashboardItemForm> {
     initialValues: T;
-    submitFunction: (values: T) => Promise<any>;
+    submitFunction: (values: T) => Promise<MongoDashboardItem | IMongoChart> | Promise<IMongoIFrame>;
     onReset?: (values: T, formikHelpers: FormikHelpers<T>) => void;
     steps: TabStepComponent<T>[];
     viewMode: {
@@ -57,7 +57,7 @@ const DashboardItemDetails = <T extends DashboardItemForm>({
             {(formikProps: FormikProps<T>) => {
                 const isValidForm = steps.every((step) =>
                     step.validationSchema && isSchema(step.validationSchema)
-                        ? (step.validationSchema as any).isValidSync(formikProps.values, { abortEarly: false })
+                        ? (step.validationSchema as Schema).isValidSync(formikProps.values, { abortEarly: false })
                         : true,
                 );
 

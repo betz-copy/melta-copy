@@ -1,34 +1,36 @@
-/* eslint-disable no-restricted-globals */
-
 import { Autocomplete, InputAdornment, TextField } from '@mui/material';
-import { IMetadata } from '@packages/workspace';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import MeltaSwitch from '../../../common/MeltaDesigns/MeltaSwitch';
 import { environment } from '../../../globals';
+import { IMetadata, IWorkspace } from '../../../interfaces/workspaces';
 import { BackendConfigState } from '../../../services/backendConfigService';
 import { updateMetadata } from '../../../services/workspacesService';
 import { deepClone, setNestedValue } from '../../../utils/configs/configsUtils';
 import FieldCard from './FieldCard';
 
+const { unit } = environment;
+
+export type IValue = string | number | boolean | string[];
+
 interface FieldProps {
     keyPath: string;
-    value: string | number | boolean | string[];
-    defaultValue: string | number | boolean | string[];
-    updateConfig: (path: string, newValue: string | number | boolean | string[]) => void;
-    workspaceMetadata: any;
-    updateWorkspaceMetadata: (changes: any) => void;
+    value: IValue;
+    defaultValue: IValue;
+    updateConfig: (path: string, newValue: IValue) => void;
+    workspaceMetadata: IWorkspace['metadata'];
+    updateWorkspaceMetadata: (changes: Partial<IMetadata>) => void;
     workspaceId: string;
 }
 
 const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfig, workspaceMetadata, updateWorkspaceMetadata, workspaceId }) => {
+    const queryClient = useQueryClient();
+
     const translateConfigProp = i18next.t(`DynamicsConfigs.${keyPath}`);
 
-    const [inputValue, setInputValue] = useState<string | number | boolean | string[]>(value);
-    const [isModified, setIsModified] = useState(false);
-    const queryClient = useQueryClient();
-    const { unit } = environment;
+    const [inputValue, setInputValue] = useState<IValue>(value);
+    const [isModified, setIsModified] = useState<boolean>(false);
     const isValueDifferentFromDefault = inputValue !== defaultValue;
 
     useEffect(() => {
@@ -36,14 +38,11 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
         setIsModified(false);
     }, [value]);
 
-    const isValidInput = (val: string | number | boolean | string[]) => {
-        return val !== unit && val !== null && !(typeof val === 'number' && isNaN(val));
-    };
-    const isGatewayConfig = (path: string) => {
-        return path === 'excel.entitiesFileLimit' || path === 'excel.filesLimit';
-    };
+    const isValidInput = (val: IValue) => val !== unit && val !== null && !(typeof val === 'number' && Number.isNaN(val));
 
-    const updateConfigValue = async (val: string | number | boolean | string[]) => {
+    const isGatewayConfig = (path: string) => ['excel.entitiesFileLimit', 'excel.filesLimit'].includes(path);
+
+    const updateConfigValue = async (val: IValue) => {
         updateConfig(keyPath, val);
 
         const changes: Partial<IMetadata> = {};
@@ -51,21 +50,18 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
 
         if (keys.length > 1) {
             const parentKey = keys[0];
-            const parentObject = deepClone(workspaceMetadata[parentKey] || {});
+            const parentObject = deepClone(workspaceMetadata?.[parentKey] || {});
             setNestedValue(parentObject, keys.slice(1).join('.'), val);
             changes[parentKey] = parentObject;
-        } else {
-            changes[keyPath] = val;
-        }
+        } else changes[keyPath] = val;
 
         await updateMetadata(workspaceId, changes);
         updateWorkspaceMetadata(changes);
 
         if (isGatewayConfig(keyPath)) {
             queryClient.setQueryData<BackendConfigState>('getBackendConfig', (oldData) => {
-                if (!oldData) {
-                    throw new Error('Backend config data is undefined');
-                }
+                if (!oldData) throw new Error('Backend config data is undefined');
+
                 return {
                     ...oldData,
                     excel: {
@@ -90,7 +86,7 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
         updateConfigValue(defaultValue);
     };
 
-    const handleInputChange = (newValue: string | number | boolean | string[]) => {
+    const handleInputChange = (newValue: IValue) => {
         setInputValue(newValue);
         setIsModified(isValidInput(newValue) && newValue !== value);
     };
@@ -122,11 +118,8 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
                     }}
                     onChange={(e) => {
                         const newValue = e.target.value;
-                        if (/^\d*$/.test(newValue)) {
-                            handleInputChange(`${newValue}${unit}`);
-                        } else {
-                            handleInputChange(newValue);
-                        }
+                        if (/^\d*$/.test(newValue)) handleInputChange(`${newValue}${unit}`);
+                        else handleInputChange(newValue);
                     }}
                     onKeyDown={handleKeyDown}
                 />
@@ -162,7 +155,7 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
                         isOptionEqualToValue={(option, val) => option.trim() === val.trim()}
                         filterSelectedOptions
                         renderInput={(params) => (
-                            <TextField {...params} variant="standard" InputProps={{ ...params.InputProps, disableUnderline: true }} />
+                            <TextField {...params} variant="standard" slotProps={{ input: { ...params.InputProps, disableUnderline: true } }} />
                         )}
                         style={{ width: '100%' }}
                     />
@@ -170,7 +163,6 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
             }
             break;
 
-        case 'number':
         default:
             inputElement = (
                 <TextField
@@ -180,7 +172,7 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
                     slotProps={{ input: { disableUnderline: true } }}
                     onChange={(e) => {
                         const newValue = parseInt(e.target.value, 10);
-                        if (newValue > 0 || isNaN(newValue)) handleInputChange(newValue);
+                        if (newValue > 0 || Number.isNaN(newValue)) handleInputChange(newValue);
                     }}
                     onKeyDown={handleKeyDown}
                 />

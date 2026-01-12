@@ -84,7 +84,7 @@ export enum OptionsType {
     AggregationAndAllProperties = 'aggregationAndAllProperties',
 }
 
-export type GeneratorChart = { x: any; y: number }[];
+export type GeneratorChart = { x: IPropertyValue; y: number }[];
 
 export interface ChartsAndGenerator extends IMongoChart {
     chart: GeneratorChart;

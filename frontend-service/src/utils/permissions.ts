@@ -6,7 +6,6 @@ export const getWorkspacePermissions = async (permissions: IUser['permissions'],
 
     if (!hierarchyId) return;
 
-    // eslint-disable-next-line consistent-return
     return permissions[hierarchyId];
 };
 

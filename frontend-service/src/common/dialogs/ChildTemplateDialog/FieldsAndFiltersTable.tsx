@@ -14,7 +14,7 @@ import { ColoredEnumChip } from '../../ColoredEnumChip';
 import { getFilterFieldReadonly } from '../../inputs/FilterInputs/ReadonlyFilterInput';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import { IAgGridFilter } from '../../wizards/entityTemplate/commonInterfaces';
-import AddFilterFieldDialog from './AddFieldFilterDialog';
+import AddFilterFieldDialog, { IDefaultValue } from './AddFieldFilterDialog';
 
 type IChip = IAgGridFilter | IChildTemplateProperty['defaultValue'];
 
@@ -69,7 +69,7 @@ const renderChips = (
 ): React.ReactNode[] => {
     if (isFilterByUser || isFilterByUserUnit) {
         return [
-            <Typography sx={{ fontSize: '14px', fontWeight: 400, color: '#BBBED8' }}>
+            <Typography sx={{ fontSize: '14px', fontWeight: 400, color: '#BBBED8' }} key={mode}>
                 {i18next.t(`childTemplate.${isFilterByUser ? 'byUser' : 'byUnit'}`)}
             </Typography>,
         ];
@@ -273,7 +273,7 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
                     formikProps={formikProps}
                     entityTemplate={entityTemplate}
                     onClose={() => setAddFilterField(undefined)}
-                    onSubmit={(fieldValue: any) => {
+                    onSubmit={(fieldValue: IAgGridFilter | IDefaultValue) => {
                         const value = values.properties.properties[addFilterField.fieldName];
                         setFieldValue(`properties.properties.${addFilterField.fieldName}`, {
                             ...value,

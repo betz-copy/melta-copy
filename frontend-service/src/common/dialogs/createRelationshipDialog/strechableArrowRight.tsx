@@ -1,7 +1,7 @@
 import { Grid, SvgIcon, useTheme } from '@mui/material';
 import React from 'react';
 
-const StrechableArrowRight: React.FC<{ height?: number }> = ({ height = 50 }) => {
+const StretchableArrowRight: React.FC<{ height?: number }> = ({ height = 50 }) => {
     const theme = useTheme();
 
     return (
@@ -15,6 +15,7 @@ const StrechableArrowRight: React.FC<{ height?: number }> = ({ height = 50 }) =>
                     }}
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill={theme.palette.primary.main}>
+                        <title>Right arrow</title>
                         <polygon points="0,0 24,12 0,24" />
                     </svg>
                 </SvgIcon>
@@ -23,4 +24,4 @@ const StrechableArrowRight: React.FC<{ height?: number }> = ({ height = 50 }) =>
     );
 };
 
-export default StrechableArrowRight;
+export default StretchableArrowRight;

@@ -6,10 +6,14 @@ import * as XLSX from 'xlsx';
 import { ExcelStepStatus, IExcelSteps } from '../../interfaces/excel';
 import { useWorkspaceStore } from '../../stores/workspace';
 
-const convertFileDataToRowData = (gridData: any[][], headers: string[], template: IMongoEntityTemplateWithConstraintsPopulated) => {
+const convertFileDataToRowData = (
+    gridData: (string | number | null)[][],
+    headers: string[],
+    template: IMongoEntityTemplateWithConstraintsPopulated,
+) => {
     return gridData
         .map((row) => {
-            const rowObject: { [key: string]: any } = {};
+            const rowObject: Record<string, IPropertyValue> = {};
             headers.forEach((header, index) => {
                 const templateHeader = Object.entries(template.properties.properties).find(([_, value]) => value.title === header);
                 if (!templateHeader) return;
@@ -17,19 +21,22 @@ const convertFileDataToRowData = (gridData: any[][], headers: string[], template
                 rowObject[key] = row[index] || '';
             });
 
-            const isEmptyRow = Object.values(rowObject).every((value) => value === '' || value === undefined);
+            const isEmptyRow = !Object.values(rowObject).some((value) => value !== '' && value !== undefined);
 
             return isEmptyRow ? null : { properties: rowObject };
         })
         .filter((rowObject) => rowObject !== null);
 };
 
-const importDataToGrid = (fileData: any[][], template: IMongoEntityTemplateWithConstraintsPopulated): { properties: Record<string, any> }[] | [] => {
-    if (fileData.length === 0) return [];
+const importDataToGrid = (
+    fileData: (string | number | null)[][],
+    template: IMongoEntityTemplateWithConstraintsPopulated,
+): { properties: Record<string, IPropertyValue> }[] | [] => {
+    if (!fileData.length) return [];
 
     const headers = fileData[0] as string[];
     const newRows = convertFileDataToRowData(fileData.slice(1), headers, template);
-    return (newRows || []).filter((row): row is { properties: Record<string, any> } => row !== null);
+    return (newRows || []).filter((row): row is { properties: Record<string, IPropertyValue> } => row !== null);
 };
 
 const createFileObject = (filesLimit: number, files?: File[]): Record<string, File> | undefined => {
@@ -39,13 +46,17 @@ const createFileObject = (filesLimit: number, files?: File[]): Record<string, Fi
         toast.error(i18next.t('wizard.entity.loadEntities.limitNumberFiles') + filesLimit);
         return undefined;
     }
-    return validFiles.reduce<Record<string, File>>((acc, file) => {
-        return { ...acc, [file.name]: file };
-    }, {});
+
+    const filesMap: Record<string, File> = {};
+    for (const file of validFiles) {
+        filesMap[file.name] = file;
+    }
+
+    return filesMap;
 };
 
 export const useReadExcel = () => {
-    const [rowData, setRowData] = useState<any[]>([]);
+    const [rowData, setRowData] = useState<{ properties: Record<string, IPropertyValue> }[]>([]);
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { entitiesFileLimit, filesLimit } = workspace.metadata.excel;
 
@@ -60,7 +71,7 @@ export const useReadExcel = () => {
 
         setRowData([]);
 
-        const entities: { properties: Record<string, any> }[] = [];
+        const entities: { properties: Record<string, IPropertyValue> }[] = [];
         const fileReadPromises = Array.from(Object.values(fileObject)).map((file) => {
             const excelExtension = ['.xlsx', '.xls'];
             if (!excelExtension.some((ext) => file.name.toLowerCase().endsWith(ext))) throw new Error('Invalid File Type');
@@ -75,13 +86,14 @@ export const useReadExcel = () => {
 
                         const worksheetName = Object.keys(workbook.Sheets)[0] as string;
                         if (template.displayName.trim() !== worksheetName.trim()) throw new Error('Invalid File: wrong template');
-                        const fileData: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                        const fileData: (string | number | null)[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
                         const newEntities = importDataToGrid(fileData, template);
-                        if ((newEntities?.length || 0) > entitiesFileLimit) {
-                            reject(new Error(file.name));
-                        } else {
-                            newEntities?.forEach((newEntity) => entities.push(newEntity));
+                        if ((newEntities?.length || 0) > entitiesFileLimit) reject(new Error(file.name));
+                        else {
+                            newEntities?.forEach((newEntity) => {
+                                entities.push(newEntity);
+                            });
                             resolve();
                         }
                     } catch (err) {
@@ -95,7 +107,7 @@ export const useReadExcel = () => {
 
         try {
             await Promise.all(fileReadPromises);
-            if (entities.length === 0) {
+            if (!entities.length) {
                 toast.warn(i18next.t('wizard.entity.loadEntities.emptyExcel'));
                 return;
             }

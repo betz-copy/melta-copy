@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { environment } from '../../globals';
 import { generateLayoutDetails, generateNewItemSizes } from '../../utils/charts/defaultChartSizes';
 import { LocalStorage } from '../../utils/localStorage';
@@ -27,13 +27,13 @@ const LocalStorageGridLayout = <T extends { _id: string }>({
 }: LocalStorageGridLayoutProps<T>) => {
     const [mounted, setMounted] = useState(false);
 
-    const getSavedLayout = (): LayoutItem[] => LocalStorage.get(localStorageKey) || [];
+    const getSavedLayout = useCallback((): LayoutItem[] => LocalStorage.get(localStorageKey) || [], [localStorageKey]);
 
     useEffect(() => {
         const savedLayout = getSavedLayout();
         layout.set(savedLayout.length ? savedLayout : generateLayoutDetails(items).lg);
         setMounted(true);
-    }, []);
+    }, [getSavedLayout, items, layout.set]);
 
     useEffect(() => {
         const savedLayout = getSavedLayout();
@@ -56,7 +56,7 @@ const LocalStorageGridLayout = <T extends { _id: string }>({
         }
 
         if (textSearch) savedLayout.filter((l) => items.some((item) => item._id === l.i));
-    }, [items, textSearch]);
+    }, [items, textSearch, getSavedLayout, layout.set, localStorageKey]);
 
     const handleLayoutChange = (newLayout: LayoutItem[]) => {
         const savedLayout = getSavedLayout();

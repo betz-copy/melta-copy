@@ -4,7 +4,6 @@ import { logger } from '@packages/utils';
 import { menash } from 'menashmq';
 import config from '../config';
 import UsersManager from '../express/users/manager';
-// eslint-disable-next-line import/extensions
 import MailManager from './mailNotifications';
 import { IMailNotificationMetadataPopulated } from './mailNotifications/interfaces';
 

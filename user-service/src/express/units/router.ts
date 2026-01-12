@@ -3,6 +3,7 @@ import { Router } from 'express';
 import UnitsController from './controller';
 import {
     createUnitRequestSchema,
+    getUnitByIdRequestSchema,
     getUnitHierarchyRequestSchema,
     getUnitsByIdsRequestSchema,
     getUnitsRequestSchema,
@@ -16,6 +17,8 @@ unitsRouter.get('/', ValidateRequest(getUnitsRequestSchema), wrapController(Unit
 unitsRouter.post('/ids', ValidateRequest(getUnitsByIdsRequestSchema), wrapController(UnitsController.getUnitsByIds));
 
 unitsRouter.post('/', ValidateRequest(createUnitRequestSchema), wrapController(UnitsController.createUser));
+
+unitsRouter.get('/:unitId', ValidateRequest(getUnitByIdRequestSchema), wrapController(UnitsController.getUnitById));
 
 unitsRouter.patch('/:id', ValidateRequest(updateUnitRequestSchema), wrapController(UnitsController.updateUnit));
 

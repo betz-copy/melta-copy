@@ -26,7 +26,7 @@ const checkPropertyInUsed = (
         (variable.entityTemplateId === entityId || variable.aggregatedRelationship?.otherEntityTemplateId === entityId) &&
         properties.includes(property)
     ) {
-        throw new ServiceError(400, 'can not delete field that used in rules', {
+        throw new ServiceError(StatusCodes.BAD_REQUEST, 'can not delete field that used in rules', {
             errorCode: archive ? config.errorCodes.failedToArchiveField : config.errorCodes.failedToDeleteField,
             type: 'rules',
             property,
@@ -40,7 +40,9 @@ const checkPropertyInUsedFromArgument = (argument: IArgument, entityId: string, 
     }
 
     if (isRegularFunction(argument)) {
-        return argument.arguments.forEach((arg) => checkPropertyInUsedFromArgument(arg, entityId, properties, archive));
+        return argument.arguments.forEach((arg) => {
+            checkPropertyInUsedFromArgument(arg, entityId, properties, archive);
+        });
     }
 
     if (!isConstant(argument) && !isCountAggFunction(argument)) {

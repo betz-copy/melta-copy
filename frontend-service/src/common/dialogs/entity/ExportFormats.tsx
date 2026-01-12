@@ -12,7 +12,7 @@ import { exportEntityToDocumentRequest } from '../../../services/entitiesService
 import { getLongDate } from '../../../utils/date';
 import { getFileName } from '../../../utils/getFileName';
 import { locationConverterToString } from '../../../utils/map/convert';
-import { CoordinateSystem } from '../../inputs/JSONSchemaFormik/RjsfLocationWidget';
+import { CoordinateSystem } from '../../inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
 import { EntityWizardValues } from '.';
 
 export const ExportFormats: React.FC<{
@@ -56,9 +56,7 @@ export const ExportFormats: React.FC<{
                 // Sometimes and somewhere user is sent as a stringified JSON.
                 try {
                     propertyCopy[fieldKey] = JSON.parse(propertyCopy[fieldKey]);
-                } catch {
-                    propertyCopy[fieldKey] = propertyCopy[fieldKey];
-                }
+                } catch {}
             } else if (field.type === 'array' && field.items?.format === 'user') {
                 // Sometimes and somewhere users are sent as an array of stringified JSONs, and sometimes as an object with arrays of each user field.
                 if (propertyCopy[fieldKey]) {
@@ -87,15 +85,8 @@ export const ExportFormats: React.FC<{
                     expandedField.coordinateSystem === CoordinateSystem.UTM
                         ? locationConverterToString(expandedField.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
                         : expandedField.location;
-            } else if (
-                expandedField?.fullName &&
-                expandedField?.mail &&
-                (expandedField?.id || expandedField?._id) &&
-                expandedField?.hierarchy &&
-                expandedField?.jobTitle
-            ) {
-                propertyCopy[fieldKey] = expandedField.fullName;
-            } else if (Array.isArray(expandedField)) {
+            } else if (expandedField?.fullName) propertyCopy[fieldKey] = expandedField.fullName;
+            else if (Array.isArray(expandedField))
                 propertyCopy[fieldKey] = expandedField.map((item) => {
                     try {
                         return JSON.parse(item).fullName;
@@ -103,15 +94,7 @@ export const ExportFormats: React.FC<{
                         return item;
                     }
                 });
-            } else if (
-                expandedField?.fullNames &&
-                expandedField?.mails &&
-                expandedField?.ids &&
-                expandedField?.hierarchies &&
-                expandedField?.jobTitles
-            ) {
-                propertyCopy[fieldKey] = expandedField.fullNames;
-            }
+            else if (expandedField?.fullNames) propertyCopy[fieldKey] = expandedField.fullNames;
         }
 
         return propertyCopy;

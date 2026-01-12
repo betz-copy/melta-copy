@@ -35,7 +35,6 @@ export const EntityLink: React.FC<EntityLinkProps> = ({
     const linkText = entityTemplate ? entityTemplate.displayName : i18next.t('ruleBreachInfo.updateEntityActionInfo.unknownEntity');
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const entityPropertiesTooltip =
-        // eslint-disable-next-line no-nested-ternary
         !entityTemplate || !entity ? (
             i18next.t('ruleBreachInfo.deletedEntity')
         ) : !entityTemplate.propertiesPreview.length ? (

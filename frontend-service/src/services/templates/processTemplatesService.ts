@@ -1,4 +1,5 @@
 import { FileDetails } from '@packages/common';
+import { PropertyType } from '@packages/entity-template';
 import {
     ICreateProcessTemplateBody,
     IMongoProcessTemplateReviewerPopulated,
@@ -6,6 +7,7 @@ import {
     IProcessSingleProperty,
     ISearchProcessTemplatesBody,
     IUpdateProcessTemplateBody,
+    ProcessPropertyFormats,
 } from '@packages/process';
 import { v4 as uuid } from 'uuid';
 import axios from '../../axios';
@@ -14,8 +16,6 @@ import { environment } from '../../globals';
 import { extractProperties } from './entityTemplatesService';
 
 const { processTemplates } = environment.api;
-export const basePropertyTypes = ['string', 'number', 'boolean', 'array'];
-export const stringFormats = ['date', 'date-time', 'email', 'entityReference', 'fileId', 'text-area', 'signature'];
 
 export type ExtractedProcessProps = {
     properties: ProcessTemplateFormInputProperties[];
@@ -128,19 +128,19 @@ const processTemplateObjectToProcessTemplateForm = (
     };
 };
 
-const createFileAttachmentProperty = (type: string, required: boolean): any => {
+const createFileAttachmentProperty = (type: string, required: boolean): Omit<IProcessSingleProperty, 'title'> & { required?: boolean } => {
     if (type === 'multipleFiles') {
         return {
-            type: 'array',
+            type: PropertyType.array,
             items: {
-                type: 'string',
+                type: PropertyType.string,
                 format: 'fileId',
             },
             ...(required && { required: true }),
         };
     }
     return {
-        type: 'string',
+        type: PropertyType.string,
         format: 'fileId',
         ...(required && { required: true }),
     };
@@ -158,8 +158,7 @@ const addAttachmentProperties = (
 ) => {
     attachmentProperties.forEach(({ name, title, type, required, deleted }) => {
         if (!deleted) {
-            const { required: requiredFile, ...attachmentProperty } = createFileAttachmentProperty(type, required);
-            // eslint-disable-next-line no-param-reassign
+            const { required: _requiredFile, ...attachmentProperty } = createFileAttachmentProperty(type, required);
             properties[name] = {
                 title,
                 ...attachmentProperty,
@@ -189,8 +188,8 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
         if (!deleted) {
             detailsSchema.properties[name] = {
                 title,
-                type: basePropertyTypes.includes(type) ? (type as IProcessSingleProperty['type']) : 'string',
-                format: stringFormats.includes(type) ? (type as IProcessSingleProperty['format']) : undefined,
+                type: Object.values(PropertyType).includes(type) ? (type as IProcessSingleProperty['type']) : PropertyType.string,
+                format: Object.values(ProcessPropertyFormats).includes(type) ? (type as IProcessSingleProperty['format']) : undefined,
                 enum: type === 'enum' ? options : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
@@ -218,8 +217,8 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
             if (!deleted) {
                 stepSchema.properties[name] = {
                     title,
-                    type: basePropertyTypes.includes(type) ? (type as IProcessSingleProperty['type']) : 'string',
-                    format: stringFormats.includes(type) ? (type as IProcessSingleProperty['format']) : undefined,
+                    type: Object.values(PropertyType).includes(type) ? (type as IProcessSingleProperty['type']) : PropertyType.string,
+                    format: Object.values(ProcessPropertyFormats).includes(type) ? (type as IProcessSingleProperty['format']) : undefined,
                     enum: type === 'enum' ? options : undefined,
                     pattern: type === 'pattern' ? pattern : undefined,
                     patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,

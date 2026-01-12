@@ -119,48 +119,46 @@ const ClientSidePageInner: React.FC = () => {
     if (isLoading)
         return (
             <Grid width="100%" justifyContent="center">
-                <LoadingAnimation isLoading={isLoading} />;
+                <LoadingAnimation isLoading={isLoading} />
             </Grid>
         );
 
     return (
-        <>
-            <MainBox
-                ref={(ref: HTMLElement | null) => {
-                    pageScrollTargetRef.current = ref;
-                }}
-                sx={{
-                    backgroundImage: `url(/clientSide/${clientSideWorkspaceName}/logo-rtl.svg)`,
-                    backgroundSize: '90% 90%',
-                    backgroundRepeat: 'no-repeat',
-                    backgroundPositionX: 'center',
-                    backgroundPositionY: 'bottom',
-                }}
-                style={{ overflowY: 'auto', overflowAnchor: 'none' }}
-            >
-                <Box>
-                    <Suspense fallback={<div />}>
-                        {!isError && <Topbar currentUser={currentUser} />}
-                        <Switch>
-                            <Route path="client-side/user-not-exists">
-                                <UserNotExistsPage />
-                            </Route>
-                            <Route path="client-side/main">
-                                <ClientSideMainPage />
-                            </Route>
-                            <Route path="client-side/entity/:entityId">
-                                <ClientSideEntityPage />
-                            </Route>
-                            <Route path="*">
-                                <ErrorPage errorText={i18next.t('errorPage.reachedTheWrongPage')} />
-                            </Route>
-                        </Switch>
-                    </Suspense>
+        <MainBox
+            ref={(ref: HTMLElement | null) => {
+                pageScrollTargetRef.current = ref;
+            }}
+            sx={{
+                backgroundImage: `url(/clientSide/${clientSideWorkspaceName}/logo-rtl.svg)`,
+                backgroundSize: '90% 90%',
+                backgroundRepeat: 'no-repeat',
+                backgroundPositionX: 'center',
+                backgroundPositionY: 'bottom',
+            }}
+            style={{ overflowY: 'auto', overflowAnchor: 'none' }}
+        >
+            <Box>
+                <Suspense fallback={<div />}>
+                    {!isError && <Topbar currentUser={currentUser} />}
+                    <Switch>
+                        <Route path="client-side/user-not-exists">
+                            <UserNotExistsPage />
+                        </Route>
+                        <Route path="client-side/main">
+                            <ClientSideMainPage />
+                        </Route>
+                        <Route path="client-side/entity/:entityId">
+                            <ClientSideEntityPage />
+                        </Route>
+                        <Route path="*">
+                            <ErrorPage errorText={i18next.t('errorPage.reachedTheWrongPage')} />
+                        </Route>
+                    </Switch>
+                </Suspense>
 
-                    <ScrollToTop fadeInTrigger={trigger} />
-                </Box>
-            </MainBox>
-        </>
+                <ScrollToTop fadeInTrigger={trigger} />
+            </Box>
+        </MainBox>
     );
 };
 

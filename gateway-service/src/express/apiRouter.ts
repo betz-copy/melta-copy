@@ -9,28 +9,31 @@ import flowCubeRouter from './flowCube/router';
 import GanttsRouter from './gantts/router';
 import iFramesRouter from './iFrames/router';
 import instancesRouter from './instances/router';
+import mapRouter from './map/router';
 import notificationsRouter from './notifications/router';
 import processesRouter from './processes/router';
 import RulesBreachesRouter from './ruleBreaches/router';
 import ChartsRouter from './templateCharts/router';
 import templatesRouter from './templates/router';
+import unitsRouter from './units/router';
 import usersRouter from './users/router';
 import workspaceRouter from './workspaces/router';
 
 const apiRouter = Router();
 
-apiRouter.use('/config', (_req, res) =>
+apiRouter.use('/config', (_req, res) => {
     res.json({
         matomoUrl: config.frontendConfig.matotmo.baseUrl,
         matomoSiteId: config.frontendConfig.matotmo.siteId,
         mapLayers: config.frontendConfig.mapLayers,
         textLayers: config.frontendConfig.textLayers,
+        getMapLayers: config.frontendConfig.getMapLayers,
         deleteEntitiesLimit: config.frontendConfig.agGridLimit.deleteLimit,
         meltaUpdates: config.frontendConfig.meltaUpdates,
-        meltaUpdatesDescription: config.frontendConfig.meltaUpdatesDescription,
         isOutsideDevelopment: config.frontendConfig.isOutsideDevelopment,
-    }),
-);
+        maxEntitiesToPrint: config.frontendConfig.maxEntitiesToPrint,
+    });
+});
 
 apiRouter.use('/templates', templatesRouter);
 apiRouter.use('/instances', instancesRouter);
@@ -62,20 +65,11 @@ apiRouter.use(
 
 apiRouter.use('/processes', processesRouter);
 
-apiRouter.use(
-    '/units',
-    createProxyMiddleware({
-        target: `${config.userService.url}${config.userService.unitsRoute}`,
-        changeOrigin: true,
-        on: {
-            proxyReq: fixRequestBody,
-        },
-        proxyTimeout: config.previewService.requestTimeout,
-    }),
-    AuthorizerControllerMiddleware.userHasSomePermissions,
-);
+apiRouter.use('/units', unitsRouter);
 
 apiRouter.use('/users', usersRouter);
+
+apiRouter.use('/map', mapRouter);
 
 apiRouter.use('/activity-log', ActivityLogRouter);
 

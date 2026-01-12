@@ -28,6 +28,7 @@ export const CardMenu: React.FC<{
         tooltipTitle: string;
         editTooltipTitle?: string;
         disableForReadPermissions?: boolean;
+        isWalletTransferEntity?: boolean;
         disabledErrorTooltip?: string;
     };
     onDisableClick?: MouseEventHandler;
@@ -162,7 +163,13 @@ export const CardMenu: React.FC<{
                 {onDeleteClick && (
                     <MeltaTooltip
                         placement="left"
-                        title={disabledProps?.isDisabled || disabledProps?.isDeleteDisabled ? disabledProps?.tooltipTitle : ''}
+                        title={
+                            disabledProps?.isDisabled || disabledProps?.isDeleteDisabled
+                                ? disabledProps?.tooltipTitle
+                                : disabledProps?.isWalletTransferEntity
+                                  ? i18next.t('entityPage.walletTransfer.deleteDisabled')
+                                  : ''
+                        }
                     >
                         <Grid>
                             <MenuButton
@@ -171,7 +178,7 @@ export const CardMenu: React.FC<{
                                     handleClose(e);
                                 }}
                                 text={i18next.t('actions.delete')}
-                                disabled={disabledProps?.isDisabled || disabledProps?.isDeleteDisabled}
+                                disabled={disabledProps?.isDisabled || disabledProps?.isDeleteDisabled || disabledProps?.isWalletTransferEntity}
                                 icon={<DeleteIcon color="action" />}
                             />
                         </Grid>

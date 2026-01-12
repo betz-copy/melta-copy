@@ -1,6 +1,8 @@
 import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IProcessDetails } from '@packages/process';
-import pickBy from 'lodash.pickby';
+import { pickBy } from 'lodash';
+import { PropertyFormat } from '../interfaces/entityTemplates';
+
 export const filterFieldsFromPropertiesSchema = (
     schema: IMongoEntityTemplateWithConstraintsPopulated['properties'] | undefined = {} as IMongoEntityTemplateWithConstraintsPopulated['properties'],
     fieldsToFilter: Record<string, boolean> | undefined = undefined,
@@ -11,13 +13,14 @@ export const filterFieldsFromPropertiesSchema = (
         ...schema,
         properties: pickBy(
             schema?.properties,
-            (value) => !formats.includes(value.format ?? '') && value.items?.format !== 'fileId' && !value.archive && value.display !== false,
+            (value) =>
+                !formats.includes(value.format ?? '') && value.items?.format !== PropertyFormat.fileId && !value.archive && value.display !== false,
         ),
         required:
             schema.required.filter(
                 (requiredKey) =>
                     !formats.includes(getProperty(requiredKey)?.format ?? '') &&
-                    getProperty(requiredKey)?.items?.format !== 'fileId' &&
+                    getProperty(requiredKey)?.items?.format !== PropertyFormat.fileId &&
                     getProperty(requiredKey)?.serialCurrent === undefined &&
                     (!fieldsToFilter || !!fieldsToFilter?.[requiredKey]),
             ) ?? [],
@@ -30,7 +33,7 @@ export const pickProcessFieldsPropertiesSchema = (schema: IProcessDetails): IMon
         hide: [],
         properties: schema.properties.properties as unknown as Record<string, IEntitySingleProperty>,
         required: schema.properties.required,
-    });
+    } as IProperties & { required: string[] });
 
     return {
         ...filteredProperties,

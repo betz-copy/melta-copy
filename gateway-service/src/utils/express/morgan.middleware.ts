@@ -1,6 +1,6 @@
 import { logger } from '@packages/utils';
 import { StatusCodes } from 'http-status-codes';
-import morgan, { StreamOptions } from 'morgan';
+import morgan, { StreamOptions, TokenIndexer } from 'morgan';
 
 const stream: StreamOptions = {
     write: (message) => {
@@ -9,7 +9,8 @@ const stream: StreamOptions = {
         logger.info('morgan-log', logObject);
     },
 };
-morgan.format('jsonFormat', (tokens: any, req: any, res: any) => {
+// biome-ignore lint/suspicious/noExplicitAny: lol
+morgan.format('jsonFormat', (tokens: TokenIndexer<Request, Response>, req: any, res: Response) => {
     const status = tokens.status(req, res);
 
     const logObject = {

@@ -1,10 +1,11 @@
 import { ActionsLog } from '@packages/activity-log';
+import { IPropertyValue } from '@packages/entity';
 import { Status } from '@packages/process';
 
 export interface IUpdatedFields {
     fieldName: string;
-    oldValue: any;
-    newValue: any;
+    oldValue: IPropertyValue;
+    newValue: IPropertyValue;
 }
 
 interface IBaseActivityLog {

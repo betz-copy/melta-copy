@@ -3,7 +3,7 @@ import { IChildTemplateMap } from '@packages/child-template';
 import { IEntity, IEntityExpanded } from '@packages/entity';
 import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IMongoRelationshipTemplate, IRelationshipTemplateMap } from '@packages/relationship-template';
-import uniqBy from 'lodash.uniqby';
+import { uniqBy } from 'lodash';
 import { GraphData, LinkObject, NodeObject } from 'react-force-graph-2d';
 import { environment } from '../../globals';
 import { apiUrlToImageSource } from '../../services/storageService';
@@ -46,7 +46,7 @@ export const getSizeOfNodeByConnections = (nodeId: string, links: LinkObject[]) 
 };
 
 // this function is used to fixed weird behavior of the graph engine which is to populate the links to the real objects
-export const getFixedGraphLinks = (links: Record<string, any>[] | string[]): LinkObject[] => {
+export const getFixedGraphLinks = (links: Record<string, IPropertyValue>[] | string[]): LinkObject[] => {
     const fixedLinks = links.map((link) => {
         const { source, target, ...other } = link;
 

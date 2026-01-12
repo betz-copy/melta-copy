@@ -4,7 +4,7 @@ import {
     DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
     DoNotDisturbOnOutlined as DoNotDisturbOnOutlinedIcon,
     ContentCopy as DuplicateIcon,
-    Map,
+    Map as MapIcon,
     MoreVertOutlined,
     Unarchive,
 } from '@mui/icons-material';
@@ -76,7 +76,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
     };
 
     const entityDetailTooltipTitle = (canWriteInstance: boolean, isEntityDisabled: boolean) => {
-        // eslint-disable-next-line no-nested-ternary
         return !canWriteInstance
             ? i18next.t('permissions.dontHaveWritePermissionsToTemplate')
             : isEntityDisabled
@@ -201,29 +200,35 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
                                 {includeLocationProperty && (
                                     <Grid onClick={() => setMapDialogOpen(true)}>
                                         <IconButtonWithPopover popoverText={i18next.t('map')}>
-                                            <Map sx={{ color: '#787c9e' }} />
+                                            <MapIcon sx={{ color: '#787c9e' }} />
                                         </IconButtonWithPopover>
                                     </Grid>
                                 )}
                                 <Grid
                                     onClick={() => {
-                                        if (canWriteInstance && !isEntityDisabled) setIsEditMode(true);
+                                        if (canWriteInstance && !isEntityDisabled && !currentEntityTemplate?.walletTransfer) setIsEditMode(true);
                                     }}
                                 >
                                     <IconButtonWithPopover
                                         popoverText={
                                             // eslint-disable-next-line no-nested-ternary
-                                            !canWriteInstance
+                                            !canWriteInstance || currentEntityTemplate?.walletTransfer
                                                 ? i18next.t('permissions.dontHaveWritePermissionsToTemplate')
                                                 : isEntityDisabled
                                                   ? i18next.t('entityPage.disabledEntity')
                                                   : i18next.t('actions.edit')
                                         }
                                         style={{
-                                            cursor: !canWriteInstance || isEntityDisabled ? 'default' : 'pointer',
+                                            cursor:
+                                                !canWriteInstance || isEntityDisabled || !!currentEntityTemplate?.walletTransfer
+                                                    ? 'default'
+                                                    : 'pointer',
                                         }}
                                     >
-                                        <ImageWithDisable srcPath="/icons/edit-icon.svg" disabled={!canWriteInstance || isEntityDisabled} />
+                                        <ImageWithDisable
+                                            srcPath="/icons/edit-icon.svg"
+                                            disabled={!canWriteInstance || isEntityDisabled || !!currentEntityTemplate?.walletTransfer}
+                                        />
                                     </IconButtonWithPopover>
                                 </Grid>
                                 <Grid
@@ -232,7 +237,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
                                     }}
                                 >
                                     <IconButtonWithPopover popoverText={i18next.t('actions.graph')}>
-                                        <img src="/icons/graph-icon.svg" />
+                                        <img src="/icons/graph-icon.svg" alt="graph-icon" />
                                     </IconButtonWithPopover>
                                 </Grid>
                                 <IconButton onClick={handleClick}>
@@ -260,7 +265,12 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
                                             setOpenDeleteDialog(true);
                                             handleClose();
                                         }}
-                                        disabled={!canWriteInstance || entityTemplate.disabled || entity.properties.disabled}
+                                        disabled={
+                                            !canWriteInstance ||
+                                            entityTemplate.disabled ||
+                                            entity.properties.disabled ||
+                                            !!currentEntityTemplate?.walletTransfer
+                                        }
                                         icon={DeleteIcon}
                                         text={i18next.t('actions.delete')}
                                     />

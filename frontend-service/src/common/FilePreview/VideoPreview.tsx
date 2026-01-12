@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/media-has-caption */
 import React from 'react';
 
 interface IVideoPreview {
@@ -19,7 +18,8 @@ export const VideoPreview: React.FC<IVideoPreview> = ({ data }) => {
                     overflow: 'hidden',
                 }}
             >
-                <source src={data} />
+                <source src={data} type="video/mp4" />
+                <track kind="captions" src="" label="English captions" srcLang="en" default />
             </video>
         </div>
     );

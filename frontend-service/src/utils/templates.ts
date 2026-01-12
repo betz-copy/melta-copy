@@ -33,7 +33,7 @@ export const groupChildTemplatesByParent = (
 ): Record<string, IMongoChildTemplateWithConstraintsPopulated[]> => {
     const grouped: Record<string, IMongoChildTemplateWithConstraintsPopulated[]> = {};
 
-    for (const childTemplate of childTemplates.values()) {
+    for (const childTemplate of Array.from(childTemplates.values())) {
         const parentId = childTemplate.parentTemplate._id.toString();
 
         if (!entityTemplates.get(parentId)) {
@@ -106,7 +106,7 @@ export const getFullRelationshipTemplates = (
 
         if (isSelfProperty || !connection) continue;
 
-        const hasInstances = expandedEntity?.connections.some(({ relationship: { templateId } }) => templateId === relationshipTemplate._id)!;
+        const hasInstances = expandedEntity?.connections.some(({ relationship: { templateId } }) => templateId === relationshipTemplate._id);
 
         if (filterOnlyThoseWithInstances && !hasInstances) continue;
 
@@ -140,7 +140,7 @@ export const isRelationshipConnectedToEntityTemplate = (
     return sourceEntity._id === entityTemplate._id || destinationEntity._id === entityTemplate._id;
 };
 
-export const mapTemplates = <T extends Record<string, any> & { _id: string }>(templates: T[], sortByField: keyof T = 'displayName') => {
+export const mapTemplates = <T extends Record<string, IPropertyValue> & { _id: string }>(templates: T[], sortByField: keyof T = 'displayName') => {
     const map: Map<string, T> = new Map();
 
     const sortedTemplates = templates.sort((a, b) => a[sortByField].localeCompare(b[sortByField]));

@@ -11,7 +11,7 @@ import { isUserHasWritePermissions } from '../common/EntitiesPage/TemplateTable'
 import { UserState } from '../stores/user';
 import { matchValueAgainstFilter } from './filters';
 
-const parseFilterObject = (filters: any): any | null => {
+const parseFilterObject = (filters: (string & Record<string, unknown>) | undefined): (string & Record<string, unknown>) | undefined | null => {
     if (typeof filters === 'string') {
         try {
             return JSON.parse(filters);
@@ -22,10 +22,10 @@ const parseFilterObject = (filters: any): any | null => {
     return typeof filters === 'object' && filters !== null ? filters : null;
 };
 
-const getFilteredEnum = (enumVals: string[], filterObj: any): string[] | undefined => {
+const getFilteredEnum = (enumVals: string[], filterObj: IFilter): string[] | undefined => {
     const enumEquals = filterObj.$or
-        .map((condition: any) => (Object.values(condition) as any)[0]?.$in)
-        .filter((val: any): val is string[] => Array.isArray(val))
+        .map((condition: IFilter) => (Object.values(condition) as IFilter)[0]?.$in)
+        .filter((val: IFilter): val is string[] => Array.isArray(val))
         .flat();
 
     return enumEquals.length > 0 ? enumVals.filter((val) => enumEquals.includes(val)) : enumVals;
@@ -39,9 +39,7 @@ export const getChildPropertiesFiltered = (childTemplate: IMongoChildTemplatePop
 
         const newValue = { ...value };
 
-        if (value.enum && filterObj) {
-            newValue.enum = getFilteredEnum(value.enum, filterObj);
-        }
+        if (value.enum && filterObj) newValue.enum = getFilteredEnum(value.enum, filterObj);
 
         properties[key] = newValue;
     }
@@ -72,8 +70,13 @@ export const isEntityFitsToChildTemplate = (
     for (const [key, prop] of Object.entries(template.properties.properties)) {
         const value = entity.properties[key];
 
-        if (prop.isFilterByCurrentUser && currentUserKartoffelId && value !== currentUserKartoffelId) return false;
-
+        if (prop.isFilterByCurrentUser && currentUserKartoffelId && prop.format === 'user') {
+            try {
+                if (JSON.parse(value)?._id !== currentUserKartoffelId) return false;
+            } catch (error) {
+                console.error('user type is unexpected', { error });
+            }
+        }
         if (prop.isFilterByUserUnit && units && !isUserAdmin && !units.includes(value)) return false;
 
         if (prop.filters) {

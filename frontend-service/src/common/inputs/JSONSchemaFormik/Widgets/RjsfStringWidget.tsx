@@ -1,15 +1,12 @@
-/* eslint-disable react/jsx-no-duplicate-props */
-/* eslint-disable import/no-extraneous-dependencies */
-/* eslint-disable no-underscore-dangle */
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import { IconButton, InputAdornment, TextField } from '@mui/material';
 import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import { format, parseISO } from 'date-fns';
 import React from 'react';
-import { environment } from '../../../globals';
-import { containsHTMLTags, convertToPlainText } from '../../../utils/HtmlTagsStringValue';
-import { getFixedNumber, getTextDirection } from '../../../utils/stringValues';
+import { environment } from '../../../../globals';
+import { containsHTMLTags, convertToPlainText } from '../../../../utils/HtmlTagsStringValue';
+import { getFixedNumber, getTextDirection } from '../../../../utils/stringValues';
 
 const RjsfTextWidget = ({
     id,
@@ -53,7 +50,8 @@ const RjsfTextWidget = ({
     const inputType = (type || schema.type) === 'string' ? 'text' : `${type || schema.type}`;
 
     const isTextArea = containsHTMLTags(value);
-    let finalValue;
+    // biome-ignore lint/suspicious/noExplicitAny: lol
+    let finalValue: any;
 
     const isoDateRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/;
 
@@ -117,7 +115,7 @@ const RjsfTextWidget = ({
                             </InputAdornment>
                         ) : null,
                 },
-                htmlInput: { readOnly: readonly },
+                htmlInput: { readOnly: readonly && disabled },
                 inputLabel: { shrink: readonly || undefined },
             }}
             dir={getTextDirection(value, schema)}

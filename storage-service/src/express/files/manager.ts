@@ -1,7 +1,7 @@
+import { Stream } from 'node:stream';
 import { UploadedFile } from '@packages/entity';
 import { ServiceError } from '@packages/utils';
 import { menash } from 'menashmq';
-import { Stream } from 'stream';
 import config from '../../config';
 import { getFileExtension, isFileDocument } from '../../utils/fileHelper';
 import { generate32CharUUID, generatePath } from '../../utils/generatePath';

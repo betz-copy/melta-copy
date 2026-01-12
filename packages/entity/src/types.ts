@@ -17,9 +17,12 @@ import {
 } from '@packages/rule-breach';
 import { Readable } from 'stream';
 
+// biome-ignore lint/suspicious/noExplicitAny: prop value is any
+export type IPropertyValue = any;
+
 export interface IEntity {
     templateId: string;
-    properties: Record<string, any>;
+    properties: Record<string, IPropertyValue>;
     coloredFields?: Record<string, string>;
 }
 
@@ -59,7 +62,7 @@ export interface IUniqueConstraint {
     templateId: string;
     uniqueGroupName: string;
     properties: string[];
-    values?: Record<string, any>;
+    values?: Record<string, IPropertyValue>;
 }
 
 export interface IRequiredConstraint {
@@ -106,7 +109,7 @@ export interface IValidationErrorData {
     type: string;
     message: string;
     metadata: {
-        properties: Record<string, any>;
+        properties: Record<string, IPropertyValue>;
         errors: { type: ActionErrors.validation; metadata: IValidationError }[];
     };
 }
@@ -153,11 +156,10 @@ export interface IFilterOfField {
     $not?: IFilterOfField;
 }
 
-export type IFilterOfTemplate<T extends Record<string, any> = Record<string, any>> = {
+export type IFilterOfTemplate<T extends Record<string, IPropertyValue> = Record<string, IPropertyValue>> = {
     [field in keyof T]?: IFilterOfField;
 };
 
-// eslint-disable-next-line no-use-before-define
 export type IFilterGroup = IFilterOfTemplate | ISearchFilter;
 
 export enum FilterLogicalOperator {
@@ -177,7 +179,7 @@ type OrFilter = {
 
 export type ISearchFilter = AndFilter | OrFilter;
 
-export type ISearchSort<T extends Record<string, any> = Record<string, any>> = Array<{
+export type ISearchSort<T extends Record<string, IPropertyValue> = Record<string, IPropertyValue>> = Array<{
     field: keyof T;
     sort: 'asc' | 'desc';
 }>;
@@ -288,7 +290,7 @@ export interface IExportEntitiesBody {
             sort?: ISearchSort;
             displayColumns?: string[];
             headersOnly?: boolean;
-            insertEntities?: Record<string, any>[];
+            insertEntities?: Record<string, IPropertyValue>[];
             isChildTemplate?: boolean;
         };
     };

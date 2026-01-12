@@ -1,5 +1,3 @@
-/* eslint-disable class-methods-use-this */
-
 import { IMongoStepTemplate, IStepTemplate } from '@packages/process';
 import { DefaultManagerMongo, NotFoundError, ValidationError } from '@packages/utils';
 import { ClientSession, Types } from 'mongoose';

@@ -1,5 +1,28 @@
 import { IMongoCategory } from '@packages/category';
-import { ISearchFilter, IUniqueConstraintOfTemplate } from '@packages/entity';
+import { IFilter } from '@packages/child-template';
+import { IPropertyValue, ISearchFilter, IUniqueConstraintOfTemplate } from '@packages/entity';
+
+export enum PropertyType {
+    string = 'string',
+    number = 'number',
+    boolean = 'boolean',
+    array = 'array',
+}
+
+export enum PropertyFormat {
+    date = 'date',
+    'date-time' = 'date-time',
+    email = 'email',
+    fileId = 'fileId',
+    'text-area' = 'text-area',
+    relationshipReference = 'relationshipReference',
+    location = 'location',
+    user = 'user',
+    signature = 'signature',
+    comment = 'comment',
+    kartoffelUserField = 'kartoffelUserField',
+    unitField = 'unitField',
+}
 
 export interface IRelationshipReference {
     relationshipTemplateId?: string;
@@ -17,23 +40,8 @@ export interface FieldGroupData {
 
 export interface IEntitySingleProperty {
     title: string;
-    type: 'string' | 'number' | 'boolean' | 'array';
-    format?:
-        | 'date'
-        | 'date-time'
-        | 'email'
-        | 'fileId'
-        | 'text-area'
-        | 'relationshipReference'
-        | 'location'
-        | 'user'
-        | 'signature'
-        | 'comment'
-        | 'kartoffelUserField'
-        | 'unitField'
-        | 'serialNumber'
-        | 'enum'
-        | 'pattern';
+    type: PropertyType;
+    format?: PropertyFormat;
     enum?: string[];
     readOnly?: true;
     identifier?: true;
@@ -52,9 +60,9 @@ export interface IEntitySingleProperty {
     };
     relationshipReference?: IRelationshipReference;
     items?: {
-        type: 'string';
+        type: PropertyType.string;
         enum?: string[];
-        format?: 'fileId' | 'user';
+        format?: PropertyFormat.fileId | PropertyFormat.user;
     };
     minItems?: 1;
     uniqueItems?: true;
@@ -62,15 +70,9 @@ export interface IEntitySingleProperty {
     comment?: string;
     color?: string;
     hideFromDetailsPage?: boolean;
-    filters?: any;
-    defaultValue?: any;
-    isFilterByCurrentUser?: boolean;
-    isFilterByUserUnit?: boolean;
-    isProfileImage?: boolean;
-    display?: boolean;
-    fieldGroup?: FieldGroupData;
-    uniqueCheckbox?: boolean;
-    properties?: Record<string, IEntitySingleProperty>; // For groups inside of entity
+    filters?: IFilter;
+    defaultValue?: IPropertyValue;
+    accountBalance?: boolean;
 }
 export interface IProperties {
     type: 'object';
@@ -85,6 +87,13 @@ interface IFieldsGroup {
     displayName: string;
     fields: string[];
 }
+interface IWalletTransfer {
+    from: string;
+    to: string;
+    description: string;
+    amount: string;
+}
+
 export interface IEntityTemplate {
     name: string;
     displayName: string;
@@ -100,6 +109,7 @@ export interface IEntityTemplate {
     documentTemplatesIds?: string[];
     mapSearchProperties?: string[];
     fieldGroups?: IFieldsGroup[];
+    walletTransfer?: IWalletTransfer;
 }
 
 export interface IMongoEntityTemplate extends IEntityTemplate {

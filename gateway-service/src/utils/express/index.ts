@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-function-type */
-
 import { FunctionKey } from '@packages/common';
 import { dataLogger } from '@packages/utils';
 import { NextFunction, Request, Response } from 'express';
@@ -7,6 +5,7 @@ import { get } from 'lodash';
 import config from '../../config';
 import { InvalidWorkspaceHeaderError } from '../../express/error';
 import WorkspaceService from '../../express/workspaces/service';
+import DefaultExternalServiceApi from './externalService';
 import DefaultManagerProxy from './manager';
 
 const { workspaceIdHeaderName } = config.service;
@@ -15,7 +14,7 @@ interface IWrapControllerOptions {
     toLog: boolean;
     logRequestFields: Array<{ key: string; path: string }>;
     indexName: string;
-    responseDataExtractor: ((body: any) => any) | undefined;
+    responseDataExtractor: ((body: unknown) => unknown) | undefined;
 }
 
 const defaultWrapControllerOptions: IWrapControllerOptions = {
@@ -25,7 +24,10 @@ const defaultWrapControllerOptions: IWrapControllerOptions = {
     responseDataExtractor: undefined,
 };
 
-export const wrapController = <ExtendedRequest extends Request<any, any, any, any> = Request, ExtendedResponse extends Response = Response>(
+export const wrapController = <
+    ExtendedRequest extends Request<unknown, unknown, unknown, unknown> = Request,
+    ExtendedResponse extends Response = Response,
+>(
     func: (req: ExtendedRequest, res: ExtendedResponse, next?: NextFunction) => Promise<void>,
     options: IWrapControllerOptions = defaultWrapControllerOptions,
 ) => {
@@ -37,13 +39,13 @@ export const wrapController = <ExtendedRequest extends Request<any, any, any, an
         }
 
         const originalJson = res.json.bind(res);
-        const loggedRequestData: Record<string, any> = {};
+        const loggedRequestData: Record<string, unknown> = {};
 
         logRequestFields.forEach(({ key, path }) => {
             loggedRequestData[key] = get(req, path);
         });
 
-        res.json = (body: any) => {
+        res.json = (body) => {
             const loggedResponseData = JSON.parse(JSON.stringify(responseDataExtractor ? responseDataExtractor(body) : body));
 
             if (loggedResponseData?._id) {
@@ -92,7 +94,7 @@ export const translateWorkspaceParameterFlowColumns = async (req: Request) => {
     req.headers[config.service.workspaceIdHeaderName] = workspaceId;
 };
 
-export default abstract class DefaultProxyController<Manager extends DefaultManagerProxy<any> | null = null> {
+export default abstract class DefaultProxyController<Manager extends DefaultManagerProxy<DefaultExternalServiceApi> | null = null> {
     public manager: Manager;
 
     constructor(manager: Manager) {
@@ -100,7 +102,9 @@ export default abstract class DefaultProxyController<Manager extends DefaultMana
     }
 }
 
-export const createWorkspacesController = <T extends InstanceType<typeof DefaultProxyController<any>>>(
+export const createWorkspacesController = <
+    T extends InstanceType<typeof DefaultProxyController<DefaultManagerProxy<DefaultExternalServiceApi> | null>>,
+>(
     Controller: { new (workspaceId: string): T },
     isMiddleware = false,
 ) => {
@@ -114,11 +118,11 @@ export const createWorkspacesController = <T extends InstanceType<typeof Default
                     if (!workspaceId) return;
 
                     if (isMiddleware) {
-                        (new Controller(workspaceId)[funcName] as Function)(req, res, next).then(next).catch(next);
+                        new Controller(workspaceId)[funcName](req, res, next).then(next).catch(next);
                         return;
                     }
 
-                    (new Controller(workspaceId)[funcName] as Function)(req, res, next).catch(next);
+                    new Controller(workspaceId)[funcName](req, res, next).catch(next);
                 };
             },
         },

@@ -59,18 +59,13 @@ export const useUnitMutation = (onSuccess?: (unit: Partial<IMongoUnit> & { _id: 
             },
             onError: (error: AxiosError, { isEditMode }) => {
                 let errorMessage = 'wizard.unit.';
+                // biome-ignore lint/suspicious/noExplicitAny: error response data is any
+                const errorData = error.response?.data as any;
 
-                if ((error.response?.data as any)?.type === 'MongoServerError') {
-                    errorMessage += 'duplicateUnitError';
-                } else if ((error.response?.data as any)?.metadata?.type === 'cyclical') {
-                    errorMessage += 'cyclicalError';
-                } else if ((error.response?.data as any)?.metadata?.type === 'disabled') {
-                    errorMessage += 'disabledError';
-                } else if (isEditMode) {
-                    errorMessage += 'failedToEdit';
-                } else {
-                    errorMessage += 'failedToCreate';
-                }
+                if (errorData?.type === 'MongoServerError') errorMessage += 'duplicateUnitError';
+                else if (errorData?.metadata?.type === 'cyclical') errorMessage += 'cyclicalError';
+                else if (errorData?.metadata?.type === 'disabled') errorMessage += 'disabledError';
+                else errorMessage += `failedTo${isEditMode ? 'Edit' : 'Create'}`;
 
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t(errorMessage)} />);
             },

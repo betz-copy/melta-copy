@@ -16,8 +16,7 @@ import {
     isSumAggFunction,
 } from '@packages/rule';
 import { ICausesOfInstance } from '@packages/rule-breach';
-import groupBy from 'lodash.groupby';
-import isEqual from 'lodash.isequal';
+import { groupBy, isEqual } from 'lodash';
 import filteredMap from '../../utils/filteredMap';
 import { IRuleFailure } from './interfaces';
 import { IFormulaCauses } from './interfaces/formulaWithCauses';
@@ -91,7 +90,6 @@ const getCausesOfRegularFunction = (
     }
 
     const argumentsNewCauses = regularFunctionCauses.arguments.map((argumentCauses, index) =>
-        // eslint-disable-next-line no-use-before-define
         getNewCausesOfArgument(argumentCauses, regularFunctionCausesBeforeAction?.arguments[index], regularFunction.arguments[index]),
     );
 
@@ -175,7 +173,6 @@ export const getCausesOfGroup = (groupCauses: IGroupCauses, groupCausesBeforeAct
     const relevantSubFormulasCauses = groupCauses.subFormulas.filter(({ resultValue }) => groupCauses.resultValue === resultValue);
 
     const subFormulasNewCauses = relevantSubFormulasCauses.map((subFormulaCauses, index) =>
-        // eslint-disable-next-line no-use-before-define
         getCausesOfFormula(subFormulaCauses, groupCausesBeforeAction?.subFormulas[index], group.subFormulas[index]),
     );
 

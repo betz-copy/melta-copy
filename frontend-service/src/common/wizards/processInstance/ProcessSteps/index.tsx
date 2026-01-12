@@ -1,7 +1,3 @@
-/* eslint-disable jsx-a11y/no-static-element-interactions */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
-/* eslint-disable jsx-a11y/anchor-is-valid */
-
 import { ArrowBackIos, ArrowForwardIos, History, Toc } from '@mui/icons-material';
 import { Box, Button, Divider, Grid, Step, StepConnector, Stepper, stepConnectorClasses, styled, Typography } from '@mui/material';
 import {
@@ -16,15 +12,15 @@ import i18next from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivitiesContent } from '../../../../pages/Entity/components/activityLog/ActivitiesContent';
 import { StepIcon } from '../../../../pages/ProcessInstances/ProcessCard';
-import { useDarkModeStore } from '../../../../stores/darkMode';
 import BlueTitle from '../../../MeltaDesigns/BlueTitle';
 import MeltaTooltip from '../../../MeltaDesigns/MeltaTooltip';
 import { ProcessStep } from './processStep';
 import './processStep.css';
+import { IPropertyValue } from '@packages/entity';
 
 export interface ProcessStepValues {
-    properties: object;
-    attachmentsProperties: object;
+    properties: Record<string, IPropertyValue>;
+    attachmentsProperties: Record<string, IPropertyValue>;
     entityReferences: Record<string, IReferencedEntityForProcess>;
     status: Status;
     comments: string;
@@ -62,22 +58,21 @@ const Steps: React.FC<IStepsProp> = ({
     defaultStepTemplate,
     setActiveStep,
 }) => {
-    const [currStepInstance, setCurrStepInstance] = useState(
+    const theme = useTheme();
+    const containerRef = useRef<HTMLDivElement | null>(null);
+
+    const [currStepInstance, setCurrStepInstance] = useState<IMongoStepInstancePopulated | undefined>(
         defaultStepTemplate ? processInstance.steps.find((step) => step.templateId === defaultStepTemplate._id) : processInstance.steps[0],
     );
 
-    const [currStepInstanceIndex, setCurrStepInstanceIndex] = useState(
+    const [currStepInstanceIndex, setCurrStepInstanceIndex] = useState<number>(
         defaultStepTemplate ? processInstance.steps.findIndex((step) => step.templateId === defaultStepTemplate._id) : 0,
     );
 
-    const [openActivityPopper, setOpenActivityPopper] = useState(false);
-    const [scrollPosition, setScrollPosition] = useState(0);
-    const [scrollLeftDisabled, setScrollLeftDisabled] = useState(false);
-    const [scrollRightDisabled, setScrollRightDisabled] = useState(false);
-
-    const darkMode = useDarkModeStore((state) => state.darkMode);
-
-    const containerRef = useRef<HTMLDivElement | null>(null);
+    const [openActivityPopper, setOpenActivityPopper] = useState<boolean>(false);
+    const [scrollPosition, setScrollPosition] = useState<number>(0);
+    const [scrollLeftDisabled, setScrollLeftDisabled] = useState<boolean>(false);
+    const [scrollRightDisabled, setScrollRightDisabled] = useState<boolean>(false);
 
     const updateScrollButtons = () => {
         if (containerRef.current) {
@@ -101,6 +96,7 @@ const Steps: React.FC<IStepsProp> = ({
         }
     };
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         const container = containerRef.current;
 
@@ -110,9 +106,7 @@ const Steps: React.FC<IStepsProp> = ({
         }
 
         return () => {
-            if (container) {
-                container.removeEventListener('scroll', updateScrollButtons);
-            }
+            if (container) container.removeEventListener('scroll', updateScrollButtons);
         };
     }, []);
 
@@ -126,9 +120,9 @@ const Steps: React.FC<IStepsProp> = ({
         handleScroll((-indexToScroll / stepsAmount) * stepperWidth - scrollPosition);
     };
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         setScrollByStepIndex(currStepInstanceIndex);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currStepInstanceIndex]);
 
     return (
@@ -159,16 +153,19 @@ const Steps: React.FC<IStepsProp> = ({
                     <Grid container width="70%" minWidth="680px">
                         <Grid width="20px">
                             {!scrollRightDisabled && (
-                                <a
-                                    onClick={() => {
-                                        handleScroll(stepperWidth / 2);
+                                <button
+                                    type="button"
+                                    onClick={() => handleScroll(stepperWidth / 2)}
+                                    style={{
+                                        cursor: !isStepEditMode ? 'pointer' : undefined,
+                                        background: 'none',
+                                        border: 'none',
+                                        padding: 0,
                                     }}
-                                    style={{ cursor: !isStepEditMode ? 'pointer' : undefined }}
+                                    aria-label={i18next.t('wizard.processInstance.scrollForward')}
                                 >
-                                    <ArrowForwardIos
-                                        sx={{ color: darkMode ? '#9398c2' : '#1E2775', marginTop: '10px', width: '18px', height: '25px' }}
-                                    />
-                                </a>
+                                    <ArrowForwardIos sx={{ color: theme.palette.primary.main, marginTop: '10px', width: '18px', height: '25px' }} />
+                                </button>
                             )}
                         </Grid>
                         <Grid
@@ -212,7 +209,9 @@ const Steps: React.FC<IStepsProp> = ({
                                                         gap="10px"
                                                     >
                                                         <StepIcon
-                                                            iconColor={currStepInstance?._id === stepInstance._id ? '#1E2775' : '#9398C2'}
+                                                            iconColor={
+                                                                currStepInstance?._id === stepInstance._id ? theme.palette.primary.main : '#9398C2'
+                                                            }
                                                             step={stepInstance}
                                                             stepTemplate={processTemplate.steps[index]}
                                                             setOpen={() => {
@@ -226,12 +225,7 @@ const Steps: React.FC<IStepsProp> = ({
 
                                                         <Typography
                                                             color={
-                                                                // eslint-disable-next-line no-nested-ternary
-                                                                currStepInstance?._id === stepInstance._id
-                                                                    ? darkMode
-                                                                        ? '#b7bef7'
-                                                                        : '#1E2775'
-                                                                    : '#9398C2'
+                                                                currStepInstance?._id === stepInstance._id ? theme.palette.primary.main : '#9398C2'
                                                             }
                                                             noWrap
                                                             sx={{ maxWidth: '70px', textOverflow: 'ellipsis' }}
@@ -251,16 +245,13 @@ const Steps: React.FC<IStepsProp> = ({
                         </Grid>
                         <Grid width="20px">
                             {!scrollLeftDisabled && (
-                                <a
-                                    onClick={() => {
-                                        handleScroll((-1 * stepperWidth) / 2);
-                                    }}
+                                <button
+                                    type="button"
+                                    onClick={() => handleScroll((-1 * stepperWidth) / 2)}
                                     style={{ cursor: !isStepEditMode ? 'pointer' : undefined }}
                                 >
-                                    <ArrowBackIos
-                                        sx={{ color: darkMode ? '#9398c2' : '#1E2775', marginTop: '10px', width: '18px', height: '25px' }}
-                                    />
-                                </a>
+                                    <ArrowBackIos sx={{ color: theme.palette.primary.main, marginTop: '10px', width: '18px', height: '25px' }} />
+                                </button>
                             )}
                         </Grid>
                     </Grid>
@@ -283,7 +274,7 @@ const Steps: React.FC<IStepsProp> = ({
                                         if (!isStepEditMode) setActiveStep(0);
                                     }}
                                 >
-                                    <Toc sx={{ color: '#1E2775' }} />
+                                    <Toc sx={{ color: theme.palette.primary.main }} />
                                 </Box>
                             </Grid>
                             <Grid>

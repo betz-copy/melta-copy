@@ -1,8 +1,8 @@
-import { MongoIdSchema, variableNameValidation } from '@packages/utils';
+import { MongoIdSchema } from '@packages/utils';
 import Joi from 'joi';
 
 const printingTemplateBodySchema = Joi.object({
-    name: variableNameValidation.required(),
+    name: Joi.string().required(),
     sections: Joi.array()
         .items(
             Joi.object({

@@ -1,12 +1,29 @@
-import { IEntity, ISearchFilter } from '@packages/entity';
+import { IEntity, IMongoEntityTemplate, IMongoRelationshipTemplate, ISearchFilter } from '@packages/entity';
 
 export interface IGetExpandedEntityBody {
-    disabled: boolean | null;
     templateIds: string[];
     expandedParams: Record<string, { minLevel?: number; maxLevel: number }>;
     filters: { [templateId: string]: { filter?: ISearchFilter; showRelationships: boolean } };
+
+    relationshipIds?: string[];
 }
 
+export type IRelationShipTreeNode = IMongoRelationshipTemplate & {
+    _id: string;
+    depth: number;
+    destinationEntity: IMongoEntityTemplate;
+    sourceEntity: IMongoEntityTemplate;
+    entitiesCount: number;
+    neoRelIds: string[];
+    children: IRelationShipTreeNode[];
+    path: string;
+};
+
+export type ITreeNodeMap = Map<string, { _id: string; children: ITreeNodeMap; neoRelIds: Set<string> }>;
+
+export type IEntityTreeNode = IEntity & { children: (IEntityTreeNode & { relationshipId: string })[] };
+
+// biome-ignore lint/suspicious/noExplicitAny: lol
 export const isRelationshipReference = (object: any): object is IEntity => {
     return (
         typeof object === 'object' &&

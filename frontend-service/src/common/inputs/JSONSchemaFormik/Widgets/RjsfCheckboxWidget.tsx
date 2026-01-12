@@ -1,7 +1,7 @@
 import { Box, Typography } from '@mui/material';
 import { WidgetProps } from '@rjsf/utils';
 import React from 'react';
-import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
+import MeltaCheckbox from '../../../MeltaDesigns/MeltaCheckbox';
 
 const RjsfCheckboxWidget = ({
     id,

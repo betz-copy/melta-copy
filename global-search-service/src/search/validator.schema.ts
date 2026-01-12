@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import { IndexingAction } from '@packages/global-search';
 import Joi from 'joi';
 

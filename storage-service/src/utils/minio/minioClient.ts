@@ -1,7 +1,7 @@
+import * as http from 'node:http';
+import { Readable } from 'node:stream';
 import { logger } from '@packages/utils';
-import * as http from 'http';
 import { BucketItem, Client, CopyConditions } from 'minio';
-import { Readable } from 'stream';
 import config from '../../config';
 
 const { url: endPoint, port, accessKey, secretKey, useSSL, transportAgent } = config.minio;
@@ -23,7 +23,7 @@ class MinIOClient {
     private async wrapDBNotExistsError<T>(func: () => Promise<T>) {
         try {
             return func();
-        } catch (err: any) {
+        } catch (err: unknown) {
             if (!(await this.bucketExists())) {
                 await this.makeBucket().catch((error) => {
                     throw error;

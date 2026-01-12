@@ -16,7 +16,7 @@ class PreviewConsumer {
             if (Array.isArray(msgContent)) await Promise.all(msgContent.map(async (message) => manager.uploadFilePreview(message.toString())));
             else await manager.uploadFilePreview(msgContent.toString());
             msg.ack();
-        } catch (err: any) {
+        } catch (err) {
             msg.nack(false);
             throw new ServiceError(undefined, 'Rabbit consumer error', { error: err });
         }

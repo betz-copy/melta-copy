@@ -23,7 +23,7 @@ import {
     ToggleButtonGroup,
     Typography,
 } from '@mui/material';
-import { IEntityTemplateMap } from '@packages/entity-template';
+import { IEntityTemplateMap, IPropertyValue } from '@packages/entity';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import React, { SetStateAction, useEffect, useRef, useState } from 'react';
@@ -65,7 +65,7 @@ export interface PropertiesTypesProps {
     index: number;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     templateId: string;
-    setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
+    setFieldValue: (field: keyof CommonFormInputProperties, value: IPropertyValue) => void;
     touched?: FormikTouched<CommonFormInputProperties>;
     errors?: FormikErrors<CommonFormInputProperties>;
     isDisabled: boolean;
@@ -189,7 +189,7 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
     );
 
     const { mutate: deleteEnumField, isLoading: isDeleteLoading } = useMutation(
-        (mutationArgs: { id: string; tagIndex: number; fieldValue: any }) => {
+        (mutationArgs: { id: string; tagIndex: number; fieldValue: IPropertyValue }) => {
             const { id, tagIndex, fieldValue } = mutationArgs;
             return deleteEnumFieldRequest(id, fieldValue.options[tagIndex], fieldValue);
         },
@@ -285,7 +285,6 @@ export const PropertiesTypes: React.FC<PropertiesTypesProps> = ({
 
         const tempColors = Object.keys({ ...value.optionColors }).reduce((acc, key) => {
             if (newOptions.includes(key) && value.optionColors) {
-                // eslint-disable-next-line no-param-reassign
                 acc[key] = value.optionColors[key];
             }
             return acc;

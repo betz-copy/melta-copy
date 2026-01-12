@@ -1,5 +1,5 @@
 import { IMongoChildTemplateWithConstraintsPopulated, ViewType } from '@packages/child-template';
-import { IFullMongoEntityTemplate, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IFullMongoEntityTemplate, IMongoEntityTemplateWithConstraintsPopulated, IPropertyValue } from '@packages/entity-template';
 
 export const emptyEntityTemplate: IMongoEntityTemplateWithConstraintsPopulated = {
     _id: '',
@@ -69,9 +69,8 @@ export const emptyChildTemplate: IMongoChildTemplateWithConstraintsPopulated = {
     },
     uniqueConstraints: [],
 };
-
-export interface EntityWizardValues {
+export type EntityWizardValues = {
     template: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated;
-    properties: Record<string, any> & { disabled: boolean };
+    properties: Record<string, IPropertyValue> & { disabled: boolean };
     attachmentsProperties: Record<string, File[] | File | undefined>;
-}
+};

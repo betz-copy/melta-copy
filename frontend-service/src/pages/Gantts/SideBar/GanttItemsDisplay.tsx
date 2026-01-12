@@ -35,7 +35,7 @@ export const GanttItemsDisplay: React.FC<IGanttItemsDisplayProps> = ({ open, gan
 
             {gantt.items.map((item, index) => (
                 // can't use item.entityTemplate.id because it doesn't necessary exist in edit mode
-                // eslint-disable-next-line react/no-array-index-key
+                // biome-ignore lint/suspicious/noArrayIndexKey: Yahalom knows what he's doing
                 <Grid key={index} container direction="column" alignItems="center" wrap="nowrap">
                     {Boolean(index) && <Divider sx={{ width: '85%' }} />}
 

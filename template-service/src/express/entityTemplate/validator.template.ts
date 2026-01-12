@@ -99,7 +99,7 @@ class EntityTemplateValidator extends DefaultController<IMongoEntityTemplate, En
 
                 const relateUserField = properties[value.expandedUserField?.relatedUserField];
 
-                if (relateUserField && relateUserField.archive && !value.archive)
+                if (relateUserField?.archive && !value.archive)
                     throw new BadRequestError('Cannot archive user field that have unarchived kartoffelField');
             }
         });

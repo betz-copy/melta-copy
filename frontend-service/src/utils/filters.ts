@@ -1,6 +1,6 @@
 import { ISearchEntitiesOfTemplateBody, ISearchFilter } from '@packages/entity';
 
-const evaluateOperator = (operator: string, actual: any, expected: any): boolean => {
+const evaluateOperator = (operator: string, actual: IPropertyValue, expected: IPropertyValue): boolean => {
     switch (operator) {
         case '$eq':
             return actual === expected;
@@ -37,9 +37,9 @@ const evaluateOperator = (operator: string, actual: any, expected: any): boolean
     }
 };
 
-const matchValueAgainstFilter = (data: any, filter: any): boolean => {
-    if ('$and' in filter) return filter.$and.every((f: any) => matchValueAgainstFilter(data, f));
-    if ('$or' in filter) return filter.$or.some((f: any) => matchValueAgainstFilter(data, f));
+const matchValueAgainstFilter = (data: Record<string, IPropertyValue>, filter: IFilter): boolean => {
+    if ('$and' in filter) return filter.$and.every((f: IFilter) => matchValueAgainstFilter(data, f));
+    if ('$or' in filter) return filter.$or.some((f: IFilter) => matchValueAgainstFilter(data, f));
 
     const [field, condition] = Object.entries(filter)[0];
     const actual = data[field];

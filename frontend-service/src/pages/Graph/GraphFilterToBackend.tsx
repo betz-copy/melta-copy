@@ -18,14 +18,13 @@ import { filterModelToFilterOfTemplatePerField } from '../../utils/agGrid/agGrid
 const { fieldFilterPrefix } = environment;
 
 export interface IGraphFilterToBackendBody {
-    [templateId: string]: { filter: ISearchFilter } | {};
+    [templateId: string]: { filter: ISearchFilter };
 }
 
 export const filterModelToFilterOfGraph = (filterModel: IGraphFilterBodyBatch): IGraphFilterToBackendBody['filter'] => {
     const groupedByTemplate = Object.values(filterModel).reduce(
         (acc: Record<string, IFilterOfTemplate[]>, { selectedTemplate, selectedProperty, filterField }) => {
             const { _id, properties } = selectedTemplate;
-            // eslint-disable-next-line no-param-reassign
             acc[_id] = acc[_id] || [];
 
             if (selectedProperty && filterField) {

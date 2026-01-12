@@ -1,5 +1,4 @@
 import { Grid, styled, Typography, useTheme } from '@mui/material';
-/* eslint-disable no-nested-ternary */
 import { ActionsLog } from '@packages/activity-log';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IMongoStepTemplatePopulated, IProcessDetails, IProcessSingleProperty } from '@packages/process';
@@ -8,7 +7,7 @@ import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
-import { CoordinateSystem, LocationData } from '../../../../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
+import { CoordinateSystem, LocationData } from '../../../../common/inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
 import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
 import { NotificationColor } from '../../../../common/notificationColor';
 import RelationshipReferenceView from '../../../../common/RelationshipReferenceView';
@@ -173,9 +172,8 @@ const popperProps = {
     ],
 };
 
-const isLocationData = (value: any): value is LocationData => {
-    return value && typeof value === 'object' && 'location' in value && 'coordinateSystem' in value;
-};
+const isLocationData = (value: IPropertyValue): value is LocationData =>
+    value && typeof value === 'object' && 'location' in value && 'coordinateSystem' in value;
 
 const UpdateTextValue: React.FC<{
     value: string;
@@ -270,7 +268,7 @@ const UpdateTextValue: React.FC<{
 };
 
 const UpdateEntityMetadataActionText: React.FC<{
-    actionMetadata: { updatedFields: [{ fieldName: string; oldValue: any; newValue: any }] };
+    actionMetadata: { updatedFields: [{ fieldName: string; oldValue: IPropertyValue; newValue: IPropertyValue }] };
     entityTemplateProperties: Record<string, IEntitySingleProperty> | Record<string, IProcessSingleProperty>;
 }> = ({ actionMetadata, entityTemplateProperties }) => {
     const theme = useTheme();
@@ -383,7 +381,7 @@ const ActionText: React.FC<{
         return (
             <UpdateEntityMetadataActionText
                 entityTemplateProperties={entityTemplate.properties.properties}
-                actionMetadata={metadata as { updatedFields: [{ fieldName: string; oldValue: any; newValue: any }] }}
+                actionMetadata={metadata as { updatedFields: [{ fieldName: string; oldValue: IPropertyValue; newValue: IPropertyValue }] }}
             />
         );
 

@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import { ServiceError } from '@packages/utils';
 import config from '../../config';
 import { DefaultExternalServiceRabbit } from '../../utils/rabbit/manager';

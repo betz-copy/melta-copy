@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import { IMongoChart } from '@packages/chart';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import config from './config';

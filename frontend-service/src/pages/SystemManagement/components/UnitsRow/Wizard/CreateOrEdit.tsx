@@ -1,9 +1,9 @@
-import { Autocomplete, Grid, TextField } from '@mui/material';
-import { IGetUnits } from '@packages/unit';
+import { Grid, TextField } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import * as Yup from 'yup';
+import UnitSelect from '../../../../../common/inputs/UnitTreeSelect';
 import { StepComponentProps } from '../../../../../common/wizards';
 import { UnitWizardValues } from '.';
 
@@ -15,13 +15,7 @@ export const createOrEditSchema = {
 
 export const canEnableUnit = (filteredUnits: IGetUnits, parentId?: string) => !!parentId && !filteredUnits.find(({ _id }) => parentId === _id);
 
-export const CreateOrEditStep: React.FC<StepComponentProps<UnitWizardValues, 'isEditMode'>> = ({
-    initialValues,
-    values,
-    touched,
-    errors,
-    setFieldValue,
-}) => {
+export const CreateOrEditStep: React.FC<StepComponentProps<UnitWizardValues, 'isEditMode'>> = ({ values, touched, errors, setFieldValue }) => {
     const queryClient = useQueryClient();
     const units = queryClient.getQueryData<IGetUnits>('getUnits')!;
 
@@ -36,21 +30,14 @@ export const CreateOrEditStep: React.FC<StepComponentProps<UnitWizardValues, 'is
                 helperText={touched.name && errors.name}
             />
 
-            <Autocomplete
-                options={units.filter((unit) => unit._id !== initialValues._id)}
-                onChange={(_e, value) => setFieldValue('parentId', value?._id || '')}
-                value={units.find((unit) => unit._id === values.parentId)}
-                getOptionLabel={(option) => option.name}
-                sx={{ width: '220px' }}
-                renderInput={(params) => (
-                    <TextField
-                        {...params}
-                        error={Boolean(touched.parentId && errors.parentId)}
-                        helperText={touched.parentId ? errors.parentId : ''}
-                        variant="outlined"
-                        label={i18next.t('wizard.unit.parentUnit')}
-                    />
-                )}
+            <UnitSelect
+                label={i18next.t('wizard.unit.parentUnit')}
+                value={units.find((unit) => unit._id === values.parentId)?._id}
+                onChange={(value) => {
+                    setFieldValue('parentId', value || '');
+                }}
+                error={Boolean(touched.parentId && errors.parentId)}
+                textFieldProps={{ sx: { width: '220px' } }}
             />
         </Grid>
     );

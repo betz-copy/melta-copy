@@ -5,6 +5,7 @@ import { IEntitySingleProperty, IEntityTemplateMap } from '@packages/entity-temp
 import i18next from 'i18next';
 import { forwardRef, useImperativeHandle, useRef } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
+import { IDefaultValue } from '../../../common/dialogs/ChildTemplateDialog/AddFieldFilterDialog';
 import TemplateTable, { TemplateTableRef } from '../../../common/EntitiesPage/TemplateTable';
 import { TemplateTablesViewResultsRef } from '../../../common/EntitiesPage/TemplateTablesView';
 import { TablePageType } from '../../../common/EntitiesTableOfTemplate';
@@ -77,7 +78,7 @@ const UserEntityTables = forwardRef<UserEntityTablesRef, IUserEntityTablesProps>
                             const childTemplatePropertiesList = Object.keys(properties);
                             const childTemplateProperties = Object.fromEntries(
                                 Object.entries(parentTemplate.properties.properties).filter(([key]) => childTemplatePropertiesList.includes(key)),
-                            ) as Record<string, IEntitySingleProperty & { defaultValue?: any; isEditableByUser?: boolean }>;
+                            ) as Record<string, IEntitySingleProperty & { defaultValue?: IDefaultValue; isEditableByUser?: boolean }>;
 
                             for (const propertyKey of Object.keys(childTemplateProperties)) {
                                 childTemplateProperties[propertyKey] = {
@@ -94,7 +95,7 @@ const UserEntityTables = forwardRef<UserEntityTablesRef, IUserEntityTablesProps>
                                               const filters = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
                                               if (filters.$and) {
                                                   const transformedFilters = filters.$and
-                                                      .map((filter: any) => {
+                                                      .map((filter: IFilter) => {
                                                           const fieldFilter = filter[key];
                                                           if (fieldFilter) return { [key]: fieldFilter };
 

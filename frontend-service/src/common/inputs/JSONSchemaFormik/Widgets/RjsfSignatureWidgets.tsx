@@ -3,10 +3,10 @@ import { WidgetProps } from '@rjsf/utils';
 import i18next from 'i18next';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import SignatureCanvas from 'react-signature-canvas';
-import { environment } from '../../../globals';
-import { getFilePreviewRequest } from '../../../services/previewService';
-import { useDarkModeStore } from '../../../stores/darkMode';
-import { darkTheme, lightTheme } from '../../../theme';
+import { environment } from '../../../../globals';
+import { getFilePreviewRequest } from '../../../../services/previewService';
+import { useDarkModeStore } from '../../../../stores/darkMode';
+import { darkTheme, lightTheme } from '../../../../theme';
 
 const { signaturePrefix } = environment;
 
@@ -27,20 +27,15 @@ const RjsfSignatureWidgets = ({ id, required, readonly, disabled, label, value, 
                 } catch (error) {
                     console.error('Error loading signature preview:', error);
                 }
-            } else if (value) {
-                signatureCanvas.current?.fromDataURL(value);
-            }
+            } else if (value) signatureCanvas.current?.fromDataURL(value);
         };
         fetchSignature();
-    }, [value]);
+    }, [value, isDrawing]);
 
     useEffect(() => {
         if (signatureCanvas.current) {
-            if (readonly || disabled) {
-                signatureCanvas.current.off();
-            } else {
-                signatureCanvas.current.on();
-            }
+            if (readonly || disabled) signatureCanvas.current.off();
+            else signatureCanvas.current.on();
         }
     }, [readonly, disabled]);
 
@@ -48,7 +43,7 @@ const RjsfSignatureWidgets = ({ id, required, readonly, disabled, label, value, 
         if (!signatureCanvas.current) return;
         if (signatureCanvas.current.isEmpty()) onChange(undefined);
         else onChange(signatureCanvas.current.toDataURL());
-    }, []);
+    }, [onChange]);
 
     const clearSignature = () => {
         if (!signatureCanvas.current) return;
@@ -79,7 +74,6 @@ const RjsfSignatureWidgets = ({ id, required, readonly, disabled, label, value, 
                         canvasProps={{
                             height: '100%',
                             style: {
-                                // eslint-disable-next-line no-nested-ternary
                                 backgroundColor: darkMode ? '#666666' : !isDisabled ? '#fff' : undefined,
                                 border:
                                     !signatureCanvas.current || signatureCanvas.current.isEmpty()

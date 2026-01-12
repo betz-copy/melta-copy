@@ -1,6 +1,3 @@
-/* eslint-disable no-restricted-syntax */
-
-/* eslint-disable class-methods-use-this */
 import { ActionsLog } from '@packages/activity-log';
 import {
     CreateProcessReqBody,

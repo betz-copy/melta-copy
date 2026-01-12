@@ -37,7 +37,6 @@ export const GanttItemDisplay: React.FC<IGanttItemDisplayProps> = ({ item, formi
 
     const title = useMemo(
         () =>
-            // eslint-disable-next-line prettier/prettier
             `${entityTemplate?.displayName} ${connectedEntityTemplatesDetails.length ? separators.related : ''} ${connectedEntityTemplatesDetails
                 .map(({ connectedEntityTemplate: { displayName } }) => displayName)
                 .join(separators.template)}`,

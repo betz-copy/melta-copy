@@ -1,13 +1,15 @@
+import { WmtsEndpoint } from '@camptocamp/ogc-client';
 import Bowser from 'bowser';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useLocation } from 'wouter';
+import { useLocation, useSearchParams } from 'wouter';
 import { LoadingAnimation } from './common/LoadingAnimation';
 import './css/index.css';
 import './css/loading.css';
+import { enableFallbackWithoutWorker } from '@camptocamp/ogc-client';
 import { environment } from './globals';
 import Main from './Main';
 import { useMatomoInstance } from './matomo';
@@ -16,12 +18,16 @@ import ClientSidePage from './pages/ClientSidePage';
 import ErrorPage from './pages/ErrorPage';
 import { AuthService } from './services/authService';
 import { BackendConfigState, getBackendConfigRequest } from './services/backendConfigService';
+import { getMapLayer } from './services/mapService';
 import { getMyUserRequest } from './services/userService';
 import { getById, getWorkspaceHierarchyIds } from './services/workspacesService';
 import { useDarkModeStore } from './stores/darkMode';
 import { useUserStore } from './stores/user';
 import { useWorkspaceStore } from './stores/workspace';
+import { extractImageryUrl } from './utils/map';
 import { getWorkspacePermissions } from './utils/permissions';
+
+enableFallbackWithoutWorker();
 
 const App: React.FC = () => {
     const [isLoadingUser, setIsLoadingUser] = useState(true);
@@ -29,8 +35,10 @@ const App: React.FC = () => {
     const [isClientSide, setIsClientSide] = useState(false);
 
     const [location, navigate] = useLocation();
+    const [searchParams] = useSearchParams();
 
     const matomoInstance = useMatomoInstance();
+    const queryClient = useQueryClient();
 
     useEffect(() => {
         const browser = Bowser.getParser(window.navigator.userAgent);
@@ -49,11 +57,41 @@ const App: React.FC = () => {
     const setDarkMode = useDarkModeStore((state) => state.setDarkMode);
     const workspaceStore = useWorkspaceStore((state) => state.workspace);
 
+    useQuery('getMapLayers', () => undefined, { enabled: false });
     const { isError: isErrorBackendConfig } = useQuery<BackendConfigState>('getBackendConfig', getBackendConfigRequest, {
         onError: () => {
             toast.error(i18next.t('error.config'));
         },
         enabled: !isLoadingUser && !isErrorMyUser,
+        onSuccess: async ({
+            isOutsideDevelopment,
+            getMapLayers: { url, params, layers, token, capabilitiesLinkSchema, cesiumLinkSchema, layerLinkTag, capabilitiesUrl },
+        }) => {
+            if (isOutsideDevelopment) return;
+
+            const mapLayers = await Promise.all(
+                layers?.map(async (layer) => {
+                    const xml = await getMapLayer(url, params, layer.body, token);
+
+                    const layerProvider = extractImageryUrl(
+                        xml,
+                        capabilitiesLinkSchema,
+                        cesiumLinkSchema,
+                        layer.name,
+                        layer.displayName,
+                        layer.type,
+                        layerLinkTag,
+                    );
+
+                    const endpoint = await new WmtsEndpoint(`${capabilitiesUrl}?url=${layerProvider.url}`).isReady();
+                    const wmtsLayer = endpoint.getLayerByName(layerProvider.id);
+
+                    return { ...layerProvider, ...wmtsLayer };
+                }),
+            );
+
+            queryClient.setQueryData('getMapLayers', mapLayers);
+        },
     });
 
     const { data: hierarchyIds } = useQuery({
@@ -77,6 +115,7 @@ const App: React.FC = () => {
         handleWorkspace();
     }, [currentUser, hierarchyIds, setUser, workspaceStore]);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         const initUser = async () => {
             const user = AuthService.getUser();
@@ -107,8 +146,13 @@ const App: React.FC = () => {
                 if (workspaceIds.length === 1) {
                     const workspace = await getById(workspaceIds[0]);
                     const path = `${workspace.path}/${workspace.name}${workspace.type}`;
+                    const searchParamsArray = [...searchParams.entries()];
+                    const normalizedSearchParams = searchParamsArray.length
+                        ? `?${searchParamsArray.map(([key, value]) => `${key}=${value}`).join('&')}`
+                        : '';
+
                     if (workspace.name !== '' && workspace.path !== '/')
-                        navigate(`${path}${location.length <= path.length ? '' : location.replace(path, '')}`);
+                        navigate(`${path}${location.length <= path.length ? '' : location.replace(path, '')}${normalizedSearchParams}`);
                 }
             } catch {
                 setIsErrorMyUser(true);
@@ -118,7 +162,7 @@ const App: React.FC = () => {
         };
 
         initUser();
-    }, [setUser, navigate, workspaceStore]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [setUser, navigate, workspaceStore]);
 
     if (isClientSide) return <ClientSidePage />;
 
@@ -130,7 +174,11 @@ const App: React.FC = () => {
 
     if (isErrorBackendConfig) return <ErrorPage errorText={i18next.t('errorPage.systemUnavailable')} />;
 
-    return <MatomoWrapper matomoInstance={matomoInstance! as MatomoTracker} children={<Main />} />;
+    return (
+        <MatomoWrapper matomoInstance={matomoInstance! as MatomoTracker}>
+            <Main />
+        </MatomoWrapper>
+    );
 };
 
 export default App;

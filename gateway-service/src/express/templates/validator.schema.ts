@@ -105,6 +105,7 @@ export const createEntityTemplateSchema = Joi.object({
         uniqueConstraints: ExtendedJoi.stringToArray().required(),
         mapSearchProperties: ExtendedJoi.stringToArray(),
         fieldGroups: ExtendedJoi.stringToArray(),
+        walletTransfer: ExtendedJoi.stringToObject(),
     },
     query: {},
     params: {},
@@ -153,6 +154,7 @@ export const updateEntityTemplateSchema = Joi.object({
         documentTemplatesIds: ExtendedJoi.stringToArray(),
         mapSearchProperties: ExtendedJoi.stringToArray(),
         fieldGroups: ExtendedJoi.stringToArray(),
+        walletTransfer: ExtendedJoi.stringToObject().allow(null),
     },
     query: {},
     params: {

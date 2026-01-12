@@ -8,7 +8,7 @@ import { IRuleBreach } from '@packages/rule-breach';
 import { mapValues } from 'lodash';
 import axios from '../axios';
 import { EntityWizardValues } from '../common/dialogs/entity';
-import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
+import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
 import { environment } from '../globals';
 import { locationConverterToString } from '../utils/map/convert';
 import { isChildTemplate } from '../utils/templates';
@@ -86,20 +86,17 @@ const createEntityClientSideRequest = async (
     const propertiesWithDefaults = childTemplate
         ? Object.entries(entityTemplateProperties).reduce(
               (acc, [key]) => {
-                  if (entity.properties[key] === undefined && childTemplate.properties[key]?.defaultValue !== undefined) {
+                  if (entity.properties[key] === undefined && childTemplate.properties[key]?.defaultValue !== undefined)
                       acc[key] = childTemplate.properties[key].defaultValue;
-                  } else {
-                      acc[key] = entity.properties[key];
-                  }
+                  else acc[key] = entity.properties[key];
 
                   if (entity.properties[key] === undefined && entityTemplateProperties[key]?.format === 'relationshipReference') {
-                      if (entityTemplateProperties[key]?.relationshipReference?.relatedTemplateId === clientSideUserEntity?.templateId) {
+                      if (entityTemplateProperties[key]?.relationshipReference?.relatedTemplateId === clientSideUserEntity?.templateId)
                           acc[key] = clientSideUserEntity?.properties._id;
-                      }
                   }
                   return acc;
               },
-              {} as Record<string, any>,
+              {} as Record<string, IPropertyValue>,
           )
         : entity.properties;
 
@@ -159,8 +156,8 @@ const manyNotificationSeenClientSideRequest = async (types: NotificationType[]) 
 };
 
 const getMyNotificationsClientSideRequest = async (query: IGetMyNotificationsRequestQuery) => {
-    const startDate = query.startDate && query.startDate.toDateString();
-    const endDate = query.endDate && query.endDate.toDateString();
+    const startDate = query.startDate?.toDateString();
+    const endDate = query.endDate?.toDateString();
 
     const { data } = await axios.get<INotificationPopulated[]>(`${clientSideRoutes}/notifications/my`, {
         params: { ...query, startDate, endDate },

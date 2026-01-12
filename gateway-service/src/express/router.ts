@@ -3,6 +3,7 @@ import { Router } from 'express';
 import passport from 'passport';
 import config from '../config';
 import UserService from '../externalServices/userService';
+import { IConnectedUser } from '../utils/express/passport';
 import apiRouter from './apiRouter';
 import authenticationRouter from './authentication/router';
 
@@ -15,7 +16,7 @@ if (config.authentication.isRequired) {
 } else {
     appRouter.use(
         wrapMiddleware(async (req, _res) => {
-            if (!req.user) req.user = {} as any;
+            if (!req.user) req.user = {} as IConnectedUser;
             const user = await UserService.getUserByExternalId(config.authentication.mockAuthenticatedUserId);
             req.user!.id = user._id;
         }),

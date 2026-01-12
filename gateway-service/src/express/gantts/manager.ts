@@ -2,7 +2,7 @@ import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import { IGantt, IGanttItem, IMongoGantt, ISearchGanttsBody } from '@packages/gantt';
 import { IRelationshipTemplate } from '@packages/relationship-template';
 import { BadRequestError } from '@packages/utils';
-import lodashIsEqual from 'lodash.isequal';
+import { isEqual } from 'lodash';
 import GanttsService from '../../externalServices/ganttsService';
 import InstancesService from '../../externalServices/instanceService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
@@ -85,7 +85,7 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
         const groupByEntityTemplateConstraints = await this.instancesService.getConstraintsOfTemplate(gantt.groupBy.entityTemplateId);
         if (
             !groupByEntityTemplateConstraints.uniqueConstraints.find((uniqueConstraint) =>
-                lodashIsEqual(uniqueConstraint.properties, [gantt.groupBy!.groupNameField]),
+                isEqual(uniqueConstraint.properties, [gantt.groupBy!.groupNameField]),
             )
         ) {
             throw new BadRequestError(

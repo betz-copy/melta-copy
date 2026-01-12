@@ -1,5 +1,6 @@
 import { Close, ExpandMore } from '@mui/icons-material';
 import { Autocomplete, Grid, MenuItem, TextField, TextFieldProps } from '@mui/material';
+import { IPropertyValue } from '@packages/entity-template';
 import { IMongoUnit } from '@packages/unit';
 import { RJSFSchema } from '@rjsf/utils';
 import React from 'react';
@@ -23,12 +24,12 @@ const MultipleSelect: React.FC<{
     schema?: RJSFSchema;
     selectedValue: ISelectOption | ISelectOption[] | null;
     onChange: (event: React.SyntheticEvent, newVal: ISelectOption | ISelectOption[] | null) => void;
-    onBlur: (event: React.FocusEvent<HTMLInputElement>) => void;
-    onFocus: (event: React.FocusEvent<HTMLInputElement>) => void;
+    onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
+    onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void;
     variant: 'standard' | 'outlined';
-    rawErrors: string[];
-    textFieldProps?: TextFieldProps;
-    value?: string[];
+    rawErrors?: string[];
+    textFieldProps?: Partial<TextFieldProps>;
+    value?: IPropertyValue;
     multiple?: boolean;
     disabled?: boolean;
     readonly?: boolean;
@@ -40,13 +41,12 @@ const MultipleSelect: React.FC<{
 }> = ({
     id,
     items,
-    schema,
     selectedValue,
     onChange,
     onBlur,
     onFocus,
     variant,
-    rawErrors,
+    rawErrors = [],
     textFieldProps,
     value,
     multiple,
@@ -124,7 +124,7 @@ const MultipleSelect: React.FC<{
                         onBlur={onBlur}
                         onFocus={onFocus}
                         variant={variant}
-                        error={!!rawErrors.length}
+                        error={!!rawErrors?.length}
                         label={label}
                         placeholder={placeholder}
                         slotProps={{

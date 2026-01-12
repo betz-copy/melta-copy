@@ -1,5 +1,4 @@
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
-/* eslint-disable no-param-reassign */
 import { ForceGraphMethods as ForceGraphMethods3D, NodeObject } from 'react-force-graph-3d';
 import * as THREE from 'three';
 import { environment } from '../../globals';

@@ -10,7 +10,7 @@ import { useUserStore } from '../../stores/user';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import StartPageSearch from './components/StartPageSearch';
 
-const GlobalSearch: React.FC<{}> = () => {
+const GlobalSearch: React.FC = () => {
     const currentUser = useUserStore((state) => state.user);
 
     const queryClient = useQueryClient();

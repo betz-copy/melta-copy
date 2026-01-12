@@ -47,7 +47,7 @@ export const getTemplateProperties = (entityTemplates: IEntityTemplateMap | IChi
 };
 
 export const tableMetaDataToBackend = (tableData: TableForm, queryClient: QueryClient): TableItemToBackend => {
-    const { childTemplateId, ...restTableData } = tableData;
+    const { childTemplateId, _id, ...restTableData } = tableData;
     return {
         type: DashboardItemType.Table,
         metaData: {

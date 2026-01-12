@@ -108,7 +108,7 @@ const singleTree = (
         preSelectedItemsIds={selectedTemplates.map(({ _id }) => _id)}
         getItemId={getOptionId}
         getItemLabel={getOptionLabel}
-        allowMultiSelect
+        multiSelect
         treeItems={firstTree.tree}
         filteredTreeItems={firstTree.filteredTree}
         onSelectItems={(ids) => {

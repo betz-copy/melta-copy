@@ -3,7 +3,7 @@ import { Box, Card, CardContent, FormControlLabel, Grid, IconButton, MenuItem, T
 import { PermissionScope } from '@packages/permission';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
-import isEqual from 'lodash.isequal';
+import { isEqual } from 'lodash';
 import React, { memo } from 'react';
 import { useUserStore } from '../../../stores/user';
 import MeltaSwitch from '../../MeltaDesigns/MeltaSwitch';
@@ -19,12 +19,12 @@ interface AttachmentEditCardProps {
     touched?: FormikTouched<CommonFormInputProperties>;
     errors?: FormikErrors<CommonFormInputProperties>;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    remove: (index: number, isNewProperty: boolean) => any;
+    remove: (index: number, isNewProperty: boolean) => void;
     supportChangeToRequiredWithInstances: boolean;
     supportDeleteForExistingInstances: boolean;
     hasActions?: boolean;
     supportConvertingToMultipleFields?: boolean;
-    dragRef?: any;
+    dragRef?: React.RefObject<null>;
 }
 
 export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({

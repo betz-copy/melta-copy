@@ -132,6 +132,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         try {
             const process = await this.service.getProcessInstanceById(id, userId);
             return this.getPopulatedProcess(process, userId);
+            // biome-ignore lint/suspicious/noExplicitAny: error is any
         } catch (error: any) {
             if (error instanceof NotFoundError && error.code === StatusCodes.NOT_FOUND) return null;
             throw error;
@@ -186,8 +187,8 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
 
     async removeUnusedFileIds(
         templateProperties: IProcessDetails['properties'],
-        oldProperties: Record<string, any>,
-        newProperties: Record<string, any>,
+        oldProperties: Record<string, IPropertyValue>,
+        newProperties: Record<string, IPropertyValue>,
     ) {
         const oldFileIds = new Set<string>(this.extractFileIdsFromProperties(templateProperties, oldProperties));
         const newFileIds = new Set<string>(this.extractFileIdsFromProperties(templateProperties, newProperties));
@@ -492,11 +493,15 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
                 limit: config.instanceService.searchEntitiesFlowMaxLimit,
             });
 
-            userIdsWithPermission.forEach((userId) => reviewersIds.add(userId));
+            userIdsWithPermission.forEach((userId) => {
+                reviewersIds.add(userId);
+            });
         }
 
         steps.forEach(({ reviewers }) => {
-            reviewers.forEach(({ _id }) => reviewersIds.add(_id));
+            reviewers.forEach(({ _id }) => {
+                reviewersIds.add(_id);
+            });
         });
 
         return Array.from(reviewersIds);

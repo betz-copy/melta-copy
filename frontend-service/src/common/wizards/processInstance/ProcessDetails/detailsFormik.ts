@@ -4,14 +4,16 @@ import {
     IProcessDetails,
     IProcessTemplateMap,
 } from '@packages/process';
+import { AxiosError } from 'axios';
 import { useFormik, yupToFormErrors } from 'formik';
 import i18next from 'i18next';
 import { useMemo } from 'react';
+import { UseMutateAsyncFunction } from 'react-query';
 import * as Yup from 'yup';
 import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { splitSpacialProperties } from '../../../../utils/processWizard/formik';
 import { getStepsObjectPopulated } from '../../../../utils/processWizard/steps';
-import { trycatch } from '../../../../utils/trycatch';
+import { tryCatch } from '../../../../utils/tryCatch';
 import { ajvValidate } from '../../../inputs/JSONSchemaFormik';
 import { ProcessDetailsValues } from '.';
 
@@ -23,8 +25,8 @@ const validationSchema = Yup.object().shape({
     steps: Yup.object().nullable().required('This field is required'),
 });
 
-export const initDetailsValues = (template: IMongoProcessTemplateReviewerPopulated): Record<string, unknown> => {
-    const details: Record<string, unknown> = {};
+export const initDetailsValues = (template: IMongoProcessTemplateReviewerPopulated): object => {
+    const details = {};
     Object.keys(template.details.properties.properties).forEach((field) => {
         details[field] = undefined;
     });
@@ -66,7 +68,7 @@ export const getInitialDetailsValues = (
 };
 
 export const getValidationErrors = async (values) => {
-    const { err: validationSchemaErr } = await trycatch(() => validationSchema.validate(values, { abortEarly: false }));
+    const { err: validationSchemaErr } = await tryCatch(() => validationSchema.validate(values, { abortEarly: false }));
     const validationSchemaErrors = !validationSchemaErr ? {} : yupToFormErrors<IProcessDetails>(validationSchemaErr);
 
     if (!values?.template?.details) {
@@ -84,7 +86,7 @@ export const getValidationErrors = async (values) => {
 export const useProcessDetailsFormik = (
     processInstance: IMongoProcessInstanceReviewerPopulated | undefined,
     processTemplatesMap: IProcessTemplateMap,
-    mutateAsync: (data: ProcessDetailsValues) => Promise<IMongoProcessInstanceReviewerPopulated>,
+    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstanceReviewerPopulated, AxiosError, ProcessDetailsValues, unknown>,
 ) => {
     const initialValues = useMemo(() => getInitialDetailsValues(processInstance, processTemplatesMap), [processInstance, processTemplatesMap]);
     const formik = useFormik<ProcessDetailsValues>({

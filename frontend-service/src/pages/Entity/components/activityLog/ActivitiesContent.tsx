@@ -79,7 +79,7 @@ const ActivitiesContent: React.FC<{
                                             gap: '10px',
                                         }}
                                     >
-                                        <img src="/icons/search-gray.svg" style={{ alignSelf: 'center', height: '18px' }} />
+                                        <img src="/icons/search-gray.svg" alt="search-gray" style={{ alignSelf: 'center', height: '18px' }} />
                                     </InputAdornment>
                                 ),
                                 startAdornment: <InputAdornment position="start" />,
@@ -99,12 +99,8 @@ const ActivitiesContent: React.FC<{
                             if (newVal === null) return;
                             setActivitiesFilterValue(Array.isArray(newVal) ? newVal.map((val) => val.value) : [newVal.value]);
                         }}
-                        textFieldProps={{}}
                         required={false}
-                        onBlur={() => {}}
-                        onFocus={() => {}}
                         variant="outlined"
-                        rawErrors={[]}
                         label={i18next.t('entityPage.activityLog.activityType')}
                     />
                 </Grid>
@@ -149,7 +145,7 @@ const ActivitiesContent: React.FC<{
                         infiniteScrollPageCount,
                         pageParam,
                         entityTemplate.properties.properties,
-                        activitiesFilterValue && activitiesFilterValue.length ? activitiesFilterValue : Object.values(ActionsLog),
+                        activitiesFilterValue?.length ? activitiesFilterValue : Object.values(ActionsLog),
                         searchInput.trim(),
                         startDateInput || undefined,
                         endDateInput || undefined,

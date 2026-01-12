@@ -1,8 +1,8 @@
 import { errorMiddleware } from '@packages/utils';
-import { once } from 'events';
+import { once } from 'node:events';
+import * as http from 'node:http';
 import express from 'express';
 import helmet from 'helmet';
-import * as http from 'http';
 import config from '../config';
 import appRouter from './router';
 

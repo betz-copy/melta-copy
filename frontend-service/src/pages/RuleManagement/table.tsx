@@ -8,6 +8,7 @@ import {
     IRuleBreachAlertPopulated,
     IRuleBreachPopulated,
     IRuleBreachRequestPopulated,
+    PropertyFormat,
     RuleBreachRequestStatus,
 } from '@packages/rule-breach';
 import i18next from 'i18next';
@@ -15,20 +16,19 @@ import React, { forwardRef, memo, useImperativeHandle, useMemo, useRef } from 'r
 import { toast } from 'react-toastify';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import '../../css/table.css';
-
 import { getRuleBreachAlertsRequest, getRuleBreachRequestsRequest } from '../../services/ruleBreachesService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { agGridLocaleText } from '../../utils/agGrid/agGridLocaleText';
 import { dateColDef, enumArrayColDef, translatedEnumColDef } from '../../utils/agGrid/commonColDefs';
 import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
-import { trycatch } from '../../utils/trycatch';
+import { tryCatch } from '../../utils/tryCatch';
 
 const getDatasource = (breachType: BreachType, onFail: ((err: unknown) => void) | undefined): IServerSideDatasource => {
     return {
         async getRows(params) {
             const { sortModel, startRow, endRow, filterModel } = params.request;
-            const { result: data, err } = await trycatch(() => {
+            const { result: data, err } = await tryCatch(() => {
                 const searchRequest = breachType === 'alert' ? getRuleBreachAlertsRequest : getRuleBreachRequestsRequest;
 
                 return searchRequest({
@@ -114,7 +114,7 @@ const getColumnDefs = (
             ({ data }) => data?.createdAt,
             {
                 title: i18next.t('ruleManagement.createdAt'),
-                format: 'date-time',
+                format: PropertyFormat['date-time'],
             },
             true,
         ),
@@ -145,15 +145,13 @@ const getColumnDefs = (
             ({ data }) => data?.reviewedAt,
             {
                 title: i18next.t('ruleManagement.reviewedAt'),
-                format: 'date-time',
+                format: PropertyFormat['date-time'],
             },
             true,
         ),
     ];
 
-    if (breachType === 'request') {
-        return [...commonRuleBreachColumns, ...requestColDef, actionColDef];
-    }
+    if (breachType === 'request') return [...commonRuleBreachColumns, ...requestColDef, actionColDef];
 
     return [...commonRuleBreachColumns, actionColDef];
 };
@@ -195,6 +193,7 @@ const RuleBreachTable = forwardRef<
         },
     }));
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: datasourceOnFail changes on every re-render and should not be used as a hook dependency
     const rowDataSource = useMemo(() => getDatasource(breachType, datasourceOnFail), [breachType]);
 
     return (

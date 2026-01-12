@@ -29,7 +29,7 @@ const {
     },
 } = config;
 
-type Node = Neo4jNode<number>;
+export type Node = Neo4jNode<number>;
 type Relationship = Neo4jRelationship<number>;
 
 /**
@@ -44,17 +44,19 @@ export const formatDate = (date: string) => {
  * Fix the values of an entity that is saved in neo4j to its original values.
  * For example dates and fixing the user fields to be without the suffix.
  */
-export const normalizeFields = (properties: Record<string, any>): { properties: Record<string, any>; coloredFields: Record<string, string> } => {
+export const normalizeFields = (
+    properties: Record<string, IPropertyValue>,
+): { properties: Record<string, IPropertyValue>; coloredFields: Record<string, string> } => {
     const props = {};
     const coloredFields = {};
 
     const usersArrayKeys: Set<string> = new Set<string>();
     const userKeys: Set<string> = new Set<string>();
 
-    Object.entries(properties).forEach(([key, value]) => {
+    for (const [key, value] of Object.entries(properties)) {
         const suffixes = [stringPropertySuffix, booleanPropertySuffix, filePropertySuffix, locationCoordinateSystemSuffix];
 
-        if (suffixes.some((suffix) => key.endsWith(suffix))) return;
+        if (suffixes.some((suffix) => key.endsWith(suffix))) continue;
 
         if (key.endsWith(colorPropertySuffix) && properties[key] !== undefined) coloredFields[key.slice(0, -colorPropertySuffix.length)] = value;
 
@@ -64,31 +66,31 @@ export const normalizeFields = (properties: Record<string, any>): { properties: 
                 key.includes(suffixFieldName),
             )!.suffixFieldName;
             usersArrayKeys.add(key.split(currentUserField)[0]);
-            return;
+            continue;
         }
 
         if (key.includes('.') && key.endsWith(`${userFieldPropertySuffix}`)) {
             const currentUserField = userOriginalAndSuffixFieldsMap.find(({ suffixFieldName }) => key.includes(suffixFieldName))!.suffixFieldName;
             userKeys.add(key.split(currentUserField)[0]);
-            return;
+            continue;
         }
 
         if (value instanceof neo4j.types.LocalDateTime) {
             props[key] = fromZonedTime(new Date(value.toString()), timezone).toISOString();
 
-            return;
+            continue;
         }
 
         if (value instanceof neo4j.types.Date) {
             props[key] = formatDate(value.toString());
 
-            return;
+            continue;
         }
 
         if (value instanceof neo4j.types.Point) {
             props[key] = { location: `${value.x}, ${value.y}`, coordinateSystem: properties[`${key}${locationCoordinateSystemSuffix}`] };
 
-            return;
+            continue;
         }
         if (Array.isArray(value) && value.every((item) => item instanceof neo4j.types.Point)) {
             const points = value.map((point) => `${point.x} ${point.y}`);
@@ -97,43 +99,43 @@ export const normalizeFields = (properties: Record<string, any>): { properties: 
                 coordinateSystem: properties[`${key}${locationCoordinateSystemSuffix}`],
             };
 
-            return;
+            continue;
         }
 
         props[key] = value;
-    });
+    }
 
     if (usersArrayKeys.size) {
-        usersArrayKeys.forEach((userKey) => {
+        for (const userKey of usersArrayKeys) {
             props[userKey] = properties[`${userKey}${usersArrayOriginalAndSuffixFieldsMap[0].suffixFieldName}${usersFieldsPropertySuffix}`].map(
                 (_id: string, index: string | number) => {
-                    const objToReturn: any = {};
+                    const objToReturn: Record<string, unknown> = {};
 
-                    usersArrayOriginalAndSuffixFieldsMap.forEach((userField) => {
+                    for (const userField of usersArrayOriginalAndSuffixFieldsMap) {
                         objToReturn[userField.originalFieldName] =
                             properties[`${userKey}${userField.suffixFieldName}${usersFieldsPropertySuffix}`][index];
-                    });
+                    }
 
                     return JSON.stringify({
                         ...objToReturn,
                     });
                 },
             );
-        });
+        }
     }
 
     if (userKeys.size) {
-        userKeys.forEach((userKey) => {
-            const objToReturn: any = {};
+        for (const userKey of userKeys) {
+            const objToReturn: Record<string, unknown> = {};
 
-            userOriginalAndSuffixFieldsMap.forEach((userField) => {
+            for (const userField of userOriginalAndSuffixFieldsMap) {
                 objToReturn[userField.originalFieldName] = properties[`${userKey}${userField.suffixFieldName}${userFieldPropertySuffix}`];
-            });
+            }
 
             props[userKey] = JSON.stringify({
                 ...objToReturn,
             });
-        });
+        }
     }
 
     return { properties: props, coloredFields };
@@ -148,7 +150,7 @@ type Response<ResType extends ResponseType, Data> = ResType extends 'singleRespo
         ? Data[]
         : never;
 
-const nodeToEntity = (node: Node): IEntity => {
+export const nodeToEntity = (node: Node): IEntity => {
     const { properties, coloredFields } = normalizeFields(node.properties);
     return {
         templateId: node.labels[0],
@@ -244,15 +246,8 @@ export const normalizeReturnedDeletedRelationship = (result: QueryResult) => {
     };
 };
 
-const doesPathContainDisabledNode = (path: (Node | Relationship)[], disabled: boolean) => {
-    return path.slice(1).some((pathPart) => {
-        const isNode = 'labels' in pathPart;
-        return isNode && !pathPart.properties.disabled === disabled;
-    });
-};
-
 export const normalizeReturnedRelAndEntities =
-    (disabled: boolean | null) =>
+    () =>
     (result: QueryResult): IEntityExpanded | null => {
         if (!result.records.length) return null;
 
@@ -260,18 +255,10 @@ export const normalizeReturnedRelAndEntities =
 
         if (!entity) return null;
 
-        const validConnections = result.records.slice(1).filter((record) => {
-            const path = record.get(0) as (Node | Relationship)[];
-
-            if (typeof disabled === 'boolean') return !doesPathContainDisabledNode(path, disabled);
-
-            return true;
-        });
-
-        const connections = validConnections.map((record) => {
+        const connections = result.records.slice(1).map((record) => {
             const [firstEntity, relationship, secondEntity] = record.get(0).slice(-3) as [Node, Relationship, Node];
             const [sourceEntity, destinationEntity] =
-                relationship.start === firstEntity.identity ? [firstEntity, secondEntity] : [secondEntity, firstEntity];
+                firstEntity.identity === relationship.start ? [firstEntity, secondEntity] : [secondEntity, firstEntity];
 
             return {
                 sourceEntity: nodeToEntity(sourceEntity),
@@ -337,6 +324,7 @@ export const runInTransactionAndNormalize = async <T>(
     transaction: Transaction,
     cypherQuery: string,
     normalizeFunction: (queryResult: QueryResult) => T,
+    // biome-ignore lint/suspicious/noExplicitAny: never doubt Noam
     parameters?: Record<string, any>,
 ): Promise<T> => {
     const result = await transaction.run(cypherQuery, parameters);
@@ -366,7 +354,7 @@ export const generateDefaultProperties = () => {
     };
 };
 
-const getLocationPoint = (pointString: string, splitBy: SplitBy, entityProperties: Record<string, any>, key: string) => {
+const getLocationPoint = (pointString: string, splitBy: SplitBy, entityProperties: Record<string, IPropertyValue>, key: string) => {
     const [longitude, latitude] = pointString.split(splitBy).map(Number);
     if (Number.isNaN(longitude) || Number.isNaN(latitude)) {
         throw new ValidationError('Invalid format. Expected format: "number, number".', {
@@ -388,7 +376,7 @@ const getLocationPoint = (pointString: string, splitBy: SplitBy, entityPropertie
     return new neo4j.types.Point(srid, longitude, latitude);
 };
 
-export const getNeo4jLocation = (locationString: string, entityProperties: Record<string, any>, key: string) => {
+export const getNeo4jLocation = (locationString: string, entityProperties: Record<string, IPropertyValue>, key: string) => {
     if (!locationString.startsWith('POLYGON')) return getLocationPoint(locationString, SplitBy.comma, entityProperties, key);
 
     if (!locationString.startsWith(polygonPrefix) || !locationString.endsWith(polygonSuffix)) {

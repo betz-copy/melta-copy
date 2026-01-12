@@ -1,7 +1,7 @@
 import { IUser } from '@packages/user';
 import axios from 'axios';
 import config from './config';
-import { trycatch } from './utils';
+import { tryCatch } from './utils';
 
 const { url, usersRoute, isAliveRoute } = config.usersService;
 
@@ -15,7 +15,7 @@ export const createUsers = async (users: Omit<IUser, '_id'>[]) => {
 };
 
 export const isUserServiceAlive = async () => {
-    const { result, err } = await trycatch(() => axios.get(url + isAliveRoute));
+    const { result, err } = await tryCatch(() => axios.get(url + isAliveRoute));
 
     return { result, err };
 };

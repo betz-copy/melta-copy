@@ -3,11 +3,18 @@ import { IEntity, IFilterOfField } from '@packages/entity';
 import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { CoordinatesResult, MapItemType } from '@packages/utils';
 import { Cartesian3 } from 'cesium';
+import { XMLParser } from 'fast-xml-parser';
 import { environment } from '../../globals';
-import { ICoordinateSearchResult, IPolygonSearchResult } from '../../interfaces/location';
+import { ICoordinateSearchResult, IPolygonSearchResult, LayerProvider, LayerProviderType } from '../../interfaces/location';
+import { MatrixSetLink } from '../../interfaces/map';
 import { convertECEFToWGS84, convertWGS94ToECEF, isValidWGS84 } from './convert';
 
-const { polygonPrefix, polygonSuffix } = environment.map.polygon;
+const {
+    polygon: { polygonPrefix, polygonSuffix },
+    textValueOfLinkTag,
+    tileMatrixSetIdentifiers,
+    tilingSchemeId,
+} = environment.map;
 
 export const zoomNumber = 300000;
 
@@ -137,7 +144,7 @@ export const getLocationProperties = (entity: IEntity, selectedTemplates: IMongo
                 acc[key] = value;
                 return acc;
             },
-            {} as { [x: string]: any },
+            {} as { [x: string]: IEntity['properties'] },
         );
 
     return { template, locationTemplateProperties, locationProperties };
@@ -186,3 +193,87 @@ export const getFilteredItems = (
     polygons: IPolygonSearchResult[],
     coordinates: ICoordinateSearchResult[],
 ) => [...polygons, ...coordinates].filter((item) => matchesAutoSearch(item, autoSearch) && matchesListFilters(item, listFields, sourceTemplateId));
+
+const xmlParser = new XMLParser({
+    ignoreAttributes: false,
+    attributeNamePrefix: '',
+    removeNSPrefix: true,
+});
+
+const emptyResult: LayerProvider = { url: '', cesiumUrl: '', id: '', type: LayerProviderType.map };
+
+const findLinks = (
+    paredXml: object,
+    capabilitiesLinkSchema: string,
+    cesiumLinkSchema: string,
+    layerName: string,
+    layerDisplayName: string,
+    layerType: LayerProviderType,
+    layerLinkTag: string,
+): LayerProvider => {
+    if (!paredXml || typeof paredXml !== 'object') return emptyResult;
+
+    // If it's an array, search each element
+    if (Array.isArray(paredXml)) {
+        for (const item of paredXml) {
+            const result = findLinks(item, capabilitiesLinkSchema, cesiumLinkSchema, layerName, layerDisplayName, layerType, layerLinkTag);
+            if (result.url) return result;
+        }
+        return emptyResult;
+    }
+
+    // Check the current level
+    if (paredXml[layerLinkTag]) {
+        const linksList = Array.isArray(paredXml[layerLinkTag]) ? paredXml[layerLinkTag] : [paredXml[layerLinkTag]];
+
+        const matchedLinkCapabilities = linksList.find((link) => link.scheme === capabilitiesLinkSchema && link.name?.startsWith(layerName));
+
+        const matchedLinkCesium = linksList.find((link) => link.scheme === cesiumLinkSchema && link.name?.startsWith(layerName));
+
+        if (!matchedLinkCesium || !matchedLinkCapabilities) return emptyResult;
+
+        return {
+            id: matchedLinkCesium.name,
+            url: matchedLinkCapabilities[textValueOfLinkTag],
+            cesiumUrl: matchedLinkCesium[textValueOfLinkTag],
+            displayName: layerDisplayName,
+            type: layerType,
+        };
+    }
+
+    // Recurse deeper
+    for (const key in paredXml)
+        if (typeof paredXml[key] === 'object') {
+            const result = findLinks(paredXml[key], capabilitiesLinkSchema, cesiumLinkSchema, layerName, layerDisplayName, layerType, layerLinkTag);
+            if (result.url) return result;
+        }
+
+    return emptyResult;
+};
+
+export const extractImageryUrl = (
+    xml: string,
+    capabilitiesLinkSchema: string,
+    cesiumLinkSchema: string,
+    layerName: string,
+    layerDisplayName: string,
+    layerType: LayerProviderType,
+    layerLinkTag: string,
+): LayerProvider => {
+    try {
+        const json = xmlParser.parse(xml);
+
+        return findLinks(json, capabilitiesLinkSchema, cesiumLinkSchema, layerName, layerDisplayName, layerType, layerLinkTag);
+    } catch (e) {
+        console.error('XML Parsing Error:', e);
+        return emptyResult;
+    }
+};
+
+export const getMatrixSet = (matrixSets: MatrixSetLink[]) => {
+    const matrixSet = tileMatrixSetIdentifiers.map((id) => matrixSets.find((m) => m.identifier === id)).find(Boolean) ?? matrixSets[0];
+
+    const tilingScheme = matrixSet.crs.includes(tilingSchemeId) ? new Cesium.WebMercatorTilingScheme() : new Cesium.GeographicTilingScheme();
+
+    return { identifier: matrixSet.identifier, tilingScheme };
+};

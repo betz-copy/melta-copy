@@ -159,7 +159,8 @@ const Dashboard: React.FC = () => {
                     localStorageKey={dashboardOrderKey}
                     generateDom={() =>
                         (dashboardItems ?? []).map((dashboardItem, index) => (
-                            <div
+                            <button
+                                type="button"
                                 key={dashboardItem._id}
                                 style={{
                                     background: darkMode ? '#131313' : 'white',
@@ -183,7 +184,7 @@ const Dashboard: React.FC = () => {
                                     }
                                     onEdit={() => handleEdit(dashboardItem)}
                                 />
-                            </div>
+                            </button>
                         ))
                     }
                     layout={{ value: layout, set: setLayout }}

@@ -27,6 +27,7 @@ export type StepType<T extends object> = {
     label: string;
     description?: string;
     component: (formikProps: FormikProps<T>, helpers: StepComponentHelpers) => JSX.Element;
+    // biome-ignore lint/suspicious/noExplicitAny: generic
     validationSchema?: any;
     validate?: FormikConfig<T>['validate'];
     stepperActions?: {
@@ -35,6 +36,7 @@ export type StepType<T extends object> = {
         next?: { text?: string; onClick?: (values: T, formikHelpers: FormikHelpers<T>) => Promise<void> | void; disabled?: boolean };
     };
     invisibleBeforeStep?: boolean;
+    alignItems?: 'start' | string;
 };
 
 const Wizard = <T extends object>({
@@ -56,6 +58,7 @@ const Wizard = <T extends object>({
         title: string;
         steps: StepType<T>[];
         isLoading: boolean;
+        // biome-ignore lint/suspicious/noExplicitAny: generic
         submitFunction: (values: T) => Promise<any>;
         direction?: 'row' | 'column';
         showPrevSteps?: boolean;
@@ -73,6 +76,7 @@ const Wizard = <T extends object>({
         setActiveStep((prevActiveStep) => prevActiveStep - 1);
     };
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: it was there a long time ago
     useEffect(() => {
         setActiveStep(initialStep);
     }, [open, initialStep]);
@@ -108,11 +112,11 @@ const Wizard = <T extends object>({
                 <Formik
                     initialValues={initialValues}
                     validationSchema={
-                        steps[activeStep].validationSchema instanceof Yup.ObjectSchema
+                        steps[activeStep]?.validationSchema instanceof Yup.ObjectSchema
                             ? steps[activeStep].validationSchema
-                            : Yup.object(steps[activeStep].validationSchema)
+                            : Yup.object(steps[activeStep]?.validationSchema)
                     }
-                    validate={steps[activeStep].validate}
+                    validate={steps[activeStep]?.validate}
                     onSubmit={async (values, actions) => {
                         if (isLastStep) {
                             await submitFunction(values);
@@ -135,7 +139,7 @@ const Wizard = <T extends object>({
                                 direction={direction}
                                 showPrevSteps={showPrevSteps}
                             />
-                            {steps[activeStep].stepperActions?.hide !== 'all' && (
+                            {steps[activeStep]?.stepperActions?.hide !== 'all' && (
                                 <Box sx={{ position: 'sticky', bottom: 0 }}>
                                     <StepperActions
                                         step={steps[activeStep]}

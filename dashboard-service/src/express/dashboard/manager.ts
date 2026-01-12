@@ -3,7 +3,7 @@ import { DashboardItem, DashboardItemType, MongoDashboardItem } from '@packages/
 import { IMongoIframe } from '@packages/iframe';
 import { DefaultManagerMongo, NotFoundError, ServiceError } from '@packages/utils';
 import { StatusCodes } from 'http-status-codes';
-import groupBy from 'lodash.groupby';
+import { groupBy } from 'lodash';
 import { FilterQuery, Types } from 'mongoose';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';

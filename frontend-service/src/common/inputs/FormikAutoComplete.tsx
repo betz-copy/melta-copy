@@ -4,6 +4,7 @@ import { CSSProperties } from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
 
 interface IFormikAutoCompleteProps<T> {
+    // biome-ignore lint/suspicious/noExplicitAny: generic
     formik: FormikProps<any>;
     formikField: string;
     options: T[];
@@ -71,8 +72,12 @@ export const FormikAutoComplete = <T,>({
             )}
             renderTags={(tags, getTagProps) =>
                 tags.map((option, index) => (
-                    // eslint-disable-next-line react/jsx-key
-                    <Chip {...getTagProps({ index })} variant="outlined" label={getOptionLabel ? getOptionLabel(option) : String(option)} />
+                    <Chip
+                        {...getTagProps({ index })}
+                        key={getTagProps({ index }).key}
+                        variant="outlined"
+                        label={getOptionLabel ? getOptionLabel(option) : String(option)}
+                    />
                 ))
             }
             popupIcon={<IoIosArrowDown fontSize="Medium" />}

@@ -1,10 +1,11 @@
+import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { AddCircle, CloseFullscreenRounded, Expand, TableRowsOutlined } from '@mui/icons-material';
 import { Box, Grid, useTheme } from '@mui/material';
 import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IConnection, IEntity, IEntityExpanded } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { ISubCompactPermissions, PermissionScope } from '@packages/permission';
-import { IRelationship } from '@packages/relationship';
+import { IMongoRelationship, IRelationship } from '@packages/relationship';
 import i18next from 'i18next';
 import React, { useRef, useState } from 'react';
 import { useQueryClient } from 'react-query';
@@ -17,8 +18,6 @@ import { EntityLink } from '../../common/EntityLink';
 import { EntityTemplateTextComponent, RelationshipTitle } from '../../common/RelationshipTitle';
 import { TableButton } from '../../common/TableButton';
 import '../../css/pages.css';
-import { useMatomo } from '@datapunt/matomo-tracker-react';
-
 import { useClientSideUserStore } from '../../stores/clientSideUser';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
@@ -148,7 +147,7 @@ export const ConnectionsTable: React.FC<{
 
     const userHasWritePermissions = isUserHasWritePermissions(currentClientSideUser, currentUser, template);
 
-    const onCreateRelationship = (createdRelationship: IRelationship, sourceEntity: IEntity, destinationEntity: IEntity) => {
+    const onCreateRelationship = (createdRelationship: IMongoRelationship, sourceEntity: IEntity, destinationEntity: IEntity) => {
         const doesCreatedRelationshipWithCurrEntity = [createdRelationship.sourceEntityId, createdRelationship.destinationEntityId].includes(
             expandedEntity.entity.properties._id!,
         );
@@ -306,7 +305,7 @@ export const ConnectionsTable: React.FC<{
                         popoverText: isEditButtonsDisabled
                             ? disabledButtonText
                             : i18next.t(`entityPage.deleteRelationshipPopoverText${relationshipTemplate.isProperty ? '-cant' : ''}`),
-                        onClick: (connectionToDelete: any) => {
+                        onClick: (connectionToDelete) => {
                             setDeleteRelationshipDialogState({ open: true, connectionToDelete });
                         },
                         disabledButton: isEditButtonsDisabled || relationshipTemplate.isProperty || false,

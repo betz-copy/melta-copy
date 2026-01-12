@@ -1,6 +1,11 @@
 import { Autocomplete, TextField } from '@mui/material';
 import { IChildTemplateMap, IChildTemplatePopulated, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
-import { IEntityTemplateMap, IEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import {
+    IEntityTemplateMap,
+    IEntityTemplatePopulated,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    IPropertyValue,
+} from '@packages/entity-template';
 import { PermissionScope } from '@packages/permission';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
@@ -32,13 +37,13 @@ const ChooseTemplate: React.FC<{
     values: EntityWizardValues;
     touched: FormikTouched<EntityWizardValues>;
     errors: FormikErrors<EntityWizardValues>;
-    setFieldValue: (field: string, value: any, shouldValidate?: boolean | undefined) => void;
+    setFieldValue: <K extends keyof EntityWizardValues>(field: K, value: EntityWizardValues[K], shouldValidate?: boolean) => void;
     parentId?: string;
     chooseMode?: IChooseTemplateMode;
     entityId?: string;
     getInitialProperties?: (
         newTemplate: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
-    ) => Record<string, any>;
+    ) => Record<string, IPropertyValue>;
 }> = ({ values, touched, errors, setFieldValue, chooseMode, parentId, getInitialProperties }) => {
     const { categoryId } = useParams<{ categoryId?: string }>();
     const queryClient = useQueryClient();

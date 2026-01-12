@@ -9,7 +9,10 @@ import { WorkspaceWizardValues } from './index';
 
 export const chooseColorsSchema = Yup.object().shape({
     colors: Yup.object().shape(
-        Object.entries(Colors).reduce((acc, [key]) => ({ ...acc, [key]: Yup.string().required(i18next.t('validation.required')) }), {}),
+        Object.entries(Colors).reduce((acc, [key]) => {
+            acc[key] = Yup.string().required(i18next.t('validation.required'));
+            return acc;
+        }, {}),
     ),
 });
 

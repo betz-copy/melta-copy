@@ -81,7 +81,7 @@ export const EditConnectedEntityTemplates: React.FC<IEditConnectedEntityTemplate
                                     marginLeft="-0.35rem"
                                     position="relative"
                                     // can't use relationshipTemplateId (or a similar id of the connectedEntityTemplate) because it doesn't necessary exist while editing
-                                    // eslint-disable-next-line react/no-array-index-key
+                                    // biome-ignore lint/suspicious/noArrayIndexKey: Yahalom knows what he's doing
                                     key={index}
                                 >
                                     <RemoveFromArrayButton

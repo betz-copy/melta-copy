@@ -1,5 +1,5 @@
 import { ScatterPlotOutlined as HiveIcon, NavigateBefore, NavigateNext } from '@mui/icons-material';
-import { Card, CardContent, CardHeader, Fab, Grid } from '@mui/material';
+import { Card, CardContent, CardHeader, Fab, Grid, useTheme } from '@mui/material';
 import { IMongoStepTemplatePopulated } from '@packages/process';
 import { IUser } from '@packages/user';
 import i18next from 'i18next';
@@ -12,16 +12,16 @@ import { IDetailsStepProp } from '.';
 import { ReviewerSelector } from './ReviewerSelector';
 
 const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processInstance }) => {
+    const theme = useTheme();
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const cardRef = useRef<HTMLDivElement | null>(null);
     const [cardWidth, setCardWidth] = useState<number | null>(null);
 
     const updateCardWidth = () => {
-        if (cardRef.current) {
-            setCardWidth(cardRef.current.offsetWidth);
-        }
+        if (cardRef.current) setCardWidth(cardRef.current.offsetWidth);
     };
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         updateCardWidth();
         window.addEventListener('resize', updateCardWidth);
@@ -29,6 +29,7 @@ const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processIn
             window.removeEventListener('resize', updateCardWidth);
         };
     }, []);
+
     return (
         <Grid size={{ xs: 10 }} marginBottom={1}>
             <Card
@@ -43,7 +44,7 @@ const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processIn
                 <CardHeader
                     avatar={
                         stepTemplate.iconFileId ? (
-                            <CustomIcon iconUrl={stepTemplate.iconFileId} width="30px" height="30px" color={darkMode ? '#9398c2' : '#1E2775'} />
+                            <CustomIcon iconUrl={stepTemplate.iconFileId} width="30px" height="30px" color={theme.palette.primary.main} />
                         ) : (
                             <HiveIcon fontSize="large" />
                         )

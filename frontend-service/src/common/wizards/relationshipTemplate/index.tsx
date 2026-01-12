@@ -100,13 +100,12 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
     const queryClient = useQueryClient();
     const { isLoading, mutateAsync } = useMutation(
         (relationshipTemplateForm: RelationshipTemplateWizardValues) => {
-            const { _id, createdAt, updatedAt, ...restOfRelationshipTemplateForm } = relationshipTemplateForm;
+            const { _id, createdAt: _c, updatedAt: _u, ...restOfRelationshipTemplateForm } = relationshipTemplateForm;
             const relationshipTemplateBody = relationshipTemplateFormToRelationshipTemplateObject(restOfRelationshipTemplateForm);
-            // TODO: check if we need to set iProperty as false
+
             if (isEditMode) {
                 return updateRelationshipTemplateRequest(_id!, relationshipTemplateBody);
-            }
-            return createRelationshipTemplateRequest(relationshipTemplateBody);
+            } else return createRelationshipTemplateRequest(relationshipTemplateBody);
         },
         {
             onSuccess: (data) => {
@@ -115,19 +114,16 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
                 );
                 queryClient.invalidateQueries(['searchRelationshipTemplates']);
 
-                if (isEditMode) {
-                    toast.success(i18next.t('wizard.relationshipTemplate.editedSuccessfully'));
-                } else {
-                    toast.success(i18next.t('wizard.relationshipTemplate.createdSuccessfully'));
-                }
+                toast.success(i18next.t(`wizard.relationshipTemplate.${isEditMode ? 'edited' : 'created'}Successfully`));
                 handleClose();
             },
             onError: (error: AxiosError) => {
-                if (isEditMode) {
-                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.relationshipTemplate.failedToEdit')} />);
-                } else {
-                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.relationshipTemplate.failedToCreate')} />);
-                }
+                toast.error(
+                    <ErrorToast
+                        axiosError={error}
+                        defaultErrorMessage={i18next.t(`wizard.relationshipTemplate.failedTo${isEditMode ? 'Edit' : 'Create'}`)}
+                    />,
+                );
             },
         },
     );
@@ -139,7 +135,7 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
             initialValues={initialValues}
             initialStep={initialStep}
             isEditMode={isEditMode}
-            title={isEditMode ? i18next.t('wizard.relationshipTemplate.updateTitle') : i18next.t('wizard.relationshipTemplate.createTitle')}
+            title={i18next.t(`wizard.relationshipTemplate.${isEditMode ? 'update' : 'create'}Title`)}
             steps={steps}
             isLoading={isLoading}
             submitFunction={mutateAsync}

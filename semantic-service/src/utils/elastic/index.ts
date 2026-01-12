@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-/* eslint-disable no-underscore-dangle */
 import { Client, estypes } from '@elastic/elasticsearch';
 import { ISemanticSearchResult } from '@packages/semantic-search';
 import { logger } from '@packages/utils';

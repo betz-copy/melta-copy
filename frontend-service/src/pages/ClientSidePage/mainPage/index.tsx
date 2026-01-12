@@ -1,5 +1,5 @@
 import { Box, Grid } from '@mui/material';
-import { IChildTemplateMap, IChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IChildTemplateMap } from '@packages/child-template';
 import { IEntityTemplateMap } from '@packages/entity-template';
 import React, { useRef } from 'react';
 import { useQueryClient } from 'react-query';
@@ -26,39 +26,36 @@ const ClientSideMainPage: React.FC = () => {
     const firstXPropsKeys: string[] = parentTemplate ? getFirstXPropsKeys(numOfPropsToShow, parentTemplate) : [];
 
     return (
-        <>
-            <Box
-                sx={{
-                    width: '100%',
-                    height: '100%',
-                    paddingRight: '30px',
-                    paddingLeft: '30px',
-                }}
-            >
-                <Grid container paddingY="20px" alignItems="top" justifyContent="space-between" width="100%">
-                    <Grid width="70%">
-                        <UserInfoCard
-                            currentUserFromClientSide={clientSideUserEntity}
-                            // TODO: CHECK IF THIS IS CORRECT
-                            usersInfoChildTemplate={usersInfoChildTemplate as unknown as IChildTemplateWithConstraintsPopulated}
-                            overridePropertiesToShow={firstXPropsKeys}
-                        />
-                    </Grid>
-                    <Grid width="28%">
-                        <ContactInfoCard />
-                    </Grid>
-                    <Grid container size={{ xs: 12 }} justifyContent="center"></Grid>
-                </Grid>
-                <Grid container size={{ xs: 12 }} justifyContent="center">
-                    <UserEntityTables
-                        childTemplates={Array.from(childTemplates.values())}
+        <Box
+            sx={{
+                width: '100%',
+                height: '100%',
+                paddingRight: '30px',
+                paddingLeft: '30px',
+            }}
+        >
+            <Grid container paddingY="20px" alignItems="top" justifyContent="space-between" width="100%">
+                <Grid width="70%">
+                    <UserInfoCard
                         currentUserFromClientSide={clientSideUserEntity}
                         usersInfoChildTemplate={usersInfoChildTemplate}
-                        ref={userEntityTablesRef}
+                        overridePropertiesToShow={firstXPropsKeys}
                     />
                 </Grid>
-            </Box>
-        </>
+                <Grid width="28%">
+                    <ContactInfoCard />
+                </Grid>
+                <Grid container size={{ xs: 12 }} justifyContent="center"></Grid>
+            </Grid>
+            <Grid container size={{ xs: 12 }} justifyContent="center">
+                <UserEntityTables
+                    childTemplates={Array.from(childTemplates.values())}
+                    currentUserFromClientSide={clientSideUserEntity}
+                    usersInfoChildTemplate={usersInfoChildTemplate}
+                    ref={userEntityTablesRef}
+                />
+            </Grid>
+        </Box>
     );
 };
 

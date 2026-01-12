@@ -1,8 +1,6 @@
+import { Grid } from '@mui/material';
 import { IEntityWithIgnoredRules } from '@packages/entity';
 import { ActionTypes } from '@packages/rule-breach';
-/* eslint-disable react/no-unstable-nested-components */
-
-import { Grid } from '@mui/material';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
 import React, { useState } from 'react';
@@ -87,7 +85,15 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     );
 
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
-        async ({ fileName, headersOnly, insertEntities }: { fileName: string; headersOnly?: boolean; insertEntities?: Record<string, any>[] }) => {
+        async ({
+            fileName,
+            headersOnly,
+            insertEntities,
+        }: {
+            fileName: string;
+            headersOnly?: boolean;
+            insertEntities?: Record<string, IPropertyValue>[];
+        }) => {
             return exportEntitiesRequest({
                 fileName,
                 templates: {

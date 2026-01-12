@@ -61,10 +61,11 @@ class WorkspaceManager extends DefaultManagerProxy {
 
         const fileIds = await this.storageService.uploadFiles(files);
 
-        return files.reduce(
-            (acc, { fieldname }, index) => ({ ...acc, [fieldname]: fileIds[index] }),
-            {} as Pick<IWorkspace, 'iconFileId' | 'logoFileId'>,
-        );
+        const result = {} as Pick<IWorkspace, 'iconFileId' | 'logoFileId'>;
+        files.forEach(({ fieldname }, index) => {
+            result[fieldname] = fileIds[index];
+        });
+        return result;
     }
 
     async createOne(workspace: Omit<IWorkspace, '_id'>, files: UploadedFile[]) {
@@ -76,11 +77,12 @@ class WorkspaceManager extends DefaultManagerProxy {
         return this.updateOne(_id, { ...createdWorkspace, ...fileProperties }, []);
     }
 
+    // biome-ignore lint/suspicious/noExplicitAny: never doubt Hammer
     private async deleteFilesWrapper(id: string, deleteFunc: () => Promise<any>) {
         try {
             return deleteFunc();
         } catch (error) {
-            console.error(`failed to delete files of workspaceId ${id}`, { error }); // eslint-disable-line no-console
+            console.error(`failed to delete files of workspaceId ${id}`, { error });
             return [];
         }
     }

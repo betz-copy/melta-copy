@@ -23,7 +23,6 @@ const getColorRulesByEntityId = (rules: Map<string, IMongoRule>, brokenRules: IB
 
         brokenRule.failures.forEach((ruleFailure) => {
             if (!colorRulesByEntityId[ruleFailure.entityId]) {
-                // eslint-disable-next-line no-param-reassign
                 colorRulesByEntityId[ruleFailure.entityId] = [rule];
                 return;
             }

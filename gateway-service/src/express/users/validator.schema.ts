@@ -114,6 +114,7 @@ export const createUserRequestSchema = joi.object({
             workspaceId: joi.string(),
             roleIds: joi.array().items(joi.string()),
             kartoffelId: joi.string().required(),
+            units: joi.object({}).pattern(MongoIdSchema, joi.array().items(MongoIdSchema)),
         })
         .required(),
     params: {},

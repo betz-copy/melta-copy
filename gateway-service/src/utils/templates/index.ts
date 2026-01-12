@@ -1,5 +1,5 @@
 import { childTemplateKeys, dePopulateChildProperties } from '@packages/child-template';
-import { IConstraintsOfTemplate } from '@packages/entity';
+import { IConstraintsOfTemplate, PropertyFormat, PropertyType } from '@packages/entity';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import { IRelationship } from '@packages/relationship';
 import { IMongoRule } from '@packages/rule';
@@ -48,8 +48,8 @@ const buildNewRelationshipField = (
 ): IEntitySingleProperty => {
     return {
         title: displayFieldName,
-        type: 'string',
-        format: 'relationshipReference',
+        type: PropertyType.string,
+        format: PropertyFormat.relationshipReference,
         relationshipReference: {
             relationshipTemplateId,
             relationshipTemplateDirection,
@@ -85,7 +85,9 @@ const updateChildTemplatesOnParentUpdate = async (
             if (removedProperties.some((removedPropertyKey) => Object.keys(childProperties.properties).includes(removedPropertyKey))) {
                 hasChildChanged = true;
 
-                removedProperties.forEach((removedPropertyKey) => delete childProperties.properties[removedPropertyKey]);
+                removedProperties.forEach((removedPropertyKey) => {
+                    delete childProperties.properties[removedPropertyKey];
+                });
             }
 
             const requiredDiff = _.xor(newRequired, oldRequired);

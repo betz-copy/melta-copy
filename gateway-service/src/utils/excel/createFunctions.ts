@@ -1,5 +1,3 @@
-/* eslint-disable no-param-reassign */
-
 import { EntityTemplateType, TemplateItem } from '@packages/child-template';
 import { IEntity } from '@packages/entity';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@packages/entity-template';
@@ -11,7 +9,10 @@ import hexToARGB from './colors';
 import excelConfig from './excelConfig';
 import { isIncludedColumn, isIncludedEditColumn } from './getFunctions';
 
-const { dateTime, date: dateFormat } = config.formats;
+const {
+    formats: { dateTime, date: dateFormat },
+    excel: { or, and },
+} = config;
 
 interface IExcelStyle {
     columnHeader: {
@@ -66,18 +67,34 @@ const createWorkbook = async (fileName: string) => {
     };
 };
 
-const TypesToHebrew = (propertyTemplate: IEntitySingleProperty) => {
+const TypesToHebrew = (
+    propertyTemplate: IEntitySingleProperty,
+    relatedTemplatesMap: Record<string, IMongoEntityTemplatePopulated>,
+    unitsMap: Map<string, string>,
+    isLoadMode?: boolean,
+) => {
     const { propertyType } = excelConfig;
     const type = propertyType[propertyTemplate.format ?? propertyTemplate.type];
 
+    if (propertyTemplate.format === 'unitField') return `${propertyType.unitField}: ${[...unitsMap.values()].join(or)}`;
+
     if (type === propertyType.string) {
-        if (propertyTemplate.enum) return `${propertyType.enum}: ${propertyTemplate.enum.join('/ ')}`;
+        if (propertyTemplate.enum) return `${propertyType.enum}: ${propertyTemplate.enum.join(or)}`;
         if (propertyTemplate.pattern) return `${propertyType.regex}`;
     }
     if (type === propertyType.array && propertyTemplate.items) {
         if (propertyTemplate.items.format === 'user') return propertyType.users;
         if (propertyTemplate.items.format === 'fileId') return propertyType.files;
-        return `${propertyType.multiEnum}: ${propertyTemplate.items.enum?.join(', ')}`;
+        return `${propertyType.multiEnum}: ${propertyTemplate.items.enum?.join(and)}`;
+    }
+
+    if (type === propertyType.relationshipReference && isLoadMode) {
+        if (propertyTemplate.relationshipReference?.relatedTemplateId) {
+            const relatedTemplate = relatedTemplatesMap[propertyTemplate.relationshipReference.relatedTemplateId];
+            const identifierFieldTitle = Object.values(relatedTemplate.properties.properties).find((value) => value.identifier)?.title;
+
+            return `${type} ${relatedTemplate?.displayName} ${identifierFieldTitle ? `- ${identifierFieldTitle}` : ''}`;
+        }
     }
     return type;
 };
@@ -123,7 +140,7 @@ export const indexToExcelColumn = (index: number): string => {
 //     }
 // };
 
-const showRelationshipRefColumn = (
+export const showRelationshipRefColumn = (
     propertyKey: string,
     propertyTemplate: IEntitySingleProperty,
     relatedTemplatesMap: Record<string, IMongoEntityTemplatePopulated>,
@@ -133,7 +150,10 @@ const showRelationshipRefColumn = (
 
     const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId;
     const relatedTemplate = relatedTemplatesMap[relatedTemplateId!];
-    const identifierField = Object.entries(relatedTemplate!.properties.properties).find(([_key, value]) => value.identifier)?.[0];
+
+    if (!relatedTemplate) return false;
+
+    const identifierField = Object.entries(relatedTemplate?.properties.properties).find(([_key, value]) => value.identifier)?.[0];
     const isRequiredProperty = requiredConstraints?.includes(propertyKey);
 
     return !!(identifierField || isRequiredProperty);
@@ -144,26 +164,29 @@ const createWorksheet = async (
     templateItem: TemplateItem,
     relatedTemplatesMap: Record<string, IMongoEntityTemplatePopulated>,
     requiredConstraints: string[],
+    unitsMap: Map<string, string>,
     displayColumns?: string[],
-    headersOnly?: boolean,
+    isLoadMode?: boolean,
 ) => {
     const { metaData: template } = templateItem;
 
     const worksheet = workbook.addWorksheet(template.displayName);
 
     const sheetColumns: Partial<Excel.Column>[] = [];
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    let columnIndex = 0; // TODO: make data validation work in office excel
+    // let columnIndex = 0; // TODO: make data validation work in office excel
 
     Object.entries(template.properties.properties).forEach(([propertyKey, propertyTemplate]) => {
-        const shouldAddColumn = headersOnly
-            ? showRelationshipRefColumn(propertyKey, propertyTemplate, relatedTemplatesMap, requiredConstraints) && isIncludedColumn(propertyTemplate)
-            : displayColumns?.includes(propertyKey);
+        const showRelationshipRef = showRelationshipRefColumn(propertyKey, propertyTemplate, relatedTemplatesMap, requiredConstraints);
+        const shouldAddColumn = showRelationshipRef
+            ? isLoadMode
+                ? isIncludedColumn(propertyTemplate)
+                : displayColumns?.includes(propertyKey)
+            : false;
 
         if (shouldAddColumn) {
             // TODO: make data validation work in office excel
             // columnDataValidation(worksheet, propertyTemplate, columnIndex);
-            columnIndex++;
+            // columnIndex++;
             sheetColumns.push({
                 key: propertyKey,
                 header: propertyTemplate.title,
@@ -172,14 +195,20 @@ const createWorksheet = async (
         }
     });
     const externalColumns = excelConfig.excelDefaultColumns.filter((externalColumn) => displayColumns?.includes(externalColumn.key));
-    worksheet.columns = headersOnly ? sheetColumns : sheetColumns.concat(externalColumns);
+
+    worksheet.columns = isLoadMode ? sheetColumns : sheetColumns.concat(externalColumns);
     worksheet.getRow(1).eachCell((cell) => {
         cell.font = excelStyle.columnHeader.font;
         cell.alignment = excelStyle.columnHeader.alignment;
 
         const type =
-            externalColumns.find(({ header }) => header === cell.value) ??
-            TypesToHebrew(Object.values(template.properties.properties).find((propertyTemplate) => propertyTemplate.title === cell.value)!);
+            externalColumns.find(({ header }) => header === cell.value)?.header ??
+            TypesToHebrew(
+                Object.values(template.properties.properties).find((propertyTemplate) => propertyTemplate.title === cell.value)!,
+                relatedTemplatesMap,
+                unitsMap,
+                isLoadMode,
+            );
 
         cell.note = type;
         cell.fill = {
@@ -191,32 +220,51 @@ const createWorksheet = async (
     return worksheet;
 };
 
-export const getFileName = (fileId: string) => {
-    return fileId.slice(config.storageService.fileIdLength);
-};
+export const getFileName = (fileId: string) => fileId.slice(config.storageService.fileIdLength);
 
 const relationshipRefCell = (
     cell: Excel.Cell,
     [key, value]: [string, IEntitySingleProperty],
-    row: Record<string, any>,
+    row: Record<string, IPropertyValue>,
     workspacePath: string,
+    unitsMap: Map<string, string>,
+    relatedTemplatesMap: Record<string, IMongoEntityTemplatePopulated>,
+    enumPropertiesColors?: IEnumPropertiesColors,
     insertEntities?: boolean,
+    headersOnly?: boolean,
 ) => {
-    cell.value = insertEntities
-        ? row[key]
-        : {
-              text: row[key].properties[value.relationshipReference!.relatedTemplateField],
-              hyperlink: `${config.service.meltaBaseUrl}${workspacePath}/entity/${row[key].properties._id}`,
-          };
+    if (insertEntities) {
+        cell.value = row[key];
+        return;
+    }
+
+    const relatedTemplate = relatedTemplatesMap[value.relationshipReference!.relatedTemplateId!];
+    const relatedTemplateField = value.relationshipReference!.relatedTemplateField;
+    const relatedTemplateProperty = relatedTemplate.properties.properties[value.relationshipReference!.relatedTemplateField];
+
+    const formatted = formatCellValue(
+        row[key].properties[relatedTemplateField],
+        key,
+        relatedTemplateProperty,
+        unitsMap,
+        enumPropertiesColors,
+        insertEntities,
+        headersOnly,
+    );
+
+    cell.value = {
+        text: formatted.value == null ? '' : String(formatted.value),
+        hyperlink: `${config.service.meltaBaseUrl}${workspacePath}/entity/${row[key].properties._id}`,
+    };
 };
 
-const userArrayCell = (cell: Excel.Cell, row: Record<string, any>, key: string, insertEntities?: boolean) => {
+const userArrayCell = (cell: Excel.Cell, row: Record<string, IPropertyValue>, key: string, insertEntities?: boolean) => {
     const currentValue = row[key];
     cell.value = insertEntities
         ? Array.isArray(currentValue)
-            ? currentValue.join(', ')
+            ? currentValue.join(and)
             : currentValue
-        : currentValue.map((stringUser) => JSON.parse(stringUser).fullName).join(', ');
+        : currentValue.map((stringUser) => JSON.parse(stringUser).fullName).join(and);
 };
 
 const filesCell = (cell: Excel.Cell, isFileArray: boolean, rowIndex: number, value: string, workspaceId: string) => {
@@ -228,11 +276,15 @@ const filesCell = (cell: Excel.Cell, isFileArray: boolean, rowIndex: number, val
 
 const fixComplexProperties = (
     cell: Excel.Cell,
-    row: Record<string, any>,
+    row: Record<string, IPropertyValue>,
     [key, value]: [string, IEntitySingleProperty],
     rowIndex: number,
     workspace: { path: string; id: string },
+    unitsMap: Map<string, string>,
+    relatedTemplatesMap: Record<string, IMongoEntityTemplatePopulated>,
+    enumPropertiesColors?: IEnumPropertiesColors,
     insertEntities?: boolean,
+    headersOnly?: boolean,
 ) => {
     const isFileArray = value.type === 'array' && value.items?.format === 'fileId';
     const isSingleFile = value.format === 'fileId';
@@ -240,7 +292,17 @@ const fixComplexProperties = (
     const isUserArray = value.type === 'array' && value.items?.format === 'user';
 
     if (value.format === 'relationshipReference') {
-        relationshipRefCell(cell, [key, value], row, workspace.path, insertEntities);
+        relationshipRefCell(
+            cell,
+            [key, value],
+            row,
+            workspace.path,
+            unitsMap,
+            relatedTemplatesMap,
+            enumPropertiesColors,
+            insertEntities,
+            headersOnly,
+        );
         return true;
     }
 
@@ -265,12 +327,88 @@ const readOnlyCell = (cell: Cell) => {
     };
 };
 
+type FormattedCell = {
+    value: IPropertyValue;
+    numFmt?: string;
+    alignment?: Excel.Alignment;
+    font?: Partial<Excel.Font>;
+};
+
+const formatCellValue = (
+    rawValue: IPropertyValue,
+    key: string,
+    property: IEntitySingleProperty,
+    unitsMap: Map<string, string>,
+    enumPropertiesColors?: IEnumPropertiesColors,
+    insertEntities?: boolean,
+    headersOnly?: boolean,
+): FormattedCell => {
+    let numFmt: string | undefined;
+    let alignment: Excel.Alignment | undefined;
+    let font: Partial<Excel.Font> | undefined;
+
+    if (typeof rawValue === 'boolean') rawValue = rawValue ? excelConfig.TRUE_TO_HEBREW : excelConfig.FALSE_TO_HEBREW;
+
+    if (property.format === 'user') rawValue = insertEntities ? rawValue : JSON.parse(rawValue as string)?.fullName;
+
+    if (property.format === 'location') {
+        if (typeof rawValue === 'string' && rawValue.includes('{')) {
+            const location = typeof rawValue === 'string' ? JSON.parse(rawValue) : rawValue;
+
+            rawValue =
+                location.coordinateSystem === CoordinateSystem.UTM
+                    ? locationConverterToString(location.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
+                    : location.location;
+        }
+    }
+
+    if (property.format === 'unitField') rawValue = unitsMap.get(rawValue as string);
+
+    //  date formatting
+    if (rawValue && typeof rawValue === 'string') {
+        const str = String(rawValue);
+
+        if (excelConfig.regexOfDateFormat.test(str)) {
+            const date = new Date(str);
+
+            if (str.includes(':')) {
+                rawValue = date;
+                numFmt = dateTime;
+            } else {
+                rawValue = new Date(date.setHours(0, 0, 0, 0));
+                numFmt = dateFormat;
+            }
+        }
+    }
+
+    // text-area (strip html)
+    if (excelConfig.regexOfTextAreaFormat.test(String(rawValue))) {
+        rawValue = String(rawValue).replace(/<[^>]*>/g, '');
+        alignment = { vertical: 'top' } as Excel.Alignment;
+    }
+
+    if (property.type === 'number') rawValue = rawValue.toString();
+
+    // enum simple list
+    if (!headersOnly && property.type === 'string' && property.enum) {
+        const color = enumPropertiesColors?.[key]?.[rawValue];
+
+        if (color) font = { ...excelStyle.cell.font, color: { argb: hexToARGB(color) } };
+    }
+
+    // enum multiple list
+    if (!headersOnly && property.type === 'array' && property.items?.type === 'string' && property.items.enum) rawValue = rawValue.join(', ');
+
+    return { value: rawValue, numFmt, alignment, font };
+};
+
 const styleAWorksheet = (
     worksheet: Excel.Worksheet,
     rows: IEntity['properties'][],
     templateItem: TemplateItem,
     workspace: { path: string; id: string },
     unitsMap: Map<string, string>,
+    relatedTemplatesMap: Record<string, IMongoEntityTemplatePopulated>,
     displayColumns?: string[],
     headersOnly?: boolean,
     insertEntities?: boolean,
@@ -284,80 +422,70 @@ const styleAWorksheet = (
         cell.alignment = excelStyle.columnHeader.alignment;
     });
 
-    const { disabled, createdAt, updatedAt } = template;
+    const mongoProperties = {
+        disabled: { title: 'disabled', type: PropertyType.string },
+        createdAt: { title: 'createdAt', type: PropertyType.string, format: PropertyFormat['date-time'] },
+        updatedAt: { title: 'updatedAt', type: PropertyType.string, format: PropertyFormat['date-time'] },
+    };
 
-    const allProperties: Record<string, IEntitySingleProperty> = Object.entries({ ...template.properties.properties, disabled, createdAt, updatedAt })
-        .filter(([key]) => displayColumns?.includes(key))
-        .reduce((acc, [key, value]) => {
-            acc[key] = value;
+    const allProperties = Object.keys({
+        ...template.properties.properties,
+        ...mongoProperties,
+    }).reduce<Record<string, IEntitySingleProperty>>((acc, key) => {
+        if (!displayColumns?.includes(key)) return acc;
+
+        if (key in mongoProperties) {
+            acc[key] = mongoProperties[key];
             return acc;
-        }, {});
+        }
+
+        const property = template.properties.properties[key];
+        if (!property) return acc;
+        if (!showRelationshipRefColumn(key, property, relatedTemplatesMap, [])) return acc;
+
+        acc[key] = property;
+        return acc;
+    }, {});
 
     Object.entries(allProperties).forEach(([key, value], columnIndex) => {
         rows.forEach((row, index) => {
             const rowIndex = index + skip;
             const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${rowIndex + SKIP_ROW_HEADER}`);
 
-            if (!isIncludedEditColumn(value, row.disabled, disabled)) readOnlyCell(cell);
+            if (!isIncludedEditColumn(value, row.disabled, template.disabled)) readOnlyCell(cell);
 
             if (row[key] !== undefined && value !== undefined) {
                 cell.alignment = excelStyle.cell.alignment;
                 cell.font = excelStyle.cell.font;
 
-                const isComplex = fixComplexProperties(cell, row, [key, value], rowIndex, workspace, insertEntities);
+                const isComplex = fixComplexProperties(
+                    cell,
+                    row,
+                    [key, value],
+                    rowIndex,
+                    workspace,
+                    unitsMap,
+                    relatedTemplatesMap,
+                    parentTemplate.enumPropertiesColors,
+                    insertEntities,
+                    headersOnly,
+                );
                 if (!isComplex) {
                     cell.value = row[key];
 
-                    if (typeof cell.value === 'boolean') cell.value = cell.value ? excelConfig.TRUE_TO_HEBREW : excelConfig.FALSE_TO_HEBREW;
-                    if (value.format === 'user') cell.value = insertEntities ? cell.value : JSON.parse(cell.value as string).fullName;
-                    if (value.format === 'location') {
-                        if (typeof cell.value === 'string' && !cell.value.includes('{')) return;
-                        const location: { location: string; coordinateSystem: CoordinateSystem.UTM | CoordinateSystem.WGS84 } =
-                            typeof cell.value === 'string' ? JSON.parse(cell.value) : cell.value;
-                        cell.value =
-                            location.coordinateSystem === CoordinateSystem.UTM
-                                ? locationConverterToString(location.location, CoordinateSystem.WGS84, CoordinateSystem.UTM)
-                                : location.location;
-                    }
-                    if (value.format === 'unitField') {
-                        cell.value = unitsMap.get(cell.value as string);
-                    }
+                    const {
+                        value: formattedCellValue,
+                        alignment,
+                        font,
+                        numFmt,
+                    } = formatCellValue(row[key], key, value, unitsMap, parentTemplate.enumPropertiesColors, insertEntities, headersOnly);
 
-                    // Check if value is date
-                    if (cell.value && typeof cell.value === 'string') {
-                        const cellValue = String(cell.value);
-
-                        if (excelConfig.regexOfDateFormat.test(cellValue)) {
-                            const date = new Date(cellValue);
-
-                            if (cellValue.includes(':')) {
-                                cell.value = date;
-                                cell.numFmt = dateTime;
-                            } else {
-                                cell.value = new Date(date.setHours(0, 0, 0, 0));
-                                cell.numFmt = dateFormat;
-                            }
-                        }
-                    }
-                    // Check if value is html tags when format is text area
-                    if (excelConfig.regexOfTextAreaFormat.test(String(cell.value))) {
-                        cell.value = String(cell.value).replace(/<[^>]*>/g, '');
-                        cell.alignment = { vertical: 'top' };
-                    }
-                    if (value.type === 'number') cell.value = row[key].toString();
-
-                    if (!headersOnly) {
-                        // Check if value is simple list
-                        if (value.type === 'string' && value.enum) {
-                            if (parentTemplate.enumPropertiesColors?.[key]?.[row?.[key]])
-                                cell.font = {
-                                    ...excelStyle.cell.font,
-                                    color: { argb: hexToARGB(parentTemplate.enumPropertiesColors[key][row[key]]) },
-                                };
-                        }
-                        // Check if value is multiple list
-                        if (value.type === 'array' && value.items?.type === 'string' && value.items.enum) cell.value = row[key].join(', ');
-                    }
+                    Object.assign(cell, {
+                        value: formattedCellValue,
+                        ...(numFmt && { numFmt }),
+                        ...(alignment && { alignment }),
+                        ...(font && { font }),
+                    });
                 }
             }
         });

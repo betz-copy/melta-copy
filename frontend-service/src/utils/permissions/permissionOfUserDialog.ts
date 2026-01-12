@@ -3,7 +3,7 @@ import { IMongoChildTemplateWithConstraintsPopulated, ViewType } from '@packages
 import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import { ISubCompactPermissions, PermissionScope } from '@packages/permission';
 import { IUser } from '@packages/user';
-import isEqualWith from 'lodash.isequalwith';
+import { isEqualWith } from 'lodash';
 
 export const userHasNoPermissions = (permissions: ISubCompactPermissions) => {
     return (
@@ -11,6 +11,7 @@ export const userHasNoPermissions = (permissions: ISubCompactPermissions) => {
         permissions?.templates?.scope !== PermissionScope.write &&
         permissions?.processes?.scope !== PermissionScope.write &&
         permissions?.rules?.scope !== PermissionScope.write &&
+        permissions?.units?.scope !== PermissionScope.write &&
         Object.keys(permissions?.instances?.categories ?? {}).length === 0
     );
 };

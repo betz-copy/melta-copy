@@ -1,12 +1,12 @@
 import { IMongoStepInstancePopulated, IMongoStepTemplatePopulated, InstanceProperties, IReferencedEntityForProcess } from '@packages/process';
-import pickBy from 'lodash.pickby';
+import { pickBy } from 'lodash';
 import { ProcessStepValues } from './index';
 
 const splitStepProperties = (stepInstance: IMongoStepInstancePopulated, stepTemplate: IMongoStepTemplatePopulated) => {
     const newProperties = {};
 
     Object.keys(stepTemplate.properties.properties).forEach((key) => {
-        if (stepInstance.properties && stepInstance.properties[key]) {
+        if (stepInstance.properties?.[key]) {
             newProperties[key] = stepInstance.properties[key];
         }
     });

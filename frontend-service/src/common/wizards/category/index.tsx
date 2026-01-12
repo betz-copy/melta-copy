@@ -1,6 +1,5 @@
 import { ICategory, ICategoryMap } from '@packages/category';
 import { FileDetails } from '@packages/common';
-/* eslint-disable react/no-unstable-nested-components */
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React from 'react';

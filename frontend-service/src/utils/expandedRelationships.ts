@@ -5,7 +5,9 @@ import { environment } from '../globals';
 import { INestedRelationshipTemplates } from '../pages/Entity';
 import { getFullRelationshipTemplates } from './templates';
 
-const { maxPrintLevel } = environment;
+const {
+    print: { maxPrintLevel },
+} = environment;
 
 export const sortTemplatesChildrenToParents = (
     depth: number,

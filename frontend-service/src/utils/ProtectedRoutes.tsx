@@ -53,9 +53,9 @@ export const EntityProtectedRoute: React.FC<{
         () => getExpandedEntityByIdRequest(entityId!, expanded, { templateIds, childTemplateId }),
         {
             onError: (error: AxiosError) => {
-                if (error.response?.status === StatusCodes.NOT_FOUND) {
+                // biome-ignore lint/suspicious/noExplicitAny: error is any
+                if (error.response?.status === StatusCodes.NOT_FOUND || (error.response?.data as any).StatusCodes === StatusCodes.FORBIDDEN)
                     navigate('/404');
-                }
             },
         },
     );

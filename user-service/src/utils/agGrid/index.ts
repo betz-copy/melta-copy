@@ -1,11 +1,10 @@
-/* eslint-disable default-case */
-
 import {
     basicFilterOperationTypes,
     FilterQuery,
     FilterTypes,
     IAgGridFilterModel,
     IAgGridSort,
+    IPropertyValue,
     numberFilterOperationTypes,
     relativeDateFilters,
     textFilterOperationTypes,
@@ -13,9 +12,9 @@ import {
 import { ServiceError } from '@packages/utils';
 
 const translateAgGridFilter = (
-    type: basicFilterOperationTypes | numberFilterOperationTypes | textFilterOperationTypes | relativeDateFilters,
-    filterValue: any,
-    other?: any,
+    type: basicFilterOperationTypes | numberFilterOperationTypes | textFilterOperationTypes,
+    filterValue: IPropertyValue,
+    other?: IPropertyValue,
 ) => {
     switch (type) {
         case basicFilterOperationTypes.equals:

@@ -1,13 +1,11 @@
-/* eslint-disable new-cap */
-/* eslint-disable import/no-extraneous-dependencies */
 import { Check as CheckIcon, Close as CloseIcon, FilterBAndW, PictureAsPdf } from '@mui/icons-material';
-import { Box, Dialog, DialogContent, Grid, IconButton, TextField } from '@mui/material';
+import { Box, Dialog, DialogContent, Grid, IconButton, TextField, useTheme } from '@mui/material';
 import 'cropperjs/dist/cropper.css';
 import { Form, Formik, FormikProps } from 'formik';
 import i18next from 'i18next';
 import jsPDF from 'jspdf';
 import React, { useRef, useState } from 'react';
-import { Cropper } from 'react-cropper';
+import { Cropper, ReactCropperElement } from 'react-cropper';
 import { toast } from 'react-toastify';
 import { filterImageData } from '../../../utils/filterImageData';
 import urlToFile from '../../fileConversions';
@@ -34,11 +32,13 @@ const ImageView: React.FC<IImageView> = ({
     setOpenCamera,
     onPictureTaken,
 }) => {
-    const [usePdf, setUsePdf] = useState(false);
-    const [applyFilter, setApplyFilter] = useState(false);
+    const theme = useTheme();
+
+    const [usePdf, setUsePdf] = useState<boolean>(false);
+    const [applyFilter, setApplyFilter] = useState<boolean>(false);
     const [imgName, setImgName] = useState<string | null>(null);
 
-    const cropperRef = useRef<any>(null);
+    const cropperRef = useRef<ReactCropperElement>(null);
 
     const handleUploadPng = async () => {
         const file = await urlToFile(imgURL, imgName!);
@@ -75,11 +75,8 @@ const ImageView: React.FC<IImageView> = ({
         const context = filteredCanvas.getContext('2d');
         if (!context) return;
 
-        if (applyFilter) {
-            filterImageData(context, croppedCanvas, filteredCanvas);
-        } else {
-            context.drawImage(croppedCanvas, 0, 0);
-        }
+        if (applyFilter) filterImageData(context, croppedCanvas, filteredCanvas);
+        else context.drawImage(croppedCanvas, 0, 0);
 
         const croppedImageURL = filteredCanvas.toDataURL('image/png');
 
@@ -105,9 +102,7 @@ const ImageView: React.FC<IImageView> = ({
         if (usePdf) {
             setUsePdf(false);
             setApplyFilter(false);
-        } else {
-            setUsePdf(true);
-        }
+        } else setUsePdf(true);
     };
 
     return (
@@ -155,7 +150,13 @@ const ImageView: React.FC<IImageView> = ({
                                 sx={{ width: 260 }}
                             />
                             <IconButton disabled={!formikProps.values.name} type="submit" onClick={() => uploadImgOrPdf()}>
-                                <CheckIcon style={{ color: !formikProps.values.name ? '#CCCFE5' : '#1E2775', width: '25px', height: '25px' }} />
+                                <CheckIcon
+                                    style={{
+                                        color: !formikProps.values.name ? '#CCCFE5' : theme.palette.primary.main,
+                                        width: '25px',
+                                        height: '25px',
+                                    }}
+                                />
                             </IconButton>
                             <IconButton onClick={pdfClick}>
                                 <PictureAsPdf color={usePdf ? 'primary' : 'disabled'} />

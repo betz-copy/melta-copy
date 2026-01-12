@@ -1,8 +1,6 @@
-import { IActionPopulated } from '@packages/rule-breach';
-/* eslint-disable react/no-array-index-key */
-
 import { ExpandLess as ExpandLessIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { Collapse, Grid, Typography } from '@mui/material';
+import { IActionPopulated } from '@packages/rule-breach';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { ActionInfo } from '../ActionInfo';
@@ -33,7 +31,7 @@ export const BrokenRuleActions: React.FC<{
                 <Collapse in={openActions} timeout="auto" unmountOnExit style={{ marginRight: '15px' }}>
                     {actions.map((action, index) => {
                         return (
-                            <Grid container key={index} spacing={1}>
+                            <Grid container key={JSON.stringify(action.actionMetadata)} spacing={1}>
                                 <Grid>
                                     <Typography>{index + 1}.</Typography>
                                 </Grid>

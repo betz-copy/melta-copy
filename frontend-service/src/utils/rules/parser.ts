@@ -106,7 +106,7 @@ export class RuleParser {
         }
     };
 
-    private static constantParser = (value: any, valueType: ValueType): IConstant => {
+    private static constantParser = (value: IPropertyValue, valueType: ValueType): IConstant => {
         if (value === null || value === undefined) throw new Error('value can not be empty');
 
         let parsedValue = value;

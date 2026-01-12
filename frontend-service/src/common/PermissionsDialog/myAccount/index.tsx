@@ -32,6 +32,7 @@ const MyAccount: React.FC<{
         allNotifications.filter((notification) => existingUser?.preferences.mailsNotificationsTypes?.includes(notification.type)),
     );
     const [editProfile, setEditProfile] = useState(false);
+    // biome-ignore lint/suspicious/noExplicitAny: this code is bad
     const [profilePreference, setProfilePreference] = useState<{ profilePath?: string; icon?: any }>({
         profilePath: existingUser?.preferences.profilePath,
     });
@@ -42,13 +43,20 @@ const MyAccount: React.FC<{
 
     useEffect(() => {
         const updatedNotificationsTypes = notificationsToShowCheckbox.map(({ type }) => type);
+
         const hasPreferencesChanged =
             profilePreference.icon ||
             !isEqual(profilePreference.profilePath, existingUser.preferences.profilePath) ||
             !isEqual(updatedNotificationsTypes, existingUser.preferences.mailsNotificationsTypes);
+
         setIsPreferencesUpdated(hasPreferencesChanged);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [profilePreference, notificationsToShowCheckbox]);
+    }, [
+        profilePreference,
+        notificationsToShowCheckbox,
+        existingUser.preferences.profilePath,
+        existingUser.preferences.mailsNotificationsTypes,
+        setIsPreferencesUpdated,
+    ]);
 
     const { mutateAsync } = useMutation(
         (id: string) =>

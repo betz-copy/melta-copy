@@ -84,7 +84,6 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
           )
         : [];
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const debouncedOnFilter = useCallback(
         debounce((newFilterField: IGraphFilterBody['filterField'], template, property) => {
             const newValue: IGraphFilterBody = {
@@ -96,7 +95,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
             setFilterRecord(newValue, filterKey);
             onFilter?.();
         }, 500),
-        [filterKey],
+        [],
     );
 
     const handleSelectTemplate = (newValue: IMongoEntityTemplateWithConstraintsPopulated | null) => {
@@ -120,7 +119,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
         const { format, type, enum: enumValues } = selectedTemplate.properties.properties[newProperty];
 
         const selectedFilter =
-            (enumValues && initializedFilterField['array']) || (format && initializedFilterField[format]) || (type && initializedFilterField[type]);
+            (enumValues && initializedFilterField.array) || (format && initializedFilterField[format]) || (type && initializedFilterField[type]);
 
         if (selectedFilter) setFilterField(selectedFilter);
     };

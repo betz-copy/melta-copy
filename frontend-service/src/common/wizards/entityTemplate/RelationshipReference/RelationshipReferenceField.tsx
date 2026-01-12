@@ -11,7 +11,7 @@ export interface FieldEditCardProps {
     index: number;
     touched?: FormikTouched<CommonFormInputProperties | ConvertToRelationshipFieldFormInputProperties>;
     errors?: FormikErrors<CommonFormInputProperties | ConvertToRelationshipFieldFormInputProperties>;
-    setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
+    setFieldValue: (field: keyof CommonFormInputProperties, value: IPropertyValue) => void;
     isDisabled?: boolean;
     convertToRelationshipField?: {
         options: IMongoEntityTemplateWithConstraintsPopulated[];

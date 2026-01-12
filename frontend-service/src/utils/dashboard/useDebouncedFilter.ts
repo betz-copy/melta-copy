@@ -22,7 +22,7 @@ export const useDebouncedFilter = (values: FilterProcessingInput, queryClient: Q
         if (validFilters.length === 0) return undefined;
 
         return filterTemplateToSearchFilter(validFilters, templateId, queryClient);
-    }, [values.templateId, values.filter, queryClient]);
+    }, [values, queryClient]);
 
     const [debouncedFilter, setDebouncedFilter] = useState<ISearchFilter | undefined>(memoizedFilter);
     const isInitialMount = useRef(true);
@@ -31,7 +31,7 @@ export const useDebouncedFilter = (values: FilterProcessingInput, queryClient: Q
         debounce((newFilter: ISearchFilter | undefined) => {
             setDebouncedFilter(newFilter);
         }, debounceMs),
-        [debounceMs],
+        [],
     );
 
     useEffect(() => {

@@ -1,8 +1,6 @@
-/* eslint-disable import/prefer-default-export */
-
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { BadRequestError } from '@packages/utils';
-import * as fs from 'fs';
-import * as path from 'path';
 import * as ts from 'typescript-actions';
 
 const createCustomCompilerHost = (

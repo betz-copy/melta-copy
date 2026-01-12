@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { IEntityWithDirectRelationships, ISearchResult } from '@packages/entity';
 import { IRerankResult, ISemanticSearchResult } from '@packages/semantic-search';
 import excelConfig from './excel/excelConfig';

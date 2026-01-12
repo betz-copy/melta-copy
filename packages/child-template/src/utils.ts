@@ -8,20 +8,7 @@ const isChildTemplate = (
     return 'parentTemplate' in template && Boolean(template.parentTemplate);
 };
 
-const getFilterFromChildTemplate = (childTemplate: IChildTemplatePopulated | IChildTemplate): ISearchFilter | undefined => {
-    const filterClauses: (IFilterOfTemplate | IFilterGroup)[] = [];
-
-    for (const [_key, prop] of Object.entries(childTemplate.properties.properties)) {
-        if (prop.filters) {
-            const parsed = typeof prop.filters === 'string' ? JSON.parse(prop.filters) : prop.filters;
-            if (parsed) filterClauses.push(parsed);
-        }
-    }
-
-    return filterClauses.length > 0 ? { $and: filterClauses } : undefined;
-};
-
-const parseFilterObject = (filters: any): any | null => {
+const parseFilterObject = (filters: string | ISearchFilter | null): ISearchFilter | null => {
     if (typeof filters === 'string') {
         try {
             return JSON.parse(filters);
@@ -32,10 +19,10 @@ const parseFilterObject = (filters: any): any | null => {
     return typeof filters === 'object' && filters !== null ? filters : null;
 };
 
-const getFilteredEnum = (enumVals: string[], filterObj: any): string[] | undefined => {
+const getFilteredEnum = (enumVals: string[], filterObj: IFilter): string[] | undefined => {
     const enumEquals = filterObj.$or
-        .map((condition: any) => (Object.values(condition) as any)[0]?.$in)
-        .filter((val: any): val is string[] => Array.isArray(val))
+        .map((condition) => (Object.values(condition) as IFilter)[0]?.$in)
+        .filter((val): val is string[] => Array.isArray(val))
         .flat();
 
     return enumEquals.length > 0 ? enumVals.filter((val) => enumEquals.includes(val)) : enumVals;
@@ -51,9 +38,7 @@ const getChildPropertiesFiltered = (
 
         const newValue = { ...value };
 
-        if (value.enum && filterObj) {
-            newValue.enum = getFilteredEnum(value.enum, filterObj);
-        }
+        if (value.enum && filterObj) newValue.enum = getFilteredEnum(value.enum, filterObj);
 
         properties[key] = newValue;
     }
@@ -93,16 +78,17 @@ const childTemplateKeys: (keyof IChildTemplate)[] = [
 
 const getDefaultFilterFromChildTemplate = (
     template: IChildTemplatePopulated,
-    currentUserKartoffelId: string,
-    units: string[],
-    isUserAdmin: boolean,
+    currentUser: IUser,
+    workspace: { id: string; hierarchyIds: string[] },
 ): ISearchFilter | undefined => {
     const filterClauses: (IFilterOfTemplate | IFilterGroup)[] = [];
+    const isUserAdmin = isAdmin(currentUser?.permissions, workspace.hierarchyIds);
 
     Object.entries(template.properties.properties).forEach(([key, prop]) => {
-        if (template.isFilterByCurrentUser && currentUserKartoffelId && template.filterByCurrentUserField === key)
-            filterClauses.push({ [key]: { $eq: currentUserKartoffelId } });
+        if (template.isFilterByCurrentUser && template.filterByCurrentUserField === key)
+            filterClauses.push({ [key]: { $eq: currentUser.kartoffelId } });
 
+        const units = currentUser.units?.[workspace.id];
         if (template.isFilterByUserUnit && units && !isUserAdmin && template.filterByUnitUserField === key)
             filterClauses.push({ [key]: { $in: units } });
 
@@ -115,11 +101,4 @@ const getDefaultFilterFromChildTemplate = (
     return filterClauses.length ? { $and: filterClauses } : undefined;
 };
 
-export {
-    dePopulateChildProperties,
-    getChildPropertiesFiltered,
-    getFilterFromChildTemplate,
-    childTemplateKeys,
-    isChildTemplate,
-    getDefaultFilterFromChildTemplate,
-};
+export { dePopulateChildProperties, getChildPropertiesFiltered, childTemplateKeys, isChildTemplate, getDefaultFilterFromChildTemplate };

@@ -26,6 +26,7 @@ class PermissionsManager {
             if (compactPermissions[workspaceId]?.[type]) throw new SinglePermissionOfTypePerUserError(type);
 
             if (!compactPermissions[workspaceId]) compactPermissions[workspaceId] = {};
+            // biome-ignore lint/suspicious/noExplicitAny: never doubt Hammer
             compactPermissions[workspaceId][type] = metadata as any;
         });
 
@@ -62,16 +63,11 @@ class PermissionsManager {
         dontDeleteUser?: boolean,
     ): Promise<ICompactPermissions> {
         const isDeletePermission =
+            !dontDeleteUser &&
             Object.values(permissionsCompact).every(
-                (permission) =>
-                    permission === null ||
-                    (permission.permissions === null &&
-                        permission.rules === null &&
-                        permission.instances === null &&
-                        permission.processes === null &&
-                        permission.templates === null &&
-                        permission.units === null),
-            ) && !dontDeleteUser;
+                (workspacePermissions) =>
+                    workspacePermissions === null || Object.values(workspacePermissions as ISubCompactPermissions).every((perm) => perm === null),
+            );
 
         if (permissionType === RelatedPermission.User)
             await UsersManager.getUserById(relatedId); // Validate user exists
@@ -84,7 +80,7 @@ class PermissionsManager {
         const updatedWorkspacesIds: string[] = [];
 
         await transaction(async (session) => {
-            const actions: Promise<any>[] = [];
+            const actions: Promise<unknown>[] = [];
 
             typedObjectEntries(permissionsCompact).forEach(([workspaceId, subCompactPermission]) => {
                 if (subCompactPermission === null) {
@@ -108,12 +104,12 @@ class PermissionsManager {
         });
 
         const allRelatedPermissions = await PermissionsManager.getCompactPermissionsOfRelatedId(relatedId, undefined, permissionType);
-        if (Object.keys(allRelatedPermissions).length === 0 && isDeletePermission) {
+        if (!Object.keys(allRelatedPermissions).length && isDeletePermission) {
             // no permissions of role or user and it can be deleted from collection
             if (permissionType === RelatedPermission.Role) RolesManager.deleteRoleById(relatedId);
             else {
                 const user = await UsersManager.getUserById(relatedId);
-                if (user.roleIds?.length === 0) UsersManager.deleteUserById(relatedId);
+                if (!user.roleIds?.length) UsersManager.deleteUserById(relatedId);
             }
         }
 

@@ -9,7 +9,6 @@ export const regexSchema = Yup.string()
     .test('is-regex', (value, context) => {
         if (!value) return true;
         try {
-            // eslint-disable-next-line no-new
             new RegExp(value);
             return true;
         } catch (error) {
@@ -57,7 +56,7 @@ const testFields = (
         properties2.forEach((field2) => {
             if (field1.id === field2.id) return;
 
-            const isDeleted = (field: any) => field.deleted === true;
+            const isDeleted = (field) => field.deleted === true;
 
             const shouldCompare = groupTest || (!isDeleted(field1) && !isDeleted(field2));
 

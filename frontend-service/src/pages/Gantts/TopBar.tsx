@@ -115,7 +115,7 @@ export const GanttsTopBar: React.FC<IGanttTopBar> = ({ title, formik, onEdit, on
 
                                     <MeltaTooltip
                                         title={
-                                            <>
+                                            <div>
                                                 {Object.values(separators).map((separator) => (
                                                     <Fragment key={separator}>
                                                         <Typography display="inline" fontWeight="bold">
@@ -125,7 +125,7 @@ export const GanttsTopBar: React.FC<IGanttTopBar> = ({ title, formik, onEdit, on
                                                         <br />
                                                     </Fragment>
                                                 ))}
-                                            </>
+                                            </div>
                                         }
                                     >
                                         <IconButton disableRipple>

@@ -2,23 +2,23 @@ import { Autocomplete, FormControl, FormControlLabel, FormHelperText, Grid, Text
 import { FormikErrors, FormikTouched, getIn } from 'formik';
 import i18next from 'i18next';
 import React, { useEffect } from 'react';
-import { environment } from '../../../globals';
+import { IPropertyValue } from '../../../interfaces/entities';
 import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
 import TextArea from '../../inputs/TextArea';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import { RuleWizardValues } from '.';
-
-const { errorColor } = environment;
 
 interface CreateRuleEmailNotificationProps {
     mail: RuleWizardValues['mail'];
     touched: FormikTouched<RuleWizardValues>['mail'];
     errors: FormikErrors<RuleWizardValues>['mail'];
     hasUserFields: boolean;
-    setFieldValue: (field: string, value: any, shouldValidate?: boolean | undefined) => Promise<void | FormikErrors<RuleWizardValues>>;
+    // biome-ignore lint/suspicious/noConfusingVoidType: lol
+    setFieldValue: (field: string, value: IPropertyValue, shouldValidate?: boolean | undefined) => Promise<void | FormikErrors<RuleWizardValues>>;
 }
 
 export const CreateRuleEmailNotification: React.FC<CreateRuleEmailNotificationProps> = ({ mail, touched, errors, hasUserFields, setFieldValue }) => {
+    // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
     useEffect(() => {
         // set checkboxes to default on change
         if (mail && !hasUserFields) setFieldValue('mail.sendPermissionUsers', true);
@@ -74,7 +74,7 @@ export const CreateRuleEmailNotification: React.FC<CreateRuleEmailNotificationPr
                             error={touched && Boolean(getIn(errors, 'body'))}
                         />
                         {touched && Boolean(getIn(errors, 'body')) && (
-                            <FormHelperText sx={{ color: errorColor, fontSize: '12px', marginLeft: 2 }}>{getIn(errors, 'body')}</FormHelperText>
+                            <FormHelperText sx={{ color: 'error', fontSize: '12px', marginLeft: 2 }}>{getIn(errors, 'body')}</FormHelperText>
                         )}
                     </Grid>
                     <Grid container direction="column">
@@ -82,7 +82,7 @@ export const CreateRuleEmailNotification: React.FC<CreateRuleEmailNotificationPr
                             <FormControl sx={{ fontSize: '14px', margin: 0 }}>{i18next.t('wizard.rule.sendMailTo')}</FormControl>
                             <FormHelperText
                                 sx={{
-                                    color: mailCheckError ? errorColor : '#9398C2',
+                                    color: mailCheckError ? 'error' : '#9398C2',
                                     fontSize: '14px',
                                     margin: 0,
                                 }}
@@ -126,11 +126,13 @@ interface CreateRuleColorFieldProps {
     touched: FormikTouched<RuleWizardValues>['fieldColor'];
     errors: FormikErrors<RuleWizardValues>['fieldColor'];
     templateKeys: { key: string; title: string }[];
-    setFieldValue: (field: string, value: any, shouldValidate?: boolean | undefined) => Promise<void | FormikErrors<RuleWizardValues>>;
+    // biome-ignore lint/suspicious/noConfusingVoidType: lol
+    setFieldValue: (field: string, value: IPropertyValue, shouldValidate?: boolean | undefined) => Promise<void | FormikErrors<RuleWizardValues>>;
     setFieldTouched: (
         field: string,
         isTouched?: boolean | undefined,
         shouldValidate?: boolean | undefined,
+        // biome-ignore lint/suspicious/noConfusingVoidType: lol
     ) => Promise<void | FormikErrors<RuleWizardValues>>;
 }
 

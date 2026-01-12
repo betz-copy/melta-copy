@@ -96,7 +96,7 @@ export const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, text, font
         >
             {displayIcon && (
                 <Grid alignItems="center" height="100%">
-                    <img style={{ height: '100%', width: fontSize }} src={`/icons/process-status-${status}.svg`} />
+                    <img style={{ height: '100%', width: fontSize }} src={`/icons/process-status-${status}.svg`} alt="process-status" />
                 </Grid>
             )}
             <Typography width="60px" fontWeight="500" fontSize={displayIcon ? '16px' : '12px'} style={{ textAlign: 'center', color: fontColor }}>

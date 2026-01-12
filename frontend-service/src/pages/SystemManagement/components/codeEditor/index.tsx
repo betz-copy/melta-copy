@@ -29,13 +29,11 @@ const {
 const CodeEditorDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
-    templateItem: TemplateItem | null;
+    templateItem: TemplateItem;
     searchText: string;
     categoriesToShow: IMongoCategory[];
     isChild?: boolean;
 }> = ({ open, handleClose, templateItem, searchText, categoriesToShow }) => {
-    if (!templateItem) return null;
-
     const { type, metaData: entityTemplate } = templateItem;
 
     const queryClient = useQueryClient();

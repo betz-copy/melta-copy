@@ -15,12 +15,12 @@ import { environment } from '../../../globals';
 import { IErrorResponse } from '../../../interfaces/error';
 import { createRelationshipRequest } from '../../../services/relationshipsService';
 import { useDarkModeStore } from '../../../stores/darkMode';
-import { trycatch } from '../../../utils/trycatch';
+import { tryCatch } from '../../../utils/tryCatch';
 import { ErrorToast } from '../../ErrorToast';
 import RelationshipTemplateAutocomplete from '../../inputs/RelationshipTemplateAutocomplete';
 import TemplateTableSelect from '../../inputs/TemplateTableSelect';
 import CreateWithRuleBreachDialog from './CreateWithRuleBreachDialog';
-import StrechableArrowRight from './strechableArrowRight';
+import StretchableArrowRight from './strechableArrowRight';
 
 const { errorCodes } = environment;
 
@@ -51,7 +51,7 @@ const validationSchema = Yup.object({
 });
 
 const validateForm = async (values: ICreateRelationshipValues): Promise<FormikErrors<ICreateRelationshipValues>> => {
-    const { err: validationSchemaErr } = await trycatch(() => validationSchema.validate(values, { abortEarly: false }));
+    const { err: validationSchemaErr } = await tryCatch(() => validationSchema.validate(values, { abortEarly: false }));
     const validationSchemaErrors = !validationSchemaErr ? {} : yupToFormErrors<ICreateRelationshipValues>(validationSchemaErr);
 
     const nonSchemaErrors: FormikErrors<ICreateRelationshipValues> = {};
@@ -253,7 +253,7 @@ const CreateRelationshipDialog: React.FC<{
                                         </Grid>
                                         <Grid container justifyContent="center">
                                             <Grid size={{ xs: 8 }}>
-                                                <StrechableArrowRight />
+                                                <StretchableArrowRight />
                                             </Grid>
                                         </Grid>
                                     </Grid>

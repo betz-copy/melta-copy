@@ -1,4 +1,3 @@
-/* eslint-disable react/no-array-index-key */
 import { Box } from '@mui/material';
 import { IGraphFilterBody, IGraphFilterBodyBatch } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';

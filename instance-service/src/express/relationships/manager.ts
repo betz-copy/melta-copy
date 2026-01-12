@@ -1,5 +1,3 @@
-/* eslint-disable no-await-in-loop */
-
 import { ActionsLog, IActivityLog } from '@packages/activity-log';
 import { IRelationship } from '@packages/relationship';
 import { IMongoRelationshipTemplate } from '@packages/relationship-template';

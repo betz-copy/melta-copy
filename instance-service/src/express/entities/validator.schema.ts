@@ -97,10 +97,55 @@ export const createEntityRequestSchema = Joi.object({
         ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
         userId: Joi.string().required(),
         duplicatedFromId: Joi.string().optional(),
-        childTemplateId: Joi.string().optional(),
+        childTemplate: Joi.object({ id: Joi.string().required(), filter: searchFilterSchema.optional() }).optional(),
+        newDestWalletData: Joi.object().optional(),
     },
     query: {},
     params: {},
+});
+
+/**
+ * POST /api/instances/entities/templatesStructure/:id
+ */
+export const getPrintEntitiesByIdRequestSchema = Joi.object({
+    query: {},
+    body: {
+        relationshipIds: Joi.array().items(Joi.string()).min(1).required(),
+        isShowDisabled: Joi.boolean().required(),
+    },
+    params: {
+        id: Joi.string().required(),
+    },
+});
+
+/**
+ * POST /api/instances/entities/printEntities/:id
+ */
+export const getPrintTemplatesByIdRequestSchema = Joi.object({
+    query: {},
+    body: {
+        relationshipIds: Joi.array().items(Joi.string()),
+        templateIds: Joi.array().items(Joi.string()).required(),
+        expandedParams: Joi.object()
+            .pattern(
+                Joi.string(),
+                Joi.object({
+                    minLevel: Joi.number().integer().min(1).max(Joi.ref('maxLevel')).optional(),
+                    maxLevel: Joi.number().integer().min(1).required(),
+                }),
+            )
+            .default({}),
+        filters: Joi.object()
+            .pattern(Joi.string(), {
+                filter: searchFilterSchema,
+            })
+            .default({}),
+        userId: Joi.string().required(),
+        childTemplateId: Joi.string(),
+    },
+    params: {
+        id: Joi.string().required(),
+    },
 });
 
 /**
@@ -109,7 +154,6 @@ export const createEntityRequestSchema = Joi.object({
 export const getExpandedGraphByIdRequestSchema = Joi.object({
     query: {},
     body: {
-        disabled: Joi.boolean().default(null),
         templateIds: Joi.array().items(Joi.string()).required(),
         numberOfConnections: Joi.number().default(0),
         expandedParams: Joi.object()
@@ -386,7 +430,7 @@ export const updateEntityByIdRequestSchema = Joi.object({
         userId: Joi.string(),
         convertToRelationshipField: Joi.boolean().default(false),
         updateOnlyGivenProps: Joi.boolean().default(false),
-        childTemplateId: Joi.string().optional(),
+        childTemplate: Joi.object({ id: Joi.string().required(), filter: searchFilterSchema.optional() }).optional(),
     },
     query: {},
     params: {

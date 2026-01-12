@@ -14,12 +14,11 @@ import { useWorkspaceStore } from '../../../../stores/workspace';
 import { CardMenu } from '../CardMenu';
 import Header from './Header';
 import { treeNodeContent, treeNodeGroupTransition } from './styles';
+import { useSearchUnits } from './useSearchUnits';
 import { defaultInitialValues, UnitWizard, useUnitMutation } from './Wizard';
 import { canEnableUnit } from './Wizard/CreateOrEdit';
 
 const UnitsRow: React.FC = () => {
-    const [filteredUnits, setFilteredUnits] = useState<IUnitHierarchy[] | undefined>([]);
-    const [expandedIds, setExpandedIds] = useState<string[]>([]);
     const [unitToDisable, setUnitToDisable] = useState<{ _id: string; disabled: boolean }>();
     const [effectChildrenOnEnable, setEffectChildrenOnEnable] = useState<boolean>(true);
     const [wizardDialogState, setWizardDialogState] = useState<{ isWizardOpen: boolean; unit: IMongoUnit | Partial<IMongoUnit> | null }>({
@@ -29,13 +28,19 @@ const UnitsRow: React.FC = () => {
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const workspace = useWorkspaceStore((state) => state.workspace);
-    const enabledUnits = useUnitStore((state) => state.filteredUnits);
+    const enabledUnits = useUnitStore((state) => state.enabledUnits);
 
     const { data: unitHierarchies = [] } = useQuery({
         queryKey: ['unitHierarchy', workspace._id],
         queryFn: () => getUnitHierarchy(workspace._id),
         initialData: [],
     });
+
+    const { expandedIds, onSearch, searchedUnits, setExpandedIds, setIsShowDisabled, isShowDisabled } = useSearchUnits(
+        unitHierarchies,
+        ({ _id }) => _id,
+        (item, search, isShowDisabled) => item.name.toLowerCase().includes(search?.toLowerCase() ?? '') && (isShowDisabled || !item.disabled),
+    );
 
     const handleClose = () => {
         setUnitToDisable(undefined);
@@ -91,14 +96,16 @@ const UnitsRow: React.FC = () => {
                 expandedIds={expandedIds}
                 setExpandedIds={setExpandedIds}
                 hierarchy={unitHierarchies}
-                setFilteredUnits={setFilteredUnits}
                 setWizardDialogState={setWizardDialogState}
+                isShowDisabled={isShowDisabled}
+                setIsShowDisabled={setIsShowDisabled}
+                onSearch={onSearch}
             />
 
             <Grid direction="column" width="100%">
                 {unitHierarchies.length ? (
                     <Tree
-                        filteredTreeItems={filteredUnits}
+                        filteredTreeItems={searchedUnits}
                         getStyles={({ itemDepth, node, status }) => ({
                             treeItemContent: treeNodeContent(status, node.disabled, itemDepth, darkMode),
                             treeNodeGroupTransition,

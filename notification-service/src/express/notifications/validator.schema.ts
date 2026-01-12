@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import { NotificationType } from '@packages/notification';
 import { MongoIdSchema } from '@packages/utils';
 import * as joi from 'joi';

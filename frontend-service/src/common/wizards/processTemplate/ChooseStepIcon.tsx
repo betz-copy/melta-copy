@@ -1,11 +1,12 @@
 import { FileDetails } from '@packages/common';
+import { IPropertyValue } from '@packages/entity';
 import React from 'react';
 import { ImagePicker } from '../../inputs/ImagePicker';
 
 export const ChooseStepsIcon: React.FC<{
     icon: FileDetails | undefined;
     index: number;
-    setFieldValue: (field: string, value: any, shouldValidate?: boolean) => void;
+    setFieldValue: (field: string, value: IPropertyValue, shouldValidate?: boolean) => void;
 }> = ({ icon, index, setFieldValue }) => (
     <ImagePicker
         image={icon}

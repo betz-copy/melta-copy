@@ -1,10 +1,9 @@
-/* eslint-disable consistent-return */
 import { IEntityWithDirectConnections, IFilterOfTemplate, ISearchBatchBody } from '@packages/entity';
 import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IGantt, IGanttGroupBy, IGanttItem } from '@packages/gantt';
 import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import i18next from 'i18next';
-import cloneDeep from 'lodash.clonedeep';
+import { cloneDeep } from 'lodash';
 import * as Yup from 'yup';
 import { environment } from '../globals';
 import { IConnectedEntityTemplateDetails, IGanttHeatmapBox } from '../interfaces/gantts';
@@ -58,7 +57,6 @@ export const getEntitiesSearchBody = (
             disabled: { $eq: false },
         };
 
-        // eslint-disable-next-line no-param-reassign
         currTemplates[item.entityTemplate.id] = {
             filter: showEntitiesWithoutEndDate
                 ? {
@@ -294,6 +292,7 @@ export const ganttItemValidationSchema = Yup.object({
     groupByRelationshipId: Yup.string()
         .nullable()
         // the original type of 'ctx' is missing the 'from' property
+        // biome-ignore lint/suspicious/noExplicitAny: never doubt Yahalom
         .test('testGroupByRelationshipId', i18next.t('gantts.requiredGroupByRelationship'), (value, ctx: any) => {
             const root = ctx.from[ctx.from.length - 1].value;
 

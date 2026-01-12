@@ -1,5 +1,5 @@
 import { IAggregation, IAggregationType, IAxisField } from '@packages/chart';
-import { IMongoEntityTemplate } from '@packages/entity-template';
+import { IMongoEntityTemplate, IPropertyValue } from '@packages/entity-template';
 import { IGetUnits } from '@packages/unit';
 import { CoordinateSystem, locationConverterToString } from '@packages/utils';
 import { fromZonedTime } from 'date-fns-tz';
@@ -127,7 +127,7 @@ const getLocation = ({ x, y }: InstanceType<typeof neo4j.types.Point>, coordinat
 
 export const manipulateReturnedChart = async (
     xAxis: IAxisField,
-    chart: { x: any; y: number; coordinateSystem?: string }[],
+    chart: { x: IPropertyValue; y: number; coordinateSystem?: string }[],
     entityTemplate: IMongoEntityTemplate,
     workspaceId: string,
     units: IGetUnits,

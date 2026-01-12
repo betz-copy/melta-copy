@@ -1,12 +1,12 @@
 import { Box, Typography } from '@mui/material';
 import { WidgetProps } from '@rjsf/utils';
-import UserAvatar from '../../UserAvatar';
+import UserAvatar from '../../../UserAvatar';
 
 const RjsfUserAvatarWidget = ({ options: { user }, label }: WidgetProps) => {
     return (
         <Box display="flex" alignItems="center" gap={'2rem'}>
             <Typography sx={{ color: '#9398C2' }}>{label}</Typography>
-            {user ? <UserAvatar user={user} shouldRenderChip={false} userIcon={{ size: 42 }} shouldGetKartoffelImage /> : <></>}
+            {user ? <UserAvatar user={user} shouldRenderChip={false} userIcon={{ size: 42 }} shouldGetKartoffelImage /> : <div />}
         </Box>
     );
 };

@@ -19,7 +19,7 @@ import { EntityDates } from '../../Entity/components/EntityDates';
 
 const ProcessComponentToPrint: React.FC<{
     processInstance: IMongoProcessInstanceReviewerPopulated;
-    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstanceReviewerPopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
+    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstanceReviewerPopulated, AxiosError, ProcessDetailsValues, unknown>;
 }> = ({ processInstance, mutateAsync }) => {
     const theme = useTheme();
 

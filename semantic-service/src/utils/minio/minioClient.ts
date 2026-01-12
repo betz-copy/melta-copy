@@ -1,6 +1,6 @@
+import * as http from 'node:http';
 import { FileTypes } from '@packages/semantic-search';
 import { logger } from '@packages/utils';
-import http from 'http';
 import mammoth from 'mammoth';
 import { Client } from 'minio';
 import pdf from 'pdf-parse';
@@ -29,6 +29,7 @@ class MinIOClient {
     private async wrapDBNotExistsError<T>(func: () => Promise<T>) {
         try {
             return func();
+            // biome-ignore lint/suspicious/noExplicitAny: error is any
         } catch (err: any) {
             // Check if the error is caused by non-existing bucket
             if (err.code !== 'NoSuchBucket') throw err;

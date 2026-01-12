@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-use-before-define -- recursive circular functions */
-
 import { IVariable } from '@packages/rule';
 import { ImmutableTree, JsonGroup, JsonItem, JsonRuleGroupExt, Utils as QbUtils } from '@react-awesome-query-builder/mui';
 import { RuleParser } from './parser';

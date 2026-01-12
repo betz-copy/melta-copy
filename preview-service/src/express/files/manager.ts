@@ -1,8 +1,8 @@
+import { Readable } from 'node:stream';
+import { promisify } from 'node:util';
 import { NotFoundError } from '@packages/utils';
 import * as libreoffice from 'libreoffice-convert';
 import { menash } from 'menashmq';
-import { Readable } from 'stream';
-import { promisify } from 'util';
 import config from '../../config';
 import { streamToBuffer } from '../../utils/fs';
 import DefaultManagerMinio from '../../utils/minio/manager';
@@ -23,6 +23,7 @@ class FilesManager extends DefaultManagerMinio {
             const fileBuffer = await streamToBuffer(fileStream);
 
             return Readable.from(fileBuffer);
+            // biome-ignore lint/suspicious/noExplicitAny: error is any
         } catch (error: any) {
             if (error.code === 'NoSuchKey') {
                 await menash.send(rabbit.previewQueue, filePath, { headers: { [workspaceIdHeaderName]: this.workspaceId } });

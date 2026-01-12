@@ -7,6 +7,7 @@ import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { getEmptyImage, HTML5Backend } from 'react-dnd-html5-backend';
 import { v4 as uuid } from 'uuid';
 import * as Yup from 'yup';
+import { IPropertyValue } from '../../../interfaces/entities';
 import { processTemplateUniquePropertiesSteps, variableNameValidation } from '../../../utils/validation';
 import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
 import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
@@ -19,7 +20,7 @@ import StepsApproversBlock from './StepsApproversBlock';
 import StepsIconBlock from './StepsIconBlock';
 import { StepsNameBlock } from './StepsNameBlock';
 
-const stepTemplateUniqueNames = (value, context: Yup.TestContext) => {
+const stepTemplateUniqueNames = (value: IPropertyValue, context: Yup.TestContext) => {
     if (!value) return true;
     const steps = value.steps as ProcessTemplateWizardValues['steps'];
     const errors: Yup.ValidationError[] = [];
@@ -28,12 +29,11 @@ const stepTemplateUniqueNames = (value, context: Yup.TestContext) => {
         const doesStepHasDuplicateDisplayName = steps.some(
             ({ displayName }, restStepsIndex) => step.displayName === displayName && index !== restStepsIndex,
         );
-        if (doesStepHasDuplicateName) {
+        if (doesStepHasDuplicateName)
             errors.push(context.createError({ message: i18next.t('validation.stepNameExists'), path: `steps[${index}].name` }));
-        }
-        if (doesStepHasDuplicateDisplayName) {
+
+        if (doesStepHasDuplicateDisplayName)
             errors.push(context.createError({ message: i18next.t('validation.stepDisplayNameExists'), path: `steps[${index}].displayName` }));
-        }
     });
 
     if (errors.length) {
@@ -122,7 +122,7 @@ const FieldBlockStepWarper = ({
 
     useEffect(() => {
         preview(getEmptyImage(), { captureDraggingState: true });
-    }, []);
+    }, [preview]);
 
     drag(drop(ref));
 
@@ -142,7 +142,6 @@ const FieldBlockStepWarper = ({
                     style={{
                         border: isFieldBlockTouched && errors.steps?.[index] ? '1px solid red' : '',
                     }}
-                    // eslint-disable-next-line react/no-array-index-key
                     key={index}
                     slotProps={{ transition: { unmountOnExit: true } }} // performance issues with many steps
                 >
@@ -293,7 +292,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
 
             setFieldValue('steps', newValuesOrder);
         },
-        [values.steps],
+        [values.steps, setFieldValue],
     );
 
     return (
@@ -303,7 +302,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                     <Grid>
                         <Grid>
                             {errorsOfSteps === i18next.t('validation.oneField') && (
-                                <div style={{ color: '#d32f2f', alignItems: 'center', justifyContent: 'center' }}>
+                                <div style={{ color: 'error', alignItems: 'center', justifyContent: 'center' }}>
                                     {i18next.t('validation.oneStep')}
                                 </div>
                             )}

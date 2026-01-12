@@ -26,7 +26,7 @@ const getActionMetadata = (currEntity: IEntity, disabledStatus: boolean): IUpdat
 const UpdateStatusWithRuleBreachDialog: React.FC<{
     isLoadingUpdateEntity: boolean;
     handleClose: () => void;
-    onUpdateStatus: () => Promise<any>;
+    onUpdateStatus: () => Promise<IEntity>;
     brokenRules: IRuleBreachPopulated['brokenRules'];
     rawBrokenRules: IRuleBreach['brokenRules'];
     currEntity: IEntity;

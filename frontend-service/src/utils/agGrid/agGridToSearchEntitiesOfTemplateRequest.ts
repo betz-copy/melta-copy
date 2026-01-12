@@ -169,7 +169,6 @@ export const dateFilterToFilterOfTemplate = (
         case numberFilterOperationTypes.greaterThanOrEqual:
             return { [field]: { $gte: dateFrom } };
         case numberFilterOperationTypes.inRange: {
-            // eslint-disable-next-line no-case-declarations
             const dateTo =
                 filterType === FilterType.field
                     ? `${fieldFilterPrefix}${dateToString}`
@@ -215,7 +214,6 @@ export const dateTimeFilterToFilterOfTemplate = (
         case numberFilterOperationTypes.greaterThanOrEqual:
             return { [field]: { $gte: dateFrom } }; // include this day
         case numberFilterOperationTypes.inRange: {
-            // eslint-disable-next-line no-case-declarations
             const dateTo = filterType === FilterType.field ? `${fieldFilterPrefix}${dateToString}` : getDayEnd(new Date(dateToString!)).toISOString();
             return { [field]: { $gte: dateFrom, $lte: dateTo } };
         }
@@ -263,7 +261,7 @@ export const filterModelToFilterOfTemplate = (
         const filter = filterModelToFilterOfTemplatePerField(fieldTemplate, field, fieldFilter);
 
         if (filter[field] && typeof filter[field] === 'object' && '$and' in (filter[field] as object)) {
-            return (filter[field] as { $and: IFilterOfField[] })['$and'].map((condition) => ({ [field]: condition }));
+            return (filter[field] as { $and: IFilterOfField[] }).$and.map((condition) => ({ [field]: condition }));
         }
 
         return [filter];

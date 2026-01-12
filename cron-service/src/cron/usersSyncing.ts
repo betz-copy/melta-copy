@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 
 import { IEntity } from '@packages/entity';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@packages/entity-template';
@@ -107,9 +106,10 @@ export const updateKartoffelFields = async () => {
                         entitiesIds.push(properties._id);
 
                         getTypedPropertyEntries(entityTemplate.properties.properties).forEach(([key, value]) => {
+                            const field = value as IEntitySingleProperty;
                             const fieldValue = properties[key];
 
-                            if (value.format === 'user' && fieldValue) usersIds.add(JSON.parse(fieldValue)._id);
+                            if (field.format === 'user' && fieldValue) usersIds.add(JSON.parse(fieldValue)._id);
                         });
                     });
 
@@ -123,17 +123,16 @@ export const updateKartoffelFields = async () => {
                             const entityTemplate = templatesMapById[entity.templateId];
                             // for each user field in each instance, check if the user from kartoffel is different in one of the fields of the user in the instance
                             // update the user fields if needed
-                            const updatedProperies = checkForEntityToUpdate(entity, entityTemplate, kartoffelUsersMapById);
-                            if (Object.keys(updatedProperies).length === 0) return;
+                            const updatedProperties = checkForEntityToUpdate(entity, entityTemplate, kartoffelUsersMapById);
+                            if (Object.keys(updatedProperties).length === 0) return;
 
                             const entityById = entitiesMapById[entity.properties._id];
 
-                            // eslint-disable-next-line consistent-return
                             return instanceService.updateEntityInstance(
                                 entity.properties._id,
                                 {
                                     ...entityById,
-                                    properties: { ...entityById.properties, ...updatedProperies },
+                                    properties: { ...entityById.properties, ...updatedProperties },
                                 },
                                 [],
                             );

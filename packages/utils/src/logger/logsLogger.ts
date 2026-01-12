@@ -34,6 +34,7 @@ const customFormat: IWinstonFormat = format.combine(
         format: logs.format,
     }),
     format.label({ label: 'logs' }),
+    // biome-ignore lint/suspicious/noExplicitAny: lol
     format.printf(({ timestamp, level, message, metadata = {} }: any) => {
         const extra: IExtra = { ...logs.extraDefault };
 

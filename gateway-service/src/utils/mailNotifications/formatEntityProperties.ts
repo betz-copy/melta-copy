@@ -18,13 +18,13 @@ const fileLink = (fileName: string, fileId: string, workspaceId: string): string
 
 const extractStringFromProperty = (
     property: IEntitySingleProperty,
-    value: any,
+    value: IPropertyValue,
     relatedTemplates?: Map<string, IMongoEntityTemplatePopulated>,
     baseUrl?: string,
     workspaceId?: string,
     allowLink: boolean = false,
 ): string => {
-    const { format, type, ...restOfProp } = property;
+    const { format, type, ...restOfProp } = property ?? {};
     switch (format) {
         case 'comment':
             return restOfProp.comment || '';
@@ -37,14 +37,14 @@ const extractStringFromProperty = (
             if (relatedTemplates) {
                 const relatedTemplate: IMongoEntityTemplatePopulated = relatedTemplates!.get(property.relationshipReference!.relatedTemplateId)!;
                 const relatedValue = extractStringFromProperty(
-                    relatedTemplate.properties.properties[relatedFieldName],
-                    value.properties[relatedFieldName],
+                    relatedTemplate?.properties?.properties[relatedFieldName],
+                    value?.properties[relatedFieldName],
                 );
 
-                return allowLink && baseUrl ? entityLink(relatedValue, baseUrl, value.properties._id) : relatedValue;
+                return allowLink && baseUrl ? entityLink(relatedValue, baseUrl, value?.properties._id) : relatedValue;
             }
 
-            return allowLink && baseUrl ? entityLink(property.title, baseUrl, value.properties._id) : property.title;
+            return allowLink && baseUrl ? entityLink(property.title, baseUrl, value?.properties._id) : property.title;
         }
         case 'user': {
             const parsed = JSON.parse(value);
@@ -80,12 +80,12 @@ const extractStringFromProperty = (
 
 const formatEntityPropertiesToString = (
     entityTemplate: IMongoEntityTemplatePopulated,
-    properties: Record<string, any>,
+    properties: Record<string, IPropertyValue>,
     relatedTemplates?: Map<string, IMongoEntityTemplatePopulated>,
     baseUrl?: string,
     workspaceId?: string,
     allowLink: boolean = false,
-): Record<string, any> => {
+): Record<string, IPropertyValue> => {
     return mapValues(properties, (value, key) => {
         const property = entityTemplate.properties.properties[key];
         if (!property) return value;

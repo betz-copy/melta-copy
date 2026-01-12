@@ -1,5 +1,3 @@
-/* eslint-disable react/no-unstable-nested-components */
-
 import { CircularProgress } from '@mui/material';
 import { DashboardItemType } from '@packages/dashboard';
 import { AxiosError } from 'axios';

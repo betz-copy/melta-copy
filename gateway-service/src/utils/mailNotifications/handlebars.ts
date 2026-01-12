@@ -1,4 +1,4 @@
-import { IEntity } from '@packages/entity';
+import { IEntity, IPropertyValue } from '@packages/entity';
 import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import { IRuleMail } from '@packages/rule';
 import Handlebars from 'handlebars';
@@ -6,7 +6,7 @@ import formatEntityPropertiesToString from './formatEntityProperties';
 
 export const injectValuesToString = (
     template: string,
-    properties: Record<string, any>,
+    properties: Record<string, IPropertyValue>,
     entityTemplate: IMongoEntityTemplatePopulated,
     relatedTemplates?: Map<string, IMongoEntityTemplatePopulated>,
     baseUrl?: string,

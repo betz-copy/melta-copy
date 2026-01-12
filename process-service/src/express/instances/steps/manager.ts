@@ -1,5 +1,3 @@
-/* eslint-disable class-methods-use-this */
-
 import { ActionsLog, IUpdateProcessStepMetadata } from '@packages/activity-log';
 import { IMongoStepInstance, IMongoStepTemplate, IStepInstance, UpdateStepReqBody } from '@packages/process';
 import { DefaultManagerMongo, NotFoundError, ServiceError, ValidationError } from '@packages/utils';

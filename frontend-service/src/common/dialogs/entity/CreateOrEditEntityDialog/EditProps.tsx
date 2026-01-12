@@ -7,6 +7,7 @@ import i18next from 'i18next';
 import { DebouncedFunc, isEqual } from 'lodash';
 import React, { Dispatch, SetStateAction, useEffect, useMemo } from 'react';
 import { IExternalErrors } from '../../../../interfaces/CreateOrEditEntityDialog';
+import { IPropertyValue } from '../../../../interfaces/entities';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import { filterFieldsFromPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
@@ -25,8 +26,8 @@ const EditProps: React.FC<{
     errors: FormikState<EntityWizardValues>['errors'];
     touched: FormikState<EntityWizardValues>['touched'];
     setFieldTouched: FormikHelpers<EntityWizardValues>['setFieldTouched'];
-    setInitialValuePropsToFilter: Dispatch<SetStateAction<Record<string, any>>>;
-    initialValuePropsToFilter: Record<string, any>;
+    initialValuePropsToFilter: Record<string, IPropertyValue>;
+    setInitialValuePropsToFilter: Dispatch<SetStateAction<Record<string, IPropertyValue>>>;
     isMultipleSelection: boolean;
     entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated;
     wasDirty: boolean;
@@ -49,7 +50,7 @@ const EditProps: React.FC<{
     parentId?: string;
     getInitialProperties?: (
         newTemplate: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
-    ) => Record<string, any>;
+    ) => Record<string, IPropertyValue>;
 }> = ({
     setFieldValue,
     values,
@@ -86,10 +87,12 @@ const EditProps: React.FC<{
 
     const schema = filterFieldsFromPropertiesSchema(values.template?.properties, multipleSelectionProps?.selectedFields);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         setInitialValuePropsToFilter({ ...initialValues.properties });
     }, []);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         schema.required.forEach((field) => {
             const fieldPropertiesEnum = schema.properties[field]?.enum;
@@ -109,33 +112,35 @@ const EditProps: React.FC<{
         // (if the value changes it won't be undefined and it will consider it dirty)
         const isSignatureField = (key: string) => values.template?.properties.properties[key]?.format === 'signature';
         const valuePropsToFilter = { ...values.properties };
-        Object.keys(valuePropsToFilter).forEach((key) =>
-            valuePropsToFilter[key] === undefined || isSignatureField(key) ? delete valuePropsToFilter[key] : {},
-        );
+        Object.keys(valuePropsToFilter).forEach((key) => {
+            if (valuePropsToFilter[key] === undefined || isSignatureField(key)) delete valuePropsToFilter[key];
+        });
 
-        Object.keys(initialValuePropsToFilter).forEach((key) =>
-            initialValuePropsToFilter[key] === undefined || isSignatureField(key) ? delete initialValuePropsToFilter[key] : {},
-        );
+        Object.keys(initialValuePropsToFilter).forEach((key) => {
+            if (initialValuePropsToFilter[key] === undefined || isSignatureField(key)) delete initialValuePropsToFilter[key];
+        });
 
         return !isEqual(valuePropsToFilter, initialValuePropsToFilter);
-    }, [initialValues, values]);
+    }, [values.properties, initialValuePropsToFilter, values.template]);
 
     useEffect(() => {
         if (!absoluteDirty || !draftId || !createOrUpdateDraftDebounced) return;
         createOrUpdateDraftDebounced(values, draftId);
-    }, [absoluteDirty, values, draftId]);
+    }, [absoluteDirty, values, draftId, createOrUpdateDraftDebounced]);
 
     useEffect(() => {
         setWasDirty(absoluteDirty);
-    }, [absoluteDirty]);
+    }, [absoluteDirty, setWasDirty]);
 
     useEffect(() => {
         if (multipleSelectionProps) setWasDirty(!!Object.keys(values.attachmentsProperties).length);
-    }, [values.attachmentsProperties]);
+    }, [values.attachmentsProperties, multipleSelectionProps, setWasDirty]);
 
     if (isMultipleSelection) {
         const uniqueFields: string[] = [];
-        values.template.uniqueConstraints.forEach((groupField) => uniqueFields.push(...groupField.properties));
+        values.template.uniqueConstraints.forEach((groupField) => {
+            uniqueFields.push(...groupField.properties);
+        });
 
         uniqueFields.forEach((uniqueField) => {
             schema.properties[uniqueField].readOnly = true;

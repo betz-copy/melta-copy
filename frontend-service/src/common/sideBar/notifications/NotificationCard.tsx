@@ -50,7 +50,6 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
     return (
         <Card
             sx={{
-                // eslint-disable-next-line no-nested-ternary
                 bgcolor: notification.type === NotificationType.dateAboutToExpire ? 'rgba(255, 0, 107, 0.05)' : darkMode ? '#161616' : '#FFFFFF',
                 marginTop: '0.5rem',
                 marginX: '1rem',

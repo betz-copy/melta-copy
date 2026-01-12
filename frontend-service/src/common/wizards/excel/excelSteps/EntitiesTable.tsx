@@ -6,6 +6,7 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { IFailedEntity } from '../../../../interfaces/excel';
+import { useDarkModeStore } from '../../../../stores/darkMode';
 import { useWorkspaceStore } from '../../../../stores/workspace';
 import EntitiesTableOfTemplate, { ExternalIdType, TablePageType } from '../../../EntitiesTableOfTemplate';
 import { TableButton } from '../../../TableButton';
@@ -18,6 +19,7 @@ export const EntitiesTable: React.FC<{
     icon?: React.JSX.Element;
     title: string;
     description?: string;
+    // biome-ignore lint/suspicious/noExplicitAny: lol
     download?: { onDownload: (brokenRulesEntities?: boolean) => Promise<any>; isLoading: boolean };
     defaultFilter?: ISearchFilter;
     overrideSx?: object;
@@ -52,6 +54,8 @@ export const EntitiesTable: React.FC<{
     usePagination = true,
 }) => {
     const theme = useTheme();
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
     const [expanded, setExpanded] = useState(defaultExpanded);
@@ -88,7 +92,7 @@ export const EntitiesTable: React.FC<{
             >
                 <Grid container direction="row" alignItems="center" gap="10px">
                     {icon && icon}
-                    <Typography color={theme.palette.mode === 'dark' ? '#FFFFFF' : '#1E2775'} fontFamily="Rubik" fontWeight={400} fontSize="14px">
+                    <Typography color={darkMode ? '#FFFFFF' : theme.palette.primary.main} fontFamily="Rubik" fontWeight={400} fontSize="14px">
                         {title}
                     </Typography>
                     {description && defaultExpanded && (

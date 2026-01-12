@@ -11,7 +11,6 @@ export class AuthService {
                 environment.accessTokenName,
                 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVlNTY4ODMyNDIwM2ZjNDAwNDM1OTFhYSIsIm5hbWUiOnsiZmlyc3ROYW1lIjoi16DXmdeZ16fXmSIsImxhc3ROYW1lIjoi15DXk9eZ15PXoSJ9LCJkaXNwbGF5TmFtZSI6InQyMzQ1ODc4OUBqZWxsby5jb20iLCJyYW5rIjoibWVnYSIsImpvYiI6Iteo15XXpteXIiwiaWF0IjoxNjI3MTMxNzExLCJleHAiOjIwMDAwMDAwMDB9.yxis0RbaKM9--HPyq34BSZ7QhY8urnyzRo7OpK6GA-4',
             );
-            // eslint-disable-next-line no-console
             console.log('Development Environment, using default auth cookie');
         }
 
@@ -40,7 +39,7 @@ export class AuthService {
     static parseUserToken = (token: string) => {
         try {
             return jwtDecode(token) as UserState['user'] & {};
-        } catch (error) {
+        } catch {
             return null;
         }
     };

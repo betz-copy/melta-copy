@@ -1,6 +1,4 @@
 import { IEntity } from '@packages/entity';
-import ReactQueryBuilder from '@react-awesome-query-builder/mui';
-import ForceGraph2D from 'react-force-graph-2d';
 import { Object3D } from 'three';
 import { ILabelIcon } from '../utils/graph/helperTypes';
 

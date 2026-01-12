@@ -5,7 +5,7 @@ import { IEntity, IExportEntitiesBody } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
-import mapValues from 'lodash.mapvalues';
+import { mapValues } from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -87,17 +87,16 @@ const EntitiesPage = <T extends IMongoEntityTemplateWithConstraintsPopulated | I
                         .filter((child) => child?.parentTemplate._id === templateId)
                         .map((child) => child?._id);
 
-                    [...childTemplateIds, templateId].map((tempId) => {
-                        if (templateTablesViewRef.current) {
-                            const reference = templateTablesViewRef.current!.templateTablesRefs?.[tempId];
-
-                            if (reference) reference.refreshServerSide();
+                    [...childTemplateIds, templateId].forEach((tempId) => {
+                        const reference = templateTablesViewRef.current?.templateTablesRefs?.[tempId];
+                        if (reference) {
+                            reference.refreshServerSide();
                         }
                     });
                 });
             }
         }
-    }, [updatedTemplateIds, viewMode]);
+    }, [updatedTemplateIds, viewMode, entityChildTemplates, searchInput, urlSemanticSearch, queryClient]);
 
     useEffect(() => {
         setSearchInput(search || '');

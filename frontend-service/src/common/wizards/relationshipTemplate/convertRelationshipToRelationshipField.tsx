@@ -78,14 +78,14 @@ const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleC
                     handleClose();
                 }}
             >
-                {(formik) => {
-                    // eslint-disable-next-line react-hooks/rules-of-hooks
+                {({ values, setFieldValue, handleChange, touched, errors, handleBlur, isValid, handleSubmit }) => {
+                    // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
+                    // biome-ignore lint/correctness/useHookAtTopLevel: lol
                     useEffect(() => {
                         if (relationshipTemplate) {
-                            formik.setFieldValue('fieldName', relationshipTemplate.name);
-                            formik.setFieldValue('displayFieldName', relationshipTemplate.displayName);
+                            setFieldValue('fieldName', relationshipTemplate.name);
+                            setFieldValue('displayFieldName', relationshipTemplate.displayName);
                         }
-                        // eslint-disable-next-line react-hooks/exhaustive-deps
                     }, [relationshipTemplate]);
 
                     return (
@@ -100,7 +100,7 @@ const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleC
                             </DialogTitle>
 
                             <DialogContent sx={{ padding: '5px' }}>
-                                <form onSubmit={formik.handleSubmit}>
+                                <form onSubmit={handleSubmit}>
                                     <Grid container gap={2} padding={1}>
                                         <Grid container>
                                             <Grid paddingRight={1}>
@@ -108,11 +108,11 @@ const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleC
                                                     id="fieldName"
                                                     name="fieldName"
                                                     label={i18next.t('wizard.entityTemplate.propertyName')}
-                                                    value={formik.values.fieldName}
-                                                    onChange={formik.handleChange}
-                                                    onBlur={formik.handleBlur}
-                                                    error={formik.touched.fieldName && Boolean(formik.errors.fieldName)}
-                                                    helperText={formik.touched.fieldName && formik.errors.fieldName}
+                                                    value={values.fieldName}
+                                                    onChange={handleChange}
+                                                    onBlur={handleBlur}
+                                                    error={touched.fieldName && Boolean(errors.fieldName)}
+                                                    helperText={touched.fieldName && errors.fieldName}
                                                     size="small"
                                                     sx={textFieldStyle}
                                                 />
@@ -122,11 +122,11 @@ const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleC
                                                     id="displayFieldName"
                                                     name="displayFieldName"
                                                     label={i18next.t('wizard.entityTemplate.propertyDisplayName')}
-                                                    value={formik.values.displayFieldName}
-                                                    onChange={formik.handleChange}
-                                                    onBlur={formik.handleBlur}
-                                                    error={formik.touched.displayFieldName && Boolean(formik.errors.displayFieldName)}
-                                                    helperText={formik.touched.displayFieldName && formik.errors.displayFieldName}
+                                                    value={values.displayFieldName}
+                                                    onChange={handleChange}
+                                                    onBlur={handleBlur}
+                                                    error={touched.displayFieldName && Boolean(errors.displayFieldName)}
+                                                    helperText={touched.displayFieldName && errors.displayFieldName}
                                                     size="small"
                                                     sx={textFieldStyle}
                                                 />
@@ -134,11 +134,11 @@ const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleC
                                         </Grid>
                                         <Grid container justifyContent="space-between" flexWrap="nowrap">
                                             <RelationshipReferenceField
-                                                value={formik.values}
+                                                value={values}
                                                 index={0}
-                                                touched={formik.touched}
-                                                errors={formik.errors}
-                                                setFieldValue={formik.setFieldValue}
+                                                touched={touched}
+                                                errors={errors}
+                                                setFieldValue={setFieldValue}
                                                 isDisabled={false}
                                                 convertToRelationshipField={{
                                                     options: [srcEntity, destEntity],
@@ -152,7 +152,7 @@ const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleC
                             </DialogContent>
                             <DialogActions sx={{ paddingTop: 0 }}>
                                 <Button onClick={handleClose}>{i18next.t('wizard.cancel')}</Button>
-                                <Button type="submit" onClick={() => formik.handleSubmit()} disabled={isLoading || !formik.isValid}>
+                                <Button type="submit" onClick={() => handleSubmit()} disabled={isLoading || !isValid}>
                                     {i18next.t('wizard.finish')} {isLoading && <CircularProgress size={20} />}
                                 </Button>
                             </DialogActions>

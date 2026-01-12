@@ -1,6 +1,5 @@
 import { IMongoProcessInstanceReviewerPopulated, IMongoProcessTemplateReviewerPopulated, InstanceProperties } from '@packages/process';
-import { get } from 'lodash';
-import pickBy from 'lodash.pickby';
+import { get, pickBy } from 'lodash';
 import { ProcessDetailsValues } from '../../common/wizards/processInstance/ProcessDetails';
 
 export const getAllFieldsTouched = (values: ProcessDetailsValues) => {

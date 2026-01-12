@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IGantt, IGanttItem } from '@packages/gantt';
 import { IMongoRelationshipTemplate } from '@packages/relationship-template';
@@ -17,7 +16,6 @@ const generateGanttItemEntityTemplate = (
             2,
             ([_, value]) => value.format === 'date' || value.format === 'date-time',
         );
-        // eslint-disable-next-line no-continue
         if (!startAndEndDateFields) continue;
 
         const [[startDateField], [endDateField]] = startAndEndDateFields;

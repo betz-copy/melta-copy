@@ -14,7 +14,7 @@ import {
 import { PermissionScope } from '@packages/permission';
 import { IMongoUser, IUser } from '@packages/user';
 import i18next from 'i18next';
-import _debounce from 'lodash.debounce';
+import { debounce } from 'lodash';
 import React, { useCallback, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -46,8 +46,8 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
     const usersQueryKey = ['usersByWorkspaceId', workspace._id, searchInput];
 
     const debouncedSetSearchInput = useCallback(
-        _debounce((value: string) => setSearchInput(value), 1000),
-        [setSearchInput],
+        debounce((value: string) => setSearchInput(value), 1000),
+        [],
     );
 
     const { data: users = [], isLoading } = useQuery<IMongoUser[]>(usersQueryKey, () => searchUsersByPermissions(workspace._id, searchInput), {
@@ -192,14 +192,13 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
                                                 gap: '10px',
                                             }}
                                         >
-                                            <img src="/icons/search-gray.svg" style={{ alignSelf: 'center', height: '18px' }} />
+                                            <img src="/icons/search-gray.svg" style={{ alignSelf: 'center', height: '18px' }} alt="Search" />
                                         </InputAdornment>
                                     ),
                                 },
                             }}
                         />
                     </Grid>
-                    {/* eslint-disable-next-line no-nested-ternary */}
                     {isLoading ? (
                         <CircularProgress size={50} />
                     ) : users.length ? (

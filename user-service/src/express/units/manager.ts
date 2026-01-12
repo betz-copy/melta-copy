@@ -1,13 +1,19 @@
 import { IGetUnits, IMongoUnit, IUnit, IUnitHierarchy } from '@packages/unit';
-import mongoose from 'mongoose';
+import mongoose, { FilterQuery } from 'mongoose';
 import config from '../../config';
+import UsersManager from '../users/manager';
 import { CyclicalTreeError, DisabledChildUnderEnabledParent, UnitDoesNotExistError } from './errors';
 import UnitsModel from './model';
 
 const { unitsCollectionName } = config.mongo;
 
 class UnitsManager {
-    static async getUnits(query: Partial<IUnit> & Pick<IUnit, 'workspaceId'>): Promise<IGetUnits> {
+    static async getUnits({
+        workspaceIds,
+        ...query
+    }: FilterQuery<Partial<Omit<IUnit, 'workspaceId'>> & { workspaceIds?: string[] }>): Promise<IGetUnits> {
+        if (workspaceIds) query.workspaceId = { $in: workspaceIds };
+
         const units = await UnitsModel.aggregate<IMongoUnit & { hierarchy: (IMongoUnit & { depth: number })[] }>([
             { $match: query },
             { $sort: { disabled: 1, name: 1 } },
@@ -121,9 +127,23 @@ class UnitsManager {
         return getChildren(0);
     }
 
-    static async getUnitHierarchy(workspaceId: IUnit['workspaceId']): Promise<IUnitHierarchy[]> {
-        const units = await UnitsModel.aggregate<IUnitHierarchy>([
-            { $match: { workspaceId, parentId: null } },
+    /**
+     * Get the complete nested hierarchy of the user's units
+     * @param workspaceId workspaceId of the units to get
+     * @param userId userId to filter the units by.
+     * @returns the nested units the user has a permission to see
+     */
+    static async getUnitHierarchy(workspaceId: IUnit['workspaceId'], userId: string): Promise<IUnitHierarchy[]> {
+        const user = await UsersManager.getUserById(userId, [workspaceId], false, true);
+        const userUnitIds = user.units?.[workspaceId]?.map((unitId) => new mongoose.Types.ObjectId(unitId)) || [];
+
+        let units = await UnitsModel.aggregate<IUnitHierarchy>([
+            {
+                $match: {
+                    workspaceId,
+                    ...(!userUnitIds.length ? { parentId: null } : { _id: { $in: userUnitIds } }),
+                },
+            },
             {
                 $graphLookup: {
                     from: unitsCollectionName,
@@ -144,12 +164,8 @@ class UnitsManager {
             {
                 $group: {
                     _id: '$_id',
-                    children: {
-                        $push: '$children',
-                    },
-                    root: {
-                        $first: '$$ROOT',
-                    },
+                    children: { $push: '$children' },
+                    root: { $first: '$$ROOT' },
                 },
             },
             {
@@ -161,6 +177,13 @@ class UnitsManager {
             },
             { $sort: { disabled: 1, name: 1 } },
         ]);
+
+        // Filter out units whose parent is also in the result set
+        // This is for when the users unit have also a child and its parent (which is the same as having just the parent)
+        if (userUnitIds.length) {
+            const allChildrenIds = new Set(units.flatMap((unit) => [unit._id.toString(), ...unit.children.map((child) => child._id.toString())]));
+            units = units.filter((unit) => !unit.parentId || !allChildrenIds.has(unit.parentId.toString()));
+        }
 
         return units.map((unit) => {
             const acc: IUnitHierarchy['children'] = [];

@@ -1,5 +1,5 @@
 import { CircularProgress, Grid } from '@mui/material';
-import { L10n, loadCldr } from '@syncfusion/ej2-base'; // eslint-disable-line import/no-extraneous-dependencies
+import { L10n, loadCldr } from '@syncfusion/ej2-base';
 import {
     Day,
     EventRenderedArgs,
@@ -17,7 +17,7 @@ import {
     Week,
 } from '@syncfusion/ej2-react-schedule';
 import i18next from 'i18next';
-import flatten from 'lodash.flatten';
+import { flatten } from 'lodash';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { useInfiniteQuery, useQuery, useQueryClient } from 'react-query';
@@ -26,8 +26,8 @@ import caHebrew from '../../CLDR/hebrew/ca-hebrew.json';
 import numberingSystems from '../../CLDR/hebrew/numberingSystems.json';
 import numbers from '../../CLDR/hebrew/numbers.json';
 import timeZoneNames from '../../CLDR/hebrew/timeZoneNames.json';
-import darkTheme from '../../css/syncfusion/dark.css?inline'; // eslint-disable-line import/no-unresolved
-import lightTheme from '../../css/syncfusion/light.css?inline'; // eslint-disable-line import/no-unresolved
+import darkTheme from '../../css/syncfusion/dark.css?inline';
+import lightTheme from '../../css/syncfusion/light.css?inline';
 import '../../css/syncfusion/schedule.css';
 import { IEntityTemplateMap } from '@packages/entity-template';
 import { IMongoGantt } from '@packages/gantt';
@@ -82,7 +82,6 @@ export const Gantt: React.FC<IGanttProps> = ({ gantt }) => {
 
     const entityTemplateResources = useMemo(
         () => getScheduleComponentEntityTemplateResourceData(gantt.items, entityTemplates),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
         [gantt, entityTemplates],
     );
     const { data: groupByEntityResources } = useQuery(
@@ -127,12 +126,13 @@ export const Gantt: React.FC<IGanttProps> = ({ gantt }) => {
         },
     );
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: Yahalom knows what he's doing
     const data = useMemo(() => {
         if (hasNextPage) fetchNextPage();
 
         if (pagedData) return flatten(pagedData.pages);
         return [];
-    }, [pagedData]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [pagedData]);
 
     const injectToolbar = () => {
         document.getElementById('scheduleToolbar')?.remove();
@@ -148,7 +148,7 @@ export const Gantt: React.FC<IGanttProps> = ({ gantt }) => {
         root.render(<ScheduleToolbar scheduleRef={scheduleRef} darkMode={darkMode} />);
     };
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // biome-ignore lint/correctness/useExhaustiveDependencies: it's needed!
     useEffect(() => injectToolbar(), [darkMode]);
 
     return (
@@ -201,8 +201,9 @@ export const Gantt: React.FC<IGanttProps> = ({ gantt }) => {
                         // so when grouping by the 'groupByEntity' we override the color to be according to the entityTemplate resource
                         if (!gantt.groupBy) return;
                         const entityTemplateResource = entityTemplateResources.find((resource) => resource.Id === event.data.entityTemplateId);
-                        if (entityTemplateResource?.Color) event.element.style.backgroundColor = entityTemplateResource.Color; // eslint-disable-line no-param-reassign
+                        if (entityTemplateResource?.Color) event.element.style.backgroundColor = entityTemplateResource.Color;
                     }}
+                    // biome-ignore lint/suspicious/noExplicitAny: never doubt Yahalom
                     quickInfoTemplates={{ header: GanttQuickInfo as any }} // 'header' type should be `string | Function`
                     group={{ resources: gantt.groupBy ? ['groupByEntity'] : [] }}
                     enableAdaptiveUI

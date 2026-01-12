@@ -1,5 +1,3 @@
-/* eslint-disable lines-between-class-members */
-
 import { IMongoCategory } from '@packages/category';
 import { DefaultController } from '@packages/utils';
 import { Request, Response } from 'express';

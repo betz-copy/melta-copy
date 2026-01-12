@@ -12,7 +12,7 @@ export const createChart = async (newChart: ChartToBackend, toDashboard: boolean
 };
 
 export const editChart = async (chartId: string, updatedChart: ChartToBackend & Partial<MongoBaseFields>, prevChildTemplateId?: string) => {
-    const { usedInDashboard, _id, createdAt, updatedAt, childTemplateId, ...restChart } = updatedChart;
+    const { usedInDashboard, _id, createdAt: _c, updatedAt: _u, childTemplateId, ...restChart } = updatedChart;
 
     const deleteReferenceDashboardItems = usedInDashboard && updatedChart.permission === IChartPermission.Private;
 

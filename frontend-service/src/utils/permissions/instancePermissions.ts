@@ -56,7 +56,6 @@ export const getNewScope = (oldScope: PermissionScope | undefined, clickedScope:
     if (clickedScope === PermissionScope.write) {
         newScope = checked ? PermissionScope.write : oldScope ? PermissionScope.read : undefined;
     } else {
-        // eslint-disable-next-line no-nested-ternary
         newScope = oldScope === PermissionScope.write ? PermissionScope.write : checked ? PermissionScope.read : undefined;
     }
 

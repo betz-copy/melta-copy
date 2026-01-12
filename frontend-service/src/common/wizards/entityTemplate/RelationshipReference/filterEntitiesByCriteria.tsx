@@ -1,5 +1,6 @@
 import { Add, Clear } from '@mui/icons-material';
 import { Autocomplete, Button, Grid, IconButton, TextField, Typography } from '@mui/material';
+import { IPropertyValue } from '@packages/entity';
 import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { FilterTypes } from '@packages/rule-breach';
 import { FormikErrors, FormikTouched, getIn } from 'formik';
@@ -19,7 +20,7 @@ interface FilterEntitiesByCriteriaProps {
     name: string; // e.g. "properties[0].relationshipReference.filters"
     value: CommonFormInputProperties;
     values: Record<string, PropertyItem[]>;
-    setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
+    setFieldValue: (field: keyof CommonFormInputProperties, value: IPropertyValue) => void;
     selectedEntityTemplate: IMongoEntityTemplateWithConstraintsPopulated | undefined;
     initialValue: CommonFormInputProperties | undefined;
     touched?: FormikTouched<CommonFormInputProperties>;
@@ -154,7 +155,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                                         const { format, type, enum: enumValues } = selectedProp;
 
                                         const newFilterField =
-                                            (enumValues && initializedFilterField['array']) ||
+                                            (enumValues && initializedFilterField.array) ||
                                             (format && initializedFilterField[format]) ||
                                             (type && initializedFilterField[type]);
 
@@ -212,7 +213,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                                         const { format, type, enum: enumValues } = selectedProp;
 
                                         const emptyFilterField =
-                                            (enumValues && initializedFilterField['array']) ||
+                                            (enumValues && initializedFilterField.array) ||
                                             (format && initializedFilterField[format]) ||
                                             (type && initializedFilterField[type]);
 

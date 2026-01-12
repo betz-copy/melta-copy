@@ -1,5 +1,6 @@
 import { Close, NavigateBefore } from '@mui/icons-material';
 import { Box, Dialog, Divider, Fab, Grid, IconButton, Step, StepLabel, Stepper } from '@mui/material';
+import { IPropertyValue } from '@packages/entity';
 import { IMongoProcessInstanceReviewerPopulated, IProcessTemplateMap } from '@packages/process';
 import { AxiosError } from 'axios';
 import { FormikProvider } from 'formik';
@@ -23,7 +24,7 @@ interface ISimpleDialogProps {
     processInstance?: IMongoProcessInstanceReviewerPopulated;
     viewMode?: boolean;
     isEditMode?: boolean;
-    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstanceReviewerPopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
+    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstanceReviewerPopulated, AxiosError, ProcessDetailsValues, unknown>;
 }
 
 const steps = [
@@ -52,7 +53,7 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
 
     const handleNext = useCallback(() => {
         isNextStepPressed.current = true;
-        const currentTouched: Record<string, any> = getAllFieldsTouched(detailsFormikData.values);
+        const currentTouched: Record<string, IPropertyValue> = getAllFieldsTouched(detailsFormikData.values);
 
         const templateFileProperties = template
             ? pickBy(
@@ -110,6 +111,7 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
         previousTemplate.current = values.template;
     }, [values.template]);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
     useEffect(() => {
         if (values.template && !isEditMode) {
             if (values.template.name !== previousTemplate?.current?.name) {
@@ -128,7 +130,6 @@ const CreateOrEditProcess: React.FC<ISimpleDialogProps> = ({ open, onClose, proc
             }
             setFieldValue('steps', setInitialStepsObject(values.template.steps));
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [values.template?._id]);
 
     return (

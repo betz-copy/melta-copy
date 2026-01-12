@@ -1,11 +1,9 @@
 import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated, IProperties } from '@packages/entity-template';
-import { IMongoUnit } from '@packages/unit';
 import { IKartoffelUser } from '@packages/user';
 import { UiSchema } from '@rjsf/utils';
 import { flatten } from 'flat';
 import { FormikHelpers } from 'formik';
 import i18next from 'i18next';
-import _ from 'lodash';
 import { EntityWizardValues } from '../../dialogs/entity';
 import { kartoffelPersonalDataFields } from '../../wizards/entityTemplate/KartoffelUserField';
 
@@ -23,11 +21,8 @@ const changeRelatedUserFields = (properties: IProperties['properties'], changedU
                   })
                 : undefined;
         }
-        if (value.properties) {
-            acc[key] = changeRelatedUserFields(value.properties, changedUserKey, user);
-        } else if (value.expandedUserField?.relatedUserField === changedUserKey) {
-            acc[key] = user?.[value.expandedUserField.kartoffelField];
-        }
+        if (value.properties) acc[key] = changeRelatedUserFields(value.properties, changedUserKey, user);
+        else if (value.expandedUserField?.relatedUserField === changedUserKey) acc[key] = user?.[value.expandedUserField.kartoffelField];
 
         return acc;
     }, {});
@@ -36,12 +31,11 @@ const changeRelatedUserFields = (properties: IProperties['properties'], changedU
 const getFieldUiSchema = (
     schema: IMongoEntityTemplateWithConstraintsPopulated['properties'],
     values: EntityWizardValues,
-    setValues: FormikHelpers<any>['setValues'],
+    setValues: FormikHelpers<EntityWizardValues>['setValues'],
     isEditMode: boolean,
     toPrint: boolean,
     propertyKey: string,
     propertySchema: IEntitySingleProperty,
-    unitsOptions?: IMongoUnit[],
 ): UiSchema => {
     const defaultValue = values.template?.properties?.properties?.[propertyKey]?.defaultValue ?? undefined;
     const enumPropertiesColors = values.template?.enumPropertiesColors;
@@ -69,13 +63,13 @@ const getFieldUiSchema = (
     if (propertySchema.readOnly) {
         const isGoalUser =
             propertySchema.format === 'kartoffelUserField' &&
-            !!values.properties[propertySchema?.expandedUserField?.relatedUserField!] &&
-            JSON.parse(values.properties[propertySchema?.expandedUserField?.relatedUserField!])?.userType === 'GoalUser' &&
+            !!values.properties[propertySchema?.expandedUserField?.relatedUserField] &&
+            JSON.parse(values.properties[propertySchema?.expandedUserField?.relatedUserField])?.userType === 'GoalUser' &&
             kartoffelPersonalDataFields.includes((propertySchema.expandedUserField?.kartoffelField ?? '').trim());
 
         return {
             'ui:options': {
-                disabled: !isGoalUser,
+                disabled: !(propertySchema.accountBalance && !isEditMode) && !isGoalUser,
                 readonly: !isGoalUser,
                 defaultValue,
             },
@@ -91,15 +85,8 @@ const getFieldUiSchema = (
         };
     if (propertySchema.format === 'unitField') {
         return {
-            'ui:widget': 'SelectWidget',
-            'ui:options': {
-                defaultValue,
-                enumOptions: unitsOptions?.map((option) => ({
-                    label: option.name,
-                    value: option._id,
-                })),
-                disabled: unitsOptions?.find((unit) => unit._id === values.properties?.[propertyKey])?.disabled,
-            },
+            'ui:widget': 'UnitSelectWidget',
+            'ui:options': { defaultValue },
         };
     }
     if (propertySchema.items?.enum || propertySchema?.enum) {
@@ -129,12 +116,12 @@ const getFieldUiSchema = (
             'ui:widget': 'UserWidget',
             'ui:options': {
                 globalValues: values,
-                updateExpandedUserFields: (user: IKartoffelUser | null, curValues: any) => {
+                updateExpandedUserFields: (user: IKartoffelUser | null, curValues: EntityWizardValues['properties']) => {
                     // TODO: refactor - this code gets the fields that need to be modified so the displayed fields will be set in a nested way..
                     const changedPropertiesOfUser = changeRelatedUserFields(schema.properties, propertyKey, user);
 
                     // in order to set the values in the backend, we need to send the updated fields flatten
-                    const flattenChangedPropertiesOfUser: Object = flatten(changedPropertiesOfUser, { maxDepth: Infinity });
+                    const flattenChangedPropertiesOfUser: object = flatten(changedPropertiesOfUser, { maxDepth: Infinity });
 
                     const updatedFlattenFields = {};
 
@@ -160,6 +147,7 @@ const getFieldUiSchema = (
     if (propertySchema.format === 'relationshipReference')
         return {
             'ui:widget': 'TemplateReferenceWidget',
+            'ui:options': { template: values.template },
         };
     if (propertySchema.format === 'location')
         return {
@@ -174,11 +162,10 @@ const getFieldUiSchema = (
 export const uiSchemaUtils = (
     schema: IMongoEntityTemplateWithConstraintsPopulated['properties'],
     values: EntityWizardValues,
-    setValues: FormikHelpers<any>['setValues'],
+    setValues: FormikHelpers<EntityWizardValues>['setValues'],
     isEditMode: boolean,
     toPrint: boolean,
     groupTitleColor: string,
-    unitsOptions?: IMongoUnit[],
 ): Record<string, UiSchema> => {
     const uiSchema: ReturnType<typeof uiSchemaUtils> = {};
 
@@ -188,20 +175,11 @@ export const uiSchemaUtils = (
             if (!uiSchema[propertyKey]) uiSchema[propertyKey] = { 'ui:style': { color: groupTitleColor } };
 
             for (const [groupedPropertyKey, groupedPropertySchema] of Object.entries(propertySchema.properties)) {
-                const groupedUiSchema = getFieldUiSchema(
-                    schema,
-                    values,
-                    setValues,
-                    isEditMode,
-                    toPrint,
-                    groupedPropertyKey,
-                    groupedPropertySchema,
-                    unitsOptions,
-                );
+                const groupedUiSchema = getFieldUiSchema(schema, values, setValues, isEditMode, toPrint, groupedPropertyKey, groupedPropertySchema);
 
                 uiSchema[propertyKey][groupedPropertyKey] = groupedUiSchema;
             }
-        } else uiSchema[propertyKey] = getFieldUiSchema(schema, values, setValues, isEditMode, toPrint, propertyKey, propertySchema, unitsOptions);
+        } else uiSchema[propertyKey] = getFieldUiSchema(schema, values, setValues, isEditMode, toPrint, propertyKey, propertySchema);
     }
 
     return uiSchema;

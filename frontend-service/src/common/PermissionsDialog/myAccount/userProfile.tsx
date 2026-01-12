@@ -5,14 +5,15 @@ import React, { useState } from 'react';
 import { defaultInputType, isProfileFile } from '../../../utils/userProfile';
 import { UserProfilePicker } from '../../inputs/userProfilePicker';
 import UserAvatar from '../../UserAvatar';
+import { FileDetails } from '@packages/common';
 
 const UserProfile: React.FC<{
     existingUser: IUser;
     darkMode: boolean;
     editProfile: boolean;
     setEditProfile: (editProfile: boolean) => void;
-    profilePreference: { profilePath?: string; icon?: any };
-    setProfilePreference: (profilePreference: { profilePath?: string; icon?: any }) => void;
+    profilePreference: { profilePath?: string; icon?: FileDetails | string };
+    setProfilePreference: (profilePreference: { profilePath?: string; icon?: FileDetails | string }) => void;
 }> = ({ existingUser, editProfile, setProfilePreference, setEditProfile }) => {
     const [userProfileImage, setUserProfileImage] = useState<string>();
     const [isDefaultProfile, setIsDefaultProfile] = useState<boolean>(!existingUser.preferences.profilePath);
@@ -42,9 +43,8 @@ const UserProfile: React.FC<{
                 <Grid marginTop={2}>
                     <UserProfilePicker
                         user={existingUser}
-                        onPick={(value?: any) => {
-                            setProfilePreference(value?.file ? { icon: value } : { profilePath: value });
-                        }}
+                        // biome-ignore lint/suspicious/noExplicitAny: this code is bad
+                        onPick={(value?: any) => setProfilePreference(value?.file ? { icon: value } : { profilePath: value })}
                         onDelete={() => setProfilePreference({})}
                         imageName={isProfileFile(existingUser.preferences.profilePath) ? existingUser.preferences.profilePath : undefined}
                         defaultInputType={defaultInputType(existingUser.preferences.profilePath)}

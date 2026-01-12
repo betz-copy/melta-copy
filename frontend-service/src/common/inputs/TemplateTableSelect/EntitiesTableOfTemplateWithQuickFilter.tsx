@@ -2,7 +2,7 @@ import { Box, Grid } from '@mui/material';
 import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IEntity } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
-import _debounce from 'lodash.debounce';
+import { debounce } from 'lodash';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { useUserStore } from '../../../stores/user';
@@ -23,7 +23,7 @@ const EntitiesTableOfTemplateWithQuickFilter: React.FC<{
     const workspace = useWorkspaceStore((state) => state.workspace);
 
     const [quickFilterText, setQuickFilterText] = useState('');
-    const setQuickFilterTextDebounced = _debounce(setQuickFilterText, 1000);
+    const setQuickFilterTextDebounced = debounce(setQuickFilterText, 1000);
 
     const childTemplatesOfParent: IMongoChildTemplateWithConstraintsPopulated[] = Array.from(childTemplates.values()).filter(
         ({ parentTemplate: { _id } }) => _id === entityTemplate._id,

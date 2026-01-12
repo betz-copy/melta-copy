@@ -31,7 +31,7 @@ const UserFilterInput: React.FC<UserFilterProps> = ({ filterField, handleFilterT
     useEffect(() => {
         if (forceEqualsType && filterField && filterField.type !== basicFilterOperationTypes.equals)
             handleFilterTypeChange(basicFilterOperationTypes.equals);
-    }, [forceEqualsType, filterField]);
+    }, [forceEqualsType, filterField, handleFilterTypeChange]);
 
     return (
         <Grid container flexDirection="column" spacing={1}>
@@ -44,7 +44,7 @@ const UserFilterInput: React.FC<UserFilterProps> = ({ filterField, handleFilterT
                             : undefined
                     }
                     currentUser={{ value: currentUser, set: setCurrentUser }}
-                    handleOnChange={(user: IKartoffelUserStringFields | null, _values?: any) =>
+                    handleOnChange={(user: IKartoffelUserStringFields | null, _values?: { _id: string; displayName: string }) =>
                         handleFilterFieldChange({
                             ...filterField,
                             filter: user
