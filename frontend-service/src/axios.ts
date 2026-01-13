@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import axiosInstance, { AxiosHeaders } from 'axios';
 import { StatusCodes } from 'http-status-codes';
 import { environment } from './globals';

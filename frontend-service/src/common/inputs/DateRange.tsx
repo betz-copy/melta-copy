@@ -32,7 +32,6 @@ const DateRange: React.FC<{
             justifyContent="center"
             alignItems="center"
             wrap="nowrap"
-            // eslint-disable-next-line no-nested-ternary
             spacing={overrideSx && 'spacing' in overrideSx ? (overrideSx.spacing as number) : overrideSx ? 2 : 0}
             display="flex"
             flexDirection={directionIsRow ? 'row' : 'column'}

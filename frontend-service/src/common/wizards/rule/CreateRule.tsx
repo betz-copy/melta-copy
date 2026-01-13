@@ -6,7 +6,6 @@ import { omit } from 'lodash';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import * as Yup from 'yup';
-import { environment } from '../../../globals';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { ActionOnFail } from '../../../interfaces/rules';
 import { useUserStore } from '../../../stores/user';
@@ -14,8 +13,6 @@ import { getAllWritePermissionEntityTemplates } from '../../../utils/permissions
 import { StepComponentProps } from '../index';
 import { RuleWizardValues } from '.';
 import { CreateRuleColorField, CreateRuleEmailNotification } from './CreateIndicatorRuleControls';
-
-const { errorColor } = environment;
 
 const validMailField = (value: string): boolean => {
     try {
@@ -190,6 +187,7 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
                     <RadioGroup row name="actionOnFail" onChange={onRadioChange} value={values.actionOnFail}>
                         {[ActionOnFail.WARNING, ActionOnFail.ENFORCEMENT, ActionOnFail.INDICATOR].map((actionOnFail) => (
                             <FormControlLabel
+                                key={actionOnFail}
                                 value={actionOnFail}
                                 control={<Radio />}
                                 label={i18next.t(`wizard.rule.actions.${actionOnFail.toLowerCase()}`)}
@@ -201,7 +199,7 @@ const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> =
 
                 {values.actionOnFail === ActionOnFail.INDICATOR && (
                     <Grid container direction="column" gap={2}>
-                        <FormHelperText sx={{ color: hasCheckedOneIndicator ? errorColor : '#9398C2', fontSize: '14px' }}>
+                        <FormHelperText sx={{ color: hasCheckedOneIndicator ? 'error' : '#9398C2', fontSize: '14px' }}>
                             {i18next.t('wizard.rule.atLeastOne')}
                         </FormHelperText>
                         <CreateRuleColorField

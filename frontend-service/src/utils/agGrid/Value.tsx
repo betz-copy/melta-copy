@@ -40,7 +40,7 @@ const Value: React.FC<{
 
     let innerContent: string | React.JSX.Element | undefined;
 
-    if (hideValue && hideField) innerContent = <>••••••••</>;
+    if (hideValue && hideField) innerContent = '••••••••';
     else if ((enumColor || enumColor === 'default') && value.length)
         innerContent = <ColoredEnumChip label={value} enumColor={enumColor} searchValue={searchValue} color={color} />;
     else if (containsHtmlTags) innerContent = getFirstLine(value);
@@ -48,7 +48,7 @@ const Value: React.FC<{
     else if (isNumberField && value) innerContent = getFixedNumber(Number(value));
     else innerContent = value;
 
-    let popoverText;
+    let popoverText: string | React.JSX.Element;
 
     if (containsHtmlTags) popoverText = renderHTML(value);
     else if (calculateTime) popoverText = <CalculateDateDifference date={value} />;

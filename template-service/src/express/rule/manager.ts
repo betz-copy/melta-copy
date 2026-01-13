@@ -1,4 +1,4 @@
-import { DefaultManagerMongo, IMongoRule, IRule, NotFoundError } from '@microservices/shared';
+import { DefaultManagerMongo, IMongoRule, IPropertyValue, IRule, NotFoundError } from '@microservices/shared';
 import { FilterQuery } from 'mongoose';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
@@ -21,18 +21,15 @@ class RuleManager extends DefaultManagerMongo<IMongoRule> {
     }
 
     formatIndicatorRule(updatedFields: Omit<IRule, 'formula' | 'entityTemplateId' | 'disabled' | 'doesFormulaHaveTodayFunc'>) {
-        const $set: Record<string, any> = {};
-        const $unset: Record<string, any> = {};
+        const $set: Record<string, IPropertyValue> = {};
+        const $unset: Record<string, IPropertyValue> = {};
 
         for (const [key, value] of Object.entries(updatedFields)) {
-            if (value && typeof value === 'object' && value.display === false) {
-                $unset[key] = '';
-            } else {
-                $set[key] = value;
-            }
+            if (value && typeof value === 'object' && value.display === false) $unset[key] = '';
+            else $set[key] = value;
         }
 
-        const update: Record<string, any> = {};
+        const update: Record<string, IPropertyValue> = {};
         if (Object.keys($set).length) update.$set = $set;
         if (Object.keys($unset).length) update.$unset = $unset;
         return update;
@@ -79,7 +76,6 @@ class RuleManager extends DefaultManagerMongo<IMongoRule> {
         }
 
         if (doesFormulaHaveTodayFunc !== undefined) {
-            // eslint-disable-next-line no-underscore-dangle
             query.doesFormulaHaveTodayFunc = doesFormulaHaveTodayFunc;
         }
 

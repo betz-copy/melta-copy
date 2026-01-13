@@ -13,8 +13,8 @@ export interface IGetMyNotificationsRequestQuery {
 }
 
 export const getMyNotificationsRequest = async (query: IGetMyNotificationsRequestQuery) => {
-    const startDate = query.startDate && query.startDate.toDateString();
-    const endDate = query.endDate && query.endDate.toDateString();
+    const startDate = query.startDate?.toDateString();
+    const endDate = query.endDate?.toDateString();
 
     const { data } = await axios.get<INotificationPopulated[]>(`${notifications}/my`, {
         params: { ...query, startDate, endDate },

@@ -1,4 +1,4 @@
-import { Map } from '@mui/icons-material';
+import { Map as MapIcon } from '@mui/icons-material';
 import { Autocomplete, Box, Dialog, Grid, InputAdornment, TextField } from '@mui/material';
 import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
@@ -102,6 +102,7 @@ const RjsfLocationWidget = ({
     const [mapOpen, setMapOpen] = useState(false);
     const [newLocationValue, setNewLocationValue] = useState<string | undefined>('');
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         setNewLocationValue(getInitialLocation(value));
     }, []);
@@ -161,7 +162,7 @@ const RjsfLocationWidget = ({
                                             onClick={() => (error ? '' : setMapOpen(true))}
                                             style={{ cursor: 'pointer' }}
                                         >
-                                            <Map color={readonly || error ? 'disabled' : 'action'} />
+                                            <MapIcon color={readonly || error ? 'disabled' : 'action'} />
                                         </InputAdornment>
                                     ),
                                 },

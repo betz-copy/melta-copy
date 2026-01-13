@@ -15,11 +15,11 @@ import { arrayTypes, basePropertyTypes, stringFormats } from '../../../services/
 import { entityTemplateUniqueProperties, regexSchema, variableNameValidation } from '../../../utils/validation';
 import { ErrorToast } from '../../ErrorToast';
 import { StepComponentHelpers, StepComponentProps } from '../index';
-import { CommonFormInputProperties, FieldProperty, FilterType, GroupProperty, PropertyItem } from './commonInterfaces';
+import { CommonFormInputProperties, FieldProperty, FilterType, GroupProperty, IAGGridFilter, PropertyItem } from './commonInterfaces';
 import { FieldBlockDND } from './fieldBlock/FieldBlock';
 import { ItemTypes } from './fieldBlock/interfaces';
 import { getFieldData } from './fieldBlock/propertiesTypes';
-import { EntityTemplateWizardValues } from './index';
+import { EntityTemplateWizardValues, hasAccountBalanceField } from './index';
 
 const {
     relativeDateFilters,
@@ -131,7 +131,7 @@ const agGridSetFilterSchema = Yup.object({
 
 // Dynamic filter field validation based on `filterType`
 export const filterFieldSchema = (isRequired: boolean = true) =>
-    Yup.lazy((value: any, { parent }) => {
+    Yup.lazy((value: IAGGridFilter, { parent }) => {
         const makeOptional = (schema: Yup.AnySchema) => (isRequired ? schema : schema.notRequired().nullable());
 
         switch (value?.filterType) {
@@ -206,71 +206,81 @@ const groupSchema = Yup.object({
         .min(1, i18next.t('validation.oneField'))
         .test('hasNonArchivedFields', i18next.t('validation.oneField'), (entries) => {
             if (!entries) return false;
-            return entries.some((item: any) => {
-                return item.archive !== true;
-            });
+            return entries.some((item) => (item as CommonFormInputProperties).archive !== true);
         })
         .test('hasNonDeletedFields', i18next.t('validation.oneField'), (entries) => {
             if (!entries) return false;
-            return entries.some((item: any) => {
-                return item.deleted !== true;
-            });
+            return entries.some((item) => (item as CommonFormInputProperties).deleted !== true);
         }),
 });
-const fieldByTypeSchema = Yup.lazy((item: any) => {
+const fieldByTypeSchema = Yup.lazy((item: PropertyItem) => {
     if (item?.type === 'field') return fieldSchema;
     if (item?.type === 'group') return groupSchema;
     return Yup.mixed().notRequired();
 });
 
-const propertiesSchema = Yup.array()
-    .of(fieldByTypeSchema as any)
-    .min(1, i18next.t('validation.oneField'))
-    .test('hasActiveFields', i18next.t('validation.oneField'), (entries) => {
-        if (!entries) return false;
-        return (entries as PropertyItem[]).some((item) => {
-            if (item.type === 'field') return !item.data?.deleted;
-            if (item.type === 'group') return item.fields?.some((f) => !f.deleted);
-            return false;
-        });
-    })
-    .test('hasNonArchivedFields', i18next.t('validation.oneField'), (entries) => {
-        if (!entries) return false;
-        return (entries as PropertyItem[]).some((item) => {
-            if (item.type === 'field') return item.data?.archive !== true;
-            if (item.type === 'group') return item.fields?.some((f) => f.archive !== true);
-            return false;
-        });
-    })
-    .test('mapSearchLimit', i18next.t('validation.mapSearchPropertiesLimit', { limit: mapSearchPropertiesLimit }), (entries) => {
-        if (!entries) return true;
-        let count = 0;
-        for (const item of entries as PropertyItem[]) {
-            if (item.type === 'field' && item.data?.mapSearch) count++;
-            if (item.type === 'group') count += item.fields?.filter((f) => f.mapSearch).length || 0;
-        }
-        if (count > mapSearchPropertiesLimit) toast.error(i18next.t('validation.mapSearchPropertiesLimit', { limit: mapSearchPropertiesLimit }));
+const propertiesSchema = (isAccountTemplate = false) => {
+    return Yup.array()
+        .of(fieldByTypeSchema)
+        .min(1, i18next.t('validation.oneField'))
+        .test('hasNonAccountBalanceField', i18next.t('validation.accountBalanceField'), (entries) => {
+            if (!isAccountTemplate) return true;
+            if (!entries) return false;
+            return !(entries as PropertyItem[]).every((item) => {
+                if (item.type === 'field') return !item.data?.accountBalance;
+                if (item.type === 'group') return item.fields?.every((f) => !f.accountBalance);
 
-        return count <= mapSearchPropertiesLimit;
-    });
+                return false;
+            });
+        })
+        .test('hasActiveFields', i18next.t('validation.oneField'), (entries) => {
+            if (!entries) return false;
+            return (entries as PropertyItem[]).some((item) => {
+                if (item.type === 'field') return !item.data?.deleted;
+                if (item.type === 'group') return item.fields?.some((f) => !f.deleted);
+                return false;
+            });
+        })
+        .test('hasNonArchivedFields', i18next.t('validation.oneField'), (entries) => {
+            if (!entries) return false;
+            return (entries as PropertyItem[]).some((item) => {
+                if (item.type === 'field') return item.data?.archive !== true;
+                if (item.type === 'group') return item.fields?.some((f) => f.archive !== true);
+                return false;
+            });
+        })
+        .test('mapSearchLimit', i18next.t('validation.mapSearchPropertiesLimit', { limit: mapSearchPropertiesLimit }), (entries) => {
+            if (!entries) return true;
+            let count = 0;
+            for (const item of entries as PropertyItem[]) {
+                if (item.type === 'field' && item.data?.mapSearch) count++;
+                if (item.type === 'group') count += item.fields?.filter((f) => f.mapSearch).length || 0;
+            }
+            if (count > mapSearchPropertiesLimit) toast.error(i18next.t('validation.mapSearchPropertiesLimit', { limit: mapSearchPropertiesLimit }));
 
-const addFieldsSchema = Yup.object({
-    properties: propertiesSchema,
-    attachmentProperties: Yup.array().of(
-        Yup.object({
-            type: Yup.string().oneOf(['field']).required(),
-            data: attachmentPropertiesBaseSchema.shape({
-                required: Yup.boolean().required(i18next.t('validation.required')),
+            return count <= mapSearchPropertiesLimit;
+        });
+};
+
+const addFieldsSchema = (isAccountTemplate = false) => {
+    return Yup.object({
+        properties: propertiesSchema(isAccountTemplate),
+        attachmentProperties: Yup.array().of(
+            Yup.object({
+                type: Yup.string().oneOf(['field']).required(),
+                data: attachmentPropertiesBaseSchema.shape({
+                    required: Yup.boolean().required(i18next.t('validation.required')),
+                }),
             }),
-        }),
-    ),
-}).test('uniqueProperties', entityTemplateUniqueProperties);
+        ),
+    }).test('uniqueProperties', entityTemplateUniqueProperties);
+};
 
 type AddFieldsDNDProps = Pick<
     FormikProps<EntityTemplateWizardValues>,
     'values' | 'setValues' | 'touched' | 'errors' | 'setFieldValue' | 'initialValues'
 > &
-    Pick<StepComponentHelpers, 'isEditMode' | 'setBlock'>;
+    Pick<StepComponentHelpers, 'isEditMode' | 'setBlock'> & { isAccountTemplate?: boolean; setIsTransferTemplate?: (val: boolean) => void };
 
 export enum PropertiesTypes {
     properties = 'properties',
@@ -291,15 +301,27 @@ export const FieldBlockWrapper = ({
     initialValues,
     isEditMode,
     setBlock,
+    isAccountTemplate,
+    setIsTransferTemplate,
 }) => {
     const hasActions = Boolean(initialValues?.actions);
-    const countMapSearchProperties = Object.values(values.properties).flatMap((property: any) => {
-        if (property.type === 'field' && property.data?.mapSearch) return [property];
 
-        if (property.type === 'group' && Array.isArray(property.fields)) return property.fields.filter((field) => field.mapSearch);
+    const isAlreadyWalletTemplate = (Object.values(initialValues.properties) as PropertyItem[]).some((property) => {
+        if (property.type === 'field') return !!property.data.accountBalance;
 
-        return [];
-    }).length;
+        if (property.type === 'group') return property.fields.some((field) => !!field.accountBalance);
+
+        return false;
+    });
+
+    const isWalletTemplate = hasAccountBalanceField(Object.values(values.properties) as PropertyItem[]);
+
+    const propertyValues = Object.values(values.properties) as PropertyItem[];
+
+    const countMapSearchProperties = propertyValues.reduce((count, property) => {
+        if (property.type === 'field' && property.data?.mapSearch) return count + 1;
+        return count;
+    }, 0);
 
     if (countMapSearchProperties > mapSearchPropertiesLimit) setBlock(true);
     const { data: areThereInstancesByTemplateIdResponse } = useQuery(
@@ -324,7 +346,7 @@ export const FieldBlockWrapper = ({
         indexesInTypes: { index: number; type: PropertiesTypes; groupIndex?: number }[],
         field: 'deleted' | 'archive',
         value: boolean,
-        currentValues: any,
+        currentValues: EntityTemplateWizardValues,
     ) => {
         const displayValuesCopy = { ...currentValues };
 
@@ -375,15 +397,13 @@ export const FieldBlockWrapper = ({
             if (property.type === 'group' && 'fields' in property && Array.isArray(property.fields)) {
                 for (let idx = 0; idx < property.fields.length; idx++) {
                     const field = property.fields[idx];
-                    if (field.type === 'kartoffelUserField' && field.expandedUserField?.relatedUserField === propertyToCheck.name) {
+                    if (field.type === 'kartoffelUserField' && field.expandedUserField?.relatedUserField === propertyToCheck.name)
                         indexesArray.push({ propertyIndex: idx, propertyGroupIndex: index });
-                    }
                 }
             } else if (property.type !== 'group') {
                 const propertyData = (property as FieldProperty).data;
-                if (propertyData.type === 'kartoffelUserField' && propertyData.expandedUserField?.relatedUserField === propertyToCheck.name) {
+                if (propertyData.type === 'kartoffelUserField' && propertyData.expandedUserField?.relatedUserField === propertyToCheck.name)
                     indexesArray.push({ propertyIndex: index });
-                }
             }
         }
 
@@ -645,7 +665,6 @@ export const FieldBlockWrapper = ({
             if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
 
             moveItem(dragIndex, hoverIndex);
-            // eslint-disable-next-line no-param-reassign
             item.index = hoverIndex;
         },
     });
@@ -660,7 +679,7 @@ export const FieldBlockWrapper = ({
 
     useEffect(() => {
         preview(getEmptyImage(), { captureDraggingState: true });
-    }, []);
+    }, [preview]);
 
     drag(drop(ref));
 
@@ -713,30 +732,28 @@ export const FieldBlockWrapper = ({
                     draggable={{ isDraggable: true }}
                     locationSearchFields={{
                         show: (Object.values(values.properties) as PropertyItem[]).some((property) => {
-                            if (property.type === 'field') {
-                                return property.data.type === 'location';
-                            }
-                            if (property.type === 'group') {
-                                return property.fields.some((field) => field.type === 'location');
-                            }
+                            if (property.type === 'field') return property.data.type === 'location';
+                            if (property.type === 'group') return property.fields.some((field) => field.type === 'location');
+
                             return false;
                         }),
                         disabled: countMapSearchProperties >= 2,
                     }}
                     supportIdentifier
                     hasIdentifier={(Object.values(values.properties) as PropertyItem[]).some((property) => {
-                        if (property.type === 'field') {
-                            return 'identifier' in property.data && Boolean(property.data.identifier);
-                        }
-                        if (property.type === 'group') {
-                            return property.fields.some((field) => 'identifier' in field && Boolean(field.identifier));
-                        }
+                        if (property.type === 'field') return 'identifier' in property.data && Boolean(property.data.identifier);
+                        if (property.type === 'group') return property.fields.some((field) => 'identifier' in field && Boolean(field.identifier));
+
                         return false;
                     })}
                     userPropertiesInTemplate={userPropertiesInTemplate}
                     archive={(ind, groupIndex) => archive(ind, itemId, groupIndex)}
                     remove={remove}
                     onDeleteSure={onDeleteSure}
+                    isAccountTemplate={isAccountTemplate}
+                    hasAccountBalanceField={isWalletTemplate}
+                    isAlreadyWalletTemplate={isAlreadyWalletTemplate}
+                    setIsTransferTemplate={setIsTransferTemplate}
                 />
             </div>
         </Grid>
@@ -752,6 +769,8 @@ export const AddFieldsDND: React.FC<AddFieldsDNDProps> = ({
     initialValues,
     isEditMode,
     setBlock,
+    isAccountTemplate,
+    setIsTransferTemplate,
 }) => {
     const moveItem = useCallback(
         (dragIndex, hoverIndex) => {
@@ -761,7 +780,7 @@ export const AddFieldsDND: React.FC<AddFieldsDNDProps> = ({
 
             setFieldValue('propertiesTypeOrder', newValuesOrder);
         },
-        [values.propertiesTypeOrder],
+        [values.propertiesTypeOrder, setFieldValue],
     );
 
     return (
@@ -780,13 +799,20 @@ export const AddFieldsDND: React.FC<AddFieldsDNDProps> = ({
                     initialValues={initialValues}
                     isEditMode={isEditMode}
                     setBlock={setBlock}
+                    isAccountTemplate={isAccountTemplate}
+                    setIsTransferTemplate={setIsTransferTemplate}
                 />
             ))}
         </Grid>
     );
 };
 
-const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEditMode' | 'setBlock'>> = ({
+const AddFields: React.FC<
+    StepComponentProps<EntityTemplateWizardValues, 'isEditMode' | 'setBlock'> & {
+        isAccountTemplate?: boolean;
+        setIsTransferTemplate?: (val: boolean) => void;
+    }
+> = ({
     values,
     setValues,
     touched,
@@ -795,6 +821,8 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
     initialValues,
     isEditMode,
     setBlock,
+    isAccountTemplate = false,
+    setIsTransferTemplate,
 }) => {
     return (
         <DndProvider backend={HTML5Backend}>
@@ -807,6 +835,8 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                 initialValues={initialValues}
                 isEditMode={isEditMode}
                 setBlock={setBlock}
+                isAccountTemplate={isAccountTemplate}
+                setIsTransferTemplate={setIsTransferTemplate}
             />
         </DndProvider>
     );

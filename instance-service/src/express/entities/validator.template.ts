@@ -9,6 +9,7 @@ import {
     IFilterOfField,
     IMongoEntityTemplate,
     IMongoRelationshipTemplate,
+    IPropertyValue,
     ISearchBatchBody,
     ISearchEntitiesByTemplatesBody,
     ISearchEntitiesOfTemplateBody,
@@ -30,7 +31,7 @@ import EntityTemplateManagerService from '../../externalServices/templates/entit
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import addDefaultFieldsToTemplate from '../../utils/addDefaultsFieldsToEntityTemplate';
 import DefaultController from '../../utils/express/controller';
-import { trycatch } from '../../utils/lib';
+import { tryCatch } from '../../utils/lib';
 import { getNeo4jDate, getNeo4jDateTime, getNeo4jLocation } from '../../utils/neo4j/lib';
 import { IGetExpandedEntityBody } from './interface';
 
@@ -94,6 +95,7 @@ ajv.addKeyword({
     keyword: 'serialCurrent',
     type: 'number',
 });
+ajv.addKeyword({ keyword: 'accountBalance', type: 'boolean' });
 
 export class EntityValidator extends DefaultController {
     private entityTemplateManagerService: EntityTemplateManagerService;
@@ -108,7 +110,7 @@ export class EntityValidator extends DefaultController {
     }
 
     private async getEntityTemplateByIdOrThrowValidationError(templateId: string) {
-        const { result: entityTemplate, err: getEntityTemplateByIdErr } = await trycatch(() =>
+        const { result: entityTemplate, err: getEntityTemplateByIdErr } = await tryCatch(() =>
             this.entityTemplateManagerService.getEntityTemplateById(templateId),
         );
         if (getEntityTemplateByIdErr || !entityTemplate) {
@@ -121,7 +123,7 @@ export class EntityValidator extends DefaultController {
         return entityTemplate;
     }
 
-    validateEntity(entityTemplate: IMongoEntityTemplate, properties: Record<string, any>) {
+    validateEntity(entityTemplate: IMongoEntityTemplate, properties: Record<string, IPropertyValue>) {
         const validateFunction = ajv.compile(entityTemplate.properties);
         const valid = validateFunction(properties);
 
@@ -143,7 +145,7 @@ export class EntityValidator extends DefaultController {
         }
     }
 
-    validatePropertiesMatchFilters(properties: Record<string, any>, filter?: ISearchFilter) {
+    validatePropertiesMatchFilters(properties: Record<string, IPropertyValue>, filter?: ISearchFilter) {
         const notValidKey = matchValueAgainstFilter(properties, filter);
         if (notValidKey)
             throw new FilterValidation(`Property ${notValidKey} do not match the filter`, {
@@ -482,6 +484,26 @@ export class EntityValidator extends DefaultController {
         });
         addPropertyToRequest(req, 'entityTemplatesMap', entityTemplatesMap);
     }
+
+    async validatePrintBody(req: Request) {
+        const searchBody: IGetExpandedEntityBody['filters'] = req.body.filters;
+        const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({});
+        const relationShips = await this.relationshipsTemplateManagerService.searchRelationshipTemplates();
+
+        const entityTemplatesMap = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
+        const relationShipsMap = new Map(relationShips.map((relationship) => [relationship._id, relationship]));
+
+        const entityTemplatesForValidationMap: Map<string, IMongoEntityTemplate> = new Map(
+            entityTemplates.map((entityTemplate) => [entityTemplate._id, addDefaultFieldsToTemplate(entityTemplate)]),
+        );
+        Object.entries(searchBody).forEach(([templateId, { filter }]) => {
+            if (filter) {
+                this.validateFilter(filter, entityTemplatesForValidationMap.get(templateId)!, `filters.${templateId}.filter`);
+            }
+        });
+        addPropertyToRequest(req, 'entityTemplatesMap', entityTemplatesMap);
+        addPropertyToRequest(req, 'relationShipsMap', relationShipsMap);
+    }
 }
 
 // same format as dates shown in UI
@@ -511,13 +533,13 @@ export const getFilesName = (files: string[]): string => {
  * @returns flattened entity (i.e. an object with no nested properties, using key paths as keys).
  */
 export const addStringFieldsAndNormalizeSpecialStringValues = async (
-    entityProperties: Record<string, any>,
+    entityProperties: Record<string, IPropertyValue>,
     entityTemplate: IMongoEntityTemplate | IEntityTemplate,
     entityTemplateService: EntityTemplateManagerService,
     coloredFields?: Record<string, string>,
     recursiveRelationshipReference = false,
-): Promise<Record<string, any>> => {
-    const normalizedEntity: Record<string, any> = {};
+): Promise<Record<string, IPropertyValue>> => {
+    const normalizedEntity: Record<string, IPropertyValue> = {};
 
     await Promise.all(
         Object.entries(entityTemplate.properties.properties).map(async ([key, value]) => {
@@ -584,7 +606,7 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
             }
 
             if (type === 'string' && format === 'relationshipReference' && typeof propertyValue === 'object') {
-                let relationShipPropValue: Record<string, any> = 'properties' in propertyValue ? propertyValue.properties : propertyValue;
+                let relationShipPropValue: Record<string, IPropertyValue> = 'properties' in propertyValue ? propertyValue.properties : propertyValue;
 
                 if (recursiveRelationshipReference) {
                     const relatedEntityTemplate = await entityTemplateService.getEntityTemplateById(propertyValue.templateId);

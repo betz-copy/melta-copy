@@ -1,8 +1,8 @@
+import { once } from 'node:events';
+import * as http from 'node:http';
 import { errorMiddleware } from '@microservices/shared';
-import { once } from 'events';
 import express from 'express';
 import helmet from 'helmet';
-import * as http from 'http';
 import config from '../config';
 import appRouter from './router';
 

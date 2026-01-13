@@ -69,7 +69,6 @@ const GanttItem = new mongoose.Schema(
     { _id: false },
 );
 
-// eslint-disable-next-line import/prefer-default-export
 export const GanttSchema = new mongoose.Schema(
     {
         name: {
@@ -89,12 +88,10 @@ export const GanttSchema = new mongoose.Schema(
     { timestamps: true, versionKey: false },
 );
 
+// biome-ignore lint/suspicious/noExplicitAny: error is any
 const handleMongooseDuplicateKeyError = (error: any, _doc: mongoose.Document, next: (err?: any) => void) => {
-    if (error.name === 'MongoError' && error.code === 11000) {
-        next(new BadRequestError('gantt with the same name already exists'));
-    } else {
-        next(error);
-    }
+    if (error.name === 'MongoError' && error.code === 11000) next(new BadRequestError('gantt with the same name already exists'));
+    else next(error);
 };
 
 GanttSchema.post('save', handleMongooseDuplicateKeyError);

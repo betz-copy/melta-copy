@@ -3,7 +3,7 @@ import axios from 'axios';
 import config from './config';
 import { getRandomGantts } from './mocks/gantts/generate';
 import getHardcodedRealGantts from './mocks/gantts/hardcoded';
-import { trycatch } from './utils';
+import { tryCatch } from './utils';
 import createAxiosInstance from './utils/axios';
 
 const { url, baseRoute, isAliveRoute } = config.ganttService;
@@ -34,7 +34,7 @@ export const createGantts = (
 };
 
 export const isGanttsServiceAlive = async () => {
-    const { result, err } = await trycatch(() => axios.get(url + isAliveRoute));
+    const { result, err } = await tryCatch(() => axios.get(url + isAliveRoute));
 
     return { result, err };
 };

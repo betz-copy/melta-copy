@@ -2,7 +2,7 @@ import { ArrowBack as ArrowBackIcon, ArrowForward as ArrowForwardIcon, Done as D
 import { Button, CircularProgress, Grid } from '@mui/material';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
-import isEqual from 'lodash.isequal';
+import { isEqual } from 'lodash';
 import { JSX } from 'react';
 import { StepType } from '..';
 

@@ -13,6 +13,7 @@ import {
     IGetUnits,
     IMongoRule,
     IMultipleSelect,
+    IPropertyValue,
     IRelationship,
     IRuleMail,
     ISearchBatchBody,
@@ -46,7 +47,7 @@ class InstancesService extends DefaultExternalServiceApi {
     }
 
     // entity instances
-    async updateEnumFieldOfEntity(id: string, newValue: string, oldValue: string, field: any) {
+    async updateEnumFieldOfEntity(id: string, newValue: string, oldValue: string, field: { name: string; type: string }) {
         const { data } = await this.api.put<IEntity>(`${baseEntitiesRoute}/update-enum-field/${id}`, { newValue, oldValue, field });
         return data;
     }
@@ -78,6 +79,7 @@ class InstancesService extends DefaultExternalServiceApi {
         userId: string,
         duplicatedFromId?: string,
         childTemplate?: { id: string; filter?: ISearchFilter },
+        newDestWalletData?: IEntity,
     ) {
         const { data } = await this.api.post<{ createdEntity: IEntity; actions?: IAction[]; emails?: IRuleMail[] }>(`${baseEntitiesRoute}`, {
             ...entity,
@@ -85,6 +87,7 @@ class InstancesService extends DefaultExternalServiceApi {
             userId,
             duplicatedFromId,
             childTemplate,
+            newDestWalletData,
         });
 
         return data;
@@ -170,7 +173,7 @@ class InstancesService extends DefaultExternalServiceApi {
     }
 
     async getChartsOfTemplate(templateId: string, body: { chartsData: IChartBody[]; childTemplateId?: string }, units: IGetUnits) {
-        const { data } = await this.api.post<{ _id: string; chart: { x: any; y: number }[] }[] | { x: any; y: number }[][]>(
+        const { data } = await this.api.post<{ _id: string; chart: { x: IPropertyValue; y: number }[] }[] | { x: IPropertyValue; y: number }[][]>(
             `${baseEntitiesRoute}/chart/${templateId}`,
             {
                 ...body,

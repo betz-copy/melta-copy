@@ -1,5 +1,5 @@
 import { Payment } from '@mui/icons-material';
-import { Avatar, Box, Grid, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { Avatar, Box, Grid, ToggleButton, ToggleButtonGroup, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { environment } from '../../globals';
@@ -33,6 +33,8 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({
     setUserProfileImage,
     setIsDefaultProfile,
 }) => {
+    const theme = useTheme();
+
     const [inputType, setInputType] = useState(defaultInputType);
     const [fileInputValue, setFileInputValue] = useState<fileDetails | undefined>(
         imageName ? { file: { name: imageName }, name: imageName } : undefined,
@@ -105,9 +107,8 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({
                 <Grid>
                     <Box style={{ border: '1px solid #ccc', borderRadius: '8px' }}>
                         <Grid container sx={{ display: 'flex', justifyContent: 'space-evenly' }}>
-                            {allAvatarPaths.map((iconName, index) => (
-                                // eslint-disable-next-line react/no-array-index-key
-                                <Grid key={index} padding={2}>
+                            {allAvatarPaths.map((iconName) => (
+                                <Grid key={iconName} padding={2}>
                                     <Avatar
                                         src={`${environment.avatarIconPath}${iconName}`}
                                         style={{
@@ -131,7 +132,7 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({
                                         boxShadow: !selectedIcon ? '0px 4px 15px rgba(0, 0, 0, 1.5)' : '0px 4px 10px rgba(0, 0, 0, 0.5)',
                                         border: !selectedIcon ? '1px solid green' : '',
                                         backgroundColor: '#fcfeff',
-                                        color: '#1E2775',
+                                        color: theme.palette.primary.main,
                                         overflow: 'hidden',
                                         maxWidth: '100%',
                                         font: `${Math.round(25)}px Rubik`,

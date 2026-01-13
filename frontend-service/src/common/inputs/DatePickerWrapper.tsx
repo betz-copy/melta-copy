@@ -9,7 +9,10 @@ import i18next from 'i18next';
 import React from 'react';
 import { environment } from '../../globals';
 
-const { date } = environment.formats;
+const {
+    formats: { date },
+    datePickerViews,
+} = environment;
 
 interface DatePickerWrapperProps {
     label?: string;
@@ -45,6 +48,7 @@ const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
     >
         <DatePicker
             format={date}
+            views={datePickerViews}
             enableAccessibleFieldDOMStructure={false}
             minDate={minDate ? new Date(minDate) : undefined}
             maxDate={maxDate ? new Date(maxDate) : undefined}

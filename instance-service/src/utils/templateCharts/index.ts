@@ -1,4 +1,13 @@
-import { CoordinateSystem, IAggregation, IAggregationType, IAxisField, IGetUnits, IMongoEntityTemplate, locationConverterToString } from '@microservices/shared';
+import {
+    CoordinateSystem,
+    IAggregation,
+    IAggregationType,
+    IAxisField,
+    IGetUnits,
+    IMongoEntityTemplate,
+    IPropertyValue,
+    locationConverterToString,
+} from '@microservices/shared';
 import { fromZonedTime } from 'date-fns-tz';
 import neo4j from 'neo4j-driver';
 import config from '../../config';
@@ -124,7 +133,7 @@ const getLocation = ({ x, y }: InstanceType<typeof neo4j.types.Point>, coordinat
 
 export const manipulateReturnedChart = async (
     xAxis: IAxisField,
-    chart: { x: any; y: number; coordinateSystem?: string }[],
+    chart: { x: IPropertyValue; y: number; coordinateSystem?: string }[],
     entityTemplate: IMongoEntityTemplate,
     workspaceId: string,
     units: IGetUnits,

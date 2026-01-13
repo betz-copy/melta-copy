@@ -7,6 +7,8 @@ import {
     IMongoEntityTemplatePopulated,
     IMongoRule,
     IRelationship,
+    PropertyFormat,
+    PropertyType,
     ServiceError,
 } from '@microservices/shared';
 import { StatusCodes } from 'http-status-codes';
@@ -53,8 +55,8 @@ const buildNewRelationshipField = (
 ): IEntitySingleProperty => {
     return {
         title: displayFieldName,
-        type: 'string',
-        format: 'relationshipReference',
+        type: PropertyType.string,
+        format: PropertyFormat.relationshipReference,
         relationshipReference: {
             relationshipTemplateId,
             relationshipTemplateDirection,

@@ -1,3 +1,7 @@
+/** biome-ignore-all lint/suspicious/noThenProperty: Joi... */
+/** biome-ignore-all lint/suspicious/noExplicitAny: lol */
+
+import assert from 'node:assert';
 import {
     DefaultController,
     defaultValidationOptions,
@@ -15,13 +19,14 @@ import {
     ISumAggFunction,
     IVariable,
     isConstant,
+    PropertyFormat,
+    PropertyType,
 } from '@microservices/shared';
-import assert from 'assert';
 import { isValid as isValidDate, parse } from 'date-fns';
 import { Request } from 'express';
 import { flatten } from 'flat';
 import Joi from 'joi';
-import isEqual from 'lodash.isequal';
+import { isEqual } from 'lodash';
 import { joiValidate } from '../../utils/joi';
 import EntityTemplateManager from '../entityTemplate/manager';
 import { RelationshipTemplateManager } from '../relationshipTemplate/manager';
@@ -151,10 +156,10 @@ class RuleValidator extends DefaultController<IMongoRelationshipTemplate, Relati
                 ...entityTemplate.properties,
                 properties: {
                     ...entityTemplate.properties.properties,
-                    _id: { title: '_id', type: 'string' },
-                    disabled: { title: 'disabled', type: 'boolean' },
-                    createdAt: { title: 'createdAt', type: 'string', format: 'date-time' },
-                    updatedAt: { title: 'updatedAt', type: 'string', format: 'date-time' },
+                    _id: { title: '_id', type: PropertyType.string },
+                    disabled: { title: 'disabled', type: PropertyType.string },
+                    createdAt: { title: 'createdAt', type: PropertyType.string, format: PropertyFormat['date-time'] },
+                    updatedAt: { title: 'updatedAt', type: PropertyType.string, format: PropertyFormat['date-time'] },
                 },
             },
         };
@@ -324,7 +329,6 @@ class RuleValidator extends DefaultController<IMongoRelationshipTemplate, Relati
         } = this.joiValidateNoConvert(regularFunctionSchema, regularFunctionData);
 
         funcArguments.forEach((argument) => {
-            // eslint-disable-next-line no-use-before-define -- circular recursive functions
             this.validateArgument(argument, relevantTemplates, aggregationGroupsContext);
         });
         switch (functionType) {
@@ -421,7 +425,6 @@ class RuleValidator extends DefaultController<IMongoRelationshipTemplate, Relati
         this.joiValidateNoConvert(groupSchema, groupData);
 
         (groupData.subFormulas as Array<any>).forEach((subFormula) => {
-            // eslint-disable-next-line no-use-before-define -- circular recursive functions
             this.validateFormula(subFormula, relevantTemplates, aggregationGroupsContext);
         });
     }
@@ -439,7 +442,6 @@ class RuleValidator extends DefaultController<IMongoRelationshipTemplate, Relati
         this.validateVariableOfAggregation(aggregationGroup.variableOfAggregation, relevantTemplates, false, aggregationGroupsContext);
 
         (aggregationGroup.subFormulas as Array<any>).forEach((subFormula) => {
-            // eslint-disable-next-line no-use-before-define -- circular recursive functions (formula->group->formulas)
             this.validateFormula(subFormula, relevantTemplates, [...aggregationGroupsContext, aggregationGroup.variableOfAggregation]);
         });
     }
@@ -503,7 +505,6 @@ class RuleValidator extends DefaultController<IMongoRelationshipTemplate, Relati
     async validateRuleFormulaMiddleware(req: Request) {
         await this.validateRuleFormula(req.body);
 
-        // eslint-disable-next-line no-underscore-dangle
         req.body.doesFormulaHaveTodayFunc = this.doesFormulaHaveTodayFunc(req.body.formula);
     }
 }

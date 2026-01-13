@@ -1,5 +1,3 @@
-/* eslint-disable no-param-reassign */
-
 import {
     IBaseUser,
     IMongoUnit,
@@ -10,7 +8,7 @@ import {
     IUserPopulated,
     RelatedPermission,
 } from '@microservices/shared';
-import { FilterQuery } from 'mongoose';
+import { FilterQuery, UpdateQuery } from 'mongoose';
 import { typedObjectEntries } from '../../utils';
 import { translateAgGridFilterModel, translateAgGridSortModel } from '../../utils/agGrid';
 import PermissionsManager from '../permissions/manager';
@@ -130,7 +128,7 @@ class UsersManager {
     }
 
     static async updateUser(id: string, updateData: Partial<IBaseUser>): Promise<IUser> {
-        const updateQuery: any = { ...updateData };
+        const updateQuery: UpdateQuery<IBaseUser> = { ...updateData };
 
         if (updateQuery.roleIds === null) {
             delete updateQuery.roleIds; // remove from $set

@@ -40,6 +40,7 @@ const SmallPreview: React.FC<IPreviewProps> = ({ file, sx }) => {
                     <CircularProgress size={20} />
                 </Box>
             );
+
         if (error || !data) {
             return (
                 <Card elevation={10}>
@@ -60,6 +61,7 @@ const SmallPreview: React.FC<IPreviewProps> = ({ file, sx }) => {
                 </Card>
             );
         }
+
         if (isUnsupported(contentType))
             return (
                 <Card sx={{ bgcolor: '#4c494c', display: 'grid' }} elevation={10}>
@@ -84,11 +86,13 @@ const SmallPreview: React.FC<IPreviewProps> = ({ file, sx }) => {
                     <VideoPreview data={data} />
                 </Box>
             );
+
         if (shouldDisplayImage(contentType))
             return (
                 <Box sx={{ display: 'flex', alignItems: 'center', alignContent: 'center' }}>
                     <img
                         src={data}
+                        alt="Workspace content preview"
                         style={{
                             position: 'relative',
                             right: '50%',
@@ -100,6 +104,7 @@ const SmallPreview: React.FC<IPreviewProps> = ({ file, sx }) => {
                     />
                 </Box>
             );
+
         if (shouldDisplayDocument(contentType))
             return (
                 <Document file={data} onLoadError={() => null}>
@@ -112,8 +117,7 @@ const SmallPreview: React.FC<IPreviewProps> = ({ file, sx }) => {
                 <Skeleton variant="rectangular" sx={{ borderRadius: '1rem' }} />
             </Box>
         );
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [loading, data]);
+    }, [loading, error, data, contentType, noSuchKeyError]);
 
     return (
         <Grid container sx={{ height: '100%', overflowY: 'hidden', overflowX: 'hidden', fontSize: 'small' }} justifyContent="center">

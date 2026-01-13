@@ -33,6 +33,7 @@ const TemplatesSelectCheckbox = <T extends IMongoEntityTemplatePopulated | IMong
 }: TemplatesSelectCheckboxProps<T>) => {
     return (
         <SelectCheckbox<T, IMongoCategory>
+            // biome-ignore lint/suspicious/noExplicitAny: blame Itay
             treeFunc={categories?.length ? (groupTemplatesByCategory as any) : undefined}
             title={title}
             filterIcon={title === i18next.t('entityTemplatesCheckboxLabel')}

@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 import { Stack, StackProps, useTheme } from '@mui/material';
 import { forwardRef } from 'react';
 
@@ -15,7 +14,10 @@ const FlexBox = forwardRef<HTMLDivElement, FlexBoxProps>(({ gap, direction, sx, 
     const { gap: sxGap, ...sxRest } = sx && 'gap' in sx ? sx : { gap: undefined, ...sx };
     const flexGap = gap || sxGap;
     const spacing = typeof flexGap === 'number' ? theme.spacing(flexGap) : flexGap ? String(flexGap) : flexGap;
-    const gapStyles = { row: { marginInlineEnd: spacing }, column: { marginBottom: spacing } };
+    const gapStyles = {
+        row: { marginInlineEnd: spacing },
+        column: { marginBottom: spacing },
+    };
 
     const shrinkStyles = shrink ? { minWidth: 0, minHeight: 0 } : {};
 

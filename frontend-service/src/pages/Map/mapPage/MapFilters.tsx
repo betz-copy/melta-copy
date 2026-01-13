@@ -38,11 +38,11 @@ const MapFilters = ({
     moveToEntityLocations,
     entityTemplateMap,
     clearAutocompleteSearch,
-    sourceTemplate,
     filters: {
         value: { autoSearch, listFields, dirty },
         set: setFilters,
     },
+    sourceTemplate,
     isSearchShape,
     applyFilterWithShapeSearch,
     setCameraFocus,
@@ -214,7 +214,7 @@ const MapFilters = ({
                                     key={`${field.name}-${index}`}
                                     multiple
                                     options={field.enum ?? field.items?.enum ?? []}
-                                    disabled={autoSearch.length < minSearchLength}
+                                    disabled={autoSearch.length < minSearchLength && !isSearchShape}
                                     onChange={(_e, newValue) => {
                                         setFilters((prev) => {
                                             const newListFields = { ...prev.listFields };

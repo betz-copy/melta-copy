@@ -1,5 +1,28 @@
 import { IMongoCategory } from './category';
-import { ISearchFilter, IUniqueConstraintOfTemplate } from './entity';
+import { IFilter } from './childTemplate';
+import { IPropertyValue, ISearchFilter, IUniqueConstraintOfTemplate } from './entity';
+
+export enum PropertyType {
+    string = 'string',
+    number = 'number',
+    boolean = 'boolean',
+    array = 'array',
+}
+
+export enum PropertyFormat {
+    date = 'date',
+    'date-time' = 'date-time',
+    email = 'email',
+    fileId = 'fileId',
+    'text-area' = 'text-area',
+    relationshipReference = 'relationshipReference',
+    location = 'location',
+    user = 'user',
+    signature = 'signature',
+    comment = 'comment',
+    kartoffelUserField = 'kartoffelUserField',
+    unitField = 'unitField',
+}
 
 export interface IRelationshipReference {
     relationshipTemplateId?: string;
@@ -11,20 +34,8 @@ export interface IRelationshipReference {
 
 export interface IEntitySingleProperty {
     title: string;
-    type: 'string' | 'number' | 'boolean' | 'array';
-    format?:
-        | 'date'
-        | 'date-time'
-        | 'email'
-        | 'fileId'
-        | 'text-area'
-        | 'relationshipReference'
-        | 'location'
-        | 'user'
-        | 'signature'
-        | 'comment'
-        | 'kartoffelUserField'
-        | 'unitField';
+    type: PropertyType;
+    format?: PropertyFormat;
     enum?: string[];
     readOnly?: true;
     identifier?: true;
@@ -43,9 +54,9 @@ export interface IEntitySingleProperty {
     };
     relationshipReference?: IRelationshipReference;
     items?: {
-        type: 'string';
+        type: PropertyType.string;
         enum?: string[];
-        format?: 'fileId' | 'user';
+        format?: PropertyFormat.fileId | PropertyFormat.user;
     };
     minItems?: 1;
     uniqueItems?: true;
@@ -53,8 +64,9 @@ export interface IEntitySingleProperty {
     comment?: string;
     color?: string;
     hideFromDetailsPage?: boolean;
-    filters?: any;
-    defaultValue?: any;
+    filters?: IFilter;
+    defaultValue?: IPropertyValue;
+    accountBalance?: boolean;
 }
 export interface IProperties {
     type: 'object';
@@ -69,6 +81,13 @@ interface IFieldsGroup {
     displayName: string;
     fields: string[];
 }
+interface IWalletTransfer {
+    from: string;
+    to: string;
+    description: string;
+    amount: string;
+}
+
 export interface IEntityTemplate {
     name: string;
     displayName: string;
@@ -84,6 +103,7 @@ export interface IEntityTemplate {
     documentTemplatesIds?: string[];
     mapSearchProperties?: string[];
     fieldGroups?: IFieldsGroup[];
+    walletTransfer?: IWalletTransfer;
 }
 
 export interface IMongoEntityTemplate extends IEntityTemplate {

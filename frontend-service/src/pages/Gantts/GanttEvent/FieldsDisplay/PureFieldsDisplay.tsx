@@ -1,12 +1,13 @@
 import { Grid, Typography } from '@mui/material';
 import React, { CSSProperties, Fragment } from 'react';
 import { useQueryClient } from 'react-query';
-import { formatToString } from '../../../../common/EntityProperties';
 import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
 import { environment } from '../../../../globals';
 import { IEntity } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IGetUnits } from '../../../../interfaces/units';
+import { useDarkModeStore } from '../../../../stores/darkMode';
+import { formatToString } from '../../../../utils/entityProperties';
 
 const { ganttSettings } = environment;
 
@@ -22,6 +23,7 @@ export interface IPureFieldsDisplayProps {
 export const PureFieldsDisplay: React.FC<IPureFieldsDisplayProps> = ({ fields, entity, entityTemplate, textStyle, underlineColor, expanded }) => {
     const queryClient = useQueryClient();
     const units = queryClient.getQueryData<IGetUnits>('getUnits')!;
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return (
         <>
@@ -50,17 +52,18 @@ export const PureFieldsDisplay: React.FC<IPureFieldsDisplayProps> = ({ fields, e
                                         ...textStyle,
                                     }}
                                 >
-                                    {`${expanded ? `${fieldName}:` : ''} ${formatToString(
-                                        entity.properties[field],
+                                    {`${expanded ? `${fieldName}:` : ''} ${formatToString({
+                                        value: entity.properties[field],
                                         property,
                                         units,
-                                        field,
-                                        undefined,
-                                        undefined,
-                                        {
+                                        key: field,
+                                        preview: undefined,
+                                        color: undefined,
+                                        options: {
                                             pureString: true,
                                         },
-                                    )}`}
+                                        darkMode,
+                                    })}`}
                                 </Typography>
                             </MeltaTooltip>
                         </Grid>

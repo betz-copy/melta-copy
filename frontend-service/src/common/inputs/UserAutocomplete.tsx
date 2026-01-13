@@ -1,7 +1,7 @@
 import { ExpandMore } from '@mui/icons-material';
 import { Autocomplete, AutocompleteProps, TextField } from '@mui/material';
 import i18next from 'i18next';
-import _debounce from 'lodash.debounce';
+import { debounce } from 'lodash';
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
@@ -17,7 +17,9 @@ export interface IUserAutocomplete<TMode = 'internal' | 'external' | 'kartoffel'
     displayValue?: string;
     onChange: AutocompleteProps<IUser, undefined, undefined, undefined>['onChange'];
     onDisplayValueChange?: AutocompleteProps<IUser, undefined, undefined, undefined>['onInputChange'];
+    // biome-ignore lint/suspicious/noExplicitAny: lol
     onBlur?: any;
+    // biome-ignore lint/suspicious/noExplicitAny: lol
     onFocus?: any;
     isOptionDisabled?: AutocompleteProps<IUser, undefined, undefined, undefined>['getOptionDisabled'];
     disabled?: boolean;
@@ -29,9 +31,10 @@ export interface IUserAutocomplete<TMode = 'internal' | 'external' | 'kartoffel'
     size?: 'small' | 'medium';
     enableClear?: boolean;
     required?: boolean;
-    autoFocus?: any;
+    autoFocus?: boolean | undefined;
+    // biome-ignore lint/suspicious/noExplicitAny: lol
     textFieldProps?: any;
-    overrideSx?: Object;
+    overrideSx?: object;
 }
 
 const UserAutocomplete: React.FC<IUserAutocomplete> = ({
@@ -81,8 +84,8 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
         },
     );
 
-    const searchUsersOptionsDebounced = _debounce(searchUsersOptions, 1000);
-    const isValueExist = value && value.fullName != '';
+    const searchUsersOptionsDebounced = debounce(searchUsersOptions, 1000);
+    const isValueExist = value && value.fullName !== '';
 
     return (
         <MeltaTooltip title={value?.displayName ? '' : (value?.fullName ?? '')} sx={{ maxWidth: 'none' }}>
@@ -135,6 +138,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                                 endAdornment: enableClear ? params.InputProps.endAdornment : (readOnly || disabled) && undefined,
                                 startAdornment: isValueExist ? (
                                     <UserAvatar
+                                        // biome-ignore lint/suspicious/noExplicitAny: blame Itay
                                         user={{ ...value, _id: value.kartoffelId ?? value._id ?? (value as any).id }}
                                         tooltip={undefined}
                                         shouldGetKartoffelImage
@@ -146,14 +150,16 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                                 },
                             },
                             inputLabel: {
-                                ...(params.InputLabelProps,
-                                readOnly && {
-                                    sx: {
-                                        '&.Mui-focused': {
-                                            color: 'rgba(0, 0, 0, 0.6)',
-                                        },
-                                    },
-                                }),
+                                ...params.InputLabelProps,
+                                ...(readOnly
+                                    ? {
+                                          sx: {
+                                              '&.Mui-focused': {
+                                                  color: 'rgba(0, 0, 0, 0.6)',
+                                              },
+                                          },
+                                      }
+                                    : {}),
                                 required,
                             },
                         }}

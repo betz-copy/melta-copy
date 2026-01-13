@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { AxiosError } from 'axios';
 import { Chance } from 'chance';
 import { JSONSchemaFaker } from 'json-schema-faker';

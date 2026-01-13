@@ -3,12 +3,12 @@ import { Button, Card, CardContent, CircularProgress, Divider, Grid } from '@mui
 import { format } from 'date-fns';
 import { Form, Formik } from 'formik';
 import i18next from 'i18next';
-import pickBy from 'lodash.pickby';
+import { pickBy } from 'lodash';
 import React, { useEffect, useMemo, useState } from 'react';
 import { environment } from '../../../../globals';
 import { ICreateOrUpdateWithRuleBreachDialogState, IExternalErrors, IMutationProps } from '../../../../interfaces/CreateOrEditEntityDialog';
 import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
-import { IEntity } from '../../../../interfaces/entities';
+import { IEntity, IPropertyValue } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { ActionTypes } from '../../../../interfaces/ruleBreaches/actionMetadata';
 import ActionOnEntityWithRuleBreachDialog from '../../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
@@ -41,7 +41,7 @@ const convertIEntityToEntityWizardValues = (
     entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     initialTemplateFileKeys: string[],
 ): EntityWizardValues => {
-    const { _id, createdAt, updatedAt, disabled, ...entityToUpdateData } = entityToUpdate.properties;
+    const { _id, createdAt: _create, updatedAt: _update, disabled: _disabled, ...entityToUpdateData } = entityToUpdate.properties;
 
     const fieldProperties = pickBy(entityToUpdateData, (_value, key) => !initialTemplateFileKeys.includes(key));
     const fileIdsProperties = pickBy(entityToUpdateData, (_value, key) => initialTemplateFileKeys.includes(key));
@@ -108,7 +108,7 @@ const CreateOrEditEntityDetails: React.FC<{
     showActionButtons?: boolean;
     chooseMode?: IChooseTemplateMode;
     parentId?: string;
-    getInitialProperties?: (newTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => Record<string, any>;
+    getInitialProperties?: (newTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => Record<string, IPropertyValue>;
 }> = ({
     mutationProps,
     entityTemplate,
@@ -127,7 +127,7 @@ const CreateOrEditEntityDetails: React.FC<{
     const [isDraftDialogOpen, setIsDraftDialogOpen] = useState(false);
     const [wasDirty, setWasDirty] = useState(false);
     const [isSubmitPressed, setIsSubmitPressed] = useState(false);
-    const [initialValuePropsToFilter, setInitialValuePropsToFilter] = useState<Record<string, any>>({});
+    const [initialValuePropsToFilter, setInitialValuePropsToFilter] = useState<Record<string, IPropertyValue>>({});
 
     const isEditMode = actionType === ActionTypes.UpdateEntity;
 
@@ -152,7 +152,7 @@ const CreateOrEditEntityDetails: React.FC<{
             // TODO don't add currentUser default value to each form user field
             currentUser,
         );
-    }, [payload, entityTemplate, initialTemplateFileKeys, currentUser]);
+    }, [payload, entityTemplate, initialTemplateFileKeys, currentUser, initialCurrValues, isEditMode]);
 
     const clientSideUserEntity: IEntity = useClientSideUserStore((state) => state.clientSideUserEntity);
 
@@ -203,16 +203,16 @@ const CreateOrEditEntityDetails: React.FC<{
             }}
             validate={(values) => {
                 const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(values.template?.properties);
-                const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties);
+                const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties, values.template?.walletTransfer);
 
-                if (Object.keys(propertiesErrors).length === 0) {
-                    return {};
-                }
+                if (!Object.keys(propertiesErrors).length) return {};
 
                 return { properties: propertiesErrors };
             }}
         >
             {({ setFieldValue, values, errors, touched, setFieldTouched, setValues, dirty, initialValues: formInitialValues }) => {
+                // biome-ignore lint/correctness/useExhaustiveDependencies: biome is wrong
+                // biome-ignore lint/correctness/useHookAtTopLevel: :(
                 useEffect(() => {
                     if (initialCurrValues) setValues(getInitialValuesWithDefaults(initialCurrValues, currentUser));
                 }, [initialCurrValues]);

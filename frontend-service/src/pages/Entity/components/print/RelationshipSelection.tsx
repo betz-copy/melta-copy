@@ -1,221 +1,172 @@
-/* eslint-disable react/no-unstable-nested-components */
-import { ChevronLeft, ExpandLess } from '@mui/icons-material';
-import { Grid, Typography } from '@mui/material';
-import { RichTreeViewPro, TreeItemProps, useTreeViewApiRef } from '@mui/x-tree-view-pro';
+import { Box, CircularProgress, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import React, { Dispatch, SetStateAction, useCallback, useMemo, useState } from 'react';
+import React, { FC, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
-import TreeItem from '../../../../common/Tree/TreeItem';
-import { IConnection, IEntityExpanded } from '../../../../interfaces/entities';
+import { toast } from 'react-toastify';
+import SearchInput from '../../../../common/inputs/SearchInput';
+import { ArrowTail } from '../../../../common/RelationshipTitle';
+import Tree, { flattenTree } from '../../../../common/Tree';
+import { environment } from '../../../../globals';
+import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
-import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
-import { getExpandedEntityByIdRequest } from '../../../../services/entitiesService';
+import { IRelationShipSelectionTree } from '../../../../interfaces/printingTemplates';
+import { BackendConfigState } from '../../../../services/backendConfigService';
+import { getRelationshipSelectTreeForPrint } from '../../../../services/entitiesService';
 import { useUserStore } from '../../../../stores/user';
-import { findAncestryTree, mergeAncestryTree, sortTemplatesChildrenToParents, updateChildrenToParent } from '../../../../utils/expandedRelationships';
 import { getAllAllowedEntities } from '../../../../utils/permissions/templatePermissions';
-import { INestedRelationshipTemplates } from '../..';
+import { useSearchUnits } from '../../../SystemManagement/components/UnitsRow/useSearchUnits';
 
-const collectAllSelectedItemIds = (nodes: INestedRelationshipTemplates[], selectedIds: Set<string>) => {
-    for (const node of nodes) {
-        selectedIds.add(getItemId(node));
-        if (node.children && node.children.length > 0) {
-            collectAllSelectedItemIds(node.children, selectedIds);
-        }
-    }
-};
+const { maxPrintLevel, neoIdsPathSeparator, relationshipPathSeparator, neoRelIdsSeparator } = environment.print;
 
-// item id is node depth - node id - parent id (if he has one)
-const getItemId = ({ depth, relationshipTemplate: { _id }, parentRelationship }: INestedRelationshipTemplates) =>
-    `${depth}-${_id}${parentRelationship ? `-${parentRelationship?._id}` : ''}`;
+interface ITreeNode extends Omit<IRelationShipSelectionTree, 'children'> {
+    children?: ITreeNode[];
+}
 
-const getItemLabel = ({ relationshipTemplate: { displayName, sourceEntity, destinationEntity } }: INestedRelationshipTemplates) =>
-    `${displayName} (${sourceEntity.displayName} > ${destinationEntity.displayName})`;
-
-export type EntityConnectionsProps = {
-    connectionsTemplates: INestedRelationshipTemplates[];
-    setConnectionsTemplates: Dispatch<SetStateAction<INestedRelationshipTemplates[]>>;
-    setConnectionsInstances: Dispatch<SetStateAction<IConnection[]>>;
-    selectedConnections: INestedRelationshipTemplates[];
-    setSelectedConnections: Dispatch<SetStateAction<INestedRelationshipTemplates[]>>;
-};
-
-const RelationshipSelection: React.FC<{
+interface RelationshipSelectionProps {
     expandedEntity: IEntityExpanded;
-    entityConnections: EntityConnectionsProps;
-}> = ({
-    expandedEntity,
-    entityConnections: { connectionsTemplates, setConnectionsTemplates, setConnectionsInstances, selectedConnections, setSelectedConnections },
-}) => {
+    setSelectedRelationShipIds: React.Dispatch<React.SetStateAction<string[]>>;
+    setSelectedEntitiesCount: React.Dispatch<React.SetStateAction<number>>;
+}
+
+const getItemLabelComponent = (item: ITreeNode) => (
+    <Grid container flexWrap="nowrap" alignItems="center" gap="5px">
+        {item.sourceEntity.displayName}
+        {<ArrowTail width={11} height={1} color="#9398C2" />}
+        <span style={{ color: '#4752B6' }}>{item.displayName}</span>
+        <img src="/icons/arrow-head.svg" alt="" />
+        {item.destinationEntity.displayName}
+    </Grid>
+);
+
+const getItemLabelText = (item: ITreeNode) => `${item.sourceEntity.displayName} - ${item.displayName} -> ${item.destinationEntity.displayName}`;
+
+const getItemId = (item: ITreeNode) => `${item.neoRelIds.join(neoRelIdsSeparator)}${neoIdsPathSeparator}${item.path}`;
+
+const calculateSelectedEntitiesCount = (selectedRelationshipIds: string[], entitiesCountByRelationshipId: Map<string, number>) =>
+    selectedRelationshipIds.reduce((sum, id) => sum + (entitiesCountByRelationshipId.get(id) ?? 0), 0);
+
+const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity, setSelectedRelationShipIds, setSelectedEntitiesCount }) => {
+    const [selectedTreeItemIds, setSelectedTreeItemIds] = useState<string[]>([]);
+
+    const rootEntityId = expandedEntity.entity.properties._id;
+
+    const currentUser = useUserStore((s) => s.user);
+
     const queryClient = useQueryClient();
-    const currentUser = useUserStore((state) => state.user);
-    const apiRef = useTreeViewApiRef();
-
+    const { maxEntitiesToPrint } = queryClient.getQueryData<BackendConfigState>('getBackendConfig')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const allRelationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
 
-    const allowedEntityTemplates = getAllAllowedEntities(Array.from(entityTemplates.values()), currentUser);
-    const allowedEntityTemplatesIds = allowedEntityTemplates.map((entity) => entity._id);
-
-    const flattenSelectedIds = useMemo(() => {
-        return selectedConnections.flatMap((parent) => [
-            parent.relationshipTemplate._id,
-            ...(parent.children?.map((child) => child.relationshipTemplate._id) || []),
-        ]);
-    }, [selectedConnections]);
-
-    const [selectedItemsIds, setSelectedItemsIds] = useState<string[]>(flattenSelectedIds);
-    const [expansionDepth, setExpansionDepth] = useState<number>(1);
-
-    const templateIds = [...entityTemplates.keys()];
-    const { refetch: getExpandedData } = useQuery<IEntityExpanded>({
-        queryKey: ['getExpandedEntity', expandedEntity.entity.properties._id, { templateIds }, expansionDepth],
-        queryFn: () =>
-            getExpandedEntityByIdRequest(
-                expandedEntity.entity.properties._id,
-                { [expandedEntity.entity.properties._id]: { maxLevel: expansionDepth + 1 } },
-                { disabled: false, templateIds: allowedEntityTemplatesIds },
-            ),
-        enabled: false,
-    });
-
-    const findNodeById = (nodes: INestedRelationshipTemplates[], id: string): INestedRelationshipTemplates | undefined => {
-        for (const node of nodes) {
-            if (getItemId(node) === id) return node;
-            if (node.children) {
-                const found = findNodeById(node.children, id);
-                if (found) return found;
-            }
-        }
-        return undefined;
-    };
-
-    const findParent = useCallback((nodes: INestedRelationshipTemplates[], id: string): INestedRelationshipTemplates | undefined => {
-        const targetId = id.split('-')[1];
-        for (const node of nodes) {
-            if (node.children?.some((child) => child.relationshipTemplate._id === targetId)) return node;
-
-            if (node.children && node.children.length > 0) {
-                const found = findParent(node.children, id);
-                if (found) return found;
-            }
-        }
-
-        return undefined;
-    }, []);
-
-    const handleSelectedItemsChange = (itemIds: string[]) => {
-        const currentSelectedNodesIds = new Set<string>();
-        let currentSelectedNodes = [...selectedConnections];
-
-        const changedIds = [...itemIds.filter((id) => !selectedItemsIds.includes(id)), ...selectedItemsIds.filter((id) => !itemIds.includes(id))];
-
-        for (const id of changedIds) {
-            const currentNode = findNodeById(connectionsTemplates, id);
-
-            if (!currentNode) continue;
-
-            if (currentNode.parentRelationship) {
-                // handle a child
-                const parent = findParent(selectedConnections, id);
-
-                if (parent) {
-                    // if the parent is selected
-                    const isChildAlreadySelected = parent.children?.some(
-                        ({ relationshipTemplate }) => relationshipTemplate._id === currentNode.relationshipTemplate._id,
-                    );
-
-                    const updatedParent: INestedRelationshipTemplates = {
-                        ...parent,
-                        children: isChildAlreadySelected
-                            ? parent.children?.filter(({ relationshipTemplate }) => relationshipTemplate._id !== currentNode.relationshipTemplate._id)
-                            : [...parent.children, currentNode],
-                    };
-                    currentSelectedNodes = updateChildrenToParent(1, currentSelectedNodes, updatedParent);
-                } else {
-                    // if the parent isn't selected
-                    const ancestryTree = findAncestryTree(connectionsTemplates, id);
-                    if (ancestryTree) currentSelectedNodes = mergeAncestryTree(currentSelectedNodes, ancestryTree);
-                }
-            } else {
-                // if it's a parent
-                const isParentSelected = currentSelectedNodes.some((node) => node.relationshipTemplate._id === currentNode.relationshipTemplate._id);
-
-                if (isParentSelected) {
-                    // If the parent is selected, remove it
-                    currentSelectedNodes = currentSelectedNodes.filter(
-                        ({ relationshipTemplate }) => relationshipTemplate._id !== currentNode.relationshipTemplate._id,
-                    );
-                } else {
-                    // If the parent is not selected, add it
-                    currentSelectedNodes.push(currentNode);
-                }
-            }
-        }
-
-        collectAllSelectedItemIds(currentSelectedNodes, currentSelectedNodesIds);
-
-        setSelectedConnections(currentSelectedNodes);
-
-        return Array.from(currentSelectedNodesIds);
-    };
-
-    const getItemById = useCallback((itemId: string) => apiRef.current?.getItem(itemId), [apiRef]);
-
-    const TreeItemWrapper = useCallback(
-        (props: TreeItemProps) => <TreeItem node={getItemById(props.itemId)} {...props} showIcon={false} removeDivider />,
-        [getItemById],
+    const allowedEntityTemplatesIds = useMemo(
+        () => getAllAllowedEntities(Array.from(entityTemplates.values()), currentUser).map((e) => e._id),
+        [entityTemplates, currentUser],
     );
 
-    const fetchTreeItems = async (parentId?: string): Promise<INestedRelationshipTemplates[]> => {
-        const { data } = await getExpandedData();
+    const { data: relationShips, isLoading } = useQuery<ITreeNode[]>({
+        queryKey: ['getRelationshipSelectTreeForPrint', rootEntityId, { allowedEntityTemplatesIds }],
+        queryFn: () =>
+            getRelationshipSelectTreeForPrint(
+                rootEntityId,
+                { [rootEntityId]: { maxLevel: maxPrintLevel } },
+                { templateIds: allowedEntityTemplatesIds },
+            ),
 
-        if (!data) return [];
+        enabled: !!rootEntityId,
+    });
 
-        const sorted = sortTemplatesChildrenToParents(2, connectionsTemplates, data, allRelationshipTemplates, entityTemplates);
+    const { expandedIds, onSearch, searchedUnits, setExpandedIds } = useSearchUnits(relationShips ?? [], getItemId, (item, search) =>
+        getItemLabelText(item)
+            .toLowerCase()
+            .includes(search?.toLowerCase() ?? ''),
+    );
 
-        setExpansionDepth((prev) => prev + 1);
+    const getSelectedEntitiesCountById = useMemo(() => {
+        const map = new Map<string, number>();
+        const stack = relationShips ? [...relationShips] : [];
 
-        setConnectionsTemplates(sorted);
-        setConnectionsInstances(data.connections);
-
-        if (!parentId) return sorted;
-
-        const parent = findNodeById(sorted, parentId);
-        const selectedParent = findNodeById(selectedConnections, parentId);
-        if (selectedParent && parent!.children) {
-            // if parent is selected select all the children
-            const mergedIds = Array.from(new Set([...selectedItemsIds, ...parent!.children.map(getItemId)]));
-
-            setSelectedItemsIds(handleSelectedItemsChange(mergedIds));
+        while (stack.length) {
+            const node = stack.pop()!;
+            map.set(`${node.neoRelIds} ${node.path}`, node.entitiesCount);
+            if (node.children?.length) stack.push(...node.children);
         }
-        return parent?.children ?? [];
+
+        return map;
+    }, [relationShips]);
+
+    const includeParentRelationshipsInSelection = (selectedRelationshipIds: Set<string>, flattenedRelationshipNodes: ITreeNode[]) => {
+        for (const selectedId of selectedRelationshipIds) {
+            const path = selectedId.split(neoIdsPathSeparator).slice(1).join(neoIdsPathSeparator);
+            const pathSegments = path.split(relationshipPathSeparator);
+
+            for (let i = 1; i < pathSegments.length; i++) {
+                const parentPath = pathSegments.slice(0, i).join(relationshipPathSeparator);
+                const parentNode = flattenedRelationshipNodes.find((node) => node.path === parentPath);
+                parentNode && selectedRelationshipIds.add(`${parentNode.neoRelIds}${neoIdsPathSeparator}${parentNode.path}`);
+            }
+        }
     };
+
+    const allNodes = useMemo(() => flattenTree(relationShips ?? [], getItemId, true, false), [relationShips]);
+
+    if (isLoading) return <CircularProgress size={20} />;
+    if (!relationShips?.length)
+        return (
+            <Box sx={{ color: '#6B6F9A', px: 1 }}>
+                <Typography sx={{ fontSize: '14px' }}>{i18next.t('entityPage.print.noRelationshipsToDisplay')}</Typography>
+            </Box>
+        );
 
     return (
         <>
-            <Typography color="#53566E" fontSize="14px" marginBottom={1}>
-                {i18next.t('entityPage.print.chooseRelationship')}
-            </Typography>
-            <Grid maxHeight="228px" sx={{ overflowY: 'auto' }}>
-                <RichTreeViewPro
-                    items={[]}
-                    dataSource={{
-                        getChildrenCount: (item) => item?.children.length,
-                        getTreeItems: fetchTreeItems,
-                    }}
-                    slots={{
-                        expandIcon: ChevronLeft,
-                        collapseIcon: ExpandLess,
-                        item: TreeItemWrapper,
-                    }}
-                    multiSelect
-                    checkboxSelection
+            <Box
+                sx={{
+                    border: '1px solid #D0D4E8',
+                    borderRadius: '10px',
+                    backgroundColor: '#fff',
+                    overflow: 'hidden',
+                }}
+            >
+                <SearchInput width="100%" onChange={onSearch} borderRadius="7px" placeholder={i18next.t('entityPage.print.search')} clearButton />
+            </Box>
+            <Box
+                sx={{
+                    marginTop: '10px',
+                    maxHeight: '230px',
+                    overflowY: 'auto',
+                }}
+            >
+                <Tree
+                    treeItems={relationShips}
                     getItemId={getItemId}
-                    getItemLabel={getItemLabel}
-                    selectedItems={selectedItemsIds}
-                    onSelectedItemsChange={(_, itemIds) => setSelectedItemsIds(handleSelectedItemsChange(itemIds))}
+                    getItemLabel={getItemLabelText}
+                    renderItemLabel={getItemLabelComponent}
+                    removeDivider
+                    selectedItems={selectedTreeItemIds}
+                    filteredTreeItems={searchedUnits}
+                    selectionPropagation={{ descendants: true, parents: false }}
+                    preExpandedItemIds={expandedIds}
+                    onExpandedItemsChange={(_e, items) => setExpandedIds(items)}
+                    onSelectItems={(itemIds) => {
+                        const selectedRelationshipIds = new Set(itemIds as string[]);
+
+                        if (selectedRelationshipIds.size > selectedTreeItemIds.length) {
+                            includeParentRelationshipsInSelection(selectedRelationshipIds, allNodes);
+                        }
+
+                        const finalSelectedIds = [...selectedRelationshipIds];
+                        const totalEntitiesCount = calculateSelectedEntitiesCount(finalSelectedIds, getSelectedEntitiesCountById);
+
+                        if (totalEntitiesCount > maxEntitiesToPrint) {
+                            toast.error(i18next.t('entityPage.print.limits.warning'));
+                        } else {
+                            setSelectedEntitiesCount(totalEntitiesCount);
+                            setSelectedTreeItemIds(finalSelectedIds);
+                            setSelectedRelationShipIds([
+                                ...new Set(finalSelectedIds.flatMap((id) => id.split(neoIdsPathSeparator)[0]?.split(neoRelIdsSeparator) ?? [])),
+                            ]);
+                        }
+                    }}
                 />
-            </Grid>
+            </Box>
         </>
     );
 };

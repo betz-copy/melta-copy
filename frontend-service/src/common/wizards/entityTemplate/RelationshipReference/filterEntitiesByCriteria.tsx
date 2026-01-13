@@ -4,6 +4,7 @@ import { FormikErrors, FormikTouched, getIn } from 'formik';
 import i18next from 'i18next';
 import { isEqual } from 'lodash';
 import React, { useMemo, useState } from 'react';
+import { IPropertyValue } from '../../../../interfaces/entities';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { getPropertyType } from '../../../../services/templates/entityTemplatesService';
 import { handleRemoveFilter, initializedFilterField, renderFilterInput } from '../../../FilterComponent';
@@ -18,7 +19,7 @@ interface FilterEntitiesByCriteriaProps {
     name: string; // e.g. "properties[0].relationshipReference.filters"
     value: CommonFormInputProperties;
     values: Record<string, PropertyItem[]>;
-    setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
+    setFieldValue: (field: keyof CommonFormInputProperties, value: IPropertyValue) => void;
     selectedEntityTemplate: IMongoEntityTemplatePopulated | undefined;
     initialValue: CommonFormInputProperties | undefined;
     touched?: FormikTouched<CommonFormInputProperties>;
@@ -138,7 +139,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                                 case 'array':
                                     return 'set';
                                 default:
-                                    return selectedProperty.type;
+                                    return selectedProperty.type as IAGGridFilter['filterType'];
                             }
                         };
 
@@ -153,7 +154,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                                         const { format, type, enum: enumValues } = selectedProp;
 
                                         const newFilterField =
-                                            (enumValues && initializedFilterField['array']) ||
+                                            (enumValues && initializedFilterField.array) ||
                                             (format && initializedFilterField[format]) ||
                                             (type && initializedFilterField[type]);
 
@@ -211,7 +212,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                                         const { format, type, enum: enumValues } = selectedProp;
 
                                         const emptyFilterField =
-                                            (enumValues && initializedFilterField['array']) ||
+                                            (enumValues && initializedFilterField.array) ||
                                             (format && initializedFilterField[format]) ||
                                             (type && initializedFilterField[type]);
 

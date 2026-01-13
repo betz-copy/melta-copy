@@ -1,9 +1,9 @@
-import { ActionsLog, Status } from '@microservices/shared';
+import { ActionsLog, IPropertyValue, Status } from '@microservices/shared';
 
 export interface IUpdatedFields {
     fieldName: string;
-    oldValue: any;
-    newValue: any;
+    oldValue: IPropertyValue;
+    newValue: IPropertyValue;
 }
 
 interface IBaseActivityLog {
