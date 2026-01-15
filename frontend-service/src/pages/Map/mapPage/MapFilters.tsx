@@ -38,11 +38,11 @@ const MapFilters = ({
     moveToEntityLocations,
     entityTemplateMap,
     clearAutocompleteSearch,
-    sourceTemplate,
     filters: {
         value: { autoSearch, listFields },
         set: setFilters,
     },
+    sourceTemplate,
     isSearchShape,
     applyFilterWithShapeSearch,
     setCameraFocus,
