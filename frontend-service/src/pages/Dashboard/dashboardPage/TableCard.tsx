@@ -75,7 +75,8 @@ const TableCard: React.FC<{ metaData: TableMetaData & { _id: string } }> = ({ me
                 templates: {
                     [template._id]: {
                         filter: getFilterModal(
-                            filterModelToFilterOfTemplate(entitiesTableRef.current?.getFilterModel(), template),
+                            // biome-ignore lint/suspicious/noNonNullAssertedOptionalChain: lol
+                            filterModelToFilterOfTemplate(entitiesTableRef.current?.getFilterModel()!, template),
                             metaData.filter && JSON.parse(metaData.filter),
                         ),
                         displayColumns: metaData.columns,

@@ -9,19 +9,19 @@ class ChartController extends DefaultController<ChartManager> {
     }
 
     async getChartById(req: Request, res: Response) {
-        res.json(await this.manager.getChartById(req.params.chartId));
+        res.json(await this.manager.getChartById(req.params.chartId as string));
     }
 
     async getChartsByTemplateId(req: Request, res: Response) {
         const { body, params, permissionsOfUserId, user } = req as RequestWithPermissionsOfUserId;
 
-        res.json(await this.manager.getChartsOfTemplateId(params.templateId, user!.id, permissionsOfUserId, body));
+        res.json(await this.manager.getChartsOfTemplateId(params.templateId as string, user!.id, permissionsOfUserId, body));
     }
 
     async searchChartByUserId(req: Request, res: Response) {
         const { body, params, user } = req as RequestWithPermissionsOfUserId;
 
-        res.json(await this.manager.searchChartByUserId(params.templateId, user!.id, body));
+        res.json(await this.manager.searchChartByUserId(params.templateId as string, user!.id, body));
     }
 
     async createChart(req: Request, res: Response) {
@@ -29,11 +29,13 @@ class ChartController extends DefaultController<ChartManager> {
     }
 
     async updateChart(req: Request, res: Response) {
-        res.json(await this.manager.updateChart(req.params.chartId, req.body, req.query.deleteReferenceDashboardItems as boolean | undefined));
+        res.json(
+            await this.manager.updateChart(req.params.chartId as string, req.body, req.query.deleteReferenceDashboardItems as boolean | undefined),
+        );
     }
 
     async deleteChart(req: Request, res: Response) {
-        res.json(await this.manager.deleteChart(req.params.chartId, req.query.deleteReferenceDashboardItems as boolean | undefined));
+        res.json(await this.manager.deleteChart(req.params.chartId as string, req.query.deleteReferenceDashboardItems as boolean | undefined));
     }
 }
 

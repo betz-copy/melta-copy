@@ -18,19 +18,19 @@ class RuleBreachesController extends DefaultController<RuleBreachesManager> {
     async approveRuleBreachRequest(req: Request, res: Response) {
         const { ruleBreachRequestId } = req.params;
 
-        res.json(await this.manager.approveRuleBreachRequest(ruleBreachRequestId, req.user!, req.body.childTemplateId));
+        res.json(await this.manager.approveRuleBreachRequest(ruleBreachRequestId as string, req.user!, req.body.childTemplateId));
     }
 
     async denyRuleBreachRequest(req: Request, res: Response) {
         const { ruleBreachRequestId } = req.params;
 
-        res.json(await this.manager.denyRuleBreachRequest(ruleBreachRequestId, req.user!));
+        res.json(await this.manager.denyRuleBreachRequest(ruleBreachRequestId as string, req.user!));
     }
 
     async cancelRuleBreachRequest(req: Request, res: Response) {
         const { ruleBreachRequestId } = req.params;
 
-        res.json(await this.manager.cancelRuleBreachRequest(ruleBreachRequestId, req.user!));
+        res.json(await this.manager.cancelRuleBreachRequest(ruleBreachRequestId as string, req.user!));
     }
 
     async searchRuleBreachRequests(req: Request, res: Response) {
@@ -44,13 +44,13 @@ class RuleBreachesController extends DefaultController<RuleBreachesManager> {
     async getRuleBreachRequestsById(req: Request, res: Response) {
         const { ruleBreachRequestId } = req.params;
 
-        res.json(await this.manager.getRuleBreachRequestById(ruleBreachRequestId, req.user!));
+        res.json(await this.manager.getRuleBreachRequestById(ruleBreachRequestId as string, req.user!));
     }
 
     async getRuleBreachAlertsById(req: Request, res: Response) {
         const { ruleBreachAlertId } = req.params;
 
-        res.json(await this.manager.getRuleBreachAlertsById(ruleBreachAlertId, req.user!));
+        res.json(await this.manager.getRuleBreachAlertsById(ruleBreachAlertId as string, req.user!));
     }
 }
 

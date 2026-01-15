@@ -19,7 +19,7 @@ export class IFrameController extends DefaultController<IFrameManager> {
             params: { iFrameId },
         } = req as RequestWithPermissionsOfUserId;
 
-        res.json(await this.manager.getIFrameById(iFrameId));
+        res.json(await this.manager.getIFrameById(iFrameId as string));
     }
 
     async createIFrame(req: Request, res: Response) {
@@ -27,11 +27,11 @@ export class IFrameController extends DefaultController<IFrameManager> {
     }
 
     async deleteIFrame(req: Request, res: Response) {
-        res.json(await this.manager.deleteIFrame(req.params.iFrameId, req.query.deleteReferenceDashboardItems as boolean | undefined));
+        res.json(await this.manager.deleteIFrame(req.params.iFrameId as string, req.query.deleteReferenceDashboardItems as boolean | undefined));
     }
 
     async updateIFrame(req: Request, res: Response) {
-        res.json(await this.manager.updateIFrame(req.params.iFrameId, req.body, req.file));
+        res.json(await this.manager.updateIFrame(req.params.iFrameId as string, req.body, req.file));
     }
 }
 

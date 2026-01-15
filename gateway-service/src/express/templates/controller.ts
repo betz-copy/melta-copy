@@ -41,11 +41,11 @@ export default class TemplatesController extends DefaultController<TemplatesMana
     }
 
     async deleteCategory(req: Request, res: Response) {
-        res.json(await this.manager.deleteCategory(req.params.id, req.user!.id));
+        res.json(await this.manager.deleteCategory(req.params.id as string, req.user!.id));
     }
 
     async updateCategory(req: Request, res: Response) {
-        res.json(await this.manager.updateCategory(req.params.id, req.body, req.file));
+        res.json(await this.manager.updateCategory(req.params.id as string, req.body, req.file));
     }
 
     async searchCategories(req: Request, res: Response) {
@@ -59,7 +59,7 @@ export default class TemplatesController extends DefaultController<TemplatesMana
     async updateCategoryTemplatesOrder(req: Request, res: Response) {
         const { srcCategoryId, newCategoryId, newIndex }: { srcCategoryId: string; newCategoryId: string; newIndex: number } = req.body;
 
-        res.json(await this.manager.updateCategoryTemplatesOrder(req.params.templateId, newIndex, srcCategoryId, newCategoryId));
+        res.json(await this.manager.updateCategoryTemplatesOrder(req.params.templateId as string, newIndex, srcCategoryId, newCategoryId));
     }
 
     // config
@@ -79,7 +79,7 @@ export default class TemplatesController extends DefaultController<TemplatesMana
 
     async updateCategoryOrderConfig(req: Request, res: Response) {
         const { newIndex, item }: { newIndex: number; item: string } = req.body;
-        res.json(await this.manager.updateCategoryOrderConfig(req.params.configId, newIndex, item));
+        res.json(await this.manager.updateCategoryOrderConfig(req.params.configId as string, newIndex, item));
     }
 
     async createOrderConfig(req: Request, res: Response) {
@@ -100,14 +100,14 @@ export default class TemplatesController extends DefaultController<TemplatesMana
     }
 
     async deleteEntityTemplate(req: Request, res: Response) {
-        res.json(await this.manager.deleteEntityTemplate(req.params.id));
+        res.json(await this.manager.deleteEntityTemplate(req.params.id as string));
     }
 
     async updateEntityTemplate(req: Request, res: Response) {
         const { permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
         res.json(
             await this.manager.updateEntityTemplate(
-                req.params.id,
+                req.params.id as string,
                 req.user!.id,
                 req.body,
                 {
@@ -121,21 +121,21 @@ export default class TemplatesController extends DefaultController<TemplatesMana
 
     async updateEntityTemplateAction(req: Request, res: Response) {
         const { actions, isChildTemplate } = req.body;
-        res.json(await this.manager.updateEntityTemplateAction(req.params.templateId, actions, isChildTemplate));
+        res.json(await this.manager.updateEntityTemplateAction(req.params.templateId as string, actions, isChildTemplate));
     }
 
     async updateEntityTemplateStatus(req: Request, res: Response) {
-        res.json(await this.manager.updateEntityTemplateStatus(req.params.id, req.body.disabled));
+        res.json(await this.manager.updateEntityTemplateStatus(req.params.id as string, req.body.disabled));
     }
 
     async updateEntityEnumFieldValue(req: Request, res: Response) {
         const { field, partialInput: values, fieldValue } = req.body;
-        res.json(await this.manager.updateEntityEnumFieldValue(req.params.id, field, values, fieldValue));
+        res.json(await this.manager.updateEntityEnumFieldValue(req.params.id as string, field, values, fieldValue));
     }
 
     async deleteEntityEnumFieldValue(req: Request, res: Response) {
         const { fieldValue, partialInput: field } = req.body;
-        res.json(await this.manager.deleteEntityEnumFieldValue(req.params.id, field, fieldValue));
+        res.json(await this.manager.deleteEntityEnumFieldValue(req.params.id as string, field, fieldValue));
     }
 
     async searchEntityTemplates(req: Request, res: Response) {
@@ -155,11 +155,11 @@ export default class TemplatesController extends DefaultController<TemplatesMana
 
     async updateChildTemplate(req: Request, res: Response) {
         const { permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
-        res.json(await this.manager.updateChildTemplate(req.params.id, req.user!.id, req.body, permissionsOfUserId));
+        res.json(await this.manager.updateChildTemplate(req.params.id as string, req.user!.id, req.body, permissionsOfUserId));
     }
 
     async updateChildTemplateStatus(req: Request, res: Response) {
-        res.json(await this.manager.updateChildTemplateStatus(req.params.id, req.body.disabled));
+        res.json(await this.manager.updateChildTemplateStatus(req.params.id as string, req.body.disabled));
     }
 
     // relationshipTemplates
@@ -168,15 +168,15 @@ export default class TemplatesController extends DefaultController<TemplatesMana
     }
 
     async deleteRelationshipTemplate(req: Request, res: Response) {
-        res.json(await this.manager.deleteRelationshipTemplate(req.params.id));
+        res.json(await this.manager.deleteRelationshipTemplate(req.params.id as string));
     }
 
     async updateRelationshipTemplate(req: Request, res: Response) {
-        res.json(await this.manager.updateRelationshipTemplate(req.params.id, req.body));
+        res.json(await this.manager.updateRelationshipTemplate(req.params.id as string, req.body));
     }
 
     async convertToRelationshipField(req: Request, res: Response) {
-        res.json(await this.manager.convertRelationshipToRelationshipField(req.params.id, req.body, req.user!.id));
+        res.json(await this.manager.convertRelationshipToRelationshipField(req.params.id as string, req.body, req.user!.id));
     }
 
     async getAllRelationshipTemplates(req: Request, res: Response) {
@@ -194,11 +194,11 @@ export default class TemplatesController extends DefaultController<TemplatesMana
 
     // rules
     async updateRuleStatusById(req: Request, res: Response) {
-        res.json(await this.manager.updateRuleStatusById(req.params.ruleId, req.body.disabled));
+        res.json(await this.manager.updateRuleStatusById(req.params.ruleId as string, req.body.disabled));
     }
 
     async deleteRuleById(req: Request, res: Response) {
-        res.json(await this.manager.deleteRuleById(req.params.ruleId));
+        res.json(await this.manager.deleteRuleById(req.params.ruleId as string));
     }
 
     async searchRulesTemplates(req: Request, res: Response) {
@@ -225,15 +225,15 @@ export default class TemplatesController extends DefaultController<TemplatesMana
     }
 
     async getPrintingTemplateById(req: Request, res: Response) {
-        res.json(await this.manager.getPrintingTemplateById(req.params.id));
+        res.json(await this.manager.getPrintingTemplateById(req.params.id as string));
     }
 
     async updatePrintingTemplate(req: Request, res: Response) {
-        res.json(await this.manager.updatePrintingTemplate(req.params.id, req.body));
+        res.json(await this.manager.updatePrintingTemplate(req.params.id as string, req.body));
     }
 
     async deletePrintingTemplate(req: Request, res: Response) {
-        res.json(await this.manager.deletePrintingTemplate(req.params.id));
+        res.json(await this.manager.deletePrintingTemplate(req.params.id as string));
     }
 
     async searchPrintingTemplates(req: Request, res: Response) {
@@ -242,6 +242,6 @@ export default class TemplatesController extends DefaultController<TemplatesMana
 
     // child templates
     async updateChildTemplateById(req: Request, res: Response) {
-        res.json(await this.manager.updateChildTemplateById(req.params.id, req.body));
+        res.json(await this.manager.updateChildTemplateById(req.params.id as string, req.body));
     }
 }

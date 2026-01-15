@@ -66,7 +66,7 @@ export const getButtonState = (
 export interface INestedRelationshipTemplates {
     relationshipTemplate: IMongoRelationshipTemplatePopulated;
     isExpandedEntityRelationshipSource: boolean; // for relationship that is of format currentEntityTemplate -> currentEntityTemplate, we want it twice, once with outgoing connections of expandedEntity, and once with incoming connections of expandedEntity
-    hasInstances: boolean;
+    hasInstances: boolean | undefined;
     depth: number;
     parentRelationship?: IMongoRelationshipTemplatePopulated;
     children: INestedRelationshipTemplates[];

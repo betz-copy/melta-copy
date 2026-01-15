@@ -8,16 +8,16 @@ export default class StepInstanceController extends DefaultController<IStepInsta
     }
 
     async getStepById(req: Request, res: Response) {
-        res.json(await this.manager.getStepById(req.params.id));
+        res.json(await this.manager.getStepById(req.params.id as string));
     }
 
     async getStepTemplateByStepInstanceId(req: Request, res: Response) {
-        res.json(await this.manager.getStepTemplateByStepInstanceId(req.params.id));
+        res.json(await this.manager.getStepTemplateByStepInstanceId(req.params.id as string));
     }
 
     async updateStep(req: Request, res: Response) {
         const { userId, ...updatedFields } = req.body;
 
-        res.json(await this.manager.updateStep(req.params.id, updatedFields, userId));
+        res.json(await this.manager.updateStep(req.params.id as string, updatedFields, userId));
     }
 }

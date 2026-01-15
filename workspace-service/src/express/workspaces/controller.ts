@@ -7,7 +7,7 @@ class WorkspacesController {
     }
 
     static async getWorkspaceHierarchyIds(req: Request, res: Response) {
-        res.json(await WorkspacesManager.getWorkspaceHierarchyIds(req.params.id));
+        res.json(await WorkspacesManager.getWorkspaceHierarchyIds(req.params.id as string));
     }
 
     static async getDir(req: Request, res: Response) {
@@ -19,7 +19,7 @@ class WorkspacesController {
     }
 
     static async getById(req: Request, res: Response) {
-        res.json(await WorkspacesManager.getById(req.params.id));
+        res.json(await WorkspacesManager.getById(req.params.id as string));
     }
 
     static async createOne(req: Request, res: Response) {
@@ -27,15 +27,15 @@ class WorkspacesController {
     }
 
     static async deleteOne(req: Request, res: Response) {
-        res.json(await WorkspacesManager.deleteOne(req.params.id));
+        res.json(await WorkspacesManager.deleteOne(req.params.id as string));
     }
 
     static async updateOne(req: Request, res: Response) {
-        res.json(await WorkspacesManager.updateOne(req.params.id, req.body));
+        res.json(await WorkspacesManager.updateOne(req.params.id as string, req.body));
     }
 
     static async updateMetadata(req: Request, res: Response) {
-        res.json(await WorkspacesManager.updateMetadata(req.params.id, req.body));
+        res.json(await WorkspacesManager.updateMetadata(req.params.id as string, req.body));
     }
 
     static async getWorkspaces(req: Request, res: Response) {

@@ -63,7 +63,7 @@ const ChartAutoComplete: React.FC<{ formikProps: FormikProps<ChartForm> }> = ({ 
 
     const [inputValue, setInputValue] = useState('');
 
-    const translateFieldFilter = (filter: string) => FilterModelToFilterRecord(JSON.parse(filter), entityTemplate?._id, queryClient);
+    const translateFieldFilter = (filter: string) => FilterModelToFilterRecord(JSON.parse(filter), entityTemplate?._id ?? '', queryClient);
 
     const renderFilters = (filter: string | undefined) => {
         if (!filter) return <span>{i18next.t('charts.noFilters')}</span>;
@@ -72,7 +72,7 @@ const ChartAutoComplete: React.FC<{ formikProps: FormikProps<ChartForm> }> = ({ 
         return Object.values(translatedFilter).map((filter, index) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: lol
             <span key={index}>
-                {getFilterFieldReadonly(filter.filterField, entityTemplate?.properties.properties[filter.filterProperty].type)}
+                {getFilterFieldReadonly(filter.filterField, entityTemplate?.properties.properties[filter.filterProperty].type ?? '')}
                 {index < Object.values(translatedFilter).length - 1 ? ', ' : ''}
             </span>
         ));

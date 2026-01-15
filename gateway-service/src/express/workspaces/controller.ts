@@ -12,7 +12,7 @@ class WorkspaceController extends DefaultController<WorkspaceManager> {
     }
 
     static async getWorkspaceHierarchyIds(req: Request, res: Response) {
-        res.json(await WorkspaceManager.getWorkspaceHierarchyIds(req.params.id));
+        res.json(await WorkspaceManager.getWorkspaceHierarchyIds(req.params.id as string));
     }
 
     static async getDir(req: Request, res: Response) {
@@ -24,7 +24,7 @@ class WorkspaceController extends DefaultController<WorkspaceManager> {
     }
 
     static async getById(req: Request, res: Response) {
-        res.json(await WorkspaceManager.getById(req.params.id));
+        res.json(await WorkspaceManager.getById(req.params.id as string));
     }
 
     async createOne(req: Request, res: Response) {
@@ -32,11 +32,11 @@ class WorkspaceController extends DefaultController<WorkspaceManager> {
     }
 
     async updateOne(req: Request, res: Response) {
-        res.json(await this.manager.updateOne(req.params.id, req.body, req.files || (req.file ? [req.file] : [])));
+        res.json(await this.manager.updateOne(req.params.id as string, req.body, req.files || (req.file ? [req.file] : [])));
     }
 
     async deleteOne(req: Request, res: Response) {
-        res.json(await this.manager.deleteOne(req.params.id));
+        res.json(await this.manager.deleteOne(req.params.id as string));
     }
 }
 
