@@ -1,9 +1,9 @@
 import {
+    fetchPropertyFromRequest,
     IDeleteEntityBody,
     IMongoEntityTemplate,
     IMongoRelationshipTemplate,
     RequestWithQuery,
-    fetchPropertyFromRequest,
 } from '@microservices/shared';
 import { Request, Response } from 'express';
 import DefaultController from '../../utils/express/controller';
@@ -18,7 +18,9 @@ class EntityController extends DefaultController<EntityManager> {
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
         const { properties, ignoredRules, userId, duplicatedFromId, childTemplate, newDestWalletData } = req.body;
 
-        res.json(await this.manager.createEntity(properties, entityTemplate, ignoredRules, userId, duplicatedFromId, childTemplate?.id, newDestWalletData));
+        res.json(
+            await this.manager.createEntity(properties, entityTemplate, ignoredRules, userId, duplicatedFromId, childTemplate?.id, newDestWalletData),
+        );
     }
 
     async searchEntitiesOfTemplate(req: Request, res: Response) {
