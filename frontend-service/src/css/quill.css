@@ -19,14 +19,14 @@
     max-height: 400px;
     overflow: auto;
     direction: rtl;
-    border-top: none;
-    border-right: none;
-    border-left: none;
-    border-bottom: 1px solid #ccc;
+    border-top: none !important;
+    border-right: none !important;
+    border-left: none !important;
+    border-bottom: 1px solid #ccc !important;
 }
 
 .quill .ql-container.ql-snow {
-    border: none;
+    border: none !important;
     max-height: 400px;
     overflow: auto;
     direction: rtl;
@@ -34,9 +34,9 @@
 
 /* Toolbar + container border fix */
 .quill .ql-toolbar + .ql-container.ql-snow {
-    border-right: none;
-    border-left: none;
-    border-bottom: 1px solid #ccc;
+    border-right: none !important;
+    border-left: none !important;
+    border-bottom: 1px solid #ccc !important;
 }
 
 /* ===============================
@@ -44,7 +44,7 @@
    =============================== */
 
 .ql-toolbar.ql-snow {
-    border: none;
+    border: none !important;
 }
 
 /* Align-right list handling */
