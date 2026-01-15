@@ -275,12 +275,12 @@ services:
     volumes:
       - logs:/usr/src/app/logs
 
-  mailer-service:
-    depends_on:
-      - redis
-    ports:
-      - 8010:8000
-    <<: *common
+  # mailer-service:
+  #   depends_on:
+  #     - redis
+  #   ports:
+  #     - 8010:8000
+  #   <<: *common
 
   preview-service:
     ports:

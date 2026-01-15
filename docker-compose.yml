@@ -312,16 +312,16 @@ services:
     volumes:
       - ./nginx:/etc/nginx/conf.d
 
-  mailer-service:
-    image: registry.gitlab.com/yesodot/rnd/terminal-rabaz/dropbox/microservices/mailer-service:latest
-    environment:
-      PORT: 8000
-      MAIL_HOSTS: ${MAIL_HOSTS}
-      MAIL_USER: ${MAIL_USER}
-      MAIL_PASS: ${MAIL_PASS}
-      USE_AUTH: 'true'
-      RABBIT_URI: ${RABBIT_URL}
-      REDIS_CONNECTION_URI: ${REDIS_HOST}
+  # mailer-service:
+  #   image: registry.gitlab.com/yesodot/rnd/terminal-rabaz/dropbox/microservices/mailer-service:latest
+  #   environment:
+  #     PORT: 8000
+  #     MAIL_HOSTS: ${MAIL_HOSTS}
+  #     MAIL_USER: ${MAIL_USER}
+  #     MAIL_PASS: ${MAIL_PASS}
+  #     USE_AUTH: 'true'
+  #     RABBIT_URI: ${RABBIT_URL}
+  #     REDIS_CONNECTION_URI: ${REDIS_HOST}
 
   cron-service:
     build:
@@ -369,3 +369,17 @@ services:
       dockerfile: Dockerfile
     environment:
       JINA_API_KEY: ${JINA_API_KEY}
+
+  ai-summary-service:
+    build:
+      context: .
+      dockerfile: AISummary-service/Dockerfile
+    command: ['npm', 'run', 'start', '-w', 'AISummary-service']
+    environment:
+      PORT: 8000
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL}
+      OPENAI_MODEL: ${OPENAI_MODEL}
+      HF_TOKEN: ${HF_TOKEN}
+      MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
+
