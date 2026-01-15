@@ -138,8 +138,8 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                             const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
                             const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 
-                            const entityTemplate = entityTemplates?.get(entity.templateId)!;
-                            const childEntityTemplate = childTemplateId ? childTemplates?.get(childTemplateId)! : undefined;
+                            const entityTemplate = entityTemplates?.get(entity.templateId);
+                            const childEntityTemplate = childTemplateId ? childTemplates?.get(childTemplateId) : undefined;
                             const template = childEntityTemplate ?? entityTemplate;
 
                             return (

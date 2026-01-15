@@ -110,16 +110,15 @@ export const updateKartoffelFields = async () => {
                     const entitiesMapById: Record<string, IEntity> = keyBy<IEntity>(instances, (entity) => entity.properties._id);
 
                     const updatedEntities = await Promise.allSettled(
-                        instances.map((entity) => {
+                        instances.map(async (entity) => {
                             const entityTemplate = templatesMapById[entity.templateId];
-                            // for each user field in each instance, check if the user from kartoffel is different in one of the fields of the user in the instance
-                            // update the user fields if needed
                             const updatedProperties = checkForEntityToUpdate(entity, entityTemplate, kartoffelUsersMapById);
-                            if (Object.keys(updatedProperties).length === 0) return;
+
+                            if (!Object.keys(updatedProperties).length) return { updated: false, id: entity.properties._id };
 
                             const entityById = entitiesMapById[entity.properties._id];
 
-                            return instanceService.updateEntityInstance(
+                            const result = await instanceService.updateEntityInstance(
                                 entity.properties._id,
                                 {
                                     ...entityById,
@@ -127,6 +126,8 @@ export const updateKartoffelFields = async () => {
                                 },
                                 [],
                             );
+
+                            return { updated: true, ...result };
                         }),
                     );
 

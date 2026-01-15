@@ -93,8 +93,8 @@ const AxisInput: React.FC<AxisInputProps> = ({ formik, entityTemplate, formikFie
                     getOptionDisabled={(option) => {
                         const propertyTemplate = entityTemplate.properties.properties[option];
                         if (propertyTemplate?.format === 'relationshipReference') {
-                            const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId!;
-                            return !entityTemplates?.get(relatedTemplateId);
+                            const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId;
+                            return !entityTemplates?.get(relatedTemplateId ?? '');
                         }
                         return false;
                     }}

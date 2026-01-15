@@ -133,7 +133,6 @@ const TreeItem = React.forwardRef(function CustomTreeItem<T extends Record<strin
     const labelNode = props.renderItemLabel ? props.renderItemLabel(node) : labelText;
 
     return (
-        // @ts-ignore
         <TreeItemProvider {...props} ref={ref} itemId={itemId}>
             <TreeItemRoot
                 {...rootProps}

@@ -66,7 +66,7 @@ export const RuleBreachDialogContainer: React.FC<RuleBreachDialogContainerProps>
             isOpen={isDialogOpen}
             ruleBreach={ruleBreach!}
             breachType={breachType as BreachType}
-            refreshBreaches={ruleBreachRequestsRef.current?.refreshBreaches!}
+            refreshBreaches={ruleBreachRequestsRef.current?.refreshBreaches}
             handleClose={() => {
                 setIsDialogOpen(false);
                 navigate('/rule-management');

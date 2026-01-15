@@ -272,7 +272,9 @@ export class EntityValidator extends DefaultController {
         if (filterOfField.$rgx) this.validateStrictStringFilterOfField(filterOfField.$rgx, templateOfField, `${path}.$rgx`);
 
         if (filterOfField.$in) {
-            filterOfField.$in.forEach((inItem, index) => this.validateSimplePartFilterOfField(inItem, templateOfField, `${path}.$in.${index}`));
+            filterOfField.$in.forEach((inItem, index) => {
+                this.validateSimplePartFilterOfField(inItem, templateOfField, `${path}.$in.${index}`);
+            });
         }
 
         if (filterOfField.$not) {
@@ -307,11 +309,15 @@ export class EntityValidator extends DefaultController {
     ) {
         const { $or, $and } = filter;
         if ($or) {
-            $or.forEach((orPart, index) => this.validateFilterOfTemplate(orPart, template, `${pathOfFilterField}.$or.${index}`));
+            $or.forEach((orPart, index) => {
+                this.validateFilterOfTemplate(orPart, template, `${pathOfFilterField}.$or.${index}`);
+            });
         }
         if (!$and) return;
         if (Array.isArray($and)) {
-            $and.forEach((andPart, index) => this.validateFilterOfTemplate(andPart, template, `${pathOfFilterField}.$and.${index}`));
+            $and.forEach((andPart, index) => {
+                this.validateFilterOfTemplate(andPart, template, `${pathOfFilterField}.$and.${index}`);
+            });
         } else {
             this.validateFilterOfTemplate($and, template, `${pathOfFilterField}.$and`);
         }

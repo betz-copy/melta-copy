@@ -164,7 +164,9 @@ class EntityManager extends DefaultManagerNeo4j {
                             (rule) => !rulesIds.has(rule._id),
                         ),
                     );
-                    relevantRules.forEach((rule) => rulesIds.add(rule._id));
+                    relevantRules.forEach((rule) => {
+                        rulesIds.add(rule._id);
+                    });
                 } else if (reason.type === RunRuleReason.dependentViaAggregation) {
                     relevantRules.push(
                         ...filterDependentRulesViaAggregation(
@@ -173,7 +175,9 @@ class EntityManager extends DefaultManagerNeo4j {
                             reason.updatedProperties,
                         ).filter((rule) => !rulesIds.has(rule._id)),
                     );
-                    relevantRules.forEach((rule) => rulesIds.add(rule._id));
+                    relevantRules.forEach((rule) => {
+                        rulesIds.add(rule._id);
+                    });
                 }
             });
 

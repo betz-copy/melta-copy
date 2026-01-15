@@ -111,8 +111,8 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                 const containsHtmlTags = containsHTMLTags(propertyValue);
                 let relatedEntityAllowed: IMongoEntityTemplatePopulated | undefined;
                 if (format === 'relationshipReference') {
-                    const relatedTemplateId = relationshipReference?.relatedTemplateId!;
-                    relatedEntityAllowed = entityTemplates?.get(relatedTemplateId);
+                    const relatedTemplateId = relationshipReference?.relatedTemplateId;
+                    relatedEntityAllowed = entityTemplates?.get(relatedTemplateId ?? '');
                 }
 
                 const stringFormatValue = formatToString({

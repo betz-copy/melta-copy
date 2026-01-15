@@ -14,15 +14,15 @@ export const initializeMongo = async () => {
 
 export const transformObjectIdKeysToString = (doc: Record<string, unknown>) => {
     forEach(doc, (val, key) => {
-        if (val instanceof Types.ObjectId) {
-            doc[key] = val.toString();
-        }
+        if (val instanceof Types.ObjectId) doc[key] = val.toString();
     });
 };
 
 export const transformResultDocsObjectIdKeysToString = (res: Record<string, unknown> | Record<string, unknown>[]) => {
     if (Array.isArray(res)) {
-        res.forEach((doc) => transformObjectIdKeysToString(doc));
+        res.forEach((doc) => {
+            transformObjectIdKeysToString(doc);
+        });
         return;
     }
 

@@ -143,7 +143,7 @@ class InstancesValidator extends DefaultController {
 
         const entityTemplatesMap = await this.validateHasPermissionsToEntitiesInTemplates(req.user!, relatedTemplateIds);
 
-        Object.entries(entityTemplatesMap).map(([templateId, relatedTemplate]) => {
+        Object.entries(entityTemplatesMap).forEach(([templateId, relatedTemplate]) => {
             const hasIdentifier = Object.values(relatedTemplate.properties.properties).some((prop) => prop.identifier === true);
 
             if (!hasIdentifier)
@@ -200,7 +200,9 @@ class InstancesValidator extends DefaultController {
         const templateIds = new Set<string>([...templateIdsFromReq]);
 
         const entities = await this.instancesService.getEntityInstancesByIds(entitiesIds);
-        entities.forEach((entity) => templateIds.add(entity.templateId));
+        entities.forEach((entity) => {
+            templateIds.add(entity.templateId);
+        });
 
         const categoriesIds = await this.getCategoryIdsFromTemplateIds([...templateIds], userId);
 
@@ -304,7 +306,7 @@ class InstancesValidator extends DefaultController {
         await Promise.all(
             relatedTemplates.map(({ _id, category }) => {
                 const childTemplateId = childTemplatesOfParents.find(({ parentTemplate }) => parentTemplate._id === _id)?._id;
-                this.validateUserPermissionForEntityInstance(req, _id, PermissionScope.write, category._id, childTemplateId);
+                return this.validateUserPermissionForEntityInstance(req, _id, PermissionScope.write, category._id, childTemplateId);
             }),
         );
     }
