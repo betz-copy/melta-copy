@@ -50,20 +50,20 @@ const MapFilters = ({
 }: Props) => {
     const theme = useTheme();
     const [openFilter, setOpenFilter] = useState<boolean>(false);
+    const [debouncedSearchValue, setDebouncedSearchValue] = useState<string>(autoSearch ?? '');
 
-    const [localSearch, setLocalSearch] = useState<string>(autoSearch ?? '');
-
-    useEffect(() => setLocalSearch(autoSearch), [autoSearch]);
+    useEffect(() => setDebouncedSearchValue(autoSearch), [autoSearch]);
 
     const debouncedSetFilter = useCallback(
-        debounce((newValue: string) => setFilters((prev) => ({ ...prev, autoSearch: newValue })), 500),
+        debounce((newValue: string) => setFilters((prev) => ({ ...prev, autoSearch: newValue })), 300),
         [setFilters],
     );
 
-    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const val = e.target.value;
-        setLocalSearch(val);
-        debouncedSetFilter(val);
+    const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const { value } = event.target;
+
+        setDebouncedSearchValue(value);
+        debouncedSetFilter(value);
     };
 
     useEffect(() => {
@@ -209,7 +209,7 @@ const MapFilters = ({
                     <Divider />
 
                     <TextField
-                        value={localSearch}
+                        value={debouncedSearchValue}
                         onChange={handleSearchChange}
                         placeholder={`${i18next.t('globalSearch.searchInPage')}  ${i18next.t('location.minCharsToStartSearch')}`}
                         fullWidth
