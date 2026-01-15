@@ -19,16 +19,17 @@ import {
     ISearchResult,
 } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IRelationShipSelectionTree } from '@packages/printing-template';
+import { IBrokenRule, IRuleBreach } from '@packages/rule-breach';
+import { CoordinateSystem } from '@packages/utils';
 import { mapValues } from 'lodash';
 import axios from '../axios';
 import { EntityWizardValues } from '../common/dialogs/entity';
 import { IUpdateMultipleEntitiesResponse } from '../common/EntitiesPage/MultiSelectStatusBar';
 import { IExternalId } from '../common/EntitiesTableOfTemplate';
 import urlToFile from '../common/fileConversions';
-import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
 import { environment } from '../globals';
 import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
-import { IRelationShipSelectionTree } from '../interfaces/printingTemplates';
 import { IEntityTreeNode } from '../pages/Entity/components/print/ComponentToPrint';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
 import { combineFilters } from '../utils/filters';

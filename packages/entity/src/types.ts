@@ -22,6 +22,7 @@ export type IPropertyValue = any;
 
 export interface IEntity {
     templateId: string;
+    childTemplateId?: string;
     properties: Record<string, IPropertyValue>;
     coloredFields?: Record<string, string>;
 }

@@ -9,6 +9,7 @@ import { isEqual } from 'lodash';
 import React, { useMemo, useState } from 'react';
 import { getPropertyType } from '../../../../services/templates/entityTemplatesService';
 import { handleRemoveFilter, initializedFilterField, renderFilterInput } from '../../../FilterComponent';
+import { PropertyWizardType } from '..';
 import { CommonFormInputProperties, FilterType, IAgGridFilter, IFilterTemplate, PropertyItem } from '../commonInterfaces';
 
 export interface FieldOption {
@@ -116,7 +117,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                                 const type = item.type === 'field' ? item.data.type : item.type;
 
                                 return (
-                                    getFilterDateType(getPropertyType(type), type) ===
+                                    getFilterDateType(getPropertyType(type as PropertyWizardType), type) ===
                                         getFilterDateType(selectedProperty.type, selectedProperty.format) && !notIncludedFormats.includes(type)
                                 );
                             })
@@ -140,7 +141,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                                 case 'array':
                                     return FilterTypes.set;
                                 default:
-                                    return selectedProperty.type as FilterTypes;
+                                    return selectedProperty.type as unknown as IAgGridFilter['filterType'];
                             }
                         };
 

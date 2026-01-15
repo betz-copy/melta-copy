@@ -255,6 +255,7 @@ class UsersManager {
             kartoffelId,
             preferences: existingUser.preferences,
             permissions: existingUser.permissions || {},
+            usersUnitsWithInheritance: existingUser.usersUnitsWithInheritance || [],
         };
     }
 

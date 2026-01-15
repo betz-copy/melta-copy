@@ -1,4 +1,5 @@
-import { ISearchEntitiesOfTemplateBody, ISearchFilter } from '@packages/entity';
+import { IFilter } from '@packages/child-template';
+import { IPropertyValue, ISearchEntitiesOfTemplateBody, ISearchFilter } from '@packages/entity';
 
 const evaluateOperator = (operator: string, actual: IPropertyValue, expected: IPropertyValue): boolean => {
     switch (operator) {

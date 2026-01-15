@@ -1,7 +1,7 @@
 import { useTheme } from '@mui/material';
 import { ByCurrentDefaultValue, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
-import { IEntitySingleProperty, IPropertyValue } from '@packages/entity';
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IPropertyValue } from '@packages/entity';
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated, IWalletTransfer } from '@packages/entity-template';
 import { Form as JSONSchemaForm } from '@rjsf/mui';
 import { ErrorSchema, RegistryWidgetsType, RJSFSchema, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
@@ -12,11 +12,9 @@ import i18next from 'i18next';
 import { pickBy } from 'lodash';
 import React, { memo, useEffect, useState } from 'react';
 import { environment } from '../../../globals';
-
 import { matchValueAgainstFilter } from '../../../utils/filters';
 import { uiSchemaUtils } from './ utils';
 import './form.css';
-
 import InputAccordion from './InputAccordion';
 import RjsfCheckboxWidget from './Widgets/RjsfCheckboxWidget';
 import RjsfCommentWidget from './Widgets/RjsfCommentWidget';

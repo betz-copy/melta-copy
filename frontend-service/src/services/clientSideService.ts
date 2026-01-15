@@ -1,6 +1,6 @@
 import { IMongoCategory } from '@packages/category';
 import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
-import { ICountSearchResult, IEntity, IEntityExpanded, ISearchEntitiesOfTemplateBody, ISearchResult } from '@packages/entity';
+import { ICountSearchResult, IEntity, IEntityExpanded, IPropertyValue, ISearchEntitiesOfTemplateBody, ISearchResult } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { INotificationCountGroups, INotificationGroupCountDetails, INotificationPopulated, NotificationType } from '@packages/notification';
 import { IMongoRelationshipTemplate } from '@packages/relationship-template';

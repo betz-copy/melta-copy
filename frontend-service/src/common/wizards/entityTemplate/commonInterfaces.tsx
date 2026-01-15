@@ -1,10 +1,11 @@
 import { FieldGroupData, IRelationshipReference } from '@packages/entity-template';
 import { IAgGridDateFilter, IAgGridNumberFilter, IAgGridSetFilter, IAgGridTextFilter } from '@packages/rule-breach';
+import { PropertyWizardType } from '.';
 
 export interface CommonFormInputProperties {
     name: string;
     title: string;
-    type: string;
+    type: PropertyWizardType;
     id: string;
     options: string[];
     optionColors?: Record<string, string>;

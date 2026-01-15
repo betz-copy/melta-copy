@@ -1,8 +1,8 @@
 import { CloseOutlined } from '@mui/icons-material';
-import { Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, useTheme } from '@mui/material';
+import { Box, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { IEntity, IEntityExpanded } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
-import { IFile } from '@packages/preview';
+import { IMongoPrintingTemplate } from '@packages/printing-template';
 import {
     IMongoProcessInstanceReviewerPopulated,
     IMongoProcessTemplateReviewerPopulated,
@@ -11,7 +11,10 @@ import {
 } from '@packages/process';
 import i18next from 'i18next';
 import React, { useCallback, useEffect, useState } from 'react';
+import { useQueryClient } from 'react-query';
+import { IFile } from '../../interfaces/preview';
 import RelationshipSelection from '../../pages/Entity/components/print/RelationshipSelection';
+import { BackendConfigState } from '../../services/backendConfigService';
 import { getFile } from '../../utils/getFileType';
 import BlueTitle from '../MeltaDesigns/BlueTitle';
 import DialogFooter from './components/DialogFooter';

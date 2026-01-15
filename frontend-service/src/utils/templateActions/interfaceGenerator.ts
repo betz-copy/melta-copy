@@ -5,7 +5,7 @@ import {
     IMongoEntityTemplateWithConstraintsPopulated,
 } from '@packages/entity-template';
 import { QueryClient } from 'react-query';
-import { CoordinateSystem } from '../../common/inputs/JSONSchemaFormik/RjsfLocationWidget';
+import { CoordinateSystem } from '../../common/inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
 
 const generateFromString = ({ format, relationshipReference, enum: typeEnum }: IEntitySingleProperty, queryClient: QueryClient) => {
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -14,7 +14,7 @@ const generateFromString = ({ format, relationshipReference, enum: typeEnum }: I
 
     if (format === 'date' || format === 'date-time') return 'Date';
 
-    if (format === 'relationshipReference') return entityTemplates.get(relationshipReference?.relatedTemplateId)!.name;
+    if (format === 'relationshipReference') return entityTemplates.get(relationshipReference?.relatedTemplateId ?? '')?.name ?? '';
 
     if (format === 'location')
         return `{ location: \`Polygon((\${string}))\`, coordinateSystem: ${Object.values(CoordinateSystem)

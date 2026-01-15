@@ -1,8 +1,8 @@
 import { Box, Grid, TextField, Typography } from '@mui/material';
+import { IMongoPrintingTemplate, IPrintingTemplateMap } from '@packages/printing-template';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
 import { IFile } from '../../../interfaces/preview';
-import { IMongoPrintingTemplate, IPrintingTemplateMap } from '../../../interfaces/printingTemplates';
 import MultipleSelect, { ISelectOption } from '../../inputs/MultipleSelect';
 import { PrintItem } from '../PrintOptionsDialog';
 import OptionsSection from './OptionsSection';

@@ -1,5 +1,6 @@
 import { Add as AddIcon, Delete as DeleteIcon, DragHandle as DragHandleIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { AccordionDetails, AccordionSummary, Grid, IconButton, Typography, useTheme } from '@mui/material';
+import { IPropertyValue } from '@packages/entity';
 import { FieldArray, FormikErrors } from 'formik';
 import i18next from 'i18next';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -7,7 +8,6 @@ import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { getEmptyImage, HTML5Backend } from 'react-dnd-html5-backend';
 import { v4 as uuid } from 'uuid';
 import * as Yup from 'yup';
-import { IPropertyValue } from '../../../interfaces/entities';
 import { processTemplateUniquePropertiesSteps, variableNameValidation } from '../../../utils/validation';
 import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
 import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';

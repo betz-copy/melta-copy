@@ -1,3 +1,4 @@
+import { PropertyType } from '@packages/entity-template';
 import { ICreateProcessTemplateBody, ProcessPropertyFormats } from '@packages/process';
 
 const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) => {
@@ -11,15 +12,15 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                     properties: {
                         weapon: {
                             title: 'אמצעיי לחימה',
-                            type: 'string',
+                            type: PropertyType.string,
                         },
                         payment: {
                             title: 'תשלום',
-                            type: 'string',
+                            type: PropertyType.string,
                         },
                         weaponsFile: {
                             title: 'קובץ הנשק',
-                            type: 'string',
+                            type: PropertyType.string,
                             format: 'fileId' as ProcessPropertyFormats,
                         },
                     },
@@ -38,19 +39,19 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                         properties: {
                             weaponName: {
                                 title: 'שם הנשק',
-                                type: 'string',
+                                type: PropertyType.string,
                             },
                             weight: {
                                 title: 'משקל',
-                                type: 'number',
+                                type: PropertyType.number,
                             },
                             length: {
                                 title: 'אורך',
-                                type: 'number',
+                                type: PropertyType.number,
                             },
                             sketch: {
                                 title: 'סקיצה',
-                                type: 'string',
+                                type: PropertyType.string,
                                 format: 'fileId' as ProcessPropertyFormats,
                             },
                         },
@@ -68,16 +69,16 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                         properties: {
                             amount: {
                                 title: 'סכום',
-                                type: 'number',
+                                type: PropertyType.number,
                             },
                             paymentMethod: {
                                 enum: ['אשראי', 'מזומן', `צ'ק`],
                                 title: 'סוג תשלום',
-                                type: 'string',
+                                type: PropertyType.string,
                             },
                             numberOfPayments: {
                                 title: 'מספר תשלומים',
-                                type: 'number',
+                                type: PropertyType.number,
                             },
                         },
                         required: [],
@@ -94,16 +95,16 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                         properties: {
                             frequency: {
                                 title: 'תדירות שימוש (מספר ימים בשבוע)',
-                                type: 'number',
+                                type: PropertyType.number,
                             },
                             typeOfUse: {
                                 enum: ['מבצעי', 'אימונים', `מלחמה`],
                                 title: 'סוג שימוש',
-                                type: 'string',
+                                type: PropertyType.string,
                             },
                             typeOfBullets: {
                                 title: 'סוג כדורים',
-                                type: 'string',
+                                type: PropertyType.string,
                             },
                         },
                         required: [],
@@ -121,11 +122,11 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                     properties: {
                         destination: {
                             title: 'יעד',
-                            type: 'string',
+                            type: PropertyType.string,
                         },
                         travelDocument: {
                             title: 'מסמך נסיעה',
-                            type: 'string',
+                            type: PropertyType.string,
                             format: 'fileId' as ProcessPropertyFormats,
                         },
                     },
@@ -144,21 +145,21 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                         properties: {
                             airline: {
                                 title: 'חברת תעופה',
-                                type: 'string',
+                                type: PropertyType.string,
                             },
                             departureTime: {
                                 title: 'שעת יציאה',
-                                type: 'string',
+                                type: PropertyType.string,
                                 format: 'date-time' as ProcessPropertyFormats,
                             },
                             arrivalTime: {
                                 title: 'שעת נחיתה',
-                                type: 'string',
+                                type: PropertyType.string,
                                 format: 'date-time' as ProcessPropertyFormats,
                             },
                             flightNumber: {
                                 title: 'מספר טיסה',
-                                type: 'string',
+                                type: PropertyType.string,
                             },
                         },
                         required: [],
@@ -175,16 +176,16 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                         properties: {
                             amount: {
                                 title: 'סכום',
-                                type: 'number',
+                                type: PropertyType.number,
                             },
                             paymentMethod: {
                                 enum: ['אשראי', 'מזומן', `צ'ק`],
                                 title: 'סוג תשלום',
-                                type: 'string',
+                                type: PropertyType.string,
                             },
                             numberOfPayments: {
                                 title: 'מספר תשלומים',
-                                type: 'number',
+                                type: PropertyType.number,
                             },
                         },
                         required: ['paymentMethod'],
@@ -201,15 +202,15 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                         properties: {
                             insuranceProvider: {
                                 title: 'ספק ביטוח',
-                                type: 'string',
+                                type: PropertyType.string,
                             },
                             coverageAmount: {
                                 title: 'סכום כיסוי',
-                                type: 'number',
+                                type: PropertyType.number,
                             },
                             insurancePolicy: {
                                 title: 'מדיניות ביטוח',
-                                type: 'string',
+                                type: PropertyType.string,
                                 format: 'fileId' as ProcessPropertyFormats,
                             },
                         },
@@ -228,15 +229,15 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                     properties: {
                         pizzaSize: {
                             title: 'גודל הפיצה',
-                            type: 'string',
+                            type: PropertyType.string,
                         },
                         crustType: {
                             title: 'סוג בצק',
-                            type: 'string',
+                            type: PropertyType.string,
                         },
                         orderID: {
                             title: 'מספר הזמנה',
-                            type: 'string',
+                            type: PropertyType.string,
                         },
                     },
                     required: ['crustType'],
@@ -254,15 +255,15 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                         properties: {
                             flourType: {
                                 title: 'סוג קמח',
-                                type: 'string',
+                                type: PropertyType.string,
                             },
                             waterAmount: {
                                 title: 'כמות מים',
-                                type: 'number',
+                                type: PropertyType.number,
                             },
                             crustThickness: {
                                 title: 'עובי הבצק',
-                                type: 'number',
+                                type: PropertyType.number,
                             },
                         },
                         required: ['crustThickness'],
@@ -279,15 +280,15 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                         properties: {
                             sauceType: {
                                 title: 'סוג רוטב',
-                                type: 'string',
+                                type: PropertyType.string,
                             },
                             cheeseType: {
                                 title: 'סוג גבינה',
-                                type: 'string',
+                                type: PropertyType.string,
                             },
                             toppings: {
                                 title: 'תוספות',
-                                type: 'string',
+                                type: PropertyType.string,
                                 enum: ['זיתים, פטריות, טונה, תירס, אקסטרה גבינה'],
                             },
                         },
@@ -305,11 +306,11 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                         properties: {
                             ovenTemperature: {
                                 title: 'טמפרטורת התנור',
-                                type: 'number',
+                                type: PropertyType.number,
                             },
                             bakingTime: {
                                 title: 'זמן אפיה',
-                                type: 'number',
+                                type: PropertyType.number,
                             },
                         },
                         required: ['ovenTemperature'],
@@ -327,15 +328,15 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                     properties: {
                         senderAccount: {
                             title: 'חשבון השולח',
-                            type: 'string',
+                            type: PropertyType.string,
                         },
                         recipientAccount: {
                             title: 'חשבון המקבל',
-                            type: 'string',
+                            type: PropertyType.string,
                         },
                         transferAmount: {
                             title: 'סכום ההעברה',
-                            type: 'number',
+                            type: PropertyType.number,
                         },
                     },
                     required: ['recipientAccount'],
@@ -353,15 +354,15 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                         properties: {
                             senderBank: {
                                 title: 'בנק השולח',
-                                type: 'string',
+                                type: PropertyType.string,
                             },
                             senderCountry: {
                                 title: 'ארץ השולח',
-                                type: 'string',
+                                type: PropertyType.string,
                             },
                             senderID: {
                                 title: 'מספר זיהוי השולח',
-                                type: 'string',
+                                type: PropertyType.string,
                             },
                         },
                         required: ['senderID'],
@@ -378,15 +379,15 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                         properties: {
                             recipientBank: {
                                 title: 'בנק המקבל',
-                                type: 'string',
+                                type: PropertyType.string,
                             },
                             recipientCountry: {
                                 title: 'ארץ המקבל',
-                                type: 'string',
+                                type: PropertyType.string,
                             },
                             recipientID: {
                                 title: 'מספר זיהוי המקבל',
-                                type: 'string',
+                                type: PropertyType.string,
                             },
                         },
                         required: ['recipientID'],
@@ -403,15 +404,15 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                         properties: {
                             transferFee: {
                                 title: 'עמלת העברה',
-                                type: 'number',
+                                type: PropertyType.number,
                             },
                             exchangeRate: {
                                 title: 'שער חליפין',
-                                type: 'number',
+                                type: PropertyType.number,
                             },
                             transferTime: {
                                 title: 'זמן העברה',
-                                type: 'number',
+                                type: PropertyType.number,
                             },
                         },
                         required: ['transferTime'],
@@ -428,15 +429,15 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                         properties: {
                             someNumber: {
                                 title: 'מספר כלשהו',
-                                type: 'number',
+                                type: PropertyType.number,
                             },
                             anotherSomeNumber: {
                                 title: 'עוד מספר כלשהו',
-                                type: 'number',
+                                type: PropertyType.number,
                             },
                             thirdNumber: {
                                 title: 'מספר כלשהו שלישי',
-                                type: 'number',
+                                type: PropertyType.number,
                             },
                         },
                         required: ['anotherSomeNumber'],
@@ -454,15 +455,15 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                     properties: {
                         bookTitle: {
                             title: 'שם הספר',
-                            type: 'string',
+                            type: PropertyType.string,
                         },
                         author: {
                             title: 'המחבר',
-                            type: 'string',
+                            type: PropertyType.string,
                         },
                         manuscriptFile: {
                             title: 'קובץ התסריט',
-                            type: 'string',
+                            type: PropertyType.string,
                             format: 'fileId' as ProcessPropertyFormats,
                         },
                     },
@@ -482,11 +483,11 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                         properties: {
                             reviewerComments: {
                                 title: 'הערות המבקר',
-                                type: 'string',
+                                type: PropertyType.string,
                             },
                             isApproved: {
                                 title: 'אישור לפרסום',
-                                type: 'boolean',
+                                type: PropertyType.boolean,
                             },
                         },
                         required: ['isApproved'],
@@ -504,11 +505,11 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                         properties: {
                             editorName: {
                                 title: 'שם העורך',
-                                type: 'string',
+                                type: PropertyType.string,
                             },
                             editingComplete: {
                                 title: 'האם העריכה הסתיימה',
-                                type: 'boolean',
+                                type: PropertyType.boolean,
                             },
                         },
                         required: ['editorName'],
@@ -525,11 +526,11 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                         properties: {
                             designerName: {
                                 title: 'שם המעצב',
-                                type: 'string',
+                                type: PropertyType.string,
                             },
                             designApproved: {
                                 title: 'אישור העיצוב',
-                                type: 'boolean',
+                                type: PropertyType.boolean,
                             },
                         },
                         required: ['designApproved'],
@@ -546,7 +547,7 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                         properties: {
                             numberOfCopies: {
                                 title: 'מספר העותקים',
-                                type: 'number',
+                                type: PropertyType.number,
                             },
                         },
                         required: [],
@@ -563,7 +564,7 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                         properties: {
                             numberOfLocations: {
                                 title: 'מספר מקומות הפצה',
-                                type: 'number',
+                                type: PropertyType.number,
                             },
                         },
                         required: ['numberOfLocations'],
@@ -581,15 +582,15 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                     properties: {
                         missionName: {
                             title: 'שם המשימה',
-                            type: 'string',
+                            type: PropertyType.string,
                         },
                         missionObjective: {
                             title: 'מטרת המשימה',
-                            type: 'string',
+                            type: PropertyType.string,
                         },
                         missionDuration: {
                             title: 'משך המשימה (בימים)',
-                            type: 'number',
+                            type: PropertyType.number,
                         },
                     },
                     required: ['missionDuration'],
@@ -607,7 +608,7 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                         properties: {
                             planDetails: {
                                 title: 'פרטי התוכנית',
-                                type: 'string',
+                                type: PropertyType.string,
                             },
                         },
                         required: ['planDetails'],
@@ -624,7 +625,7 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                         properties: {
                             designDetails: {
                                 title: 'פרטי העיצוב',
-                                type: 'string',
+                                type: PropertyType.string,
                             },
                         },
                         required: ['designDetails'],
@@ -641,7 +642,7 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                         properties: {
                             crewMembers: {
                                 title: 'חברי הצוות',
-                                type: 'string',
+                                type: PropertyType.string,
                             },
                         },
                         required: ['crewMembers'],
@@ -658,7 +659,7 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                         properties: {
                             preparationDetails: {
                                 title: 'פרטי ההכנה',
-                                type: 'string',
+                                type: PropertyType.string,
                             },
                         },
                         required: ['preparationDetails'],
@@ -675,7 +676,7 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                         properties: {
                             launchTime: {
                                 title: 'שעת ההשקה',
-                                type: 'string',
+                                type: PropertyType.string,
                             },
                         },
                         required: ['launchTime'],
@@ -692,7 +693,7 @@ const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) =>
                         properties: {
                             operationDetails: {
                                 title: 'פרטי ההפעלה',
-                                type: 'string',
+                                type: PropertyType.string,
                             },
                         },
                         required: ['operationDetails'],

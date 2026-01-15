@@ -1,12 +1,12 @@
 import { InfoOutlined } from '@mui/icons-material';
 import { Box, Grid, Typography } from '@mui/material';
+import { IWalletTransferPopulated, PropertyFormat } from '@packages/entity-template';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useEffect } from 'react';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
-import { IWalletTransferPopulated } from '../../../interfaces/entityTemplates';
 import { searchEntitiesOfTemplateRequest } from '../../../services/entitiesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { ErrorToast } from '../../ErrorToast';
@@ -50,7 +50,7 @@ export const walletTransferSettingsSchema = () => {
 
                 if (!from || !to || typeof from === 'string' || typeof to === 'string') return true;
 
-                const isValid = from.type === 'relationshipReference' || to.type === 'relationshipReference';
+                const isValid = from.format === PropertyFormat.relationshipReference || to.format === PropertyFormat.relationshipReference;
                 if (!isValid) {
                     const errorMessage = i18next.t('validation.eitherFromOrToRelationshipReference');
 
@@ -78,9 +78,10 @@ export const WalletTransferSettings: React.FC<
     const { data: areThereInstancesByTemplateIdResponse } = useQuery(
         ['areThereInstancesByTemplateId', values._id],
         () =>
-            searchEntitiesOfTemplateRequest(values._id, {
+            searchEntitiesOfTemplateRequest(values._id!, {
                 skip: 0,
                 limit: 1,
+                showRelationships: false,
             }),
         {
             enabled: isEditMode,

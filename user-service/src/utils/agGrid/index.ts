@@ -1,10 +1,10 @@
+import { IPropertyValue } from '@packages/entity';
 import {
     basicFilterOperationTypes,
     FilterQuery,
     FilterTypes,
     IAgGridFilterModel,
     IAgGridSort,
-    IPropertyValue,
     numberFilterOperationTypes,
     relativeDateFilters,
     textFilterOperationTypes,
@@ -12,7 +12,7 @@ import {
 import { ServiceError } from '@packages/utils';
 
 const translateAgGridFilter = (
-    type: basicFilterOperationTypes | numberFilterOperationTypes | textFilterOperationTypes,
+    type: basicFilterOperationTypes | numberFilterOperationTypes | textFilterOperationTypes | relativeDateFilters,
     filterValue: IPropertyValue,
     other?: IPropertyValue,
 ) => {

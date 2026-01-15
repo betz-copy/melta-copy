@@ -13,6 +13,7 @@ export interface MongoBaseFields {
 }
 
 export interface TableMetaData {
+    _id?: string;
     templateId: string;
     name: string;
     description: string;

@@ -1,6 +1,13 @@
 import { IChildTemplatePopulated, IChildTemplateProperty, isChildTemplate } from '@packages/child-template';
-import { IEntity, IEntityWithDirectRelationships, IEntityWithIgnoredRules, IValidationErrorData, UploadedFile } from '@packages/entity';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import {
+    IEntity,
+    IEntityWithDirectRelationships,
+    IEntityWithIgnoredRules,
+    IPropertyValue,
+    IValidationErrorData,
+    UploadedFile,
+} from '@packages/entity';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated, PropertyFormat } from '@packages/entity-template';
 import {
     ActionErrors,
     ActionTypes,
@@ -12,7 +19,6 @@ import {
     ICreateEntityMetadata,
     ICreateEntityMetadataPopulated,
     IFailedEntity,
-    IPropertyValue,
     IUpdateEntityMetadataPopulated,
 } from '@packages/rule-breach';
 import {
@@ -24,7 +30,6 @@ import {
     isValidWGS84,
     locationConverterToString,
     logger,
-    PropertyFormat,
     ServiceError,
     stringToCoordinates,
 } from '@packages/utils';

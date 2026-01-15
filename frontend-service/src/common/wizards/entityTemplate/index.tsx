@@ -2,7 +2,16 @@ import { ICategoryMap, IMongoCategory } from '@packages/category';
 import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { FileDetails } from '@packages/common';
 import { IConstraint, IUniqueConstraintOfTemplate } from '@packages/entity';
-import { FieldGroupData, IEntityTemplateMap, IEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import {
+    FieldGroupData,
+    IEntityTemplateMap,
+    IEntityTemplateWithConstraintsPopulated,
+    IWalletTransfer,
+    IWalletTransferPopulated,
+    PropertyExternalWizardType,
+    PropertyFormat,
+    PropertyType,
+} from '@packages/entity-template';
 import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -10,13 +19,6 @@ import React, { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
-import {
-    IWalletTransfer,
-    IWalletTransferPopulated,
-    PropertyExternalWizardType,
-    PropertyFormat,
-    PropertyType,
-} from '../../../interfaces/entityTemplates';
 import { IErrorResponse } from '../../../interfaces/error';
 import { getAllChildTemplates } from '../../../services/templates/childTemplatesService';
 import { createEntityTemplateRequest, formToJSONSchema, updateEntityTemplateRequest } from '../../../services/templates/entityTemplatesService';
@@ -30,7 +32,8 @@ import { StepType, Wizard, WizardBaseType } from '../index';
 import { AddFields, addFieldsSchema } from './AddFields';
 import { ChooseIcon } from './ChooseIcon';
 import { useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
-import { IFilterTemplate, PropertyItem } from './commonInterfaces';
+import { CreateTemplateSettings } from './CreateTemplateSettings';
+import { CommonFormInputProperties, IFilterTemplate, PropertyItem } from './commonInterfaces';
 import { UploadExportFormats } from './UploadExportFormats';
 import { WalletTransferSettings, walletTransferSettingsSchema } from './WalletTransferSettings';
 
@@ -38,28 +41,7 @@ const { errorCodes } = environment;
 
 export type PropertyWizardType = keyof typeof PropertyType | keyof typeof PropertyFormat | keyof typeof PropertyExternalWizardType;
 
-export interface EntityTemplateFormInputProperties {
-    name: string;
-    title: string;
-    type: PropertyWizardType;
-    id: string;
-    options: string[];
-    pattern: string;
-    patternCustomErrorMessage: string;
-    required: boolean;
-    preview: boolean;
-    hide: boolean;
-    readOnly?: true;
-    identifier?: true;
-    uniqueCheckbox?: boolean;
-    groupName?: string;
-    optionColors: Record<string, string>;
-    dateNotification: number | null | undefined;
-    isDailyAlert: boolean | null | undefined;
-    isDatePastAlert: boolean | null | undefined;
-    calculateTime: boolean | null | undefined;
-    serialStarter: number | undefined;
-    deleted?: boolean | undefined;
+export interface EntityTemplateFormInputProperties extends CommonFormInputProperties {
     relationshipReference?: {
         relationshipTemplateId?: string;
         relationshipTemplateDirection: 'outgoing' | 'incoming';
@@ -94,6 +76,7 @@ export interface EntityTemplateWizardValues
         | 'uniqueConstraints'
         | 'documentTemplatesIds'
         | 'walletTransfer'
+        | '_id'
     > {
     properties: PropertyItem[];
     attachmentProperties: EntityTemplatePropertyByType[];
@@ -105,6 +88,9 @@ export interface EntityTemplateWizardValues
     walletTransfer?: IWalletTransferPopulated | IWalletTransfer | null;
     _id?: string;
 }
+
+export const hasAccountBalanceField = (properties: PropertyItem[]) =>
+    properties.some((property) => (property.type === 'field' ? !!property.data?.accountBalance : property.fields?.some((f) => !!f.accountBalance)));
 
 const defaultInitialValues: EntityTemplateWizardValues = {
     _id: '',

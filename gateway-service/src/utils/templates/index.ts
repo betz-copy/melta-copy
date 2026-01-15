@@ -1,6 +1,6 @@
 import { childTemplateKeys, dePopulateChildProperties } from '@packages/child-template';
-import { IConstraintsOfTemplate, PropertyFormat, PropertyType } from '@packages/entity';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { IConstraintsOfTemplate } from '@packages/entity';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated, PropertyFormat, PropertyType } from '@packages/entity-template';
 import { IRelationship } from '@packages/relationship';
 import { IMongoRule } from '@packages/rule';
 import { BadRequestError, ServiceError } from '@packages/utils';

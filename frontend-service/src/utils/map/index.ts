@@ -1,12 +1,14 @@
+import { MatrixSetLink } from '@camptocamp/ogc-client/dist/wmts/model';
 import { SplitBy } from '@packages/common';
 import { IEntity, IFilterOfField } from '@packages/entity';
 import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { CoordinatesResult, MapItemType } from '@packages/utils';
+import * as Cesium from 'cesium';
 import { Cartesian3 } from 'cesium';
 import { XMLParser } from 'fast-xml-parser';
 import { environment } from '../../globals';
-import { ICoordinateSearchResult, IPolygonSearchResult, LayerProvider, LayerProviderType } from '../../interfaces/location';
-import { MatrixSetLink } from '../../interfaces/map';
+import { ICoordinateSearchResult, IPolygonSearchResult } from '../../interfaces/location';
+import { LayerProvider, LayerProviderType } from '../../pages/Map/BaseLayers';
 import { convertECEFToWGS84, convertWGS94ToECEF, isValidWGS84 } from './convert';
 
 const {

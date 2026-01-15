@@ -2,6 +2,7 @@ import {
     FilterLogicalOperator,
     IFilterGroup,
     IFilterOfField,
+    IPropertyValue,
     ISearchBatchBody,
     ISearchEntitiesByTemplatesBody,
     ISearchEntitiesOfTemplateBody,

@@ -1,6 +1,6 @@
 import { SplitBy } from '@packages/common';
-import { IEntity, IEntityExpanded, IEntityWithDirectRelationships } from '@packages/entity';
-import { IRelationship } from '@packages/relationship';
+import { IEntity, IEntityExpanded, IEntityWithDirectRelationships, IPropertyValue } from '@packages/entity';
+import { IMongoRelationship, IRelationship } from '@packages/relationship';
 import { ActionErrors } from '@packages/rule-breach';
 import { ValidationError } from '@packages/utils';
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
@@ -260,11 +260,12 @@ export const normalizeReturnedRelAndEntities =
             const [sourceEntity, destinationEntity] =
                 firstEntity.identity === relationship.start ? [firstEntity, secondEntity] : [secondEntity, firstEntity];
 
+            const normalizedProperties = normalizeFields(relationship.properties).properties;
             return {
                 sourceEntity: nodeToEntity(sourceEntity),
                 relationship: {
                     templateId: relationship.type,
-                    properties: normalizeFields(relationship.properties).properties,
+                    properties: normalizedProperties as IMongoRelationship['properties'],
                 },
                 destinationEntity: nodeToEntity(destinationEntity),
             };

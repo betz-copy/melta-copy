@@ -11,9 +11,10 @@ import {
 } from '@packages/process';
 import { v4 as uuid } from 'uuid';
 import axios from '../../axios';
+import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/commonInterfaces';
 import { ProcessTemplateFormInputProperties, ProcessTemplatePropertyByType, ProcessTemplateWizardValues } from '../../common/wizards/processTemplate';
 import { environment } from '../../globals';
-import { extractProperties } from './entityTemplatesService';
+import { extractProperties, PropertyItemsArray } from './entityTemplatesService';
 
 const { processTemplates } = environment.api;
 
@@ -134,14 +135,14 @@ const createFileAttachmentProperty = (type: string, required: boolean): Omit<IPr
             type: PropertyType.array,
             items: {
                 type: PropertyType.string,
-                format: 'fileId',
+                format: ProcessPropertyFormats.FileId,
             },
             ...(required && { required: true }),
         };
     }
     return {
         type: PropertyType.string,
-        format: 'fileId',
+        format: ProcessPropertyFormats.FileId,
         ...(required && { required: true }),
     };
 };
@@ -172,8 +173,10 @@ const addAttachmentProperties = (
 const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTemplateBody | IUpdateProcessTemplateBody => {
     const { detailsProperties, detailsAttachmentProperties, steps, ...restOfProperties } = values;
 
-    const { properties: extractDetailsProperties } = extractProperties<ProcessTemplateFormInputProperties>(detailsProperties);
-    const { properties: extractDetailsAttachmentProperties } = extractProperties<ProcessTemplateFormInputProperties>(detailsAttachmentProperties);
+    const { properties: extractDetailsProperties } = extractProperties<ProcessTemplateFormInputProperties>(detailsProperties as PropertyItemsArray);
+    const { properties: extractDetailsAttachmentProperties } = extractProperties<ProcessTemplateFormInputProperties>(
+        detailsAttachmentProperties as PropertyItemsArray,
+    );
 
     const detailsPropertiesOrder: string[] = [];
     const stepTemplates: ICreateProcessTemplateBody['steps'] | IUpdateProcessTemplateBody['steps'] = [];
@@ -188,8 +191,10 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
         if (!deleted) {
             detailsSchema.properties[name] = {
                 title,
-                type: Object.values(PropertyType).includes(type) ? (type as IProcessSingleProperty['type']) : PropertyType.string,
-                format: Object.values(ProcessPropertyFormats).includes(type) ? (type as IProcessSingleProperty['format']) : undefined,
+                type: Object.values(PropertyType).includes(type as PropertyType) ? (type as IProcessSingleProperty['type']) : PropertyType.string,
+                format: Object.values(ProcessPropertyFormats).includes(type as ProcessPropertyFormats)
+                    ? (type as IProcessSingleProperty['format'])
+                    : undefined,
                 enum: type === 'enum' ? options : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
@@ -210,15 +215,23 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
             properties: {},
             required: [],
         };
-        const { properties: extractStepProperties } = extractProperties<ProcessTemplateFormInputProperties>(step.properties);
-        const { properties: extractStepAttachmentProperties } = extractProperties<ProcessTemplateFormInputProperties>(step.attachmentProperties);
+        const { properties: extractStepProperties } = extractProperties<ProcessTemplateFormInputProperties>(
+            step.properties as Array<{ type: 'field'; data: CommonFormInputProperties } | { type: 'group'; fields: CommonFormInputProperties[] }>,
+        );
+        const { properties: extractStepAttachmentProperties } = extractProperties<ProcessTemplateFormInputProperties>(
+            step.attachmentProperties as Array<
+                { type: 'field'; data: CommonFormInputProperties } | { type: 'group'; fields: CommonFormInputProperties[] }
+            >,
+        );
 
         extractStepProperties.forEach(({ name, title, type, required, options, pattern, patternCustomErrorMessage, deleted }) => {
             if (!deleted) {
                 stepSchema.properties[name] = {
                     title,
-                    type: Object.values(PropertyType).includes(type) ? (type as IProcessSingleProperty['type']) : PropertyType.string,
-                    format: Object.values(ProcessPropertyFormats).includes(type) ? (type as IProcessSingleProperty['format']) : undefined,
+                    type: Object.values(PropertyType).includes(type as PropertyType) ? (type as IProcessSingleProperty['type']) : PropertyType.string,
+                    format: Object.values(ProcessPropertyFormats).includes(type as ProcessPropertyFormats)
+                        ? (type as IProcessSingleProperty['format'])
+                        : undefined,
                     enum: type === 'enum' ? options : undefined,
                     pattern: type === 'pattern' ? pattern : undefined,
                     patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,

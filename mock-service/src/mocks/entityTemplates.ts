@@ -1,4 +1,4 @@
-import { PropertyFormat, PropertyType } from '@microservices/shared';
+import { PropertyFormat, PropertyType } from '@packages/entity-template';
 import { IEntityTemplateMock } from '../templates/entityTemplates';
 
 // TODO: create entityTemplates with backend service in order to add required+unique constraints

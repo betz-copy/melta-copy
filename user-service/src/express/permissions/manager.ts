@@ -9,7 +9,7 @@ import {
 } from '@packages/permission';
 import { IUser, IUserPopulated, RelatedPermission } from '@packages/user';
 import { ValidationError } from '@packages/utils';
-import mapValues from 'lodash.mapvalues';
+import { mapValues } from 'lodash';
 import { FilterQuery } from 'mongoose';
 import { flattenObject, typedObjectEntries } from '../../utils';
 import { transaction } from '../../utils/mongoose';

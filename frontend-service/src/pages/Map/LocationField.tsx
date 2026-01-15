@@ -1,6 +1,6 @@
 import { Close, DeleteTwoTone, PentagonTwoTone, PlaceTwoTone } from '@mui/icons-material';
 import { ToggleButton, ToggleButtonGroup, useTheme } from '@mui/material';
-import { MapItemType } from '@packages/utils';
+import {  MapItemType } from '@packages/utils';
 import * as Cesium from 'cesium';
 import { Cartesian3 } from 'cesium';
 import i18next from 'i18next';
@@ -9,7 +9,6 @@ import { useQueryClient } from 'react-query';
 import { CesiumComponentRef, CesiumMovementEvent, Viewer } from 'resium';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
-import { MapItemType } from '../../interfaces/location';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import {

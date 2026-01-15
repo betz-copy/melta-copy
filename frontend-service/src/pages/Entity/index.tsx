@@ -3,7 +3,7 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, CircularProgress, Grid, Tab, useTheme } from '@mui/material';
 import { IChildTemplateMap, IFilter, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { ISearchFilter } from '@packages/entity';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { ISubCompactPermissions, PermissionScope } from '@packages/permission';
 import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '@packages/relationship-template';
 import { useTour } from '@reactour/tour';
@@ -157,7 +157,7 @@ const Entity: React.FC = () => {
         PermissionScope.write,
     );
 
-    const getButtonStateByRelatedTemplate = (relatedTemplate: IMongoEntityTemplatePopulated) => {
+    const getButtonStateByRelatedTemplate = (relatedTemplate: IMongoEntityTemplateWithConstraintsPopulated) => {
         const { isEditButtonsDisabled, disabledButtonText, hasPermissionToRelatedTemplate } = getButtonState(
             isEntityDisabled,
             hasWritePermissionToCurrTemplate,

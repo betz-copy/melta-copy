@@ -1,7 +1,7 @@
 import { DragHandle as DragHandleIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { AccordionDetails, AccordionSummary, Box, Button, Grid, Typography } from '@mui/material';
 import { IPropertyValue } from '@packages/entity';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import { debounce } from 'lodash';
@@ -51,7 +51,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
     initialFieldCardDataOnAdd = {
         name: '',
         title: '',
-        type: '',
+        type: 'string',
         required: false,
         preview: false,
         hide: false,
@@ -115,7 +115,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
 
     useEffect(() => {
         if (!orderedItems?.length || !templates?.size) return;
-        const templateHasAccountBalance = (template: IMongoEntityTemplatePopulated) =>
+        const templateHasAccountBalance = (template: IMongoEntityTemplateWithConstraintsPopulated) =>
             Object.values(template?.properties?.properties ?? {}).some((property) => property.accountBalance);
 
         const hasRelatedAccountBalance = (relatedId?: string) => {
@@ -364,7 +364,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         const isGrouped = typeof groupIndex === 'number';
         const sourceField = getFieldData(displayValuesCopy, fieldIndex, groupIndex);
 
-        const newField = {
+        const newField: CommonFormInputProperties = {
             id: uuid(),
             ...initialFieldCardDataOnAdd,
             type: 'kartoffelUserField',
@@ -733,7 +733,7 @@ export const FieldBlock = <PropertiesType extends string, Values extends Record<
     initialFieldCardDataOnAdd = {
         name: '',
         title: '',
-        type: '',
+        type: 'string',
         required: false,
         preview: false,
         hide: false,
@@ -795,7 +795,7 @@ export const FieldBlock = <PropertiesType extends string, Values extends Record<
                     initialFieldCardDataOnAdd ?? {
                         name: '',
                         title: '',
-                        type: '',
+                        type: 'string',
                         required: false,
                         preview: false,
                         hide: false,

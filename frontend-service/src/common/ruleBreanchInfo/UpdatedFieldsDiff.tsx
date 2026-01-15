@@ -1,4 +1,5 @@
 import { Typography } from '@mui/material';
+import { IPropertyValue } from '@packages/entity';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IUpdateEntityMetadataPopulated } from '@packages/rule-breach';
 import { IGetUnits } from '@packages/unit';

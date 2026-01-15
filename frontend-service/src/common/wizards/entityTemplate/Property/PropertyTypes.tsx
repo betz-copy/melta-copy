@@ -23,7 +23,8 @@ import {
     ToggleButtonGroup,
     Typography,
 } from '@mui/material';
-import { IEntityTemplateMap, IPropertyValue } from '@packages/entity';
+import { IPropertyValue } from '@packages/entity';
+import { IEntityTemplateMap } from '@packages/entity-template';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import React, { SetStateAction, useEffect, useRef, useState } from 'react';

@@ -62,6 +62,7 @@ export interface IEntitySingleProperty {
     calculateTime?: boolean;
     serialStarter?: number;
     serialCurrent?: number;
+    properties?: Record<string, IEntitySingleProperty>; // For nested groups inside of entity
     isNewPropNameEqualDeletedPropName?: boolean;
     expandedUserField?: {
         relatedUserField: string;
@@ -82,6 +83,10 @@ export interface IEntitySingleProperty {
     filters?: IFilter;
     defaultValue?: IPropertyValue;
     default?: IPropertyValue; // Acts as defaultValue in rjsf. Added because defaultValue doesn't work in nested properties (group)
+    isFilterByCurrentUser?: boolean;
+    isFilterByUserUnit?: boolean;
+    isProfileImage?: boolean;
+    display?: boolean;
     accountBalance?: boolean;
 }
 export interface IProperties {
@@ -97,7 +102,7 @@ interface IFieldsGroup {
     displayName: string;
     fields: string[];
 }
-interface IWalletTransfer {
+export interface IWalletTransfer {
     from: string;
     to: string;
     description: string;
@@ -105,8 +110,8 @@ interface IWalletTransfer {
 }
 
 export interface IWalletTransferPopulated extends Omit<IWalletTransfer, 'from' | 'to'> {
-    from: CommonFormInputProperties;
-    to: CommonFormInputProperties;
+    from: IEntitySingleProperty;
+    to: IEntitySingleProperty;
 }
 
 export interface IEntityTemplate {

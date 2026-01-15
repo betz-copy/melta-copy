@@ -1,9 +1,9 @@
+import { IPropertyValue } from '@packages/entity';
 import {
     basicFilterOperationTypes,
     FilterTypes,
     IAgGridRequest,
     IAgGridSort,
-    IPropertyValue,
     numberFilterOperationTypes,
     relativeDateFilters,
     textFilterOperationTypes,

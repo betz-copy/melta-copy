@@ -1,6 +1,6 @@
 import { EntityTemplateType, TemplateItem } from '@packages/child-template';
-import { IEntity } from '@packages/entity';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { IEntity, IPropertyValue } from '@packages/entity';
+import { IEntitySingleProperty, IEnumPropertiesColors, IMongoEntityTemplatePopulated, PropertyFormat, PropertyType } from '@packages/entity-template';
 import { CoordinateSystem, locationConverterToString } from '@packages/utils';
 import Excel, { Cell } from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';

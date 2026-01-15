@@ -1,4 +1,4 @@
-import { IEntity, UploadedFile } from '@packages/entity';
+import { IEntity, IPropertyValue, UploadedFile } from '@packages/entity';
 import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import {
     INotificationMetadata,
@@ -51,7 +51,7 @@ import {
 } from '@packages/rule-breach';
 import { IKartoffelUser, IUser } from '@packages/user';
 import { BadRequestError, ForbiddenError, logger } from '@packages/utils';
-import pickBy from 'lodash.pickby';
+import { pickBy } from 'lodash';
 import config from '../../config';
 import InstancesService from '../../externalServices/instanceService';
 import RuleBreachService from '../../externalServices/ruleBreachService';

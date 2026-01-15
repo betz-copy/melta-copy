@@ -18,6 +18,7 @@ import { CustomIcon } from './CustomIcon';
 import { EntityPropertiesInternal } from './EntityProperties';
 import { CoordinateSystem } from './inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
 import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
+import { IGetUnits } from '@packages/unit';
 
 interface RelationshipReferenceViewProps {
     entity: IEntity | string;

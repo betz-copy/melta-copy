@@ -1,5 +1,5 @@
 import { useMatomo } from '@datapunt/matomo-tracker-react';
-import { Box, Button, debounce, useScrollTrigger } from '@mui/material';
+import { Box, Button, CircularProgress, debounce, useScrollTrigger } from '@mui/material';
 import { IChildTemplateMap } from '@packages/child-template';
 import { DashboardItemType } from '@packages/dashboard';
 import { IEntityTemplateMap } from '@packages/entity-template';

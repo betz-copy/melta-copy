@@ -1,5 +1,6 @@
 import { Grid, styled, Typography, useTheme } from '@mui/material';
-import { ActionsLog } from '@packages/activity-log';
+import { ActionsLog, IUpdatedFields } from '@packages/activity-log';
+import { IPropertyValue } from '@packages/entity';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IMongoStepTemplatePopulated, IProcessDetails, IProcessSingleProperty } from '@packages/process';
 import { IRelationshipTemplateMap } from '@packages/relationship-template';
@@ -268,7 +269,7 @@ const UpdateTextValue: React.FC<{
 };
 
 const UpdateEntityMetadataActionText: React.FC<{
-    actionMetadata: { updatedFields: [{ fieldName: string; oldValue: IPropertyValue; newValue: IPropertyValue }] };
+    actionMetadata: { updatedFields: IUpdatedFields[] };
     entityTemplateProperties: Record<string, IEntitySingleProperty> | Record<string, IProcessSingleProperty>;
 }> = ({ actionMetadata, entityTemplateProperties }) => {
     const theme = useTheme();
@@ -285,7 +286,7 @@ const UpdateEntityMetadataActionText: React.FC<{
                 {actionMetadata.updatedFields.map((field) => {
                     const { oldValue, newValue, fieldName } = field;
 
-                    const isDeleted = entityTemplateProperties[fieldName] === undefined;
+                    const isDeleted = !entityTemplateProperties[fieldName];
 
                     return (
                         <Grid key={fieldName} style={{ marginBottom: '10px' }}>

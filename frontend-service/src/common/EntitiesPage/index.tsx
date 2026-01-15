@@ -89,9 +89,7 @@ const EntitiesPage = <T extends IMongoEntityTemplateWithConstraintsPopulated | I
 
                     [...childTemplateIds, templateId].forEach((tempId) => {
                         const reference = templateTablesViewRef.current?.templateTablesRefs?.[tempId];
-                        if (reference) {
-                            reference.refreshServerSide();
-                        }
+                        if (reference) reference.refreshServerSide();
                     });
                 });
             }

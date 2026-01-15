@@ -1,6 +1,5 @@
 import { Close } from '@mui/icons-material';
-import { Autocomplete, Divider, Grid, IconButton, useTheme } from '@mui/material';
-import { Box } from '@mui/system';
+import { Autocomplete, Box, Divider, Grid, IconButton, useTheme } from '@mui/material';
 import { IEntitySingleProperty, IEntityTemplateMap } from '@packages/entity-template';
 import { FormikErrors, FormikProps, FormikTouched, getIn } from 'formik';
 import i18next from 'i18next';
@@ -104,7 +103,7 @@ const FilterCompetent = <T extends TableForm | ChartForm>({
                                                 const propertyTemplate = entityTemplate?.properties.properties[option];
 
                                                 if (propertyTemplate?.format === 'relationshipReference') {
-                                                    const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId!;
+                                                    const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId ?? '';
                                                     return !entityTemplates?.get(relatedTemplateId);
                                                 }
                                                 return false;

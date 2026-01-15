@@ -1,7 +1,7 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: lol */
 /** biome-ignore-all lint/suspicious/noThenProperty: Joi... */
 import assert from 'node:assert';
-import { IEntitySingleProperty, IEntityTemplatePopulated } from '@packages/entity-template';
+import { IEntitySingleProperty, IEntityTemplatePopulated, PropertyFormat, PropertyType } from '@packages/entity-template';
 import { IMongoRelationshipTemplate } from '@packages/relationship-template';
 
 import {

@@ -1,4 +1,3 @@
-
 import { IEntity } from '@packages/entity';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import { logger } from '@packages/utils';
@@ -124,8 +123,6 @@ export const updateKartoffelFields = async () => {
                             // for each user field in each instance, check if the user from kartoffel is different in one of the fields of the user in the instance
                             // update the user fields if needed
                             const updatedProperties = checkForEntityToUpdate(entity, entityTemplate, kartoffelUsersMapById);
-                            if (Object.keys(updatedProperties).length === 0) return;
-
                             const entityById = entitiesMapById[entity.properties._id];
 
                             return instanceService.updateEntityInstance(

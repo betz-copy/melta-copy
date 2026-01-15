@@ -6,8 +6,9 @@ import { useFormikContext } from 'formik';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { EntityWizardValues } from '../../dialogs/entity';
-import TemplateEntitiesAutocomplete from '../TemplateEntitiesAutocomplete';
+import { useWorkspaceStore } from '../../../../stores/workspace';
+import { EntityWizardValues } from '../../../dialogs/entity';
+import TemplateEntitiesAutocomplete from '../../TemplateEntitiesAutocomplete';
 
 const RjsfTemplateReferenceWidget = ({
     id,

@@ -14,6 +14,7 @@ import {
     isSumAggFunction,
 } from '@packages/rule';
 import { ServiceError } from '@packages/utils';
+import { StatusCodes } from 'http-status-codes';
 import config from '../../../config';
 
 const checkPropertyInUsed = (

@@ -1,6 +1,7 @@
 import { IMongoPrintingTemplate, IPrintingTemplate } from '@packages/printing-template';
 import axios from '../../axios';
 import { environment } from '../../globals';
+import { ISearchEntityTemplatesBody } from '@packages/entity-template';
 
 const { printingTemplates } = environment.api;
 
@@ -29,7 +30,7 @@ const deletePrintingTemplateRequest = async (printingTemplateId: string) => {
     return data;
 };
 
-const searchPrintingTemplatesRequest = async (searchBody: Partial<ISearchEntityTemplateQuery> = {}) => {
+const searchPrintingTemplatesRequest = async (searchBody: Partial<ISearchEntityTemplatesBody> = {}) => {
     const { data } = await axios.post<IMongoPrintingTemplate[]>(`${printingTemplates}/search`, searchBody);
     return data;
 };

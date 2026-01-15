@@ -24,13 +24,14 @@ import {
     IUsersNotFoundError,
     NotFoundErrorTypes,
 } from '@packages/entity';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated, PropertyFormat } from '@packages/entity-template';
 import { PermissionData } from '@packages/permission';
 import { ActionErrors, IRuleBreachPopulated, IRuleBreachRequestPopulated } from '@packages/rule-breach';
 import { ISemanticSearchResult } from '@packages/semantic-search';
 import { IGetUnits, IMongoUnit } from '@packages/unit';
 import { IUser } from '@packages/user';
 import i18next from 'i18next';
+import { isEmpty } from 'lodash';
 import { EntityWizardValues } from '../../common/dialogs/entity';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';

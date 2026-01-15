@@ -1,5 +1,7 @@
 import { Grid } from '@mui/material';
+import { IMongoChart } from '@packages/chart';
 import { DashboardItemType, MongoDashboardItem } from '@packages/dashboard';
+import { IMongoIframe } from '@packages/iframe';
 import { Form, Formik, FormikHelpers, FormikProps } from 'formik';
 import React, { JSX } from 'react';
 import { isSchema, Schema } from 'yup';
@@ -10,7 +12,7 @@ import DashboardItemDetailsSideBar from './DashboardItemDetailsSideBar';
 
 interface DashboardItemDetailsProps<T extends DashboardItemForm> {
     initialValues: T;
-    submitFunction: (values: T) => Promise<MongoDashboardItem | IMongoChart> | Promise<IMongoIFrame>;
+    submitFunction: (values: T) => Promise<MongoDashboardItem | IMongoChart> | Promise<IMongoIframe>;
     onReset?: (values: T, formikHelpers: FormikHelpers<T>) => void;
     steps: TabStepComponent<T>[];
     viewMode: {

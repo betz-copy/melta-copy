@@ -1,6 +1,6 @@
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
 import { Card, CardContent, Grid, useTheme } from '@mui/material';
-import { IChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IEntity } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
@@ -18,7 +18,7 @@ import { EntityDates } from '../../Entity/components/EntityDates';
 
 interface IUserInfoCardProps {
     currentUserFromClientSide: IEntity;
-    usersInfoChildTemplate: IChildTemplateWithConstraintsPopulated;
+    usersInfoChildTemplate: IMongoChildTemplateWithConstraintsPopulated;
     overridePropertiesToShow?: string[];
     displayTitle?: boolean;
 }

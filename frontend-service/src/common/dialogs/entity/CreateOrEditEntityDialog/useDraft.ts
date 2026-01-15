@@ -1,11 +1,10 @@
 import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
-import { IEntity } from '@packages/entity';
+import { IEntity, IPropertyValue } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { cloneDeep, debounce } from 'lodash';
 import { Dispatch, SetStateAction, useCallback, useMemo } from 'react';
 import { v4 as uuid } from 'uuid';
 import { environment } from '../../../../globals';
-import { IPropertyValue } from '../../../../interfaces/entities';
 import { useDraftIdStore, useDraftsStore } from '../../../../stores/drafts';
 import { EntityWizardValues } from '..';
 

@@ -1,3 +1,4 @@
+import { IPropertyValue } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React, { useState } from 'react';

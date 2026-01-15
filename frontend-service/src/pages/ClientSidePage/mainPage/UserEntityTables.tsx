@@ -1,5 +1,5 @@
 import { CircularProgress, Grid, Typography } from '@mui/material';
-import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IFilter, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IEntity } from '@packages/entity';
 import { IEntitySingleProperty, IEntityTemplateMap } from '@packages/entity-template';
 import i18next from 'i18next';

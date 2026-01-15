@@ -23,7 +23,7 @@ import { arrayTypes, basePropertyTypes, stringFormats } from '../../../services/
 import { entityTemplateUniqueProperties, regexSchema, variableNameValidation } from '../../../utils/validation';
 import { ErrorToast } from '../../ErrorToast';
 import { StepComponentHelpers, StepComponentProps } from '../index';
-import { CommonFormInputProperties, FieldProperty, FilterType, GroupProperty, IAGGridFilter, PropertyItem } from './commonInterfaces';
+import { CommonFormInputProperties, FieldProperty, FilterType, GroupProperty, IAgGridFilter, PropertyItem } from './commonInterfaces';
 import { FieldBlockDND } from './fieldBlock/FieldBlock';
 import { ItemTypes } from './fieldBlock/interfaces';
 import { getFieldData } from './fieldBlock/propertiesTypes';
@@ -143,7 +143,7 @@ const agGridSetFilterSchema = Yup.object({
 
 // Dynamic filter field validation based on `filterType`
 export const filterFieldSchema = (isRequired: boolean = true) =>
-    Yup.lazy((value: IAGGridFilter, { parent }) => {
+    Yup.lazy((value: IAgGridFilter, { parent }) => {
         const makeOptional = (schema: Yup.AnySchema) => (isRequired ? schema : schema.notRequired().nullable());
 
         switch (value?.filterType) {

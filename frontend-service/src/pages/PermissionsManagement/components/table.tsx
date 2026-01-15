@@ -20,6 +20,7 @@ import { useWorkspaceStore } from '../../../stores/workspace';
 import { translatedEnumColDef } from '../../../utils/agGrid/commonColDefs';
 import { tryCatch } from '../../../utils/tryCatch';
 import { WalletTransferData } from '../../Entity/walletTransfers';
+import { IGetUnits } from '@packages/unit';
 
 const { infiniteScrollPageCount } = environment.permission;
 

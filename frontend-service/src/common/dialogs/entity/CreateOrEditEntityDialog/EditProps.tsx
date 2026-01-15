@@ -1,13 +1,13 @@
 import { Close as CloseIcon } from '@mui/icons-material';
 import { Box, Divider, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IPropertyValue } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { FormikComputedProps, FormikHelpers, FormikState } from 'formik';
 import i18next from 'i18next';
 import { DebouncedFunc, isEqual } from 'lodash';
 import React, { Dispatch, SetStateAction, useEffect, useMemo } from 'react';
 import { IExternalErrors } from '../../../../interfaces/CreateOrEditEntityDialog';
-import { IPropertyValue } from '../../../../interfaces/entities';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import { filterFieldsFromPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';

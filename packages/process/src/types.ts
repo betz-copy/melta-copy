@@ -1,5 +1,5 @@
 import { IEntity, IPropertyValue } from '@packages/entity';
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoEntityTemplateWithConstraintsPopulated, PropertyType } from '@packages/entity-template';
 import { IUser } from '@packages/user';
 
 export enum Status {

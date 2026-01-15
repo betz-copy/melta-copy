@@ -1,5 +1,5 @@
 import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
-import { IEntity, IEntityWithIgnoredRules, IRequiredConstraint, IUniqueConstraint, IUsersNotFoundError } from '@packages/entity';
+import { IEntity, IEntityWithIgnoredRules, IPropertyValue, IRequiredConstraint, IUniqueConstraint, IUsersNotFoundError } from '@packages/entity';
 import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import {
     ActionErrors,

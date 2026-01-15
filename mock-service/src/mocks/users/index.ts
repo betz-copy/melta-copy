@@ -16,6 +16,7 @@ const getUsersToCreate = (rootWorkspaceId: string, mainWorkspaceId: string, cate
             },
             kartoffelId,
             permissions: getPermissionsToCreate(rootWorkspaceId, mainWorkspaceId, categories),
+            usersUnitsWithInheritance: [],
         };
     });
 };

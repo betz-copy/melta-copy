@@ -1,8 +1,8 @@
 import { IChildTemplatePopulated } from '@packages/child-template';
-import { IBrokenRulesError, IEntity, IExcelNotFoundError, UploadedFile } from '@packages/entity';
+import { IBrokenRulesError, IEntity, IExcelNotFoundError, IValidationError, UploadedFile } from '@packages/entity';
 import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import { ActionErrors, ActionTypes, IBrokenRuleEntity, IFailedEntity, IFailedEntityError } from '@packages/rule-breach';
-import { BadRequestError, ServiceError } from '@packages/utils';
+import { BadRequestError, ServiceError, ValidationError } from '@packages/utils';
 import { IWorkspace } from '@packages/workspace';
 import { AxiosError } from 'axios';
 import { StatusCodes } from 'http-status-codes';

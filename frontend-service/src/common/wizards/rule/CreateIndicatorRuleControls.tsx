@@ -1,8 +1,8 @@
 import { Autocomplete, FormControl, FormControlLabel, FormHelperText, Grid, TextField } from '@mui/material';
+import { IPropertyValue } from '@packages/entity';
 import { FormikErrors, FormikTouched, getIn } from 'formik';
 import i18next from 'i18next';
 import React, { useEffect } from 'react';
-import { IPropertyValue } from '../../../interfaces/entities';
 import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
 import TextArea from '../../inputs/TextArea';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';

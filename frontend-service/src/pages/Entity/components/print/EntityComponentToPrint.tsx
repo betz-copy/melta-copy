@@ -1,3 +1,4 @@
+import ShortcutIcon from '@mui/icons-material/Shortcut';
 import { IEntity } from '@packages/entity';
 import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IMongoPrintingTemplate } from '@packages/printing-template';

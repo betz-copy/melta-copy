@@ -1,7 +1,7 @@
 import { Dialog, useTheme } from '@mui/material';
 import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IEntity, IPropertyValue } from '@packages/entity';
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { ActionTypes } from '@packages/rule-breach';
 import i18next from 'i18next';
 import React, { CSSProperties, ReactNode, useState } from 'react';
@@ -16,7 +16,7 @@ import { IChooseTemplateMode } from '../../dialogs/entity/ChooseTemplate';
 import { CreateOrEditEntityDetails } from '../../dialogs/entity/CreateOrEditEntityDialog';
 import { TableButton } from '../../TableButton';
 
-const isTwinWalletsInTransferTemplate = (properties: IEntity['properties'], template: IMongoEntityTemplatePopulated, twinTemplates: string[]) => {
+const isTwinWalletsInTransferTemplate = (properties: IEntity['properties'], template: IMongoEntityTemplateWithConstraintsPopulated, twinTemplates: string[]) => {
     if (!template.walletTransfer) return false;
     const sourceWalletTemplateId = properties[template.walletTransfer?.from].templateId;
     const destWalletTemplateId = properties[template.walletTransfer?.to].templateId;

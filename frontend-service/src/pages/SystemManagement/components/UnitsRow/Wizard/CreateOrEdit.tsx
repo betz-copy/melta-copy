@@ -6,6 +6,7 @@ import * as Yup from 'yup';
 import UnitSelect from '../../../../../common/inputs/UnitTreeSelect';
 import { StepComponentProps } from '../../../../../common/wizards';
 import { UnitWizardValues } from '.';
+import { IGetUnits } from '@packages/unit';
 
 export const createOrEditSchema = {
     name: Yup.string().required(i18next.t('validation.required')),

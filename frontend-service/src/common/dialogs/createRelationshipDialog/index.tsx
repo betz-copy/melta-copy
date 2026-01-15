@@ -1,7 +1,7 @@
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material';
 import { IEntity } from '@packages/entity';
 import { PermissionScope } from '@packages/permission';
-import { IRelationship } from '@packages/relationship';
+import { IMongoRelationship } from '@packages/relationship';
 import { IMongoRelationshipTemplatePopulated } from '@packages/relationship-template';
 import { IBrokenRule, ICreateRelationshipMetadataPopulated, IRuleBreachPopulated } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
@@ -163,7 +163,7 @@ interface ICreateRelationshipBodyPopulated {
 const CreateRelationshipDialog: React.FC<{
     isOpen: boolean;
     handleClose: () => void;
-    onSubmitSuccess: (createdRelationship: IRelationship, sourceEntity: IEntity, destinationEntity: IEntity) => void;
+    onSubmitSuccess: (createdRelationship: IMongoRelationship, sourceEntity: IEntity, destinationEntity: IEntity) => void;
     initialValues?: Partial<ICreateRelationshipValues>;
 }> = ({ isOpen, handleClose, onSubmitSuccess = () => {}, initialValues: parentInitialValues }) => {
     const initialValues = { ...defaultInitialValues, ...parentInitialValues };

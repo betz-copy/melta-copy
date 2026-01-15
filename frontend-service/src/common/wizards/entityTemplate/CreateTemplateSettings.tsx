@@ -30,6 +30,7 @@ const CreateTemplateSettings: React.FC<
             searchEntitiesOfTemplateRequest(values._id ?? '', {
                 skip: 0,
                 limit: 1,
+                showRelationships: false,
             }),
         {
             enabled: isEditMode,

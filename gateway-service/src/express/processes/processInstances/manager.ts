@@ -1,4 +1,4 @@
-import { UploadedFile } from '@packages/entity';
+import { IPropertyValue, UploadedFile } from '@packages/entity';
 import {
     IArchiveProcessNotificationMetadata,
     IArchiveProcessNotificationMetadataPopulated,

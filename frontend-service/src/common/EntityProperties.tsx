@@ -1,7 +1,8 @@
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
 import { Divider, IconButton, Typography } from '@mui/material';
 import { IEntity } from '@packages/entity';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IPrintSection } from '@packages/printing-template';
 import { IGetUnits } from '@packages/unit';
 import _ from 'lodash';
 import React, { CSSProperties, JSX, useState } from 'react';
@@ -111,7 +112,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                 let relatedEntityAllowed: IMongoEntityTemplateWithConstraintsPopulated | undefined;
                 if (format === 'relationshipReference') {
                     const relatedTemplateId = relationshipReference?.relatedTemplateId;
-                    relatedEntityAllowed = entityTemplates?.get(relatedTemplateId);
+                    relatedEntityAllowed = entityTemplates?.get(relatedTemplateId ?? '');
                 }
 
                 const stringFormatValue = formatToString({

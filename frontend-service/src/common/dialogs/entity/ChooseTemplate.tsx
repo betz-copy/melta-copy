@@ -1,11 +1,7 @@
 import { Autocomplete, TextField } from '@mui/material';
 import { IChildTemplateMap, IChildTemplatePopulated, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
-import {
-    IEntityTemplateMap,
-    IEntityTemplatePopulated,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IPropertyValue,
-} from '@packages/entity-template';
+import { IPropertyValue } from '@packages/entity';
+import { IEntityTemplateMap, IEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { PermissionScope } from '@packages/permission';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';

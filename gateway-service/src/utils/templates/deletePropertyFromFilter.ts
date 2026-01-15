@@ -1,5 +1,5 @@
 import { IMongoChart } from '@packages/chart';
-import { MongoBaseFields, TableItem } from '@packages/dashboard';
+import { MongoBaseFields, MongoDashboardItem, TableItem } from '@packages/dashboard';
 import { ISearchFilter } from '@packages/entity';
 import { logger } from '@packages/utils';
 import { omit } from 'lodash';

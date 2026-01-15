@@ -3,7 +3,7 @@ import { Add as AddIcon } from '@mui/icons-material';
 import { Grid, Typography } from '@mui/material';
 import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { EntityData, IEntity, IPropertyValue } from '@packages/entity';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated, PropertyFormat } from '@packages/entity-template';
 import { IRuleBreach } from '@packages/rule-breach';
 import { ISemanticSearchResult } from '@packages/semantic-search';
 import { IGetUnits } from '@packages/unit';

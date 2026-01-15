@@ -8,6 +8,7 @@ import {
     IEntityExpanded,
     IEntityWithDirectRelationships,
     IMultipleSelect,
+    IPropertyValue,
     ISearchBatchBody,
     ISearchEntitiesByLocationBody,
     ISearchEntitiesOfTemplateBody,

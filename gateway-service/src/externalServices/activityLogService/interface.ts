@@ -1,4 +1,5 @@
-import { ActionsLog, IPropertyValue } from '@packages/activity-log';
+import { ActionsLog } from '@packages/activity-log';
+import { IPropertyValue } from '@packages/entity';
 
 interface IBaseActivityLog {
     _id: string;

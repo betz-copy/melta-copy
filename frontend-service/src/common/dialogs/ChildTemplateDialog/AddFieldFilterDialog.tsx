@@ -32,7 +32,7 @@ interface IAddFilterFieldDialogProps {
     formikProps: FormikProps<IChildTemplateForm>;
     entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
     onClose: () => void;
-    onSubmit: (fieldValue: IAGGridFilter | IDefaultValue) => void;
+    onSubmit: (fieldValue: IAgGridFilter | IDefaultValue) => void;
 }
 
 const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
@@ -67,7 +67,7 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
 
     const handleFilterTypeChange = (newTypeFilter: IAgGridDateFilter['type'] | IAgGridTextFilter['type'] | IAgGridNumberFilter['type']) => {
         setCurrentFieldError(undefined);
-        setLocalFilterField({ ...localFilterField, type: newTypeFilter } as IAGGridFilter);
+        setLocalFilterField({ ...localFilterField, type: newTypeFilter } as IAgGridFilter);
     };
 
     const handleFilterFieldChange = (value: IGraphFilterBody['filterField']) => {

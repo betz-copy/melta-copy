@@ -1,7 +1,7 @@
 import { Clear as ClearIcon, Done as DoneIcon } from '@mui/icons-material';
 import { Button, Card, CardContent, CircularProgress, Divider, Grid } from '@mui/material';
 import { ByCurrentDefaultValue, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
-import { IEntity } from '@packages/entity';
+import { IEntity, IPropertyValue } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { ActionTypes } from '@packages/rule-breach';
 import { format } from 'date-fns';
@@ -11,7 +11,6 @@ import { pickBy } from 'lodash';
 import React, { useEffect, useMemo, useState } from 'react';
 import { environment } from '../../../../globals';
 import { ICreateOrUpdateWithRuleBreachDialogState, IExternalErrors, IMutationProps } from '../../../../interfaces/CreateOrEditEntityDialog';
-import { IPropertyValue } from '../../../../interfaces/entities';
 import ActionOnEntityWithRuleBreachDialog from '../../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { useClientSideUserStore } from '../../../../stores/clientSideUser';
 import { UserState, useUserStore } from '../../../../stores/user';

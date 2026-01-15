@@ -1,4 +1,5 @@
 // Most code is copied from
+/** biome-ignore-all lint/suspicious/noTsIgnore: ignore ts ignore */
 // https://mui.com/x/react-tree-view/rich-tree-view/ordering/
 
 import { Hive as HiveIcon, Menu } from '@mui/icons-material';
@@ -15,8 +16,8 @@ import {
     TreeViewCancellableEventHandler,
     useTreeItem,
 } from '@mui/x-tree-view-pro';
+import { IPropertyValue } from '@packages/entity';
 import React, { useMemo } from 'react';
-import { IPropertyValue } from '../../interfaces/entities';
 import { CustomIcon } from '../CustomIcon';
 import MeltaCheckbox from '../MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';

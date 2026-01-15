@@ -183,6 +183,7 @@
         "axios-mock-adapter": "^2.1.0",
         "cesium": "^1.132.0",
         "chance": "^1.1.13",
+        "csstype": "^3.2.3",
         "json-schema-faker": "^0.5.9",
         "patch-package": "^8.0.0",
         "source-map-explorer": "^2.5.3",

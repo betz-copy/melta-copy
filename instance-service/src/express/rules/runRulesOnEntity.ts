@@ -1,4 +1,5 @@
-import { IMongoEntityTemplate, IMongoRule } from '@packages/entity-template';
+import { IMongoEntityTemplate } from '@packages/entity-template';
+import { IMongoRule } from '@packages/rule';
 import { Transaction } from 'neo4j-driver';
 import { normalizeRuleResultOnEntity, normalizeRuleResultsOnEntitiesOfTemplate, runInTransactionAndNormalize } from '../../utils/neo4j/lib';
 import { generateNeo4jRuleQueryOnEntitiesOfTemplate, generateNeo4jRuleQueryOnEntity } from './generateRuleNeo4jQuery';

@@ -9,6 +9,9 @@ import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';
 import { IDeleteDialogState, IWizardDialogState } from './PrintingTemplatesRow';
 import { showProperty } from './RulesRow';
+import { ICategoryMap } from '@packages/category';
+import { IEntityTemplateMap } from '@packages/entity-template';
+import { useDarkModeStore } from '../../../stores/darkMode';
 
 interface PrintingTemplateCardProps {
     printingTemplate: IMongoPrintingTemplate;

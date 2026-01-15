@@ -8,6 +8,7 @@ import {
     IEntity,
     IEntityWithDirectRelationships,
     IMultipleSelect,
+    IPropertyValue,
     IRequiredConstraint,
     ISearchBatchBody,
     ISearchEntitiesByLocationBody,
@@ -18,8 +19,16 @@ import {
     Polygon,
 } from '@packages/entity';
 
-import { IEntitySingleProperty, IEntityTemplate, IMongoEntityTemplate, IRelationshipReference } from '@packages/entity-template';
+import {
+    IEntitySingleProperty,
+    IEntityTemplate,
+    IMongoEntityTemplate,
+    IRelationshipReference,
+    PropertyFormat,
+    PropertyType,
+} from '@packages/entity-template';
 import { IDeleteRelationshipReference, IRelationship } from '@packages/relationship';
+import { IMongoRelationshipTemplate } from '@packages/relationship-template';
 import { ActionOnFail, IMongoRule, IRuleMail } from '@packages/rule';
 import {
     ActionTypes,

@@ -1,3 +1,4 @@
+import { IPropertyValue } from '@packages/entity';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import { CoordinateSystem, locationConverterToString } from '@packages/utils';
 import Handlebars from 'handlebars';

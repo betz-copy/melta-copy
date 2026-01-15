@@ -8,7 +8,6 @@ import {
     IRuleBreachAlertPopulated,
     IRuleBreachPopulated,
     IRuleBreachRequestPopulated,
-    PropertyFormat,
     RuleBreachRequestStatus,
 } from '@packages/rule-breach';
 import i18next from 'i18next';
@@ -16,6 +15,7 @@ import React, { forwardRef, memo, useImperativeHandle, useMemo, useRef } from 'r
 import { toast } from 'react-toastify';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import '../../css/table.css';
+import { PropertyFormat } from '@packages/entity-template';
 import { getRuleBreachAlertsRequest, getRuleBreachRequestsRequest } from '../../services/ruleBreachesService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useWorkspaceStore } from '../../stores/workspace';

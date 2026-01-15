@@ -4,6 +4,7 @@ import { IEntity } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React from 'react';
+import { environment } from '../../../../globals';
 import { IStatusEntitiesTables } from '../../../../interfaces/excel';
 import { EntitiesTable } from './EntitiesTable';
 

@@ -1,8 +1,8 @@
+import { IPropertyValue } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import * as Yup from 'yup';
 import { IChildTemplateFormProperty, IFieldChip } from '../../../interfaces/childTemplateForms';
-import { IPropertyValue } from '../../../interfaces/entities';
 import { matchValueAgainstFilter } from '../../../utils/filters';
 import { variableNameValidation } from '../../../utils/validation';
 import { filterFieldSchema } from '../../wizards/entityTemplate/AddFields';

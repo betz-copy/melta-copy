@@ -1,6 +1,7 @@
 import {
     IChildTemplate,
     IChildTemplateMap,
+    IFilter,
     IMongoChildTemplatePopulated,
     IMongoChildTemplateWithConstraintsPopulated,
 } from '@packages/child-template';

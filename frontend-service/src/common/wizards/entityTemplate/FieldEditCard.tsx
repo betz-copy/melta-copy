@@ -10,8 +10,8 @@ import {
     WrongLocation,
 } from '@mui/icons-material';
 import { Autocomplete, Box, Card, CardContent, FormControlLabel, Grid, IconButton, MenuItem, TextField } from '@mui/material';
-import { IUniqueConstraintOfTemplate } from '@packages/entity';
-import { IEntityTemplateMap } from '@packages/entity-template';
+import { IPropertyValue, IUniqueConstraintOfTemplate } from '@packages/entity';
+import { IEntityTemplateMap, PropertyExternalWizardType } from '@packages/entity-template';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import { isEqual } from 'lodash';
@@ -21,6 +21,7 @@ import { environment } from '../../../globals';
 import { arrayTypes } from '../../../services/templates/entityTemplatesService';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
+import { PropertyWizardType } from '.';
 import { validPropertyTypes } from './AddFields';
 import { CommonFormInputProperties, PropertyItem } from './commonInterfaces';
 import { PropertiesTypes } from './Property/PropertyTypes';
@@ -328,7 +329,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                         name={type}
                                         value={value.type === 'text-area' ? 'string' : value.type}
                                         onChange={(e) => {
-                                            const newType = e.target.value;
+                                            const newType = e.target.value as PropertyWizardType;
                                             setValues?.((prevValue) => ({
                                                 ...prevValue,
                                                 type: newType,

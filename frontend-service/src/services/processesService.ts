@@ -1,7 +1,9 @@
+import { IPropertyValue } from '@packages/entity';
 import {
     IMongoProcessInstanceReviewerPopulated,
     IMongoProcessTemplateReviewerPopulated,
     IMongoStepInstancePopulated,
+    IProcessSingleProperty,
     IReferencedEntityForProcess,
     ISearchProcessInstancesBody,
 } from '@packages/process';

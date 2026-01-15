@@ -2,6 +2,9 @@ import { CellClassParams, ColDef, ICellRendererParams, ValueGetterParams } from 
 import { AgGridReact } from '@ag-grid-community/react';
 import { ArrowBack as ArrowBackIcon, ArrowForward as ArrowForwardIcon } from '@mui/icons-material';
 import { Avatar, Grid } from '@mui/material';
+import { isChildTemplate } from '@packages/child-template';
+import { IEntity, IEntityExpanded } from '@packages/entity';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React, { memo, useMemo, useRef } from 'react';
 import { useQueryClient } from 'react-query';
@@ -10,11 +13,8 @@ import AgGridTable from '../../common/agGridTable';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 import { environment } from '../../globals';
-import { IEntity, IEntityExpanded } from '../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useUserStore } from '../../stores/user';
 import { Value } from '../../utils/agGrid/Value';
-import { isChildTemplate } from '../../utils/templates';
 import { defaultColDef } from '../PermissionsManagement/components/table';
 import { INestedRelationshipTemplates } from '.';
 
@@ -27,7 +27,7 @@ enum Direction {
 }
 
 export interface WalletTransferData {
-    template: IMongoEntityTemplatePopulated;
+    template: IMongoEntityTemplateWithConstraintsPopulated;
     entity: IEntity;
     direction: Direction;
     balanceAtThatTime?: number;
@@ -38,7 +38,7 @@ interface IWalletTransfers {
     templateId: string;
     expandedEntity: IEntityExpanded;
     connectionsTemplates?: INestedRelationshipTemplates[];
-    getButtonStateByRelatedTemplate: (relatedTemplate: IMongoEntityTemplatePopulated) => {
+    getButtonStateByRelatedTemplate: (relatedTemplate: IMongoEntityTemplateWithConstraintsPopulated) => {
         isEditButtonsDisabled: boolean;
         disabledButtonText: string;
         hasPermissionToRelatedTemplate: boolean;
@@ -59,7 +59,9 @@ export const WalletTransfers = ({ templateId, connectionsTemplates, expandedEnti
     const isAdmin = Boolean(currentUser.currentWorkspacePermissions?.admin) || false;
 
     const currentTemplate = entityTemplates.get(expandedEntity.entity.templateId)!;
-    const amountPropertyKey = Object.entries(currentTemplate.properties.properties).find(([_key, property]) => !!property.accountBalance)?.[0];
+    const amountPropertyKey = Object.entries(currentTemplate.properties.properties).find(
+        ([_key, property]) => !!(property as IEntitySingleProperty).accountBalance,
+    )?.[0];
     const currentEntityBalance = expandedEntity.entity.properties[amountPropertyKey!] || 0;
 
     const allTransfersConnectionsTemplates = connectionsTemplates
@@ -69,8 +71,9 @@ export const WalletTransfers = ({ templateId, connectionsTemplates, expandedEnti
         })
         .map(({ relationshipTemplate }) => relationshipTemplate);
 
-    const isWalletTemplate = (entityTemplate: IMongoEntityTemplatePopulated) =>
-        !!Object.values(entityTemplate.properties.properties).find((property) => !!property.accountBalance) && entityTemplate._id === templateId;
+    const isWalletTemplate = (entityTemplate: IMongoEntityTemplateWithConstraintsPopulated) =>
+        !!Object.values(entityTemplate.properties.properties).find((property) => !!(property as IEntitySingleProperty).accountBalance) &&
+        entityTemplate._id === templateId;
 
     const orderedConnectionEntities: WalletTransferData[] = expandedEntity.connections
         .map((connection) => {
@@ -121,7 +124,7 @@ export const WalletTransfers = ({ templateId, connectionsTemplates, expandedEnti
         });
 
         const initialRow: WalletTransferData = {
-            template: {} as IMongoEntityTemplatePopulated,
+            template: {} as IMongoEntityTemplateWithConstraintsPopulated,
             entity: expandedEntity.entity,
             direction: Direction.initial,
             balanceAtThatTime: balance,

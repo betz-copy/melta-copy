@@ -1,8 +1,9 @@
 import { IMongoCategory } from '@packages/category';
 import { IEntitySingleProperty, IEntityTemplate, IEntityTemplatePopulated, IMongoEntityTemplate } from '@packages/entity-template';
 import { IRelationshipTemplate } from '@packages/relationship-template';
-import { DefaultManagerMongo, NotFoundError } from '@packages/utils';
-import { ClientSession, FilterQuery } from 'mongoose';
+import { DefaultManagerMongo, NotFoundError, ServiceError } from '@packages/utils';
+import { StatusCodes } from 'http-status-codes';
+import { ClientSession, FilterQuery, UpdateQuery } from 'mongoose';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
 import { withTransaction } from '../../utils/mongo/mongoose';
@@ -177,11 +178,13 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
             entityTemplate = await createdEntityTemplate.populate<Pick<IEntityTemplatePopulated, 'category'>>('category');
         }
 
+        if (!entityTemplate) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Failed to create entity template');
+
         const { templatesOrder } = entityTemplate.category;
         templatesOrder.push(entityTemplate._id.toString());
         await this.categoryManager.updateCategory(entityTemplate.category._id, { templatesOrder });
 
-        await this.globalSearchIndexCreator.sendUpdateIndexesOnUpdateTemplate(entityTemplate!._id);
+        await this.globalSearchIndexCreator.sendUpdateIndexesOnUpdateTemplate(entityTemplate._id);
 
         return entityTemplate;
     }
@@ -245,7 +248,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         updatedTemplateData: Omit<IEntityTemplate, 'disabled'>,
         allowToDeleteRelationshipFields: boolean,
         session?: ClientSession,
-    ) {
+    ): Promise<IEntityTemplatePopulated> {
         let entityTemplateToUpdate = { ...currentEntityTemplate, ...updatedTemplateData };
 
         if (this.hasRelationshipsProperties(entityTemplateToUpdate)) {
@@ -294,7 +297,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
             );
         }
 
-        return updatedEntityTemplate;
+        return updatedEntityTemplate as unknown as IEntityTemplatePopulated;
     }
 
     async updateEntityTemplate(
@@ -311,7 +314,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
 
         const currentEntityTemplate = await this.getTemplateById(id);
 
-        const newEntityTemplate = session
+        const newEntityTemplate: IEntityTemplatePopulated = session
             ? await this.updateEntityTemplateInTransaction(id, currentEntityTemplate, updatedTemplateData, allowToDeleteRelationshipFields, session)
             : await withTransaction(async (newSession: ClientSession) =>
                   this.updateEntityTemplateInTransaction(id, currentEntityTemplate, updatedTemplateData, allowToDeleteRelationshipFields, newSession),
@@ -334,7 +337,8 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         });
 
         const isNewPropertyAdded =
-            Object.keys(currentEntityTemplate.properties.properties).length !== Object.keys(newEntityTemplate?.properties.properties).length;
+            Object.keys(currentEntityTemplate.properties.properties).length !==
+            Object.keys((newEntityTemplate as IEntityTemplatePopulated).properties.properties).length;
 
         if (isPropertyTypeChanged || isNewPropertyAdded) {
             await this.globalSearchIndexCreator.sendUpdateIndexesOnUpdateTemplate(id);

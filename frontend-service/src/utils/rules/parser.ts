@@ -1,3 +1,4 @@
+import { IPropertyValue } from '@packages/entity';
 import {
     IAggregationGroup,
     IArgument,

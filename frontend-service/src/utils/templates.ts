@@ -1,6 +1,6 @@
 import { IMongoCategory } from '@packages/category';
 import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
-import { IEntityExpanded } from '@packages/entity';
+import { IEntityExpanded, IPropertyValue } from '@packages/entity';
 import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '@packages/relationship-template';
 import { INestedRelationshipTemplates } from '../pages/Entity';
@@ -106,7 +106,7 @@ export const getFullRelationshipTemplates = (
 
         if (isSelfProperty || !connection) continue;
 
-        const hasInstances = expandedEntity?.connections.some(({ relationship: { templateId } }) => templateId === relationshipTemplate._id);
+        const hasInstances = expandedEntity?.connections.some(({ relationship: { templateId } }) => templateId === relationshipTemplate._id) ?? false;
 
         if (filterOnlyThoseWithInstances && !hasInstances) continue;
 

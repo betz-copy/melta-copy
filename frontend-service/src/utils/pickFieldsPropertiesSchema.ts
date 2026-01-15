@@ -1,7 +1,6 @@
-import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated, IProperties, PropertyFormat } from '@packages/entity-template';
 import { IProcessDetails } from '@packages/process';
 import { pickBy } from 'lodash';
-import { PropertyFormat } from '../interfaces/entityTemplates';
 
 export const filterFieldsFromPropertiesSchema = (
     schema: IMongoEntityTemplateWithConstraintsPopulated['properties'] | undefined = {} as IMongoEntityTemplateWithConstraintsPopulated['properties'],

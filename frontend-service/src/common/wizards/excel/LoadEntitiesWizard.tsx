@@ -1,5 +1,5 @@
 import { Grid } from '@mui/material';
-import { IEntityWithIgnoredRules } from '@packages/entity';
+import { IEntityWithIgnoredRules, IPropertyValue } from '@packages/entity';
 import { ActionTypes } from '@packages/rule-breach';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';

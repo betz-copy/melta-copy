@@ -28,6 +28,13 @@
         }
     },
     "biome.formatOnSave": true,
+    "workbench.colorCustomizations": {
+        "statusBar.background": "#007fff",
+        "statusBar.foreground": "#e7e7e7",
+        "statusBarItem.hoverBackground": "#3399ff",
+        "statusBarItem.remoteBackground": "#007fff",
+        "statusBarItem.remoteForeground": "#e7e7e7"
+    },
     "cSpell.words": [
         "ECEF",
         "epsg",
@@ -52,9 +59,11 @@
         "**/node_modules": true,
         "**/dist": true
     },
-    "typescript.tsserver.maxTsServerMemory": 1024,
+    "typescript.tsserver.maxTsServerMemory": 4096,
     "typescript.tsserver.useSyntaxServer": "never",
     "typescript.disableAutomaticTypeAcquisition": true,
+    "typescript.preferences.includePackageJsonAutoImports": "off",
+    "typescript.tsserver.experimental.enableProjectDiagnostics": false,
     "files.watcherExclude": {
         "**/dist/**": true,
         "**/coverage/**": true
