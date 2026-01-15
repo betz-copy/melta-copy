@@ -101,8 +101,6 @@ const MapFilters = ({
     useEffect(() => {
         const noFilters = autoSearch.length < 2 && !Object.keys(listFields).length;
 
-        console.log({ noFilters });
-
         if (noFilters) {
             if (isSearchShape) applyFilterWithShapeSearch('', {});
             else clearAutocompleteSearch();
