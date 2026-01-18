@@ -18,5 +18,5 @@ export default defineConfig({
     splitting: false,
     clean: true,
     shims: true,
-    external: [/^@packages\//],
+    noExternal: [/^@packages\//],
 });

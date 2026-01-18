@@ -6,7 +6,6 @@ import {
     IEntity,
     IEntityExpanded,
     IEntityWithDirectConnections,
-    IEntityWithIgnoredRules,
     IExportEntitiesBody,
     IGraphFilterBodyBatch,
     IMultipleSelect,
@@ -29,6 +28,7 @@ import { IUpdateMultipleEntitiesResponse } from '../common/EntitiesPage/MultiSel
 import { IExternalId } from '../common/EntitiesTableOfTemplate';
 import urlToFile from '../common/fileConversions';
 import { environment } from '../globals';
+import { IEntityWithIgnoredRules } from '../interfaces/entity';
 import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
 import { IEntityTreeNode } from '../pages/Entity/components/print/ComponentToPrint';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';

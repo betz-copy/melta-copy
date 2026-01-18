@@ -1,4 +1,4 @@
-import { FieldGroupData, IRelationshipReference } from '@packages/entity-template';
+import { FieldGroupData, IRelationshipReference, IWalletTransfer } from '@packages/entity-template';
 import { IAgGridDateFilter, IAgGridNumberFilter, IAgGridSetFilter, IAgGridTextFilter } from '@packages/rule-breach';
 import { PropertyWizardType } from '.';
 
@@ -78,3 +78,8 @@ export interface IFilterTemplate {
 }
 
 export type IAgGridFilter = IAgGridTextFilter | IAgGridNumberFilter | IAgGridDateFilter | IAgGridSetFilter;
+
+export interface IWalletTransferPopulated extends Omit<IWalletTransfer, 'from' | 'to'> {
+    from: CommonFormInputProperties;
+    to: CommonFormInputProperties;
+}

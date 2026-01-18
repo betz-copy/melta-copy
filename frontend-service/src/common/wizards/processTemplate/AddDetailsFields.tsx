@@ -1,4 +1,5 @@
 import { Grid } from '@mui/material';
+import { PropertyType } from '@packages/entity-template';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React from 'react';
@@ -58,7 +59,7 @@ export const useAreThereProcessInstancesByTemplateId = (templateId: string, enab
 export const initialFieldCardDataOnAdd = {
     name: '',
     title: '',
-    type: '',
+    type: PropertyType.string,
     options: [],
     pattern: '',
     patternCustomErrorMessage: '',

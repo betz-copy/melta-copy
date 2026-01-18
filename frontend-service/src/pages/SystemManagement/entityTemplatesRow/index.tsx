@@ -1,6 +1,6 @@
 import { Grid } from '@mui/material';
 import { ICategoryMap, IMongoCategory } from '@packages/category';
-import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated, TemplateItem } from '@packages/child-template';
+import { IChildTemplateMap, IMongoChildTemplatePopulated, IMongoChildTemplateWithConstraintsPopulated, TemplateItem } from '@packages/child-template';
 import { IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import { AxiosError } from 'axios';
@@ -45,21 +45,12 @@ export const defaultEntityTemplatePopulated: IMongoEntityTemplateWithConstraints
     uniqueConstraints: [],
     name: '',
     displayName: '',
-    category: {
-        displayName: '',
-        name: '',
-        _id: '',
-        color: '',
-        templatesOrder: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        iconFileId: null,
-    },
+    category: { displayName: '', name: '', _id: '', color: '', templatesOrder: [], createdAt: new Date(), updatedAt: new Date(), iconFileId: '' },
     disabled: false,
     properties: {
-        type: 'object',
         properties: {},
         required: [],
+        type: 'object',
         hide: [],
     },
     createdAt: new Date(),
@@ -171,7 +162,7 @@ const EntityTemplatesRow: React.FC = () => {
                 } else {
                     const { entityTemplate, childTemplates } = data as {
                         entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
-                        childTemplates: IMongoChildTemplateWithConstraintsPopulated[];
+                        childTemplates: IMongoChildTemplatePopulated[];
                     };
 
                     queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>
@@ -181,7 +172,9 @@ const EntityTemplatesRow: React.FC = () => {
                     queryClient.invalidateQueries(searchEntityTemplatesQueryKey);
 
                     queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) => {
-                        childTemplates.forEach((template) => (childTemplateMap ?? new Map()).set(template._id, template));
+                        childTemplates.forEach((template) => {
+                            (childTemplateMap ?? new Map()).set(template._id, template);
+                        });
 
                         return new Map(childTemplateMap);
                     });
@@ -264,33 +257,26 @@ const EntityTemplatesRow: React.FC = () => {
         }
     };
 
-    const { mutateAsync } = useMutation(
-        ({ entityTemplateId, entityTemplate, category }: { entityTemplateId: string; entityTemplate: IEntityTemplate; category: IMongoCategory }) => {
+    const { mutateAsync } = useMutation<
+        IMongoEntityTemplateWithConstraintsPopulated,
+        AxiosError,
+        { entityTemplateId: string; entityTemplate: IEntityTemplate; category: IMongoCategory }
+    >(
+        async ({ entityTemplateId, entityTemplate, category }) => {
             setLoadedEntityTemplateId(entityTemplateId);
 
-            return updateEntityTemplateRequest(
+            return await updateEntityTemplateRequest(
                 entityTemplateId,
                 {
-                    attachmentProperties: [],
-                    archiveProperties: [],
                     ...entityTemplate,
-                    _id: entityTemplateId,
-                    category,
-                } as any,
+                    category: category._id,
+                },
                 queryClient,
             );
         },
         {
-            onSuccess({ template: data, childTemplates }) {
-                queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>
-                    entityTemplateMap!.set(data._id, data as IMongoEntityTemplateWithConstraintsPopulated),
-                );
-                queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) => {
-                    childTemplates.forEach((child) => {
-                        childTemplateMap!.set(child._id, child as IMongoChildTemplateWithConstraintsPopulated);
-                    });
-                    return childTemplateMap!;
-                });
+            onSuccess(data) {
+                queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
 
                 queryClient.invalidateQueries(searchEntityTemplatesQueryKey);
                 const updatedUserPermissions = updateUserPermissionForEntityTemplate(data, currentUser, currentWorkspace._id);

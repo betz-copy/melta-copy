@@ -11,10 +11,10 @@ import {
 } from '@packages/process';
 import { v4 as uuid } from 'uuid';
 import axios from '../../axios';
-import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/commonInterfaces';
+import { PropertyWizardType } from '../../common/wizards/entityTemplate';
 import { ProcessTemplateFormInputProperties, ProcessTemplatePropertyByType, ProcessTemplateWizardValues } from '../../common/wizards/processTemplate';
 import { environment } from '../../globals';
-import { extractProperties, PropertyItemsArray } from './entityTemplatesService';
+import { extractProperties, PropertyItemsArray, PropertyWizardTypes } from './entityTemplatesService';
 
 const { processTemplates } = environment.api;
 
@@ -35,12 +35,12 @@ const processTemplateObjectToProcessTemplateForm = (
     details.propertiesOrder.forEach((key) => {
         const value = details.properties.properties[key];
 
-        let type: string = value.format || value.type;
+        let type: PropertyWizardType = (value.format as PropertyWizardType) || (value.type as PropertyWizardType);
         if (value.enum) {
-            type = 'enum';
+            type = PropertyWizardTypes.enum;
         }
         if (value.pattern) {
-            type = 'pattern';
+            type = PropertyWizardTypes.pattern;
         }
 
         const property: ProcessTemplateFormInputProperties = {
@@ -54,10 +54,10 @@ const processTemplateObjectToProcessTemplateForm = (
             patternCustomErrorMessage: value.patternCustomErrorMessage || '',
         };
 
-        if (value.format === 'fileId') {
+        if (value.format === ProcessPropertyFormats.FileId) {
             detailsAttachmentProperties.push({ type: 'field', data: property });
-        } else if (value.items?.format === 'fileId') {
-            property.type = 'multipleFiles';
+        } else if (value.items?.format === ProcessPropertyFormats.FileId) {
+            property.type = PropertyWizardTypes.multipleFiles;
 
             detailsAttachmentProperties.push({ type: 'field', data: property });
         } else {
@@ -70,12 +70,12 @@ const processTemplateObjectToProcessTemplateForm = (
         step.propertiesOrder.forEach((key) => {
             const value = step.properties.properties[key];
 
-            let type: string = value.format || value.type;
+            let type: PropertyWizardType = (value.format as PropertyWizardType) || (value.type as PropertyWizardType);
             if (value.enum) {
-                type = 'enum';
+                type = PropertyWizardTypes.enum;
             }
             if (value.pattern) {
-                type = 'pattern';
+                type = PropertyWizardTypes.pattern;
             }
 
             const property: ProcessTemplateFormInputProperties = {
@@ -89,10 +89,10 @@ const processTemplateObjectToProcessTemplateForm = (
                 patternCustomErrorMessage: value.patternCustomErrorMessage || '',
             };
 
-            if (value.format === 'fileId') {
+            if (value.format === ProcessPropertyFormats.FileId) {
                 stepsAttachmentProperties.push({ type: 'field', data: property });
-            } else if (value.items?.format === 'fileId') {
-                property.type = 'multipleFiles';
+            } else if (value.items?.format === ProcessPropertyFormats.FileId) {
+                property.type = PropertyWizardTypes.multipleFiles;
 
                 stepsAttachmentProperties.push({ type: 'field', data: property });
             } else {
@@ -129,8 +129,11 @@ const processTemplateObjectToProcessTemplateForm = (
     };
 };
 
-const createFileAttachmentProperty = (type: string, required: boolean): Omit<IProcessSingleProperty, 'title'> & { required?: boolean } => {
-    if (type === 'multipleFiles') {
+const createFileAttachmentProperty = (
+    type: PropertyWizardType,
+    required: boolean,
+): Omit<IProcessSingleProperty, 'title'> & { required?: boolean } => {
+    if (type === PropertyWizardTypes.multipleFiles) {
         return {
             type: PropertyType.array,
             items: {
@@ -215,13 +218,9 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
             properties: {},
             required: [],
         };
-        const { properties: extractStepProperties } = extractProperties<ProcessTemplateFormInputProperties>(
-            step.properties as Array<{ type: 'field'; data: CommonFormInputProperties } | { type: 'group'; fields: CommonFormInputProperties[] }>,
-        );
+        const { properties: extractStepProperties } = extractProperties<ProcessTemplateFormInputProperties>(step.properties as PropertyItemsArray);
         const { properties: extractStepAttachmentProperties } = extractProperties<ProcessTemplateFormInputProperties>(
-            step.attachmentProperties as Array<
-                { type: 'field'; data: CommonFormInputProperties } | { type: 'group'; fields: CommonFormInputProperties[] }
-            >,
+            step.attachmentProperties as PropertyItemsArray,
         );
 
         extractStepProperties.forEach(({ name, title, type, required, options, pattern, patternCustomErrorMessage, deleted }) => {

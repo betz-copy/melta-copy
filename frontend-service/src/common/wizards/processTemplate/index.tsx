@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 import { v4 as uuid } from 'uuid';
 import { createProcessTemplateRequest, updateProcessTemplateRequest } from '../../../services/templates/processTemplatesService';
 import { ErrorToast } from '../../ErrorToast';
+import { PropertyWizardType } from '../entityTemplate';
 import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from '../entityTemplate/CreateTemplateName'; // Import the schema
 import { StepType, Wizard, WizardBaseType } from '../index';
 import { AddDetailsFields, addDetailsFieldsSchema } from './AddDetailsFields';
@@ -17,7 +18,7 @@ import { AddStepsFields, addStepsFieldsSchema } from './AddStepsFields';
 export interface ProcessTemplateFormInputProperties {
     name: string;
     title: string;
-    type: string;
+    type: PropertyWizardType;
     id: string;
     options: string[];
     pattern: string;

@@ -140,7 +140,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
 
                             const entityTemplate = entityTemplates?.get(entity.templateId);
                             const childEntityTemplate = childTemplateId ? childTemplates?.get(childTemplateId) : undefined;
-                            const template = childEntityTemplate ?? entityTemplate;
+                            const template = (childEntityTemplate ?? entityTemplate) as IMongoEntityTemplateWithConstraintsPopulated;
 
                             return (
                                 <EntityCard

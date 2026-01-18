@@ -1,5 +1,5 @@
 import { Grid } from '@mui/material';
-import { IEntityWithIgnoredRules, IPropertyValue } from '@packages/entity';
+import { IPropertyValue } from '@packages/entity';
 import { ActionTypes } from '@packages/rule-breach';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
@@ -8,6 +8,7 @@ import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
+import { IEntityWithIgnoredRules } from '../../../interfaces/entity';
 import { EntitiesWizardValues, ExcelStepStatus, IExcelSteps } from '../../../interfaces/excel';
 import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { exportEntitiesRequest, loadEntitiesRequest } from '../../../services/entitiesService';

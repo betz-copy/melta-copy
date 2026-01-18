@@ -52,8 +52,8 @@ export interface IEntitySingleProperty {
     type: PropertyType;
     format?: PropertyFormat;
     enum?: string[];
-    readOnly?: true;
-    identifier?: true;
+    readOnly?: boolean;
+    identifier?: boolean;
     pattern?: string;
     patternCustomErrorMessage?: string;
     dateNotification?: number;
@@ -107,11 +107,6 @@ export interface IWalletTransfer {
     to: string;
     description: string;
     amount: string;
-}
-
-export interface IWalletTransferPopulated extends Omit<IWalletTransfer, 'from' | 'to'> {
-    from: IEntitySingleProperty;
-    to: IEntitySingleProperty;
 }
 
 export interface IEntityTemplate {

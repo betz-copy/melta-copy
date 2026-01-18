@@ -1,6 +1,6 @@
 import { InfoOutlined } from '@mui/icons-material';
 import { Box, Grid, Typography } from '@mui/material';
-import { IWalletTransferPopulated, PropertyFormat } from '@packages/entity-template';
+import { PropertyFormat } from '@packages/entity-template';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useEffect } from 'react';
@@ -14,7 +14,7 @@ import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip, { TooltipVariant } from '../../MeltaDesigns/MeltaTooltip';
 import { StepComponentProps } from '../index';
 import { EntityTemplateWizardValues } from '.';
-import { CommonFormInputProperties } from './commonInterfaces';
+import { CommonFormInputProperties, IWalletTransferPopulated } from './commonInterfaces';
 import { WalletTransferAutocomplete } from './WalletTransferAutoComplete';
 
 function validateDifferent(this: Yup.TestContext, value: CommonFormInputProperties | undefined, otherKey: 'from' | 'to') {
@@ -50,7 +50,7 @@ export const walletTransferSettingsSchema = () => {
 
                 if (!from || !to || typeof from === 'string' || typeof to === 'string') return true;
 
-                const isValid = from.format === PropertyFormat.relationshipReference || to.format === PropertyFormat.relationshipReference;
+                const isValid = from.type === PropertyFormat.relationshipReference || to.type === PropertyFormat.relationshipReference;
                 if (!isValid) {
                     const errorMessage = i18next.t('validation.eitherFromOrToRelationshipReference');
 

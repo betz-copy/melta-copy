@@ -7,7 +7,6 @@ import {
     IEntityTemplateMap,
     IEntityTemplateWithConstraintsPopulated,
     IWalletTransfer,
-    IWalletTransferPopulated,
     PropertyExternalWizardType,
     PropertyFormat,
     PropertyType,
@@ -33,7 +32,7 @@ import { AddFields, addFieldsSchema } from './AddFields';
 import { ChooseIcon } from './ChooseIcon';
 import { useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
 import { CreateTemplateSettings } from './CreateTemplateSettings';
-import { CommonFormInputProperties, IFilterTemplate, PropertyItem } from './commonInterfaces';
+import { CommonFormInputProperties, IFilterTemplate, IWalletTransferPopulated, PropertyItem } from './commonInterfaces';
 import { UploadExportFormats } from './UploadExportFormats';
 import { WalletTransferSettings, walletTransferSettingsSchema } from './WalletTransferSettings';
 
@@ -148,18 +147,11 @@ const EntityTemplateWizard: React.FC<
                     queryClient,
                 );
             }
-            const createdTemplate = await createEntityTemplateRequest(entityTemplate, queryClient);
-            return { template: createdTemplate, childTemplates: [] };
+            return await createEntityTemplateRequest(entityTemplate, queryClient);
         },
         {
-            onSuccess: async ({ template: data, childTemplates }) => {
+            onSuccess: async (data) => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
-                queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) => {
-                    childTemplates.forEach((child) => {
-                        childTemplateMap!.set(child._id, child);
-                    });
-                    return childTemplateMap!;
-                });
 
                 queryClient.invalidateQueries(searchEntityTemplatesQueryKey);
 

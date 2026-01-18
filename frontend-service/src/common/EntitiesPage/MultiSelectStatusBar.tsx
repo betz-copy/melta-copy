@@ -3,7 +3,7 @@ import { Delete, Edit } from '@mui/icons-material';
 import { Box, CircularProgress, Grid, Typography } from '@mui/material';
 import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IDeleteEntityBody, IMultipleSelect, IPropertyValue } from '@packages/entity';
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated, PropertyFormat } from '@packages/entity-template';
 import { ActionTypes, IBrokenRule, ICreateEntityMetadata } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -179,10 +179,10 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
             api.refreshServerSide();
 
             const relatedTemplateIds = Object.values(template.properties.properties)
-                .filter((value) => value?.format === 'relationshipReference')
-                .map((value) => value.relationshipReference?.relatedTemplateId);
+                .filter((value) => (value as IEntitySingleProperty)?.format === PropertyFormat.relationshipReference)
+                .map((value) => (value as IEntitySingleProperty).relationshipReference?.relatedTemplateId);
 
-            setUpdatedTemplateIds?.(relatedTemplateIds);
+            setUpdatedTemplateIds?.(relatedTemplateIds as string[]);
         }
     };
 

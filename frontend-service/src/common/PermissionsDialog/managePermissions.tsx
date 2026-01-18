@@ -50,7 +50,7 @@ const ManagePermissions: React.FC<{
                 mode === 'view' &&
                 Object.entries(currentPermissions)
                     .filter(([key]) => !['admin', 'instances'].includes(key))
-                    .some(([_, perm]) => perm?.scope === PermissionScope.write)
+                    .some(([_, perm]) => (perm as { scope?: PermissionScope }).scope === PermissionScope.write)
             ) ||
                 isAdmin) && (
                 <Box>
@@ -133,7 +133,8 @@ const ManagePermissions: React.FC<{
                                           checked:
                                               (Object.keys(categoriesPermissions).length === categories.size &&
                                                   Object.values(categoriesPermissions).every(
-                                                      (categoryPermission) => categoryPermission?.scope === PermissionScope.write,
+                                                      (categoryPermission) =>
+                                                          (categoryPermission as { scope?: PermissionScope }).scope === PermissionScope.write,
                                                   )) ||
                                               isAdmin,
                                           onChange: (_e, checked) => {
@@ -158,7 +159,9 @@ const ManagePermissions: React.FC<{
                                       read: {
                                           checked:
                                               (Object.keys(categoriesPermissions).length === categories.size &&
-                                                  Object.values(categoriesPermissions).every((categoryPermission) => categoryPermission?.scope)) ||
+                                                  Object.values(categoriesPermissions).every(
+                                                      (categoryPermission) => (categoryPermission as { scope?: PermissionScope }).scope ?? false,
+                                                  )) ||
                                               isAdmin,
                                           onChange: (_e, checked) => {
                                               Array.from(categories).forEach(([categoryId]) => {
