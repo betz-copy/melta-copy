@@ -224,7 +224,7 @@ const MapFilters = ({
                             ...(darkMode
                                 ? {}
                                 : {
-                                      backgroundColor: '#FFFFFF',
+                                      backgroundColor: 'white',
                                       '& .MuiOutlinedInput-notchedOutline': { border: '' },
                                   }),
                         }}

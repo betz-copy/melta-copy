@@ -129,7 +129,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
 
     useEffect(() => applyFilterWithShapeSearch(autoSearch, listFields), [polygons, coordinates]);
 
-    // useCesiumTooltip({ viewerRef, darkMode, entityTemplateMap, searchedEntitiesPolygons, filteredPolygons });
+    // useCesiumTooltip({ viewerRef, darkMode, entityTemplateMap, searchedEntitiesPolygons, filteredPolygons }); //TODO: tooltip for map entities
 
     useEffect(() => {
         const animateCamera = () => {
