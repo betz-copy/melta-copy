@@ -51,7 +51,7 @@ export interface IMongoChildTemplate extends IChildTemplate {
 }
 
 export interface IChildTemplatePopulatedFromDb extends Omit<IMongoChildTemplate, 'category' | 'parentTemplateId'> {
-    parentTemplateId: IFullMongoEntityTemplate;
+    parentTemplate: IFullMongoEntityTemplate;
     category: IMongoCategory;
 }
 

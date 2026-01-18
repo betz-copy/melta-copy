@@ -118,7 +118,7 @@ const ChildTemplateDialog: React.FC<{
             ...rest,
             name: name.replace(`${entityTemplate.name}_`, ''),
             displayName: displayName.replace(`${entityTemplate.displayName}-`, ''),
-            parentTemplateId: rest.parentTemplate,
+            parentTemplate: rest.parentTemplate,
             category: rest._id ? category : entityTemplate.category,
             properties: { properties: newProperties },
             filterByCurrentUserField: rest.filterByCurrentUserField ?? undefined,
@@ -210,8 +210,7 @@ const ChildTemplateDialog: React.FC<{
                                 ...rest,
                                 filters: filters
                                     ? filterDocumentToFilterBackend(
-                                          // TODO: CHECK IF WORKS
-                                          values.parentTemplateId._id || entityTemplate._id,
+                                          values.parentTemplate._id || entityTemplate._id,
                                           filters.map((filter) => ({ filterProperty: key, filterField: filter })),
                                           queryClient,
                                           FilterLogicalOperator.OR,

@@ -48,7 +48,7 @@ class ChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate> {
         const populatedWithParent = await this.model
             .find(query)
             .populate<Pick<IChildTemplatePopulatedFromDb, 'category'>>('category')
-            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplateId'>>('parentTemplateId')
+            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplate'>>('parentTemplateId')
             .limit(limit)
             .skip(skip)
             .lean()
@@ -61,7 +61,7 @@ class ChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate> {
         const populatedWithParent = await this.model
             .find()
             .populate<Pick<IChildTemplatePopulatedFromDb, 'category'>>('category')
-            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplateId'>>('parentTemplateId')
+            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplate'>>('parentTemplateId')
             .lean()
             .exec();
 
@@ -72,7 +72,7 @@ class ChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate> {
         const populatedWithParent = await this.model
             .findById(id)
             .populate<Pick<IChildTemplatePopulatedFromDb, 'category'>>('category')
-            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplateId'>>('parentTemplateId')
+            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplate'>>('parentTemplateId')
             .orFail(new NotFoundError('Child Template not found'))
             .lean()
             .exec();
@@ -127,7 +127,7 @@ class ChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate> {
         const populatedWithParent = await this.model
             .findByIdAndUpdate(id, { disabled: disabledStatus }, { new: true })
             .populate<Pick<IChildTemplatePopulatedFromDb, 'category'>>('category')
-            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplateId'>>('parentTemplateId')
+            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplate'>>('parentTemplateId')
             .orFail(new NotFoundError('Child Template not found'))
             .lean()
             .exec();
@@ -141,7 +141,7 @@ class ChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate> {
         const populatedWithParent = await this.model
             .find({ parentTemplateId })
             .populate<Pick<IChildTemplatePopulatedFromDb, 'category'>>('category')
-            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplateId'>>('parentTemplateId')
+            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplate'>>('parentTemplateId')
             .lean()
             .exec();
 

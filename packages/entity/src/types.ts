@@ -1,4 +1,3 @@
-import { Readable } from 'node:stream';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IMongoRelationship, IRelationship } from '@packages/relationship';
 import { IMongoRelationshipTemplate } from '@packages/relationship-template';
@@ -16,6 +15,8 @@ import {
     ICreateEntityMetadata,
     IFailedEntity,
 } from '@packages/rule-breach';
+// biome-ignore lint/style/useNodejsImportProtocol: <explanation>
+import { Readable } from 'stream';
 
 // biome-ignore lint/suspicious/noExplicitAny: prop value is any
 export type IPropertyValue = any;
