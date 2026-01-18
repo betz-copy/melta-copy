@@ -1,11 +1,13 @@
 import { IServerSideSelectionState, IStatusPanelParams } from '@ag-grid-community/core';
-import { Delete, Edit } from '@mui/icons-material';
+import { CheckCircle, Delete, Edit } from '@mui/icons-material';
 import { Box, CircularProgress, Grid, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import axios from '../../axios';
+import { environment } from '../../globals';
 import { IChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { IDeleteEntityBody, IMultipleSelect, IPropertyValue } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -13,6 +15,7 @@ import { IBrokenRuleEntity, IFailedEntity } from '../../interfaces/excel';
 import { ActionTypes, ICreateEntityMetadata } from '../../interfaces/ruleBreaches/actionMetadata';
 import { IBrokenRule } from '../../interfaces/ruleBreaches/ruleBreach';
 import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
+import { IAISummaryResponse, summarizeFilesRequest } from '../../services/aiSummaryService';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { deleteEntityRequest, updateMultipleEntitiesRequest } from '../../services/entitiesService';
 import { useDarkModeStore } from '../../stores/darkMode';
@@ -30,12 +33,14 @@ import { ajvValidate } from '../inputs/JSONSchemaFormik';
 import { TableButton } from '../TableButton';
 import { StepType, Wizard } from '../wizards';
 import { StatusEntitiesTables } from '../wizards/excel/excelSteps/StatusEntitiesTables';
+import { AISummaryDialog } from './AISummaryDialog';
 import { DeleteEntitiesDialog } from './DeleteEntitiesDialog';
 
 interface MultiSelectStatusBarProps extends IStatusPanelParams {
     template: IMongoEntityTemplatePopulated | IChildTemplatePopulated;
     quickFilterText: string;
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
+    aiSummarySelectMode?: boolean;
 }
 
 export interface IUpdateMultipleEntitiesResponse {
@@ -44,7 +49,13 @@ export interface IUpdateMultipleEntitiesResponse {
     brokenRulesEntities?: IBrokenRuleEntity[];
 }
 
-export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api, template, quickFilterText, setUpdatedTemplateIds }) => {
+export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({
+    api,
+    template,
+    quickFilterText,
+    setUpdatedTemplateIds,
+    aiSummarySelectMode,
+}) => {
     const initialValues: EntityWizardValues = getInitialValuesWithDefaults({
         template,
         attachmentsProperties: {},
@@ -74,6 +85,8 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
     const [wasDirty, setWasDirty] = useState(false);
     const [initialValuePropsToFilter, setInitialValuePropsToFilter] = useState<Record<string, IPropertyValue>>(initialValues);
     const [entityData, setEntityData] = useState<{ propertiesToChange: EntityWizardValues; propertiesToRemove: string[] } | undefined>(undefined);
+    const [aiSummaryDialogOpen, setAiSummaryDialogOpen] = useState(false);
+    const [aiSummaryText, setAiSummaryText] = useState('');
 
     const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(
         (deleteBody: IDeleteEntityBody) => deleteEntityRequest(deleteBody),
@@ -114,6 +127,76 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                     toast.error(i18next.t('errorCodes.FILES_TOO_BIG'));
                     setExternalErrors((prev) => ({ ...prev, files: true }));
                 } else toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
+            },
+        },
+    );
+
+    const { isLoading: isAISummaryLoading, mutateAsync: aiSummaryMutation } = useMutation(
+        async () => {
+            const selectedRows = api.getSelectedRows();
+            if (selectedRows.length === 0) {
+                throw new Error('No rows selected');
+            }
+
+            // Find file properties in the template (both single files and file arrays)
+            const fileProperties = Object.entries(template.properties.properties)
+                .filter(([_, prop]) => prop.format === 'fileId' || prop.items?.format === 'fileId')
+                .map(([key]) => key);
+
+            if (fileProperties.length === 0) {
+                throw new Error('No file properties in this template');
+            }
+
+            // Collect all file IDs from selected entities
+            const fileIds: string[] = [];
+            selectedRows.forEach((row) => {
+                fileProperties.forEach((propKey) => {
+                    const value = row.properties[propKey];
+                    if (value) {
+                        if (Array.isArray(value)) {
+                            fileIds.push(...value.filter((v: string) => v));
+                        } else {
+                            fileIds.push(value);
+                        }
+                    }
+                });
+            });
+
+            if (fileIds.length === 0) {
+                throw new Error('No files found in selected entities');
+            }
+
+            // Download files and convert to File objects
+            const files: File[] = [];
+            for (const fileId of fileIds) {
+                try {
+                    const response = await axios.get(`${environment.api.storage}/${fileId}`, {
+                        responseType: 'blob',
+                    });
+                    const blob = response.data as Blob;
+                    // Only process PDF files
+                    if (blob.type === 'application/pdf') {
+                        const file = new File([blob], `${fileId}.pdf`, { type: blob.type });
+                        files.push(file);
+                    }
+                } catch (err) {
+                    console.error(`Failed to download file ${fileId}:`, err);
+                }
+            }
+
+            if (files.length === 0) {
+                throw new Error('No PDF files found in selected entities');
+            }
+
+            return summarizeFilesRequest(files);
+        },
+        {
+            onSuccess: (data: IAISummaryResponse) => {
+                setAiSummaryText(data.summary);
+                setAiSummaryDialogOpen(true);
+            },
+            onError: (error: Error) => {
+                toast.error(`${i18next.t('actions.aiSummary')}: ${error.message}`);
             },
         },
     );
@@ -316,39 +399,61 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
     return (
         <Grid>
             <Grid container spacing={2} alignItems="center">
-                <Grid>
-                    <TableButton
-                        iconButtonWithPopoverProps={{
-                            popoverText: i18next.t(`entitiesTableOfTemplate.deleteWithRelationship${workspaceAdmin ? 'Reference' : ''}Warn`),
-                            iconButtonProps: {
-                                onClick: () => setOpenDeleteDialog(true),
-                                sx: {
-                                    fontSize: '15px',
-                                    marginTop: '6px',
+                {!aiSummarySelectMode && (
+                    <Grid>
+                        <TableButton
+                            iconButtonWithPopoverProps={{
+                                popoverText: i18next.t(`entitiesTableOfTemplate.deleteWithRelationship${workspaceAdmin ? 'Reference' : ''}Warn`),
+                                iconButtonProps: {
+                                    onClick: () => setOpenDeleteDialog(true),
+                                    sx: {
+                                        fontSize: '15px',
+                                        marginTop: '6px',
+                                    },
                                 },
-                            },
-                        }}
-                        icon={isDeleteLoading ? <CircularProgress /> : <Delete fontSize="small" />}
-                        text={i18next.t('actions.delete')}
-                        disableButton={selectedRowCount === 0 || selectedRowCount >= deleteEntitiesLimit}
-                    />
-                </Grid>
+                            }}
+                            icon={isDeleteLoading ? <CircularProgress /> : <Delete fontSize="small" />}
+                            text={i18next.t('actions.delete')}
+                            disableButton={selectedRowCount === 0 || selectedRowCount >= deleteEntitiesLimit}
+                        />
+                    </Grid>
+                )}
+
+                {!aiSummarySelectMode && (
+                    <Grid>
+                        <TableButton
+                            iconButtonWithPopoverProps={{
+                                popoverText: i18next.t('actions.edit'),
+                                iconButtonProps: {
+                                    onClick: () => setOpenEditDialog(true),
+                                    sx: {
+                                        fontSize: '15px',
+                                        marginTop: '6px',
+                                    },
+                                },
+                            }}
+                            icon={isDeleteLoading ? <CircularProgress /> : <Edit fontSize="small" />}
+                            text={i18next.t('actions.edit')}
+                            disableButton={selectedRowCount === 0 || selectedRowCount >= deleteEntitiesLimit}
+                        />
+                    </Grid>
+                )}
 
                 <Grid>
                     <TableButton
                         iconButtonWithPopoverProps={{
-                            popoverText: i18next.t('actions.edit'),
+                            popoverText: i18next.t('actions.aiSummary'),
                             iconButtonProps: {
-                                onClick: () => setOpenEditDialog(true),
+                                onClick: () => aiSummaryMutation(),
                                 sx: {
                                     fontSize: '15px',
                                     marginTop: '6px',
                                 },
                             },
                         }}
-                        icon={isDeleteLoading ? <CircularProgress /> : <Edit fontSize="small" />}
-                        text={i18next.t('actions.edit')}
-                        disableButton={selectedRowCount === 0 || selectedRowCount >= deleteEntitiesLimit}
+                        icon={isAISummaryLoading ? <CircularProgress size={20} /> : <CheckCircle fontSize="small" />}
+                        text={i18next.t('actions.summarize')}
+                        disableButton={selectedRowCount === 0}
                     />
                 </Grid>
 
@@ -426,6 +531,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                     onCreateRuleBreachRequest={() => handleClose(true)}
                 />
             )}
+            <AISummaryDialog open={aiSummaryDialogOpen} handleClose={() => setAiSummaryDialogOpen(false)} initialSummary={aiSummaryText} />
         </Grid>
     );
 };

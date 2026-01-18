@@ -108,6 +108,11 @@ export default {
         addActions: 'הוספת פעולות',
         addChildTemplate: 'הוספת תצוגת בן',
         convertToRelationShipFieldClick: 'המרה לשדה קשר',
+        aiSummary: 'סיכום AI',
+        copyToClipboard: 'העתק ללוח',
+        copiedToClipboard: 'הועתק ללוח',
+        close: 'סגירה',
+        summarize: 'סכם',
     },
     entityTemplatesRow: {
         areYouSureDeleteEntityTemplate: 'מחיקת תבנית ישות',

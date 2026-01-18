@@ -89,4 +89,14 @@ apiRouter.use('/workspaces', workspaceRouter);
 
 apiRouter.use('/client-side', ClientSideRouter);
 
+apiRouter.use(
+    '/ai-summary',
+    createProxyMiddleware({
+        target: config.aiSummaryService.url,
+        changeOrigin: true,
+        on: { proxyReq: fixRequestBody },
+        proxyTimeout: config.aiSummaryService.requestTimeout,
+    }),
+);
+
 export default apiRouter;
