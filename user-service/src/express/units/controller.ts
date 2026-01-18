@@ -12,7 +12,7 @@ class UnitsController {
     }
 
     static async getUnitById(req: Request, res: Response) {
-        res.json(await UnitsManager.getUnit(req.params.unitId));
+        res.json(await UnitsManager.getUnit(req.params.unitId as string));
     }
 
     static async createUser(req: Request, res: Response) {
@@ -21,11 +21,11 @@ class UnitsController {
 
     static async updateUnit(req: Request, res: Response) {
         const { shouldEffectChildren, ...unit } = req.body;
-        res.json(await UnitsManager.updateUnit(req.params.id, unit, shouldEffectChildren));
+        res.json(await UnitsManager.updateUnit(req.params.id as string, unit, shouldEffectChildren));
     }
 
     static async getUnitHierarchy(req: Request, res: Response) {
-        res.json(await UnitsManager.getUnitHierarchy(req.params.workspaceId, req.query.userId as unknown as string));
+        res.json(await UnitsManager.getUnitHierarchy(req.params.workspaceId as string, req.query.userId as unknown as string));
     }
 }
 

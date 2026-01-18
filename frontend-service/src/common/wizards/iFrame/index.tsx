@@ -40,7 +40,7 @@ export const updateIFramesOrderOnLocalStorage = (data: IMongoIFrame, queryClient
 
     if (iFramesOrder) {
         let iFramesStored = JSON.parse(iFramesOrder);
-        const index = iFramesStored.findIndex((iFrameId) => iFrameId === data._id);
+        const index = iFramesStored.indexOf(data._id);
 
         if (index === -1) {
             iFramesStored = [data._id, ...iFramesStored];

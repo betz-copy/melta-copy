@@ -42,7 +42,7 @@ const ClientSidePageInner: React.FC = () => {
         isError,
     } = useQuery({
         queryKey: ['searchEntitiesOfTemplate', usersInfoChildTemplate?.parentTemplate._id, user?.kartoffelId],
-        queryFn: () => getCurrentUserEntity(usersInfoChildTemplate?.parentTemplate._id || '', user?.kartoffelId!),
+        queryFn: () => getCurrentUserEntity(usersInfoChildTemplate?.parentTemplate._id || '', user?.kartoffelId ?? ''),
         onError: () => {
             navigate('/client-side/user-not-exists');
         },

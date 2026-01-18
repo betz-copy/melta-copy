@@ -14,11 +14,15 @@ class ElasticSearchManager extends DefaultManagerElastic {
 
             if (typeof value === 'object') {
                 if (Array.isArray(value)) {
-                    value.forEach((item) => recursiveHelper(item));
+                    value.forEach((item) => {
+                        recursiveHelper(item);
+                    });
                 } else if (value instanceof Date) {
                     valuesString.push(value.toISOString());
                 } else {
-                    Object.entries(value).forEach(([key, val]) => recursiveHelper(val, key));
+                    Object.entries(value).forEach(([key, val]) => {
+                        recursiveHelper(val, key);
+                    });
                 }
             } else {
                 valuesString.push(String(value));

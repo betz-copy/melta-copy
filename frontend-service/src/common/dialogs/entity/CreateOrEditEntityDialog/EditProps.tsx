@@ -109,13 +109,13 @@ const EditProps: React.FC<{
         // (if the value changes it won't be undefined and it will consider it dirty)
         const isSignatureField = (key: string) => values.template?.properties.properties[key]?.format === 'signature';
         const valuePropsToFilter = { ...values.properties };
-        Object.keys(valuePropsToFilter).forEach((key) =>
-            valuePropsToFilter[key] === undefined || isSignatureField(key) ? delete valuePropsToFilter[key] : {},
-        );
+        Object.keys(valuePropsToFilter).forEach((key) => {
+            valuePropsToFilter[key] === undefined || isSignatureField(key) ? delete valuePropsToFilter[key] : {};
+        });
 
-        Object.keys(initialValuePropsToFilter).forEach((key) =>
-            initialValuePropsToFilter[key] === undefined || isSignatureField(key) ? delete initialValuePropsToFilter[key] : {},
-        );
+        Object.keys(initialValuePropsToFilter).forEach((key) => {
+            initialValuePropsToFilter[key] === undefined || isSignatureField(key) ? delete initialValuePropsToFilter[key] : {};
+        });
 
         return !isEqual(valuePropsToFilter, initialValuePropsToFilter);
     }, [values.properties, initialValuePropsToFilter, values.template]);
@@ -135,7 +135,9 @@ const EditProps: React.FC<{
 
     if (isMultipleSelection) {
         const uniqueFields: string[] = [];
-        values.template.uniqueConstraints.forEach((groupField) => uniqueFields.push(...groupField.properties));
+        values.template.uniqueConstraints.forEach((groupField) => {
+            uniqueFields.push(...groupField.properties);
+        });
         uniqueFields.forEach((uniqueField) => {
             schema.properties[uniqueField].readOnly = true;
         });

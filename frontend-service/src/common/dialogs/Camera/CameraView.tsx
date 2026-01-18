@@ -41,7 +41,9 @@ const CameraView: React.FC<ICameraViewProps> = ({ videoRef, setVideoRef, stream,
             toast.error(i18next.t('camera.somethingWentWrong'));
         }
 
-        stream.getVideoTracks().forEach((track) => track.stop());
+        stream.getVideoTracks().forEach((track) => {
+            track.stop();
+        });
         setStream(null);
         setOpenImageView(true);
     };

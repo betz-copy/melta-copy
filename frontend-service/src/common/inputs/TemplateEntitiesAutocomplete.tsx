@@ -250,7 +250,9 @@ const TemplateEntitiesAutocomplete: React.FC<{
     orderedProperties
         .filter((prop) => prop !== showField && !displayKeys.includes(prop))
         .slice(0, metadata.numOfRelationshipFieldsToShow - 1)
-        .forEach((prop) => displayKeys.push(prop));
+        .forEach((prop) => {
+            displayKeys.push(prop);
+        });
 
     const convertPropertyToString = (value: IPropertyValue, property: IEntitySingleProperty | undefined): string | undefined => {
         if (property?.format === 'unitField') return units.find((unit) => unit._id === value)?.name ?? '';
