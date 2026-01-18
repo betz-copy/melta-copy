@@ -141,7 +141,6 @@ const EditProps: React.FC<{
         values.template.uniqueConstraints.forEach((groupField) => {
             uniqueFields.push(...groupField.properties);
         });
-
         uniqueFields.forEach((uniqueField) => {
             schema.properties[uniqueField].readOnly = true;
         });

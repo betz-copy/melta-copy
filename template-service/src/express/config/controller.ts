@@ -18,7 +18,7 @@ class ConfigController extends DefaultController<IMongoBaseConfig, ConfigManager
 
     async updateCategoryOrder(req: Request, res: Response) {
         const { newIndex, item }: { newIndex: number; item: string } = req.body;
-        res.json(await this.manager.updateCategoryOrder(req.params.configId, newIndex, item));
+        res.json(await this.manager.updateCategoryOrder(req.params.configId as string, newIndex, item));
     }
 
     async createCategoryOrder(req: Request, res: Response) {

@@ -15,7 +15,7 @@ class IFrameController extends DefaultController<IMongoIframe, IFrameManager> {
     }
 
     async getIFrameById(req: Request, res: Response) {
-        res.json(await this.manager.getIFrameById(req.params.iFrameId));
+        res.json(await this.manager.getIFrameById(req.params.iFrameId as string));
     }
 
     async createIFrame(req: Request, res: Response) {
@@ -23,11 +23,11 @@ class IFrameController extends DefaultController<IMongoIframe, IFrameManager> {
     }
 
     async deleteIFrame(req: Request, res: Response) {
-        res.json(await this.manager.deleteIFrame(req.params.iFrameId));
+        res.json(await this.manager.deleteIFrame(req.params.iFrameId as string));
     }
 
     async updateIFrame(req: Request, res: Response) {
-        res.json(await this.manager.updateIFrame(req.params.iFrameId, req.body));
+        res.json(await this.manager.updateIFrame(req.params.iFrameId as string, req.body));
     }
 }
 

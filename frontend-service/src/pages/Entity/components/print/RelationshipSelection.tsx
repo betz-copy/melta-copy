@@ -71,7 +71,6 @@ const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity,
             ),
 
         enabled: !!rootEntityId,
-        initialData: [],
     });
 
     const { expandedIds, onSearch, searchedUnits, setExpandedIds } = useSearchUnits(relationShips ?? [], getItemId, (item, search) =>

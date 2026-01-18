@@ -243,6 +243,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                 onDuplicateClick={
                                     childTemplates?.get(entityTemplate._id)
                                         ? () => {
+                                              // biome-ignore lint/suspicious/noNonNullAssertedOptionalChain: lol
                                               const childTemplate = childTemplates?.get(entityTemplate._id)!;
                                               const populatedParentTemplate = entityTemplates?.get(childTemplate.parentTemplate._id);
                                               if (!populatedParentTemplate) return;

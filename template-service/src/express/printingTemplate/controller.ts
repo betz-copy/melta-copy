@@ -13,15 +13,15 @@ class PrintingTemplateController extends DefaultController<IMongoPrintingTemplat
     }
 
     async getPrintingTemplateById(req: Request, res: Response) {
-        res.json(await this.manager.getTemplateById(req.params.templateId));
+        res.json(await this.manager.getTemplateById(req.params.templateId as string));
     }
 
     async updatePrintingTemplateById(req: Request, res: Response) {
-        res.json(await this.manager.updateTemplateById(req.params.templateId, req.body));
+        res.json(await this.manager.updateTemplateById(req.params.templateId as string, req.body));
     }
 
     async deletePrintingTemplateById(req: Request, res: Response) {
-        res.json(await this.manager.deleteTemplateById(req.params.templateId));
+        res.json(await this.manager.deleteTemplateById(req.params.templateId as string));
     }
 
     async createPrintingTemplate(req: Request, res: Response) {

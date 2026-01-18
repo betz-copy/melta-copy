@@ -51,7 +51,7 @@ const ClientSidePage: React.FC = () => {
 
     const { isLoading: isLoadingAllClientSideTemplates, isError: isErrorAllClientSideTemplates } = useQuery<GetAllClientSideTemplatesType>(
         'getAllClientSideTemplates',
-        () => getAllClientSideTemplates(workspace?.metadata?.clientSide!.usersInfoChildTemplateId || ''),
+        () => getAllClientSideTemplates(workspace?.metadata?.clientSide?.usersInfoChildTemplateId || ''),
         {
             onError: (error) => {
                 toast.error(i18next.t('failedToGetTemplates'));

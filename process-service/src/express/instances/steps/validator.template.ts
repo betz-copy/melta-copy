@@ -15,7 +15,7 @@ export default class StepInstanceValidator extends DefaultController<IStepInstan
         if (!stepInstanceProp) return;
 
         const { id: stepId } = req.params;
-        const stepTemplate = await this.manager.getStepTemplateByStepInstanceId(stepId);
+        const stepTemplate = await this.manager.getStepTemplateByStepInstanceId(stepId as string);
         const validateStep = ajv.compile(stepTemplate.properties);
         const stepIsValid = validateStep(stepInstanceProp);
         if (!stepIsValid) {

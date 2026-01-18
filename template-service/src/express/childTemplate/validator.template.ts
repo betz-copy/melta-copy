@@ -97,9 +97,9 @@ class ChildTemplateValidator extends DefaultController<IMongoChildTemplate, Chil
         compileTsCode(filename, sourceFile);
 
         // todo: ensure that the code doesn't use in global variables
-        const entityTemplatesByIds = await this.getAllRelationshipReferencesEntityTemplates(templateId);
+        const entityTemplatesByIds = await this.getAllRelationshipReferencesEntityTemplates(templateId as string);
 
-        addPropertyToRequest(req, 'actions', this.cleanActionCode(actions, entityTemplatesByIds, templateId));
+        addPropertyToRequest(req, 'actions', this.cleanActionCode(actions, entityTemplatesByIds, templateId as string));
     };
 }
 

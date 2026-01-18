@@ -180,7 +180,7 @@ class InstancesValidator extends DefaultController {
     async validateUserCanWriteEntityInstance(req: Request) {
         const { id } = req.params;
         const { childTemplateId } = req.body;
-        const { templateId } = await this.instancesService.getEntityInstanceById(id);
+        const { templateId } = await this.instancesService.getEntityInstanceById(id as string);
 
         await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write, undefined, childTemplateId);
     }
@@ -228,7 +228,7 @@ class InstancesValidator extends DefaultController {
 
     async validateUserCanReadEntityInstance(req: Request) {
         const { id } = req.params;
-        const { templateId } = await this.instancesService.getEntityInstanceById(id);
+        const { templateId } = await this.instancesService.getEntityInstanceById(id as string);
 
         await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.read, undefined, req.body.childTemplateId);
     }
@@ -236,7 +236,7 @@ class InstancesValidator extends DefaultController {
     async validateUserCanGetChart(req: Request) {
         const { templateId } = req.params;
 
-        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.read, undefined, req.body.childTemplateId);
+        await this.validateUserPermissionForEntityInstance(req, templateId as string, PermissionScope.read, undefined, req.body.childTemplateId);
     }
 
     async validateUserCanGetExpandedEntity(req: Request) {
@@ -291,7 +291,7 @@ class InstancesValidator extends DefaultController {
     }
 
     async validateUserCanUpdateOrDeleteRelationshipInstance(req: Request) {
-        const relationshipInstance = await this.instancesService.getRelationshipInstanceById(req.params.id);
+        const relationshipInstance = await this.instancesService.getRelationshipInstanceById(req.params.id as string);
         const relatedTemplates = await this.getRelatedTemplatesFromRelationshipInstance(relationshipInstance);
 
         const childTemplatesOfParents = await this.entityTemplateService.searchChildTemplates({

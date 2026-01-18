@@ -54,7 +54,7 @@ class EntityController extends DefaultController<EntityManager> {
     }
 
     async getEntityById(req: Request, res: Response) {
-        res.json(await this.manager.getEntityById(req.params.id));
+        res.json(await this.manager.getEntityById(req.params.id as string));
     }
 
     async getEntitiesByIds(req: Request, res: Response) {
@@ -65,7 +65,7 @@ class EntityController extends DefaultController<EntityManager> {
         const entityTemplatesMap = fetchPropertyFromRequest<Map<string, IMongoEntityTemplate>>(req, 'entityTemplatesMap');
         const { userId, ...body } = req.body;
 
-        res.json(await this.manager.getExpandedGraphById(req.params.id, body, entityTemplatesMap, userId));
+        res.json(await this.manager.getExpandedGraphById(req.params.id as string, body, entityTemplatesMap, userId));
     }
 
     async printTemplates(req: Request, res: Response) {
@@ -73,13 +73,15 @@ class EntityController extends DefaultController<EntityManager> {
         const relationShipsMap = fetchPropertyFromRequest<Map<string, IMongoRelationshipTemplate>>(req, 'relationShipsMap');
         const { userId, ...body } = req.body;
 
-        res.json(await this.manager.getNestedRelationshipTemplatesForPrint(req.params.id, body, entityTemplatesMap, relationShipsMap, userId));
+        res.json(
+            await this.manager.getNestedRelationshipTemplatesForPrint(req.params.id as string, body, entityTemplatesMap, relationShipsMap, userId),
+        );
     }
 
     async printEntities(req: Request, res: Response) {
         const { relationshipIds, isShowDisabled } = req.body;
 
-        res.json(await this.manager.printEntities(req.params.id, relationshipIds, isShowDisabled));
+        res.json(await this.manager.printEntities(req.params.id as string, relationshipIds, isShowDisabled));
     }
 
     async deleteEntityInstances(req: Request, res: Response) {
@@ -93,7 +95,7 @@ class EntityController extends DefaultController<EntityManager> {
     }
 
     async updateStatusById(req: Request, res: Response) {
-        res.json(await this.manager.updateStatusById(req.params.id, req.body.disabled, req.body.ignoredRules, req.body.userId));
+        res.json(await this.manager.updateStatusById(req.params.id as string, req.body.disabled, req.body.ignoredRules, req.body.userId));
     }
 
     async updateEntityById(req: Request, res: Response) {
@@ -102,7 +104,7 @@ class EntityController extends DefaultController<EntityManager> {
 
         res.json(
             await this.manager.updateEntityById(
-                req.params.id,
+                req.params.id as string,
                 properties,
                 entityTemplate,
                 ignoredRules,
@@ -120,20 +122,20 @@ class EntityController extends DefaultController<EntityManager> {
 
     async updateEnumFieldValue(req: Request, res: Response) {
         const { newValue, oldValue, field } = req.body;
-        res.json(await this.manager.updateEnumFieldValue(req.params.id, newValue, oldValue, field));
+        res.json(await this.manager.updateEnumFieldValue(req.params.id as string, newValue, oldValue, field));
     }
 
     async convertFieldsToPlural(req: Request, res: Response) {
-        res.json(await this.manager.convertFieldsToPlural(req.params.id, req.body.propertiesKeysToPluralize));
+        res.json(await this.manager.convertFieldsToPlural(req.params.id as string, req.body.propertiesKeysToPluralize));
     }
 
     async getIsFieldUsed(req: Request, res: Response) {
         const { fieldValue, fieldName, type } = (req as RequestWithQuery<{ fieldValue: string; fieldName: string; type: string }>).query;
-        res.json(await this.manager.getIsFieldUsed(req.params.id, fieldValue, fieldName, type));
+        res.json(await this.manager.getIsFieldUsed(req.params.id as string, fieldValue, fieldName, type));
     }
 
     async getConstraintsOfTemplate(req: Request, res: Response) {
-        res.json(await this.manager.getConstraintsOfTemplate(req.params.templateId));
+        res.json(await this.manager.getConstraintsOfTemplate(req.params.templateId as string));
     }
 
     async getAllConstraints(_req: Request, res: Response) {
@@ -141,7 +143,7 @@ class EntityController extends DefaultController<EntityManager> {
     }
 
     async getChartOfTemplate(req: Request, res: Response) {
-        res.json(await this.manager.getChartByTemplate(req.params.templateId, req.body));
+        res.json(await this.manager.getChartByTemplate(req.params.templateId as string, req.body));
     }
 
     async updateConstraintsOfTemplate(req: Request, res: Response) {
@@ -151,11 +153,13 @@ class EntityController extends DefaultController<EntityManager> {
     }
 
     async enumerateNewSerialNumberFields(req: Request, res: Response) {
-        res.json(await this.manager.enumerateNewSerialNumberFields(req.params.templateId, req.body.newSerialNumberFields));
+        res.json(await this.manager.enumerateNewSerialNumberFields(req.params.templateId as string, req.body.newSerialNumberFields));
     }
 
     async deletePropertiesOfTemplate(req: Request, res: Response) {
-        res.json(await this.manager.deletePropertiesOfTemplate(req.params.templateId, req.body.properties, req.body.currentTemplateProperties));
+        res.json(
+            await this.manager.deletePropertiesOfTemplate(req.params.templateId as string, req.body.properties, req.body.currentTemplateProperties),
+        );
     }
 
     async getDependentRules(req: Request, res: Response) {

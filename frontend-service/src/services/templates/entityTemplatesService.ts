@@ -439,7 +439,6 @@ const processStandardProperty = (
         propertiesOrder: string[];
         propertiesPreview: string[];
         mapSearchProperties: string[];
-        serialsUniqueConstraints: string[];
         enumPropertiesColors: IEntityTemplate['enumPropertiesColors'] | undefined;
     },
     isEditMode: boolean,
@@ -457,7 +456,6 @@ const processStandardProperty = (
     if (property.hide) schema.hide.push(property.name);
     if (property.preview) state.propertiesPreview.push(property.name);
     if (property.mapSearch) state.mapSearchProperties.push(property.name);
-    if (property.type === 'serialNumber') state.serialsUniqueConstraints.push(property.name);
 
     state.enumPropertiesColors = collectEnumColors(property, state.enumPropertiesColors);
 };
@@ -504,7 +502,6 @@ export const formToJSONSchema = (
         ...restOfProperties
     } = values;
 
-    const serialsUniqueConstraints: string[] = [];
     const propertiesOrder: string[] = [];
     const attachmentPropertiesOrder: string[] = [];
     const propertiesPreview: string[] = [];
@@ -529,7 +526,6 @@ export const formToJSONSchema = (
         propertiesOrder,
         propertiesPreview,
         mapSearchProperties,
-        serialsUniqueConstraints,
         enumPropertiesColors,
     };
 
@@ -543,11 +539,6 @@ export const formToJSONSchema = (
     extractAttachmentProps.forEach((property) => {
         processAttachmentProperty(property, extractAttachmentProps, schema, attachmentPropertiesOrder, isEditMode);
     });
-
-    const serialUniqueConstraints = serialsUniqueConstraints.map((serial) => ({
-        groupName: '',
-        properties: [serial],
-    }));
 
     enumPropertiesColors = state.enumPropertiesColors;
 
@@ -563,7 +554,7 @@ export const formToJSONSchema = (
         propertiesTypeOrder,
         propertiesPreview,
         enumPropertiesColors,
-        uniqueConstraints: [...(restOfProperties.uniqueConstraints ?? []), ...serialUniqueConstraints],
+        uniqueConstraints: restOfProperties.uniqueConstraints ?? [],
         mapSearchProperties,
         fieldGroups: updatedFieldGroups,
         walletTransfer: walletTransfer

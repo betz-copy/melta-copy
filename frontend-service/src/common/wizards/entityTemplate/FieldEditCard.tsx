@@ -465,7 +465,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                         </MeltaTooltip>
                                     )}
                                     <MeltaTooltip
-                                        disableHoverListener={!initialValue?.required}
+                                        disableHoverListener={!value.required}
                                         title={i18next.t('wizard.entityTemplate.cantDeleteUniqueOrRequiredFields')}
                                     >
                                         <Box>
@@ -473,7 +473,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 onClick={() => remove(index, isNewProperty, groupIndex)}
                                                 disabled={
                                                     !supportDeleteForExistingInstances ||
-                                                    initialValue?.required ||
+                                                    value.required ||
                                                     hasActions ||
                                                     (value.accountBalance && areThereAnyInstances)
                                                 }

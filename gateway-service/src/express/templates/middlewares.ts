@@ -34,14 +34,14 @@ class TemplatesValidator extends DefaultController {
         const templateId = req.params.id;
 
         const [entityTemplate, userPermissions] = await Promise.all([
-            this.entityTemplateService.getEntityTemplateById(templateId),
+            this.entityTemplateService.getEntityTemplateById(templateId as string),
             this.authorizer.getWorkspacePermissions(req.user!.id),
         ]);
 
         if (
             !userPermissions.admin?.scope &&
             userPermissions.instances?.categories[entityTemplate.category._id]?.scope !== PermissionScope.write &&
-            userPermissions.instances?.categories[entityTemplate.category._id]?.entityTemplates[templateId]?.scope !== PermissionScope.write
+            userPermissions.instances?.categories[entityTemplate.category._id]?.entityTemplates[templateId as string]?.scope !== PermissionScope.write
         )
             throw new ForbiddenError('user not authorized', {
                 metadata: `user does not have write permission on entity ${entityTemplate}`,
@@ -80,7 +80,7 @@ class TemplatesValidator extends DefaultController {
     }
 
     async validateUserCanUpdateOrDeleteRelationshipTemplate(req: Request) {
-        const relationshipTemplate = await this.relationshipsTemplateService.getRelationshipTemplateById(req.params.id);
+        const relationshipTemplate = await this.relationshipsTemplateService.getRelationshipTemplateById(req.params.id as string);
 
         const [relatedCategories, userPermissions] = await Promise.all([
             this.getRelatedCategoriesFromRelationshipTemplate(relationshipTemplate.sourceEntityId, relationshipTemplate.destinationEntityId),
@@ -107,7 +107,7 @@ class TemplatesValidator extends DefaultController {
         const ruleTemplateId = req.params.ruleId;
 
         const [ruleTemplate, userPermissions] = await Promise.all([
-            this.relationshipsTemplateService.getRuleById(ruleTemplateId),
+            this.relationshipsTemplateService.getRuleById(ruleTemplateId as string),
             this.authorizer.getWorkspacePermissions(req.user!.id),
         ]);
 
@@ -152,7 +152,7 @@ class TemplatesValidator extends DefaultController {
     // Child Templates
     async validateUserCanUpdateOrDeleteChildTemplate(req: Request): Promise<void> {
         const childTemplateId = req.params.id;
-        const childTemplate = await this.entityTemplateService.getChildTemplateById(childTemplateId);
+        const childTemplate = await this.entityTemplateService.getChildTemplateById(childTemplateId as string);
 
         if (typeof childTemplate.category !== 'string' && typeof childTemplate.category !== 'object')
             throw new NotFoundError('Child Template category is invalid');
@@ -172,7 +172,7 @@ class TemplatesValidator extends DefaultController {
     async validateCanEnableChildTemplate(req: Request): Promise<void> {
         const { disabled } = req.body;
         const childTemplateId = req.params.id;
-        const childTemplate = await this.entityTemplateService.getChildTemplateById(childTemplateId);
+        const childTemplate = await this.entityTemplateService.getChildTemplateById(childTemplateId as string);
 
         if (!disabled && childTemplate?.parentTemplate.disabled)
             throw new ValidationError('Cannot enable child template under a disabled parent template');

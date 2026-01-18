@@ -413,8 +413,8 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                                     getOptionDisabled={(option) => {
                                         const propertyTemplate = selectedEntityTemplate?.properties.properties[option];
                                         if (propertyTemplate?.format === 'relationshipReference') {
-                                            const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId!;
-                                            return !entityTemplates?.get(relatedTemplateId);
+                                            const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId;
+                                            return !entityTemplates?.get(relatedTemplateId ?? '');
                                         }
                                         return false;
                                     }}

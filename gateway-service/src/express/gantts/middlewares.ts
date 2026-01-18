@@ -55,11 +55,11 @@ class GanttsValidator extends DefaultController {
     }
 
     async validateUserCanUpdateGantt(req: Request) {
-        await this.validateUserHasPermissionsToGantt(req, req.body, req.params.ganttId);
+        await this.validateUserHasPermissionsToGantt(req, req.body, req.params.ganttId as string);
     }
 
     async validateUserCanDeleteGantt(req: Request) {
-        await this.validateUserHasPermissionsToGantt(req, undefined, req.params.ganttId);
+        await this.validateUserHasPermissionsToGantt(req, undefined, req.params.ganttId as string);
     }
 }
 

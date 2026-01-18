@@ -1,6 +1,6 @@
 import { Close } from '@mui/icons-material';
 import { Autocomplete, Box, Divider, Grid, IconButton, useTheme } from '@mui/material';
-import { IEntitySingleProperty, IEntityTemplateMap } from '@packages/entity-template';
+import { IEntitySingleProperty, IEntityTemplateMap, PropertyFormat } from '@packages/entity-template';
 import { FormikErrors, FormikProps, FormikTouched, getIn } from 'formik';
 import i18next from 'i18next';
 import { useMemo, useState } from 'react';
@@ -102,7 +102,7 @@ const FilterCompetent = <T extends TableForm | ChartForm>({
                                             getOptionDisabled={(option) => {
                                                 const propertyTemplate = entityTemplate?.properties.properties[option];
 
-                                                if (propertyTemplate?.format === 'relationshipReference') {
+                                                if (propertyTemplate?.format === PropertyFormat.relationshipReference) {
                                                     const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId ?? '';
                                                     return !entityTemplates?.get(relatedTemplateId);
                                                 }

@@ -14,7 +14,7 @@ class DashboardController extends DefaultController<MongoDashboardItem, Dashboar
 
     async getDashboardItemById(req: Request, res: Response) {
         const { dashboardItemId } = req.params;
-        res.json(await this.manager.getDashboardItemById(dashboardItemId));
+        res.json(await this.manager.getDashboardItemById(dashboardItemId as string));
     }
 
     async getDashboardRelatedItems(req: Request, res: Response) {
@@ -23,12 +23,12 @@ class DashboardController extends DefaultController<MongoDashboardItem, Dashboar
 
     async editDashboardItem(req: Request, res: Response) {
         const { dashboardItemId } = req.params;
-        res.json(await this.manager.editDashboardItem(dashboardItemId, req.body));
+        res.json(await this.manager.editDashboardItem(dashboardItemId as string, req.body));
     }
 
     async deleteDashboardItem(req: Request, res: Response) {
         const { dashboardItemId } = req.params;
-        res.json(await this.manager.deleteDashboardItem(dashboardItemId));
+        res.json(await this.manager.deleteDashboardItem(dashboardItemId as string));
     }
 
     async searchDashboardItems(req: Request, res: Response) {
@@ -37,7 +37,7 @@ class DashboardController extends DefaultController<MongoDashboardItem, Dashboar
 
     async deleteDashboardItemByRelatedItem(req: Request, res: Response) {
         const { relatedId } = req.params;
-        res.json(await this.manager.deleteDashboardItemByRelatedItem(relatedId));
+        res.json(await this.manager.deleteDashboardItemByRelatedItem(relatedId as string));
     }
 }
 

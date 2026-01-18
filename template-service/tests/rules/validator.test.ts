@@ -64,23 +64,24 @@ describe('logic of validator of rules', () => {
         jest.restoreAllMocks();
     });
 
-    it.each([oneTravelAgentPerFlight, noOverlappingFlightsInTrip, warnOnEveryFlightOnActiveZone])(
-        'should verify good rule named "$name"',
-        async (rule) => {
-            createRuleRequestSchema.validate(rule, defaultValidationOptions);
+    it.each([
+        oneTravelAgentPerFlight,
+        noOverlappingFlightsInTrip,
+        warnOnEveryFlightOnActiveZone,
+    ])('should verify good rule named "$name"', async (rule) => {
+        createRuleRequestSchema.validate(rule, defaultValidationOptions);
 
-            const getRelationshipTepmlateByIdSpy = jest.spyOn(RelationshipTemplateManager, 'getTemplateById');
-            getRelationshipTepmlateByIdSpy.mockImplementation(mockGetRelationshipTemplateByIdWithRuleExamples);
+        const getRelationshipTepmlateByIdSpy = jest.spyOn(RelationshipTemplateManager, 'getTemplateById');
+        getRelationshipTepmlateByIdSpy.mockImplementation(mockGetRelationshipTemplateByIdWithRuleExamples);
 
-            const getEntityTemplateByIdSpy = jest.spyOn(EntityTemplateManagerService, 'getEntityTemplateById');
-            getEntityTemplateByIdSpy.mockImplementation(mockGetEntityTemplateByIdWithRuleExamples);
+        const getEntityTemplateByIdSpy = jest.spyOn(EntityTemplateManagerService, 'getEntityTemplateById');
+        getEntityTemplateByIdSpy.mockImplementation(mockGetEntityTemplateByIdWithRuleExamples);
 
-            const searchEntityTemplatesSpy = jest.spyOn(RelationshipTemplateManager, 'searchTemplates');
-            searchEntityTemplatesSpy.mockImplementation(mockSearchRelationshipTemplatesWithSimpleBody);
+        const searchEntityTemplatesSpy = jest.spyOn(RelationshipTemplateManager, 'searchTemplates');
+        searchEntityTemplatesSpy.mockImplementation(mockSearchRelationshipTemplatesWithSimpleBody);
 
-            await validateRuleFormula(rule);
-        },
-    );
+        await validateRuleFormula(rule);
+    });
 
     it('should fail rule with non existing relationship template', async () => {
         const ruleWithUnknownRelationship: IRelationshipTemplateRule = {

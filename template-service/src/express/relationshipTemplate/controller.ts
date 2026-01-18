@@ -9,15 +9,15 @@ class RelationshipTemplateController extends DefaultController<IMongoRelationshi
     }
 
     async getTemplateById(req: Request, res: Response) {
-        res.json(await this.manager.getTemplateById(req.params.templateId));
+        res.json(await this.manager.getTemplateById(req.params.templateId as string));
     }
 
     async updateTemplateById(req: Request, res: Response) {
-        res.json(await this.manager.updateTemplateById(req.params.templateId, req.body));
+        res.json(await this.manager.updateTemplateById(req.params.templateId as string, req.body));
     }
 
     async deleteTemplateById(req: Request, res: Response) {
-        res.json(await this.manager.deleteTemplateById(req.params.templateId));
+        res.json(await this.manager.deleteTemplateById(req.params.templateId as string));
     }
 
     async createTemplate(req: Request, res: Response) {

@@ -23,7 +23,7 @@ class RelationshipController extends DefaultController<RelationshipManager> {
     }
 
     async getRelationshipById(req: Request, res: Response) {
-        res.json(await this.manager.getRelationshipById(req.params.id));
+        res.json(await this.manager.getRelationshipById(req.params.id as string));
     }
 
     async getRelationshipsCountByTemplateId(req: Request, res: Response) {
@@ -42,11 +42,11 @@ class RelationshipController extends DefaultController<RelationshipManager> {
     }
 
     async deleteRelationshipById(req: Request, res: Response) {
-        res.json(await this.manager.deleteRelationshipById(req.params.id, req.body.ignoredRules, req.body.userId));
+        res.json(await this.manager.deleteRelationshipById(req.params.id as string, req.body.ignoredRules, req.body.userId));
     }
 
     async updateRelationshipPropertiesById(req: Request, res: Response) {
-        res.json(await this.manager.updateRelationshipPropertiesById(req.params.id, req.body.properties));
+        res.json(await this.manager.updateRelationshipPropertiesById(req.params.id as string, req.body.properties));
     }
 }
 

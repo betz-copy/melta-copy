@@ -741,7 +741,9 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     private async isPropertyOfTemplateInUsedInRules(templateId: string, properties: string[], archive: boolean) {
         const allRules = await this.relationshipTemplateService.searchRules({});
-        return allRules.map((rule) => checkPropertyInUsedFromFormula(rule.formula, templateId, properties, archive));
+        return allRules.forEach((rule) => {
+            checkPropertyInUsedFromFormula(rule.formula, templateId, properties, archive);
+        });
     }
 
     private async isPropertyOfTemplateInUsedInGantts(entityTemplateId: string, properties: string[], archive: boolean) {

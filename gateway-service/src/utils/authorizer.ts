@@ -51,7 +51,7 @@ export class Authorizer extends DefaultController {
     }
 
     async userFromParamsHasSomePermissions(req: Request) {
-        (req as RequestWithPermissionsOfUserId).permissionsOfUserId = await this.getWorkspacePermissions(req.params!.userId);
+        (req as RequestWithPermissionsOfUserId).permissionsOfUserId = await this.getWorkspacePermissions(req.params!.userId as string);
     }
 
     private async wrapAuthMiddleware(req: Request, authPermissions: ISubCompactPermissions) {
@@ -111,7 +111,7 @@ export class Authorizer extends DefaultController {
 
     async userCanWriteCategory(req: Request) {
         const userPermissions = await this.getWorkspacePermissions(req.user!.id);
-        if (!userPermissions.admin && !userPermissions.instances?.categories[req.params.id])
+        if (!userPermissions.admin && !userPermissions.instances?.categories[req.params.id as string])
             throw new UserIncorrectScopeError(PermissionScope.write, PermissionScope.read);
         (req as RequestWithPermissionsOfUserId).permissionsOfUserId = userPermissions;
     }

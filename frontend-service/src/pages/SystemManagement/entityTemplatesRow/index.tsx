@@ -278,6 +278,8 @@ const EntityTemplatesRow: React.FC = () => {
             onSuccess(data) {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
 
+                // TODO: CHECK IF WORKS WITHOUT
+
                 queryClient.invalidateQueries(searchEntityTemplatesQueryKey);
                 const updatedUserPermissions = updateUserPermissionForEntityTemplate(data, currentUser, currentWorkspace._id);
                 setUser(updatedUserPermissions);

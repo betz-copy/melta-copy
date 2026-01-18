@@ -9,7 +9,7 @@ export default class ProcessInstanceController extends DefaultController<IProces
     }
 
     async getProcessById(req: Request, res: Response) {
-        res.json(await this.manager.getProcessById(req.params.id));
+        res.json(await this.manager.getProcessById(req.params.id as string));
     }
 
     async createProcess(req: Request, res: Response) {
@@ -19,21 +19,21 @@ export default class ProcessInstanceController extends DefaultController<IProces
     }
 
     async deleteProcess(req: Request, res: Response) {
-        res.json(await this.manager.deleteProcess(req.params.id));
+        res.json(await this.manager.deleteProcess(req.params.id as string));
     }
 
     async updateTemplate(req: Request, res: Response) {
-        res.json(await this.manager.updateTemplate(req.params.id, req.body));
+        res.json(await this.manager.updateTemplate(req.params.id as string, req.body));
     }
 
     async updateProcess(req: Request, res: Response) {
         const { userId, ...updatedFields } = req.body;
 
-        res.json(await this.manager.updateProcess(req.params.id, updatedFields, userId));
+        res.json(await this.manager.updateProcess(req.params.id as string, updatedFields, userId));
     }
 
     async archiveProcess(req: Request, res: Response) {
-        res.json(await this.manager.archiveProcess(req.params.id, req.body));
+        res.json(await this.manager.archiveProcess(req.params.id as string, req.body));
     }
 
     async searchProcesses(req: Request, res: Response) {

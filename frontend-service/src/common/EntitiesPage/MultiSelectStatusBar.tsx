@@ -180,9 +180,9 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
 
             const relatedTemplateIds = Object.values(template.properties.properties)
                 .filter((value) => (value as IEntitySingleProperty)?.format === PropertyFormat.relationshipReference)
-                .map((value) => (value as IEntitySingleProperty).relationshipReference?.relatedTemplateId);
+                .map((value) => (value as IEntitySingleProperty).relationshipReference?.relatedTemplateId ?? '');
 
-            setUpdatedTemplateIds?.(relatedTemplateIds as string[]);
+            setUpdatedTemplateIds?.(relatedTemplateIds);
         }
     };
 

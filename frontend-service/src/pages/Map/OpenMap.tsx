@@ -1,5 +1,5 @@
 import { LocationOn } from '@mui/icons-material';
-import { Dialog, Grid, IconButton, Typography } from '@mui/material';
+import { Dialog, Grid, IconButton } from '@mui/material';
 import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IEntity } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
@@ -38,7 +38,9 @@ const OpenMap: React.FC<{
                 >
                     <LocationOn style={{ height: '18px' }} />
                     {showText && (
-                        <Typography
+                        <HighlightText
+                            text={field}
+                            searchedText={searchValue}
                             color={color}
                             sx={{
                                 marginRight: '5px',
@@ -48,9 +50,7 @@ const OpenMap: React.FC<{
                                 whiteSpace: 'nowrap',
                                 maxWidth: '100%',
                             }}
-                        >
-                            <HighlightText text={field} searchedText={searchValue} />
-                        </Typography>
+                        />
                     )}
                 </IconButton>
             </Grid>

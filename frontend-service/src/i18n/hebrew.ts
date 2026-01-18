@@ -1810,6 +1810,7 @@ export default {
         clearFilter: 'נקה סינון',
         search: 'חיפוש',
         tooManyResults: 'יש כמות גדולה של ישויות להצגה במפה, יש לצמצם את תוצאות החיפוש ע״י סינון נוסף',
+        minCharsToStartSearch: '(החל מ2 תווים)',
     },
     filters: {
         contains: 'מכיל',

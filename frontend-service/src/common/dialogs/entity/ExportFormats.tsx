@@ -124,7 +124,7 @@ export const ExportFormats: React.FC<{
                         label: getFileName(fileName),
                         value: fileName,
                     }))}
-                    onChange={(_e, selectedOption) => setSelectedFileToExport(selectedOption?.value!)}
+                    onChange={(_e, selectedOption) => setSelectedFileToExport(selectedOption?.value ?? '')}
                     disabled={disabled}
                     renderInput={(params) => (
                         <TextField

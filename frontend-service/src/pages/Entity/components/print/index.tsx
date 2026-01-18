@@ -77,13 +77,13 @@ const Print: React.FC<{
     const dialogOptions = useMemo(() => {
         const final = {} as IEntityPrint['options'];
 
-        Object.entries(printOptions).forEach(([key, value]) => {
+        for (const [key, value] of Object.entries(printOptions)) {
             final[key] = {
                 show: value,
                 set: () => setPrintOptions((prev) => ({ ...prev, [key]: !value })),
                 label: `entityPage.print.${key}`,
             };
-        });
+        }
 
         return final;
     }, [printOptions]);

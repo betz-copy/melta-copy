@@ -84,7 +84,7 @@ const Table: React.FC = () => {
               ...table.metaData,
               _id: table._id,
               filter: table?.metaData.filter
-                  ? FilterModelToFilterRecord(parseFilters(table?.metaData.filter), template?._id!, queryClient)
+                  ? FilterModelToFilterRecord(parseFilters(table?.metaData.filter), template?._id ?? '', queryClient)
                   : undefined,
           }
         : dashboardInitialValues.table;

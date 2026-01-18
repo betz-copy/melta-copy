@@ -80,9 +80,9 @@ class EntityTemplateValidator extends DefaultController<IMongoEntityTemplate, En
         const sourceFile = ts.createSourceFile(filename, code, ts.ScriptTarget.ES5);
         compileTsCode(filename, sourceFile);
         // todo: ensure that the code doesn't use in global variables
-        const entityTemplatesByIds = await this.getAllRelationshipReferencesEntityTemplates(templateId);
+        const entityTemplatesByIds = await this.getAllRelationshipReferencesEntityTemplates(templateId as string);
 
-        addPropertyToRequest(req, 'actions', this.cleanActionCode(actions, entityTemplatesByIds, templateId));
+        addPropertyToRequest(req, 'actions', this.cleanActionCode(actions, entityTemplatesByIds, templateId as string));
     };
 
     private validateProperties(properties: Record<string, IEntitySingleProperty>) {
@@ -115,7 +115,7 @@ class EntityTemplateValidator extends DefaultController<IMongoEntityTemplate, En
         } = req;
 
         if (actions) {
-            const { actions: existingActions } = await this.manager.getTemplateById(templateId);
+            const { actions: existingActions } = await this.manager.getTemplateById(templateId as string);
 
             if (actions !== existingActions) throw new BadRequestError('Cannot update actions in update entityTemplate request');
         }

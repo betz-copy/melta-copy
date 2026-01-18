@@ -24,39 +24,39 @@ export default class RuleBreachRequestsController extends DefaultController<IRul
         const { status } = req.body;
         const { entityId } = req.params;
 
-        res.json(await this.manager.updateManyRuleBreachRequestsStatusesByRelatedEntityId(entityId, status));
+        res.json(await this.manager.updateManyRuleBreachRequestsStatusesByRelatedEntityId(entityId as string, status));
     }
 
     async updateRuleBreachRequestStatus(req: Request, res: Response) {
         const { ruleBreachRequestId } = req.params;
         const { reviewerId, status } = req.body;
 
-        res.json(await this.manager.updateRuleBreachRequestStatus(ruleBreachRequestId, reviewerId, status));
+        res.json(await this.manager.updateRuleBreachRequestStatus(ruleBreachRequestId as string, reviewerId, status));
     }
 
     async updateRuleBreachRequestActionsMetadatas(req: Request, res: Response) {
         const { ruleBreachRequestId } = req.params;
         const { actions } = req.body;
 
-        res.json(await this.manager.updateRuleBreachRequestActionsMetadatas(ruleBreachRequestId, actions));
+        res.json(await this.manager.updateRuleBreachRequestActionsMetadatas(ruleBreachRequestId as string, actions));
     }
 
     async updateRuleBreachRequestBrokenRules(req: Request, res: Response) {
         const { ruleBreachRequestId } = req.params;
         const { brokenRules } = req.body;
 
-        res.json(await this.manager.updateRuleBreachRequestBrokenRules(ruleBreachRequestId, brokenRules));
+        res.json(await this.manager.updateRuleBreachRequestBrokenRules(ruleBreachRequestId as string, brokenRules));
     }
 
     async getRuleBreachRequestById(req: Request, res: Response) {
         const { ruleBreachRequestId } = req.params;
 
-        res.json(await this.manager.getRuleBreachRequestById(ruleBreachRequestId));
+        res.json(await this.manager.getRuleBreachRequestById(ruleBreachRequestId as string));
     }
 
     async getRuleBreachRequestsByRuleId(req: Request, res: Response) {
         const { ruleId } = req.params;
 
-        res.json(await this.manager.getRuleBreachRequestsByRuleId(ruleId));
+        res.json(await this.manager.getRuleBreachRequestsByRuleId(ruleId as string));
     }
 }

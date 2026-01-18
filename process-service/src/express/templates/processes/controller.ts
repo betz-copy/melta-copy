@@ -9,7 +9,7 @@ export default class ProcessTemplateController extends DefaultController<IProces
     }
 
     async getTemplateById(req: Request, res: Response) {
-        res.json(await this.manager.getProcessTemplateById(req.params.id));
+        res.json(await this.manager.getProcessTemplateById(req.params.id as string));
     }
 
     async createTemplate(req: Request, res: Response) {
@@ -17,7 +17,7 @@ export default class ProcessTemplateController extends DefaultController<IProces
     }
 
     async deleteTemplate(req: Request, res: Response) {
-        res.json(await this.manager.deleteProcessTemplate(req.params.id));
+        res.json(await this.manager.deleteProcessTemplate(req.params.id as string));
     }
 
     async searchTemplates(req: Request, res: Response) {

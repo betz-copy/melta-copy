@@ -14,9 +14,7 @@ export const initializeMongo = async () => {
 
 export const transformObjectIdKeysToString = (doc: Record<string, unknown>) => {
     forEach(doc, (val, key) => {
-        if (val instanceof Types.ObjectId) {
-            doc[key] = val.toString();
-        }
+        if (val instanceof Types.ObjectId) doc[key] = val.toString();
     });
 };
 

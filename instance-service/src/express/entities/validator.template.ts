@@ -178,7 +178,7 @@ export class EntityValidator extends DefaultController {
     }
 
     async validateConstraintsOfTemplate(req: Request) {
-        const entityTemplate = await this.getEntityTemplateByIdOrThrowValidationError(req.params.templateId);
+        const entityTemplate = await this.getEntityTemplateByIdOrThrowValidationError(req.params.templateId as string);
 
         const { properties } = entityTemplate;
         const propertiesKeys = Object.keys(properties.properties);
@@ -391,14 +391,14 @@ export class EntityValidator extends DefaultController {
         const { filter, showRelationships, sort }: ISearchEntitiesOfTemplateBody = req.body;
         const { templateId } = req.params;
 
-        const entityTemplate = await this.getEntityTemplateByIdOrThrowValidationError(templateId);
+        const entityTemplate = await this.getEntityTemplateByIdOrThrowValidationError(templateId as string);
         const entityTemplateForValidation = addDefaultFieldsToTemplate(entityTemplate);
 
-        const relationshipTemplatesMap = await this.getRelationshipTemplatesRelatedToEntityTemplates([templateId]);
+        const relationshipTemplatesMap = await this.getRelationshipTemplatesRelatedToEntityTemplates([templateId as string]);
 
         if (filter) this.validateFilterOfTemplate(filter, entityTemplateForValidation, 'filter');
 
-        this.validateShowRelationships(showRelationships, templateId, relationshipTemplatesMap, 'showRelationships');
+        this.validateShowRelationships(showRelationships, templateId as string, relationshipTemplatesMap, 'showRelationships');
 
         sort?.forEach(({ field }, sortIndex) => {
             const fieldTemplate = entityTemplateForValidation.properties.properties[field];
