@@ -16,7 +16,7 @@ const { notifications } = config;
 
 const checkNotificationDateInCustomAlert = (datePropertyValue: Date, dateNotification: number) => {
     const today = new Date();
-    
+
     today.setHours(0, 0, 0, 0);
 
     const dateNotificationOptions = notifications.dateAlertOptions;

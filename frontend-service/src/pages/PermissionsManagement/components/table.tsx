@@ -5,6 +5,7 @@ import { Chip, Grid, IconButton } from '@mui/material';
 import { IMongoCategory } from '@packages/category';
 import { ICompact, IInstancesPermission, PermissionData, PermissionScope } from '@packages/permission';
 import { IRole } from '@packages/role';
+import { IGetUnits } from '@packages/unit';
 import { IUser, RelatedPermission } from '@packages/user';
 import { IWorkspace } from '@packages/workspace';
 import i18next from 'i18next';
@@ -20,7 +21,6 @@ import { useWorkspaceStore } from '../../../stores/workspace';
 import { translatedEnumColDef } from '../../../utils/agGrid/commonColDefs';
 import { tryCatch } from '../../../utils/tryCatch';
 import { WalletTransferData } from '../../Entity/walletTransfers';
-import { IGetUnits } from '@packages/unit';
 
 const { infiniteScrollPageCount } = environment.permission;
 

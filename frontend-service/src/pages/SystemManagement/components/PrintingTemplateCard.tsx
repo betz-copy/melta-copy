@@ -1,17 +1,17 @@
 import { ChevronLeft, ExpandMore } from '@mui/icons-material';
 import { Button, Divider, Grid, Typography, useTheme } from '@mui/material';
+import { ICategoryMap } from '@packages/category';
+import { IEntityTemplateMap } from '@packages/entity-template';
 import { IMongoPrintingTemplate } from '@packages/printing-template';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
+import { useDarkModeStore } from '../../../stores/darkMode';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';
 import { IDeleteDialogState, IWizardDialogState } from './PrintingTemplatesRow';
 import { showProperty } from './RulesRow';
-import { ICategoryMap } from '@packages/category';
-import { IEntityTemplateMap } from '@packages/entity-template';
-import { useDarkModeStore } from '../../../stores/darkMode';
 
 interface PrintingTemplateCardProps {
     printingTemplate: IMongoPrintingTemplate;

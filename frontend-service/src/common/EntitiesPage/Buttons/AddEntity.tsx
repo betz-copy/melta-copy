@@ -16,7 +16,11 @@ import { IChooseTemplateMode } from '../../dialogs/entity/ChooseTemplate';
 import { CreateOrEditEntityDetails } from '../../dialogs/entity/CreateOrEditEntityDialog';
 import { TableButton } from '../../TableButton';
 
-const isTwinWalletsInTransferTemplate = (properties: IEntity['properties'], template: IMongoEntityTemplateWithConstraintsPopulated, twinTemplates: string[]) => {
+const isTwinWalletsInTransferTemplate = (
+    properties: IEntity['properties'],
+    template: IMongoEntityTemplateWithConstraintsPopulated,
+    twinTemplates: string[],
+) => {
     if (!template.walletTransfer) return false;
     const sourceWalletTemplateId = properties[template.walletTransfer?.from].templateId;
     const destWalletTemplateId = properties[template.walletTransfer?.to].templateId;

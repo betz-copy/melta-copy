@@ -1,6 +1,6 @@
 import { Close, DeleteTwoTone, PentagonTwoTone, PlaceTwoTone } from '@mui/icons-material';
 import { ToggleButton, ToggleButtonGroup, useTheme } from '@mui/material';
-import {  MapItemType } from '@packages/utils';
+import { MapItemType } from '@packages/utils';
 import * as Cesium from 'cesium';
 import { Cartesian3 } from 'cesium';
 import i18next from 'i18next';

@@ -1,7 +1,7 @@
+import { ISearchEntityTemplatesBody } from '@packages/entity-template';
 import { IMongoPrintingTemplate, IPrintingTemplate } from '@packages/printing-template';
 import axios from '../../axios';
 import { environment } from '../../globals';
-import { ISearchEntityTemplatesBody } from '@packages/entity-template';
 
 const { printingTemplates } = environment.api;
 

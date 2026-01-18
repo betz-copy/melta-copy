@@ -1,6 +1,6 @@
+/** biome-ignore-all lint/correctness/useExhaustiveDependencies: useEffects dependencies */
 import { IEntity } from '@packages/entity';
 import { IEntityTemplateMap } from '@packages/entity-template';
-/** biome-ignore-all lint/correctness/useExhaustiveDependencies: useEffects dependencies */
 import * as Cesium from 'cesium';
 import i18next from 'i18next';
 import React, { useEffect, useRef } from 'react';

@@ -1,4 +1,4 @@
-import { IPropertyValue } from "@packages/entity";
+import { IPropertyValue } from '@packages/entity';
 
 export class LocalStorage {
     public static set(key: string, value: IPropertyValue) {
