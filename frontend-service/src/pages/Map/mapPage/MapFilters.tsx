@@ -1,14 +1,14 @@
 /** biome-ignore-all lint/correctness/useExhaustiveDependencies: useEffect dependencies */
-import { FilterList } from '@mui/icons-material';
-import { Autocomplete, Box, Button, Divider, Grid, TextField, Typography, useTheme } from '@mui/material';
+import { FilterList, Search } from '@mui/icons-material';
+import { Autocomplete, Box, Button, Divider, Grid, InputAdornment, TextField, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import React, { useEffect, useState } from 'react';
+import { debounce } from 'lodash';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import { ColoredEnumChip } from '../../../common/ColoredEnumChip';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
-import SearchInput from '../../../common/inputs/SearchInput';
 import { environment } from '../../../globals';
 import { FilterLogicalOperator, IEntity, IFilterOfField } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
@@ -24,8 +24,8 @@ type Props = {
     darkMode: boolean;
     clearAutocompleteSearch: () => void;
     filters: {
-        value: { autoSearch: string; listFields: Record<string, IFilterOfField['$in']>; dirty: boolean };
-        set: React.Dispatch<React.SetStateAction<{ autoSearch: string; listFields: Record<string, IFilterOfField['$in']>; dirty: boolean }>>;
+        value: { autoSearch: string; listFields: Record<string, IFilterOfField['$in']> };
+        set: React.Dispatch<React.SetStateAction<{ autoSearch: string; listFields: Record<string, IFilterOfField['$in']> }>>;
     };
     sourceTemplate?: IMongoEntityTemplatePopulated;
     isSearchShape?: boolean;
@@ -39,7 +39,7 @@ const MapFilters = ({
     entityTemplateMap,
     clearAutocompleteSearch,
     filters: {
-        value: { autoSearch, listFields, dirty },
+        value: { autoSearch, listFields },
         set: setFilters,
     },
     sourceTemplate,
@@ -50,6 +50,25 @@ const MapFilters = ({
 }: Props) => {
     const theme = useTheme();
     const [openFilter, setOpenFilter] = useState<boolean>(false);
+    const [debouncedSearchValue, setDebouncedSearchValue] = useState<string>(autoSearch ?? '');
+
+    useEffect(() => setDebouncedSearchValue(autoSearch), [autoSearch]);
+
+    const debouncedSetFilter = useCallback(
+        debounce((newValue: string) => setFilters((prev) => ({ ...prev, autoSearch: newValue })), 300),
+        [setFilters],
+    );
+
+    const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const { value } = event.target;
+
+        setDebouncedSearchValue(value);
+        debouncedSetFilter(value);
+    };
+
+    useEffect(() => {
+        return () => debouncedSetFilter.cancel();
+    }, [debouncedSetFilter]);
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
@@ -113,14 +132,17 @@ const MapFilters = ({
         },
     );
 
-    const canSearch = () => autoSearch.length >= minSearchLength || Object.entries(listFields).length > 0;
+    const canSearch = useMemo(() => {
+        return autoSearch.length >= minSearchLength || Object.entries(listFields).length > 0;
+    }, [autoSearch, listFields]);
 
-    const handleSearch = () => {
-        setFilters((prev) => ({ ...prev, dirty: false }));
+    useEffect(() => {
+        if (!canSearch) return;
 
         setCameraFocus(CameraFocusType.Search);
+
         isSearchShape ? applyFilterWithShapeSearch(autoSearch, listFields) : refetch();
-    };
+    }, [listFields, autoSearch, minSearchLength, isSearchShape]);
 
     return (
         <Grid zIndex={1000} top={10} container wrap="nowrap" gap="15px">
@@ -175,7 +197,7 @@ const MapFilters = ({
                             disabled={!Object.entries(listFields).length && !autoSearch.length}
                             onClick={() => {
                                 clearAutocompleteSearch();
-                                const clearedFilters = { autoSearch: '', listFields: {}, dirty: false };
+                                const clearedFilters = { autoSearch: '', listFields: {} };
 
                                 setFilters(clearedFilters);
                                 if (isSearchShape) applyFilterWithShapeSearch('', {});
@@ -186,24 +208,53 @@ const MapFilters = ({
                     </Grid>
                     <Divider />
 
-                    <SearchInput
-                        value={autoSearch}
-                        showBorder
-                        placeholder={i18next.t('globalSearch.searchInPage')}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                if (canSearch()) handleSearch();
-                                e.preventDefault();
-                            }
+                    <TextField
+                        value={debouncedSearchValue}
+                        onChange={handleSearchChange}
+                        placeholder={`${i18next.t('globalSearch.searchInPage')}  ${i18next.t('location.minCharsToStartSearch')}`}
+                        fullWidth
+                        size="small"
+                        sx={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignContent: 'center',
+                            borderRadius: '7px',
+                            height: '34px',
+                            width: '231px',
+                            ...(darkMode
+                                ? {}
+                                : {
+                                      backgroundColor: 'white',
+                                      '& .MuiOutlinedInput-notchedOutline': { border: '' },
+                                  }),
                         }}
-                        onChange={(newSearchValue: string) =>
-                            setFilters((prev) => ({
-                                ...prev,
-                                autoSearch: newSearchValue,
-                                listFields: !newSearchValue.length ? {} : prev.listFields,
-                                dirty: true,
-                            }))
-                        }
+                        slotProps={{
+                            input: {
+                                style: {
+                                    borderRadius: '7px',
+                                    color: theme.palette.primary.main,
+                                    fontFamily: 'Rubik',
+                                    fontSize: '12px',
+                                    textAlign: 'right',
+                                },
+                                endAdornment: (
+                                    <InputAdornment position="end" sx={{ gap: '6px' }}>
+                                        <Divider
+                                            orientation="vertical"
+                                            sx={{
+                                                width: '1px',
+                                                height: '20px',
+                                                borderRadius: '1.5px',
+                                                backgroundColor: theme.palette.primary.main,
+                                            }}
+                                        />
+
+                                        <Search fontSize="small" />
+                                    </InputAdornment>
+                                ),
+                                startAdornment: <InputAdornment position="start" />,
+                            },
+                        }}
                     />
 
                     <Divider />
@@ -214,7 +265,6 @@ const MapFilters = ({
                                     key={`${field.name}-${index}`}
                                     multiple
                                     options={field.enum ?? field.items?.enum ?? []}
-                                    disabled={autoSearch.length < minSearchLength && !isSearchShape}
                                     onChange={(_e, newValue) => {
                                         setFilters((prev) => {
                                             const newListFields = { ...prev.listFields };
@@ -225,7 +275,6 @@ const MapFilters = ({
                                             return {
                                                 ...prev,
                                                 listFields: newListFields,
-                                                dirty: true,
                                             };
                                         });
                                     }}
@@ -244,15 +293,6 @@ const MapFilters = ({
                                 />
                             ))}
                     </Box>
-
-                    <Button
-                        disabled={!canSearch() || !dirty}
-                        variant="contained"
-                        sx={{ width: 'auto', alignSelf: 'end', borderRadius: '7px' }}
-                        onClick={handleSearch}
-                    >
-                        {i18next.t('location.search')}
-                    </Button>
                 </Grid>
             )}
         </Grid>
