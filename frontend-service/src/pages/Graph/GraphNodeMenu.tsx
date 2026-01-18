@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { MenuItem, Menu as MuiMenu } from '@mui/material';
 import { IChildTemplateMap } from '@packages/child-template';
 import { IEntityExpanded, IGraphFilterBodyBatch } from '@packages/entity';

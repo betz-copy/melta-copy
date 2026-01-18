@@ -5,7 +5,7 @@ export interface IRelationshipTemplate {
     displayName: string;
     sourceEntityId: string;
     destinationEntityId: string;
-    isProperty: boolean;
+    isProperty?: boolean;
 }
 
 export interface IConvertToRelationshipField {

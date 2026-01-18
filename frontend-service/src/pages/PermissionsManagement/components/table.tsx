@@ -214,8 +214,7 @@ const getDatasource = <Data extends PermissionData>(
                         step: startRow! / infiniteScrollPageCount,
                         limit: endRow! - startRow!,
                         search: quickFilter || undefined,
-                        // TODO: CHECK IF THIS IS CORRECT
-                        filterModel: filterModel as Record<string, object> | undefined,
+                        filterModel: filterModel as Record<string, object>,
                         sortModel,
                     }),
                 );
@@ -228,7 +227,7 @@ const getDatasource = <Data extends PermissionData>(
                         step: startRow! / infiniteScrollPageCount,
                         limit: endRow! - startRow!,
                         search: quickFilter || undefined,
-                        filterModel: filterModel as Record<string, object> | undefined,
+                        filterModel: filterModel as Record<string, object>,
                         sortModel,
                     }),
                 );

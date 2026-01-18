@@ -94,7 +94,6 @@ const MapFilters = ({
                       }
                     : undefined;
 
-            // TODO: CHECK IF THIS IS CORRECT
             return [templateId, filter ? { filter, showRelationships: false } : { showRelationships: false }] as const;
         }),
     );

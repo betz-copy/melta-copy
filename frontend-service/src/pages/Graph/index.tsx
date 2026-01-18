@@ -1,5 +1,4 @@
 import { Backdrop, Box, Button, CircularProgress } from '@mui/material';
-/* eslint-disable no-param-reassign */
 import { ICategoryMap, IMongoCategory } from '@packages/category';
 import { IChildTemplateMap } from '@packages/child-template';
 import { IEntityExpanded, IGraphFilterBody, IGraphFilterBodyBatch } from '@packages/entity';

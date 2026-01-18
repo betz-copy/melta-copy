@@ -124,7 +124,6 @@ const Entity: React.FC = () => {
     const connectionsTemplates = useMemo(() => {
         if (!currentEntityTemplate) return;
 
-        // TODO: CHECK IF THIS IS CORRECT
         const templateForRelationships =
             childTemplateId && isChildTemplate(currentEntityTemplate)
                 ? (entityTemplates.get(currentEntityTemplate.parentTemplate._id) ?? undefined)

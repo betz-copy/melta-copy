@@ -33,9 +33,8 @@ const UserInfoCard: React.FC<IUserInfoCardProps> = ({
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
 
-    // TODO: CHECK IF THIS IS CORRECT
-    const usersInfoTemplate = usersInfoChildTemplate.parentTemplate as unknown as IMongoEntityTemplateWithConstraintsPopulated;
-    const entityTemplateColor = getEntityTemplateColor(usersInfoTemplate);
+    const usersInfoTemplate = usersInfoChildTemplate.parentTemplate;
+    const entityTemplateColor = getEntityTemplateColor(usersInfoTemplate as unknown as IMongoEntityTemplateWithConstraintsPopulated);
     const { height, width } = workspace!.metadata!.iconSize!;
 
     return (

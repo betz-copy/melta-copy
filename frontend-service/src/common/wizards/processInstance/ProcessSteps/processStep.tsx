@@ -1,6 +1,5 @@
 import { Clear as ClearIcon, Done as DoneIcon, Edit as EditIcon } from '@mui/icons-material';
 import { Box, Button, CircularProgress, Grid, InputLabel, TextField, Typography } from '@mui/material';
-/* eslint-disable no-extra-boolean-cast */
 import { PermissionScope } from '@packages/permission';
 import { IMongoProcessInstanceReviewerPopulated, IMongoStepInstancePopulated, IMongoStepTemplatePopulated } from '@packages/process';
 import { AxiosError } from 'axios';

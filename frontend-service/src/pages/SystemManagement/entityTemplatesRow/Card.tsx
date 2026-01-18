@@ -248,6 +248,8 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                               const populatedParentTemplate = entityTemplates?.get(childTemplate.parentTemplate._id);
                                               if (!populatedParentTemplate) return;
 
+                                              // TODO: CHECK IF THIS IS CORRECT
+
                                               setAddChildTemplateDialogState({
                                                   isWizardOpen: true,
                                                   entityTemplate: populatedParentTemplate,
