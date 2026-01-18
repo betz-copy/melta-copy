@@ -22,7 +22,7 @@ import { groupBy, partition, pickBy } from 'lodash';
 import { Transaction } from 'neo4j-driver';
 import config from '../../config';
 import ActivityLogProducer from '../../externalServices/activityLog/producer';
-import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
+import EntityTemplateService from '../../externalServices/templates/entityTemplateManager';
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { EntitiesIdsRulesReasonsMap, RunRuleReason } from '../entities/interface';
@@ -38,7 +38,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
 
     private relationshipsManager: RelationshipManager;
 
-    private entityTemplateService: EntityTemplateManagerService;
+    private entityTemplateService: EntityTemplateService;
 
     private relationshipsTemplateService: RelationshipsTemplateManagerService;
 
@@ -48,7 +48,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
         super(workspaceId);
         this.entityManager = new EntityManager(workspaceId);
         this.relationshipsManager = new RelationshipManager(workspaceId);
-        this.entityTemplateService = new EntityTemplateManagerService(workspaceId);
+        this.entityTemplateService = new EntityTemplateService(workspaceId);
         this.relationshipsTemplateService = new RelationshipsTemplateManagerService(workspaceId);
         this.activityLogProducer = new ActivityLogProducer(workspaceId);
     }

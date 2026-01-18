@@ -11,14 +11,14 @@ const changeRelatedUserFields = (properties: IProperties['properties'], changedU
     return Object.entries(properties).reduce((acc, [key, value]) => {
         if (changedUserKey === key) {
             acc[key] = user
-                ? JSON.stringify({
+                ? {
                       _id: user?._id || user?.id,
                       fullName: user?.fullName,
                       jobTitle: user?.jobTitle,
                       hierarchy: user?.hierarchy,
                       mail: user?.mail,
                       userType: user?.entityType,
-                  })
+                  }
                 : undefined;
         }
         if (value.properties) acc[key] = changeRelatedUserFields(value.properties, changedUserKey, user);
@@ -43,7 +43,7 @@ const getFieldUiSchema = (
 
     if (propertySchema.format === 'kartoffelUserField' && propertySchema?.expandedUserField?.kartoffelField === 'image') {
         const userProperty = propertySchema?.expandedUserField?.relatedUserField;
-        const user = userProperty && values.properties?.[userProperty] ? JSON.parse(values.properties?.[userProperty]) : undefined;
+        const user = userProperty && values.properties?.[userProperty] ? values.properties?.[userProperty] : undefined;
         return { 'ui:widget': 'UserAvatarWidget', 'ui:options': { user } };
     }
 
@@ -64,7 +64,7 @@ const getFieldUiSchema = (
         const isGoalUser =
             propertySchema.format === 'kartoffelUserField' &&
             !!values.properties[propertySchema?.expandedUserField?.relatedUserField ?? ''] &&
-            JSON.parse(values.properties[propertySchema?.expandedUserField?.relatedUserField ?? ''])?.userType === 'GoalUser' &&
+            values.properties[propertySchema?.expandedUserField?.relatedUserField ?? '']?.userType === 'GoalUser' &&
             kartoffelPersonalDataFields.includes((propertySchema.expandedUserField?.kartoffelField ?? '').trim());
 
         return {

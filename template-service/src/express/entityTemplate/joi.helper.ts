@@ -18,7 +18,7 @@ ajv.addFormat('user', {
         const userObj = JSON.parse(user);
         return userObj._id && userObj.fullName && userObj.jobTitle && userObj.hierarchy && userObj.mail;
     },
-});
+}); //TODO: FIX
 ajv.addFormat('text-area', /.*/);
 ajv.addFormat('relationshipReference', /.*/);
 ajv.addFormat('location', ajvCustomFormats.locationFieldRegex);

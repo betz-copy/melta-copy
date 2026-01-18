@@ -114,28 +114,28 @@ export default class Manager extends DefaultManagerNeo4j {
         return relationshipReferencesProperties;
     }
 
-    private getUserPropertiesIndex(template: IEntityTemplate) {
-        const userProperties: string[] = [];
+    // private getUserPropertiesIndex(template: IEntityTemplate) {
+    //     const userProperties: string[] = [];
 
-        Object.entries(template.properties.properties).map(async ([key, value]) => {
-            if (value.format === 'user') {
-                userProperties.push(
-                    ...config.neo4j.userOriginalAndSuffixFieldsMap.map(
-                        (userField) => `${key}${userField.suffixFieldName}${config.neo4j.userFieldPropertySuffix}`,
-                    ),
-                );
-            }
-            if (value.items?.format === 'user') {
-                userProperties.push(
-                    ...config.neo4j.usersArrayOriginalAndSuffixFieldsMap.map(
-                        (userField) => `${key}${userField.suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`,
-                    ),
-                );
-            }
-        });
+    //     Object.entries(template.properties.properties).map(async ([key, value]) => {
+    //         if (value.format === 'user') {
+    //             userProperties.push(
+    //                 ...config.neo4j.userOriginalAndSuffixFieldsMap.map(
+    //                     (userField) => `${key}${userField.suffixFieldName}${config.neo4j.userFieldPropertySuffix}`,
+    //                 ),
+    //             );
+    //         }
+    //         if (value.items?.format === 'user') {
+    //             userProperties.push(
+    //                 ...config.neo4j.usersArrayOriginalAndSuffixFieldsMap.map(
+    //                     (userField) => `${key}${userField.suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`,
+    //                 ),
+    //             );
+    //         }
+    //     });
 
-        return userProperties;
-    }
+    //     return userProperties;
+    // }
 
     async upsertGlobalSearchIndex() {
         const templates = await this.templateManagerService.searchEntityTemplates();
@@ -152,8 +152,9 @@ export default class Manager extends DefaultManagerNeo4j {
         await Promise.all(
             templates.map(async (template) => {
                 const relationshipReferencesProperties = await this.getRelationshipReferencesPropertiesIndex(template);
-                const userProperties = this.getUserPropertiesIndex(template);
-                [...relationshipReferencesProperties, ...userProperties].forEach((property) => {
+                // const userProperties = this.getUserPropertiesIndex(template);
+                // [...relationshipReferencesProperties, ...userProperties].forEach((property) => {
+                relationshipReferencesProperties.forEach((property) => {
                     allTemplatesProperties.add(property);
                 });
             }),
@@ -187,9 +188,10 @@ export default class Manager extends DefaultManagerNeo4j {
     async upsertChangedTemplateSearchIndex(changedTemplateId: string) {
         const changedTemplate = await this.templateManagerService.getEntityTemplateById(changedTemplateId);
         const relationshipReferencesProperties = await this.getRelationshipReferencesPropertiesIndex(changedTemplate);
-        const userProperties = this.getUserPropertiesIndex(changedTemplate);
+        // const userProperties = this.getUserPropertiesIndex(changedTemplate);
 
-        const allProperties = [...relationshipReferencesProperties, ...userProperties, ...this.getTemplatePropertiesIndex(changedTemplate)];
+        // const allProperties = [...relationshipReferencesProperties, ...userProperties, ...this.getTemplatePropertiesIndex(changedTemplate)];
+        const allProperties = [...relationshipReferencesProperties, ...this.getTemplatePropertiesIndex(changedTemplate)];
 
         await this.upsertSearchIndex(`${templateSearchIndexPrefix}${changedTemplateId}`, [changedTemplateId], allProperties);
     }

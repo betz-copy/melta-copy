@@ -3,12 +3,16 @@ import {
     IEntity,
     IEntityExpanded,
     IEntityWithDirectRelationships,
+    IMongoEntityTemplate,
     IPropertyValue,
     IRelationship,
+    PropertyFormat,
     SplitBy,
     ValidationError,
 } from '@microservices/shared';
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
+import Kartoffel from 'instance-service/src/externalServices/kartoffel';
+import EntityTemplateService from 'instance-service/src/externalServices/templates/entityTemplateManager';
 import neo4j, { Node as Neo4jNode, Relationship as Neo4jRelationship, QueryResult, Transaction } from 'neo4j-driver';
 import { v4 as uuidv4 } from 'uuid';
 import config from '../../config';
@@ -21,17 +25,7 @@ const {
         srid,
     },
     timezone,
-    neo4j: {
-        stringPropertySuffix,
-        colorPropertySuffix,
-        booleanPropertySuffix,
-        filePropertySuffix,
-        locationCoordinateSystemSuffix,
-        usersFieldsPropertySuffix,
-        usersArrayOriginalAndSuffixFieldsMap,
-        userFieldPropertySuffix,
-        userOriginalAndSuffixFieldsMap,
-    },
+    neo4j: { stringPropertySuffix, colorPropertySuffix, booleanPropertySuffix, filePropertySuffix, locationCoordinateSystemSuffix },
 } = config;
 
 export type Node = Neo4jNode<number>;
@@ -49,14 +43,15 @@ export const formatDate = (date: string) => {
  * Fix the values of an entity that is saved in neo4j to its original values.
  * For example dates and fixing the user fields to be without the suffix.
  */
-export const normalizeFields = (
+export const normalizeFields = async (
     properties: Record<string, IPropertyValue>,
-): { properties: Record<string, IPropertyValue>; coloredFields: Record<string, string> } => {
+    template?: IMongoEntityTemplate,
+): Promise<{ properties: Record<string, IPropertyValue>; coloredFields: Record<string, string> }> => {
     const props = {};
     const coloredFields = {};
 
-    const usersArrayKeys: Set<string> = new Set<string>();
-    const userKeys: Set<string> = new Set<string>();
+    // const usersArrayKeys: Set<string> = new Set<string>();
+    const userKeys: Set<string> = new Set();
 
     for (const [key, value] of Object.entries(properties)) {
         const suffixes = [stringPropertySuffix, booleanPropertySuffix, filePropertySuffix, locationCoordinateSystemSuffix];
@@ -65,36 +60,45 @@ export const normalizeFields = (
 
         if (key.endsWith(colorPropertySuffix) && properties[key] !== undefined) coloredFields[key.slice(0, -colorPropertySuffix.length)] = value;
 
-        if (key.includes('.') && key.endsWith(`${usersFieldsPropertySuffix}`)) {
-            // Find the user field of the key (everything before the suffix)
-            const currentUserField = usersArrayOriginalAndSuffixFieldsMap.find(({ suffixFieldName }) =>
-                key.includes(suffixFieldName),
-            )!.suffixFieldName;
-            usersArrayKeys.add(key.split(currentUserField)[0]);
-            continue;
-        }
+        if (template) {
+            // it's entity and not relationship
+            if (template.properties.properties[key]?.format === PropertyFormat.user) {
+                userKeys.add(value);
+            }
 
-        if (key.includes('.') && key.endsWith(`${userFieldPropertySuffix}`)) {
-            const currentUserField = userOriginalAndSuffixFieldsMap.find(({ suffixFieldName }) => key.includes(suffixFieldName))!.suffixFieldName;
-            userKeys.add(key.split(currentUserField)[0]);
-            continue;
+            if (template.properties.properties[key]?.items?.format === PropertyFormat.user) {
+                value.forEach((kartoffelId: string) => {
+                    userKeys.add(kartoffelId);
+                });
+            }
         }
+        // if (key.includes('.') && key.endsWith(`${usersFieldsPropertySuffix}`)) {
+        //     // Find the user field of the key (everything before the suffix)
+        //     const currentUserField = usersArrayOriginalAndSuffixFieldsMap.find(({ suffixFieldName }) =>
+        //         key.includes(suffixFieldName),
+        //     )!.suffixFieldName;
+        //     usersArrayKeys.add(key.split(currentUserField)[0]);
+        //     continue;
+        // }
+
+        // if (key.includes('.') && key.endsWith(`${userFieldPropertySuffix}`)) {
+        //     const currentUserField = userOriginalAndSuffixFieldsMap.find(({ suffixFieldName }) => key.includes(suffixFieldName))!.suffixFieldName;
+        //     userKeys.add(key.split(currentUserField)[0]);
+        //     continue;
+        // }
 
         if (value instanceof neo4j.types.LocalDateTime) {
             props[key] = fromZonedTime(new Date(value.toString()), timezone).toISOString();
-
             continue;
         }
 
         if (value instanceof neo4j.types.Date) {
             props[key] = formatDate(value.toString());
-
             continue;
         }
 
         if (value instanceof neo4j.types.Point) {
             props[key] = { location: `${value.x}, ${value.y}`, coordinateSystem: properties[`${key}${locationCoordinateSystemSuffix}`] };
-
             continue;
         }
         if (Array.isArray(value) && value.every((item) => item instanceof neo4j.types.Point)) {
@@ -110,37 +114,48 @@ export const normalizeFields = (
         props[key] = value;
     }
 
-    if (usersArrayKeys.size) {
-        for (const userKey of usersArrayKeys) {
-            props[userKey] = properties[`${userKey}${usersArrayOriginalAndSuffixFieldsMap[0].suffixFieldName}${usersFieldsPropertySuffix}`].map(
-                (_id: string, index: string | number) => {
-                    const objToReturn: Record<string, unknown> = {};
+    // if (usersArrayKeys.size) {
+    //     for (const userKey of usersArrayKeys) {
+    //         props[userKey] = properties[`${userKey}${usersArrayOriginalAndSuffixFieldsMap[0].suffixFieldName}${usersFieldsPropertySuffix}`].map(
+    //             (_id: string, index: string | number) => {
+    //                 const objToReturn: Record<string, unknown> = {};
 
-                    for (const userField of usersArrayOriginalAndSuffixFieldsMap) {
-                        objToReturn[userField.originalFieldName] =
-                            properties[`${userKey}${userField.suffixFieldName}${usersFieldsPropertySuffix}`][index];
-                    }
+    //                 for (const userField of usersArrayOriginalAndSuffixFieldsMap) {
+    //                     objToReturn[userField.originalFieldName] =
+    //                         properties[`${userKey}${userField.suffixFieldName}${usersFieldsPropertySuffix}`][index];
+    //                 }
 
-                    return JSON.stringify({
-                        ...objToReturn,
-                    });
-                },
-            );
-        }
-    }
+    //                 return JSON.stringify({
+    //                     ...objToReturn,
+    //                 });
+    //             },
+    //         );
+    //     }
+    // }
 
-    if (userKeys.size) {
-        for (const userKey of userKeys) {
-            const objToReturn: Record<string, unknown> = {};
-
-            for (const userField of userOriginalAndSuffixFieldsMap) {
-                objToReturn[userField.originalFieldName] = properties[`${userKey}${userField.suffixFieldName}${userFieldPropertySuffix}`];
+    if (userKeys.size && template) {
+        const users = await Kartoffel.getUsersByIds(Array.from(userKeys.keys()));
+        for (const [key, value] of Object.entries(properties)) {
+            if (template.properties.properties[key]?.format === PropertyFormat.user) {
+                props[key] = users.find(({ _id }) => _id === value);
             }
 
-            props[userKey] = JSON.stringify({
-                ...objToReturn,
-            });
+            if (template.properties.properties[key]?.items?.format === PropertyFormat.user) {
+                props[key] = users.filter(({ _id }) => value.includes(_id));
+            }
         }
+
+        // for (const userKey of userKeys) {
+        //     const objToReturn: Record<string, unknown> = {};
+
+        //     for (const userField of userOriginalAndSuffixFieldsMap) {
+        //         objToReturn[userField.originalFieldName] = properties[`${userKey}${userField.suffixFieldName}${userFieldPropertySuffix}`];
+        //     }
+
+        //     props[userKey] = JSON.stringify({
+        //         ...objToReturn,
+        //     });
+        // }
     }
 
     return { properties: props, coloredFields };
@@ -155,8 +170,8 @@ type Response<ResType extends ResponseType, Data> = ResType extends 'singleRespo
         ? Data[]
         : never;
 
-export const nodeToEntity = (node: Node): IEntity => {
-    const { properties, coloredFields } = normalizeFields(node.properties);
+export const nodeToEntity = async (node: Node, template: IMongoEntityTemplate): Promise<IEntity> => {
+    const { properties, coloredFields } = await normalizeFields(node.properties, template);
     return {
         templateId: node.labels[0],
         properties: EntityManager.fixReturnedEntityReferencesFields(properties),
@@ -164,10 +179,24 @@ export const nodeToEntity = (node: Node): IEntity => {
     };
 };
 
+type IFunctionTemplate = { type: 'function'; metadata: string }; // string metadata is workspace id
+type IPureTemplate = { type: 'pure'; metadata: IMongoEntityTemplate };
+type ITemplate = IFunctionTemplate | IPureTemplate;
+
 export const normalizeReturnedEntity =
-    <T extends ResponseType>(response: T) =>
-    (result: QueryResult): Response<T, IEntity> => {
-        const entities = result.records.map((record) => nodeToEntity(record.get(0) as Node));
+    <T extends ResponseType>(response: T, template: ITemplate) =>
+    async (result: QueryResult): Promise<Response<T, IEntity>> => {
+        const entities = await Promise.all(
+            result.records.map(async (record) => {
+                const templateId = record.get(0).labels[0];
+                const entityTemplate =
+                    template.type === 'pure'
+                        ? template.metadata
+                        : await new EntityTemplateService(template.metadata).getEntityTemplateById(templateId);
+
+                return nodeToEntity(record.get(0) as Node, entityTemplate);
+            }),
+        );
 
         if (['singleResponse', 'singleResponseNotNullable'].includes(response))
             return (entities.length > 0 ? entities[0] : null) as Response<T, IEntity>;
@@ -175,11 +204,23 @@ export const normalizeReturnedEntity =
         return entities as Response<T, IEntity>;
     };
 
-export const normalizeSearchByLocationResponse = (result: QueryResult): Array<{ node: IEntity; matchingFields: string[] }> => {
-    return result.records.map((record) => ({
-        node: nodeToEntity(record.get(0) as Node),
-        matchingFields: record.get(1) as string[],
-    }));
+export const normalizeSearchByLocationResponse = async (
+    result: QueryResult,
+    workspaceId: string,
+): Promise<Array<{ node: IEntity; matchingFields: string[] }>> => {
+    const entityTemplateService = new EntityTemplateService(workspaceId);
+
+    return Promise.all(
+        result.records.map(async (record) => {
+            const node = record.get(0) as Node;
+            const template = await entityTemplateService.getEntityTemplateById(node.labels[0]);
+
+            return {
+                node: await nodeToEntity(node, template),
+                matchingFields: record.get(1) as string[],
+            };
+        }),
+    );
 };
 
 export const normalizeResponseCount = (result: QueryResult): number => {
@@ -213,27 +254,31 @@ export const normalizeRuleResultsOnEntitiesOfTemplate = (result: QueryResult) =>
 
 export const normalizeReturnedRelationship =
     <T extends ResponseType>(response: T) =>
-    (result: QueryResult): Response<T, IRelationship> => {
-        const relationships = result.records.map((record) => {
-            const { type, properties } = record.get('r') as Relationship;
-            const { properties: sourceEntityProps } = record.get('s') as Node;
-            const { properties: destEntityProps } = record.get('d') as Node;
+    async (result: QueryResult): Promise<Response<T, IRelationship>> => {
+        const relationships = await Promise.all(
+            result.records.map(async (record) => {
+                const { type, properties } = record.get('r') as Relationship;
+                const { properties: sourceEntityProps } = record.get('s') as Node;
+                const { properties: destEntityProps } = record.get('d') as Node;
 
-            return {
-                templateId: type,
-                properties: normalizeFields(properties).properties,
-                sourceEntityId: sourceEntityProps._id,
-                destinationEntityId: destEntityProps._id,
-            };
-        });
+                const normalized = await normalizeFields(properties);
+
+                return {
+                    templateId: type,
+                    properties: normalized.properties,
+                    sourceEntityId: sourceEntityProps._id,
+                    destinationEntityId: destEntityProps._id,
+                };
+            }),
+        );
 
         if (['singleResponse', 'singleResponseNotNullable'].includes(response))
-            return (relationships.length ? relationships[0] : null) as Response<T, IRelationship>;
+            return (relationships.length > 0 ? relationships[0] : null) as Response<T, IRelationship>;
 
         return relationships as Response<T, IRelationship>;
     };
 
-export const normalizeReturnedDeletedRelationship = (result: QueryResult) => {
+export const normalizeReturnedDeletedRelationship = async (result: QueryResult) => {
     if (!result.records.length) return null;
 
     const relationshipResult = result.records[0];
@@ -245,79 +290,100 @@ export const normalizeReturnedDeletedRelationship = (result: QueryResult) => {
 
     return {
         templateId: relationshipType,
-        properties: normalizeFields(relationshipProperties).properties,
+        properties: (await normalizeFields(relationshipProperties)).properties,
         sourceEntityId: sourceEntityProps._id,
         destinationEntityId: destEntityProps._id,
     };
 };
 
 export const normalizeReturnedRelAndEntities =
-    () =>
-    (result: QueryResult): IEntityExpanded | null => {
+    (workspaceId: string) =>
+    async (result: QueryResult): Promise<IEntityExpanded | null> => {
         if (!result.records.length) return null;
 
         const entity = result.records[0].get(0)[0];
 
         if (!entity) return null;
+        const entityTemplateService = new EntityTemplateService(workspaceId);
 
-        const connections = result.records.slice(1).map((record) => {
-            const [firstEntity, relationship, secondEntity] = record.get(0).slice(-3) as [Node, Relationship, Node];
-            const [sourceEntity, destinationEntity] =
-                firstEntity.identity === relationship.start ? [firstEntity, secondEntity] : [secondEntity, firstEntity];
+        const connections = await Promise.all(
+            result.records.slice(1).map(async (record) => {
+                const [firstEntity, relationship, secondEntity] = record.get(0).slice(-3) as [Node, Relationship, Node];
 
-            return {
-                sourceEntity: nodeToEntity(sourceEntity),
-                relationship: {
-                    templateId: relationship.type,
-                    properties: normalizeFields(relationship.properties).properties,
-                },
-                destinationEntity: nodeToEntity(destinationEntity),
-            };
-        });
+                const [sourceNode, destinationNode] =
+                    firstEntity.identity === relationship.start ? [firstEntity, secondEntity] : [secondEntity, firstEntity];
+
+                const [sourceTemplate, destinationTemplate] = await Promise.all([
+                    entityTemplateService.getEntityTemplateById(sourceNode.labels[0]),
+                    entityTemplateService.getEntityTemplateById(destinationNode.labels[0]),
+                ]);
+
+                return {
+                    sourceEntity: await nodeToEntity(sourceNode, sourceTemplate),
+                    relationship: {
+                        templateId: relationship.type,
+                        properties: (await normalizeFields(relationship.properties)).properties,
+                    },
+                    destinationEntity: await nodeToEntity(destinationNode, destinationTemplate),
+                };
+            }),
+        );
+        const template = await entityTemplateService.getEntityTemplateById(entity.labels[0]);
 
         return {
-            entity: nodeToEntity(entity),
+            entity: await nodeToEntity(entity, template),
             connections,
         };
     };
 
-const formatUndirectedRelationship = (relationship: Relationship, node1: Node, node2: Node): IRelationship => {
+const formatUndirectedRelationship = async (relationship: Relationship, node1: Node, node2: Node): Promise<IRelationship> => {
     const [sourceNode, destinationNode] = relationship.start === node1.identity ? [node1, node2] : [node2, node1];
 
     return {
         templateId: relationship.type,
-        properties: normalizeFields(relationship.properties).properties,
+        properties: (await normalizeFields(relationship.properties)).properties,
         sourceEntityId: sourceNode.properties._id,
         destinationEntityId: destinationNode.properties._id,
     };
 };
 
-export const normalizeSearchWithRelationships = (result: QueryResult): IEntityWithDirectRelationships[] => {
-    return result.records.map((record): IEntityWithDirectRelationships => {
-        const { node, relationships } = record.toObject() as {
-            node: Node;
-            relationships: Array<{ relationship: Relationship; otherEntity: Node }> | null;
-        };
-        return {
-            entity: nodeToEntity(node),
-            relationships: relationships?.map(({ relationship, otherEntity }) => ({
-                relationship: formatUndirectedRelationship(relationship, node, otherEntity),
-                otherEntity: nodeToEntity(otherEntity),
-            })),
-        };
-    });
+export const normalizeSearchWithRelationships = async (result: QueryResult, workspaceId: string): Promise<IEntityWithDirectRelationships[]> => {
+    const entityTemplateService = new EntityTemplateService(workspaceId);
+    return Promise.all(
+        result.records.map(async (record): Promise<IEntityWithDirectRelationships> => {
+            const { node, relationships } = record.toObject() as {
+                node: Node;
+                relationships: Array<{ relationship: Relationship; otherEntity: Node }> | null;
+            };
+
+            const normalizedRelationships = await Promise.all(
+                (relationships ?? []).map(async ({ relationship, otherEntity }) => ({
+                    relationship: await formatUndirectedRelationship(relationship, node, otherEntity),
+                    otherEntity: await nodeToEntity(otherEntity, await entityTemplateService.getEntityTemplateById(otherEntity.labels[0])),
+                })),
+            );
+            return {
+                entity: await nodeToEntity(node, await entityTemplateService.getEntityTemplateById(node.labels[0])),
+                relationships: normalizedRelationships,
+            };
+        }),
+    );
 };
 
-export const normalizeNeighborsOfEntityForRule = (result: QueryResult) => {
-    return result.records.map((record) => {
-        const relationshipTemplate = record.get('rTemplate') as string;
-        const neighborOfEntity = record.get('neighbor') as Node;
+export const normalizeNeighborsOfEntityForRule = async (result: QueryResult, workspaceId: string) => {
+    const entityTemplateService = new EntityTemplateService(workspaceId);
 
-        return {
-            relationshipTemplate,
-            neighborOfEntity: nodeToEntity(neighborOfEntity),
-        };
-    });
+    return Promise.all(
+        result.records.map(async (record) => {
+            const relationshipTemplate = record.get('rTemplate') as string;
+            const neighborOfEntity = record.get('neighbor') as Node;
+
+            return {
+                relationshipTemplate,
+                neighborOfEntity: await nodeToEntity(neighborOfEntity, await entityTemplateService.getEntityTemplateById(neighborOfEntity.labels[0])),
+            };
+        }),
+    );
 };
 
 export const normalizeGetDbConstraints = (constraintsQueryResult: QueryResult) => {

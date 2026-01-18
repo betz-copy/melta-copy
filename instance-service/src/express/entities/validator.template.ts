@@ -27,7 +27,7 @@ import { Request } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
 import FilterValidation from '../../error';
-import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
+import EntityTemplateService from '../../externalServices/templates/entityTemplateManager';
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import addDefaultFieldsToTemplate from '../../utils/addDefaultsFieldsToEntityTemplate';
 import DefaultController from '../../utils/express/controller';
@@ -43,12 +43,11 @@ ajv.addFormat('fileId', ajvCustomFormats.fileIdFieldRegex);
 ajv.addFormat('signature', ajvCustomFormats.signatureFieldRegex);
 ajv.addFormat('comment', ajvCustomFormats.commentFieldRegex);
 ajv.addFormat('user', {
-    type: 'string',
     validate: (user) => {
-        const userObj = JSON.parse(user);
-        return userObj._id && userObj.fullName && userObj.jobTitle && userObj.hierarchy && userObj.mail;
+        if (typeof user !== 'object' || user === null) return false;
+        return !!((user._id || user.id) && user.fullName && user.mail);
     },
-});
+}); //TODO: FIX
 ajv.addFormat('kartoffelUserField', /.*/);
 ajv.addFormat('unitField', ajvCustomFormats.unitFieldRegex);
 ajv.addFormat('text-area', ajvCustomFormats.textAreaFieldRegex);
@@ -98,14 +97,14 @@ ajv.addKeyword({
 ajv.addKeyword({ keyword: 'accountBalance', type: 'boolean' });
 
 export class EntityValidator extends DefaultController {
-    private entityTemplateManagerService: EntityTemplateManagerService;
+    private entityTemplateManagerService: EntityTemplateService;
 
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
 
     constructor(workspaceId: string) {
         super(undefined);
 
-        this.entityTemplateManagerService = new EntityTemplateManagerService(workspaceId);
+        this.entityTemplateManagerService = new EntityTemplateService(workspaceId);
         this.relationshipsTemplateManagerService = new RelationshipsTemplateManagerService(workspaceId);
     }
 
@@ -541,7 +540,7 @@ export const getFilesName = (files: string[]): string => {
 export const addStringFieldsAndNormalizeSpecialStringValues = async (
     entityProperties: Record<string, IPropertyValue>,
     entityTemplate: IMongoEntityTemplate | IEntityTemplate,
-    entityTemplateService: EntityTemplateManagerService,
+    entityTemplateService: EntityTemplateService,
     coloredFields?: Record<string, string>,
     recursiveRelationshipReference = false,
 ): Promise<Record<string, IPropertyValue>> => {
@@ -563,22 +562,22 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
             const propertyValue = entityProperties[key];
             const { type, format, items } = value;
 
-            if (format === 'user') {
-                config.neo4j.userOriginalAndSuffixFieldsMap.forEach(({ suffixFieldName, originalFieldName }) => {
-                    normalizedEntity[`${key}${suffixFieldName}${config.neo4j.userFieldPropertySuffix}`] =
-                        JSON.parse(propertyValue)[originalFieldName];
-                });
-                return;
-            }
+            // if (format === 'user') {
+            //     config.neo4j.userOriginalAndSuffixFieldsMap.forEach(({ suffixFieldName, originalFieldName }) => {
+            //         normalizedEntity[`${key}${suffixFieldName}${config.neo4j.userFieldPropertySuffix}`] =
+            //             JSON.parse(propertyValue)[originalFieldName];
+            //     });
+            //     return;
+            // }
 
-            if (type === 'array' && items?.format === 'user') {
-                config.neo4j.usersArrayOriginalAndSuffixFieldsMap.forEach(({ suffixFieldName, originalFieldName }) => {
-                    normalizedEntity[`${key}${suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`] = propertyValue.map(
-                        (user: string) => JSON.parse(user)[originalFieldName],
-                    );
-                });
-                return;
-            }
+            // if (type === 'array' && items?.format === 'user') {
+            //     config.neo4j.usersArrayOriginalAndSuffixFieldsMap.forEach(({ suffixFieldName, originalFieldName }) => {
+            //         normalizedEntity[`${key}${suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`] = propertyValue.map(
+            //             (user: string) => JSON.parse(user)[originalFieldName],
+            //         );
+            //     });
+            //     return;
+            // }
 
             // For Neo4j fulltext search (supports only string properties)
             if (type !== 'string') {

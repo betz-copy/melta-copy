@@ -42,8 +42,8 @@ const config = {
         booleanHeYesValue: env.get('BOOLEAN_HE_YES_VALUE').default('כן').asString(),
         booleanHeNoValue: env.get('BOOLEAN_HE_NO_VALUE').default('לא').asString(),
         relationshipReferencePropertySuffix: env.get('RELATIONSHIP_REFERENCE_PROPERTY_SUFFIX').default('_reference').asString(),
-        usersFieldsPropertySuffix: env.get('USERS_FIELDS_PROPERTY_SUFFIX').default('_usersFields').asString(),
-        userFieldPropertySuffix: env.get('USER_FIELD_PROPERTY_SUFFIX').default('_userField').asString(),
+        usersFieldsPropertySuffix: env.get('USERS_FIELDS_PROPERTY_SUFFIX').default('_usersFields').asString(), // TODO: REMOVE
+        userFieldPropertySuffix: env.get('USER_FIELD_PROPERTY_SUFFIX').default('_userField').asString(), // TODO: REMOVE
         userOriginalAndSuffixFieldsMap: env
             .get('USER_ORIGINAL_AND_SUFFIX_FIELDS_MAP')
             .default([

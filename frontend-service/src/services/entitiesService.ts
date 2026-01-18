@@ -264,6 +264,10 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
                         if (!property) return undefined;
                         return new Date(property).toISOString();
                     }
+                    case 'user': {
+                        if (!property) return undefined;
+                        return JSON.parse(property._id);
+                    }
                     default:
                         return property;
                 }

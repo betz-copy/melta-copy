@@ -8,7 +8,7 @@ const {
     },
 } = config;
 
-class EntityTemplateManagerService extends TemplatesManagerService {
+class EntityTemplateService extends TemplatesManagerService {
     // entity templates
     async getEntityTemplateById(id: string) {
         const { data } = await this.api.get<IMongoEntityTemplate>(`${getByIdRoute}/${id}`);
@@ -29,4 +29,4 @@ class EntityTemplateManagerService extends TemplatesManagerService {
     }
 }
 
-export default EntityTemplateManagerService;
+export default EntityTemplateService;

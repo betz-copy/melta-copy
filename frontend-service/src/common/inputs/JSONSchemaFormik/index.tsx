@@ -27,7 +27,7 @@ import RjsfTemplateReferenceWidget from './Widgets/RjsfTemplateReferenceWidget';
 import RjsfTextAreaWidget from './Widgets/RjsfTextAreaWidget';
 import RjsfUnitSelectWidget from './Widgets/RjsfUnitSelectWidget';
 import RjsfUserArrayWidget from './Widgets/RjsfUserArrayWidget';
-import RjsfUserAvatarWidget from './Widgets/RjsfUserAvarWidget';
+import RjsfUserAvatarWidget from './Widgets/RjsfUserAvatarWidget';
 import RjsfUserWidget from './Widgets/RjsfUserWidget';
 
 const { dateRegex } = environment;
@@ -94,16 +94,10 @@ export const ajvValidate = (
     ajv.addFormat('kartoffelUserField', /.*/);
     ajv.addFormat('unitField', /.*/);
     ajv.addFormat('user', {
-        type: 'string',
         validate: (user) => {
             if (user === ByCurrentDefaultValue.byCurrentUser) return true;
 
-            try {
-                const userObj = JSON.parse(user);
-                return userObj._id && userObj.fullName && userObj.jobTitle && userObj.hierarchy && userObj.mail;
-            } catch {
-                return false;
-            }
+            return user._id && user.fullName && user.jobTitle && user.hierarchy && user.mail;
         },
     });
     ajv.addFormat('text-area', /.*/);
@@ -384,7 +378,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             onChange={({ formData }) => {
                 Object.entries(formData as Record<string, IEntitySingleProperty>).forEach(([key, value]) => {
                     if (JSON.stringify(value) === JSON.stringify([undefined]) || JSON.stringify(value) === JSON.stringify([null]))
-                        formData[key] = undefined;
+                        formData[key] = undefined; //TODO: CHECK IF REMOVE
 
                     // if the value is an object without properties, we assume it's a grouped field and flatten it
                     // rjsf library does support grouped fields, but we do not save them as so in the db.

@@ -8,7 +8,7 @@ const {
     },
 } = config;
 
-class ChildTemplateManagerService extends TemplatesManagerService {
+class ChildTemplateService extends TemplatesManagerService {
     async getChildTemplateById(id: string) {
         const { data } = await this.api.get<IChildTemplatePopulated>(`${getByIdRoute}/${id}`);
 
@@ -28,4 +28,4 @@ class ChildTemplateManagerService extends TemplatesManagerService {
     }
 }
 
-export default ChildTemplateManagerService;
+export default ChildTemplateService;

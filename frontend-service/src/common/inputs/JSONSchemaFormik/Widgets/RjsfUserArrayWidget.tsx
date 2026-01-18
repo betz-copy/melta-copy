@@ -6,19 +6,18 @@ const RjsfUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, o
     const [inputValue, setInputValue] = useState('');
     const { defaultValue } = options;
 
-    const users = Array.isArray(value) && value[0] ? value.map((user) => JSON.parse(user)) : (defaultValue ?? []);
+    const users = Array.isArray(value) && value[0] ? value.map((user) => user) : (defaultValue ?? []);
     const [currentUsers, setCurrentUsers] = useState(Array.isArray(users) ? users.filter(Boolean) : []);
 
     if (!currentUsers.length || !currentUsers[0]) onChange(undefined);
 
-    const serializeUser = (user) =>
-        JSON.stringify({
-            _id: user?._id ?? user?.id,
-            fullName: user?.fullName,
-            jobTitle: user?.jobTitle,
-            hierarchy: user?.hierarchy,
-            mail: user?.mail,
-        });
+    const serializeUser = (user) => ({
+        _id: user?._id ?? user?.id,
+        fullName: user?.fullName,
+        jobTitle: user?.jobTitle,
+        hierarchy: user?.hierarchy,
+        mail: user?.mail,
+    });
 
     return (
         <UserArrayInput

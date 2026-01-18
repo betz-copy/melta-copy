@@ -16,7 +16,7 @@ import addFormats from 'ajv-formats';
 import { Request } from 'express';
 import { groupBy } from 'lodash';
 import config from '../../config';
-import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
+import EntityTemplateService from '../../externalServices/templates/entityTemplateManager';
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import DefaultController from '../../utils/express/controller';
 import EntityManager from '../entities/manager';
@@ -36,7 +36,7 @@ ajv.addFormat('user', {
         const userObj = JSON.parse(user);
         return userObj._id && userObj.fullName && userObj.jobTitle && userObj.hierarchy && userObj.mail;
     },
-});
+}); //TODO: FIX
 ajv.addFormat('text-area', /.*/);
 ajv.addFormat('relationshipReference', /.*/);
 ajv.addFormat('location', {
@@ -88,13 +88,13 @@ class BulkActionValidator extends DefaultController {
 
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
 
-    private entityTemplateManagerService: EntityTemplateManagerService;
+    private entityTemplateManagerService: EntityTemplateService;
 
     constructor(workspaceId: string) {
         super(undefined);
         this.entityManager = new EntityManager(workspaceId);
         this.relationshipsTemplateManagerService = new RelationshipsTemplateManagerService(workspaceId);
-        this.entityTemplateManagerService = new EntityTemplateManagerService(workspaceId);
+        this.entityTemplateManagerService = new EntityTemplateService(workspaceId);
     }
 
     private validateRelationship(relationshipTemplate: IMongoRelationshipTemplate, sourceEntity: IEntity, destinationEntity: IEntity) {
