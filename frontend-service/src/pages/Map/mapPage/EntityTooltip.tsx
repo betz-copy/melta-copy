@@ -3,7 +3,9 @@ import * as Cesium from 'cesium';
 import i18next from 'i18next';
 import React, { useEffect, useRef } from 'react';
 import { createRoot, Root } from 'react-dom/client';
+import { QueryClientProvider } from 'react-query';
 import { CesiumComponentRef } from 'resium';
+import { queryClient } from '../../..';
 import { EntityPropertiesInternal } from '../../../common/EntityProperties';
 import { IEntity } from '../../../interfaces/entities';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
@@ -52,6 +54,7 @@ export const EntityTooltip: React.FC<EntityTooltipProps> = ({ entity, darkMode, 
                     textWrap
                     viewFirstLineOfLongText
                     entityTemplates={entityTemplates}
+                    innerStyle={{ width: '50%' }}
                 />
             ) : (
                 i18next.t('graph.noPreviewProperties')
@@ -129,14 +132,22 @@ export const useCesiumTooltip = ({ viewerRef, darkMode, entityTemplateMap, searc
                 tooltip.style.left = `${mouseX - width / 2}px`;
                 tooltip.style.top = `${top}px`;
 
-                root.render(<EntityTooltip darkMode={darkMode} entity={nodeData} entityTemplates={entityTemplateMap} arrowDirection={direction} />);
+                root.render(
+                    <QueryClientProvider client={queryClient}>
+                        <EntityTooltip darkMode={darkMode} entity={nodeData} entityTemplates={entityTemplateMap} arrowDirection={direction} />
+                    </QueryClientProvider>,
+                );
             });
         }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
-
         return () => {
             handler.destroy();
-            root.unmount();
-            tooltip.remove();
+
+            const r = rootRef.current;
+
+            rootRef.current = null;
+            tooltipRef.current = null;
+
+            if (r) queueMicrotask(() => r.unmount());
         };
     }, [searchedEntitiesPolygons.length, filteredPolygons.length]);
 };

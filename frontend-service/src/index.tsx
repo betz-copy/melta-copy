@@ -20,7 +20,7 @@ if (import.meta.hot) {
     import.meta.hot.on('vite:beforeUpdate', () => console.clear());
 }
 
-const queryClient = new QueryClient({
+export const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
             refetchOnWindowFocus: false,
