@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [dev, main, preprod]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Configure npm for GitLab registry
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          cat <<EOF > ~/.npmrc
+          @yesodot:registry=https://gitlab.com/api/v4/projects/29372887/packages/npm/
+          //gitlab.com/api/v4/projects/29372887/packages/npm/:_authToken=${{ secrets.NPM_TOKEN }}
+          always-auth=true
+          EOF
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      
+      - name: Run Biome
+        run: npm run biome
+
+      # - name: Run tests
+      #   run: npm test
+
+      - name: Build
+        run: npm run build -w shared && npm run build --if-present
