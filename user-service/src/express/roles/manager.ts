@@ -1,5 +1,3 @@
-/* eslint-disable no-param-reassign */
-
 import { ISubCompactPermissions } from '@packages/permission';
 import { IBaseRole, IRole } from '@packages/role';
 import { IUserAgGridRequest } from '@packages/rule-breach';

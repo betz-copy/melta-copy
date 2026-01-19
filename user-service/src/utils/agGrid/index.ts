@@ -10,6 +10,7 @@ import {
     textFilterOperationTypes,
 } from '@packages/rule-breach';
 import { ServiceError } from '@packages/utils';
+import { StatusCodes } from 'http-status-codes';
 
 const translateAgGridFilter = (
     type: basicFilterOperationTypes | numberFilterOperationTypes | textFilterOperationTypes | relativeDateFilters,
@@ -52,10 +53,13 @@ const translateAgGridFilter = (
         case relativeDateFilters.thisYear:
         case relativeDateFilters.untilToday:
         case relativeDateFilters.fromToday:
-            throw new ServiceError(400, `Relative date filter '${type}' should be resolved to date range before backend processing`);
+            throw new ServiceError(
+                StatusCodes.BAD_REQUEST,
+                `Relative date filter '${type}' should be resolved to date range before backend processing`,
+            );
 
         default:
-            throw new ServiceError(404, `A filter of type '${type}' does not exist`);
+            throw new ServiceError(StatusCodes.NOT_FOUND, `A filter of type '${type}' does not exist`);
     }
 };
 

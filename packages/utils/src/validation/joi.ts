@@ -20,7 +20,7 @@ export const normalizeRequest = (req: any, value: any) => {
     req.params = value.params;
 };
 
-export const ValidateRequest = (schema: Joi.ObjectSchema<any>, options: Joi.ValidationOptions = defaultValidationOptions) => {
+export const ValidateRequest = <T extends object>(schema: Joi.ObjectSchema<T>, options: Joi.ValidationOptions = defaultValidationOptions) => {
     const validator = async (req: Request) => {
         const { error, value } = schema.unknown().validate(req, options);
         if (error) throw error;

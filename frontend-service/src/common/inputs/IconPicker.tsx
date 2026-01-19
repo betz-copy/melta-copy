@@ -92,9 +92,7 @@ const IconPicker: React.FC<IconPickerProps> = ({ width, height, iconsPerPage, se
                                 <DeleteIcon sx={{ fontSize: 15 }} />
                             </IconButton>
 
-                            {React.createElement(allIcons[selectedIconName] as React.ComponentType<{ style?: React.CSSProperties }>, {
-                                style: { fontSize: '2rem', color },
-                            })}
+                            {React.createElement(allIcons[selectedIconName], { style: { fontSize: '2rem', color } })}
                         </>
                     )}
                 </Grid>

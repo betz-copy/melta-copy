@@ -1,4 +1,3 @@
-/* eslint-disable no-new */
 import 'elastic-apm-node/start';
 import * as http from 'node:http';
 import { logger } from '@packages/utils';
@@ -8,8 +7,8 @@ import config from './config';
 import Server from './express/server';
 import { declareTopology } from './utils/rabbit';
 
-const { rabbit } = config;
-const { url: endPoint, port, accessKey, secretKey, useSSL, transportAgent } = config.minio;
+const { rabbit, minio } = config;
+const { url: endPoint, port, accessKey, secretKey, useSSL, transportAgent } = minio;
 
 const initializeRabbit = async () => {
     logger.info('Connecting to Rabbit...');

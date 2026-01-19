@@ -1,10 +1,9 @@
 import { ActionOnFail } from '@packages/rule';
-import { EntityTemplateManagerService } from '../../src/express/externalServices/entityTemplateManager';
+import { defaultValidationOptions } from '@packages/utils';
+import EntityTemplateManagerService from 'instance-service/src/externalServices/templates/entityTemplateManager';
 import { RelationshipTemplateManager } from '../../src/express/relationshipTemplate/manager';
-import { IRelationshipTemplateRule } from '../../src/express/rule/interfaces';
-import { validateRuleFormula } from '../../src/express/rule/validator';
+import validateRuleFormula from '../../src/express/rule/validator';
 import { createRuleRequestSchema } from '../../src/express/rule/validator.schema';
-import { defaultValidationOptions } from '../../src/utils/joi';
 import {
     flightEntityTemplate,
     flightsOnRelationshipTemplate,

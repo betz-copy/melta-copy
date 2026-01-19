@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { IChildTemplateMap } from '@packages/child-template';
 import { IEntity, IEntityExpanded, IPropertyValue } from '@packages/entity';
 import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';

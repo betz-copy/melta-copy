@@ -7,9 +7,7 @@ import { UserNotAuthorizedError } from '../error';
 import UsersManager from '../users/manager';
 import WorkspaceService from './service';
 
-const {
-    service: { meltaBaseUrl },
-} = config;
+const { meltaBaseUrl } = config.service;
 
 class WorkspaceManager extends DefaultManagerProxy {
     private storageService: StorageService;

@@ -11,15 +11,14 @@
         "typecheck": "turbo run typecheck --filter='*-service' --continue",
         "dev": "turbo run dev",
         "test": "turbo run test",
-        "lint": "biome check .",
-        "lint:fix": "biome check --write .",
+        "biome": "biome check .",
+        "biome:fix": "biome check --write .",
         "clean": "turbo run clean && rimraf ./**/dist",
         "clean:all": "rimraf ./**/dist ./**/node_modules ./node_modules pnpm-lock.yaml",
         "clean:cache": "rimraf .turbo/cache",
         "clean:cache:check": "du -sh .turbo/cache 2>/dev/null || echo 'Cache is empty'",
         "start-ui": "turbo run start:docker --filter=frontend-service",
-        "pre-push": "pnpm run lint && turbo run build",
-        "migrate": "pnpm run clean:all && pnpm install && turbo run build --filter=shared && pnpm run start-ui"
+        "pre-push": "pnpm run biome && turbo run build"
     },
     "repository": {
         "type": "git",
@@ -42,7 +41,7 @@
         "@types/jest": "^30.0.0",
         "@types/mongoose": "^5.11.97",
         "@types/node": "^24.3.0",
-        "cross-env": "^10.1.0",
+        "@types/express": "^5.0.0",
         "husky": "^9.1.7",
         "jest": "^30.0.5",
         "rimraf": "^6.0.1",

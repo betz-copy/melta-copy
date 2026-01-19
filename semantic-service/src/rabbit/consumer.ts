@@ -5,9 +5,7 @@ import { IIndexFilesRequest } from '../express/semantics/interface';
 import { SemanticManager } from '../express/semantics/manager';
 import { semanticDeleteFilesSchema, semanticIndexFilesSchema } from '../utils/joi/schemas/semantic';
 
-const {
-    service: { workspaceIdHeaderName },
-} = config;
+const { workspaceIdHeaderName } = config.service;
 
 class SemanticConsumer {
     static async indexFiles(msg: ConsumerMessage) {
