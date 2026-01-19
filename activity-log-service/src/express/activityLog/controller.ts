@@ -13,7 +13,7 @@ export default class ActivityLogController extends DefaultController<IActivityLo
 
         res.json(
             await this.manager.getActivity(
-                entityId,
+                entityId as string,
                 Number(limit),
                 Number(skip),
                 fieldsSearch as string[],

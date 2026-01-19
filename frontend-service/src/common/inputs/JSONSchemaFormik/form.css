@@ -12,7 +12,7 @@
 
 .half-width-field {
     width: 47%;
-    max-width: 47% !important;
+    max-width: 47%;
 }
 
 .full-width-field {
@@ -25,7 +25,7 @@
 }
 
 .no-padding-top {
-    padding-top: 0px !important;
+    padding-top: 0px;
 }
 
 #json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root {
@@ -42,11 +42,11 @@
 }
 
 .MuiPickersToolbar-penIconButton {
-    right: 265px !important;
+    right: 265px;
 }
 
 .rjsf-text-input-override input[type="number"] {
-    direction: ltr !important;
+    direction: ltr;
     text-align: right;
 }
 

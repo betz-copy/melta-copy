@@ -104,8 +104,8 @@ const FilterCompetent = <T extends TableForm | ChartForm>({
                                                 const propertyTemplate = entityTemplate?.properties.properties[option];
 
                                                 if (propertyTemplate?.format === 'relationshipReference') {
-                                                    const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId!;
-                                                    return !entityTemplates?.get(relatedTemplateId);
+                                                    const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId;
+                                                    return !entityTemplates?.get(relatedTemplateId ?? '');
                                                 }
                                                 return false;
                                             }}

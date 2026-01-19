@@ -76,7 +76,7 @@ export default class ProcessInstanceValidator extends DefaultController<IProcess
     public async validateUpdateProcessInstance(req: Request) {
         const { steps, details }: UpdateProcessReqBody = req.body;
 
-        const template = await this.manager.getProcessTemplateByProcessId(req.params.id);
+        const template = await this.manager.getProcessTemplateByProcessId(req.params.id as string);
 
         if (steps) {
             const [stepTemplates, stepInstances] = await Promise.all([

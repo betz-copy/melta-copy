@@ -525,7 +525,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                 handleClose={() => setConvertToRelationshipFieldDialogState({ isDialogOpen: false, relationshipTemplate: null })}
                 onYes={({ fieldName, displayFieldName, relationshipReference }) =>
                     convertRelationshipToRelationShipFieldRequest({
-                        id: convertToRelationshipFieldDialogState.relationshipTemplate?._id!,
+                        id: convertToRelationshipFieldDialogState.relationshipTemplate?._id ?? '',
                         fieldName,
                         displayFieldName,
                         relationshipReference,

@@ -993,7 +993,7 @@ export const webGLFluidSimulation = (canvas) => {
 
     updateKeywords();
     initFramebuffers();
-    multipleSplats(parseInt(Math.random() * 20) + 5);
+    multipleSplats(parseInt(Math.random() * 20, 10) + 5);
 
     let lastUpdateTime = Date.now();
     let colorUpdateTimer = 0.0;
@@ -1442,7 +1442,7 @@ export const webGLFluidSimulation = (canvas) => {
 
     const keyDownWindowEventLIstener = (e) => {
         if (e.code === 'KeyP') config.PAUSED = !config.PAUSED;
-        if (e.key === ' ') splatStack.push(parseInt(Math.random() * 20) + 5);
+        if (e.key === ' ') splatStack.push(parseInt(Math.random() * 20, 10) + 5);
     };
 
     return [

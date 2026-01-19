@@ -1548,7 +1548,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const templateIds = new Set<string>();
         const entitiesIds = new Set<string>();
 
-        actionsGroups.forEach((actionsGroup) =>
+        actionsGroups.forEach((actionsGroup) => {
             actionsGroup.forEach((action) => {
                 if (action.actionType === ActionTypes.CreateEntity) {
                     templateIds.add((action.actionMetadata as ICreateEntityMetadata).templateId);
@@ -1561,8 +1561,8 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                     const { entityId } = action.actionMetadata as IUpdateEntityMetadata;
                     if (!entityId.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) entitiesIds.add(entityId);
                 }
-            }),
-        );
+            });
+        });
 
         return { templateIds: [...templateIds], entitiesIds: [...entitiesIds] };
     }
@@ -1587,7 +1587,9 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const templateIds = new Set<string>([...templateIdsFromReq]);
 
         const entities = await this.service.getEntityInstancesByIds(entitiesIds);
-        entities.forEach((entity) => templateIds.add(entity.templateId));
+        entities.forEach((entity) => {
+            templateIds.add(entity.templateId);
+        });
 
         const templates = await this.entityTemplateService.searchEntityTemplates(userId, { ids: [...templateIds] });
 
@@ -1626,7 +1628,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const { templatesByIds, entitiesByIds } = await this.getAllActionsTemplatesByIds(actionsGroups, userId);
         const entitiesToCreate: IEntity[] = [];
 
-        actionsGroups.forEach((actionGroup) =>
+        actionsGroups.forEach((actionGroup) => {
             actionGroup.forEach((action) => {
                 if (action.actionType === ActionTypes.CreateEntity) {
                     const instanceData = action.actionMetadata as ICreateEntityMetadata;
@@ -1640,8 +1642,8 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
                     this.checkSerialFieldWasUpdated(templateOfEntity, actionMetadata.updatedFields, entity);
                 }
-            }),
-        );
+            });
+        });
 
         const newEntitiesToCreateByActionsGroups = await this.getManyEntitiesNewPropertiesToUpdate(entitiesToCreate, templatesByIds);
         let indexOfEntityToCreate = 0;

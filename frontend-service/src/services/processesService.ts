@@ -104,7 +104,9 @@ const handleAttachmentProperties = async (attachments: object, properties: objec
     }
     filesToUpload.push(...(await Promise.all(signatureFilesUploadPromises)));
 
-    filesToUpload.forEach(([key, value]) => formData.append(key, value as Blob));
+    filesToUpload.forEach(([key, value]) => {
+        formData.append(key, value as Blob);
+    });
 
     const fileProperties: { [key: string]: IPropertyValue } = {};
     unchangedFiles.forEach(([key, _value]) => {

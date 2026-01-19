@@ -17,7 +17,7 @@ export const allowedCategories = (categories: ICategoryMap, currentUser: ICurren
               return (categoryIds.get(a) ?? Infinity) - (categoryIds.get(b) ?? Infinity);
           });
 
-    return allowedCategoriesToShow.map((categoryId) => categories?.get(categoryId)!).filter((category) => category !== undefined);
+    return allowedCategoriesToShow.map((categoryId) => categories?.get(categoryId)).filter((category) => category !== undefined);
 };
 
 export const allowedEntitiesOfCategory = (

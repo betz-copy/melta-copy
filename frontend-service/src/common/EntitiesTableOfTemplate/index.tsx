@@ -578,7 +578,7 @@ const EntitiesTableOfTemplate = forwardRef(
 
         const calculateRemainingWidth = (columnStates: ColumnState[], hasActions: boolean, isRemovedFields: boolean): number => {
             const usedWidth: number = isRemovedFields ? 0 : Object.values(defaultColumnWidths).reduce((sum, width) => sum + width, 0);
-            const totalGridWidth: number = tableRef.current?.offsetWidth!;
+            const totalGridWidth: number = tableRef.current?.offsetWidth ?? 0;
             const widthConsumed: number = columnStates.reduce((sum, col) => sum + col.width!, 0);
             return totalGridWidth - usedWidth - widthConsumed - (hasActions ? actionsWidth : 0);
         };

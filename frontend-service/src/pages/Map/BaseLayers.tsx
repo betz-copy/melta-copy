@@ -80,16 +80,16 @@ export const BaseLayers: React.FC<{
         );
 
         if (isOutsideDevelopment)
-            activeLayers.forEach((layer) =>
+            activeLayers.forEach((layer) => {
                 viewer.imageryLayers.addImageryProvider(
                     new Cesium.UrlTemplateImageryProvider({
                         url: layer.url,
                         tilingScheme: undefined,
                     }),
-                ),
-            );
+                );
+            });
         else
-            (activeLayers as (LayerProvider & WmtsLayer)[])?.forEach((layer) =>
+            (activeLayers as (LayerProvider & WmtsLayer)[])?.forEach((layer) => {
                 viewer.imageryLayers.addImageryProvider(
                     new Cesium.WebMapTileServiceImageryProvider({
                         url: new Cesium.Resource({ url: layer.cesiumUrl.split('?')[0], headers: { 'x-api-key': getMapLayers.token } }),
@@ -99,8 +99,8 @@ export const BaseLayers: React.FC<{
                         tileMatrixSetID: getMatrixSet(layer.matrixSets).identifier,
                         tilingScheme: getMatrixSet(layer.matrixSets).tilingScheme,
                     }),
-                ),
-            );
+                );
+            });
     }, [activeMapLayer, activeTextLayers, providers, viewerRef, isOutsideDevelopment, getMapLayers]);
 
     return (
