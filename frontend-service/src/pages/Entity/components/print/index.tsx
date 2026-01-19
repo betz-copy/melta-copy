@@ -98,7 +98,7 @@ const Print: React.FC<{
 
             {isPreparingPdf && (
                 <div style={{ display: 'none' }}>
-                    <style>{'@page { margin: 15px 10px 15px 10px !important; } body { background-color: white !important; }'}</style>{' '}
+                    <style>{'@page { margin: 15px 10px 15px 10px !important; } body { background-color: white !important; }'}</style>
                     <ThemeProvider theme={lightTheme}>
                         <ComponentToPrint
                             ref={componentRef}
