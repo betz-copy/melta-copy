@@ -4,6 +4,7 @@ import i18next from 'i18next';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from 'react-query';
 import { useReactToPrint } from 'react-to-print';
+import { INestedRelationshipTemplates } from '../..';
 import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
 import PrintOptionsDialog, { IEntityPrint, IPrintOptions, PrintType } from '../../../../common/print/PrintOptionsDialog';
 import { IEntityExpanded } from '../../../../interfaces/entities';
@@ -12,7 +13,6 @@ import { IFile } from '../../../../interfaces/preview';
 import { IMongoPrintingTemplate } from '../../../../interfaces/printingTemplates';
 import { getEntitiesTreeForPrint } from '../../../../services/entitiesService';
 import { lightTheme } from '../../../../theme';
-import { INestedRelationshipTemplates } from '../..';
 import { ComponentToPrint } from './ComponentToPrint';
 import './print.css';
 
@@ -98,7 +98,7 @@ const Print: React.FC<{
 
             {isPreparingPdf && (
                 <div style={{ display: 'none' }}>
-                    <style>{'@page { margin: 15px 10px 15px 10px !important; }'}</style>
+                    <style>{'@page { margin: 15px 10px 15px 10px !important; } body { background-color: white !important; }'}</style>{' '}
                     <ThemeProvider theme={lightTheme}>
                         <ComponentToPrint
                             ref={componentRef}
