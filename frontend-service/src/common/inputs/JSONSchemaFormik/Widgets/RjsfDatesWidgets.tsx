@@ -86,7 +86,7 @@ const getRjsfDateOrDateTimeWidget =
                 <MuiDatePicker
                     value={parseDefaultDate(value)}
                     enableAccessibleFieldDOMStructure={false}
-                    views={datePickerViews}
+                    {...(dateOrDateTime === 'date' && { views: datePickerViews })}
                     onChange={(val) => onChangeDateWidget(val)}
                     slots={{
                         textField: (params) => <TextField {...params} style={{ textAlign: 'right' }} inputformat={inputFormat} />,
