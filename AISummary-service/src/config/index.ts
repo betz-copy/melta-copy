@@ -12,7 +12,7 @@ const config = {
     openai: {
         apiKey: env.get('OPENAI_API_KEY').asString(),
         baseUrl: env.get('OPENAI_BASE_URL').asString(),
-        model: env.get('OPENAI_MODEL').default('gpt-4o').asString(),
+        model: env.get('OPENAI_MODEL').default('aminadaven/dictalm2.0-instruct:q4_k_m').asString(),
     },
     huggingface: {
         token: env.get('HF_TOKEN').asString(),

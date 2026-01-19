@@ -382,7 +382,7 @@ services:
       PORT: 8000
       OPENAI_API_KEY: ${OPENAI_API_KEY:-ollama}
       OPENAI_BASE_URL: ${OPENAI_BASE_URL:-http://host.docker.internal:11434/v1}
-      OPENAI_MODEL: ${OPENAI_MODEL:-qwen2.5-coder:1.5b}
+      OPENAI_MODEL: ${OPENAI_MODEL:-aminadaven/dictalm2.0-instruct:q4_k_m}
       HF_TOKEN: ${HF_TOKEN}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
 

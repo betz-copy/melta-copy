@@ -6,8 +6,6 @@ import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import axios from '../../axios';
-import { environment } from '../../globals';
 import { IChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { IDeleteEntityBody, IMultipleSelect, IPropertyValue } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -15,7 +13,7 @@ import { IBrokenRuleEntity, IFailedEntity } from '../../interfaces/excel';
 import { ActionTypes, ICreateEntityMetadata } from '../../interfaces/ruleBreaches/actionMetadata';
 import { IBrokenRule } from '../../interfaces/ruleBreaches/ruleBreach';
 import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
-import { IAISummaryResponse, summarizeFilesRequest } from '../../services/aiSummaryService';
+
 import { BackendConfigState } from '../../services/backendConfigService';
 import { deleteEntityRequest, updateMultipleEntitiesRequest } from '../../services/entitiesService';
 import { useDarkModeStore } from '../../stores/darkMode';
@@ -86,7 +84,6 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({
     const [initialValuePropsToFilter, setInitialValuePropsToFilter] = useState<Record<string, IPropertyValue>>(initialValues);
     const [entityData, setEntityData] = useState<{ propertiesToChange: EntityWizardValues; propertiesToRemove: string[] } | undefined>(undefined);
     const [aiSummaryDialogOpen, setAiSummaryDialogOpen] = useState(false);
-    const [aiSummaryText, setAiSummaryText] = useState('');
 
     const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(
         (deleteBody: IDeleteEntityBody) => deleteEntityRequest(deleteBody),
@@ -127,76 +124,6 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({
                     toast.error(i18next.t('errorCodes.FILES_TOO_BIG'));
                     setExternalErrors((prev) => ({ ...prev, files: true }));
                 } else toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
-            },
-        },
-    );
-
-    const { isLoading: isAISummaryLoading, mutateAsync: aiSummaryMutation } = useMutation(
-        async () => {
-            const selectedRows = api.getSelectedRows();
-            if (selectedRows.length === 0) {
-                throw new Error('No rows selected');
-            }
-
-            // Find file properties in the template (both single files and file arrays)
-            const fileProperties = Object.entries(template.properties.properties)
-                .filter(([_, prop]) => prop.format === 'fileId' || prop.items?.format === 'fileId')
-                .map(([key]) => key);
-
-            if (fileProperties.length === 0) {
-                throw new Error('No file properties in this template');
-            }
-
-            // Collect all file IDs from selected entities
-            const fileIds: string[] = [];
-            selectedRows.forEach((row) => {
-                fileProperties.forEach((propKey) => {
-                    const value = row.properties[propKey];
-                    if (value) {
-                        if (Array.isArray(value)) {
-                            fileIds.push(...value.filter((v: string) => v));
-                        } else {
-                            fileIds.push(value);
-                        }
-                    }
-                });
-            });
-
-            if (fileIds.length === 0) {
-                throw new Error('No files found in selected entities');
-            }
-
-            // Download files and convert to File objects
-            const files: File[] = [];
-            for (const fileId of fileIds) {
-                try {
-                    const response = await axios.get(`${environment.api.storage}/${fileId}`, {
-                        responseType: 'blob',
-                    });
-                    const blob = response.data as Blob;
-                    // Only process PDF files
-                    if (blob.type === 'application/pdf') {
-                        const file = new File([blob], `${fileId}.pdf`, { type: blob.type });
-                        files.push(file);
-                    }
-                } catch (err) {
-                    console.error(`Failed to download file ${fileId}:`, err);
-                }
-            }
-
-            if (files.length === 0) {
-                throw new Error('No PDF files found in selected entities');
-            }
-
-            return summarizeFilesRequest(files);
-        },
-        {
-            onSuccess: (data: IAISummaryResponse) => {
-                setAiSummaryText(data.summary);
-                setAiSummaryDialogOpen(true);
-            },
-            onError: (error: Error) => {
-                toast.error(`${i18next.t('actions.aiSummary')}: ${error.message}`);
             },
         },
     );
@@ -444,14 +371,14 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({
                         iconButtonWithPopoverProps={{
                             popoverText: i18next.t('actions.aiSummary'),
                             iconButtonProps: {
-                                onClick: () => aiSummaryMutation(),
+                                onClick: () => setAiSummaryDialogOpen(true),
                                 sx: {
                                     fontSize: '15px',
                                     marginTop: '6px',
                                 },
                             },
                         }}
-                        icon={isAISummaryLoading ? <CircularProgress size={20} /> : <CheckCircle fontSize="small" />}
+                        icon={<CheckCircle fontSize="small" />}
                         text={i18next.t('actions.summarize')}
                         disableButton={selectedRowCount === 0}
                     />
@@ -531,7 +458,12 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({
                     onCreateRuleBreachRequest={() => handleClose(true)}
                 />
             )}
-            <AISummaryDialog open={aiSummaryDialogOpen} handleClose={() => setAiSummaryDialogOpen(false)} initialSummary={aiSummaryText} />
+            <AISummaryDialog
+                open={aiSummaryDialogOpen}
+                handleClose={() => setAiSummaryDialogOpen(false)}
+                template={template}
+                selectedRows={api.getSelectedRows()}
+            />
         </Grid>
     );
 };

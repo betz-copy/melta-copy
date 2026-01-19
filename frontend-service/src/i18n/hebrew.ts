@@ -113,6 +113,11 @@ export default {
         copiedToClipboard: 'הועתק ללוח',
         close: 'סגירה',
         summarize: 'סכם',
+        selectColumnsTitle: 'נא לבחור עמודות לסיכום',
+        selectFilesTitle: 'נא לבחור קבצים לסיכום',
+        generate: 'צור סיכום',
+        next: 'הבא',
+        skippedNonPdfFiles: 'דולגו {{count}} קבצים שאינם PDF',
     },
     entityTemplatesRow: {
         areYouSureDeleteEntityTemplate: 'מחיקת תבנית ישות',
@@ -1971,5 +1976,13 @@ export default {
             filters: 'סינון',
             defaultValue: 'ברירת מחדל',
         },
+    },
+    errors: {
+        noColumnsSelected: 'לא נבחרו עמודות',
+        noFilesSelected: 'לא נבחרו קבצים',
+        noFilesFound: 'לא נמצאו קבצים',
+        noPdfFilesFound: 'לא נמצאו קבצי PDF',
+        summaryFailed: 'יצירת סיכום נכשלה',
+        copyFailed: 'העתקה נכשלה',
     },
 };
