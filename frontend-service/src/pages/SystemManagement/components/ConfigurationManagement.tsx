@@ -1,6 +1,6 @@
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import SearchInput from '../../../common/inputs/SearchInput';
 import { IPropertyValue } from '../../../interfaces/entities';
 import { defaultMetadata, useWorkspaceStore } from '../../../stores/workspace';
@@ -19,15 +19,15 @@ const ConfigurationManagement: React.FC = () => {
         setUpdatedConfigs(deepClone(configs));
     }, [configs]);
 
-    const filteredFields = useMemo(() => {
-        const updateConfig = (path: string, newValue: IValue) => {
-            setUpdatedConfigs((prevConfigs) => {
-                const updated = deepClone(prevConfigs);
-                setNestedValue(updated, path, newValue);
-                return updated;
-            });
-        };
+    const updateConfig = useCallback((path: string, newValue: IValue) => {
+        setUpdatedConfigs((prevConfigs) => {
+            const updated = deepClone(prevConfigs);
+            setNestedValue(updated, path, newValue);
+            return updated;
+        });
+    }, []);
 
+    const filteredFields = useMemo(() => {
         const collectFilteredFields = (cfgs: Record<string, IPropertyValue>, parentKey = ''): React.ReactNode[] => {
             let fields: React.ReactNode[] = [];
             Object.entries(cfgs).forEach(([key, value]) => {
@@ -56,7 +56,7 @@ const ConfigurationManagement: React.FC = () => {
         };
 
         return collectFilteredFields(configs);
-    }, [configs, updatedConfigs, searchText, workspace.metadata, workspace._id, updateWorkspaceMetadata]);
+    }, [configs, updatedConfigs, searchText, workspace.metadata, workspace._id, updateWorkspaceMetadata, updateConfig]);
 
     return (
         <Grid container spacing={3}>
