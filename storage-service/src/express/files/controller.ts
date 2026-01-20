@@ -16,7 +16,7 @@ export default class FilesController extends DefaultController<FilesManager> {
         const [stream, fileStats] = await Promise.all([this.manager.downloadFile(path.toString()), this.manager.fileStat(path.toString())]);
 
         res.setHeader('Content-Type', fileStats.metaData['content-type']);
-        res.setHeader('Content-Disposition', `attachment; filename=${getFileName(path)}`);
+        res.setHeader('Content-Disposition', `attachment; filename=${getFileName(path as string)}`);
 
         stream.pipe(res);
     }
@@ -24,7 +24,7 @@ export default class FilesController extends DefaultController<FilesManager> {
     async downloadZip(req: express.Request, res: express.Response) {
         try {
             const { path } = req.params;
-            const fileIds = path.split(',');
+            const fileIds = (path as string).split(',');
             const filesData = await this.manager.getFilesData(fileIds);
 
             const archive = archiver('zip', {
@@ -63,7 +63,7 @@ export default class FilesController extends DefaultController<FilesManager> {
 
     async duplicateFile(req: express.Request, res: express.Response) {
         const { path } = req.params;
-        res.json(await this.manager.duplicateFile(path));
+        res.json(await this.manager.duplicateFile(path as string));
     }
 
     async duplicateFiles(req: express.Request, res: express.Response) {
@@ -74,12 +74,12 @@ export default class FilesController extends DefaultController<FilesManager> {
 
     async fileStat(req: express.Request, res: express.Response) {
         const { path } = req.params;
-        res.json(await this.manager.fileStat(path));
+        res.json(await this.manager.fileStat(path as string));
     }
 
     async deleteFile(req: express.Request, res: express.Response) {
         const { path } = req.params;
-        res.json(await this.manager.deleteFile(path));
+        res.json(await this.manager.deleteFile(path as string));
     }
 
     async deleteFiles(req: express.Request, res: express.Response) {
@@ -92,7 +92,7 @@ export const workspaceIdInHeader = async (req: express.Request, res: express.Res
     const { workspaceId } = req.params;
 
     try {
-        const filesController = new FilesController(workspaceId);
+        const filesController = new FilesController(workspaceId as string);
 
         if (req.originalUrl.includes('zip')) await filesController.downloadZip(req, res);
         else await filesController.downloadFile(req, res);

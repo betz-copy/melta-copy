@@ -88,7 +88,9 @@ export const useReadExcel = () => {
                         const newEntities = importDataToGrid(fileData, template);
                         if ((newEntities?.length || 0) > entitiesFileLimit) reject(new Error(file.name));
                         else {
-                            newEntities?.forEach((newEntity) => entities.push(newEntity));
+                            newEntities?.forEach((newEntity) => {
+                                entities.push(newEntity);
+                            });
                             resolve();
                         }
                     } catch (err) {

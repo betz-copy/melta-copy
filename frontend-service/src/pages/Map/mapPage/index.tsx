@@ -26,7 +26,6 @@ import { getFilteredItems, jerusalemCoordinates, locationToWGS84String, stringTo
 import { convertECEFToWGS84, convertWGS94ToECEF } from '../../../utils/map/convert';
 import { BaseLayers } from '../BaseLayers';
 import { MeltaCoordinate, MeltaPolygon } from '../LocationEntities';
-import { useCesiumTooltip } from './EntityTooltip';
 import MapFilters from './MapFilters';
 
 const { maxRadius } = environment.map;
@@ -48,14 +47,12 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
 
     const viewerRef = useRef<CesiumComponentRef<Cesium.Viewer>>(null);
 
-    const [{ autoSearch, listFields, dirty }, setFilters] = useState<{
+    const [{ autoSearch, listFields }, setFilters] = useState<{
         autoSearch: string;
         listFields: Record<string, IFilterOfField['$in']>;
-        dirty: boolean;
     }>({
         autoSearch: '',
         listFields: {},
-        dirty: false,
     });
 
     const [shapeType, setShapeType] = useState<ShapeType | null>(null);
@@ -132,7 +129,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
 
     useEffect(() => applyFilterWithShapeSearch(autoSearch, listFields), [polygons, coordinates]);
 
-    useCesiumTooltip({ viewerRef, darkMode, entityTemplateMap, searchedEntitiesPolygons, filteredPolygons });
+    // useCesiumTooltip({ viewerRef, darkMode, entityTemplateMap, searchedEntitiesPolygons, filteredPolygons }); //TODO: tooltip for map entities
 
     useEffect(() => {
         const animateCamera = () => {
@@ -373,7 +370,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
         setShapeType(null);
         setCameraFocus(null);
         setSearchShape({ circle: emptyCircle, polygon: [], line: [] });
-        setFilters({ autoSearch: '', listFields: {}, dirty: false });
+        setFilters({ autoSearch: '', listFields: {} });
         setSelectedEntity(null);
     };
 
@@ -487,7 +484,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                                     setCameraFocus(null);
                                 }}
                                 sourceTemplate={sourceTemplate}
-                                filters={{ value: { autoSearch, listFields, dirty }, set: setFilters }}
+                                filters={{ value: { autoSearch, listFields }, set: setFilters }}
                                 isSearchShape={isSearchShape}
                                 applyFilterWithShapeSearch={applyFilterWithShapeSearch}
                                 numOfViewedEntitiesText={i18next.t(`location.showingEntities${isSearchShape ? 'OfTotal' : 'Count'}`, {

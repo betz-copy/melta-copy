@@ -18,12 +18,12 @@ export default class RuleBreachAlertsController extends DefaultController<IRuleB
     async getRuleBreachAlertById(req: Request, res: Response) {
         const { ruleBreachAlertId } = req.params;
 
-        res.json(await this.manager.getRuleBreachAlertsById(ruleBreachAlertId));
+        res.json(await this.manager.getRuleBreachAlertsById(ruleBreachAlertId as string));
     }
 
     async getRuleBreachAlertsByRuleId(req: Request, res: Response) {
         const { ruleId } = req.params;
 
-        res.json(await this.manager.getRuleBreachAlertsByRuleId(ruleId));
+        res.json(await this.manager.getRuleBreachAlertsByRuleId(ruleId as string));
     }
 }

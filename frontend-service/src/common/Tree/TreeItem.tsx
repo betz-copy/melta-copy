@@ -133,7 +133,7 @@ const TreeItem = React.forwardRef(function CustomTreeItem<T extends Record<strin
     const labelNode = props.renderItemLabel ? props.renderItemLabel(node) : labelText;
 
     return (
-        // @ts-ignore
+        // @ts-expect-error
         <TreeItemProvider {...props} ref={ref} itemId={itemId}>
             <TreeItemRoot
                 {...rootProps}
@@ -168,7 +168,8 @@ const TreeItem = React.forwardRef(function CustomTreeItem<T extends Record<strin
                                 </TreeItemIconContainer>
                             ))}
 
-                        {checkBoxProps.visible && (
+                        {/** biome-ignore lint/suspicious/noExplicitAny: blame Itay */}
+                        {(checkBoxProps as any).visible && (
                             <Box onClick={(e) => e.stopPropagation()}>
                                 <MeltaCheckbox {...checkBoxProps} sxChecked={{ width: '18px', height: '18px' }} />
                             </Box>

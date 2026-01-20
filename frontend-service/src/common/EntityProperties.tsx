@@ -111,8 +111,8 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                 const containsHtmlTags = containsHTMLTags(propertyValue);
                 let relatedEntityAllowed: IMongoEntityTemplatePopulated | undefined;
                 if (format === 'relationshipReference') {
-                    const relatedTemplateId = relationshipReference?.relatedTemplateId!;
-                    relatedEntityAllowed = entityTemplates?.get(relatedTemplateId);
+                    const relatedTemplateId = relationshipReference?.relatedTemplateId;
+                    relatedEntityAllowed = entityTemplates?.get(relatedTemplateId ?? '');
                 }
 
                 const stringFormatValue = formatToString({
@@ -197,10 +197,12 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                 );
 
                 const valueTypography = (
-                    <Typography
-                        fontSize="14px"
-                        color={color ?? propertyValueColor}
-                        style={{
+                    <HighlightText
+                        text={innerContent}
+                        searchedText={searchedText}
+                        isLink
+                        sx={{
+                            fontSize: '14px',
                             ...(isPrintingMode
                                 ? {
                                       overflowWrap: 'anywhere',
@@ -215,9 +217,8 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                             maxHeight: isPrintingMode ? undefined : '350px',
                             direction: type === 'number' ? 'ltr' : textDirection,
                         }}
-                    >
-                        <HighlightText text={innerContent} searchedText={searchedText} isLink />
-                    </Typography>
+                        color={color ?? propertyValueColor}
+                    />
                 );
 
                 return (

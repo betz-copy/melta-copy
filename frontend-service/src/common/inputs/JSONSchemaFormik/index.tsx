@@ -135,7 +135,9 @@ export const ajvValidate = (
         'display',
         'accountBalance',
         'isProfileImage',
-    ].forEach((keyword) => ajv.addKeyword({ keyword }));
+    ].forEach((keyword) => {
+        ajv.addKeyword({ keyword });
+    });
 
     ajv.addKeyword({
         keyword: 'identifier',

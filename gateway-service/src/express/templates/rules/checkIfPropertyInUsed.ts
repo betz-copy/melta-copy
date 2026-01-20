@@ -41,7 +41,9 @@ const checkPropertyInUsedFromArgument = (argument: IArgument, entityId: string, 
     }
 
     if (isRegularFunction(argument)) {
-        return argument.arguments.forEach((arg) => checkPropertyInUsedFromArgument(arg, entityId, properties, archive));
+        return argument.arguments.forEach((arg) => {
+            checkPropertyInUsedFromArgument(arg, entityId, properties, archive);
+        });
     }
 
     if (!isConstant(argument) && !isCountAggFunction(argument)) {

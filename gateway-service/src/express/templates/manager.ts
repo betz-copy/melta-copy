@@ -768,7 +768,9 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     private async isPropertyOfTemplateInUsedInRules(templateId: string, properties: string[], archive: boolean) {
         const allRules = await this.relationshipTemplateService.searchRules({});
-        return allRules.forEach((rule) => checkPropertyInUsedFromFormula(rule.formula, templateId, properties, archive));
+        return allRules.forEach((rule) => {
+            checkPropertyInUsedFromFormula(rule.formula, templateId, properties, archive);
+        });
     }
 
     private async isPropertyOfTemplateInUsedInGantts(entityTemplateId: string, properties: string[], archive: boolean) {
@@ -1232,9 +1234,9 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
 
-        Object.keys(restOfTemplatePropertiesObject.properties).forEach(
-            (key) => delete restOfTemplatePropertiesObject.properties[key].isNewPropNameEqualDeletedPropName,
-        );
+        Object.keys(restOfTemplatePropertiesObject.properties).forEach((key) => {
+            delete restOfTemplatePropertiesObject.properties[key].isNewPropNameEqualDeletedPropName;
+        });
 
         const updatedTemplate = await this.entityTemplateService.updateEntityTemplate(id, {
             ...restOfTemplateData,

@@ -10,7 +10,7 @@ class ProcessInstancesController extends DefaultController<InstancesManager> {
 
     async getProcessInstance(req: Request, res: Response) {
         const { id: userId } = req.user as ShragaUser;
-        res.json(await this.manager.getProcessInstance(req.params.id, userId));
+        res.json(await this.manager.getProcessInstance(req.params.id as string, userId));
     }
 
     async createProcessInstance(req: Request, res: Response) {
@@ -20,16 +20,16 @@ class ProcessInstancesController extends DefaultController<InstancesManager> {
 
     async updateProcessInstance(req: Request, res: Response) {
         const { id: userId } = req.user as ShragaUser;
-        res.json(await this.manager.updateProcessInstance(req.params.id, req.body, req.files || (req.file ? [req.file] : []), userId));
+        res.json(await this.manager.updateProcessInstance(req.params.id as string, req.body, req.files || (req.file ? [req.file] : []), userId));
     }
 
     async archiveProcess(req: Request, res: Response) {
         const { id: userId } = req.user as ShragaUser;
-        res.json(await this.manager.archiveProcess(req.params.id, req.body, userId));
+        res.json(await this.manager.archiveProcess(req.params.id as string, req.body, userId));
     }
 
     async deleteProcessInstance(req: Request, res: Response) {
-        res.json(await this.manager.deleteProcessInstance(req.params.id, req.user!.id));
+        res.json(await this.manager.deleteProcessInstance(req.params.id as string, req.user!.id));
     }
 
     async searchProcessInstances(req: Request, res: Response) {
