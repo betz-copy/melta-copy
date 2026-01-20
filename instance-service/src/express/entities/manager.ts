@@ -1887,7 +1887,7 @@ class EntityManager extends DefaultManagerNeo4j {
         if (template.actions && isBodyFunctionHasContent(template.actions, IEntityCrudAction.onUpdateEntity)) {
             const actions = await this.buildActionsArray(IEntityCrudAction.onUpdateEntity, entityProperties, template, userId, {
                 ...entity,
-                properties: unPopulatedOldEntityProperties,
+                properties: unPopulatedOldEntityProperties.properties,
             });
 
             const bulkManager = new BulkActionManager(this.workspaceId);
