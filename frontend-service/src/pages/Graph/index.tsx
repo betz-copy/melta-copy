@@ -85,21 +85,22 @@ const Graph: React.FC = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const templateOptions = [...entityTemplates.values(), ...childTemplates.values()];
-    const updateGraphSize = () => {
-        const mainBox = ref.current?.parentElement;
-
-        if (mainBox) {
-            setHeight(mainBox.offsetHeight);
-            setWidth(mainBox.offsetWidth);
-        }
-
-        return () => {};
-    };
-
-    window.addEventListener('resize', updateGraphSize);
     // biome-ignore lint/correctness/useExhaustiveDependencies: dependencies
     useEffect(() => {
-        return updateGraphSize();
+        const updateGraphSize = () => {
+            const mainBox = ref.current?.parentElement;
+
+            if (mainBox) {
+                setHeight(mainBox.offsetHeight);
+                setWidth(mainBox.offsetWidth);
+            }
+        };
+
+        updateGraphSize();
+        window.addEventListener('resize', updateGraphSize);
+        return () => {
+            window.removeEventListener('resize', updateGraphSize);
+        };
     }, []);
 
     const resetGraph = (data?: IEntityExpanded, resetData?: true) => {
