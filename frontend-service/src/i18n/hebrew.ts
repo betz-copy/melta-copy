@@ -259,6 +259,7 @@ export default {
             warning: {
                 payAttention: 'שים לב!',
                 previewWarning: 'תבניות יישות אשר לא הוגדרו בתבנית הנבחרת יודפסו בהתאם להגדרת התצוגה המצומצמת',
+                tooManyEntitiesSelected: 'נבחרה כמות יישויות גדולה מדי להדפסה, יש למצמץ את הבחירה ולנסות שוב. כמות יישויות מרבית:',
             },
             chooseRelationship: 'בחירת קשרים',
             chooseFiles: 'קבצים מצורפים להדפסה',
