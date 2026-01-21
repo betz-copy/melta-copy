@@ -3,6 +3,7 @@ import { BaseTextFieldProps, Divider, IconButton, InputAdornment, TextField, use
 import i18next from 'i18next';
 import React, { ReactNode, useEffect, useState } from 'react';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { SessionStorage } from '../../utils/sessionStorage';
 
 const SearchInput: React.FC<{
     value?: string;
@@ -45,7 +46,7 @@ const SearchInput: React.FC<{
             value={search}
             onChange={(e) => {
                 setSearch(e.target.value);
-                sessionStorage.clear();
+                SessionStorage.clearTableState();
             }}
             onKeyDown={onKeyDown}
             placeholder={placeholder}
@@ -81,7 +82,7 @@ const SearchInput: React.FC<{
                                     size="small"
                                     onClick={() => {
                                         setSearch('');
-                                        sessionStorage.clear();
+                                        SessionStorage.clearTableState();
                                     }}
                                     sx={{ p: 0.5 }}
                                 >
