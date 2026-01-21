@@ -81,7 +81,6 @@ const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity,
     });
 
     const highlightedEntityByPath = useMemo(() => {
-        
         const map = new Map<string, string>();
 
         if (!relationShips) return map;
@@ -94,7 +93,6 @@ const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity,
                 map.set(node.path, highlightedEntityId);
 
                 if (node.children?.length) buildMap(node.children, highlightedEntityId);
-
             }
         };
 
