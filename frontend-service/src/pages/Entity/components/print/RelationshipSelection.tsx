@@ -81,9 +81,10 @@ const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity,
     });
 
     const highlightedEntityByPath = useMemo(() => {
-        if (!relationShips) return new Map<string, string>();
-
+        
         const map = new Map<string, string>();
+
+        if (!relationShips) return map;
 
         const buildMap = (nodes: ITreeNode[], parentEntityId: string): void => {
             for (const node of nodes) {
@@ -92,9 +93,8 @@ const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity,
 
                 map.set(node.path, highlightedEntityId);
 
-                if (node.children?.length) {
-                    buildMap(node.children, highlightedEntityId);
-                }
+                if (node.children?.length) buildMap(node.children, highlightedEntityId);
+
             }
         };
 
