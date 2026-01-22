@@ -2,31 +2,33 @@ import { UiSchema } from '@rjsf/utils';
 import { flatten } from 'flat';
 import { FormikHelpers } from 'formik';
 import i18next from 'i18next';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IProperties } from '../../../interfaces/entityTemplates';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IKartoffelUser } from '../../../interfaces/users';
 import { EntityWizardValues } from '../../dialogs/entity';
 import { kartoffelPersonalDataFields } from '../../wizards/entityTemplate/KartoffelUserField';
 
-const changeRelatedUserFields = (properties: IProperties['properties'], changedUserKey: string, user: IKartoffelUser | null) => {
-    return Object.entries(properties).reduce((acc, [key, value]) => {
-        if (changedUserKey === key) {
-            acc[key] = user
-                ? {
-                      _id: user?._id || user?.id,
-                      fullName: user?.fullName,
-                      jobTitle: user?.jobTitle,
-                      hierarchy: user?.hierarchy,
-                      mail: user?.mail,
-                      userType: user?.entityType,
-                  }
-                : undefined;
-        }
-        if (value.properties) acc[key] = changeRelatedUserFields(value.properties, changedUserKey, user);
-        else if (value.expandedUserField?.relatedUserField === changedUserKey) acc[key] = user?.[value.expandedUserField.kartoffelField];
+// const changeRelatedUserFields = (properties: IProperties['properties'], changedUserKey: string, user: IKartoffelUser | null) => {
+//     console.log({ properties, user });
 
-        return acc;
-    }, {});
-};
+//     return Object.entries(properties).reduce((acc, [key, value]) => {
+//         if (changedUserKey === key) {
+//             acc[key] = user
+//                 ? {
+//                       _id: user?._id || user?.id,
+//                       fullName: user?.fullName,
+//                       jobTitle: user?.jobTitle,
+//                       hierarchy: user?.hierarchy,
+//                       mail: user?.mail,
+//                       userType: user?.entityType,
+//                   }
+//                 : undefined;
+//         }
+//         if (value.properties) acc[key] = changeRelatedUserFields(value.properties, changedUserKey, user);
+//         else if (value.expandedUserField?.relatedUserField === changedUserKey) acc[key] = user?.[value.expandedUserField.kartoffelField];
+
+//         return acc;
+//     }, {});
+// };
 
 const getFieldUiSchema = (
     schema: IMongoEntityTemplatePopulated['properties'],
@@ -118,7 +120,16 @@ const getFieldUiSchema = (
                 globalValues: values,
                 updateExpandedUserFields: (user: IKartoffelUser | null, curValues: EntityWizardValues['properties']) => {
                     // TODO: refactor - this code gets the fields that need to be modified so the displayed fields will be set in a nested way..
-                    const changedPropertiesOfUser = changeRelatedUserFields(schema.properties, propertyKey, user);
+                    const changedPropertiesOfUser = {
+                        [propertyKey]: {
+                            _id: user?._id || user?.id,
+                            fullName: user?.fullName,
+                            jobTitle: user?.jobTitle,
+                            hierarchy: user?.hierarchy,
+                            mail: user?.mail,
+                            userType: user?.entityType,
+                        },
+                    };
 
                     // in order to set the values in the backend, we need to send the updated fields flatten
                     const flattenChangedPropertiesOfUser: object = flatten(changedPropertiesOfUser, { maxDepth: Infinity });
@@ -132,7 +143,6 @@ const getFieldUiSchema = (
                     setValues({
                         ...curValues.properties,
                         ...changedPropertiesOfUser,
-                        ...updatedFlattenFields,
                     });
                 },
             },

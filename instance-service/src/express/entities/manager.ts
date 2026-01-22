@@ -875,7 +875,11 @@ class EntityManager extends DefaultManagerNeo4j {
         const searchCountCypherQuery = searchWithRelationshipsToNeoQuery(searchBodyOfTemplate, new Map([[entityTemplate._id, entityTemplate]]), true);
 
         const [entities, count] = await Promise.all([
-            this.neo4jClient.readTransaction(searchCypherQuery.cypherQuery, normalizeSearchWithRelationships, searchCypherQuery.parameters),
+            this.neo4jClient.readTransaction(
+                searchCypherQuery.cypherQuery,
+                (result) => normalizeSearchWithRelationships(result, this.workspaceId),
+                searchCypherQuery.parameters,
+            ),
             this.neo4jClient.readTransaction(searchCountCypherQuery.cypherQuery, normalizeResponseCount, searchCountCypherQuery.parameters),
         ]);
 
@@ -981,7 +985,11 @@ class EntityManager extends DefaultManagerNeo4j {
         const searchCountCypherQuery = searchWithRelationshipsToNeoQuery(searchBody, entityTemplatesMap, true, globalSearchIndexes);
 
         const [entities, count] = await Promise.all([
-            this.neo4jClient.readTransaction(searchCypherQuery.cypherQuery, normalizeSearchWithRelationships, searchCypherQuery.parameters),
+            this.neo4jClient.readTransaction(
+                searchCypherQuery.cypherQuery,
+                (result) => normalizeSearchWithRelationships(result, this.workspaceId),
+                searchCypherQuery.parameters,
+            ),
             this.neo4jClient.readTransaction(searchCountCypherQuery.cypherQuery, normalizeResponseCount, searchCountCypherQuery.parameters),
         ]);
 
@@ -1203,7 +1211,11 @@ class EntityManager extends DefaultManagerNeo4j {
     async printEntities(rootId: string, relationshipIds: string[], isShowDisabled: boolean) {
         const initialCypherQuery = getEntitiesForPrintByRelIds(relationshipIds, isShowDisabled);
 
-        return this.neo4jClient.readTransaction(initialCypherQuery.cypherQuery, buildEntityTree(rootId), initialCypherQuery.parameters);
+        return this.neo4jClient.readTransaction(
+            initialCypherQuery.cypherQuery,
+            buildEntityTree(rootId, this.workspaceId),
+            initialCypherQuery.parameters,
+        );
     }
 
     async getExpandedGraphById(id: string, reqBody: IGetExpandedEntityBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>, userId: string) {
@@ -1526,16 +1538,13 @@ class EntityManager extends DefaultManagerNeo4j {
     };
 
     getNeighborsOfUpdatedEntityForRuleInTransaction = (transaction: Transaction, entityId: string) =>
-        runInTransactionAndNormalize(
-            transaction,
-            `MATCH (e {_id: '${entityId}'})-[r]-(neighbor) RETURN type(r) as rTemplate, neighbor`,
-            normalizeNeighborsOfEntityForRule,
+        runInTransactionAndNormalize(transaction, `MATCH (e {_id: '${entityId}'})-[r]-(neighbor) RETURN type(r) as rTemplate, neighbor`, (result) =>
+            normalizeNeighborsOfEntityForRule(result, this.workspaceId),
         );
 
     getNeighborsOfUpdatedEntityForRule = (entityId: string) =>
-        this.neo4jClient.readTransaction(
-            `MATCH (e {_id: '${entityId}'})-[r]-(neighbor) RETURN type(r) as rTemplate, neighbor`,
-            normalizeNeighborsOfEntityForRule,
+        this.neo4jClient.readTransaction(`MATCH (e {_id: '${entityId}'})-[r]-(neighbor) RETURN type(r) as rTemplate, neighbor`, (result) =>
+            normalizeNeighborsOfEntityForRule(result, this.workspaceId),
         );
 
     private runRulesOnNeighborsOfUpdatedEntity = async (
@@ -2565,7 +2574,7 @@ class EntityManager extends DefaultManagerNeo4j {
             if (brokenRule) brokenRules.push(brokenRule);
         }
 
-        await updateColorsForIndicatorRulesWithTodayFunc(this.neo4jClient, rulesWithTodayFuncRecord, brokenRules);
+        await updateColorsForIndicatorRulesWithTodayFunc(this.neo4jClient, rulesWithTodayFuncRecord, brokenRules, this.workspaceId);
 
         this.createAlertsForRulesWithTodayFunc(brokenRules, rulesWithTodayFuncRecord);
     }

@@ -56,7 +56,7 @@ class InstancesUtils extends DefaultController {
 
                     case 'user': {
                         try {
-                            const userId: string = JSON.parse(value)._id;
+                            const userId: string = value;
                             await Kartoffel.getUserById(userId);
                         } catch {
                             throw new ValidationError('must be user', {
@@ -93,7 +93,7 @@ class InstancesUtils extends DefaultController {
                 }
 
                 if (prop?.items?.format === 'user') {
-                    const userIds: string[] = value.map((userString) => JSON.parse(userString)._id);
+                    const userIds: string[] = value;
                     const users = await Kartoffel.getUsersByIds(userIds);
                     if (userIds.length !== users.length) {
                         throw new ValidationError('must be users', {

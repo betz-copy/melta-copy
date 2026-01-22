@@ -6,15 +6,14 @@ import Ajv, { ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
 import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import i18next from 'i18next';
-import { pickBy } from 'lodash';
 import React, { memo, useEffect, useState } from 'react';
 import { environment } from '../../../globals';
 import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
+import { IPropertyValue } from '../../../interfaces/entities';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IWalletTransfer } from '../../../interfaces/entityTemplates';
 import { matchValueAgainstFilter } from '../../../utils/filters';
 import { uiSchemaUtils } from './ utils';
 import './form.css';
-import { IPropertyValue } from '../../../interfaces/entities';
 import InputAccordion from './InputAccordion';
 import RjsfCheckboxWidget from './Widgets/RjsfCheckboxWidget';
 import RjsfCommentWidget from './Widgets/RjsfCommentWidget';
@@ -93,13 +92,25 @@ export const ajvValidate = (
     ajv.addFormat('signature', /.*/);
     ajv.addFormat('kartoffelUserField', /.*/);
     ajv.addFormat('unitField', /.*/);
-    ajv.addFormat('user', {
-        validate: (user) => {
-            if (user === ByCurrentDefaultValue.byCurrentUser) return true;
 
-            return user._id && user.fullName && user.jobTitle && user.hierarchy && user.mail;
+    ajv.addKeyword({
+        keyword: 'validateUser',
+        type: 'object',
+        validate: (_schema, user) => {
+            if (!user) return true;
+            if (user === ByCurrentDefaultValue.byCurrentUser) return true;
+            return !!(user._id && user.fullName && user.mail);
         },
     });
+    // ajv.addFormat('user', uuidFormat);
+    // ajv.addFormat('user', {
+    //     validate: (value) => {
+    //         console.log({ value });
+    //         if (typeof value === 'string') return true;
+    //         return value?._id && value?.fullName && value?.jobTitle && value?.hierarchy && value?.mail;
+    //     },
+    // });
+
     ajv.addFormat('text-area', /.*/);
     ajv.addFormat('location', (value: string) => validateLocation(JSON.parse(value), true) === false);
     ajv.addFormat('comment', /.*/);
@@ -140,10 +151,34 @@ export const ajvValidate = (
         errors: false,
     });
 
-    const formats = ['location', 'relationshipReference'];
+    // const formats = ['location', 'relationshipReference'];
     const schemaToValidate = {
         ...schema,
-        properties: pickBy(schema.properties, (value) => !formats.includes(value.format ?? '')),
+        properties: Object.entries(schema.properties).reduce((acc, [key, prop]) => {
+            if (prop.format === 'user') {
+                acc[key] = {
+                    ...prop,
+                    type: 'object',
+                    validateUser: true,
+                    format: undefined,
+                };
+            } else if (prop.type === 'array' && prop.items && prop.items.format === 'user') {
+                acc[key] = {
+                    ...prop,
+                    items: {
+                        ...prop.items,
+                        type: 'object',
+                        validateUser: true,
+                        format: undefined,
+                    },
+                };
+            } else if (prop.format === 'location') {
+                acc[key] = { ...prop, type: 'object', format: undefined };
+            } else {
+                acc[key] = prop;
+            }
+            return acc;
+        }, {}),
     };
 
     const validateFunction = ajv.compile(schemaToValidate);
@@ -369,6 +404,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     }, {} as RJSFSchema);
 
     schema.properties = { ...schema.properties, ...(schemaWithGroups ?? {}) };
+    console.log({ errors, values });
 
     return (
         <JSONSchemaForm

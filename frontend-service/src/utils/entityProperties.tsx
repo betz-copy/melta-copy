@@ -120,11 +120,10 @@ export const formatToString = (data: {
             );
         }
         if (format === 'user') {
-            const userObject = typeof value === 'string' ? JSON.parse(value) : value;
             return (
                 <Grid container gap={1}>
                     <UserAvatar
-                        user={userObject}
+                        user={value}
                         chip={{ sx: { background: darkMode ? '#1E1F2B' : '#EBEFFA', color: color ?? (darkMode ? '#D3D6E0' : '#53566E') } }}
                     />
                 </Grid>
@@ -156,7 +155,7 @@ export const formatToString = (data: {
             return (
                 <Grid container>
                     <OverflowWrapper
-                        items={value.map((val) => JSON.parse(val))}
+                        items={value}
                         getItemKey={(item: IUser) => item._id}
                         renderItem={(item) => (
                             <Grid>

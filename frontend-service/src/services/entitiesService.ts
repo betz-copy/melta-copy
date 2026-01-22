@@ -39,6 +39,54 @@ import { isChildTemplate } from '../utils/templates';
 const { entities, relationships } = environment.api;
 const { uuidFormat } = environment;
 
+// const getPropertiesPreparedForBackend = (entity: IEntityWithIgnoredRules, template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => {
+//     const isUUID = (str: string) => uuidFormat.test(str);
+
+//     return mapValues(entity.properties, (property, key) => {
+//         switch (template.properties.properties[key]?.format) {
+//             case 'relationshipReference': //TODO: check if all places it used or add boolean
+//                 return property?.properties._id;
+
+//             case 'location': {
+//                 if (!property) return undefined;
+//                 const location = JSON.parse(property);
+
+//                 if (location.coordinateSystem === CoordinateSystem.UTM)
+//                     return JSON.stringify({
+//                         location: locationConverterToString(location.location),
+//                         coordinateSystem: location.coordinateSystem,
+//                     });
+//                 return JSON.stringify(location);
+//             }
+//             case 'signature':
+//                 return undefined; //TODO: decide which of the signature are good
+//             case 'signature': {
+//                 if (!isUUID(property)) return undefined;
+//                 return property;
+//             }
+//             case 'date': {
+//                 if (!property) return undefined;
+//                 return new Date(property).toISOString().split('T')[0];
+//             }
+//             case 'date-time': {
+//                 if (!property) return undefined;
+//                 return new Date(property).toISOString();
+//             }
+//             case 'user': {
+//                 if (!property) return undefined;
+//                 return JSON.parse(property._id);
+//             }
+//             default: {
+//                 if (template.properties.properties[key]?.items?.format === 'user') {
+//                     if (!property) return undefined;
+//                     return JSON.parse(property._id);
+//                 }
+//                 return property;
+//             }
+//         }
+//     });
+// };
+
 export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
     const { data } = await axios.post(`${entities}/export`, body, { responseType: 'blob' });
     return data;
@@ -77,8 +125,17 @@ export const loadEntitiesRequest = async (
                     }
                     case 'signature':
                         return undefined;
-                    default:
+                    case 'user': {
+                        if (!property) return undefined;
+                        return property._id;
+                    }
+                    default: {
+                        if (template.properties.properties[key]?.items?.format === 'user') {
+                            if (!property) return undefined;
+                            return property.map(({ _id }) => _id);
+                        }
                         return property;
+                    }
                 }
             }),
             ignoredRules: entity.ignoredRules,
@@ -140,8 +197,17 @@ export const editManyEntitiesByExcelRequest = async (
                     if (!isUUID(property)) return undefined;
                     return property;
                 }
-                default:
+                case 'user': {
+                    if (!property) return undefined;
+                    return property._id;
+                }
+                default: {
+                    if (template.properties.properties[key]?.items?.format === 'user') {
+                        if (!property) return undefined;
+                        return property.map(({ _id }) => _id);
+                    }
                     return property;
+                }
             }
         }),
         ignoredRules: entity.ignoredRules,
@@ -266,10 +332,15 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
                     }
                     case 'user': {
                         if (!property) return undefined;
-                        return JSON.parse(property._id);
+                        return property._id;
                     }
-                    default:
+                    default: {
+                        if (entity.template.properties.properties[key]?.items?.format === 'user') {
+                            if (!property) return undefined;
+                            return property.map(({ _id }) => _id);
+                        }
                         return property;
+                    }
                 }
             }),
         ),
@@ -384,8 +455,17 @@ const getBodyForUpdateRequest = async (
                         if (!property) return undefined;
                         return new Date(property).toISOString();
                     }
-                    default:
+                    case 'user': {
+                        if (!property) return undefined;
+                        return property._id;
+                    }
+                    default: {
+                        if (template.properties.properties[key]?.items?.format === 'user') {
+                            if (!property) return undefined;
+                            return property.map(({ _id }) => _id);
+                        }
                         return property;
+                    }
                 }
             }),
         ),
@@ -498,8 +578,17 @@ export const duplicateEntityRequest = async (entityId: string, newEntityData: En
                         if (!property) return undefined;
                         return new Date(property).toISOString();
                     }
-                    default:
+                    case 'user': {
+                        if (!property) return undefined;
+                        return property._id;
+                    }
+                    default: {
+                        if (template.properties.properties[key]?.items?.format === 'user') {
+                            if (!property) return undefined;
+                            return property.map(({ _id }) => _id);
+                        }
                         return property;
+                    }
                 }
             }),
         ),

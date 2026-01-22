@@ -11,13 +11,13 @@ import {
     ValidationError,
 } from '@microservices/shared';
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
-import Kartoffel from 'instance-service/src/externalServices/kartoffel';
-import EntityTemplateService from 'instance-service/src/externalServices/templates/entityTemplateManager';
 import neo4j, { Node as Neo4jNode, Relationship as Neo4jRelationship, QueryResult, Transaction } from 'neo4j-driver';
 import { v4 as uuidv4 } from 'uuid';
 import config from '../../config';
 import EntityManager from '../../express/entities/manager';
 import { IFormulaCauses } from '../../express/rules/interfaces/formulaWithCauses';
+import Kartoffel from '../../externalServices/kartoffel';
+import EntityTemplateService from '../../externalServices/templates/entityTemplateManager';
 
 const {
     map: {
@@ -46,6 +46,7 @@ export const formatDate = (date: string) => {
 export const normalizeFields = async (
     properties: Record<string, IPropertyValue>,
     template?: IMongoEntityTemplate,
+    isGetMode?: boolean,
 ): Promise<{ properties: Record<string, IPropertyValue>; coloredFields: Record<string, string> }> => {
     const props = {};
     const coloredFields = {};
@@ -60,7 +61,7 @@ export const normalizeFields = async (
 
         if (key.endsWith(colorPropertySuffix) && properties[key] !== undefined) coloredFields[key.slice(0, -colorPropertySuffix.length)] = value;
 
-        if (template) {
+        if (template && isGetMode) {
             // it's entity and not relationship
             if (template.properties.properties[key]?.format === PropertyFormat.user) {
                 userKeys.add(value);
@@ -137,11 +138,30 @@ export const normalizeFields = async (
         const users = await Kartoffel.getUsersByIds(Array.from(userKeys.keys()));
         for (const [key, value] of Object.entries(properties)) {
             if (template.properties.properties[key]?.format === PropertyFormat.user) {
-                props[key] = users.find(({ _id }) => _id === value);
+                const foundUser = users.find(({ _id }) => _id === value);
+                if (!foundUser) props[key] = undefined;
+                else {
+                    props[key] = {
+                        _id: foundUser._id || foundUser.id,
+                        fullName: foundUser.fullName,
+                        jobTitle: foundUser.jobTitle,
+                        hierarchy: foundUser.hierarchy,
+                        mail: foundUser.mail,
+                        userType: foundUser.entityType,
+                    };
+                }
             }
 
             if (template.properties.properties[key]?.items?.format === PropertyFormat.user) {
-                props[key] = users.filter(({ _id }) => value.includes(_id));
+                const foundUsers = users.filter(({ _id }) => value.includes(_id));
+                props[key] = foundUsers.map((foundUser) => ({
+                    _id: foundUser._id || foundUser.id,
+                    fullName: foundUser.fullName,
+                    jobTitle: foundUser.jobTitle,
+                    hierarchy: foundUser.hierarchy,
+                    mail: foundUser.mail,
+                    userType: foundUser.entityType,
+                }));
             }
         }
 
@@ -170,8 +190,8 @@ type Response<ResType extends ResponseType, Data> = ResType extends 'singleRespo
         ? Data[]
         : never;
 
-export const nodeToEntity = async (node: Node, template: IMongoEntityTemplate): Promise<IEntity> => {
-    const { properties, coloredFields } = await normalizeFields(node.properties, template);
+export const nodeToEntity = async (node: Node, template: IMongoEntityTemplate, isGetMode?: boolean): Promise<IEntity> => {
+    const { properties, coloredFields } = await normalizeFields(node.properties, template, isGetMode);
     return {
         templateId: node.labels[0],
         properties: EntityManager.fixReturnedEntityReferencesFields(properties),
@@ -319,19 +339,19 @@ export const normalizeReturnedRelAndEntities =
                 ]);
 
                 return {
-                    sourceEntity: await nodeToEntity(sourceNode, sourceTemplate),
+                    sourceEntity: await nodeToEntity(sourceNode, sourceTemplate, true),
                     relationship: {
                         templateId: relationship.type,
                         properties: (await normalizeFields(relationship.properties)).properties,
                     },
-                    destinationEntity: await nodeToEntity(destinationNode, destinationTemplate),
+                    destinationEntity: await nodeToEntity(destinationNode, destinationTemplate, true),
                 };
             }),
         );
         const template = await entityTemplateService.getEntityTemplateById(entity.labels[0]);
 
         return {
-            entity: await nodeToEntity(entity, template),
+            entity: await nodeToEntity(entity, template, true),
             connections,
         };
     };
@@ -363,7 +383,7 @@ export const normalizeSearchWithRelationships = async (result: QueryResult, work
                 })),
             );
             return {
-                entity: await nodeToEntity(node, await entityTemplateService.getEntityTemplateById(node.labels[0])),
+                entity: await nodeToEntity(node, await entityTemplateService.getEntityTemplateById(node.labels[0]), true),
                 relationships: normalizedRelationships,
             };
         }),

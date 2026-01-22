@@ -48,29 +48,10 @@ export const createInstances = async (
     JSONSchemaFaker.format('comment', () => 'This is a fake comment');
     JSONSchemaFaker.format('text-area', () => 'Itay hamelech');
 
-    JSONSchemaFaker.format('user', (_value) => {
-        return JSON.stringify({
-            _id: '5e5688d54203fc40043591ac',
-            fullName: 'אחמד אדידס',
-            jobTitle: 'טבח',
-            hierarchy: 'es_name/es',
-            mail: 't25458789sh@jello.com',
-        });
-    });
+    JSONSchemaFaker.format('user', (_value) => '5e5688d54203fc40043591ac');
 
-    if (relationshipReferenceTemplateId) {
-        JSONSchemaFaker.format('relationshipReference', (_value) => relationshipReferenceTemplateId);
-    } else {
-        JSONSchemaFaker.format('relationshipReference', (_value) => {
-            return JSON.stringify({
-                _id: '5e5688d54203fc40043591ac',
-                fullName: 'אחמד אדידס',
-                jobTitle: 'טבח',
-                hierarchy: 'es_name/es',
-                mail: 't25458789sh@jello.com',
-            });
-        });
-    }
+    if (relationshipReferenceTemplateId) JSONSchemaFaker.format('relationshipReference', (_value) => relationshipReferenceTemplateId);
+    else JSONSchemaFaker.format('relationshipReference', (_value) => '5e5688d54203fc40043591ac');
 
     const promises = entityTemplates.flatMap((entityTemplate) => {
         return Array.from({ length: chance.integer({ min: minNumberOfEntities, max: maxEntitiesPerTemplate || maxNumberOfEntities }) }, () =>
