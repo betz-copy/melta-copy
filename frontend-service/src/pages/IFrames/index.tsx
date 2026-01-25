@@ -48,7 +48,16 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
         Object.keys(localStorage)
             .filter((key) => key.startsWith(iFrameDimensionKey))
             .forEach((key) => {
-                const value = JSON.parse(localStorage.getItem(key)!);
+                let value;
+                try {
+                    value = JSON.parse(localStorage.getItem(key)!);
+                } catch (error) {
+                    console.warn(
+                        `[iFrameDimensions] Invalid JSON in localStorage for key: ${key}`,
+                        error,
+                    );
+                }
+
                 if (isSideBarOpen && !open) {
                     value.width *= sideBarWidthPrec;
                 } else if (open && !isSideBarOpen) {
