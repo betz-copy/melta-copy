@@ -1,6 +1,6 @@
+import { IMongoActivityLog } from '@packages/activity-log';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
-import { IActivityLog } from './interface';
 
 const {
     activityLogService: { url, requestTimeout, baseRoute },
@@ -23,8 +23,8 @@ class ActivityLogService extends DefaultExternalServiceApi {
             startDateRange: Date;
             endDateRange: Date;
         }>,
-    ): Promise<IActivityLog[]> {
-        const { data } = await this.api.get<IActivityLog[]>(`${baseRoute}/${entityId}`, {
+    ): Promise<IMongoActivityLog[]> {
+        const { data } = await this.api.get<IMongoActivityLog[]>(`${baseRoute}/${entityId}`, {
             params,
         });
 

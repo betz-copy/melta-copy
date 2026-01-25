@@ -1,5 +1,5 @@
 import { Grid, styled, Typography, useTheme } from '@mui/material';
-import { ActionsLog, IUpdatedFields } from '@packages/activity-log';
+import { ActionsLog, IMongoActivityLog, IMongoUpdateProcessStepMetadata, IUpdatedFields } from '@packages/activity-log';
 import { IPropertyValue } from '@packages/entity';
 import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IMongoStepTemplatePopulated, IProcessDetails, IProcessSingleProperty } from '@packages/process';
@@ -17,7 +17,6 @@ import { StatusDisplay } from '../../../../common/wizards/processInstance/Proces
 import { activityLogConfigMap } from '../../../../interfaces/activityLog';
 import { LocationData } from '../../../../interfaces/location';
 import { IEntityTemplateMap } from '../../../../interfaces/template';
-import { IActivityLog, IUpdateProcessStepMetadata } from '../../../../services/activityLogService';
 import { getFilesName } from '../../../../utils/getFileName';
 import { containsHTMLTags, getFirstLine, getNumLines } from '../../../../utils/HtmlTagsStringValue';
 import { locationConverterToString } from '../../../../utils/map/convert';
@@ -298,7 +297,7 @@ const UpdateEntityMetadataActionText: React.FC<{
 };
 
 const UpdateStepProcessMetadataActionText: React.FC<{
-    actionMetadata: IUpdateProcessStepMetadata['metadata'];
+    actionMetadata: IMongoUpdateProcessStepMetadata['metadata'];
     entityTemplate: IMongoStepTemplatePopulated;
 }> = ({ actionMetadata, entityTemplate }) => {
     return (
@@ -346,7 +345,7 @@ const UpdateStepProcessMetadataActionText: React.FC<{
 };
 
 const ActionText: React.FC<{
-    log: IActivityLog;
+    log: IMongoActivityLog;
     entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | IProcessDetails | IMongoStepTemplatePopulated;
 }> = ({ log: { metadata, action }, entityTemplate }) => {
     if (action === ActionsLog.CREATE_RELATIONSHIP || action === ActionsLog.DELETE_RELATIONSHIP)
@@ -369,7 +368,7 @@ const ActionText: React.FC<{
         return (
             <UpdateStepProcessMetadataActionText
                 entityTemplate={entityTemplate as IMongoStepTemplatePopulated}
-                actionMetadata={metadata as IUpdateProcessStepMetadata['metadata']}
+                actionMetadata={metadata as IMongoUpdateProcessStepMetadata['metadata']}
             />
         );
 

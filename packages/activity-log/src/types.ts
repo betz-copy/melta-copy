@@ -62,3 +62,8 @@ export interface IUpdateProcessStepMetadata extends IBaseActivityLog {
 }
 
 export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IDuplicateEntityMetadata | IUpdateEntityMetadata | IUpdateProcessStepMetadata;
+
+export type IMongoActivityLog = IActivityLog & { _id: string };
+export interface IMongoUpdateProcessStepMetadata extends IUpdateProcessStepMetadata {
+    _id: string;
+}

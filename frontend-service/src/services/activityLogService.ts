@@ -1,45 +1,10 @@
-import { ActionsLog, IUpdatedFields } from '@packages/activity-log';
+import { ActionsLog, IMongoActivityLog } from '@packages/activity-log';
 import { IEntitySingleProperty } from '@packages/entity-template';
-import { IProcessSingleProperty, Status } from '@packages/process';
+import { IProcessSingleProperty } from '@packages/process';
 import axios from '../axios';
 import { environment } from '../globals';
 
 const { activityLog } = environment.api;
-
-interface IBaseActivityLog {
-    _id: string;
-    timestamp: Date;
-    entityId: string;
-    userId: string;
-}
-
-interface IEmptyMetadata extends IBaseActivityLog {
-    action: ActionsLog.CREATE_ENTITY | ActionsLog.DISABLE_ENTITY | ActionsLog.ACTIVATE_ENTITY | ActionsLog.VIEW_ENTITY | ActionsLog.CREATE_PROCESS;
-    // biome-ignore lint/complexity/noBannedTypes: old code
-    metadata: {};
-}
-
-interface IRelationshipMetadata extends IBaseActivityLog {
-    action: ActionsLog.DELETE_RELATIONSHIP | ActionsLog.CREATE_RELATIONSHIP;
-    metadata: { relationshipId: string; relationshipTemplateId: string; entityId: string };
-}
-
-interface IDuplicateEntityMetadata extends IBaseActivityLog {
-    action: ActionsLog.DUPLICATE_ENTITY;
-    metadata: { entityIdDuplicatedFrom: string };
-}
-
-interface IUpdateEntityMetadata extends IBaseActivityLog {
-    action: ActionsLog.UPDATE_ENTITY | ActionsLog.UPDATE_PROCESS | ActionsLog.UPDATE_FIELDS;
-    metadata: { updatedFields: IUpdatedFields[] };
-}
-
-export interface IUpdateProcessStepMetadata extends IBaseActivityLog {
-    action: ActionsLog.UPDATE_PROCESS_STEP;
-    metadata: { updatedFields?: IUpdatedFields[]; comments?: string; status?: Status };
-}
-
-export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IDuplicateEntityMetadata | IUpdateEntityMetadata | IUpdateProcessStepMetadata;
 
 const getActivityLogRequest = async (
     entityId: string,
@@ -85,7 +50,7 @@ const getActivityLogRequest = async (
         params.fieldsSearch = fieldsKeysToSearch;
     }
 
-    const { data } = await axios.get<IActivityLog[]>(`${activityLog}/${entityId}`, { params });
+    const { data } = await axios.get<IMongoActivityLog[]>(`${activityLog}/${entityId}`, { params });
     return data;
 };
 

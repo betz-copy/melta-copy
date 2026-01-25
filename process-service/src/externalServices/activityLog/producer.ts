@@ -1,7 +1,7 @@
+import { IActivityLog } from '@packages/activity-log';
 import { ServiceError } from '@packages/utils';
 import config from '../../config';
 import { DefaultExternalServiceRabbit } from '../../utils/rabbit/manager';
-import { IActivityLog } from './interface';
 
 const { rabbit } = config;
 

@@ -1,17 +1,17 @@
 import { Grid, Skeleton, Typography } from '@mui/material';
+import { IMongoActivityLog } from '@packages/activity-log';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IMongoStepTemplatePopulated, IProcessDetails } from '@packages/process';
 import i18next from 'i18next';
 import React from 'react';
 import { useQuery } from 'react-query';
-import { IActivityLog } from '../../../../services/activityLogService';
 import { getUserByIdRequest } from '../../../../services/userService';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import { getShortDate } from '../../../../utils/date';
 import ActionText from './ActionText';
 
 const ActivityLogRow: React.FC<{
-    log: IActivityLog;
+    log: IMongoActivityLog;
     entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | IProcessDetails | IMongoStepTemplatePopulated;
 }> = ({ log, entityTemplate }) => {
     const { data: user, isLoading } = useQuery(['getUserById', log.userId], () => getUserByIdRequest(log.userId));

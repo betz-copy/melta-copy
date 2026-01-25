@@ -1,5 +1,5 @@
 import { Grid, InputAdornment, Paper, TextField } from '@mui/material';
-import { ActionsLog } from '@packages/activity-log';
+import { ActionsLog, IMongoActivityLog } from '@packages/activity-log';
 import { IEntityExpanded } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IMongoStepTemplatePopulated, IProcessDetails } from '@packages/process';
@@ -10,13 +10,13 @@ import { InfiniteScroll } from '../../../../common/InfiniteScroll';
 import DateRange from '../../../../common/inputs/DateRange';
 import MultipleSelect from '../../../../common/inputs/MultipleSelect';
 import { environment } from '../../../../globals';
-import { getActivityLogRequest, IActivityLog } from '../../../../services/activityLogService';
+import { getActivityLogRequest } from '../../../../services/activityLogService';
 import { FilterButton } from '../../../SystemManagement/components/FilterButton';
 import ActivityLogRow from './ActivityLogRow';
 
 const { infiniteScrollPageCount } = environment.activityLog;
 
-const getNextPageParam = (lastPage: IActivityLog[], allPages: IActivityLog[][]) => {
+const getNextPageParam = (lastPage: IMongoActivityLog[], allPages: IMongoActivityLog[][]) => {
     const nextPage = allPages.length * infiniteScrollPageCount;
     return lastPage.length ? nextPage : undefined;
 };
@@ -129,7 +129,7 @@ const ActivitiesContent: React.FC<{
                     />
                 </Grid>
             </Grid>
-            <InfiniteScroll<IActivityLog>
+            <InfiniteScroll<IMongoActivityLog>
                 queryKey={[
                     'getActivityLogRequest',
                     entityId,
