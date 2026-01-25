@@ -1,10 +1,9 @@
 import { ColDef, ValueGetterFunc } from '@ag-grid-community/core';
 import { Add as AddIcon } from '@mui/icons-material';
 import { Grid, Typography } from '@mui/material';
-import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
-import { EntityData, IEntity, IPropertyValue } from '@packages/entity';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated, PropertyFormat } from '@packages/entity-template';
-import { IRuleBreach } from '@packages/rule-breach';
+import { IEntity, IPropertyValue } from '@packages/entity';
+import { PropertyFormat } from '@packages/entity-template';
+import { EntityData, IRuleBreach } from '@packages/rule-breach';
 import { ISemanticSearchResult } from '@packages/semantic-search';
 import { IGetUnits } from '@packages/unit';
 import { IWorkspace } from '@packages/workspace';
@@ -14,6 +13,7 @@ import React, { memo } from 'react';
 import { UseMutateAsyncFunction } from 'react-query';
 import { Link } from 'wouter';
 import { environment } from '../../globals';
+import { IChildTemplateMap, IEntityTemplateMap, ITemplate } from '../../interfaces/template';
 import { CardMenu } from '../../pages/SystemManagement/components/CardMenu';
 import { UserState } from '../../stores/user';
 import {
@@ -44,7 +44,7 @@ import { ImageWithDisable } from '../ImageWithDisable';
 import { IButtonPopoverProps } from '.';
 
 export interface IGetColumnDefsOptions<Data> {
-    template: (IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated) & {
+    template: ITemplate & {
         entitiesWithFiles?: ISemanticSearchResult[string];
     };
     getRowId: (data: Data) => string;
@@ -82,7 +82,7 @@ export interface IGetColumnDefsOptions<Data> {
     actionsColumnWidth?: number;
     darkMode: boolean;
     workspace: IWorkspace;
-    childTemplatesOfParent?: IMongoChildTemplateWithConstraintsPopulated[];
+    childTemplatesOfParent?: ITemplate[];
     units: IGetUnits;
 }
 
@@ -460,9 +460,7 @@ export const getColumnDefs = <Data = EntityData>({
                       entityTemplateMap?.get(addRelationshipReferenceButtonProps))
                     : undefined;
 
-                const getInitialProperties = (
-                    relatedTemplate: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
-                ): Record<string, IPropertyValue> => {
+                const getInitialProperties = (relatedTemplate: ITemplate): Record<string, IPropertyValue> => {
                     const relatedProperties = relatedTemplate.properties.properties ?? {};
 
                     return Object.entries(relatedProperties).reduce(

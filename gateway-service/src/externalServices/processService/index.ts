@@ -15,9 +15,7 @@ import { NotFoundError } from '../../express/processes/error';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 
-const {
-    processService: { url, templatesBaseRoute, instancesBaseRoute, requestTimeout },
-} = config;
+const { url, templatesBaseRoute, instancesBaseRoute, requestTimeout } = config.processService;
 
 class ProcessService extends DefaultExternalServiceApi {
     constructor(private workspaceId: string) {

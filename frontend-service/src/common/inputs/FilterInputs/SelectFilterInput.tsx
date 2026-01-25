@@ -1,8 +1,8 @@
 import { Grid, MenuItem } from '@mui/material';
-import { IGraphFilterBody } from '@packages/entity';
 import { IAgGridDateFilter, IAgGridNumberFilter, IAgGridTextFilter } from '@packages/rule-breach';
 import i18next from 'i18next';
 import React from 'react';
+import { IGraphFilterBody } from '../../../interfaces/graphFilter';
 import { FieldOption } from '../../wizards/entityTemplate/RelationshipReference/filterEntitiesByCriteria';
 import { StyledFilterInput } from './StyledFilterInput';
 import { TypeSelectFilter } from './TypeSelectFilter';

@@ -5,9 +5,7 @@ import Handlebars from 'handlebars';
 import { mapValues } from 'lodash';
 import config from '../../config';
 
-const {
-    service: { meltaBaseUrl },
-} = config;
+const { meltaBaseUrl } = config.service;
 
 const entityLink = (content: string, baseUrl: string, entityId: string): string => {
     return `<a href="${baseUrl}/entity/${entityId}" target="_blank" style="color:#225AA7;font-weight:bold">${Handlebars.escapeExpression(content)}</a>`;

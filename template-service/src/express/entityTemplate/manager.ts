@@ -6,7 +6,7 @@ import { StatusCodes } from 'http-status-codes';
 import { ClientSession, FilterQuery, UpdateQuery } from 'mongoose';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
-import { withTransaction } from '../../utils/mongo/mongoose';
+import { withTransaction } from '../../utils/mongoose';
 import CategoryManager from '../category/manager';
 import ChildTemplateManager from '../childTemplate/manager';
 import GlobalSearchIndexCreator from '../externalServices/globalSearchIndexCreator';
@@ -248,7 +248,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         updatedTemplateData: Omit<IEntityTemplate, 'disabled'>,
         allowToDeleteRelationshipFields: boolean,
         session?: ClientSession,
-    ): Promise<IEntityTemplatePopulated> {
+    ) {
         let entityTemplateToUpdate = { ...currentEntityTemplate, ...updatedTemplateData };
 
         if (this.hasRelationshipsProperties(entityTemplateToUpdate)) {
@@ -297,7 +297,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
             );
         }
 
-        return updatedEntityTemplate as unknown as IEntityTemplatePopulated;
+        return updatedEntityTemplate;
     }
 
     async updateEntityTemplate(
@@ -314,7 +314,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
 
         const currentEntityTemplate = await this.getTemplateById(id);
 
-        const newEntityTemplate: IEntityTemplatePopulated = session
+        const newEntityTemplate = session
             ? await this.updateEntityTemplateInTransaction(id, currentEntityTemplate, updatedTemplateData, allowToDeleteRelationshipFields, session)
             : await withTransaction(async (newSession: ClientSession) =>
                   this.updateEntityTemplateInTransaction(id, currentEntityTemplate, updatedTemplateData, allowToDeleteRelationshipFields, newSession),
@@ -337,8 +337,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         });
 
         const isNewPropertyAdded =
-            Object.keys(currentEntityTemplate.properties.properties).length !==
-            Object.keys((newEntityTemplate as IEntityTemplatePopulated).properties.properties).length;
+            Object.keys(currentEntityTemplate.properties.properties).length !== Object.keys(newEntityTemplate.properties.properties).length;
 
         if (isPropertyTypeChanged || isNewPropertyAdded) {
             await this.globalSearchIndexCreator.sendUpdateIndexesOnUpdateTemplate(id);

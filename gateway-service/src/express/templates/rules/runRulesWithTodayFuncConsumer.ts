@@ -1,4 +1,5 @@
-import { ActionTypes, IBrokenRule } from '@packages/rule-breach';
+import { ActionTypes } from '@packages/action';
+import { IBrokenRule } from '@packages/rule-breach';
 import { logger } from '@packages/utils';
 import { ConsumerMessage } from 'menashmq';
 import config from '../../../config';

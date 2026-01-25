@@ -1,5 +1,5 @@
 import type { ByCurrentDefaultValue, IChildTemplatePopulatedFromDb, IChildTemplateProperty } from '@packages/child-template';
-import type { relativeDateFilters } from '@packages/rule-breach';
+import type { RelativeDateFilters } from '@packages/rule-breach';
 import type { IAgGridFilter } from '../common/wizards/entityTemplate/commonInterfaces';
 
 export enum ChipType {
@@ -23,4 +23,4 @@ export interface IChildTemplateForm extends Omit<IChildTemplatePopulatedFromDb, 
     properties: { properties: Record<string, IChildTemplateFormProperty> };
 }
 
-export type IFilterDateType = Date | ByCurrentDefaultValue.byCurrentDate | relativeDateFilters | null;
+export type IFilterDateType = Date | ByCurrentDefaultValue.byCurrentDate | RelativeDateFilters | null;

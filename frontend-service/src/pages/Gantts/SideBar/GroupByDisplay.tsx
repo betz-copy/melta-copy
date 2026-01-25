@@ -1,5 +1,4 @@
 import { Grid, Typography } from '@mui/material';
-import { IEntityTemplateMap } from '@packages/entity-template';
 import { IGantt, IGanttGroupBy } from '@packages/gantt';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
@@ -8,6 +7,7 @@ import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';
 import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
+import { IEntityTemplateMap } from '../../../interfaces/template';
 import { filteredMap } from '../../../utils/filteredMap';
 import { EntityTemplateDisplay } from '../GanttItemDisplay/EntityTemplateDisplay';
 import { RemoveFromArrayButton } from '../GanttItemDisplay/GanttItemEdit/RemoveFromArrayButton';

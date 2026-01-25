@@ -1,21 +1,8 @@
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
-import { IMongoRelationship, IRelationship } from '@packages/relationship';
+import { IEntitySingleProperty } from '@packages/entity-template';
+import { IRelationship } from '@packages/relationship';
 import { IMongoRelationshipTemplate } from '@packages/relationship-template';
-import { IBulkRuleMail } from '@packages/rule';
-import {
-    ActionErrors,
-    IAction,
-    IActionPopulated,
-    IAgGridDateFilter,
-    IAgGridNumberFilter,
-    IAgGridSetFilter,
-    IAgGridTextFilter,
-    IBrokenRule,
-    IBrokenRulePopulated,
-    ICreateEntityMetadata,
-    IFailedEntity,
-} from '@packages/rule-breach';
-// biome-ignore lint/style/useNodejsImportProtocol: <explanation>
+import { IRuleMail } from '@packages/rule';
+// biome-ignore lint/style/useNodejsImportProtocol: false positive
 import { Readable } from 'stream';
 
 // biome-ignore lint/suspicious/noExplicitAny: prop value is any
@@ -28,34 +15,24 @@ export interface IEntity {
     coloredFields?: Record<string, string>;
 }
 
-export interface IEntityWithChildTemplate extends IEntity {
-    childTemplateId?: string;
-}
-
 export type IConnection = {
-    relationship: Pick<IMongoRelationship, 'templateId' | 'properties'>;
+    relationship: Pick<IRelationship, 'templateId' | 'properties'>;
     sourceEntity: IEntity;
     destinationEntity: IEntity;
 };
-
-export interface IBulkOfActions {
-    instances: IEntity | IRelationship[];
-    emails: IBulkRuleMail[];
-}
 
 export interface IEntityExpanded {
     entity: IEntity;
     connections: IConnection[];
 }
 
-export interface IBrokenRulesError {
-    metadata: {
-        errorCode: 'RULE_BLOCK';
-        rawBrokenRules: IBrokenRule[];
-        brokenRules: IBrokenRulePopulated[];
-        actions: IActionPopulated[];
-        rawActions: IAction[];
-    };
+export interface IBulkRuleMail extends IRuleMail {
+    entity: IEntity;
+}
+
+export interface IBulkOfActions {
+    instances: IEntity | IRelationship[];
+    emails: IBulkRuleMail[];
 }
 
 export interface IUniqueConstraint {
@@ -101,20 +78,6 @@ export type IUsersNotFoundError = {
 };
 
 export type IExcelNotFoundError = IUsersNotFoundError | IRelationshipRefNotFoundError;
-
-export interface EntitiesWizardValues {
-    files?: File[];
-    template?: IMongoEntityTemplateWithConstraintsPopulated;
-}
-
-export interface IValidationErrorData {
-    type: string;
-    message: string;
-    metadata: {
-        properties: Record<string, IPropertyValue>;
-        errors: { type: ActionErrors.validation; metadata: IValidationError }[];
-    };
-}
 
 export type IConstraint = IRequiredConstraint | IUniqueConstraint;
 
@@ -197,7 +160,7 @@ export interface ISearchEntitiesOfTemplateBody {
     limit: number;
     textSearch?: string;
     filter?: ISearchFilter;
-    showRelationships: boolean | Array<IMongoRelationshipTemplate['_id']>;
+    showRelationships?: boolean | Array<IMongoRelationshipTemplate['_id']>;
     sort?: ISearchSort;
     entitiesWithFiles?: ICountSearchResult['entitiesWithFiles'];
     entityIdsToInclude?: string[];
@@ -220,7 +183,7 @@ export interface ISearchBatchBody {
     templates: {
         [templateId: string]: {
             filter?: ISearchFilter;
-            showRelationships: boolean | Array<IMongoRelationshipTemplate['_id']>;
+            showRelationships?: boolean | Array<IMongoRelationshipTemplate['_id']>;
             childTemplateId?: string;
         };
     };
@@ -273,10 +236,6 @@ export interface IFilterDatesRange {
     isDatePastAlert: boolean;
 }
 
-export interface IEntityWithIgnoredRules extends ICreateEntityMetadata {
-    ignoredRules: IBrokenRule[];
-}
-
 export interface ITemplateSearchBody {
     textSearch?: string;
     templateIds: string[];
@@ -296,16 +255,6 @@ export interface IExportEntitiesBody {
             isChildTemplate?: boolean;
         };
     };
-}
-
-export interface IGraphFilterBody {
-    selectedTemplate: IMongoEntityTemplatePopulated;
-    selectedProperty?: string;
-    filterField?: IAgGridTextFilter | IAgGridNumberFilter | IAgGridDateFilter | IAgGridSetFilter;
-}
-
-export interface IGraphFilterBodyBatch {
-    [key: string]: IGraphFilterBody;
 }
 
 export interface IDeleteEntityBodyBase {
@@ -328,5 +277,3 @@ export type IMultipleSelect<T extends boolean = boolean> = {
       });
 
 export type IDeleteEntityBody<T extends boolean = boolean> = IDeleteEntityBodyBase & IMultipleSelect<T>;
-
-export type EntityData = IEntity | IFailedEntity | IConnection;

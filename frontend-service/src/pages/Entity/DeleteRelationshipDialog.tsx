@@ -1,12 +1,7 @@
+import { ActionTypes, IDeleteRelationshipMetadata, IDeleteRelationshipMetadataPopulated } from '@packages/action';
 import { IEntityExpanded } from '@packages/entity';
 import { ActionOnFail, IRuleMap } from '@packages/rule';
-import {
-    ActionTypes,
-    IDeleteRelationshipMetadata,
-    IDeleteRelationshipMetadataPopulated,
-    IRuleBreach,
-    IRuleBreachPopulated,
-} from '@packages/rule-breach';
+import { IRuleBreach, IRuleBreachPopulated } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';

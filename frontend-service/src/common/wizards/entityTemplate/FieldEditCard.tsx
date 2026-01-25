@@ -11,17 +11,17 @@ import {
 } from '@mui/icons-material';
 import { Autocomplete, Box, Card, CardContent, FormControlLabel, Grid, IconButton, MenuItem, TextField } from '@mui/material';
 import { IPropertyValue, IUniqueConstraintOfTemplate } from '@packages/entity';
-import { IEntityTemplateMap, PropertyExternalWizardType } from '@packages/entity-template';
+import { PropertyExternalWizardType, PropertyFormat, PropertyType } from '@packages/entity-template';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import { isEqual } from 'lodash';
 import React, { memo, SetStateAction } from 'react';
 import { useQueryClient } from 'react-query';
 import { environment } from '../../../globals';
-import { arrayTypes } from '../../../services/templates/entityTemplatesService';
+import { IEntityTemplateMap, PropertyWizardType } from '../../../interfaces/template';
+import { arrayTypes, PropertyWizardTypes } from '../../../services/templates/entityTemplatesService';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
-import { PropertyWizardType } from '.';
 import { validPropertyTypes } from './AddFields';
 import { CommonFormInputProperties, PropertyItem } from './commonInterfaces';
 import { PropertiesTypes } from './Property/PropertyTypes';
@@ -120,7 +120,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const isComment = value.type === 'comment';
+    const isComment = value.type === PropertyFormat.comment;
 
     const name = `properties[${index}].name`;
     const touchedName = touched?.name;
@@ -135,7 +135,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const errorType = errors?.type;
 
     const unique =
-        value.type === 'serialNumber' ||
+        value.type === PropertyWizardTypes.serialNumber ||
         (uniqueConstraints && uniqueConstraints.filter((constraints) => constraints.properties.includes(value.name)).length > 0);
     const uniqueConstraintGroupName = uniqueConstraints
         ? uniqueConstraints.find((constraint) => constraint.properties.includes(value.name))?.groupName
@@ -153,8 +153,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
         if (!values?.walletTransfer) return false;
 
         const walletTransfer = (values as Record<string, IPropertyValue>).walletTransfer;
-        const from = typeof walletTransfer.from === 'string' ? walletTransfer.from : walletTransfer.from.name;
-        const to = typeof walletTransfer.to === 'string' ? walletTransfer.to : walletTransfer.to.name;
+        const from = typeof walletTransfer.from === PropertyType.string ? walletTransfer.from : walletTransfer.from.name;
+        const to = typeof walletTransfer.to === PropertyType.string ? walletTransfer.to : walletTransfer.to.name;
         return from === value.name || to === value.name || walletTransfer?.amount === value.name;
     }, [values, value.name]);
 
@@ -327,41 +327,55 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                         label={i18next.t('wizard.entityTemplate.propertyType')}
                                         id={type}
                                         name={type}
-                                        value={value.type === 'text-area' ? 'string' : value.type}
+                                        value={value.type === PropertyFormat['text-area'] ? PropertyType.string : value.type}
                                         onChange={(e) => {
                                             const newType = e.target.value as PropertyWizardType;
                                             setValues?.((prevValue) => ({
                                                 ...prevValue,
                                                 type: newType,
-                                                required: (newType === 'serialNumber' || prevValue.required) ?? false,
-                                                title: newType === 'comment' ? value.name : value.title,
-                                                readOnly: newType === 'kartoffelUserField' || prevValue.readOnly,
+                                                required: (newType === PropertyWizardTypes.serialNumber || prevValue.required) ?? false,
+                                                title: newType === PropertyWizardTypes.comment ? value.name : value.title,
+                                                readOnly: newType === PropertyWizardTypes.kartoffelUserField || prevValue.readOnly,
                                             }));
                                         }}
                                         error={touchedType && Boolean(errorType)}
                                         helperText={touchedType && errorType}
                                         disabled={
-                                            (isDisabled && (initialValue?.type !== 'enum' || !supportConvertingToMultipleFields)) || value.deleted
+                                            (isDisabled && (initialValue?.type !== PropertyWizardTypes.enum || !supportConvertingToMultipleFields)) ||
+                                            value.deleted
                                         }
                                         sx={{ marginRight: '5px' }}
                                         fullWidth
                                     >
                                         {validPropertyTypes
                                             .filter((validPropertyType) => {
-                                                if (initialValue?.type === 'enum' && areThereAnyInstances && supportConvertingToMultipleFields)
-                                                    return validPropertyType === 'enumArray' || validPropertyType === 'enum';
+                                                if (
+                                                    initialValue?.type === PropertyWizardTypes.enum &&
+                                                    areThereAnyInstances &&
+                                                    supportConvertingToMultipleFields
+                                                )
+                                                    return validPropertyType === PropertyWizardTypes.enumArray || validPropertyType === 'enum';
                                                 if (validPropertyType === 'entityReference') return supportEntityReferenceType;
-                                                if (validPropertyType === 'serialNumber') {
+                                                if (validPropertyType === PropertyWizardTypes.serialNumber) {
                                                     if (!supportSerialNumberType) return false;
                                                 }
-                                                if (validPropertyType === 'location') return supportLocation;
-                                                if (validPropertyType === 'text-area') return false;
-                                                if (validPropertyType === 'enumArray') return supportArrayFields;
-                                                if (validPropertyType === 'relationshipReference') return supportRelationshipReference;
-                                                if (validPropertyType === 'fileId' || validPropertyType === 'multipleFiles') return false; // TODO: support file inputs
-                                                if (validPropertyType === 'user' || validPropertyType === 'users') return supportUserType;
-                                                if (validPropertyType === 'comment') return supportComment;
-                                                if (validPropertyType === 'kartoffelUserField' && !userPropertiesInTemplate.length && !value.deleted)
+                                                if (validPropertyType === PropertyWizardTypes.location) return supportLocation;
+                                                if (validPropertyType === PropertyFormat['text-area']) return false;
+                                                if (validPropertyType === PropertyWizardTypes.enumArray) return supportArrayFields;
+                                                if (validPropertyType === PropertyFormat.relationshipReference) return supportRelationshipReference;
+                                                if (
+                                                    validPropertyType === PropertyWizardTypes.fileId ||
+                                                    validPropertyType === PropertyWizardTypes.multipleFiles
+                                                )
+                                                    return false; // TODO: support file inputs
+                                                if (validPropertyType === PropertyWizardTypes.user || validPropertyType === PropertyWizardTypes.users)
+                                                    return supportUserType;
+                                                if (validPropertyType === PropertyFormat.comment) return supportComment;
+                                                if (
+                                                    validPropertyType === PropertyWizardTypes.kartoffelUserField &&
+                                                    !userPropertiesInTemplate.length &&
+                                                    !value.deleted
+                                                )
                                                     return false;
                                                 return true;
                                             })
@@ -393,7 +407,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     />
                                 </Grid>
                             </Grid>
-                            <Grid container justifyContent="space-between" marginTop={value.type === 'comment' ? '5px' : ''}>
+                            <Grid container justifyContent="space-between" marginTop={value.type === PropertyFormat.comment ? '5px' : ''}>
                                 <Switches
                                     value={value}
                                     setValues={setValues}
@@ -485,7 +499,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                 </Grid>
                             </Grid>
                             <Grid container justifyContent="space-between" alignItems="center" flexWrap="nowrap">
-                                {unique && !value.identifier && value.type !== 'serialNumber' && (
+                                {unique && !value.identifier && value.type !== PropertyWizardTypes.serialNumber && (
                                     <Grid container direction="row">
                                         <Grid container alignItems="center" flexWrap="nowrap">
                                             <MeltaTooltip title={i18next.t('validation.uniqueTooltipTitle')}>
@@ -611,7 +625,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     </Grid>
                                 )}
                             </Grid>
-                            {value.type === 'relationshipReference' && supportRelationshipReference && (
+                            {value.type === PropertyFormat.relationshipReference && supportRelationshipReference && (
                                 <FilterEntitiesByCriteria
                                     name={`relationshipReference.filters`}
                                     value={value}

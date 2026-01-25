@@ -1,7 +1,7 @@
 import { Grid } from '@mui/material';
 import { ICategoryMap, IMongoCategory } from '@packages/category';
-import { IChildTemplateMap, IMongoChildTemplatePopulated, IMongoChildTemplateWithConstraintsPopulated, TemplateItem } from '@packages/child-template';
-import { IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoChildTemplatePopulated, IMongoChildTemplateWithConstraintsPopulated, TemplateItem } from '@packages/child-template';
+import { IEntityTemplate, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -18,6 +18,7 @@ import SearchInput from '../../../common/inputs/SearchInput';
 import { SelectCheckbox } from '../../../common/SelectCheckBox';
 import { EntityTemplateWizard } from '../../../common/wizards/entityTemplate';
 import { environment } from '../../../globals';
+import { emptyCategory, IChildTemplateMap, IEntityTemplateMap } from '../../../interfaces/template';
 import { updateCategoryTemplatesOrderRequest } from '../../../services/templates/categoriesService';
 import { deleteChildTemplate, updateChildTemplateStatusRequest } from '../../../services/templates/childTemplatesService';
 import {
@@ -45,7 +46,7 @@ export const defaultEntityTemplatePopulated: IMongoEntityTemplateWithConstraints
     uniqueConstraints: [],
     name: '',
     displayName: '',
-    category: { displayName: '', name: '', _id: '', color: '', templatesOrder: [], createdAt: new Date(), updatedAt: new Date(), iconFileId: '' },
+    category: emptyCategory,
     disabled: false,
     properties: {
         properties: {},

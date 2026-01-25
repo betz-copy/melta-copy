@@ -1,3 +1,22 @@
+import {
+    ActionTypes,
+    IAction,
+    IActionMetadataPopulated,
+    ICreateEntityMetadata,
+    ICreateEntityMetadataPopulated,
+    ICreateRelationshipMetadata,
+    ICreateRelationshipMetadataPopulated,
+    ICronjobRunMetadata,
+    ICronjobRunMetadataPopulated,
+    IDeleteRelationshipMetadata,
+    IDeleteRelationshipMetadataPopulated,
+    IDuplicateEntityMetadata,
+    IDuplicateEntityMetadataPopulated,
+    IUpdateEntityMetadata,
+    IUpdateEntityMetadataPopulated,
+    IUpdateEntityStatusMetadata,
+    IUpdateEntityStatusMetadataPopulated,
+} from '@packages/action';
 import { IEntity, IPropertyValue, UploadedFile } from '@packages/entity';
 import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import {
@@ -15,26 +34,13 @@ import { InstancesSubclassesPermissions, PermissionScope, PermissionType } from 
 import { IRelationship } from '@packages/relationship';
 import { IRuleMail } from '@packages/rule';
 import {
-    ActionTypes,
-    basicFilterOperationTypes,
+    BasicFilterOperationTypes,
     FilterTypes,
-    IAction,
-    IActionMetadataPopulated,
     IAgGridRequest,
     IBrokenRule,
     IBrokenRulePopulated,
     ICauseInstancePopulated,
     ICausesOfInstancePopulated,
-    ICreateEntityMetadata,
-    ICreateEntityMetadataPopulated,
-    ICreateRelationshipMetadata,
-    ICreateRelationshipMetadataPopulated,
-    ICronjobRunMetadata,
-    ICronjobRunMetadataPopulated,
-    IDeleteRelationshipMetadata,
-    IDeleteRelationshipMetadataPopulated,
-    IDuplicateEntityMetadata,
-    IDuplicateEntityMetadataPopulated,
     IEntityForBrokenRules,
     IRelationshipForBrokenRules,
     IRuleBreach,
@@ -43,10 +49,6 @@ import {
     IRuleBreachPopulated,
     IRuleBreachRequest,
     IRuleBreachRequestPopulated,
-    IUpdateEntityMetadata,
-    IUpdateEntityMetadataPopulated,
-    IUpdateEntityStatusMetadata,
-    IUpdateEntityStatusMetadataPopulated,
     RuleBreachRequestStatus,
 } from '@packages/rule-breach';
 import { IKartoffelUser, IUser } from '@packages/user';
@@ -840,7 +842,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
         updatedAgGridRequest.filterModel.originUserId = {
             filterType: FilterTypes.text,
-            type: basicFilterOperationTypes.equals,
+            type: BasicFilterOperationTypes.equals,
             filter: user.id,
         };
 

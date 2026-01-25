@@ -6,10 +6,11 @@ import { environment } from '../../../../../globals';
 import { NotificationColor } from '../../../../notificationColor';
 import { Description } from './Description';
 
+const { notificationsMoreData } = environment.notifications;
+
 export const ProcessReviewerUpdateNotification: React.FC<{
     notificationMetadata: IProcessReviewerUpdateNotificationMetadataPopulated;
 }> = ({ notificationMetadata }) => {
-    const { notificationsMoreData } = environment.notifications;
     const color = notificationsMoreData.general.find((notificationData) => notificationData.type === NotificationType.processReviewerUpdate)?.color;
 
     return (

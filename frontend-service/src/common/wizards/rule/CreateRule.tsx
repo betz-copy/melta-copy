@@ -1,5 +1,5 @@
 import { Autocomplete, Divider, FormControl, FormControlLabel, FormHelperText, Grid, Radio, RadioGroup, TextField } from '@mui/material';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { ActionOnFail } from '@packages/rule';
 import { getIn } from 'formik';
 import Handlebars from 'handlebars';
@@ -8,6 +8,7 @@ import { omit } from 'lodash';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import * as Yup from 'yup';
+import { IEntityTemplateMap } from '../../../interfaces/template';
 import { useUserStore } from '../../../stores/user';
 import { getAllWritePermissionEntityTemplates } from '../../../utils/permissions/templatePermissions';
 import { StepComponentProps } from '../index';

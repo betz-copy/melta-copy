@@ -18,13 +18,7 @@ import {
     Typography,
 } from '@mui/material';
 import { ICategoryMap } from '@packages/category';
-import {
-    IChildTemplate,
-    IChildTemplateMap,
-    IChildTemplateProperty,
-    IMongoChildTemplateWithConstraintsPopulated,
-    ViewType,
-} from '@packages/child-template';
+import { IChildTemplate, IChildTemplateProperty, IMongoChildTemplateWithConstraintsPopulated, ViewType } from '@packages/child-template';
 import { FilterLogicalOperator } from '@packages/entity';
 import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { AxiosError } from 'axios';
@@ -35,6 +29,7 @@ import React, { useMemo } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { IChildTemplateForm, IChildTemplateFormProperty } from '../../../interfaces/childTemplateForms';
+import { IChildTemplateMap } from '../../../interfaces/template';
 import { createChildTemplate, updateChildTemplate } from '../../../services/templates/childTemplatesService';
 import { parseFilters } from '../../../services/templates/entityTemplatesService';
 import { childTemplateKeys } from '../../../utils/childTemplates';

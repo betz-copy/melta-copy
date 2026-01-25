@@ -1,9 +1,10 @@
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material';
+import { ICreateRelationshipMetadataPopulated } from '@packages/action';
 import { IEntity } from '@packages/entity';
 import { PermissionScope } from '@packages/permission';
 import { IMongoRelationship } from '@packages/relationship';
 import { IMongoRelationshipTemplatePopulated } from '@packages/relationship-template';
-import { IBrokenRule, ICreateRelationshipMetadataPopulated, IRuleBreachPopulated } from '@packages/rule-breach';
+import { IBrokenRule, IRuleBreachPopulated } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import { Form, Formik, FormikErrors, FormikProps, yupToFormErrors } from 'formik';
 import i18next from 'i18next';

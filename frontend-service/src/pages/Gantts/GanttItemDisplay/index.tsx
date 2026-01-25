@@ -1,5 +1,4 @@
 import { Grid } from '@mui/material';
-import { IEntityTemplateMap } from '@packages/entity-template';
 import { IGantt, IGanttItem } from '@packages/gantt';
 import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import { FormikProps } from 'formik';
@@ -7,6 +6,7 @@ import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { environment } from '../../../globals';
+import { IEntityTemplateMap } from '../../../interfaces/template';
 import { getConnectedEntityTemplatesDetails } from '../../../utils/gantts';
 import { ConnectionIcon } from './ConnectionIcon.styled';
 import { EntityTemplateDisplay } from './EntityTemplateDisplay';

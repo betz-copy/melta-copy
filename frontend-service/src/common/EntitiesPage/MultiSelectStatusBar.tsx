@@ -1,16 +1,17 @@
 import { IServerSideSelectionState, IStatusPanelParams } from '@ag-grid-community/core';
 import { Delete, Edit } from '@mui/icons-material';
 import { Box, CircularProgress, Grid, Typography } from '@mui/material';
-import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { ActionTypes, ICreateEntityMetadata } from '@packages/action';
 import { IDeleteEntityBody, IMultipleSelect, IPropertyValue } from '@packages/entity';
-import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated, PropertyFormat } from '@packages/entity-template';
-import { ActionTypes, IBrokenRule, ICreateEntityMetadata } from '@packages/rule-breach';
+import { PropertyFormat } from '@packages/entity-template';
+import { IBrokenRule } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { IBrokenRuleEntity, IFailedEntity } from '../../interfaces/excel';
+import { ITemplate } from '../../interfaces/template';
 import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { deleteEntityRequest, updateMultipleEntitiesRequest } from '../../services/entitiesService';
@@ -32,7 +33,7 @@ import { StatusEntitiesTables } from '../wizards/excel/excelSteps/StatusEntities
 import { DeleteEntitiesDialog } from './DeleteEntitiesDialog';
 
 interface MultiSelectStatusBarProps extends IStatusPanelParams {
-    template: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated;
+    template: ITemplate;
     quickFilterText: string;
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
 }
@@ -178,9 +179,13 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
         if (renderData) {
             api.refreshServerSide();
 
-            const relatedTemplateIds = Object.values(template.properties.properties)
-                .filter((value) => (value as IEntitySingleProperty)?.format === PropertyFormat.relationshipReference)
-                .map((value) => (value as IEntitySingleProperty).relationshipReference?.relatedTemplateId ?? '');
+            const relatedTemplateIds = Object.values(template.properties.properties).reduce<string[]>((acc, value) => {
+                if (value?.format === PropertyFormat.relationshipReference) {
+                    const relatedId = value.relationshipReference?.relatedTemplateId;
+                    if (relatedId) acc.push(relatedId);
+                }
+                return acc;
+            }, []);
 
             setUpdatedTemplateIds?.(relatedTemplateIds);
         }

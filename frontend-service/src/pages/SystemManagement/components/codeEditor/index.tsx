@@ -1,8 +1,8 @@
 import { CloseOutlined, ContentCopy, Done } from '@mui/icons-material';
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, Typography } from '@mui/material';
 import { IMongoCategory } from '@packages/category';
-import { EntityTemplateType, IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated, TemplateItem } from '@packages/child-template';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { EntityTemplateType, IMongoChildTemplateWithConstraintsPopulated, TemplateItem } from '@packages/child-template';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import { editor } from 'monaco-editor';
@@ -14,17 +14,14 @@ import { AreYouSureDialog } from '../../../../common/dialogs/AreYouSureDialog';
 import { ErrorToast } from '../../../../common/ErrorToast';
 import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
 import { environment } from '../../../../globals';
+import { IChildTemplateMap, IEntityTemplateMap } from '../../../../interfaces/template';
 import { updateActionToEntity } from '../../../../services/templates/entityTemplatesService';
 import { getChildPropertiesFiltered } from '../../../../utils/childTemplates';
 import { generateBasicFunctions } from '../../../../utils/templateActions/generateFunctions';
 import { generateInterfaceWithRelationships } from '../../../../utils/templateActions/interfaceGenerator';
 import { ActionManagement } from './actionsManagement';
 
-const {
-    systemManagement: {
-        actions: { noTypeGivenErrorCodeTs, unusedPropertyErrorCodeTs },
-    },
-} = environment;
+const { noTypeGivenErrorCodeTs, unusedPropertyErrorCodeTs } = environment.systemManagement.actions;
 
 const CodeEditorDialog: React.FC<{
     open: boolean;

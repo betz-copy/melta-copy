@@ -5,10 +5,10 @@ import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-t
 import { INotificationCountGroups, INotificationGroupCountDetails, INotificationPopulated, NotificationType } from '@packages/notification';
 import { IMongoRelationshipTemplate } from '@packages/relationship-template';
 import { IRuleBreach } from '@packages/rule-breach';
+import { CoordinateSystem } from '@packages/utils';
 import { mapValues } from 'lodash';
 import axios from '../axios';
 import { EntityWizardValues } from '../common/dialogs/entity';
-import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
 import { environment } from '../globals';
 import { locationConverterToString } from '../utils/map/convert';
 import { isChildTemplate } from '../utils/templates';

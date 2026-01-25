@@ -1,6 +1,5 @@
 import { Close } from '@mui/icons-material';
 import { Autocomplete, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, TextField, Typography } from '@mui/material';
-import { IGraphFilterBody } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IAgGridDateFilter, IAgGridNumberFilter, IAgGridSetFilter, IAgGridTextFilter } from '@packages/rule-breach';
 import { IGetUnits } from '@packages/unit';
@@ -13,6 +12,7 @@ import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { environment } from '../../../globals';
 import { ChipType, IChildTemplateForm, IFilterDateType } from '../../../interfaces/childTemplateForms';
+import { IGraphFilterBody } from '../../../interfaces/graphFilter';
 import { initializedFilterField, isValidAGGridFilter } from '../../FilterComponent';
 import { DateFilterInput } from '../../inputs/FilterInputs/DateFilterInput';
 import { MultipleSelectFilterInput } from '../../inputs/FilterInputs/MultipleSelectFilterInput';

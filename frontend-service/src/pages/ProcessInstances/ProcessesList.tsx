@@ -23,7 +23,7 @@ const ProcessesList: React.FC<{
     search: string;
     startDateInput: Date | null;
     endDateInput: Date | null;
-    templatesToShowCheckbox: IMongoProcessTemplateReviewerPopulated[]; // todo: support in backend
+    templatesToShowCheckbox: IMongoProcessTemplateReviewerPopulated[];
     statusFilter: 'all' | Status | 'archived';
     isWaitingForMeFilterOn: boolean;
 }> = ({ templatesToShowCheckbox, search, startDateInput, endDateInput, statusFilter, isWaitingForMeFilterOn }) => {

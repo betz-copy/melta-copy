@@ -1,13 +1,13 @@
 import { Grid } from '@mui/material';
-import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IEntityWithDirectConnections } from '@packages/entity';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { ISemanticSearchResult } from '@packages/semantic-search';
 import i18next from 'i18next';
 import { forwardRef, useImperativeHandle, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
+import { IChildTemplateMap, IEntityTemplateMap, ITemplate } from '../../interfaces/template';
 import EntityCard from '../../pages/GlobalSearch/components/entityCard';
 import { getEntitiesWithDirectConnections } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
@@ -28,7 +28,7 @@ export interface CardsViewRef {
 export interface CardsViewProps {
     templateIds: string[];
     searchInput: string;
-    templates: (IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated)[];
+    templates: ITemplate[];
 }
 
 const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searchInput, templates }, ref) => {
@@ -139,8 +139,8 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                             const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 
                             const entityTemplate = entityTemplates?.get(entity.templateId);
-                            const childEntityTemplate = childTemplateId ? childTemplates?.get(childTemplateId) : undefined;
-                            const template = (childEntityTemplate ?? entityTemplate) as IMongoEntityTemplateWithConstraintsPopulated;
+                            const childEntityTemplate = childTemplates?.get(childTemplateId ?? '');
+                            const template = childEntityTemplate ?? (entityTemplate as IMongoEntityTemplateWithConstraintsPopulated);
 
                             return (
                                 <EntityCard

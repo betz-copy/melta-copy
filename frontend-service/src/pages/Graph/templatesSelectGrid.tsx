@@ -34,11 +34,7 @@ type ISplitTree = {
 export const getCategoriesSelectCheckboxGroupProps = (
     categories: IMongoCategory[] | undefined,
 ): SelectCheckboxProps<IMongoEntityTemplateWithConstraintsPopulated, IMongoCategory>['groupsProps'] => {
-    if (!categories) {
-        return {
-            useGroups: false,
-        };
-    }
+    if (!categories) return { useGroups: false };
 
     return {
         useGroups: true,

@@ -1,4 +1,4 @@
-import { ActionTypes } from '@packages/rule-breach';
+import { ActionTypes } from '@packages/action';
 import { WorkspaceTypes } from '@packages/workspace';
 import { environment } from '../globals';
 import { muiDatePickersLocaleText } from '../utils/datePickers';

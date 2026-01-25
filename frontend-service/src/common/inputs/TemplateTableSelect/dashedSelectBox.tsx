@@ -1,11 +1,11 @@
 import { Grid } from '@mui/material';
-import { IChildTemplateMap } from '@packages/child-template';
 import { IEntity } from '@packages/entity';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { PermissionScope } from '@packages/permission';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
+import { IChildTemplateMap, IEntityTemplateMap } from '../../../interfaces/template';
 import { useUserStore } from '../../../stores/user';
 import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
 import { AddIconWithText } from '../../AddIconWithText';
@@ -35,6 +35,7 @@ const DashedSelectBox: React.FC<{
 
     const isChildTemplate = entityTemplate ? !entityTemplates.get(entityTemplate._id) : false;
     const childTemplatesOfParent = childTemplates.values().filter(({ parentTemplate: { _id } }) => entityTemplate?._id === _id);
+
     const userHasPermissions = !entityTemplate
         ? undefined
         : isChildTemplate

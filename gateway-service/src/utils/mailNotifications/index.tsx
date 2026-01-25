@@ -1,3 +1,11 @@
+import {
+    ActionTypes,
+    ICreateOrDuplicateEntityMetadataPopulated,
+    ICreateRelationshipMetadataPopulated,
+    IDeleteRelationshipMetadataPopulated,
+    IUpdateEntityMetadataPopulated,
+    IUpdateEntityStatusMetadataPopulated,
+} from '@packages/action';
 import { IEntity } from '@packages/entity';
 import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import {
@@ -12,18 +20,7 @@ import {
 } from '@packages/notification';
 import { IMongoStepTemplate } from '@packages/process';
 import { IRule, IRuleMail } from '@packages/rule';
-import {
-    ActionTypes,
-    ICreateOrDuplicateEntityMetadataPopulated,
-    ICreateRelationshipMetadataPopulated,
-    IDeleteRelationshipMetadataPopulated,
-    IRuleBreachAlertPopulated,
-    IRuleBreachRequestPopulated,
-    IUpdateEntityMetadataPopulated,
-    IUpdateEntityStatusMetadataPopulated,
-    RuleBreachRequestStatus,
-} from '@packages/rule-breach';
-
+import { IRuleBreachAlertPopulated, IRuleBreachRequestPopulated, RuleBreachRequestStatus } from '@packages/rule-breach';
 import { renderToString } from 'react-dom/server';
 import config from '../../config';
 import WorkspaceManager from '../../express/workspaces/manager';

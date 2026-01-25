@@ -1,4 +1,4 @@
-import { ActionTypes, IAction } from '@packages/rule-breach';
+import { ActionTypes, IAction } from '@packages/action';
 import * as joi from 'joi';
 import {
     createEntityMetadataSchema,

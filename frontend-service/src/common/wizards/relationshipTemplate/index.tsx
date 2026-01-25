@@ -5,6 +5,7 @@ import i18next from 'i18next';
 import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import { emptyCategory } from '../../../interfaces/template';
 import {
     createRelationshipTemplateRequest,
     relationshipTemplateFormToRelationshipTemplateObject,
@@ -37,16 +38,7 @@ export const defaultInitialValues: RelationshipTemplateWizardValues = {
             required: [],
             hide: [],
         },
-        category: {
-            _id: '',
-            displayName: '',
-            name: '',
-            color: '',
-            templatesOrder: [],
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            iconFileId: null,
-        },
+        category: emptyCategory,
         propertiesOrder: [],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: [],
@@ -61,16 +53,7 @@ export const defaultInitialValues: RelationshipTemplateWizardValues = {
         displayName: '',
         name: '',
         properties: { type: 'object', properties: {}, required: [], hide: [] },
-        category: {
-            _id: '',
-            displayName: '',
-            name: '',
-            color: '',
-            templatesOrder: [],
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            iconFileId: null,
-        },
+        category: emptyCategory,
         propertiesOrder: [],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: [],

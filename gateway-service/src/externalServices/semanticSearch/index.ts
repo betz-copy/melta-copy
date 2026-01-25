@@ -4,9 +4,7 @@ import { logger } from '@packages/utils';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 
-const {
-    semanticSearchService: { url, searchRoute, requestTimeout, baseRoute, rerankRoute },
-} = config;
+const { url, searchRoute, requestTimeout, baseRoute, rerankRoute } = config.semanticSearchService;
 
 export type ISemanticSearchBatchBody = Omit<ISearchBatchBody, 'templates' | 'sort' | 'skip' | 'limit'> & {
     templates: string[];

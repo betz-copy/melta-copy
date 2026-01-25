@@ -1,7 +1,7 @@
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
 import { Divider, IconButton, Typography } from '@mui/material';
 import { IEntity } from '@packages/entity';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IPrintSection } from '@packages/printing-template';
 import { IGetUnits } from '@packages/unit';
 import _ from 'lodash';
@@ -9,6 +9,7 @@ import React, { CSSProperties, JSX, useState } from 'react';
 import { pdfjs } from 'react-pdf';
 import { useQueryClient } from 'react-query';
 import { environment } from '../globals';
+import { IEntityTemplateMap } from '../interfaces/template';
 import { useDarkModeStore } from '../stores/darkMode';
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
 import { formatToString, getPropertyColor, getUserAvatar } from '../utils/entityProperties';

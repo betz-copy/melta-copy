@@ -2,15 +2,15 @@ import { Autocomplete, TextField } from '@mui/material';
 import { ByCurrentDefaultValue } from '@packages/child-template';
 import { IEntitySingleProperty } from '@packages/entity-template';
 import {
-    basicFilterOperationTypes,
+    BasicFilterOperationTypes,
     FilterTypes,
     IAgGridDateFilter,
     IAgGridNumberFilter,
     IAgGridSetFilter,
     IAgGridTextFilter,
     isRelativeDateFilter,
-    numberFilterOperationTypes,
-    textFilterOperationTypes,
+    NumberFilterOperationTypes,
+    TextFilterOperationTypes,
 } from '@packages/rule-breach';
 import { IGetUnits } from '@packages/unit';
 import { IUser } from '@packages/user';
@@ -36,11 +36,11 @@ const {
 } = environment;
 
 export const initializedFilterField: Record<string, IAgGridFilter> = {
-    'date-time': { filterType: FilterTypes.date, type: basicFilterOperationTypes.equals, dateFrom: null, dateTo: null },
-    date: { filterType: FilterTypes.date, type: basicFilterOperationTypes.equals, dateFrom: null, dateTo: null },
-    number: { filterType: FilterTypes.number, type: basicFilterOperationTypes.equals },
-    string: { filterType: FilterTypes.text, type: textFilterOperationTypes.contains },
-    boolean: { filterType: FilterTypes.text, type: basicFilterOperationTypes.equals },
+    'date-time': { filterType: FilterTypes.date, type: BasicFilterOperationTypes.equals, dateFrom: null, dateTo: null },
+    date: { filterType: FilterTypes.date, type: BasicFilterOperationTypes.equals, dateFrom: null, dateTo: null },
+    number: { filterType: FilterTypes.number, type: BasicFilterOperationTypes.equals },
+    string: { filterType: FilterTypes.text, type: TextFilterOperationTypes.contains },
+    boolean: { filterType: FilterTypes.text, type: BasicFilterOperationTypes.equals },
     array: { filterType: FilterTypes.set, values: [] },
 };
 
@@ -51,14 +51,14 @@ export const isValidAGGridFilter = (filter: IAgGridFilter | undefined): boolean 
         case FilterTypes.text:
             return filter.filter !== undefined && filter.filter !== '';
         case FilterTypes.number:
-            return filter.filter !== undefined || (filter.type === numberFilterOperationTypes.inRange && filter.filterTo !== undefined);
+            return filter.filter !== undefined || (filter.type === NumberFilterOperationTypes.inRange && filter.filterTo !== undefined);
         case FilterTypes.date: {
             if (!filter.dateFrom) return false;
             if (isRelativeDateFilter(filter.type) || filter.dateFrom === ByCurrentDefaultValue.byCurrentDate) return true;
 
             const isDateFromValid = isValidDate(parse(filter.dateFrom, loggingDate, new Date()));
 
-            return filter.type === numberFilterOperationTypes.inRange ? isDateFromValid && filter.dateTo !== null : isDateFromValid;
+            return filter.type === NumberFilterOperationTypes.inRange ? isDateFromValid && filter.dateTo !== null : isDateFromValid;
         }
         case FilterTypes.set:
             return Array.isArray(filter.values) && !!filter.values.length;
@@ -147,7 +147,7 @@ const handleTypedFilterTypeChange = (
             ...field,
             type: newType,
             ...(filterType === FilterTypes.date
-                ? { dateTo: newType === numberFilterOperationTypes.inRange ? (field as IAgGridDateFilter).dateTo : null }
+                ? { dateTo: newType === NumberFilterOperationTypes.inRange ? (field as IAgGridDateFilter).dateTo : null }
                 : {}),
         } as Partial<IAgGridTextFilter | IAgGridNumberFilter | IAgGridDateFilter>,
         onChange,

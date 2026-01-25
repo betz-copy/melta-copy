@@ -1,14 +1,15 @@
 import { Edit, SubdirectoryArrowLeft } from '@mui/icons-material';
 import { Grid, IconButton, Skeleton, useTheme } from '@mui/material';
 import { IMongoCategory } from '@packages/category';
-import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated, TemplateItem } from '@packages/child-template';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoChildTemplateWithConstraintsPopulated, TemplateItem } from '@packages/child-template';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { PermissionScope } from '@packages/permission';
 import i18next from 'i18next';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Draggable, Droppable } from 'react-beautiful-dnd';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { IMutationWithPayload } from '../../../common/dialogs/ChildTemplateDialog';
+import { IChildTemplateMap, IEntityTemplateMap } from '../../../interfaces/template';
 import { updateCategoryRequest } from '../../../services/templates/categoriesService';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';

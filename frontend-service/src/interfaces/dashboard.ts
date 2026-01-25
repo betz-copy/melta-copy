@@ -1,7 +1,6 @@
 import { IChart, IMongoChart } from '@packages/chart';
 import { DashboardItemType, TableMetaData } from '@packages/dashboard';
 import { ISearchFilter } from '@packages/entity';
-import { IFrame } from '@packages/iframe';
 import { FormikProps } from 'formik';
 import { JSX } from 'react';
 import { StepType } from '../common/wizards';
@@ -39,4 +38,3 @@ export enum ViewMode {
 export type TabStepComponent<T extends object> = Omit<StepType<T>, 'component'> & {
     component: (formikProps: FormikProps<T>) => JSX.Element;
 };
-export type { IFrame };

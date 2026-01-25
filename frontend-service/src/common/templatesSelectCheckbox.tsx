@@ -1,12 +1,11 @@
 import { IMongoCategory } from '@packages/category';
-import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React, { Dispatch } from 'react';
+import { ITemplate } from '../interfaces/template';
 import { groupTemplatesByCategory } from '../utils/hooks/useTreeUtils';
 import { SelectCheckbox } from './SelectCheckBox';
 
-type TemplatesSelectCheckboxProps<T extends IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated> = {
+type TemplatesSelectCheckboxProps<T extends ITemplate> = {
     title: string;
     templates: T[];
     selectedTemplates: T[];
@@ -19,7 +18,7 @@ type TemplatesSelectCheckboxProps<T extends IMongoEntityTemplateWithConstraintsP
     overrideSx?: object;
 };
 
-const TemplatesSelectCheckbox = <T extends IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated>({
+const TemplatesSelectCheckbox = <T extends ITemplate>({
     title,
     templates,
     selectedTemplates,

@@ -1,4 +1,5 @@
-import { ActionTypes, IAction, IBrokenRule, ICreateEntityMetadata, IUpdateEntityMetadata } from '@packages/rule-breach';
+import { ActionTypes, IAction, ICreateEntityMetadata, IUpdateEntityMetadata } from '@packages/action';
+import { IBrokenRule } from '@packages/rule-breach';
 import { environment } from '../globals';
 
 const { entityId: newEntityId } = environment.loadExcel;

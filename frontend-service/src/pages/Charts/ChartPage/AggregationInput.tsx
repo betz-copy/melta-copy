@@ -1,6 +1,6 @@
 import { Grid, Typography } from '@mui/material';
 import { IAggregation, IAggregationType, IAxisField, OptionsType } from '@packages/chart';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { FormikProps, getIn } from 'formik';
 import i18next from 'i18next';
 import { pickBy } from 'lodash';
@@ -9,6 +9,7 @@ import { useQueryClient } from 'react-query';
 import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
 import { ViewModeTextField } from '../../../common/inputs/ViewModeTextField';
 import { ChartForm } from '../../../interfaces/dashboard';
+import { IEntityTemplateMap } from '../../../interfaces/template';
 import { filteredMap } from '../../../utils/filteredMap';
 
 export const isAggregation = (field: IAxisField): field is IAggregation => typeof field !== 'string';

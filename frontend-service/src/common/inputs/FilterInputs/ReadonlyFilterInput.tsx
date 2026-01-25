@@ -1,8 +1,8 @@
 import { Grid } from '@mui/material';
-import { IGraphFilterBody } from '@packages/entity';
 import { isRelativeDateFilter } from '@packages/rule-breach';
 import i18next from 'i18next';
 import React from 'react';
+import { IGraphFilterBody } from '../../../interfaces/graphFilter';
 import { ViewModeTextField } from '../ViewModeTextField';
 
 export const getFilterFieldReadonly = (filter: IGraphFilterBody['filterField'], fieldTemplateType: string) => {

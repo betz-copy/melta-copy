@@ -5,10 +5,11 @@ import React from 'react';
 import { environment } from '../../../../globals';
 import { NotificationColor } from '../../../notificationColor';
 
+const { notificationsMoreData } = environment.notifications;
+
 export const DeleteProcessNotification: React.FC<{ notificationMetadata: IDeleteProcessNotificationMetadataPopulated }> = ({
     notificationMetadata: { processName },
 }) => {
-    const { notificationsMoreData } = environment.notifications;
     const color = notificationsMoreData.general.find((notificationData) => notificationData.type === NotificationType.deleteProcess)?.color;
 
     return (

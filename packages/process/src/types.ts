@@ -115,7 +115,7 @@ export type StepsObjectPopulated = Record<string, IUser[]>;
 
 export interface IStepInstance {
     templateId: string;
-    properties?: Record<string, any>;
+    properties?: Record<string, IPropertyValue>;
     comments?: string;
     status: Status;
     reviewers: string[];

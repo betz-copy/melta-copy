@@ -1,8 +1,7 @@
 import { Box, Grid } from '@mui/material';
-import { IChildTemplateMap } from '@packages/child-template';
-import { IEntityTemplateMap } from '@packages/entity-template';
 import React, { useRef } from 'react';
 import { useQueryClient } from 'react-query';
+import { IChildTemplateMap, IEntityTemplateMap } from '../../../interfaces/template';
 import { useClientSideUserStore } from '../../../stores/clientSideUser';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { getFirstXPropsKeys } from '../../../utils/templates';

@@ -1,5 +1,5 @@
 import { IEntityWithDirectConnections, IFilterOfTemplate, ISearchBatchBody } from '@packages/entity';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IGantt, IGanttGroupBy, IGanttItem } from '@packages/gantt';
 import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import i18next from 'i18next';
@@ -8,6 +8,7 @@ import * as Yup from 'yup';
 import { environment } from '../globals';
 import { IConnectedEntityTemplateDetails, IGanttHeatmapBox } from '../interfaces/gantts';
 import { IScheduleComponentData, IScheduleComponentResourceData } from '../interfaces/syncfusion';
+import { IEntityTemplateMap } from '../interfaces/template';
 import { getEntitiesWithDirectConnections } from '../services/entitiesService';
 import { getEntityTemplateColor } from './colors';
 import { dateBetween, getDayEnd, getDayStart } from './date';
@@ -162,7 +163,6 @@ export const getScheduleComponentGroupByEntityResourceData = async (groupBy: IGa
         templates: {
             [groupBy.entityTemplateId]: {
                 filter: { $and: { disabled: { $eq: false } } },
-                showRelationships: false,
             },
         },
     });

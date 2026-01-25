@@ -1,7 +1,7 @@
 import { CircularProgress, Grid, Typography } from '@mui/material';
 import { IFilter, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IEntity } from '@packages/entity';
-import { IEntitySingleProperty, IEntityTemplateMap } from '@packages/entity-template';
+import { IEntitySingleProperty } from '@packages/entity-template';
 import i18next from 'i18next';
 import { forwardRef, useImperativeHandle, useRef } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
@@ -9,6 +9,7 @@ import { IDefaultValue } from '../../../common/dialogs/ChildTemplateDialog/AddFi
 import TemplateTable, { TemplateTableRef } from '../../../common/EntitiesPage/TemplateTable';
 import { TemplateTablesViewResultsRef } from '../../../common/EntitiesPage/TemplateTablesView';
 import { TablePageType } from '../../../common/EntitiesTableOfTemplate';
+import { IEntityTemplateMap } from '../../../interfaces/template';
 import { countEntitiesOfTemplatesByUserEntityId } from '../../../services/clientSideService';
 
 interface IUserEntityTablesProps {

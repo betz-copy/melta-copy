@@ -1,54 +1,38 @@
 import { Grid, styled, Typography, useTheme } from '@mui/material';
 import { ActionsLog, IUpdatedFields } from '@packages/activity-log';
 import { IPropertyValue } from '@packages/entity';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IMongoStepTemplatePopulated, IProcessDetails, IProcessSingleProperty } from '@packages/process';
 import { IRelationshipTemplateMap } from '@packages/relationship-template';
+import { CoordinateSystem } from '@packages/utils';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
-import { CoordinateSystem, LocationData } from '../../../../common/inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
 import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
 import { NotificationColor } from '../../../../common/notificationColor';
 import RelationshipReferenceView from '../../../../common/RelationshipReferenceView';
 import UserAvatar from '../../../../common/UserAvatar';
 import { StatusDisplay } from '../../../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
+import { activityLogConfigMap } from '../../../../interfaces/activityLog';
+import { LocationData } from '../../../../interfaces/location';
+import { IEntityTemplateMap } from '../../../../interfaces/template';
 import { IActivityLog, IUpdateProcessStepMetadata } from '../../../../services/activityLogService';
 import { getFilesName } from '../../../../utils/getFileName';
 import { containsHTMLTags, getFirstLine, getNumLines } from '../../../../utils/HtmlTagsStringValue';
 import { locationConverterToString } from '../../../../utils/map/convert';
 
-const logColors = {
-    ACTIVATE_ENTITY: '#C5FF7B',
-    DISABLE_ENTITY: '#B7B8B9',
-    CREATE_ENTITY: '#84FF90',
-    DUPLICATE_ENTITY: '#ffc4e9',
-    CREATE_PROCESS: '#84FF90',
-    UPDATE_FIELDS: '#8CCFFF',
-    DELETE_RELATIONSHIP: '#FF7979',
-    CREATE_RELATIONSHIP: '#FFD18C',
+const TitleWithIcon = (action: ActionsLog) => {
+    const config = activityLogConfigMap[action];
+    return (
+        <Grid container marginBottom="10px">
+            <NotificationColor color={config.color} />
+            <Typography variant="subtitle1" color="primary" fontWeight="400" fontSize="15px" paddingLeft="10px">
+                {config.title}
+            </Typography>
+        </Grid>
+    );
 };
-
-const logTitles = {
-    ACTIVATE_ENTITY: i18next.t('entityPage.activityLog.titles.enableEntity'),
-    DISABLE_ENTITY: i18next.t('entityPage.activityLog.titles.disableEntity'),
-    CREATE_ENTITY: i18next.t('entityPage.activityLog.titles.createEntity'),
-    DUPLICATE_ENTITY: i18next.t('entityPage.activityLog.titles.duplicateEntity'),
-    CREATE_PROCESS: i18next.t('entityPage.activityLog.titles.createProcess'),
-    UPDATE_FIELDS: i18next.t('entityPage.activityLog.titles.updateFields'),
-    DELETE_RELATIONSHIP: i18next.t('entityPage.activityLog.titles.deleteRelationship'),
-    CREATE_RELATIONSHIP: i18next.t('entityPage.activityLog.titles.createRelationship'),
-};
-
-const TitleWithIcon = (action: string) => (
-    <Grid container marginBottom="10px">
-        <NotificationColor color={logColors[action]} />
-        <Typography variant="subtitle1" color="primary" fontWeight="400" fontSize="15px" paddingLeft="10px">
-            {logTitles[action]}
-        </Typography>
-    </Grid>
-);
 
 const StyledTypography = styled(Typography)(({ theme }) => ({
     fontFamily: 'Rubik',
@@ -60,17 +44,12 @@ const StyledTypography = styled(Typography)(({ theme }) => ({
 const EmptyMetadataActionText: React.FC<{
     action: ActionsLog;
 }> = ({ action }) => {
-    const logTexts = {
-        [ActionsLog.ACTIVATE_ENTITY]: i18next.t('entityPage.activityLog.activateEntity'),
-        [ActionsLog.DISABLE_ENTITY]: i18next.t('entityPage.activityLog.disableEntity'),
-        [ActionsLog.CREATE_ENTITY]: i18next.t('entityPage.activityLog.createEntity'),
-        [ActionsLog.CREATE_PROCESS]: i18next.t('entityPage.activityLog.createProcess'),
-    };
+    const config = activityLogConfigMap[action];
 
     return (
         <Grid minWidth="190px">
             {TitleWithIcon(action)}
-            <StyledTypography variant="body2">{logTexts[action as ActionsLog]}</StyledTypography>
+            <StyledTypography variant="body2">{config.text}</StyledTypography>
         </Grid>
     );
 };

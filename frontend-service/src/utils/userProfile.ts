@@ -1,5 +1,6 @@
 import { IUser } from '@packages/user';
 import { environment } from '../globals';
+import { InputPickerType } from '../interfaces/inputs';
 
 const { kartoffelProfile } = environment.users;
 
@@ -7,10 +8,10 @@ export const isProfileFile = (profilePath?: string): boolean => {
     return !!profilePath && profilePath !== '' && profilePath !== kartoffelProfile;
 };
 
-export const defaultInputType = (profilePath?: string) => {
-    if (!profilePath) return 'chooseAvatar';
-    if (profilePath === kartoffelProfile) return kartoffelProfile;
-    return 'chooseFile';
+export const defaultInputType = (profilePath?: string): InputPickerType => {
+    if (!profilePath) return InputPickerType.ChooseAvatar;
+    if (profilePath === kartoffelProfile) return InputPickerType.KartoffelProfile;
+    return InputPickerType.ChooseFile;
 };
 
 export const getNameInitials = (user: Partial<IUser>): string => {

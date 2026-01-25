@@ -3,8 +3,7 @@ import { AgGridReact } from '@ag-grid-community/react';
 import { ArrowBack as ArrowBackIcon, ArrowForward as ArrowForwardIcon } from '@mui/icons-material';
 import { Avatar, Grid } from '@mui/material';
 import { isChildTemplate } from '@packages/child-template';
-import { IEntity, IEntityExpanded } from '@packages/entity';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React, { memo, useMemo, useRef } from 'react';
 import { useQueryClient } from 'react-query';
@@ -13,37 +12,12 @@ import AgGridTable from '../../common/agGridTable';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 import { environment } from '../../globals';
+import { Direction, IEntityTemplateMap, IWalletTransfers, WalletTransferData } from '../../interfaces/template';
 import { useUserStore } from '../../stores/user';
 import { Value } from '../../utils/agGrid/Value';
 import { defaultColDef } from '../PermissionsManagement/components/table';
-import { INestedRelationshipTemplates } from '.';
 
 const { infiniteScrollPageCount } = environment.permission;
-
-enum Direction {
-    to = 'to',
-    from = 'from',
-    initial = 'initial',
-}
-
-export interface WalletTransferData {
-    template: IMongoEntityTemplateWithConstraintsPopulated;
-    entity: IEntity;
-    direction: Direction;
-    balanceAtThatTime?: number;
-    hasPermissionToRelatedTemplate?: boolean;
-}
-
-interface IWalletTransfers {
-    templateId: string;
-    expandedEntity: IEntityExpanded;
-    connectionsTemplates?: INestedRelationshipTemplates[];
-    getButtonStateByRelatedTemplate: (relatedTemplate: IMongoEntityTemplateWithConstraintsPopulated) => {
-        isEditButtonsDisabled: boolean;
-        disabledButtonText: string;
-        hasPermissionToRelatedTemplate: boolean;
-    };
-}
 
 export type WalletTransferTableRef<TData = WalletTransferData> = {
     refreshServerSide: () => void;
@@ -72,8 +46,7 @@ export const WalletTransfers = ({ templateId, connectionsTemplates, expandedEnti
         .map(({ relationshipTemplate }) => relationshipTemplate);
 
     const isWalletTemplate = (entityTemplate: IMongoEntityTemplateWithConstraintsPopulated) =>
-        !!Object.values(entityTemplate.properties.properties).find((property) => !!(property as IEntitySingleProperty).accountBalance) &&
-        entityTemplate._id === templateId;
+        !!Object.values(entityTemplate.properties.properties).find((property) => !!property.accountBalance) && entityTemplate._id === templateId;
 
     const orderedConnectionEntities: WalletTransferData[] = expandedEntity.connections
         .map((connection) => {

@@ -10,6 +10,7 @@ import React, { ReactElement, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
 import { environment } from '../../globals';
+import { PermissionDialogMode } from '../../interfaces/inputs';
 import { MeltaUpdates } from '../../MeltaUpdates';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { useDarkModeStore } from '../../stores/darkMode';
@@ -22,7 +23,7 @@ import RoleDialog from './RoleDialog';
 const PermissionsDialog: React.FC<{
     isOpen: boolean;
     handleClose: () => void;
-    mode: 'create' | 'edit' | 'view';
+    mode: PermissionDialogMode;
     roleOrUser?: PermissionData;
     onSuccess?: (roleOrUser?: PermissionData) => void;
     permissionType: RelatedPermission;
@@ -32,7 +33,7 @@ const PermissionsDialog: React.FC<{
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
-    const initialTab = mode === 'view' ? 'myAccount' : 'myPermissions';
+    const initialTab = mode === PermissionDialogMode.View ? 'myAccount' : 'myPermissions';
     const [tabValue, setTabValue] = useState(initialTab);
     const [isPreferencesUpdated, setIsPreferencesUpdated] = useState<boolean>(false);
     const [isUnsavedChangesDialogOpen, setIsUnsavedChangesDialogOpen] = useState<boolean>(false);
@@ -42,7 +43,7 @@ const PermissionsDialog: React.FC<{
     const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
 
     const tabsComponentsMapping: Record<string, ReactElement> = {
-        ...(mode === 'view' && {
+        ...(mode === PermissionDialogMode.View && {
             myAccount: (
                 <MyAccount
                     handleClose={handleClose}
@@ -72,7 +73,7 @@ const PermissionsDialog: React.FC<{
             <IconButton onClick={handleClose} sx={{ position: 'absolute', right: 8, top: 8, zIndex: 99 }}>
                 <CloseIcon fontSize="medium" />
             </IconButton>
-            {mode !== 'view' ? (
+            {mode !== PermissionDialogMode.View ? (
                 permissionType === RelatedPermission.User ? (
                     <MyPermissions handleClose={handleClose} mode={mode} existingUser={roleOrUser as IUser} onSuccess={onSuccess} />
                 ) : (
@@ -123,7 +124,7 @@ const PermissionsDialog: React.FC<{
                     </TabContext>
 
                     <Grid display="flex" sx={{ position: 'absolute', bottom: 15, left: 15 }}>
-                        {mode === 'view' && (
+                        {mode === PermissionDialogMode.View && (
                             <Button
                                 onClick={() => {
                                     handleClose();

@@ -4,12 +4,10 @@ import React from 'react';
 import { useLocation } from 'wouter';
 import { environment } from '../../globals';
 
+const { heatmapModeKey } = environment.ganttSettings.searchParams;
 interface IGanttCardProps {
     gantt: IMongoGantt;
 }
-const {
-    searchParams: { heatmapModeKey },
-} = environment.ganttSettings;
 
 export const GanttsCard: React.FC<IGanttCardProps> = ({ gantt }) => {
     const [_, navigate] = useLocation();

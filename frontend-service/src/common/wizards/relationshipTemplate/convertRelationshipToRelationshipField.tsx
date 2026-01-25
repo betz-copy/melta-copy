@@ -1,16 +1,12 @@
 import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, TextField } from '@mui/material';
-import {
-    IEntitySingleProperty,
-    IEntityTemplateMap,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IRelationshipReference,
-} from '@packages/entity-template';
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated, IRelationshipReference } from '@packages/entity-template';
 import { IMongoRelationshipTemplate } from '@packages/relationship-template';
 import { Form, Formik } from 'formik';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import * as Yup from 'yup';
+import { IEntityTemplateMap } from '../../../interfaces/template';
 import { variableNameValidation } from '../../../utils/validation';
 import BlueTitle from '../../MeltaDesigns/BlueTitle';
 import RelationshipReferenceField from '../entityTemplate/RelationshipReference/RelationshipReferenceField';

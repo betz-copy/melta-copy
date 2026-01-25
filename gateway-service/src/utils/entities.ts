@@ -1,6 +1,6 @@
 import { IMongoChildTemplatePopulated } from '@packages/child-template';
-import { IEntityWithIgnoredRules } from '@packages/entity';
 import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { IEntityWithIgnoredRules } from '@packages/rule-breach';
 import { IKartoffelUser } from '@packages/user';
 import UsersManager from '../express/users/manager';
 

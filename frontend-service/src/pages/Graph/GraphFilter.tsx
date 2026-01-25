@@ -1,8 +1,7 @@
 import { Clear, Close, KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import { Autocomplete, Box, Divider, Grid, IconButton, TextField, Typography, useTheme } from '@mui/material';
 import { ByCurrentDefaultValue } from '@packages/child-template';
-import { IGraphFilterBody } from '@packages/entity';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import {
     FilterTypes,
     IAgGridDateFilter,
@@ -10,8 +9,8 @@ import {
     IAgGridSetFilter,
     IAgGridTextFilter,
     isRelativeDateFilter,
-    numberFilterOperationTypes,
-    relativeDateFilters,
+    NumberFilterOperationTypes,
+    RelativeDateFilters,
 } from '@packages/rule-breach';
 import { IGetUnits } from '@packages/unit';
 import { IUser } from '@packages/user';
@@ -30,9 +29,11 @@ import { ReadOnlyFilterInput } from '../../common/inputs/FilterInputs/ReadonlyFi
 import { SelectFilterInput } from '../../common/inputs/FilterInputs/SelectFilterInput';
 import { StyledFilterInput } from '../../common/inputs/FilterInputs/StyledFilterInput';
 import { TextFilterInput } from '../../common/inputs/FilterInputs/TextFilterInput';
+import { IGraphFilterBody } from '../../interfaces/graphFilter';
+import { IEntityTemplateMap } from '../../interfaces/template';
 import { useDarkModeStore } from '../../stores/darkMode';
 
-type IFilterDateType = Date | ByCurrentDefaultValue.byCurrentDate | relativeDateFilters | null;
+type IFilterDateType = Date | ByCurrentDefaultValue.byCurrentDate | RelativeDateFilters | null;
 
 interface GraphFilterProps {
     templateOptions: IMongoEntityTemplateWithConstraintsPopulated[];
@@ -161,10 +162,10 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                 isStartDate
                     ? filterField?.filterType === FilterTypes.date &&
                           newValue &&
-                          (filterField.type !== numberFilterOperationTypes.inRange || filterField.dateTo)
+                          (filterField.type !== NumberFilterOperationTypes.inRange || filterField.dateTo)
                     : newValue &&
                           filterField?.filterType === FilterTypes.date &&
-                          filterField.type === numberFilterOperationTypes.inRange &&
+                          filterField.type === NumberFilterOperationTypes.inRange &&
                           filterField.dateFrom,
             ),
         );

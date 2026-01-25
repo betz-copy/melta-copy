@@ -1,4 +1,5 @@
 import { promises as fsp } from 'node:fs';
+import { ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata, IUpdateEntityMetadata } from '@packages/action';
 import { IChartBody } from '@packages/chart';
 import { EntityTemplateType, IMongoChildTemplatePopulated, TemplateItem } from '@packages/child-template';
 import { getDashboardFilters } from '@packages/dashboard';
@@ -7,11 +8,11 @@ import {
     FilterLogicalOperator,
     getFilterModal,
     IBulkOfActions,
+    IBulkRuleMail,
     ICountSearchResult,
     IDeleteEntityBody,
     IEntity,
     IEntityWithDirectRelationships,
-    IEntityWithIgnoredRules,
     IExportEntitiesBody,
     IMultipleSelect,
     IPropertyValue,
@@ -28,26 +29,17 @@ import {
 } from '@packages/entity';
 import { IEntitySingleProperty, IEntityTemplatePopulated, IFullMongoEntityTemplate, IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import { IRelationship } from '@packages/relationship';
-import { IBulkRuleMail, IRuleMail } from '@packages/rule';
-import {
-    ActionTypes,
-    IAction,
-    IBrokenRule,
-    IBrokenRuleEntity,
-    ICreateEntityMetadata,
-    ICreateRelationshipMetadata,
-    IFailedEntity,
-    IUpdateEntityMetadata,
-} from '@packages/rule-breach';
+import { IRuleMail } from '@packages/rule';
+import { IBrokenRule, IBrokenRuleEntity, IEntityWithIgnoredRules, IFailedEntity } from '@packages/rule-breach';
 import { ISemanticSearchResult } from '@packages/semantic-search';
 import { BadRequestError, logger, NotFoundError } from '@packages/utils';
 import axios from 'axios';
 import { stream } from 'exceljs';
-import FilterValidation from 'gateway-service/src/error';
 import { keyBy, mapValues, omit } from 'lodash';
 import { menash } from 'menashmq';
 import pMap from 'p-map';
 import config from '../../config';
+import FilterValidation from '../../error';
 import ChartService from '../../externalServices/dashboardService/chartService';
 import DashboardItemService from '../../externalServices/dashboardService/dashboardItemService';
 import InstancesService from '../../externalServices/instanceService';

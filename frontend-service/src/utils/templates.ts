@@ -1,9 +1,9 @@
 import { IMongoCategory } from '@packages/category';
-import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IEntityExpanded, IPropertyValue } from '@packages/entity';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '@packages/relationship-template';
-import { INestedRelationshipTemplates } from '../pages/Entity';
+import { IChildTemplateMap, IEntityTemplateMap, INestedRelationshipTemplates, ITemplate } from '../interfaces/template';
 
 export const templatesCompareFunc = (
     templateA: IMongoEntityTemplateWithConstraintsPopulated,
@@ -106,7 +106,7 @@ export const getFullRelationshipTemplates = (
 
         if (isSelfProperty || !connection) continue;
 
-        const hasInstances = expandedEntity?.connections.some(({ relationship: { templateId } }) => templateId === relationshipTemplate._id) ?? false;
+        const hasInstances = expandedEntity?.connections.some(({ relationship: { templateId } }) => templateId === relationshipTemplate._id);
 
         if (filterOnlyThoseWithInstances && !hasInstances) continue;
 
@@ -164,9 +164,7 @@ export const mapCategories = (categories: IMongoCategory[], order: string[]): Ma
     return map;
 };
 
-export const addDefaultFieldsToTemplate = <T extends IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated>(
-    entityTemplate: T,
-): T => {
+export const addDefaultFieldsToTemplate = <T extends ITemplate>(entityTemplate: T): T => {
     return {
         ...entityTemplate,
         properties: {
@@ -196,8 +194,6 @@ export const getFirstXPropsKeys = (numOfPropsToShow: number, entityTemplate: IMo
     ];
 };
 
-export const isChildTemplate = (
-    template: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated | undefined | null,
-): template is IMongoChildTemplateWithConstraintsPopulated => {
+export const isChildTemplate = (template: ITemplate | undefined | null): template is IMongoChildTemplateWithConstraintsPopulated => {
     return typeof template === 'object' && template !== null && 'parentTemplate' in template && Boolean(template.parentTemplate);
 };

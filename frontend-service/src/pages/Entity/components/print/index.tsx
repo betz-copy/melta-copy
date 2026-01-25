@@ -10,9 +10,9 @@ import { useReactToPrint } from 'react-to-print';
 import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
 import PrintOptionsDialog, { IEntityPrint, IPrintOptions, PrintType } from '../../../../common/print/PrintOptionsDialog';
 import { IFile } from '../../../../interfaces/preview';
+import { INestedRelationshipTemplates } from '../../../../interfaces/template';
 import { getEntitiesTreeForPrint } from '../../../../services/entitiesService';
 import { lightTheme } from '../../../../theme';
-import { INestedRelationshipTemplates } from '../..';
 import { ComponentToPrint } from './ComponentToPrint';
 import './print.css';
 

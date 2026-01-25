@@ -1,5 +1,5 @@
 import { FileDetails } from '@packages/common';
-import { IMongoProcessTemplateReviewerPopulated, IProcessTemplateMap } from '@packages/process';
+import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '@packages/process';
 import { IUser } from '@packages/user';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -7,9 +7,9 @@ import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { v4 as uuid } from 'uuid';
+import { PropertyWizardType } from '../../../interfaces/template';
 import { createProcessTemplateRequest, updateProcessTemplateRequest } from '../../../services/templates/processTemplatesService';
 import { ErrorToast } from '../../ErrorToast';
-import { PropertyWizardType } from '../entityTemplate';
 import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from '../entityTemplate/CreateTemplateName'; // Import the schema
 import { StepType, Wizard, WizardBaseType } from '../index';
 import { AddDetailsFields, addDetailsFieldsSchema } from './AddDetailsFields';
@@ -29,7 +29,7 @@ export interface ProcessTemplateFormInputProperties {
 
 export type ProcessTemplatePropertyByType = { type: 'field'; data: ProcessTemplateFormInputProperties };
 
-export interface ProcessTemplateWizardValues extends Omit<IMongoProcessTemplateReviewerPopulated, 'details' | 'steps' | 'createdAt' | 'updatedAt'> {
+export interface ProcessTemplateWizardValues extends Omit<IMongoProcessTemplatePopulated, 'details' | 'steps' | 'createdAt' | 'updatedAt'> {
     detailsProperties: ProcessTemplatePropertyByType[];
     detailsAttachmentProperties: ProcessTemplatePropertyByType[];
     steps: Array<{

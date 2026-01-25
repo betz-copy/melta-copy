@@ -118,5 +118,3 @@ export interface IMongoChildTemplateWithConstraintsPopulated extends IMongoChild
     uniqueConstraints: IUniqueConstraintOfTemplate[];
     properties: IChildTemplatePopulated['properties'] & { required: string[] };
 }
-
-export type IChildTemplateMap = Map<string, IMongoChildTemplateWithConstraintsPopulated>;

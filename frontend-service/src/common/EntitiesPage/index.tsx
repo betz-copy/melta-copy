@@ -1,14 +1,13 @@
 import { Box, Grid } from '@mui/material';
 import { IMongoCategory } from '@packages/category';
-import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IEntity, IExportEntitiesBody } from '@packages/entity';
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
 import { mapValues } from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import { IChildTemplateMap, ITemplate } from '../../interfaces/template';
 import { exportEntitiesRequest } from '../../services/entitiesService';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { convertToBool } from '../../utils/convertStringToBool';
@@ -20,7 +19,7 @@ import CardsView, { CardsViewRef } from './CardsView';
 import { EntitiesPageHeadline } from './Headline';
 import TemplateTablesView, { TemplateTablesViewRef } from './TemplateTablesView';
 
-type EntitiesPageProps<T extends IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated> = {
+type EntitiesPageProps<T extends ITemplate> = {
     templates: T[];
     setTemplates?: React.Dispatch<React.SetStateAction<T[]>>;
     templatesToShowCheckbox: T[];
@@ -32,7 +31,7 @@ type EntitiesPageProps<T extends IMongoEntityTemplateWithConstraintsPopulated | 
     pageTitle: string;
 };
 
-const EntitiesPage = <T extends IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated>({
+const EntitiesPage = <T extends ITemplate>({
     templates,
     setTemplates,
     categories,

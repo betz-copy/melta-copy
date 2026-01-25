@@ -1,5 +1,5 @@
 import { useTheme } from '@mui/material';
-import { ByCurrentDefaultValue, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { ByCurrentDefaultValue } from '@packages/child-template';
 import { IPropertyValue } from '@packages/entity';
 import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated, IWalletTransfer } from '@packages/entity-template';
 import { Form as JSONSchemaForm } from '@rjsf/mui';
@@ -15,6 +15,7 @@ import { environment } from '../../../globals';
 import { matchValueAgainstFilter } from '../../../utils/filters';
 import { uiSchemaUtils } from './ utils';
 import './form.css';
+import { ITemplate } from '../../../interfaces/template';
 import InputAccordion from './InputAccordion';
 import RjsfCheckboxWidget from './Widgets/RjsfCheckboxWidget';
 import RjsfCommentWidget from './Widgets/RjsfCommentWidget';
@@ -58,10 +59,7 @@ const ajvErrorsToFormikErrors = (
 };
 
 // biome-ignore lint/complexity/noBannedTypes: lol
-const convertErrorsToNestedGroups = <T extends ErrorMessage<string> | ErrorSchema<{}>>(
-    template: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
-    originalErrors: T,
-) => {
+const convertErrorsToNestedGroups = <T extends ErrorMessage<string> | ErrorSchema<{}>>(template: ITemplate, originalErrors: T) => {
     const finalErrors = { ...originalErrors };
 
     template?.fieldGroups?.forEach((fieldGroup) => {
@@ -187,10 +185,7 @@ export const ajvValidate = (
     return { ...formikErrors, ...childTemplateFilterErrors, ...walletTemplateErrors };
 };
 
-const formikErrorsToRjsfExtraErrorsRec = (
-    formikErrors: ErrorMessage<string> | string,
-    template: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
-): ErrorSchema<object> => {
+const formikErrorsToRjsfExtraErrorsRec = (formikErrors: ErrorMessage<string> | string, template: ITemplate): ErrorSchema<object> => {
     if (typeof formikErrors === 'string') return { __errors: [formikErrors] };
 
     if (Array.isArray(formikErrors)) return formikErrors.map((err) => formikErrorsToRjsfExtraErrorsRec(err, template));
@@ -206,19 +201,12 @@ const formikErrorsToRjsfExtraErrorsRec = (
     return formikErrors;
 };
 
-const formikErrorsToRjsfExtraErrors = (
-    formikErrors: ErrorMessage<string> | string,
-    template: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
-): ErrorSchema<object> => {
+const formikErrorsToRjsfExtraErrors = (formikErrors: ErrorMessage<string> | string, template: ITemplate): ErrorSchema<object> => {
     const nestedErrors = convertErrorsToNestedGroups(template, formikErrors);
     return formikErrorsToRjsfExtraErrorsRec(nestedErrors, template);
 };
 
-const mergeErrorSchemas = (
-    errors1: ErrorSchema<object>,
-    errors2: ErrorSchema<object>,
-    template: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
-): ErrorSchema<object> => {
+const mergeErrorSchemas = (errors1: ErrorSchema<object>, errors2: ErrorSchema<object>, template: ITemplate): ErrorSchema<object> => {
     const merged = { ...errors1 };
     for (const key in errors2) {
         if (Object.hasOwn(errors2, key)) {
@@ -270,7 +258,7 @@ const getComponent = (
     return getWrappedComponent;
 };
 
-type JSONSchemaFormFormikProps = {
+interface JSONSchemaFormFormikProps {
     schema: IMongoEntityTemplateWithConstraintsPopulated['properties'];
     // biome-ignore lint/suspicious/noExplicitAny: json schema formik is generic
     values: any;
@@ -291,7 +279,7 @@ type JSONSchemaFormFormikProps = {
         isFieldChecked: (fieldName: string) => boolean;
         onCheckboxChange: (fieldName: string, isChecked: boolean) => void;
     };
-};
+}
 
 export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     readonly,

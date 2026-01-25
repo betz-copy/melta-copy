@@ -1,11 +1,10 @@
-import { IChildTemplateMap } from '@packages/child-template';
 import { IEntity } from '@packages/entity';
-import { IEntityTemplateMap } from '@packages/entity-template';
 import { WidgetProps } from '@rjsf/utils';
 import { useFormikContext } from 'formik';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
+import { IChildTemplateMap, IEntityTemplateMap } from '../../../../interfaces/template';
 import { useWorkspaceStore } from '../../../../stores/workspace';
 import { EntityWizardValues } from '../../../dialogs/entity';
 import TemplateEntitiesAutocomplete from '../../TemplateEntitiesAutocomplete';

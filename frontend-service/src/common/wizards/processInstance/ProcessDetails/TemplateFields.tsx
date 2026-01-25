@@ -23,12 +23,7 @@ export const TemplateFields = ({
     return (
         values.template && (
             <Grid container flexDirection="column" width="100%" height="100%" justifyContent="space-between" paddingLeft={!viewMode ? '20px' : 0}>
-                <Grid
-                    sx={{
-                        overflowY: 'auto',
-                        width: '100%',
-                    }}
-                >
+                <Grid sx={{ overflowY: 'auto', width: '100%' }}>
                     {Object.keys(pickProcessFieldsPropertiesSchema(values.template?.details)?.properties).length !== 0 && (
                         <SchemaForm {...{ viewMode, values, errors, touched, setFieldValue, setFieldTouched, toPrint }} />
                     )}

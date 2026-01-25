@@ -1,6 +1,6 @@
 import { Grid } from '@mui/material';
+import { ActionTypes } from '@packages/action';
 import { IPropertyValue } from '@packages/entity';
-import { ActionTypes } from '@packages/rule-breach';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
 import React, { useState } from 'react';

@@ -1,8 +1,7 @@
 import { AppRegistration as AppRegistrationIcon, ArrowBack } from '@mui/icons-material';
 import { Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { ICategoryMap } from '@packages/category';
-import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated, IRelationshipReference } from '@packages/entity-template';
+import { IRelationshipReference } from '@packages/entity-template';
 import { PermissionScope } from '@packages/permission';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '@packages/relationship-template';
 import { AxiosError } from 'axios';
@@ -20,6 +19,7 @@ import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
 import { RelationshipTemplateWizard } from '../../../common/wizards/relationshipTemplate';
 import { ConvertToRelationship } from '../../../common/wizards/relationshipTemplate/convertRelationshipToRelationshipField';
 import { environment } from '../../../globals';
+import { IEntityTemplateMap, ITemplate } from '../../../interfaces/template';
 import { getRelationshipInstancesCountByTemplateIdRequest } from '../../../services/entitiesService';
 import {
     convertToRelationshipFieldRequest,
@@ -199,10 +199,8 @@ const RelationshipTemplatesRow: React.FC = () => {
     const allowedEntityTemplatesIds = allowedEntityTemplates.map((entity) => entity._id);
     const allowedRelationships = getAllAllowedRelationships(Array.from(relationshipTemplates.values()), allowedEntityTemplatesIds);
 
-    const [sourceEntityTemplatesToShow, setSourceEntityTemplatesToShow] =
-        useState<(IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated)[]>(allowedEntityTemplates);
-    const [destinationEntityTemplatesToShow, setDestinationEntityTemplatesToShow] =
-        useState<(IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated)[]>(allowedEntityTemplates);
+    const [sourceEntityTemplatesToShow, setSourceEntityTemplatesToShow] = useState<ITemplate[]>(allowedEntityTemplates);
+    const [destinationEntityTemplatesToShow, setDestinationEntityTemplatesToShow] = useState<ITemplate[]>(allowedEntityTemplates);
 
     const [searchText, setSearchText] = useState('');
 
@@ -280,7 +278,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                 );
 
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>
-                    entityTemplateMap!.set(updatedEntityTemplate._id, updatedEntityTemplate as IMongoEntityTemplateWithConstraintsPopulated),
+                    entityTemplateMap!.set(updatedEntityTemplate._id, updatedEntityTemplate as ITemplate),
                 );
 
                 toast.success(i18next.t('wizard.relationshipTemplate.convertToRelationshipFieldSuccessfully'));
@@ -299,13 +297,13 @@ const RelationshipTemplatesRow: React.FC = () => {
     const getRelationshipGroupedByEntitiesTemplate = (
         relationships: IMongoRelationshipTemplatePopulated[],
     ): {
-        entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated;
+        entityTemplate: ITemplate;
         relationships: IMongoRelationshipTemplatePopulated[];
     }[] => {
         const entitiesToGroupBy = isSrcRelationChecked ? sourceEntityTemplatesToShow : destinationEntityTemplatesToShow;
 
         const relationsGroupedByEntities: {
-            entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated;
+            entityTemplate: ITemplate;
             relationships: IMongoRelationshipTemplatePopulated[];
         }[] = [];
         entitiesToGroupBy.forEach((entityTemplate) => {
@@ -401,7 +399,7 @@ const RelationshipTemplatesRow: React.FC = () => {
 
             <Grid container gap="30px" marginTop="30px">
                 <InfiniteScroll<{
-                    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated;
+                    entityTemplate: ITemplate;
                     relationships: IMongoRelationshipTemplatePopulated[];
                 }>
                     queryKey={[

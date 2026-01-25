@@ -1,8 +1,9 @@
 import { Clear as ClearIcon, Done as DoneIcon } from '@mui/icons-material';
 import { Box, Button, Card, CardContent, CircularProgress, Divider, Grid, Typography } from '@mui/material';
+import { ActionTypes, IAction, IActionPopulated } from '@packages/action';
 import { IEntity, IEntityExpanded, IUniqueConstraint } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
-import { ActionTypes, IAction, IActionPopulated, IRuleBreach, IRuleBreachPopulated } from '@packages/rule-breach';
+import { IRuleBreach, IRuleBreachPopulated } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import { Form, Formik } from 'formik';
 import { StatusCodes } from 'http-status-codes';

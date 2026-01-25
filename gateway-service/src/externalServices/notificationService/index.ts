@@ -2,9 +2,7 @@ import { INotification } from '@packages/notification';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 
-const {
-    notificationService: { url, baseRoute, requestTimeout },
-} = config;
+const { url, baseRoute, requestTimeout } = config.notificationService;
 
 class NotificationService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {

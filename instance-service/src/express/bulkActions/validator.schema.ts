@@ -1,4 +1,4 @@
-import { ActionTypes } from '@packages/rule-breach';
+import { ActionTypes } from '@packages/action';
 import Joi from 'joi';
 import { brokenRuleSchema } from '../rules/ignoredRuleSchema';
 

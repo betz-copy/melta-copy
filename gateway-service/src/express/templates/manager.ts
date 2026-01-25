@@ -1699,10 +1699,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const allChildTemplateIds = new Set(Object.values(allChildTemplates).map((childTemplate) => childTemplate._id));
 
         for (const [categoryId, category] of Object.entries(userPermissions?.instances?.categories ?? {})) {
-            const categoryTyped = category as { scope?: PermissionScope; entityTemplates?: Record<string, unknown> };
-
-            const entityTemplateIds = Object.keys(categoryTyped?.entityTemplates ?? {});
-            if (categoryTyped.scope) {
+            const entityTemplateIds = Object.keys(category?.entityTemplates ?? {});
+            if (category.scope) {
                 const templatesInCategory = Object.values(allChildTemplates)
                     .filter((template) => template.category._id === categoryId)
                     .map((template) => template._id);

@@ -1,20 +1,13 @@
-import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { ActionErrors, ActionTypes, IAction, IActionMetadataPopulated, ICreateEntityMetadata } from '@packages/action';
 import { IEntity, IPropertyValue, IRequiredConstraint, IUniqueConstraint, IUsersNotFoundError } from '@packages/entity';
-import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
-import {
-    ActionErrors,
-    ActionTypes,
-    IAction,
-    IActionMetadataPopulated,
-    IBrokenRule,
-    IBrokenRulePopulated,
-    ICreateEntityMetadata,
-} from '@packages/rule-breach';
+import { IEntitySingleProperty } from '@packages/entity-template';
+import { IBrokenRule, IBrokenRulePopulated } from '@packages/rule-breach';
 import { IEntityWithIgnoredRules } from './entity';
+import { ITemplate } from './template';
 
 export interface EntitiesWizardValues {
     files?: File[];
-    template?: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated;
+    template?: ITemplate;
 }
 
 export type IValidationError = {

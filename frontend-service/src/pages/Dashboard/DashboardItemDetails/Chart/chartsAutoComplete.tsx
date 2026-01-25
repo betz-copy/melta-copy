@@ -1,7 +1,6 @@
 import { InfoOutlined } from '@mui/icons-material';
 import { Autocomplete, Grid, TextField, Typography } from '@mui/material';
 import { IAggregation, IChartType, IColumnOrLineMetaData, IMongoChart, INumberMetaData, IPieMetaData } from '@packages/chart';
-import { IEntityTemplateMap } from '@packages/entity-template';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useState } from 'react';
@@ -10,6 +9,7 @@ import { getFilterFieldReadonly } from '../../../../common/inputs/FilterInputs/R
 import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
 import { FilterModelToFilterRecord } from '../../../../common/wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
 import { ChartForm } from '../../../../interfaces/dashboard';
+import { IEntityTemplateMap } from '../../../../interfaces/template';
 import { getChartsByUserId } from '../../../../services/chartsService';
 import { initialValues } from '../../../../utils/charts/getChartAxes';
 

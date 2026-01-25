@@ -11,10 +11,10 @@ import {
 } from '@packages/process';
 import { v4 as uuid } from 'uuid';
 import axios from '../../axios';
-import { PropertyWizardType } from '../../common/wizards/entityTemplate';
 import { ProcessTemplateFormInputProperties, ProcessTemplatePropertyByType, ProcessTemplateWizardValues } from '../../common/wizards/processTemplate';
 import { environment } from '../../globals';
-import { extractProperties, PropertyItemsArray, PropertyWizardTypes } from './entityTemplatesService';
+import { PropertyWizardType } from '../../interfaces/template';
+import { extractProperties, PropertyWizardTypes } from './entityTemplatesService';
 
 const { processTemplates } = environment.api;
 
@@ -176,10 +176,8 @@ const addAttachmentProperties = (
 const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTemplateBody | IUpdateProcessTemplateBody => {
     const { detailsProperties, detailsAttachmentProperties, steps, ...restOfProperties } = values;
 
-    const { properties: extractDetailsProperties } = extractProperties<ProcessTemplateFormInputProperties>(detailsProperties as PropertyItemsArray);
-    const { properties: extractDetailsAttachmentProperties } = extractProperties<ProcessTemplateFormInputProperties>(
-        detailsAttachmentProperties as PropertyItemsArray,
-    );
+    const { properties: extractDetailsProperties } = extractProperties<ProcessTemplateFormInputProperties>(detailsProperties);
+    const { properties: extractDetailsAttachmentProperties } = extractProperties<ProcessTemplateFormInputProperties>(detailsAttachmentProperties);
 
     const detailsPropertiesOrder: string[] = [];
     const stepTemplates: ICreateProcessTemplateBody['steps'] | IUpdateProcessTemplateBody['steps'] = [];
@@ -218,10 +216,8 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
             properties: {},
             required: [],
         };
-        const { properties: extractStepProperties } = extractProperties<ProcessTemplateFormInputProperties>(step.properties as PropertyItemsArray);
-        const { properties: extractStepAttachmentProperties } = extractProperties<ProcessTemplateFormInputProperties>(
-            step.attachmentProperties as PropertyItemsArray,
-        );
+        const { properties: extractStepProperties } = extractProperties<ProcessTemplateFormInputProperties>(step.properties);
+        const { properties: extractStepAttachmentProperties } = extractProperties<ProcessTemplateFormInputProperties>(step.attachmentProperties);
 
         extractStepProperties.forEach(({ name, title, type, required, options, pattern, patternCustomErrorMessage, deleted }) => {
             if (!deleted) {

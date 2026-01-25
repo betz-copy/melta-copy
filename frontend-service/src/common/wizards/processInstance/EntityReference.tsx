@@ -15,13 +15,14 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { PermissionScope } from '@packages/permission';
 import { IReferencedEntityForProcess } from '@packages/process';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
+import { IEntityTemplateMap } from '../../../interfaces/template';
 import EntityCard from '../../../pages/GlobalSearch/components/entityCard';
 import { useUserStore } from '../../../stores/user';
 import TemplateTableSelect from '../../inputs/TemplateTableSelect';

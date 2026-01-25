@@ -2,7 +2,6 @@
 import { CircleTwoTone as CircleIcon, Close, StraightenTwoTone as DistanceIcon, PentagonTwoTone as PolygonIcon } from '@mui/icons-material';
 import { Grid, ToggleButton, ToggleButtonGroup, useTheme } from '@mui/material';
 import { IEntity, IFilterOfField, ISearchEntitiesByLocationBody } from '@packages/entity';
-import { IEntityTemplateMap } from '@packages/entity-template';
 import * as Cesium from 'cesium';
 import { Cartesian3, Color } from 'cesium';
 import i18next from 'i18next';
@@ -17,6 +16,7 @@ import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { EntitiesTable } from '../../../common/wizards/excel/excelSteps/EntitiesTable';
 import { environment } from '../../../globals';
 import { CameraFocusType, ICoordinateSearchResult, IPolygonSearchResult, LatLng, ShapeType } from '../../../interfaces/location';
+import { IEntityTemplateMap } from '../../../interfaces/template';
 import { BackendConfigState } from '../../../services/backendConfigService';
 import { getEntitiesByLocation } from '../../../services/entitiesService';
 import { useDarkModeStore } from '../../../stores/darkMode';

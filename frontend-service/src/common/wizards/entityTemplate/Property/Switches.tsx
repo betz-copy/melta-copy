@@ -1,9 +1,10 @@
 import { Box, FormControlLabel } from '@mui/material';
 import { ISearchFilter, IUniqueConstraintOfTemplate } from '@packages/entity';
-import { IEntityTemplateMap, IRelationshipReference, PropertyFormat, PropertyType } from '@packages/entity-template';
+import { IRelationshipReference, PropertyFormat, PropertyType } from '@packages/entity-template';
 import i18next from 'i18next';
 import React, { SetStateAction } from 'react';
 import { useQueryClient } from 'react-query';
+import { IEntityTemplateMap } from '../../../../interfaces/template';
 import { MinimizedColorPicker } from '../../../inputs/MinimizedColorPicker';
 import MeltaSwitch from '../../../MeltaDesigns/MeltaSwitch';
 import { CommonFormInputProperties } from '../commonInterfaces';

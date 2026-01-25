@@ -21,10 +21,9 @@ import {
 } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
 import { Box, CircularProgress, debounce } from '@mui/material';
-import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
-import { EntityData, IConnection, IDeleteEntityBody, IEntity, IEntityExpanded, ISearchFilter, IUniqueConstraint } from '@packages/entity';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
-import { ActionTypes, IAction, IActionPopulated, IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '@packages/rule-breach';
+import { ActionTypes } from '@packages/action';
+import { IConnection, IDeleteEntityBody, IEntity, IEntityExpanded, ISearchFilter, IUniqueConstraint } from '@packages/entity';
+import { EntityData, IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '@packages/rule-breach';
 import { ISemanticSearchResult } from '@packages/semantic-search';
 import { IGetUnits } from '@packages/unit';
 import { AxiosError } from 'axios';
@@ -36,9 +35,12 @@ import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import '../../css/resizeTable.css';
 import '../../css/table.css';
+import { IAction, IActionPopulated } from '@packages/action';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IAgGridRequest } from '@packages/rule-breach';
 import { environment } from '../../globals';
 import { IErrorResponse } from '../../interfaces/error';
+import { IChildTemplateMap, IEntityTemplateMap, ITemplate } from '../../interfaces/template';
 import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { searchEntitiesOfTemplateClientSideRequest } from '../../services/clientSideService';
 import {
@@ -107,7 +109,7 @@ export enum TablePageType {
 }
 
 export const getDatasource = <Data extends EntityData>(
-    template: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
+    template: ITemplate,
     // tableCount: number, // comment out  waiting for Itay
     quickFilterText?: string,
     onFail?: (err: unknown) => void,
@@ -173,7 +175,7 @@ export const getDatasource = <Data extends EntityData>(
 
 export const getRowModelProps = <Data extends EntityData>(
     rowModelType: 'serverSide' | 'clientSide' | 'infinite',
-    template: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
+    template: ITemplate,
     rowData: Data[] | undefined,
     paginationPageSize: number,
     // tableCount: number,// comment out  waiting for Itay
@@ -219,7 +221,7 @@ export const getRowModelProps = <Data extends EntityData>(
 const LoadingCellRenderer = () => <CircularProgress size={20} sx={{ marginLeft: 1 }} />;
 
 export type EntitiesTableOfTemplateProps<Data> = {
-    template: (IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated) & {
+    template: ITemplate & {
         entitiesWithFiles?: ISemanticSearchResult[string];
     };
     entities?: Data[];

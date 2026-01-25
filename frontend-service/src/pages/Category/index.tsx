@@ -1,11 +1,11 @@
 import { ICategoryMap } from '@packages/category';
-import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import React, { useEffect } from 'react';
 import { useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
 import EntitiesPage from '../../common/EntitiesPage';
 import { TablePageType } from '../../common/EntitiesTableOfTemplate';
+import { IChildTemplateMap, IEntityTemplateMap, ITemplate } from '../../interfaces/template';
 import { useUserStore } from '../../stores/user';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 
@@ -42,7 +42,7 @@ const Category: React.FC<Props> = ({ categoryId }) => {
                 currentUser.currentWorkspacePermissions?.admin?.scope),
     );
 
-    const allAuthorizedTemplatesMap = new Map<string, IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated>();
+    const allAuthorizedTemplatesMap = new Map<string, ITemplate>();
 
     authorizedTemplates.forEach((template) => {
         allAuthorizedTemplatesMap.set(template._id, template);
@@ -86,12 +86,9 @@ const Category: React.FC<Props> = ({ categoryId }) => {
         categoryTemplates.map((template) => template?._id ?? ''),
     );
 
-    const templatesToShowCheckbox: (IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated)[] =
-        templateIdsToShowCheckbox.map((id) => getParentOrChildTemplate(id));
+    const templatesToShowCheckbox: ITemplate[] = templateIdsToShowCheckbox.map((id) => getParentOrChildTemplate(id));
 
-    const setTemplatesToShowCheckbox = (
-        newTemplates: React.SetStateAction<(IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated)[]>,
-    ) => {
+    const setTemplatesToShowCheckbox = (newTemplates: React.SetStateAction<ITemplate[]>) => {
         setTemplateIdsToShowCheckbox((prevTemplateIdsToShowCheckbox) => {
             const prevTemplates = prevTemplateIdsToShowCheckbox
                 .map((id) => getParentOrChildTemplate(id))

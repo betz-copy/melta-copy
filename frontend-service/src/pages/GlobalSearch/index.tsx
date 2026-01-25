@@ -1,11 +1,10 @@
 import { ICategoryMap } from '@packages/category';
-import { IChildTemplateMap } from '@packages/child-template';
-import { IEntityTemplateMap } from '@packages/entity-template';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
 import EntitiesPage from '../../common/EntitiesPage';
 import { TablePageType } from '../../common/EntitiesTableOfTemplate';
+import { IChildTemplateMap, IEntityTemplateMap } from '../../interfaces/template';
 import { useUserStore } from '../../stores/user';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import StartPageSearch from './components/StartPageSearch';

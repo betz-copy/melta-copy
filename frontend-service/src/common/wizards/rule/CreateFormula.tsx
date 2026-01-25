@@ -1,6 +1,5 @@
 import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
 import { Grid, ThemeProvider } from '@mui/material';
-import { IEntityTemplateMap } from '@packages/entity-template';
 import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import {
     Builder,
@@ -23,6 +22,7 @@ import { StepComponentProps, StepType } from '../index';
 import { RuleWizardValues } from '.';
 import '@react-awesome-query-builder/mui/css/styles.css';
 import { environment } from '../../../globals';
+import { IEntityTemplateMap } from '../../../interfaces/template';
 import { LTRProvider } from '../../../LTRProvider';
 import { useUserStore } from '../../../stores/user';
 import { lightTheme } from '../../../theme';

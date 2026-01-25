@@ -30,12 +30,6 @@
         "url": "https://github.com/melta-team/melta/issues"
     },
     "homepage": "https://github.com/melta-team/melta#readme",
-    "pnpm": {
-        "auto-install-peers": true,
-        "strict-peer-dependencies": false,
-        "shamefully-hoist": false,
-        "node-linker": "isolated"
-    },
     "devDependencies": {
         "@biomejs/biome": "^2.1.2",
         "@types/jest": "^30.0.0",

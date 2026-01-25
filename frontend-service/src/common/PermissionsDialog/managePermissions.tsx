@@ -1,10 +1,11 @@
 import { Box } from '@mui/material';
 import { ICategoryMap } from '@packages/category';
-import { PermissionData, PermissionScope } from '@packages/permission';
+import { PermissionData, PermissionScope, PermissionType } from '@packages/permission';
 import { IMetadata, IWorkspace } from '@packages/workspace';
 import { FormikProps } from 'formik';
 import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';
+import { PermissionDialogMode } from '../../interfaces/inputs';
 import {
     checkUserCategoryPermission,
     getChangedCategoryPermissions,
@@ -15,7 +16,7 @@ import InstancesPermissionsCard from './instancesPermissionsCard';
 import ManagementPermissionsCard, { managementTypes } from './managementPermissionsCard';
 
 const ManagePermissions: React.FC<{
-    mode: 'create' | 'edit' | 'view';
+    mode: PermissionDialogMode;
     workspace: IWorkspace & {
         metadata: IMetadata;
     };
@@ -47,18 +48,18 @@ const ManagePermissions: React.FC<{
     return (
         <>
             {(!(
-                mode === 'view' &&
+                mode === PermissionDialogMode.View &&
                 Object.entries(currentPermissions)
-                    .filter(([key]) => !['admin', 'instances'].includes(key))
-                    .some(([_, perm]) => (perm as { scope?: PermissionScope }).scope === PermissionScope.write)
+                    .filter(([key]) => ![PermissionType.admin, PermissionType.instances].includes(key as PermissionType))
+                    .some(([_, perm]) => perm?.scope === PermissionScope.write)
             ) ||
                 isAdmin) && (
                 <Box>
                     <ManagementPermissionsCard
-                        viewMode={mode === 'view'}
+                        viewMode={mode === PermissionDialogMode.View}
                         isChecked={isPropertyChecked}
                         onChange={
-                            mode === 'view'
+                            mode === PermissionDialogMode.View
                                 ? () => {}
                                 : (checked, property, permissionsManagement) =>
                                       handleManagementPermissionCheck(`${permissionsPath}.${property}`, checked, permissionsManagement)
@@ -71,7 +72,7 @@ const ManagePermissions: React.FC<{
                 <InstancesPermissionsCard
                     key={`${workspace._id}-instances-permissions`}
                     searchText={searchText}
-                    viewMode={mode === 'view'}
+                    viewMode={mode === PermissionDialogMode.View}
                     formikProps={formikProps}
                     workspaceId={workspace._id}
                     permissionsPath={permissionsPath}
@@ -85,7 +86,7 @@ const ManagePermissions: React.FC<{
                             read: {
                                 checked: checkUserCategoryPermission(currentPermissions, currCategory, PermissionScope.read),
                                 onChange:
-                                    mode === 'view'
+                                    mode === PermissionDialogMode.View
                                         ? () => {}
                                         : (_e, checked: boolean) => {
                                               const newPermission = getChangedCategoryPermissions(
@@ -95,7 +96,7 @@ const ManagePermissions: React.FC<{
                                                   currCategory._id,
                                               );
 
-                                              if (!newPermission.scope && Object.keys(newPermission.entityTemplates).length === 0) {
+                                              if (!newPermission.scope && !Object.keys(newPermission.entityTemplates).length) {
                                                   delete categoriesPermissions[currCategory._id];
                                               } else {
                                                   categoriesPermissions[currCategory._id] = newPermission;
@@ -107,7 +108,7 @@ const ManagePermissions: React.FC<{
                             write: {
                                 checked: checkUserCategoryPermission(currentPermissions, currCategory, PermissionScope.write),
                                 onChange:
-                                    mode === 'view'
+                                    mode === PermissionDialogMode.View
                                         ? () => {}
                                         : (_e, checked: boolean) => {
                                               formikProps.setFieldValue(`${permissionsPath}.instances.categories`, {
@@ -124,7 +125,7 @@ const ManagePermissions: React.FC<{
                         },
                     }))}
                     checkboxAllProps={
-                        mode === 'view'
+                        mode === PermissionDialogMode.View
                             ? undefined
                             : {
                                   disabled: disableCheckboxes,
@@ -133,8 +134,7 @@ const ManagePermissions: React.FC<{
                                           checked:
                                               (Object.keys(categoriesPermissions).length === categories.size &&
                                                   Object.values(categoriesPermissions).every(
-                                                      (categoryPermission) =>
-                                                          (categoryPermission as { scope?: PermissionScope }).scope === PermissionScope.write,
+                                                      (categoryPermission) => categoryPermission?.scope === PermissionScope.write,
                                                   )) ||
                                               isAdmin,
                                           onChange: (_e, checked) => {
@@ -159,9 +159,7 @@ const ManagePermissions: React.FC<{
                                       read: {
                                           checked:
                                               (Object.keys(categoriesPermissions).length === categories.size &&
-                                                  Object.values(categoriesPermissions).every(
-                                                      (categoryPermission) => (categoryPermission as { scope?: PermissionScope }).scope ?? false,
-                                                  )) ||
+                                                  Object.values(categoriesPermissions).every((categoryPermission) => categoryPermission?.scope)) ||
                                               isAdmin,
                                           onChange: (_e, checked) => {
                                               Array.from(categories).forEach(([categoryId]) => {

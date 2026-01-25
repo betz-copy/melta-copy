@@ -18,11 +18,11 @@ import { useWorkspaceStore } from '../../../stores/workspace';
 
 const { notifications } = environment;
 
-interface ITopbarProps {
+interface ITopBarProps {
     currentUser: IKartoffelUser;
 }
 
-const Topbar: React.FC<ITopbarProps> = ({ currentUser }) => {
+const TopBar: React.FC<ITopBarProps> = ({ currentUser }) => {
     const [isNotificationsScreenOpen, setIsNotificationsScreenOpen] = useState<boolean>(false);
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { clientSideWorkspaceName } = workspace.metadata?.clientSide || {};
@@ -106,4 +106,4 @@ const Topbar: React.FC<ITopbarProps> = ({ currentUser }) => {
     );
 };
 
-export { Topbar };
+export { TopBar };

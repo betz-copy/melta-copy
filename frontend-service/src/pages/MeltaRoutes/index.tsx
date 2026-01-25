@@ -1,7 +1,5 @@
 import { Box } from '@mui/material';
 import { ICategoryMap } from '@packages/category';
-import { IChildTemplateMap } from '@packages/child-template';
-import { IEntityTemplateMap } from '@packages/entity-template';
 import { IPrintingTemplateMap } from '@packages/printing-template';
 import { IProcessTemplateMap } from '@packages/process';
 import { IRelationshipTemplateMap } from '@packages/relationship-template';
@@ -13,6 +11,7 @@ import { useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { LoadingAnimation } from '../../common/LoadingAnimation';
 import { IMongoCategoryOrderConfig } from '../../interfaces/config';
+import { IChildTemplateMap, IEntityTemplateMap } from '../../interfaces/template';
 import { GetAllTemplatesType, getAllTemplates } from '../../services/templates/getAllTemplates';
 import { getUnits } from '../../services/userService';
 import { getFile } from '../../services/workspacesService';

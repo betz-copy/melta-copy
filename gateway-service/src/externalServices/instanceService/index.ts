@@ -1,3 +1,4 @@
+import { IAction } from '@packages/action';
 import { IChartBody } from '@packages/chart';
 import {
     IBulkOfActions,
@@ -20,24 +21,22 @@ import {
 import { IEntitySingleProperty } from '@packages/entity-template';
 import { IRelationship } from '@packages/relationship';
 import { IMongoRule, IRuleMail } from '@packages/rule';
-import { IAction, IBrokenRule } from '@packages/rule-breach';
+import { IBrokenRule } from '@packages/rule-breach';
 import { ISemanticSearchResult } from '@packages/semantic-search';
 import { IGetUnits } from '@packages/unit';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 
 const {
-    instanceService: {
-        url,
-        baseEntitiesRoute,
-        baseRelationshipsRoute,
-        baseBulkActionsRoute,
-        baseConstraintsRoute,
-        requestTimeout,
-        searchOfTemplateRoute,
-        searchEntitiesByLocationRoute,
-    },
-} = config;
+    url,
+    baseEntitiesRoute,
+    baseRelationshipsRoute,
+    baseBulkActionsRoute,
+    baseConstraintsRoute,
+    requestTimeout,
+    searchOfTemplateRoute,
+    searchEntitiesByLocationRoute,
+} = config.instanceService;
 
 class InstancesService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {

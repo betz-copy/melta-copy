@@ -1,12 +1,5 @@
-import {
-    ActionTypes,
-    IActionMetadata,
-    IAgGridRequest,
-    IBrokenRule,
-    IRuleBreachAlert,
-    IRuleBreachRequest,
-    RuleBreachRequestStatus,
-} from '@packages/rule-breach';
+import { ActionTypes, IActionMetadata } from '@packages/action';
+import { IAgGridRequest, IBrokenRule, IRuleBreachAlert, IRuleBreachRequest, RuleBreachRequestStatus } from '@packages/rule-breach';
 import config from '../../config';
 import { IAgGridResult } from '../../utils/agGrid/interface';
 import DefaultExternalServiceApi from '../../utils/express/externalService';

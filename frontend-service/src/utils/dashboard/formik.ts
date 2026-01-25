@@ -1,15 +1,15 @@
 import { IChartPermission, IChartType, IColumnOrLineMetaData } from '@packages/chart';
-import { IChildTemplateMap } from '@packages/child-template';
 import { DashboardItemType } from '@packages/dashboard';
 import { FilterLogicalOperator } from '@packages/entity';
-import { IEntityTemplateMap } from '@packages/entity-template';
+import { IFrame } from '@packages/iframe';
 import i18next from 'i18next';
 import { QueryClient } from 'react-query';
 import * as Yup from 'yup';
 import { filtersSchema } from '../../common/wizards/entityTemplate/AddFields';
 import { IFilterTemplate } from '../../common/wizards/entityTemplate/commonInterfaces';
 import { filterTemplateToSearchFilter } from '../../common/wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
-import { ChartForm, IFrame, TableForm, TableItemToBackend } from '../../interfaces/dashboard';
+import { ChartForm, TableForm, TableItemToBackend } from '../../interfaces/dashboard';
+import { IChildTemplateMap, IEntityTemplateMap } from '../../interfaces/template';
 
 export const tableDetailsSchema = Yup.object().shape({
     name: Yup.string().required(i18next.t('validation.required')),

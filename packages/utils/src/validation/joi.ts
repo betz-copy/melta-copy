@@ -49,6 +49,7 @@ export const fileSchema = Joi.object({
     originalname: Joi.string().required(),
     encoding: Joi.string().required(),
     mimetype: Joi.string().required(),
+    buffer: Joi.binary(),
     size: Joi.number().min(1).required(),
 }).unknown(true);
 

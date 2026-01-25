@@ -2,28 +2,28 @@ import { Grid, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { FileDetails } from '@packages/common';
 import i18next from 'i18next';
 import React, { useState } from 'react';
+import { InputPickerType } from '../../interfaces/inputs';
 import IconPicker from './IconPicker';
 import FileInput from './ImageFileInput';
 
-type InputSelectType = 'chooseFile' | 'chooseFromOptions';
 interface ImagePickerProps {
     image?: FileDetails;
     onPick: (image: FileDetails) => void;
     onDelete: () => void;
-    defaultInputType?: InputSelectType;
+    defaultInputType?: InputPickerType;
 }
 
 const ImagePicker: React.FC<ImagePickerProps> = ({ image, onPick, onDelete, defaultInputType }) => {
-    const [inputType, setInputType] = useState(defaultInputType);
+    const [inputType, setInputType] = useState<InputPickerType | undefined>(defaultInputType);
     const [fileInputValue, setFileInputValue] = useState<FileDetails | undefined>(image);
     const [iconPickerValue, setIconPickerValue] = useState<FileDetails>();
 
-    const onToggle = (_event: React.MouseEvent<HTMLElement>, selected: InputSelectType | null) => {
+    const onToggle = (_event: React.MouseEvent<HTMLElement>, selected: InputPickerType | null) => {
         if (!selected) return;
 
         setInputType(selected);
 
-        const selectedValue = selected === 'chooseFile' ? fileInputValue : iconPickerValue;
+        const selectedValue = selected === InputPickerType.ChooseFile ? fileInputValue : iconPickerValue;
 
         if (!selectedValue) {
             onDelete();
@@ -37,16 +37,16 @@ const ImagePicker: React.FC<ImagePickerProps> = ({ image, onPick, onDelete, defa
         <Grid container direction="column" alignItems="center" spacing={1}>
             <Grid>
                 <ToggleButtonGroup value={inputType} exclusive onChange={onToggle} sx={{ height: '2.5rem' }}>
-                    <ToggleButton value="chooseFromOptions" sx={{ width: '10rem' }}>
+                    <ToggleButton value={InputPickerType.ChooseFromOptions} sx={{ width: '10rem' }}>
                         {i18next.t('input.imagePicker.chooseFromOptions')}
                     </ToggleButton>
-                    <ToggleButton value="chooseFile" sx={{ width: '10rem' }}>
+                    <ToggleButton value={InputPickerType.ChooseFile} sx={{ width: '10rem' }}>
                         {i18next.t('input.imagePicker.chooseFile')}
                     </ToggleButton>
                 </ToggleButtonGroup>
             </Grid>
 
-            {inputType === 'chooseFromOptions' && (
+            {inputType === InputPickerType.ChooseFromOptions && (
                 <Grid>
                     <IconPicker
                         width="70rem"
@@ -65,7 +65,7 @@ const ImagePicker: React.FC<ImagePickerProps> = ({ image, onPick, onDelete, defa
                     />
                 </Grid>
             )}
-            {inputType === 'chooseFile' && (
+            {inputType === InputPickerType.ChooseFile && (
                 <Grid>
                     <FileInput
                         onDropFile={(acceptedFile) => {

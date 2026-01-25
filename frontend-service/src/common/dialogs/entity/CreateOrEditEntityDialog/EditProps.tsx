@@ -1,13 +1,12 @@
 import { Close as CloseIcon } from '@mui/icons-material';
 import { Box, Divider, Grid, IconButton, Typography, useTheme } from '@mui/material';
-import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IPropertyValue } from '@packages/entity';
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { FormikComputedProps, FormikHelpers, FormikState } from 'formik';
 import i18next from 'i18next';
 import { DebouncedFunc, isEqual } from 'lodash';
 import React, { Dispatch, SetStateAction, useEffect, useMemo } from 'react';
 import { IExternalErrors } from '../../../../interfaces/CreateOrEditEntityDialog';
+import { ITemplate } from '../../../../interfaces/template';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import { filterFieldsFromPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
@@ -29,7 +28,7 @@ const EditProps: React.FC<{
     initialValuePropsToFilter: Record<string, IPropertyValue>;
     setInitialValuePropsToFilter: Dispatch<SetStateAction<Record<string, IPropertyValue>>>;
     isMultipleSelection: boolean;
-    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated;
+    entityTemplate: ITemplate;
     wasDirty: boolean;
     setWasDirty: Dispatch<React.SetStateAction<boolean>>;
     externalErrors: IExternalErrors;
@@ -48,9 +47,7 @@ const EditProps: React.FC<{
     showTitle?: boolean;
     chooseMode?: IChooseTemplateMode;
     parentId?: string;
-    getInitialProperties?: (
-        newTemplate: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
-    ) => Record<string, IPropertyValue>;
+    getInitialProperties?: (newTemplate: ITemplate) => Record<string, IPropertyValue>;
 }> = ({
     setFieldValue,
     values,

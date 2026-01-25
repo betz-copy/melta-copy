@@ -1,5 +1,4 @@
 import { IAxisField } from '@packages/chart';
-import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import {
     ICountSearchResult,
     IDeleteEntityBody,
@@ -7,7 +6,6 @@ import {
     IEntityExpanded,
     IEntityWithDirectConnections,
     IExportEntitiesBody,
-    IGraphFilterBodyBatch,
     IMultipleSelect,
     IPropertyValue,
     ISearchBatchBody,
@@ -17,7 +15,6 @@ import {
     ISearchFilter,
     ISearchResult,
 } from '@packages/entity';
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IRelationShipSelectionTree } from '@packages/printing-template';
 import { IBrokenRule, IRuleBreach } from '@packages/rule-breach';
 import { CoordinateSystem } from '@packages/utils';
@@ -30,6 +27,8 @@ import urlToFile from '../common/fileConversions';
 import { environment } from '../globals';
 import { IEntityWithIgnoredRules } from '../interfaces/entity';
 import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
+import { IGraphFilterBodyBatch } from '../interfaces/graphFilter';
+import { ITemplate } from '../interfaces/template';
 import { IEntityTreeNode } from '../pages/Entity/components/print/ComponentToPrint';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
 import { combineFilters } from '../utils/filters';
@@ -45,7 +44,7 @@ export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
 };
 
 export const loadEntitiesRequest = async (
-    template: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
+    template: ITemplate,
     files?: Record<string, File>,
     insertBrokenEntities?: IEntityWithIgnoredRules[],
 ): Promise<ITablesResults> => {
@@ -113,10 +112,7 @@ export const getChangedEntitiesFromExcelRequest = async (
     return data;
 };
 
-export const editManyEntitiesByExcelRequest = async (
-    template: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
-    entitiesToUpdate: IEntityWithIgnoredRules[],
-): Promise<ITablesResults> => {
+export const editManyEntitiesByExcelRequest = async (template: ITemplate, entitiesToUpdate: IEntityWithIgnoredRules[]): Promise<ITablesResults> => {
     const formData = new FormData();
     const isUUID = (str: string) => uuidFormat.test(str);
 

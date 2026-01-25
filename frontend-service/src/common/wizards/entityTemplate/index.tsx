@@ -1,16 +1,6 @@
 import { ICategoryMap, IMongoCategory } from '@packages/category';
-import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
-import { FileDetails } from '@packages/common';
-import { IConstraint, IUniqueConstraintOfTemplate } from '@packages/entity';
-import {
-    FieldGroupData,
-    IEntityTemplateMap,
-    IEntityTemplateWithConstraintsPopulated,
-    IWalletTransfer,
-    PropertyExternalWizardType,
-    PropertyFormat,
-    PropertyType,
-} from '@packages/entity-template';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IConstraint } from '@packages/entity';
 import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -19,6 +9,7 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
 import { IErrorResponse } from '../../../interfaces/error';
+import { EntityTemplateWizardValues, IChildTemplateMap, IEntityTemplateMap } from '../../../interfaces/template';
 import { getAllChildTemplates } from '../../../services/templates/childTemplatesService';
 import { createEntityTemplateRequest, formToJSONSchema, updateEntityTemplateRequest } from '../../../services/templates/entityTemplatesService';
 import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
@@ -32,61 +23,11 @@ import { AddFields, addFieldsSchema } from './AddFields';
 import { ChooseIcon } from './ChooseIcon';
 import { useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
 import { CreateTemplateSettings } from './CreateTemplateSettings';
-import { CommonFormInputProperties, IFilterTemplate, IWalletTransferPopulated, PropertyItem } from './commonInterfaces';
+import { PropertyItem } from './commonInterfaces';
 import { UploadExportFormats } from './UploadExportFormats';
 import { WalletTransferSettings, walletTransferSettingsSchema } from './WalletTransferSettings';
 
 const { errorCodes } = environment;
-
-export type PropertyWizardType = keyof typeof PropertyType | keyof typeof PropertyFormat | keyof typeof PropertyExternalWizardType;
-
-export interface EntityTemplateFormInputProperties extends CommonFormInputProperties {
-    relationshipReference?: {
-        relationshipTemplateId?: string;
-        relationshipTemplateDirection: 'outgoing' | 'incoming';
-        relatedTemplateId: string;
-        relatedTemplateField: string;
-        filters?: IFilterTemplate[];
-    };
-    expandedUserField?: {
-        relatedUserField: string;
-        kartoffelField: string;
-    };
-    archive?: boolean;
-    mapSearch?: boolean;
-    fieldGroup?: FieldGroupData;
-    hideFromDetailsPage?: boolean;
-    comment?: string;
-    color?: string;
-    accountBalance?: boolean;
-    isProfileImage?: boolean;
-}
-
-type EntityTemplatePropertyByType = { type: 'field'; data: EntityTemplateFormInputProperties };
-
-export interface EntityTemplateWizardValues
-    extends Omit<
-        IEntityTemplateWithConstraintsPopulated,
-        | 'properties'
-        | 'iconFileId'
-        | 'propertiesOrder'
-        | 'propertiesPreview'
-        | 'enumPropertiesColors'
-        | 'uniqueConstraints'
-        | 'documentTemplatesIds'
-        | 'walletTransfer'
-        | '_id'
-    > {
-    properties: PropertyItem[];
-    attachmentProperties: EntityTemplatePropertyByType[];
-    archiveProperties: EntityTemplatePropertyByType[];
-    uniqueConstraints?: IUniqueConstraintOfTemplate[];
-    icon?: FileDetails;
-    documentTemplatesIds?: File[];
-    enumPropertiesColors?: string[];
-    walletTransfer?: IWalletTransferPopulated | IWalletTransfer | null;
-    _id?: string;
-}
 
 export const hasAccountBalanceField = (properties: PropertyItem[]) =>
     properties.some((property) => (property.type === 'field' ? !!property.data?.accountBalance : property.fields?.some((f) => !!f.accountBalance)));
@@ -132,22 +73,18 @@ const EntityTemplateWizard: React.FC<
     }, [open]);
 
     const currentTemplateId = isEditMode ? (initialValues as EntityTemplateWizardValues & { _id: string })._id : undefined;
-    const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates') || new Map();
+    const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const createTemplateSettingsSchema = useCreateOrEditTemplateNameSchema(templates, currentTemplateId);
     const walletTransferSchema = walletTransferSettingsSchema();
     const addFieldsSettingsSchema = addFieldsSchema(isAccountTemplate);
 
     const { isLoading, mutateAsync } = useMutation(
-        async (entityTemplate: EntityTemplateWizardValues) => {
+        (entityTemplate: EntityTemplateWizardValues) => {
+            // TODO: CHECK IF WORKS
             if (isEditMode) {
-                return await updateEntityTemplateRequest(
-                    (initialValues as EntityTemplateWizardValues & { _id: string })._id,
-                    entityTemplate,
-                    queryClient,
-                );
-            }
-            return await createEntityTemplateRequest(entityTemplate, queryClient);
+                return updateEntityTemplateRequest((initialValues as EntityTemplateWizardValues & { _id: string })._id, entityTemplate, queryClient);
+            } else return createEntityTemplateRequest(entityTemplate, queryClient);
         },
         {
             onSuccess: async (data) => {

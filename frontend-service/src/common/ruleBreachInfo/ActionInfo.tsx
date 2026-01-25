@@ -1,8 +1,4 @@
 import { Box, Grid, Typography, useTheme } from '@mui/material';
-import { IEntity } from '@packages/entity';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
-import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '@packages/relationship-template';
-import { ActionOnFail, IMongoRule } from '@packages/rule';
 import {
     ActionTypes,
     IActionMetadataPopulated,
@@ -12,15 +8,20 @@ import {
     ICronjobRunMetadataPopulated,
     IDeleteRelationshipMetadataPopulated,
     IDuplicateEntityMetadataPopulated,
-    IEntityForBrokenRules,
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadataPopulated,
-} from '@packages/rule-breach';
+} from '@packages/action';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '@packages/relationship-template';
+import { ActionOnFail, IMongoRule } from '@packages/rule';
+import { IEntityForBrokenRules } from '@packages/rule-breach';
 import { IUser } from '@packages/user';
 import i18next from 'i18next';
 import React, { CSSProperties, ReactNode } from 'react';
 import { useQueryClient } from 'react-query';
 import { environment } from '../../globals';
+import { IEntityTemplateMap } from '../../interfaces/template';
 import { useUserStore } from '../../stores/user';
 import { getAllAllowedEntities, getAllAllowedRelationships } from '../../utils/permissions/templatePermissions';
 import { populateRelationshipTemplate } from '../../utils/templates';

@@ -1,12 +1,13 @@
 import { MenuItem, Menu as MuiMenu } from '@mui/material';
-import { IChildTemplateMap } from '@packages/child-template';
-import { IEntityExpanded, IGraphFilterBodyBatch } from '@packages/entity';
+import { IEntityExpanded } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React from 'react';
 import { GraphData, NodeObject } from 'react-force-graph-2d';
 import { useQuery, useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
+import { IGraphFilterBodyBatch } from '../../interfaces/graphFilter';
+import { IChildTemplateMap } from '../../interfaces/template';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { highlightNode } from '../../utils/graph';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';

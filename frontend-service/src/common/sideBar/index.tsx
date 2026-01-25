@@ -20,6 +20,7 @@ import React, { useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
 import { environment } from '../../globals';
+import { PermissionDialogMode } from '../../interfaces/inputs';
 import { searchIFrames } from '../../services/iFramesService';
 import { getMyNotificationGroupCountRequest, getMyNotificationsRequest, manyNotificationSeenRequest } from '../../services/notificationService';
 import { useDarkModeStore } from '../../stores/darkMode';
@@ -578,7 +579,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
             <PermissionsDialog
                 permissionType={RelatedPermission.User}
                 isOpen={isMyPermissionsDialogOpen}
-                mode="view"
+                mode={PermissionDialogMode.View}
                 handleClose={() => setIsMyPermissionsDialogOpen(false)}
                 roleOrUser={currentUser}
             />

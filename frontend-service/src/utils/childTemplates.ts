@@ -1,14 +1,9 @@
-import {
-    IChildTemplate,
-    IChildTemplateMap,
-    IFilter,
-    IMongoChildTemplatePopulated,
-    IMongoChildTemplateWithConstraintsPopulated,
-} from '@packages/child-template';
+import { IChildTemplate, IFilter, IMongoChildTemplatePopulated } from '@packages/child-template';
 import { IEntity } from '@packages/entity';
-import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IEntitySingleProperty } from '@packages/entity-template';
 import { IKartoffelUser } from '@packages/user';
 import { isUserHasWritePermissions } from '../common/EntitiesPage/TemplateTable';
+import { IChildTemplateMap, ITemplate } from '../interfaces/template';
 import { UserState } from '../stores/user';
 import { matchValueAgainstFilter } from './filters';
 
@@ -59,7 +54,7 @@ export const getChildrenWithWritePermission = (
     );
 
 export const isEntityFitsToChildTemplate = (
-    template: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
+    template: ITemplate,
     isChildTemplate: boolean,
     entity: IEntity | string,
     currentUserKartoffelId?: string,

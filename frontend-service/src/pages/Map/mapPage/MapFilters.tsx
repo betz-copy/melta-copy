@@ -2,7 +2,7 @@
 import { FilterList, Search } from '@mui/icons-material';
 import { Autocomplete, Box, Button, Divider, Grid, InputAdornment, TextField, Typography, useTheme } from '@mui/material';
 import { FilterLogicalOperator, IEntity, IFilterOfField } from '@packages/entity';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import { debounce } from 'lodash';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -13,6 +13,7 @@ import { ColoredEnumChip } from '../../../common/ColoredEnumChip';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { environment } from '../../../globals';
 import { CameraFocusType } from '../../../interfaces/location';
+import { IEntityTemplateMap } from '../../../interfaces/template';
 import { getEntitiesWithDirectConnections } from '../../../services/entitiesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 
@@ -94,7 +95,7 @@ const MapFilters = ({
                       }
                     : undefined;
 
-            return [templateId, filter ? { filter, showRelationships: false } : { showRelationships: false }] as const;
+            return [templateId, filter ? { filter } : {}] as const;
         }),
     );
 

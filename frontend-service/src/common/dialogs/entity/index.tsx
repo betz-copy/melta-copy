@@ -1,6 +1,7 @@
 import { IMongoChildTemplateWithConstraintsPopulated, ViewType } from '@packages/child-template';
 import { IPropertyValue } from '@packages/entity';
 import { IFullMongoEntityTemplate, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { ITemplate } from '../../../interfaces/template';
 
 export const emptyEntityTemplate: IMongoEntityTemplateWithConstraintsPopulated = {
     _id: '',
@@ -33,22 +34,8 @@ export const emptyEntityTemplate: IMongoEntityTemplateWithConstraintsPopulated =
 };
 
 const emptyParentTemplateForChild: IFullMongoEntityTemplate = {
-    _id: '',
-    displayName: '',
-    name: '',
+    ...emptyEntityTemplate,
     category: '',
-    properties: {
-        properties: {},
-        type: 'object',
-        hide: [],
-    },
-    propertiesOrder: [],
-    propertiesTypeOrder: ['properties', 'attachmentProperties'],
-    propertiesPreview: [],
-    disabled: false,
-    iconFileId: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
 };
 
 export const emptyChildTemplate: IMongoChildTemplateWithConstraintsPopulated = {
@@ -71,7 +58,7 @@ export const emptyChildTemplate: IMongoChildTemplateWithConstraintsPopulated = {
     uniqueConstraints: [],
 };
 export type EntityWizardValues = {
-    template: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated;
+    template: ITemplate;
     properties: Record<string, IPropertyValue> & { disabled: boolean };
     attachmentsProperties: Record<string, File[] | File | undefined>;
 };

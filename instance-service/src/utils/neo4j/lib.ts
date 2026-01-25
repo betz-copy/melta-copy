@@ -1,7 +1,7 @@
+import { ActionErrors } from '@packages/action';
 import { SplitBy } from '@packages/common';
 import { IEntity, IEntityExpanded, IEntityWithDirectRelationships, IPropertyValue } from '@packages/entity';
-import { IMongoRelationship, IRelationship } from '@packages/relationship';
-import { ActionErrors } from '@packages/rule-breach';
+import { IRelationship } from '@packages/relationship';
 import { ValidationError } from '@packages/utils';
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
 import neo4j, { Node as Neo4jNode, Relationship as Neo4jRelationship, QueryResult, Transaction } from 'neo4j-driver';
@@ -260,12 +260,11 @@ export const normalizeReturnedRelAndEntities =
             const [sourceEntity, destinationEntity] =
                 firstEntity.identity === relationship.start ? [firstEntity, secondEntity] : [secondEntity, firstEntity];
 
-            const normalizedProperties = normalizeFields(relationship.properties).properties;
             return {
                 sourceEntity: nodeToEntity(sourceEntity),
                 relationship: {
                     templateId: relationship.type,
-                    properties: normalizedProperties as IMongoRelationship['properties'],
+                    properties: normalizeFields(relationship.properties).properties,
                 },
                 destinationEntity: nodeToEntity(destinationEntity),
             };

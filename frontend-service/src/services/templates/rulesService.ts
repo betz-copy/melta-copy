@@ -1,9 +1,9 @@
-import { IEntityTemplateMap } from '@packages/entity-template';
 import { IMongoRule, IRule, ISearchRulesBody } from '@packages/rule';
 import { JsonItem, JsonTree, Utils as QbUtils } from '@react-awesome-query-builder/mui';
 import axios from '../../axios';
 import { RuleWizardValues } from '../../common/wizards/rule';
 import { environment } from '../../globals';
+import { IEntityTemplateMap } from '../../interfaces/template';
 import { RuleParser } from '../../utils/rules/parser';
 import { RuleSerializer } from '../../utils/rules/serializer';
 

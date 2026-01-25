@@ -1,11 +1,11 @@
 import { AccountBalanceWallet } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, CircularProgress, Grid, Tab, useTheme } from '@mui/material';
-import { IChildTemplateMap, IFilter, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IFilter, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { ISearchFilter } from '@packages/entity';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { ISubCompactPermissions, PermissionScope } from '@packages/permission';
-import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '@packages/relationship-template';
+import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -13,6 +13,7 @@ import { useQuery, useQueryClient } from 'react-query';
 import { useParams, useSearchParams } from 'wouter';
 import { getChildTemplatesFilter } from '../../common/inputs/TemplateEntitiesAutocomplete';
 import '../../css/pages.css';
+import { IChildTemplateMap, IEntityTemplateMap } from '../../interfaces/template';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
@@ -60,15 +61,6 @@ export const getButtonState = (
 
     return { isEditButtonsDisabled, disabledButtonText, hasPermissionToRelatedTemplate: Boolean(permissions?.admin || permissionToRelatedTemplate) };
 };
-
-export interface INestedRelationshipTemplates {
-    relationshipTemplate: IMongoRelationshipTemplatePopulated;
-    isExpandedEntityRelationshipSource: boolean; // for relationship that is of format currentEntityTemplate -> currentEntityTemplate, we want it twice, once with outgoing connections of expandedEntity, and once with incoming connections of expandedEntity
-    hasInstances?: boolean;
-    depth: number;
-    parentRelationship?: IMongoRelationshipTemplatePopulated;
-    children: INestedRelationshipTemplates[];
-}
 
 const Entity: React.FC = () => {
     const theme = useTheme();

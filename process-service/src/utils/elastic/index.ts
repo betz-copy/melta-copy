@@ -3,9 +3,7 @@ import type { DeleteRequest, ExistsRequest, IndexRequest, SearchRequest, UpdateR
 import { logger } from '@packages/utils';
 import config from '../../config';
 
-const {
-    elastic: { index, url, user, password, tlsRejectUnauthorized },
-} = config;
+const { index, url, user, password, tlsRejectUnauthorized } = config.elastic;
 class ElasticClient {
     static client: Client | null;
 

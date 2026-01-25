@@ -24,12 +24,12 @@ import {
     Typography,
 } from '@mui/material';
 import { IPropertyValue } from '@packages/entity';
-import { IEntityTemplateMap } from '@packages/entity-template';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import React, { SetStateAction, useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import { IEntityTemplateMap } from '../../../../interfaces/template';
 import { deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../../services/templates/entityTemplatesService';
 import { AreYouSureDialog } from '../../../dialogs/AreYouSureDialog';
 import { MinimizedColorPicker } from '../../../inputs/MinimizedColorPicker';

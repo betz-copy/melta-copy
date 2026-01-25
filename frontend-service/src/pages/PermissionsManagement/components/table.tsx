@@ -16,11 +16,11 @@ import { toast } from 'react-toastify';
 import AgGridTable from '../../../common/agGridTable';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { environment } from '../../../globals';
+import { WalletTransferData } from '../../../interfaces/template';
 import { searchRolesRequest, searchUsersRequest } from '../../../services/userService';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { translatedEnumColDef } from '../../../utils/agGrid/commonColDefs';
 import { tryCatch } from '../../../utils/tryCatch';
-import { WalletTransferData } from '../../Entity/walletTransfers';
 
 const { infiniteScrollPageCount } = environment.permission;
 

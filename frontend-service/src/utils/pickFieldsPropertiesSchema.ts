@@ -1,4 +1,4 @@
-import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated, IProperties, PropertyFormat } from '@packages/entity-template';
+import { IMongoEntityTemplateWithConstraintsPopulated, IProperties, PropertyFormat } from '@packages/entity-template';
 import { IProcessDetails } from '@packages/process';
 import { pickBy } from 'lodash';
 
@@ -30,7 +30,7 @@ export const pickProcessFieldsPropertiesSchema = (schema: IProcessDetails): IMon
     const filteredProperties = filterFieldsFromPropertiesSchema({
         type: 'object',
         hide: [],
-        properties: schema.properties.properties as unknown as Record<string, IEntitySingleProperty>,
+        properties: schema.properties.properties,
         required: schema.properties.required,
     } as IProperties & { required: string[] });
 

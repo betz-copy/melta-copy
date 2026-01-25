@@ -1,5 +1,4 @@
 import 'winston-daily-rotate-file';
-
 import config from '@packages/config';
 import { format, Logform, Logger } from 'winston';
 import initializeLogger, { IExtra, IPrintData } from './loggerFactory';

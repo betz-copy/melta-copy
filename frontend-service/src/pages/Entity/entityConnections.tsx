@@ -4,13 +4,13 @@ import { Box, Grid, Tab, Typography, useTheme } from '@mui/material';
 import { ICategoryMap } from '@packages/category';
 import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IEntityExpanded } from '@packages/entity';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import i18next from 'i18next';
 import { useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { CustomIcon } from '../../common/CustomIcon';
-import { INestedRelationshipTemplates } from '.';
+import { IEntityTemplateMap, INestedRelationshipTemplates } from '../../interfaces/template';
 import { ConnectionsTable } from './ConnectionsTable';
 import { RelationshipIcon } from './RelationshipIcon';
 
@@ -194,7 +194,6 @@ export const EntityConnections: React.FC<EntityConnectionsProps> = ({
 
                                             return (
                                                 <ConnectionsTable
-                                                    // eslint-disable-next-line react/no-array-index-key
                                                     key={connectionTemplate.relationshipTemplate._id}
                                                     expandedEntity={expandedEntity}
                                                     templateIds={templateIds}

@@ -2,9 +2,7 @@ import { IGantt, IMongoGantt, ISearchGanttsBody } from '@packages/gantt';
 import config from '../config';
 import DefaultExternalServiceApi from '../utils/express/externalService';
 
-const {
-    ganttService: { url, baseRoute, requestTimeout },
-} = config;
+const { url, baseRoute, requestTimeout } = config.ganttService;
 
 class GanttsService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {

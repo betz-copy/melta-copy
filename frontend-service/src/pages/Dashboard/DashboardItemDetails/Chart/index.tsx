@@ -1,8 +1,6 @@
 import { CircularProgress } from '@mui/material';
 import { IChartPermission, IMongoChart } from '@packages/chart';
-import { IChildTemplateMap } from '@packages/child-template';
 import { DashboardItemType } from '@packages/dashboard';
-import { IEntityTemplateMap } from '@packages/entity-template';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
@@ -15,6 +13,7 @@ import { filtersSchema } from '../../../../common/wizards/entityTemplate/AddFiel
 import { FilterModelToFilterRecord } from '../../../../common/wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
 import { environment } from '../../../../globals';
 import { ChartForm, TabStepComponent, ViewMode } from '../../../../interfaces/dashboard';
+import { IChildTemplateMap, IEntityTemplateMap } from '../../../../interfaces/template';
 import { createChart, deleteChart, editChart, getChartById } from '../../../../services/chartsService';
 import { createDashboardItem, deleteDashboardItem } from '../../../../services/dashboardService';
 import { parseFilters } from '../../../../services/templates/entityTemplatesService';

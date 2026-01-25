@@ -10,6 +10,7 @@ import { ICategoryMap } from '@packages/category';
 import { PermissionData } from '@packages/permission';
 import { IRole } from '@packages/role';
 import { IUser, IUserPopulated, RelatedPermission } from '@packages/user';
+import { PermissionDialogMode } from '../../../interfaces/inputs';
 import DeletePermissionsDialog from './deleteDialog';
 import PermissionsTable, { PermissionsTableRef } from './table';
 
@@ -104,14 +105,14 @@ const ManagePermissionTab: React.FC<{ permissionType: RelatedPermission; searchP
                 onSuccess={() => permissionsTableRef.current?.refreshServerSide()}
             />
             <PermissionsDialog
-                mode="create"
+                mode={PermissionDialogMode.Create}
                 permissionType={permissionType}
                 isOpen={isCreateDialogOpen}
                 handleClose={() => setIsCreateDialogOpen(false)}
                 onSuccess={() => permissionsTableRef.current?.refreshServerSide()}
             />
             <PermissionsDialog
-                mode="edit"
+                mode={PermissionDialogMode.Edit}
                 permissionType={permissionType}
                 isOpen={editDialogState.isDialogOpen}
                 handleClose={() => setEditDialogState({ isDialogOpen: false, user: null, role: null })}

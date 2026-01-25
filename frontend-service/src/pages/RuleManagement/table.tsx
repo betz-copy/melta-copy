@@ -3,7 +3,6 @@ import { AgGridReact } from '@ag-grid-community/react';
 import { ReadMore as ReadMoreIcon } from '@mui/icons-material';
 import { Box, GlobalStyles } from '@mui/material';
 import {
-    ActionTypes,
     BreachType,
     IRuleBreachAlertPopulated,
     IRuleBreachPopulated,
@@ -15,6 +14,7 @@ import React, { forwardRef, memo, useImperativeHandle, useMemo, useRef } from 'r
 import { toast } from 'react-toastify';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import '../../css/table.css';
+import { ActionTypes } from '@packages/action';
 import { PropertyFormat } from '@packages/entity-template';
 import { getRuleBreachAlertsRequest, getRuleBreachRequestsRequest } from '../../services/ruleBreachesService';
 import { useDarkModeStore } from '../../stores/darkMode';

@@ -1,7 +1,7 @@
 import { Box } from '@mui/material';
-import { IGraphFilterBody, IGraphFilterBodyBatch } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import React from 'react';
+import { IGraphFilterBody, IGraphFilterBodyBatch } from '../../interfaces/graphFilter';
 import { GraphFilter } from './GraphFilter';
 
 interface GraphFilterBatchProps {

@@ -1,3 +1,4 @@
+import { Conjunction } from '@packages/common';
 import { IPropertyValue } from '@packages/entity';
 import {
     IAggregationGroup,
@@ -161,8 +162,8 @@ export class RuleParser {
         };
     };
 
-    private static conjunctionParser = (conjunction: string | undefined) => {
-        return (conjunction || 'AND') as 'AND' | 'OR';
+    private static conjunctionParser = (conjunction: string | undefined): Conjunction => {
+        return (conjunction || Conjunction.AND) as Conjunction;
     };
 
     private static aggregationParser = (operator: 'some' | 'all') => {

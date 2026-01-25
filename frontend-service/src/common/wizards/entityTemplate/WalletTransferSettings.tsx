@@ -7,13 +7,13 @@ import React, { useEffect } from 'react';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
+import { EntityTemplateWizardValues } from '../../../interfaces/template';
 import { searchEntitiesOfTemplateRequest } from '../../../services/entitiesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { ErrorToast } from '../../ErrorToast';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip, { TooltipVariant } from '../../MeltaDesigns/MeltaTooltip';
 import { StepComponentProps } from '../index';
-import { EntityTemplateWizardValues } from '.';
 import { CommonFormInputProperties, IWalletTransferPopulated } from './commonInterfaces';
 import { WalletTransferAutocomplete } from './WalletTransferAutoComplete';
 
@@ -78,10 +78,9 @@ export const WalletTransferSettings: React.FC<
     const { data: areThereInstancesByTemplateIdResponse } = useQuery(
         ['areThereInstancesByTemplateId', values._id],
         () =>
-            searchEntitiesOfTemplateRequest(values._id!, {
+            searchEntitiesOfTemplateRequest(values._id, {
                 skip: 0,
                 limit: 1,
-                showRelationships: false,
             }),
         {
             enabled: isEditMode,

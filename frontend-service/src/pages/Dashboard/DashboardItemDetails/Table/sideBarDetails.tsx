@@ -1,7 +1,5 @@
 import { Divider, Grid } from '@mui/material';
-import { IChildTemplateMap } from '@packages/child-template';
 import { DashboardItemType } from '@packages/dashboard';
-import { IEntityTemplateMap } from '@packages/entity-template';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
@@ -10,6 +8,7 @@ import { FormikAutoComplete } from '../../../../common/inputs/FormikAutoComplete
 import { ViewModeTextField } from '../../../../common/inputs/ViewModeTextField';
 import { StepComponentProps } from '../../../../common/wizards';
 import { TableForm, ViewMode } from '../../../../interfaces/dashboard';
+import { IChildTemplateMap, IEntityTemplateMap } from '../../../../interfaces/template';
 import { dashboardInitialValues, getTemplateProperties } from '../../../../utils/dashboard/formik';
 import { ChangeTemplate } from '../../Dialogs';
 

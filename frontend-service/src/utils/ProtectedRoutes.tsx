@@ -1,13 +1,12 @@
 import { CircularProgress } from '@mui/material';
-import { IChildTemplateMap } from '@packages/child-template';
 import { DashboardItemType } from '@packages/dashboard';
-import { IEntityTemplateMap } from '@packages/entity-template';
 import { ISubCompactPermissions, PermissionScope } from '@packages/permission';
 import { AxiosError } from 'axios';
 import { StatusCodes } from 'http-status-codes';
 import React, { isValidElement, ReactNode } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { Redirect, useLocation, useParams, useSearchParams } from 'wouter';
+import { IChildTemplateMap, IEntityTemplateMap } from '../interfaces/template';
 import { getExpandedEntityByIdRequest } from '../services/entitiesService';
 
 export const protectedRoute = (children: React.ReactNode, isAllowed: boolean) => {

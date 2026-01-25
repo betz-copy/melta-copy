@@ -1,4 +1,4 @@
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import {
     IConvertToRelationshipField,
     IMongoRelationshipTemplate,
@@ -8,6 +8,7 @@ import {
 import axios from '../../axios';
 import { defaultInitialValues, RelationshipTemplateWizardValues } from '../../common/wizards/relationshipTemplate';
 import { environment } from '../../globals';
+import { IEntityTemplateMap } from '../../interfaces/template';
 
 const { relationshipTemplates } = environment.api;
 
@@ -35,8 +36,6 @@ const relationshipTemplateFormToRelationshipTemplateObject = (
 ): IRelationshipTemplate | IMongoRelationshipTemplate => {
     const { sourceEntity, destinationEntity, ...restOfRelationshipWizardValues } = relationshipTemplateWizardValues;
     return {
-        // TODO: Check if true
-        isProperty: false,
         ...restOfRelationshipWizardValues,
         sourceEntityId: sourceEntity._id,
         destinationEntityId: destinationEntity._id,

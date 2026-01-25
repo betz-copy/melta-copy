@@ -1,5 +1,3 @@
-import { IEntity } from '@packages/entity';
-import { ActionOnFail, IRuleMap } from '@packages/rule';
 import {
     ActionTypes,
     IAction,
@@ -8,14 +6,14 @@ import {
     ICreateEntityMetadataPopulated,
     IDuplicateEntityMetadata,
     IDuplicateEntityMetadataPopulated,
-    IRuleBreach,
-    IRuleBreachPopulated,
-    IRuleBreachRequestPopulated,
     IUpdateEntityMetadata,
     IUpdateEntityMetadataPopulated,
     IUpdateMultipleEntitiesMetadata,
     IUpdateMultipleEntitiesMetadataPopulated,
-} from '@packages/rule-breach';
+} from '@packages/action';
+import { IEntity } from '@packages/entity';
+import { ActionOnFail, IRuleMap } from '@packages/rule';
+import { IRuleBreach, IRuleBreachPopulated, IRuleBreachRequestPopulated } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import { mapValues, pickBy } from 'lodash';

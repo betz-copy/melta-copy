@@ -1,9 +1,9 @@
 import { AppRegistration as AppRegistrationIcon, AutoAwesome, KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import { Box, Card, CardContent, CardHeader, Dialog, Divider, Grid, IconButton, styled, Typography } from '@mui/material';
+import { ActionTypes } from '@packages/action';
 import { IEntity } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { PermissionScope } from '@packages/permission';
-import { ActionTypes } from '@packages/rule-breach';
 import i18next from 'i18next';
 import React, { useMemo, useRef, useState } from 'react';
 import { toast } from 'react-toastify';

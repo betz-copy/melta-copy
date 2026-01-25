@@ -1,6 +1,6 @@
 import { FieldGroupData, IRelationshipReference, IWalletTransfer } from '@packages/entity-template';
 import { IAgGridDateFilter, IAgGridNumberFilter, IAgGridSetFilter, IAgGridTextFilter } from '@packages/rule-breach';
-import { PropertyWizardType } from '.';
+import { PropertyWizardType } from '../../../interfaces/template';
 
 export interface CommonFormInputProperties {
     name: string;

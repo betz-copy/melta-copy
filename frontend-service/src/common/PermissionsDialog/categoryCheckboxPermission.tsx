@@ -1,4 +1,3 @@
-/** biome-ignore-all lint/suspicious/noExplicitAny: TS limitations */
 import { ArrowLeftRounded } from '@mui/icons-material';
 import { Collapse, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { PermissionData, PermissionScope } from '@packages/permission';
@@ -77,12 +76,10 @@ const CategoryCheckboxPermission: React.FC<{
                     disabled={disabled}
                     indeterminate={
                         categoryPermissions.scope !== PermissionScope.write &&
-                        !!Object.values(templatesPermissions ?? {}).filter(
-                            (templatePermission: any) => templatePermission.scope === PermissionScope.write,
-                        ).length &&
-                        Object.values(templatesPermissions ?? {}).filter(
-                            (templatePermission: any) => templatePermission.scope === PermissionScope.write,
-                        ).length <= entityTemplates.length
+                        !!Object.values(templatesPermissions ?? {}).filter((templatePermission) => templatePermission.scope === PermissionScope.write)
+                            .length &&
+                        Object.values(templatesPermissions ?? {}).filter((templatePermission) => templatePermission.scope === PermissionScope.write)
+                            .length <= entityTemplates.length
                     }
                 />
             </Grid>

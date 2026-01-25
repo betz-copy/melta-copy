@@ -1,6 +1,5 @@
 import AddIcon from '@mui/icons-material/Add';
 import { Button, DialogContent, Grid, Typography } from '@mui/material';
-import { IEntityTemplateMap } from '@packages/entity-template';
 import { IMongoPrintingTemplate, IPrintingTemplateMap } from '@packages/printing-template';
 import { FieldArray, Form, Formik, getIn } from 'formik';
 import i18next from 'i18next';
@@ -9,6 +8,7 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { v4 } from 'uuid';
 import * as Yup from 'yup';
+import { IEntityTemplateMap } from '../../../interfaces/template';
 import { createPrintingTemplateRequest, updatePrintingTemplateRequest } from '../../../services/templates/printingTemplateService';
 import PrintSectionRow from './components/PrintSectionRow';
 import Title from './components/Title';

@@ -1,6 +1,6 @@
 import { ExpandLess as ExpandLessIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { Collapse, Grid, Typography } from '@mui/material';
-import { IActionPopulated } from '@packages/rule-breach';
+import { IActionPopulated } from '@packages/action';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { ActionInfo } from '../ActionInfo';
@@ -11,7 +11,7 @@ export const BrokenRuleActions: React.FC<{
 }> = ({ actions, failedProperties }) => {
     const [openActions, setOpenActions] = useState(false);
 
-    if (actions.length === 0) return null;
+    if (!actions.length) return null;
 
     return (
         <Grid>

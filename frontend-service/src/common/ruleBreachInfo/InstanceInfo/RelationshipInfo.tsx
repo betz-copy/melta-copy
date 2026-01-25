@@ -1,9 +1,9 @@
 import { ExpandLess as ExpandLessIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { Collapse, Divider, Grid, Paper, Typography, useTheme } from '@mui/material';
-import { IEntityTemplateMap } from '@packages/entity-template';
 import { IMongoRelationshipTemplatePopulated } from '@packages/relationship-template';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
+import { IEntityTemplateMap } from '../../../interfaces/template';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { EntityPropertiesInternal } from '../../EntityProperties';

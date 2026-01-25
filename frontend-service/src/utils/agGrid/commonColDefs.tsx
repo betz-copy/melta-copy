@@ -12,9 +12,8 @@ import {
 } from '@ag-grid-community/core';
 import { PriorityHigh } from '@mui/icons-material';
 import { Box, Grid, Tooltip, tooltipClasses } from '@mui/material';
-import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { ActionErrors } from '@packages/action';
 import {
-    EntityData,
     IEntity,
     IExcelNotFoundError,
     IRelationshipRefNotFoundError,
@@ -24,9 +23,9 @@ import {
     IUsersNotFoundError,
     NotFoundErrorTypes,
 } from '@packages/entity';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated, PropertyFormat } from '@packages/entity-template';
+import { IEntitySingleProperty, PropertyFormat } from '@packages/entity-template';
 import { PermissionData } from '@packages/permission';
-import { ActionErrors, IRuleBreachPopulated, IRuleBreachRequestPopulated } from '@packages/rule-breach';
+import { EntityData, IRuleBreachPopulated, IRuleBreachRequestPopulated } from '@packages/rule-breach';
 import { ISemanticSearchResult } from '@packages/semantic-search';
 import { IGetUnits, IMongoUnit } from '@packages/unit';
 import { IUser } from '@packages/user';
@@ -38,6 +37,7 @@ import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 import UserAvatar, { IUserAvatarProps } from '../../common/UserAvatar';
 import { environment } from '../../globals';
 import { IError, IFailedEntity, IValidationError } from '../../interfaces/excel';
+import { IEntityTemplateMap, ITemplate } from '../../interfaces/template';
 import OpenMap from '../../pages/Map/OpenMap';
 import { PropertyWizardTypes } from '../../services/templates/entityTemplatesService';
 import { getDateWithoutTime, getLongDate } from '../date';
@@ -307,7 +307,7 @@ export const locationColDef = <Data extends EntityData>(
     valueGetter: ValueGetterFunc<Data>,
     entityGetter: ValueGetterFunc<any, any>,
     value: Partial<IEntitySingleProperty>,
-    template: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
+    template: ITemplate,
     hardcodedWidth: number | undefined,
     isLastColumn: boolean,
     hideColumn = false,

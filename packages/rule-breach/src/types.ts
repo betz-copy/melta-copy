@@ -1,6 +1,7 @@
+import { ActionErrors, ActionTypes, IAction, IActionMetadataPopulated, IActionPopulated, ICreateEntityMetadata } from '@packages/action';
 import {
+    IConnection,
     IEntity,
-    IEntityWithIgnoredRules,
     IExcelNotFoundError,
     IPropertyValue,
     IRequiredConstraint,
@@ -11,147 +12,27 @@ import { ISubCompactPermissions } from '@packages/permission';
 import { IRelationshipPopulated } from '@packages/relationship';
 import { IUser } from '@packages/user';
 
-export interface ICreateRelationshipMetadata {
-    relationshipTemplateId: string;
-    sourceEntityId: string;
-    destinationEntityId: string;
-}
-
-export interface IDeleteRelationshipMetadata {
-    relationshipId: string;
-
-    relationshipTemplateId: string;
-    sourceEntityId: string;
-    destinationEntityId: string;
-}
-
-export interface ICreateEntityMetadata {
-    templateId: string;
-    properties: Record<string, IPropertyValue>;
-}
-
-export interface IDuplicateEntityMetadata {
-    templateId: string;
-    properties: Record<string, IPropertyValue>;
-    entityIdToDuplicate: string;
-}
-
-export interface IUpdateEntityMetadata {
-    entityId: string;
-    before?: Record<string, IPropertyValue>;
-    updatedFields: Record<string, IPropertyValue>;
-}
-
-export interface IUpdateMultipleEntitiesMetadata extends Array<IUpdateEntityMetadata> {}
-
-export interface IUpdateEntityStatusMetadata {
-    entityId: string;
-    disabled: boolean;
-}
-
-export interface ICronjobRunMetadata {
-    entityId: string; // on whom cronjob run was initiated
-}
-
-export interface ICreateRelationshipMetadataPopulated extends Omit<ICreateRelationshipMetadata, 'sourceEntityId' | 'destinationEntityId'> {
-    sourceEntity: IEntity | string | null;
-    destinationEntity: IEntity | string | null;
-}
-
-export interface IDeleteRelationshipMetadataPopulated extends Omit<IDeleteRelationshipMetadata, 'sourceEntityId' | 'destinationEntityId'> {
-    sourceEntity: IEntity | string | null;
-    destinationEntity: IEntity | string | null;
-}
-
-export interface ICreateEntityMetadataPopulated extends ICreateEntityMetadata {}
-
-export interface IDuplicateEntityMetadataPopulated extends ICreateEntityMetadata {
-    entityToDuplicate: IEntity | string | null;
-}
-
-export interface IUpdateEntityStatusMetadataPopulated extends Omit<IUpdateEntityStatusMetadata, 'entityId'> {
-    entity: IEntity | null;
-}
-export interface IUpdateEntityMetadataPopulated extends Omit<IUpdateEntityMetadata, 'entityId'> {
-    entity: IEntity | null;
-}
-export interface ICreateOrDuplicateEntityMetadataPopulated {
-    templateId: string;
-    properties: Record<string, IPropertyValue>;
-}
-
-export interface IUpdateMultipleEntitiesMetadataPopulated extends Array<IUpdateEntityMetadataPopulated> {}
-
-export interface ICronjobRunMetadataPopulated {
-    entity: IEntity | null;
-}
-
-export type IActionMetadata =
-    | ICreateRelationshipMetadata
-    | IDeleteRelationshipMetadata
-    | ICreateEntityMetadata
-    | IDuplicateEntityMetadata
-    | IUpdateEntityMetadata
-    | IUpdateEntityStatusMetadata
-    | IUpdateMultipleEntitiesMetadata
-    | ICronjobRunMetadata;
-
-export type IActionMetadataPopulated =
-    | ICreateRelationshipMetadataPopulated
-    | IDeleteRelationshipMetadataPopulated
-    | ICreateEntityMetadataPopulated
-    | IDuplicateEntityMetadataPopulated
-    | IUpdateEntityMetadataPopulated
-    | IUpdateEntityStatusMetadataPopulated
-    | IUpdateMultipleEntitiesMetadataPopulated
-    | ICronjobRunMetadataPopulated;
-
-export enum ActionTypes {
-    CreateRelationship = 'create-relationship',
-    DeleteRelationship = 'delete-relationship',
-    CreateEntity = 'create-entity',
-    DuplicateEntity = 'duplicate-entity',
-    UpdateEntity = 'update-entity',
-    UpdateStatus = 'update-status',
-    UpdateMultipleEntities = 'update-multiple-entities',
-    CreateClientSideEntity = 'create-client-side-entity',
-    CronjobRun = 'cronjob-run',
-}
-
-export interface IActionPopulated {
-    actionType: ActionTypes;
-    actionMetadata: IActionMetadataPopulated;
-}
-
-export enum ActionErrors {
-    validation = 'VALIDATION',
-    unique = 'UNIQUE',
-    required = 'REQUIRED',
-    filterValidation = 'FILTER_VALIDATION',
-    notFound = 'NOT_FOUND',
-}
-
-export enum basicFilterOperationTypes {
+export enum BasicFilterOperationTypes {
     equals = 'equals',
     notEqual = 'notEqual',
     blank = 'blank',
     notBlank = 'notBlank',
 }
-export enum numberFilterOperationTypes {
+export enum NumberFilterOperationTypes {
     lessThan = 'lessThan',
     lessThanOrEqual = 'lessThanOrEqual',
     greaterThan = 'greaterThan',
     greaterThanOrEqual = 'greaterThanOrEqual',
     inRange = 'inRange',
 }
-export enum textFilterOperationTypes {
+export enum TextFilterOperationTypes {
     contains = 'contains',
     notContains = 'notContains',
     startsWith = 'startsWith',
     endsWith = 'endsWith',
 }
 
-export enum relativeDateFilters {
+export enum RelativeDateFilters {
     thisWeek = 'thisWeek',
     thisMonth = 'thisMonth',
     thisYear = 'thisYear',
@@ -161,6 +42,7 @@ export enum relativeDateFilters {
 
 export enum FilterTypes {
     text = 'text',
+    string = 'string',
     number = 'number',
     date = 'date',
     set = 'set',
@@ -168,20 +50,20 @@ export enum FilterTypes {
 
 export interface IAgGridTextFilter {
     filterType: FilterTypes.text;
-    type: basicFilterOperationTypes | textFilterOperationTypes;
+    type: BasicFilterOperationTypes | TextFilterOperationTypes;
     filter?: string;
 }
 
 export interface IAgGridNumberFilter {
     filterType: FilterTypes.number;
-    type: basicFilterOperationTypes | numberFilterOperationTypes;
+    type: BasicFilterOperationTypes | NumberFilterOperationTypes;
     filter?: number | string;
     filterTo?: number; // only inRange type
 }
 
 export interface IAgGridDateFilter {
     filterType: FilterTypes.date;
-    type: basicFilterOperationTypes | numberFilterOperationTypes | relativeDateFilters;
+    type: BasicFilterOperationTypes | NumberFilterOperationTypes | RelativeDateFilters;
     dateFrom: string | null;
     dateTo: string | null; // only inRange type
 }
@@ -246,11 +128,6 @@ export interface ICausesOfInstance {
 export interface IBrokenRule {
     ruleId: string;
     failures: Array<{ entityId: string; causes: ICausesOfInstance[] }>;
-}
-
-export interface IAction {
-    actionType: ActionTypes;
-    actionMetadata: IActionMetadata;
 }
 
 export interface IRuleBreach {
@@ -370,3 +247,28 @@ export interface IEditReadExcel {
     failedEntities: IFailedEntity[];
     entities: IEntityWithIgnoredRules[];
 }
+
+export interface IBrokenRulesError {
+    metadata: {
+        errorCode: 'RULE_BLOCK';
+        rawBrokenRules: IBrokenRule[];
+        brokenRules: IBrokenRulePopulated[];
+        actions: IActionPopulated[];
+        rawActions: IAction[];
+    };
+}
+
+export interface IEntityWithIgnoredRules extends ICreateEntityMetadata {
+    ignoredRules: IBrokenRule[];
+}
+
+export interface IValidationErrorData {
+    type: string;
+    message: string;
+    metadata: {
+        properties: Record<string, IPropertyValue>;
+        errors: { type: ActionErrors.validation; metadata: IValidationError }[];
+    };
+}
+
+export type EntityData = IEntity | IFailedEntity | IConnection;

@@ -11,12 +11,11 @@ import {
 } from '@mui/icons-material';
 import { BaseTextFieldProps, Box, CircularProgress, Grid, IconButton, ToggleButton, ToggleButtonGroup, Typography, useTheme } from '@mui/material';
 import { IMongoCategory } from '@packages/category';
-import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IEntity } from '@packages/entity';
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import { debounce } from 'lodash';
 import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
+import { ITemplate } from '../../interfaces/template';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { convertToBool } from '../../utils/convertStringToBool';
@@ -152,7 +151,7 @@ export const GlobalSearchBar: React.FC<{
     );
 };
 
-type EntitiesPageHeadlineProps<T extends IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated> = {
+type EntitiesPageHeadlineProps<T extends ITemplate> = {
     searchInput?: string;
     setSearchInput?: (newSearchInput: string) => void;
     onSearch: (value: string) => void;
@@ -179,7 +178,7 @@ type EntitiesPageHeadlineProps<T extends IMongoEntityTemplateWithConstraintsPopu
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
-const EntitiesPageHeadline = <T extends IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated>({
+const EntitiesPageHeadline = <T extends ITemplate>({
     searchInput,
     setSearchInput,
     onSearch,

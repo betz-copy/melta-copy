@@ -1,6 +1,6 @@
 import { Grid, Typography, useTheme } from '@mui/material';
 import React, { CSSProperties } from 'react';
-import '../css/realtionshipTitle.css';
+import '../css/relationshipTitle.css';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IMongoRelationshipTemplatePopulated } from '@packages/relationship-template';
 import { useDarkModeStore } from '../stores/darkMode';

@@ -184,5 +184,3 @@ export interface IUpdateOrDeleteEnumFieldReqData {
     options: string[];
     optionColors?: Record<string, string>;
 }
-
-export type IEntityTemplateMap = Map<string, IMongoEntityTemplateWithConstraintsPopulated>;

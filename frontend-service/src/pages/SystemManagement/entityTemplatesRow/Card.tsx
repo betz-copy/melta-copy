@@ -1,8 +1,8 @@
 import { AppRegistration as AppRegistrationIcon, ArrowBackIosNew, InfoOutlined } from '@mui/icons-material';
 import { Grid, Typography, useTheme } from '@mui/material';
 import { ICategoryMap } from '@packages/category';
-import { EntityTemplateType, IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated, TemplateItem, ViewType } from '@packages/child-template';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { EntityTemplateType, IMongoChildTemplateWithConstraintsPopulated, TemplateItem, ViewType } from '@packages/child-template';
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { PermissionScope } from '@packages/permission';
 import i18next from 'i18next';
 import React, { useMemo, useState } from 'react';
@@ -13,6 +13,7 @@ import { ActionMode, IMutationWithPayload } from '../../../common/dialogs/ChildT
 import { emptyEntityTemplate } from '../../../common/dialogs/entity';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
+import { IChildTemplateMap, IEntityTemplateMap } from '../../../interfaces/template';
 import { getCountByTemplateIdsRequest } from '../../../services/entitiesService';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';

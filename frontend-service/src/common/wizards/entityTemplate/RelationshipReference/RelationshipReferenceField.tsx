@@ -1,10 +1,11 @@
 import { Autocomplete, Grid, MenuItem, TextField, Typography } from '@mui/material';
 import { IPropertyValue } from '@packages/entity';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated, IRelationshipReference } from '@packages/entity-template';
+import { IMongoEntityTemplateWithConstraintsPopulated, IRelationshipReference } from '@packages/entity-template';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
+import { IEntityTemplateMap } from '../../../../interfaces/template';
 import { CommonFormInputProperties, ConvertToRelationshipFieldFormInputProperties } from '../commonInterfaces';
 
 export interface FieldEditCardProps {

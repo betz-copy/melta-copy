@@ -3,11 +3,7 @@ import { ISearchEntityTemplatesBody } from '@packages/entity-template';
 import config from '../../config';
 import TemplatesManagerService from '.';
 
-const {
-    templateService: {
-        children: { getByIdRoute, searchRoute, getRelatedByIdRoute },
-    },
-} = config;
+const { getByIdRoute, searchRoute, getRelatedByIdRoute } = config.templateService.children;
 
 class ChildTemplateManagerService extends TemplatesManagerService {
     async getChildTemplateById(id: string) {

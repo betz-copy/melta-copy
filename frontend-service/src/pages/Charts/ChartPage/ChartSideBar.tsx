@@ -13,9 +13,7 @@ import {
     useTheme,
 } from '@mui/material';
 import { IChartPermission } from '@packages/chart';
-import { IChildTemplateMap } from '@packages/child-template';
 import { DashboardItemType } from '@packages/dashboard';
-import { IEntityTemplateMap } from '@packages/entity-template';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useState } from 'react';
@@ -26,6 +24,7 @@ import { ViewModeTextField } from '../../../common/inputs/ViewModeTextField';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { StepComponentProps } from '../../../common/wizards';
 import { ChartForm, ViewMode } from '../../../interfaces/dashboard';
+import { IChildTemplateMap, IEntityTemplateMap } from '../../../interfaces/template';
 import { useUserStore } from '../../../stores/user';
 import { initialValues } from '../../../utils/charts/getChartAxes';
 import { dashboardInitialValues } from '../../../utils/dashboard/formik';

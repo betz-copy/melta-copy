@@ -18,3 +18,8 @@ export enum SplitBy {
     space = ' ',
     comma = ',',
 }
+
+export enum Conjunction {
+    AND = 'AND',
+    OR = 'OR',
+}

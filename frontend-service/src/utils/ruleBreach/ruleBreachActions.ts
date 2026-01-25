@@ -1,20 +1,19 @@
-import { IEntity } from '@packages/entity';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
-import { IRelationshipPopulated } from '@packages/relationship';
-import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import {
     ActionTypes,
     IActionPopulated,
-    ICausesOfInstancePopulated,
     ICreateEntityMetadataPopulated,
     ICreateRelationshipMetadataPopulated,
     IDuplicateEntityMetadataPopulated,
-    IEntityForBrokenRules,
-    IRelationshipForBrokenRules,
     IUpdateEntityMetadataPopulated,
-} from '@packages/rule-breach';
+} from '@packages/action';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IRelationshipPopulated } from '@packages/relationship';
+import { IRelationshipTemplateMap } from '@packages/relationship-template';
+import { ICausesOfInstancePopulated, IEntityForBrokenRules, IRelationshipForBrokenRules } from '@packages/rule-breach';
 import { isEqual } from 'lodash';
 import { environment } from '../../globals';
+import { emptyCategory, IEntityTemplateMap } from '../../interfaces/template';
 
 export const getActionsByFailureOnEntity = (
     failure: { entity: IEntityForBrokenRules; causes: ICausesOfInstancePopulated[] },
@@ -189,14 +188,7 @@ export const getEntityForRelationshipInfo = (
                 type: 'object',
             },
             category: {
-                _id: 'empty',
-                color: 'yellow',
-                displayName: 'empty',
-                name: 'empty',
-                templatesOrder: [],
-                createdAt: new Date(),
-                updatedAt: new Date(),
-                iconFileId: null,
+                ...emptyCategory,
             },
             disabled: false,
             displayName: '---',

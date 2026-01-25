@@ -1,4 +1,5 @@
-import { IEntitySingleProperty, IEntityTemplateMap } from '@packages/entity-template';
+import { Conjunction } from '@packages/common';
+import { IEntitySingleProperty } from '@packages/entity-template';
 import {
     IAggregationGroup,
     IArgument,
@@ -22,6 +23,7 @@ import {
 import { JsonGroup, JsonItem, JsonRule, JsonRuleGroupExt, RuleProperties } from '@react-awesome-query-builder/mui';
 import { v4 as uuid } from 'uuid';
 import { environment } from '../../globals';
+import { IEntityTemplateMap } from '../../interfaces/template';
 import { FunctionObject, ValueType } from './interfaces';
 
 const { formulaGetTodayVarName } = environment;
@@ -89,7 +91,7 @@ export class RuleSerializer {
                 valueSrc: ['value'],
                 operator: RuleSerializer.operatorSerializer(eq.operatorBool),
                 mode: 'array',
-                conjunction: 'AND',
+                conjunction: Conjunction.AND,
                 not: false,
             },
             children1: [],

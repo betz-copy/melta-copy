@@ -1,9 +1,10 @@
 import { Add, ExpandMore, InfoOutlined } from '@mui/icons-material';
 import { Autocomplete, AutocompleteInputChangeReason, AutocompleteProps, Box, TextField, Typography } from '@mui/material';
-import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IEntity, IPropertyValue, ISearchEntitiesOfTemplateBody, ISearchFilter } from '@packages/entity';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IGetUnits } from '@packages/unit';
+import { CoordinateSystem } from '@packages/utils';
 import { IWorkspace } from '@packages/workspace';
 import i18next from 'i18next';
 import { debounce } from 'lodash';
@@ -11,6 +12,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useInfiniteQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
+import { IChildTemplateMap, IEntityTemplateMap } from '../../interfaces/template';
 import { searchEntitiesOfTemplateClientSideRequest } from '../../services/clientSideService';
 import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
 import { useClientSideUserStore } from '../../stores/clientSideUser';
@@ -23,7 +25,6 @@ import { getDefaultFilterFromTemplate } from '../EntitiesPage/TemplateTablesView
 import { EntityPropertiesInternal } from '../EntityProperties';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import RelationshipReferenceView from '../RelationshipReferenceView';
-import { CoordinateSystem } from './JSONSchemaFormik/Widgets/RjsfLocationWidget';
 
 const { fieldFilterPrefix, twinWalletId } = environment;
 
@@ -193,7 +194,6 @@ const TemplateEntitiesAutocomplete: React.FC<{
                 limit: cacheBlockSize,
                 filter: parseAndAddDisabled(relationFilters),
                 textSearch: inputValue,
-                showRelationships: false,
             });
         },
         {

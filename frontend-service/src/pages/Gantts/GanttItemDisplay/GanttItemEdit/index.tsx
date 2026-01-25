@@ -1,5 +1,4 @@
 import { Grid } from '@mui/material';
-import { IEntityTemplateMap } from '@packages/entity-template';
 import { IGantt, IGanttItem } from '@packages/gantt';
 import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import { FieldArray, FormikProps } from 'formik';
@@ -8,6 +7,7 @@ import { pickBy } from 'lodash';
 import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';
 import { FormikAutoComplete } from '../../../../common/inputs/FormikAutoComplete';
+import { IEntityTemplateMap } from '../../../../interfaces/template';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import { getGanttItemEditDetails, getRelationshipString } from '../../../../utils/gantts';
 import { EditConnectedEntityTemplates } from './EditConnectedEntityTemplates.tsx';

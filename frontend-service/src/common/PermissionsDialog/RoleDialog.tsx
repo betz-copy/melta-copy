@@ -1,6 +1,4 @@
 import { Box, Button, CircularProgress, DialogActions, DialogContent, DialogTitle, Grid, TextField } from '@mui/material';
-import { IChildTemplateMap } from '@packages/child-template';
-import { IEntityTemplateMap } from '@packages/entity-template';
 import { PermissionData } from '@packages/permission';
 import { IRole } from '@packages/role';
 import { RelatedPermission } from '@packages/user';
@@ -12,6 +10,9 @@ import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
+import { ErrorResponseData } from '../../interfaces/error';
+import { PermissionDialogMode } from '../../interfaces/inputs';
+import { IChildTemplateMap, IEntityTemplateMap } from '../../interfaces/template';
 import { createRoleRequest, getAllWorkspaceRolesRequest, syncPermissionsRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
@@ -20,13 +21,9 @@ import { createDialogCategories, isPermissionsEquals, userHasNoPermissions } fro
 import BlueTitle from '../MeltaDesigns/BlueTitle';
 import ManagePermissions from './managePermissions';
 
-export interface ErrorResponseData {
-    metadata?: { message?: string };
-}
-
 const RoleDialog: React.FC<{
     handleClose: () => void;
-    mode: 'create' | 'edit' | 'view';
+    mode: PermissionDialogMode;
     existingRole?: IRole;
     onSuccess?: (user?: IRole) => void;
 }> = ({ handleClose, mode, existingRole, onSuccess }) => {
@@ -119,14 +116,14 @@ const RoleDialog: React.FC<{
                 name: Yup.string().nullable().required(i18next.t('validation.required')),
             }).unknown(true)}
             validate={({ name }: IRole) => {
-                if (mode === 'create' && workspaceRoles?.find((role) => role.name === name)) {
+                if (mode === PermissionDialogMode.Create && workspaceRoles?.find((role) => role.name === name)) {
                     return { name: i18next.t('permissions.permissionsOfRoleDialog.userAlreadyExistOnCreateMessage') };
                 }
 
                 return {};
             }}
             onSubmit={(formRole) => {
-                if (mode === 'create') createRole(formRole);
+                if (mode === PermissionDialogMode.Create) createRole(formRole);
                 else syncRolePermissions(formRole);
             }}
         >
@@ -135,7 +132,7 @@ const RoleDialog: React.FC<{
                 return (
                     <Form>
                         <DialogTitle>
-                            {mode !== 'view' && (
+                            {mode !== PermissionDialogMode.View && (
                                 <BlueTitle
                                     title={i18next.t(`permissions.permissionsOfRoleDialog.${mode}Title`)}
                                     component="h6"
@@ -154,20 +151,20 @@ const RoleDialog: React.FC<{
                                     label={i18next.t('permissions.roleHeaderName')}
                                     slotProps={{
                                         inputLabel: {
-                                            shrink: mode === 'view' || undefined,
+                                            shrink: mode === PermissionDialogMode.View || undefined,
                                             style: {
                                                 fontSize: '14px',
                                             },
                                         },
                                         htmlInput: {
-                                            readOnly: mode === 'view',
+                                            readOnly: mode === PermissionDialogMode.View,
                                             style: {
                                                 textOverflow: 'ellipsis',
                                                 fontSize: '14px',
                                             },
                                         },
                                     }}
-                                    disabled={mode === 'edit'}
+                                    disabled={mode === PermissionDialogMode.Edit}
                                     error={Boolean(touched.name && errors.name)}
                                     helperText={touched.name ? errors.name : ''}
                                 />
@@ -186,7 +183,7 @@ const RoleDialog: React.FC<{
                         <DialogActions sx={{ marginRight: '1rem', marginBottom: '0.5rem' }}>
                             <Grid container justifyContent="space-between">
                                 <Grid>
-                                    {mode !== 'view' && (
+                                    {mode !== PermissionDialogMode.View && (
                                         <Button
                                             type="submit"
                                             disabled={
@@ -196,8 +193,8 @@ const RoleDialog: React.FC<{
                                             }
                                             variant="contained"
                                         >
-                                            {mode === 'create' && i18next.t('permissions.permissionsOfUserDialog.createBtn')}
-                                            {mode === 'edit' && i18next.t('permissions.permissionsOfUserDialog.saveBtn')}
+                                            {mode === PermissionDialogMode.Create && i18next.t('permissions.permissionsOfUserDialog.createBtn')}
+                                            {mode === PermissionDialogMode.Edit && i18next.t('permissions.permissionsOfUserDialog.saveBtn')}
                                             {isSubmitting && <CircularProgress size={20} />}
                                         </Button>
                                     )}

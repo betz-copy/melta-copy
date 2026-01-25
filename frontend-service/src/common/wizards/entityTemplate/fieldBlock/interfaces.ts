@@ -1,24 +1,10 @@
-import { Accordion, styled } from '@mui/material';
 import { IPropertyValue, IUniqueConstraintOfTemplate } from '@packages/entity';
 import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import React, { SetStateAction } from 'react';
+import { PropertiesTypes } from '../../../../interfaces/template';
 import { StepComponentHelpers } from '../..';
-import { PropertiesTypes } from '../AddFields';
 import { CommonFormInputProperties, GroupProperty, PropertyItem } from '../commonInterfaces';
 import { FieldEditCardProps } from '../FieldEditCard';
-
-export const ItemTypes = {
-    FIELD: 'field',
-    GROUP: 'group',
-    STEP: 'step',
-    PROPERTY: 'property',
-};
-
-export const FieldBlockAccordion = styled(Accordion)({
-    width: '100%',
-    boxShadow: '1px 1px 10px 2px rgb(0 0 0 / 20%), 0px 1px 1px 0px rgb(0 0 0 / 14%), 0px 1px 3px 0px rgb(0 0 0 / 12%)',
-    marginBottom: '10px',
-});
 
 export interface FieldProps {
     field: CommonFormInputProperties;

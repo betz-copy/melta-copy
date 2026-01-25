@@ -1,12 +1,13 @@
 import { Grid } from '@mui/material';
-import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import { StepComponentProps } from '../../../../common/wizards';
 import { EntitiesTable } from '../../../../common/wizards/excel/excelSteps/EntitiesTable';
 import { ChartForm } from '../../../../interfaces/dashboard';
+import { IChildTemplateMap, IEntityTemplateMap } from '../../../../interfaces/template';
 import { useDebouncedFilter } from '../../../../utils/dashboard/useDebouncedFilter';
 import { ChartGenerator } from '../../../Charts/chartGenerator.tsx';
 

@@ -13,11 +13,9 @@ import {
     Upload,
 } from '@mui/icons-material';
 import { Box, CircularProgress, Dialog, Grid, useTheme } from '@mui/material';
-import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { ActionTypes } from '@packages/action';
 import { IEntity } from '@packages/entity';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { PermissionScope } from '@packages/permission';
-import { ActionTypes } from '@packages/rule-breach';
 import { IKartoffelUser } from '@packages/user';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
@@ -27,6 +25,7 @@ import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import { environment } from '../../globals';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../interfaces/CreateOrEditEntityDialog';
+import { IEntityTemplateMap, ITemplate } from '../../interfaces/template';
 import { exportEntitiesRequest } from '../../services/entitiesService';
 import { useClientSideUserStore } from '../../stores/clientSideUser';
 import { useDraftIdStore, useDraftsStore } from '../../stores/drafts';
@@ -55,18 +54,14 @@ const {
 
 export type TemplateTableRef = EntitiesTableOfTemplateRef<IEntity>;
 
-export const isUserHasWritePermissions = (
-    currentClientSideUser: IKartoffelUser | IEntity,
-    currentUser: UserState['user'],
-    template: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
-) =>
+export const isUserHasWritePermissions = (currentClientSideUser: IKartoffelUser | IEntity, currentUser: UserState['user'], template: ITemplate) =>
     !!Object.keys(currentClientSideUser).length ||
     checkUserTemplatePermission(currentUser.currentWorkspacePermissions, template.category._id, template._id, PermissionScope.write);
 
 const TemplateTable = forwardRef<
     EntitiesTableOfTemplateRef<IEntity>,
     {
-        template: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated;
+        template: ITemplate;
         quickFilterText: string;
         page: TablePageType;
         setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;

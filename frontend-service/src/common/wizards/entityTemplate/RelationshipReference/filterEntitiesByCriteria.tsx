@@ -7,9 +7,9 @@ import { FormikErrors, FormikTouched, getIn } from 'formik';
 import i18next from 'i18next';
 import { isEqual } from 'lodash';
 import React, { useMemo, useState } from 'react';
+import { PropertyWizardType } from '../../../../interfaces/template';
 import { getPropertyType } from '../../../../services/templates/entityTemplatesService';
 import { handleRemoveFilter, initializedFilterField, renderFilterInput } from '../../../FilterComponent';
-import { PropertyWizardType } from '..';
 import { CommonFormInputProperties, FilterType, IAgGridFilter, IFilterTemplate, PropertyItem } from '../commonInterfaces';
 
 export interface FieldOption {

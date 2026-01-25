@@ -1,3 +1,4 @@
+import { IAction } from '@packages/action';
 import {
     IEntity,
     IEntityWithDirectRelationships,
@@ -5,13 +6,11 @@ import {
     ISearchEntitiesOfTemplateBody,
     ISearchResult,
 } from '@packages/entity';
-import { IAction, IBrokenRule } from '@packages/rule-breach';
+import { IBrokenRule } from '@packages/rule-breach';
 import config from '../config';
 import DefaultExternalServiceApi from '../utils/express/externalService';
 
-const {
-    instanceService: { url, baseEntitiesRoute, requestTimeout, searchOfTemplateRoute },
-} = config;
+const { url, baseEntitiesRoute, requestTimeout, searchOfTemplateRoute } = config.instanceService;
 
 class InstancesService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {

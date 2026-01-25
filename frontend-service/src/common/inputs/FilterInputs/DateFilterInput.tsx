@@ -1,14 +1,14 @@
 import { FormControlLabel, Grid } from '@mui/material';
 import { ByCurrentDefaultValue } from '@packages/child-template';
 import {
-    basicFilterOperationTypes,
+    BasicFilterOperationTypes,
     FilterTypes,
     IAgGridDateFilter,
     IAgGridNumberFilter,
     IAgGridTextFilter,
     isRelativeDateFilter,
-    numberFilterOperationTypes,
-    relativeDateFilters,
+    NumberFilterOperationTypes,
+    RelativeDateFilters,
 } from '@packages/rule-breach';
 import i18next from 'i18next';
 import React, { useEffect } from 'react';
@@ -44,13 +44,13 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
     currentDateCheckbox = false,
 }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
-    const isInRangeType = filterField?.type === numberFilterOperationTypes.inRange;
+    const isInRangeType = filterField?.type === NumberFilterOperationTypes.inRange;
     const isRelativeType = isRelativeDateFilter(filterField?.type);
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
-        if (forceEqualsType && filterField && filterField.type !== basicFilterOperationTypes.equals)
-            handleFilterTypeChange(basicFilterOperationTypes.equals);
+        if (forceEqualsType && filterField && filterField.type !== BasicFilterOperationTypes.equals)
+            handleFilterTypeChange(BasicFilterOperationTypes.equals);
     }, [forceEqualsType, filterField]);
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: lol
@@ -59,7 +59,7 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
         const { type, dateFrom, dateTo } = filterField;
 
         if (isRelativeType) {
-            handleDateChange(type as relativeDateFilters, true);
+            handleDateChange(type as RelativeDateFilters, true);
             return;
         }
 
@@ -69,7 +69,7 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
             return;
         }
 
-        if (type !== numberFilterOperationTypes.inRange && dateTo !== null) {
+        if (type !== NumberFilterOperationTypes.inRange && dateTo !== null) {
             handleDateChange(null, false);
             return;
         }

@@ -1,9 +1,9 @@
 import { Autocomplete, Grid, TextField } from '@mui/material';
-import { IEntityTemplateMap } from '@packages/entity-template';
 import i18next from 'i18next';
 import React from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import * as Yup from 'yup';
+import { IEntityTemplateMap } from '../../../interfaces/template';
 import { getRelationshipInstancesCountByTemplateIdRequest } from '../../../services/entitiesService';
 import { useUserStore } from '../../../stores/user';
 import { getAllWritePermissionEntityTemplates } from '../../../utils/permissions/templatePermissions';

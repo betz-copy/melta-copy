@@ -4,7 +4,6 @@ import {
     FieldGroupData,
     IEntitySingleProperty,
     IEntityTemplate,
-    IEntityTemplateMap,
     IEntityTemplateWithConstraints,
     IMongoEntityTemplatePopulated,
     IMongoEntityTemplateWithConstraintsPopulated,
@@ -16,13 +15,13 @@ import {
 import { QueryClient } from 'react-query';
 import { v4 as uuid } from 'uuid';
 import axios from '../../axios';
-import { EntityTemplateFormInputProperties, EntityTemplateWizardValues, PropertyWizardType } from '../../common/wizards/entityTemplate';
 import { CommonFormInputProperties, GroupProperty, PropertyItem } from '../../common/wizards/entityTemplate/commonInterfaces';
 import {
     FilterModelToFilterRecord,
     filterTemplateToSearchFilter,
 } from '../../common/wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
 import { environment } from '../../globals';
+import { EntityTemplateFormInputProperties, EntityTemplateWizardValues, IEntityTemplateMap, PropertyWizardType } from '../../interfaces/template';
 import { getFileName } from '../../utils/getFileName';
 
 const { entityTemplates } = environment.api;
@@ -196,7 +195,7 @@ export const entityTemplateObjectToEntityTemplateForm = (
                     if (!usedFields.has(groupedField)) {
                         const propertyDetails = propertyData(groupedField, { name, displayName, id });
                         if (propertyDetails) {
-                            existingGroup.fields.push(propertyDetails as CommonFormInputProperties);
+                            existingGroup.fields.push(propertyDetails);
                             usedFields.add(groupedField);
                         }
                     }
@@ -373,7 +372,7 @@ const buildBasePropertySchema = (property: EntityTemplateFormInputProperties, qu
         hideFromDetailsPage,
         isProfileImage,
         color: comment && !color ? '#4752B6' : color,
-        uniqueItems: ['enumArray', 'users'].includes(type as string) ? true : undefined,
+        uniqueItems: ['enumArray', 'users'].includes(type) ? true : undefined,
         pattern: type === 'pattern' ? pattern : undefined,
         patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
         dateNotification: dateNotification as number | undefined,

@@ -1,10 +1,11 @@
 import { Box, Grid } from '@mui/material';
-import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IEntity } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { debounce } from 'lodash';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
+import { IChildTemplateMap } from '../../../interfaces/template';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import EntitiesTableOfTemplate, { TablePageType } from '../../EntitiesTableOfTemplate';

@@ -2,9 +2,7 @@ import { IWorkspace } from '@packages/workspace';
 import axios from 'axios';
 import config from '../../config';
 
-const {
-    workspaceService: { url, baseRoute, requestTimeout },
-} = config;
+const { url, baseRoute, requestTimeout } = config.workspaceService;
 
 class WorkspaceService {
     private static api = axios.create({ baseURL: `${url}${baseRoute}`, timeout: requestTimeout });

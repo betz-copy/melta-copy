@@ -1,13 +1,14 @@
 import { Typography } from '@mui/material';
+import { IUpdateEntityMetadataPopulated } from '@packages/action';
 import { IPropertyValue } from '@packages/entity';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
-import { IUpdateEntityMetadataPopulated } from '@packages/rule-breach';
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IGetUnits } from '@packages/unit';
 import i18next from 'i18next';
 import { pickBy } from 'lodash';
 import React from 'react';
 import ReactDiffViewer from 'react-diff-viewer';
 import { useQueryClient } from 'react-query';
+import { IEntityTemplateMap } from '../../interfaces/template';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { formatToString } from '../../utils/entityProperties';
 import { getFileName } from '../../utils/getFileName';

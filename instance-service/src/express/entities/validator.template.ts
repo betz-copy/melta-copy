@@ -1,3 +1,4 @@
+import { ActionErrors } from '@packages/action';
 import {
     FilterLogicalOperator,
     IFilterGroup,
@@ -12,7 +13,6 @@ import {
 } from '@packages/entity';
 import { IEntitySingleProperty, IEntityTemplate, IMongoEntityTemplate } from '@packages/entity-template';
 import { IMongoRelationshipTemplate } from '@packages/relationship-template';
-import { ActionErrors } from '@packages/rule-breach';
 import { addPropertyToRequest, CoordinateSystem, ValidationError } from '@packages/utils';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
@@ -366,12 +366,12 @@ export class EntityValidator extends DefaultController {
     }
 
     private validateShowRelationships(
-        showRelationships: boolean | string[],
+        showRelationships: boolean | string[] | undefined,
         entityTemplateId: string,
         relationshipTemplatesMap: Map<string, IMongoRelationshipTemplate>,
         pathOfShowRelationshipsField: string, // to show origin of error if throwing
     ) {
-        if (typeof showRelationships === 'boolean') return;
+        if (!showRelationships || typeof showRelationships === 'boolean') return;
 
         showRelationships.forEach((relationshipTemplateId, i) => {
             const relationshipTemplate = relationshipTemplatesMap.get(relationshipTemplateId);

@@ -1,7 +1,6 @@
 import { Close as CancelIcon, Delete, Edit as EditIcon, Check as SaveIcon } from '@mui/icons-material';
 import { Box, CircularProgress, Grid, useTheme } from '@mui/material';
 import { IChart } from '@packages/chart';
-import { IGraphFilterBodyBatch } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
@@ -10,6 +9,7 @@ import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
 import { TopBarGrid } from '../../../common/TopBar';
+import { IGraphFilterBodyBatch } from '../../../interfaces/graphFilter';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';

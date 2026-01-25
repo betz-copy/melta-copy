@@ -1,8 +1,7 @@
-import { Hemisphere, UTM } from '@packages/utils';
+import { CoordinateSystem, Hemisphere, UTM } from '@packages/utils';
 import * as Cesium from 'cesium';
 import { Cartesian3 } from 'cesium';
 import proj4 from 'proj4';
-import { CoordinateSystem } from '../../common/inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
 import { environment } from '../../globals';
 import { stringToCoordinates } from '.';
 

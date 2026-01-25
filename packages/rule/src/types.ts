@@ -1,4 +1,4 @@
-import { IEntity } from '@packages/entity';
+import { Conjunction } from '@packages/common';
 import { IEntityTemplatePopulated } from '@packages/entity-template';
 import { IMongoRelationshipTemplate } from '@packages/relationship-template';
 
@@ -6,11 +6,6 @@ export type IConstant = {
     isConstant: true;
     type: 'number' | 'string' | 'boolean' | 'date' | 'dateTime' | 'dateDuration' | 'dateTimeDuration' | 'relationshipReference';
     value: number | string | boolean;
-};
-
-// biome-ignore lint/suspicious/noExplicitAny: prop value is any
-export const isConstant = (constant: any): constant is IConstant => {
-    return constant.isConstant;
 };
 
 export interface IVariable {
@@ -28,36 +23,22 @@ export interface IPropertyOfVariable {
     property: string;
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: prop value is any
-export const isPropertyOfVariable = (propertyOfVariable: any): propertyOfVariable is IPropertyOfVariable => {
-    return propertyOfVariable.isPropertyOfVariable;
-};
-
 export interface IRegularFunction {
     isRegularFunction: true; // to identify interface runtime (instead of class' instanceof)
     functionType: 'toDate' | 'addToDate' | 'addToDateTime' | 'subFromDate' | 'subFromDateTime' | 'getToday';
     arguments: IArgument[];
 }
-export const isRegularFunction = (regularFunction: any): regularFunction is IRegularFunction => {
-    return regularFunction.isRegularFunction;
-};
 
 export interface ICountAggFunction {
     isCountAggFunction: true; // to identify interface runtime (instead of class' instanceof)
     variable: Required<IVariable>;
 }
-export const isCountAggFunction = (countAggFunction: any): countAggFunction is ICountAggFunction => {
-    return countAggFunction.isCountAggFunction;
-};
 
 export interface ISumAggFunction {
     isSumAggFunction: true; // to identify interface runtime (instead of class' instanceof)
     variable: Required<IVariable>;
     property: string;
 }
-export const isSumAggFunction = (sumAggFunction: any): sumAggFunction is ISumAggFunction => {
-    return sumAggFunction.isSumAggFunction;
-};
 
 export type IFunction = ICountAggFunction | ISumAggFunction | IRegularFunction;
 
@@ -76,34 +57,19 @@ export interface IEquation {
     rhsArgument: IArgument;
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: prop value is any
-export const isEquation = (equation: any): equation is IEquation => {
-    return equation.isEquation;
-};
-
 export interface IAggregationGroup {
     isAggregationGroup: true; // to identify interface runtime (instead of class' instanceof)
     aggregation: 'EVERY' | 'SOME';
     variableOfAggregation: Required<IVariable>;
-    ruleOfGroup: 'AND' | 'OR';
+    ruleOfGroup: Conjunction;
     subFormulas: IFormula[]; // formulas inside aggregation group may use the aggregated variable
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: prop value is any
-export const isAggregationGroup = (aggregationGroup: any): aggregationGroup is IAggregationGroup => {
-    return aggregationGroup.isAggregationGroup;
-};
-
 export interface IGroup {
     isGroup: true; // to identify interface runtime (instead of class' instanceof)
-    ruleOfGroup: 'AND' | 'OR';
+    ruleOfGroup: Conjunction;
     subFormulas: IFormula[];
 }
-
-// biome-ignore lint/suspicious/noExplicitAny: prop value is any
-export const isGroup = (group: any): group is IGroup => {
-    return group.isGroup;
-};
 
 export type IFormula = IGroup | IEquation | IAggregationGroup;
 
@@ -121,10 +87,6 @@ export interface IRuleMail {
     sendAssociatedUsers: boolean;
 }
 
-export interface IBulkRuleMail extends IRuleMail {
-    entity: IEntity;
-}
-
 export interface IRule {
     name: string;
     description: string;
@@ -139,6 +101,7 @@ export interface IRule {
 export interface IMongoRule extends IRule {
     _id: string;
 }
+
 export type IRuleMap = Map<string, IMongoRule>;
 
 export interface ISearchRulesBody {

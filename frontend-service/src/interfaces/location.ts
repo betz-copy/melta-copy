@@ -1,4 +1,5 @@
 import { IEntity } from '@packages/entity';
+import { CoordinateSystem } from '@packages/utils';
 import { Cartesian3 } from 'cesium';
 
 export type LatLng = {
@@ -27,4 +28,9 @@ export interface ICoordinateSearchResult {
 
 export interface IPolygonSearchResult extends Omit<ICoordinateSearchResult, 'position'> {
     position: Cartesian3[];
+}
+
+export interface LocationData {
+    location: string;
+    coordinateSystem: CoordinateSystem;
 }

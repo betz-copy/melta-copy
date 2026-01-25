@@ -1,12 +1,12 @@
 import {
     IEntitySingleProperty,
-    IEntityTemplateMap,
     IFullMongoEntityTemplate,
     IMongoEntityTemplateWithConstraintsPopulated,
     PropertyFormat,
 } from '@packages/entity-template';
+import { CoordinateSystem } from '@packages/utils';
 import { QueryClient } from 'react-query';
-import { CoordinateSystem } from '../../common/inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
+import { IEntityTemplateMap } from '../../interfaces/template';
 
 const generateFromString = ({ format, relationshipReference, enum: typeEnum }: IEntitySingleProperty, queryClient: QueryClient) => {
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;

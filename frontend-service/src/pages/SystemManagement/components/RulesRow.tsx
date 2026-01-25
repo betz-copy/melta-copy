@@ -1,7 +1,7 @@
 import { Brush, Email, WarningAmberRounded, WarningRounded } from '@mui/icons-material';
 import { FormControlLabel, Grid, Typography, useTheme } from '@mui/material';
 import { ICategoryMap } from '@packages/category';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { PermissionScope } from '@packages/permission';
 import { ActionOnFail, IMongoRule, IRuleMap } from '@packages/rule';
 import { AxiosError } from 'axios';
@@ -20,6 +20,7 @@ import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
 import { RuleWizard } from '../../../common/wizards/rule';
 import { environment } from '../../../globals';
+import { IEntityTemplateMap } from '../../../interfaces/template';
 import { deleteRuleRequest, ruleObjectToRuleForm, updateDisabledRuleRequest } from '../../../services/templates/rulesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';

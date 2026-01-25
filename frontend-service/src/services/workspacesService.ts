@@ -3,9 +3,7 @@ import axios from '../axios';
 import { environment } from '../globals';
 import { WorkspaceWizardValues } from '../pages/DirView/Wizard';
 
-const {
-    api: { workspaces },
-} = environment;
+const { workspaces } = environment.api;
 
 export const getDir = async (path: IWorkspace['path']) => {
     const { data } = await axios.post<IWorkspace[]>(`${workspaces}/dir`, { path });

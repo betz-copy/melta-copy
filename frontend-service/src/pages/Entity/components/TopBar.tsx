@@ -6,9 +6,9 @@ import React from 'react';
 import { Link } from 'wouter';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
+import { INestedRelationshipTemplates } from '../../../interfaces/template';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { getEntityTemplateColor } from '../../../utils/colors';
-import { INestedRelationshipTemplates } from '..';
 import { ActivityLog } from './activityLog';
 import { Print } from './print';
 

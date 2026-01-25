@@ -1,15 +1,14 @@
-import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IEntity, IPropertyValue } from '@packages/entity';
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { cloneDeep, debounce } from 'lodash';
 import { Dispatch, SetStateAction, useCallback, useMemo } from 'react';
 import { v4 as uuid } from 'uuid';
 import { environment } from '../../../../globals';
+import { ITemplate } from '../../../../interfaces/template';
 import { useDraftIdStore, useDraftsStore } from '../../../../stores/drafts';
 import { EntityWizardValues } from '..';
 
 const useDraftEntityDialogHook = (
-    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
+    entityTemplate: ITemplate,
     setInitialValuePropsToFilter: Dispatch<SetStateAction<Record<string, IPropertyValue>>>,
     entityToUpdate: IEntity | undefined,
 ) => {

@@ -1,6 +1,5 @@
 import { Box, CircularProgress, Grid, Typography } from '@mui/material';
 import { IEntityExpanded } from '@packages/entity';
-import { IEntityTemplateMap } from '@packages/entity-template';
 import { IRelationShipSelectionTree } from '@packages/printing-template';
 import i18next from 'i18next';
 import React, { FC, useMemo, useState } from 'react';
@@ -10,6 +9,7 @@ import SearchInput from '../../../../common/inputs/SearchInput';
 import { ArrowTail } from '../../../../common/RelationshipTitle';
 import Tree, { flattenTree } from '../../../../common/Tree';
 import { environment } from '../../../../globals';
+import { IEntityTemplateMap } from '../../../../interfaces/template';
 import { BackendConfigState } from '../../../../services/backendConfigService';
 import { getRelationshipSelectTreeForPrint } from '../../../../services/entitiesService';
 import { useUserStore } from '../../../../stores/user';

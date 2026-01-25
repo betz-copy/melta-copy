@@ -4,12 +4,10 @@ import config from '../../config';
 import DefaultExternalService from '../../utils/externalService';
 
 const {
-    templateService: {
-        url,
-        entities: { baseRoute, searchTemplatesRoute },
-        timeout,
-    },
-} = config;
+    url,
+    entities: { baseRoute, searchTemplatesRoute },
+    timeout,
+} = config.templateService;
 
 class TemplateManagerService extends DefaultExternalService {
     constructor(workspaceId: string) {

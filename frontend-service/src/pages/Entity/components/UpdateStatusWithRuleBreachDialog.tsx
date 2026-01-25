@@ -1,12 +1,7 @@
+import { ActionTypes, IUpdateEntityStatusMetadata, IUpdateEntityStatusMetadataPopulated } from '@packages/action';
 import { IEntity } from '@packages/entity';
 import { ActionOnFail, IRuleMap } from '@packages/rule';
-import {
-    ActionTypes,
-    IRuleBreach,
-    IRuleBreachPopulated,
-    IUpdateEntityStatusMetadata,
-    IUpdateEntityStatusMetadataPopulated,
-} from '@packages/rule-breach';
+import { IRuleBreach, IRuleBreachPopulated } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React from 'react';
@@ -17,11 +12,8 @@ import { ErrorToast } from '../../../common/ErrorToast';
 import { IErrorResponse } from '../../../interfaces/error';
 import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesService';
 
-const getActionMetadata = (currEntity: IEntity, disabledStatus: boolean): IUpdateEntityStatusMetadataPopulated => {
-    return {
-        entity: currEntity,
-        disabled: disabledStatus,
-    };
+const getActionMetadata = (entity: IEntity, disabled: boolean): IUpdateEntityStatusMetadataPopulated => {
+    return { entity, disabled };
 };
 const UpdateStatusWithRuleBreachDialog: React.FC<{
     isLoadingUpdateEntity: boolean;

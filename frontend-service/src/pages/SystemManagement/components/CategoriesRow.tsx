@@ -1,7 +1,6 @@
 import { AddCircle, Edit, Hive as HiveIcon } from '@mui/icons-material';
 import { Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { ICategoryMap, IMongoCategory } from '@packages/category';
-import { IEntityTemplateMap } from '@packages/entity-template';
 import { PermissionScope } from '@packages/permission';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -17,6 +16,7 @@ import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { CategoryWizard } from '../../../common/wizards/category';
 import { IMongoCategoryOrderConfig } from '../../../interfaces/config';
+import { IEntityTemplateMap } from '../../../interfaces/template';
 import { categoryObjectToCategoryForm, deleteCategoryRequest } from '../../../services/templates/categoriesService';
 import { updateConfigCategoryOrderRequest } from '../../../services/templates/configService';
 import { useUserStore } from '../../../stores/user';

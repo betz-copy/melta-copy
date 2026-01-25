@@ -1,10 +1,11 @@
+import { Conjunction } from '@packages/common';
 import { IEntity } from '@packages/entity';
 import { Object3D } from 'three';
 import { ILabelIcon } from '../utils/graph/helperTypes';
 
 declare module '@react-awesome-query-builder/mui' {
     export interface RuleGroupExtProperties {
-        conjunction: 'AND' | 'OR';
+        conjunction: Conjunction;
         not: boolean;
     }
 }

@@ -18,10 +18,10 @@ import { EntityLink } from '../../common/EntityLink';
 import { EntityTemplateTextComponent, RelationshipTitle } from '../../common/RelationshipTitle';
 import { TableButton } from '../../common/TableButton';
 import '../../css/pages.css';
+import { INestedRelationshipTemplates } from '../../interfaces/template';
 import { useClientSideUserStore } from '../../stores/clientSideUser';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
-import { INestedRelationshipTemplates } from '.';
 import DeleteRelationshipDialog from './DeleteRelationshipDialog';
 
 export const getButtonState = (

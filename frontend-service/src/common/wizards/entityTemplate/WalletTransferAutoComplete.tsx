@@ -1,8 +1,8 @@
 import { InfoOutlined } from '@mui/icons-material';
 import { Autocomplete, Box, TextField } from '@mui/material';
 import { FormikErrors, FormikTouched, getIn } from 'formik';
+import { EntityTemplateWizardValues } from '../../../interfaces/template';
 import MeltaTooltip, { TooltipVariant } from '../../MeltaDesigns/MeltaTooltip';
-import { EntityTemplateWizardValues } from '.';
 
 interface WalletAutocompleteProps<T> {
     label: string;

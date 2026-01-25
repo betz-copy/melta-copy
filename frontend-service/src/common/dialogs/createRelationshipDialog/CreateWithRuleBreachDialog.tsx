@@ -1,11 +1,6 @@
+import { ActionTypes, ICreateRelationshipMetadata, ICreateRelationshipMetadataPopulated } from '@packages/action';
 import { ActionOnFail, IRuleMap } from '@packages/rule';
-import {
-    ActionTypes,
-    ICreateRelationshipMetadata,
-    ICreateRelationshipMetadataPopulated,
-    IRuleBreach,
-    IRuleBreachPopulated,
-} from '@packages/rule-breach';
+import { IRuleBreach, IRuleBreachPopulated } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React from 'react';

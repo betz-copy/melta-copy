@@ -5,11 +5,7 @@ import config from '../../config';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import TemplatesManagerService from '.';
 
-const {
-    templateService: {
-        relationships: { baseRelationshipsRoute, baseRulesRoute, updateRuleStatusByIdRouteSuffix },
-    },
-} = config;
+const { baseRelationshipsRoute, baseRulesRoute, updateRuleStatusByIdRouteSuffix } = config.templateService.relationships;
 
 export type RequestWithSearchRelationshipTemplateBody = RequestWithPermissionsOfUserId & {
     searchBody: ISearchRelationshipTemplatesBody;

@@ -1,7 +1,7 @@
 import { Grid } from '@mui/material';
-import { IGraphFilterBody } from '@packages/entity';
-import { basicFilterOperationTypes, FilterTypes, IAgGridDateFilter, IAgGridNumberFilter, IAgGridTextFilter } from '@packages/rule-breach';
+import { BasicFilterOperationTypes, FilterTypes, IAgGridDateFilter, IAgGridNumberFilter, IAgGridTextFilter } from '@packages/rule-breach';
 import React, { useEffect } from 'react';
+import { IGraphFilterBody } from '../../../interfaces/graphFilter';
 import { StyledFilterInput } from './StyledFilterInput';
 import { TypeSelectFilter } from './TypeSelectFilter';
 
@@ -35,8 +35,8 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
 }) => {
     // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
-        if (forceEqualsType && filterField && filterField.type !== basicFilterOperationTypes.equals)
-            handleFilterTypeChange(basicFilterOperationTypes.equals);
+        if (forceEqualsType && filterField && filterField.type !== BasicFilterOperationTypes.equals)
+            handleFilterTypeChange(BasicFilterOperationTypes.equals);
     }, [forceEqualsType, filterField]);
 
     return (
@@ -74,12 +74,12 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
                                 ? ({
                                       ...filterField,
                                       filter: value ? Number(value) : undefined,
-                                      type: forceEqualsType ? basicFilterOperationTypes.equals : filterField?.type,
+                                      type: forceEqualsType ? BasicFilterOperationTypes.equals : filterField?.type,
                                   } as IAgGridNumberFilter)
                                 : ({
                                       ...filterField,
                                       filter: value || undefined,
-                                      type: forceEqualsType ? basicFilterOperationTypes.equals : filterField?.type,
+                                      type: forceEqualsType ? BasicFilterOperationTypes.equals : filterField?.type,
                                   } as IAgGridTextFilter);
 
                         handleFilterFieldChange(updatedFilter);

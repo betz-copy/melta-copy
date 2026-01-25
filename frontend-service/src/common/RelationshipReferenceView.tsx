@@ -1,13 +1,14 @@
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
 import { Grid, Typography, tooltipClasses, useTheme } from '@mui/material';
-import { IChildTemplateMap } from '@packages/child-template';
 import { IEntity } from '@packages/entity';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IGetUnits } from '@packages/unit';
+import { CoordinateSystem } from '@packages/utils';
 import i18next from 'i18next';
 import React, { CSSProperties } from 'react';
 import { useQueryClient } from 'react-query';
 import { Link } from 'wouter';
+import { IChildTemplateMap, IEntityTemplateMap } from '../interfaces/template';
 import { useUserStore } from '../stores/user';
 import { useWorkspaceStore } from '../stores/workspace';
 import { isEntityFitsToChildTemplate } from '../utils/childTemplates';
@@ -17,7 +18,6 @@ import { isWorkspaceAdmin } from '../utils/permissions/instancePermissions';
 import { ColoredEnumChip } from './ColoredEnumChip';
 import { CustomIcon } from './CustomIcon';
 import { EntityPropertiesInternal } from './EntityProperties';
-import { CoordinateSystem } from './inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
 import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
 
 interface RelationshipReferenceViewProps {

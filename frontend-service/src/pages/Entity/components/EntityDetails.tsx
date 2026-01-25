@@ -10,7 +10,7 @@ import {
 } from '@mui/icons-material';
 import { Card, CardContent, Dialog, Grid, IconButton, Menu } from '@mui/material';
 import { IDeleteEntityBody, IEntity, IEntityExpanded } from '@packages/entity';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { PermissionScope } from '@packages/permission';
 import { IRuleBreach, IRuleBreachPopulated } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
@@ -26,6 +26,7 @@ import { ErrorToast } from '../../../common/ErrorToast';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { ImageWithDisable } from '../../../common/ImageWithDisable';
 import { IErrorResponse } from '../../../interfaces/error';
+import { IEntityTemplateMap } from '../../../interfaces/template';
 import { deleteEntityRequest, updateEntityStatusRequest } from '../../../services/entitiesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';
@@ -211,7 +212,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
                                 >
                                     <IconButtonWithPopover
                                         popoverText={
-                                            // eslint-disable-next-line no-nested-ternary
                                             !canWriteInstance || currentEntityTemplate?.walletTransfer
                                                 ? i18next.t('permissions.dontHaveWritePermissionsToTemplate')
                                                 : isEntityDisabled

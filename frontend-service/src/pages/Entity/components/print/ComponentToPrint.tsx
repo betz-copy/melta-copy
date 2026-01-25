@@ -1,6 +1,6 @@
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import { IEntity } from '@packages/entity';
-import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IMongoPrintingTemplate } from '@packages/printing-template';
 import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import i18next from 'i18next';
@@ -12,6 +12,7 @@ import { FileToPrint } from '../../../../common/print/FileToPrint';
 import { IPrintOptions } from '../../../../common/print/PrintOptionsDialog';
 import { environment } from '../../../../globals';
 import { IFile } from '../../../../interfaces/preview';
+import { IEntityTemplateMap } from '../../../../interfaces/template';
 import { EntityComponentToPrint } from './EntityComponentToPrint';
 
 export type IEntityTreeNode = IEntity & { relationshipId: string; children: IEntityTreeNode[] };

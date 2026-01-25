@@ -1,3 +1,4 @@
+export * from './agGrid';
 export * from './express';
 export { default as DefaultController } from './express/controller';
 export * from './express/error';

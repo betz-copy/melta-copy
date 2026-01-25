@@ -1,8 +1,6 @@
 import { CircularProgress, Grid } from '@mui/material';
 import { ChartsAndGenerator } from '@packages/chart';
-import { IChildTemplateMap } from '@packages/child-template';
 import { DashboardItemType } from '@packages/dashboard';
-import { IEntityTemplateMap } from '@packages/entity-template';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
@@ -13,6 +11,7 @@ import { ErrorToast } from '../../common/ErrorToast';
 import { LocalStorageGridLayout } from '../../common/GridLayout/gridLayoutSavedInLs';
 import { LayoutItem } from '../../common/GridLayout/interface';
 import { environment } from '../../globals';
+import { IChildTemplateMap, IEntityTemplateMap } from '../../interfaces/template';
 import { deleteChart, getChartByTemplateId } from '../../services/chartsService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { generateLayoutDetails } from '../../utils/charts/defaultChartSizes';

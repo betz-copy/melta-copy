@@ -1,8 +1,8 @@
 import { Button, Grid } from '@mui/material';
-import { IChildTemplateMap, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { ActionTypes } from '@packages/action';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IEntity, IUniqueConstraint } from '@packages/entity';
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
-import { ActionTypes, IRuleBreach } from '@packages/rule-breach';
+import { IRuleBreach } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import { StatusCodes } from 'http-status-codes';
 import i18next from 'i18next';
@@ -13,6 +13,7 @@ import { useLocation } from 'wouter';
 import { environment } from '../../../../globals';
 import { ICreateOrUpdateWithRuleBreachDialogState, IExternalErrors, IMutationProps } from '../../../../interfaces/CreateOrEditEntityDialog';
 import { IErrorResponse } from '../../../../interfaces/error';
+import { IChildTemplateMap, ITemplate } from '../../../../interfaces/template';
 import { createEntityClientSideRequest } from '../../../../services/clientSideService';
 import { createEntityRequest, updateEntityRequestForMultiple } from '../../../../services/entitiesService';
 import { isChildTemplate } from '../../../../utils/templates';
@@ -25,7 +26,7 @@ type MutateAsyncFn = (args: { newEntityData: EntityWizardValues; ignoredRules?: 
 const useMutationHandler = (
     externalErrors: IExternalErrors,
     shouldNavigateToEntityPage: boolean,
-    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
+    entityTemplate: ITemplate,
     { actionType, payload, onError, onSuccess }: IMutationProps,
     setExternalErrors: Dispatch<SetStateAction<IExternalErrors>>,
     setCreateOrUpdateWithRuleBreachDialogState: Dispatch<SetStateAction<ICreateOrUpdateWithRuleBreachDialogState>>,
@@ -38,11 +39,7 @@ const useMutationHandler = (
     let mutateAsync: MutateAsyncFn | undefined;
     let childTemplate: IMongoChildTemplateWithConstraintsPopulated | undefined;
 
-    const handleMutationError = (
-        err: AxiosError,
-        template: IMongoEntityTemplateWithConstraintsPopulated | IMongoChildTemplateWithConstraintsPopulated,
-        newEntityData?: EntityWizardValues | undefined,
-    ) => {
+    const handleMutationError = (err: AxiosError, template: ITemplate, newEntityData?: EntityWizardValues | undefined) => {
         if (err.response?.status === StatusCodes.REQUEST_TOO_LONG) setExternalErrors((prev) => ({ ...prev, files: true }));
         const errorMetadata = (err.response?.data as IErrorResponse)?.metadata;
 

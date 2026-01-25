@@ -1,12 +1,13 @@
 import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { ActionTypes, IActionMetadataPopulated, IActionPopulated } from '@packages/action';
 import { ActionOnFail, IRuleMap } from '@packages/rule';
-import { ActionTypes, IActionMetadataPopulated, IActionPopulated, IRuleBreachPopulated } from '@packages/rule-breach';
+import { IRuleBreachPopulated } from '@packages/rule-breach';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
-import RuleBreachInfo from '../../ruleBreanchInfo/RuleBreachInfo';
+import RuleBreachInfo from '../../ruleBreachInfo/RuleBreachInfo';
 
 const ExecWithRuleBreachDialog: React.FC<{
     isSubmitting: boolean;
