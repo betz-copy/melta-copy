@@ -91,7 +91,7 @@ const MeltaUpdates: React.FC<MeltaUpdatesProps> = ({ open, handleClose, meltaUpd
                         )}
                     </Grid>
 
-                    {Object.entries(details).map(([title, description], index) => (
+                    {details && Object.entries(details).map(([title, description], index) => (
                         <Box display="flex" alignItems="center" key={description} gap={2} margin={1}>
                             <Box
                                 sx={{

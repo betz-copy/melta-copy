@@ -65,9 +65,11 @@ const App: React.FC = () => {
         enabled: !isLoadingUser && !isErrorMyUser,
         onSuccess: async ({
             isOutsideDevelopment,
-            getMapLayers: { url, params, layers, token, capabilitiesLinkSchema, cesiumLinkSchema, layerLinkTag, capabilitiesUrl },
+            getMapLayers,
         }) => {
-            if (isOutsideDevelopment) return;
+            if (isOutsideDevelopment || !getMapLayers) return;
+
+            const { url, params, layers, token, capabilitiesLinkSchema, cesiumLinkSchema, layerLinkTag, capabilitiesUrl } = getMapLayers;
 
             const mapLayers = await Promise.all(
                 layers?.map(async (layer) => {
