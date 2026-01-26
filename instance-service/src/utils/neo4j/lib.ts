@@ -204,7 +204,7 @@ type IPureTemplate = { type: 'pure'; metadata: IMongoEntityTemplate };
 type ITemplate = IFunctionTemplate | IPureTemplate;
 
 export const normalizeReturnedEntity =
-    <T extends ResponseType>(response: T, template: ITemplate) =>
+    <T extends ResponseType>(response: T, template: ITemplate, isGetMode: boolean = true) =>
     async (result: QueryResult): Promise<Response<T, IEntity>> => {
         const entities = await Promise.all(
             result.records.map(async (record) => {
@@ -214,7 +214,7 @@ export const normalizeReturnedEntity =
                         ? template.metadata
                         : await new EntityTemplateService(template.metadata).getEntityTemplateById(templateId);
 
-                return nodeToEntity(record.get(0) as Node, entityTemplate);
+                return nodeToEntity(record.get(0) as Node, entityTemplate, isGetMode);
             }),
         );
 

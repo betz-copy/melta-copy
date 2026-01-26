@@ -577,7 +577,7 @@ export const userColDef = <Data extends IUser>(
         cellRenderer: (props: ICellRendererParams<Data, any | undefined>) => {
             const error = isPropertyInvalid(props, field, ignoreType);
             if (error) return errorColDef(props, error, { ...value, format: PropertyFormat.user });
-
+            if (!props.value) return '';
             if (ignoreType && !stringifiedJSONtoObj(props.value))
                 return <Value hideValue={hideColumn} color={getColor(props, field)} value={props.value ?? ''} />;
 

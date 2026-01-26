@@ -339,7 +339,7 @@ class EntityManager extends DefaultManagerNeo4j {
         const createdEntity = await runInTransactionAndNormalize(
             transaction,
             `CREATE (e: \`${entityTemplate._id}\` $properties) RETURN e`,
-            normalizeReturnedEntity('singleResponseNotNullable', { type: 'pure', metadata: entityTemplate }),
+            normalizeReturnedEntity('singleResponseNotNullable', { type: 'pure', metadata: entityTemplate }, false),
             {
                 properties: {
                     ...generateDefaultProperties(),
@@ -379,11 +379,11 @@ class EntityManager extends DefaultManagerNeo4j {
         return { createdEntity, activityLogsToCreate: allActivityLogsToCreate };
     }
 
-    async getEntityByIdInTransaction(id: string, transaction: Transaction) {
+    async getEntityByIdInTransaction(id: string, transaction: Transaction, isGetMode: boolean = true) {
         const entity = await runInTransactionAndNormalize(
             transaction,
             `MATCH (e {_id: '${id}'}) RETURN e`,
-            normalizeReturnedEntity('singleResponse', { type: 'function', metadata: this.workspaceId }),
+            normalizeReturnedEntity('singleResponse', { type: 'function', metadata: this.workspaceId }, isGetMode),
         );
 
         if (!entity) throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
@@ -521,12 +521,21 @@ class EntityManager extends DefaultManagerNeo4j {
         userId?: string,
     ) {
         const { entityId } = metadata;
-        const entity = await this.getEntityByIdInTransaction(entityId, transaction);
+        const entity = await this.getEntityByIdInTransaction(entityId, transaction, false);
         const entityTemplate = entitiesTemplatesByIds.get(entity.templateId)!;
         const bulkManager = new BulkActionManager(this.workspaceId);
 
         const fixedFields = bulkManager.fixUpdatedFields(metadata, entityTemplate, entity);
-        return this.updateEntityByIdInnerTransaction(entityId, fixedFields.updatedFields, entityTemplate, transaction, userId);
+        return this.updateEntityByIdInnerTransaction(
+            entityId,
+            fixedFields.updatedFields,
+            entityTemplate,
+            transaction,
+            userId,
+            undefined,
+            false,
+            false,
+        );
     }
 
     async executeEntityTemplateActionOnInstanceCrud(
@@ -1128,10 +1137,10 @@ class EntityManager extends DefaultManagerNeo4j {
         return this.filterIntersectingEntities(searchResults, polygon);
     }
 
-    async getEntityById(id: string) {
+    async getEntityById(id: string, isGetMode: boolean = true) {
         const node = await this.neo4jClient.readTransaction(
             `MATCH (e {_id: '${id}'}) RETURN e`,
-            normalizeReturnedEntity('singleResponse', { type: 'function', metadata: this.workspaceId }),
+            normalizeReturnedEntity('singleResponse', { type: 'function', metadata: this.workspaceId }, isGetMode),
         );
 
         if (!node) throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
@@ -1769,6 +1778,7 @@ class EntityManager extends DefaultManagerNeo4j {
         userId?: string,
         indicatorRules?: IRuleFailure[],
         convertToRelationshipField = false,
+        isGetMode: boolean = true,
     ) {
         const activityLogUpdatedFields: IUpdatedFields[] = [];
         const activityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
@@ -1801,7 +1811,7 @@ class EntityManager extends DefaultManagerNeo4j {
                  SET e.createdAt = createdAt
                  SET e.disabled = disabled
                  RETURN e`,
-            normalizeReturnedEntity('singleResponseNotNullable', { type: 'function', metadata: this.workspaceId }),
+            normalizeReturnedEntity('singleResponseNotNullable', { type: 'function', metadata: this.workspaceId }, isGetMode),
             {
                 props: {
                     ...(await addStringFieldsAndNormalizeSpecialStringValues(
@@ -1889,7 +1899,7 @@ class EntityManager extends DefaultManagerNeo4j {
         childTemplateId?: string,
         convertToRelationshipField = false,
     ) {
-        const entity = await this.getEntityById(id);
+        const entity = await this.getEntityById(id, false);
         const unPopulatedOldEntityProperties = this.relationshipReferenceObjectToId(entity, entityTemplate);
 
         if (entity.properties.disabled) throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
@@ -1908,7 +1918,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
             const bulkManager = new BulkActionManager(this.workspaceId);
             const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
-            const updatedEntity = await this.getEntityById(results.instances[0].properties._id);
+            const updatedEntity = await this.getEntityById(results.instances[0].properties._id, false);
             const fixedActions = this.fixActions(actions, results.instances);
 
             return { updatedEntity, actions: fixedActions, emails: results.emails };
@@ -1927,6 +1937,7 @@ class EntityManager extends DefaultManagerNeo4j {
                     userId,
                     undefined,
                     convertToRelationshipField,
+                    false,
                 );
 
                 const ruleFailuresAfterAction = await this.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
