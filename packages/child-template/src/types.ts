@@ -2,10 +2,9 @@ import { IMongoCategory } from '@packages/category';
 import { IUniqueConstraintOfTemplate } from '@packages/entity';
 import {
     IEntitySingleProperty,
-    IFullMongoEntityTemplate,
     IMongoEntityTemplate,
     IMongoEntityTemplatePopulated,
-    IMongoEntityTemplateWithConstraints,
+    IMongoEntityTemplateWithConstraintsPopulated,
     IProperties,
     ISearchBody,
 } from '@packages/entity-template';
@@ -50,8 +49,8 @@ export interface IMongoChildTemplate extends IChildTemplate {
     _id: string;
 }
 
-export interface IChildTemplatePopulatedFromDb extends Omit<IMongoChildTemplate, 'category' | 'parentTemplateId'> {
-    parentTemplate: IFullMongoEntityTemplate;
+export interface IChildTemplatePopulatedFromDb extends Omit<IMongoChildTemplate, 'category'> {
+    parentTemplate: IMongoEntityTemplatePopulated;
     category: IMongoCategory;
 }
 
@@ -64,8 +63,7 @@ export interface ISearchChildTemplatesBody extends ISearchBody {
 // When populating child, it will ask the parent for all of its properties.
 export interface IChildTemplatePopulated
     extends Omit<IMongoEntityTemplate, 'properties' | 'category'>,
-        Omit<IChildTemplatePopulatedFromDb, 'properties' | 'parentTemplateId'> {
-    parentTemplate: IFullMongoEntityTemplate;
+        Omit<IChildTemplatePopulatedFromDb, 'properties'> {
     properties: Omit<IProperties, 'properties'> & {
         properties: Record<string, IEntitySingleProperty & IChildTemplateProperty>;
     };
@@ -111,7 +109,7 @@ export interface IChildTemplateWithConstraints extends IChildTemplate {
 export interface IChildTemplateWithConstraintsPopulated extends Omit<IChildTemplatePopulated, 'parentTemplate'> {
     uniqueConstraints: IUniqueConstraintOfTemplate[];
     properties: IChildTemplatePopulated['properties'] & { required: string[] };
-    parentTemplate: IMongoEntityTemplateWithConstraints;
+    parentTemplate: IMongoEntityTemplateWithConstraintsPopulated;
 }
 
 export interface IMongoChildTemplateWithConstraintsPopulated extends IMongoChildTemplatePopulated {

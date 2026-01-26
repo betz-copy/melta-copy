@@ -1,4 +1,5 @@
 import { CircularProgress, Grid, Typography } from '@mui/material';
+import { isChildTemplate } from '@packages/child-template';
 import { IEntity, IFilterGroup, IFilterOfTemplate, ISearchFilter } from '@packages/entity';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
@@ -8,7 +9,6 @@ import { toast } from 'react-toastify';
 import { environment } from '../../globals';
 import { ITemplate } from '../../interfaces/template';
 import { getCountByTemplateIdsRequest } from '../../services/entitiesService';
-import { isChildTemplate } from '../../utils/templates';
 import { TablePageType } from '../EntitiesTableOfTemplate';
 import TemplateTable, { TemplateTableRef } from './TemplateTable';
 

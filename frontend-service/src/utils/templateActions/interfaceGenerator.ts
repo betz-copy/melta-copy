@@ -1,6 +1,6 @@
 import {
     IEntitySingleProperty,
-    IFullMongoEntityTemplate,
+    IMongoEntityTemplatePopulated,
     IMongoEntityTemplateWithConstraintsPopulated,
     PropertyFormat,
 } from '@packages/entity-template';
@@ -105,7 +105,7 @@ export const generateInterfaceWithRelationships = (
     template: Record<string, IEntitySingleProperty>,
     interfaceName: string,
     queryClient: QueryClient,
-    parentTemplate?: IFullMongoEntityTemplate,
+    parentTemplate?: IMongoEntityTemplatePopulated,
 ): string => {
     const baseTemplate = parentTemplate?.properties.properties ?? template;
     const baseName = parentTemplate?.name ?? interfaceName;

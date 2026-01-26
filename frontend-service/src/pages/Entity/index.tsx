@@ -13,12 +13,13 @@ import { useQuery, useQueryClient } from 'react-query';
 import { useParams, useSearchParams } from 'wouter';
 import { getChildTemplatesFilter } from '../../common/inputs/TemplateEntitiesAutocomplete';
 import '../../css/pages.css';
+import { isChildTemplate } from '@packages/child-template';
 import { IChildTemplateMap, IEntityTemplateMap } from '../../interfaces/template';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { checkUserTemplatePermission } from '../../utils/permissions/instancePermissions';
-import { getFullRelationshipTemplates, groupChildTemplatesByParent, isChildTemplate } from '../../utils/templates';
+import { getFullRelationshipTemplates, groupChildTemplatesByParent } from '../../utils/templates';
 import { EntityDetails } from './components/EntityDetails';
 import { EntityTopBar } from './components/TopBar';
 import { EntityConnections } from './entityConnections';
@@ -117,9 +118,7 @@ const Entity: React.FC = () => {
         if (!currentEntityTemplate) return;
 
         const templateForRelationships =
-            childTemplateId && isChildTemplate(currentEntityTemplate)
-                ? (entityTemplates.get(currentEntityTemplate.parentTemplate._id) ?? undefined)
-                : currentEntityTemplate;
+            childTemplateId && isChildTemplate(currentEntityTemplate) ? currentEntityTemplate.parentTemplate : currentEntityTemplate;
 
         if (!templateForRelationships) return;
 

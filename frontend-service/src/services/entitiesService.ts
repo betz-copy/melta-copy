@@ -1,4 +1,5 @@
 import { IAxisField } from '@packages/chart';
+import { isChildTemplate } from '@packages/child-template';
 import {
     ICountSearchResult,
     IDeleteEntityBody,
@@ -33,7 +34,6 @@ import { IEntityTreeNode } from '../pages/Entity/components/print/ComponentToPri
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
 import { combineFilters } from '../utils/filters';
 import { locationConverterToString } from '../utils/map/convert';
-import { isChildTemplate } from '../utils/templates';
 
 const { entities, relationships } = environment.api;
 const { uuidFormat } = environment;

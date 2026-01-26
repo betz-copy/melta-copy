@@ -1,5 +1,5 @@
 import { IPropertyValue } from '@packages/entity';
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import * as Yup from 'yup';
 import { IChildTemplateFormProperty, IFieldChip } from '../../../interfaces/childTemplateForms';
@@ -87,11 +87,7 @@ const childTemplatePropertySchema = (propKey: string, fieldName: string) =>
             return filters?.length && defaultValue ? filters.some((filterField) => checkMatchValidation(filterField, propKey, defaultValue)) : true;
         });
 
-export const childTemplateSchema = (
-    existingNames: string[],
-    existingDisplayNames: string[],
-    parentTemplate: IMongoEntityTemplateWithConstraintsPopulated,
-) =>
+export const childTemplateSchema = (existingNames: string[], existingDisplayNames: string[], parentTemplate: IMongoEntityTemplatePopulated) =>
     Yup.object({
         name: Yup.string()
             .matches(variableNameValidation, i18next.t('validation.variableName'))

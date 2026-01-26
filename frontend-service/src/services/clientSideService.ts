@@ -1,5 +1,5 @@
 import { IMongoCategory } from '@packages/category';
-import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IMongoChildTemplateWithConstraintsPopulated, isChildTemplate } from '@packages/child-template';
 import { ICountSearchResult, IEntity, IEntityExpanded, IPropertyValue, ISearchEntitiesOfTemplateBody, ISearchResult } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { INotificationCountGroups, INotificationGroupCountDetails, INotificationPopulated, NotificationType } from '@packages/notification';
@@ -11,7 +11,6 @@ import axios from '../axios';
 import { EntityWizardValues } from '../common/dialogs/entity';
 import { environment } from '../globals';
 import { locationConverterToString } from '../utils/map/convert';
-import { isChildTemplate } from '../utils/templates';
 import { IGetMyNotificationsRequestQuery } from './notificationService';
 
 const { clientSideRoutes, getAllClientSideTemplates: getAllClientSideTemplatesRoute } = environment.api;

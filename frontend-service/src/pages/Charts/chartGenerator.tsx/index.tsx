@@ -1,6 +1,6 @@
 import { CircularProgress } from '@mui/material';
 import { IAxisField, IChartType } from '@packages/chart';
-import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IMongoChildTemplateWithConstraintsPopulated, isChildTemplate } from '@packages/child-template';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import React, { useEffect } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
@@ -8,7 +8,6 @@ import { ChartForm } from '../../../interfaces/dashboard';
 import { getChartOfTemplate } from '../../../services/entitiesService';
 import { getChartAxes } from '../../../utils/charts/getChartAxes';
 import { useDebouncedFilter } from '../../../utils/dashboard/useDebouncedFilter';
-import { isChildTemplate } from '../../../utils/templates';
 import { HighchartGenerator } from './HighchartGenerator';
 import { NumberChartGenerator } from './NumberChartGenerator';
 

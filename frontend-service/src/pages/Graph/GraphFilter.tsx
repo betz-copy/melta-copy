@@ -1,7 +1,7 @@
 import { Clear, Close, KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import { Autocomplete, Box, Divider, Grid, IconButton, TextField, Typography, useTheme } from '@mui/material';
 import { ByCurrentDefaultValue } from '@packages/child-template';
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import {
     FilterTypes,
     IAgGridDateFilter,
@@ -68,8 +68,8 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
-    const [selectedTemplate, setSelectedTemplate] = useState<IMongoEntityTemplateWithConstraintsPopulated | null>(
-        filter?.selectedTemplate ? (entityTemplates.get(filter.selectedTemplate._id) ?? null) : (selectedEntityTemplate ?? null),
+    const [selectedTemplate, setSelectedTemplate] = useState<IMongoEntityTemplatePopulated | null>(
+        filter?.selectedTemplate || selectedEntityTemplate || null,
     );
     const [selectedProperty, setSelectedProperty] = useState<string | null>(filter?.selectedProperty ?? null);
     const [filterField, setFilterField] = useState<IGraphFilterBody['filterField']>(filter?.filterField || undefined);

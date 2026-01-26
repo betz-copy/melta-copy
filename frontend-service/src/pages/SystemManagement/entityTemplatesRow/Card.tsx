@@ -13,7 +13,7 @@ import { ActionMode, IMutationWithPayload } from '../../../common/dialogs/ChildT
 import { emptyEntityTemplate } from '../../../common/dialogs/entity';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
-import { IChildTemplateMap, IEntityTemplateMap } from '../../../interfaces/template';
+import { IChildTemplateMap } from '../../../interfaces/template';
 import { getCountByTemplateIdsRequest } from '../../../services/entitiesService';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
@@ -119,7 +119,6 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     const queryClient = useQueryClient();
     const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates');
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
 
     const hasWritePermission = useMemo(() => {
         if (isChildTemplate) {
@@ -246,14 +245,13 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                         ? () => {
                                               // biome-ignore lint/suspicious/noNonNullAssertedOptionalChain: lol
                                               const childTemplate = childTemplates?.get(entityTemplate._id)!;
-                                              const populatedParentTemplate = entityTemplates?.get(childTemplate.parentTemplate._id);
-                                              if (!populatedParentTemplate) return;
-
-                                              // TODO: CHECK IF THIS IS CORRECT
-
                                               setAddChildTemplateDialogState({
                                                   isWizardOpen: true,
-                                                  entityTemplate: populatedParentTemplate,
+                                                  entityTemplate: {
+                                                      ...childTemplate.parentTemplate,
+                                                      properties: { ...childTemplate.parentTemplate.properties, required: [] },
+                                                      uniqueConstraints: [],
+                                                  },
                                                   mutationProps: {
                                                       actionType: ActionMode.Duplicate,
                                                       payload: {

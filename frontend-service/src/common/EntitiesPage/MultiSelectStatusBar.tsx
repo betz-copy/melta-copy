@@ -2,6 +2,7 @@ import { IServerSideSelectionState, IStatusPanelParams } from '@ag-grid-communit
 import { Delete, Edit } from '@mui/icons-material';
 import { Box, CircularProgress, Grid, Typography } from '@mui/material';
 import { ActionTypes, ICreateEntityMetadata } from '@packages/action';
+import { isChildTemplate } from '@packages/child-template';
 import { IDeleteEntityBody, IMultipleSelect, IPropertyValue } from '@packages/entity';
 import { PropertyFormat } from '@packages/entity-template';
 import { IBrokenRule } from '@packages/rule-breach';
@@ -20,7 +21,6 @@ import { useUserStore } from '../../stores/user';
 import { filterModelToFilterOfTemplate } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
 import { filterFieldsFromPropertiesSchema, pickOnlyGivenFields } from '../../utils/pickFieldsPropertiesSchema';
-import { isChildTemplate } from '../../utils/templates';
 import { EntityWizardValues } from '../dialogs/entity';
 import { getInitialValuesWithDefaults } from '../dialogs/entity/CreateOrEditEntityDialog';
 import EditProps from '../dialogs/entity/CreateOrEditEntityDialog/EditProps';

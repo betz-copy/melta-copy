@@ -14,6 +14,7 @@ import {
 } from '@mui/icons-material';
 import { Box, CircularProgress, Dialog, Grid, useTheme } from '@mui/material';
 import { ActionTypes } from '@packages/action';
+import { isChildTemplate } from '@packages/child-template';
 import { IEntity } from '@packages/entity';
 import { PermissionScope } from '@packages/permission';
 import { IKartoffelUser } from '@packages/user';
@@ -34,7 +35,6 @@ import { useWorkspaceStore } from '../../stores/workspace';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { getEntityTemplateColor } from '../../utils/colors';
 import { checkUserTemplatePermission } from '../../utils/permissions/instancePermissions';
-import { isChildTemplate } from '../../utils/templates';
 import { CustomIcon } from '../CustomIcon';
 import { EntityWizardValues } from '../dialogs/entity';
 import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';

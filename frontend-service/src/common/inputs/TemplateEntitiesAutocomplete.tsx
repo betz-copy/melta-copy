@@ -2,7 +2,7 @@ import { Add, ExpandMore, InfoOutlined } from '@mui/icons-material';
 import { Autocomplete, AutocompleteInputChangeReason, AutocompleteProps, Box, TextField, Typography } from '@mui/material';
 import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IEntity, IPropertyValue, ISearchEntitiesOfTemplateBody, ISearchFilter } from '@packages/entity';
-import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import { IGetUnits } from '@packages/unit';
 import { CoordinateSystem } from '@packages/utils';
 import { IWorkspace } from '@packages/workspace';
@@ -52,7 +52,7 @@ export const getChildTemplatesFilter = (
 };
 
 const TemplateEntitiesAutocomplete: React.FC<{
-    template: IMongoEntityTemplateWithConstraintsPopulated | undefined;
+    template: IMongoEntityTemplatePopulated | undefined;
     showField: string;
     value: IEntity | null;
     currentEntity: EntityWizardValues['properties'];

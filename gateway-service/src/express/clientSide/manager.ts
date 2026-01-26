@@ -45,7 +45,7 @@ class ClientSideManager extends DefaultManagerProxy<null> {
         const categories = [...new Set(childTemplates.map((childTemplate) => childTemplate.category))];
         const entityTemplates = [...new Set(childTemplates.map((childTemplate) => childTemplate.parentTemplate))].map((entityTemplate) => ({
             ...entityTemplate,
-            category: categories.find((category) => category._id === entityTemplate.category) || entityTemplate.category,
+            category: categories.find((category) => category._id === entityTemplate.category._id) || entityTemplate.category,
         })) as IMongoEntityTemplatePopulated[];
 
         const populatedEntityTemplates = await this.templatesManager.getAndPopulateAllTemplatesConstraints(entityTemplates);

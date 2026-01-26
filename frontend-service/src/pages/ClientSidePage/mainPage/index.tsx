@@ -1,7 +1,7 @@
 import { Box, Grid } from '@mui/material';
 import React, { useRef } from 'react';
 import { useQueryClient } from 'react-query';
-import { IChildTemplateMap, IEntityTemplateMap } from '../../../interfaces/template';
+import { IChildTemplateMap } from '../../../interfaces/template';
 import { useClientSideUserStore } from '../../../stores/clientSideUser';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { getFirstXPropsKeys } from '../../../utils/templates';
@@ -20,9 +20,7 @@ const ClientSideMainPage: React.FC = () => {
 
     const userEntityTablesRef = useRef<UserEntityTablesRef>(null);
 
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getClientSideEntityTemplates')!;
-    const parentTemplate = entityTemplates.get(usersInfoChildTemplate.parentTemplate._id);
-    const firstXPropsKeys: string[] = parentTemplate ? getFirstXPropsKeys(numOfPropsToShow, parentTemplate) : [];
+    const firstXPropsKeys: string[] = getFirstXPropsKeys(numOfPropsToShow, usersInfoChildTemplate.parentTemplate);
 
     return (
         <Box

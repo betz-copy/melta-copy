@@ -36,7 +36,7 @@ import { useLocation } from 'wouter';
 import '../../css/resizeTable.css';
 import '../../css/table.css';
 import { IAction, IActionPopulated } from '@packages/action';
-import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IMongoChildTemplateWithConstraintsPopulated, isChildTemplate } from '@packages/child-template';
 import { IAgGridRequest } from '@packages/rule-breach';
 import { environment } from '../../globals';
 import { IErrorResponse } from '../../interfaces/error';
@@ -58,7 +58,6 @@ import { agGridToSearchEntitiesOfTemplateRequest } from '../../utils/agGrid/agGr
 import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
 import useDeepCompareMemo from '../../utils/hooks/useDeepCompareMemo';
 import { LocalStorage } from '../../utils/localStorage';
-import { isChildTemplate } from '../../utils/templates';
 import { tryCatch } from '../../utils/tryCatch';
 import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
 import { EntityWizardValues } from '../dialogs/entity';

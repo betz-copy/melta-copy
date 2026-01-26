@@ -1,5 +1,6 @@
 import { CircularProgress, Grid } from '@mui/material';
 import { ChartsAndGenerator } from '@packages/chart';
+import { isChildTemplate } from '@packages/child-template';
 import { DashboardItemType } from '@packages/dashboard';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -16,7 +17,6 @@ import { deleteChart, getChartByTemplateId } from '../../services/chartsService'
 import { useDarkModeStore } from '../../stores/darkMode';
 import { generateLayoutDetails } from '../../utils/charts/defaultChartSizes';
 import { LocalStorage } from '../../utils/localStorage';
-import { isChildTemplate } from '../../utils/templates';
 import { ConfirmDeleteDashboardItem, ConfirmEditCommonItem } from '../Dashboard/Dialogs';
 import { DashboardHeader } from '../Dashboard/dashboardPage/DashboardHeader';
 import { AddNewChartButton } from './AddNewChartButton';

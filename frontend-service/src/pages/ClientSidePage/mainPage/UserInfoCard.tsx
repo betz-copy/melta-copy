@@ -2,7 +2,6 @@ import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-materia
 import { Card, CardContent, Grid, useTheme } from '@mui/material';
 import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IEntity } from '@packages/entity';
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React from 'react';
 import { Link } from 'wouter';
@@ -11,6 +10,7 @@ import { EntityProperties } from '../../../common/EntityProperties';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
+import { ITemplate } from '../../../interfaces/template';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { getEntityTemplateColor } from '../../../utils/colors';
@@ -34,7 +34,7 @@ const UserInfoCard: React.FC<IUserInfoCardProps> = ({
     const theme = useTheme();
 
     const usersInfoTemplate = usersInfoChildTemplate.parentTemplate;
-    const entityTemplateColor = getEntityTemplateColor(usersInfoTemplate as unknown as IMongoEntityTemplateWithConstraintsPopulated);
+    const entityTemplateColor = getEntityTemplateColor(usersInfoTemplate as ITemplate);
     const { height, width } = workspace!.metadata!.iconSize!;
 
     return (

@@ -1,5 +1,6 @@
 import { Download } from '@mui/icons-material';
 import { Box, CircularProgress, Grid, Typography, useTheme } from '@mui/material';
+import { isChildTemplate } from '@packages/child-template';
 import { TableMetaData } from '@packages/dashboard';
 import { IEntity } from '@packages/entity';
 import i18next from 'i18next';
@@ -16,7 +17,6 @@ import { IEntityTemplateMap } from '../../../interfaces/template';
 import { exportEntitiesRequest } from '../../../services/entitiesService';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { filterModelToFilterOfTemplate, getFilterModal } from '../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
-import { isChildTemplate } from '../../../utils/templates';
 import { getRelevantEntityTemplate } from '../DashboardItemDetails/Chart/BodyComponent';
 
 const { excelExtension } = environment.loadExcel;

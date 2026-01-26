@@ -1,5 +1,6 @@
 import { Grid } from '@mui/material';
 import { ActionTypes } from '@packages/action';
+import { isChildTemplate } from '@packages/child-template';
 import { IPropertyValue } from '@packages/entity';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
@@ -13,7 +14,6 @@ import { EntitiesWizardValues, ExcelStepStatus, IExcelSteps } from '../../../int
 import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { exportEntitiesRequest, loadEntitiesRequest } from '../../../services/entitiesService';
 import { groupBrokenRulesByEntity } from '../../../utils/loadEntities';
-import { isChildTemplate } from '../../../utils/templates';
 import OpenPreview from '../../FilePreview/OpenPreview';
 import { StepType, Wizard, WizardBaseType } from '..';
 import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';

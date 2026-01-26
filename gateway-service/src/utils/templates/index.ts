@@ -106,7 +106,6 @@ const updateChildTemplatesOnParentUpdate = async (
 
                 const { filterByCurrentUserField, filterByUnitUserField, ...newChildTemplate } = _.pick(
                     {
-                        parentTemplateId: parentTemplate._id,
                         category: category._id,
                         properties: {
                             properties: cloneDeep({

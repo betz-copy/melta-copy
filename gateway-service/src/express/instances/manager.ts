@@ -27,7 +27,7 @@ import {
     NotFoundErrorTypes,
     UploadedFile,
 } from '@packages/entity';
-import { IEntitySingleProperty, IEntityTemplatePopulated, IFullMongoEntityTemplate, IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { IEntitySingleProperty, IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import { IRelationship } from '@packages/relationship';
 import { IRuleMail } from '@packages/rule';
 import { IBrokenRule, IBrokenRuleEntity, IEntityWithIgnoredRules, IFailedEntity } from '@packages/rule-breach';
@@ -405,7 +405,11 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         }
     }
 
-    updateTemplateCurrentNumbers = async (template: IFullMongoEntityTemplate, serialStarters: Record<string, number>, succeededIndex: number) => {
+    updateTemplateCurrentNumbers = async (
+        template: IMongoEntityTemplatePopulated,
+        serialStarters: Record<string, number>,
+        succeededIndex: number,
+    ) => {
         const serialProperties = Object.entries(template.properties.properties)
             .filter(([_key, value]) => value.type === 'number' && !!value.serialCurrent)
             .reduce((acc, [key, value]) => {
@@ -415,7 +419,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const { category, _id, createdAt: _createdAt, updatedAt: _updatedAt, disabled: _disabled, ...restOfEntityTemplate } = template;
         await this.entityTemplateService.updateEntityTemplate(template._id, {
             ...restOfEntityTemplate,
-            category,
+            category: category._id,
             properties: {
                 ...template.properties,
                 properties: { ...template.properties.properties, ...serialProperties },
@@ -561,7 +565,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const brokenRulesEntities = await convertIdOfBrokenRules(allBrokenRulesEntities);
         if (serialStarters)
             await this.updateTemplateCurrentNumbers(
-                type === EntityTemplateType.Child ? template.parentTemplate : { ...template, category: template.category._id },
+                type === EntityTemplateType.Child ? template.parentTemplate : template,
                 serialStarters,
                 succeededEntities.length,
             );

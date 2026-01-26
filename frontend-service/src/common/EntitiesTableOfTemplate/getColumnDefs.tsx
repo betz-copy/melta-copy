@@ -1,6 +1,7 @@
 import { ColDef, ValueGetterFunc } from '@ag-grid-community/core';
 import { Add as AddIcon } from '@mui/icons-material';
 import { Grid, Typography } from '@mui/material';
+import { isChildTemplate } from '@packages/child-template';
 import { IEntity, IPropertyValue } from '@packages/entity';
 import { PropertyFormat } from '@packages/entity-template';
 import { EntityData, IRuleBreach } from '@packages/rule-breach';
@@ -34,7 +35,6 @@ import {
 } from '../../utils/agGrid/commonColDefs';
 import { getChildrenWithWritePermission, isEntityFitsToChildTemplate } from '../../utils/childTemplates';
 import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
-import { isChildTemplate } from '../../utils/templates';
 import { emptyEntityTemplate } from '../dialogs/entity';
 import { IChooseTemplateMode } from '../dialogs/entity/ChooseTemplate';
 import { AddEntityButton } from '../EntitiesPage/Buttons/AddEntity';

@@ -1,5 +1,6 @@
 import { Grid } from '@mui/material';
 import { ActionTypes } from '@packages/action';
+import { isChildTemplate } from '@packages/child-template';
 import { IPropertyValue } from '@packages/entity';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -15,7 +16,6 @@ import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components
 import { editManyEntitiesByExcelRequest, exportEntitiesRequest, getChangedEntitiesFromExcelRequest } from '../../../services/entitiesService';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { groupBrokenRulesByEntity } from '../../../utils/loadEntities';
-import { isChildTemplate } from '../../../utils/templates';
 import OpenPreview from '../../FilePreview/OpenPreview';
 import { StepType, Wizard, WizardBaseType } from '..';
 import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';

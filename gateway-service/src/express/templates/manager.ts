@@ -1255,7 +1255,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                 this.populateTemplateConstraints(
                     {
                         ...updatedChildTemplate,
-                        parentTemplate: { ...template, category: template.category._id },
+                        parentTemplate: template,
                     },
                     requiredConstraints,
                     uniqueConstraints,

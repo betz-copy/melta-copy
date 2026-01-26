@@ -1,6 +1,6 @@
 import { Button, Grid } from '@mui/material';
 import { ActionTypes } from '@packages/action';
-import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IMongoChildTemplateWithConstraintsPopulated, isChildTemplate } from '@packages/child-template';
 import { IEntity, IUniqueConstraint } from '@packages/entity';
 import { IRuleBreach } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
@@ -16,7 +16,6 @@ import { IErrorResponse } from '../../../../interfaces/error';
 import { IChildTemplateMap, ITemplate } from '../../../../interfaces/template';
 import { createEntityClientSideRequest } from '../../../../services/clientSideService';
 import { createEntityRequest, updateEntityRequestForMultiple } from '../../../../services/entitiesService';
-import { isChildTemplate } from '../../../../utils/templates';
 import { EntityWizardValues } from '..';
 
 const { errorCodes } = environment;

@@ -1,7 +1,7 @@
 import { IMongoCategory } from '@packages/category';
 import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IEntityExpanded, IPropertyValue } from '@packages/entity';
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '@packages/relationship-template';
 import { IChildTemplateMap, IEntityTemplateMap, INestedRelationshipTemplates, ITemplate } from '../interfaces/template';
 
@@ -82,7 +82,7 @@ const getFakeParentByChildren = (id: string, groupChildTemplate?: Record<string,
 export const getFullRelationshipTemplates = (
     relationshipTemplates: IRelationshipTemplateMap,
     entityTemplates: IEntityTemplateMap,
-    parentEntityTemplate: IMongoEntityTemplateWithConstraintsPopulated,
+    parentEntityTemplate: IMongoEntityTemplatePopulated,
     depth: number,
     parentRelationshipTemplate?: IMongoRelationshipTemplatePopulated,
     expandedEntity?: IEntityExpanded,
@@ -180,7 +180,7 @@ export const addDefaultFieldsToTemplate = <T extends ITemplate>(entityTemplate: 
     };
 };
 
-export const getFirstXPropsKeys = (numOfPropsToShow: number, entityTemplate: IMongoEntityTemplateWithConstraintsPopulated): string[] => {
+export const getFirstXPropsKeys = (numOfPropsToShow: number, entityTemplate: IMongoEntityTemplatePopulated): string[] => {
     return [
         ...entityTemplate.propertiesPreview,
         ...entityTemplate.propertiesOrder
@@ -192,8 +192,4 @@ export const getFirstXPropsKeys = (numOfPropsToShow: number, entityTemplate: IMo
             )
             .slice(0, Math.max(numOfPropsToShow - entityTemplate.propertiesPreview.length, 0)),
     ];
-};
-
-export const isChildTemplate = (template: ITemplate | undefined | null): template is IMongoChildTemplateWithConstraintsPopulated => {
-    return typeof template === 'object' && template !== null && 'parentTemplate' in template && Boolean(template.parentTemplate);
 };

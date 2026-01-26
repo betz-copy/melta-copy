@@ -1,7 +1,7 @@
 import { IMongoChildTemplateWithConstraintsPopulated, ViewType } from '@packages/child-template';
 import { IPropertyValue } from '@packages/entity';
-import { IFullMongoEntityTemplate, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
-import { ITemplate } from '../../../interfaces/template';
+import { IMongoEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { emptyCategory, ITemplate } from '../../../interfaces/template';
 
 export const emptyEntityTemplate: IMongoEntityTemplateWithConstraintsPopulated = {
     _id: '',
@@ -33,13 +33,14 @@ export const emptyEntityTemplate: IMongoEntityTemplateWithConstraintsPopulated =
     iconFileId: null,
 };
 
-const emptyParentTemplateForChild: IFullMongoEntityTemplate = {
+const emptyParentTemplateForChild: IMongoEntityTemplatePopulated = {
     ...emptyEntityTemplate,
-    category: '',
+    category: emptyCategory,
 };
 
 export const emptyChildTemplate: IMongoChildTemplateWithConstraintsPopulated = {
     ...emptyEntityTemplate,
+    parentTemplateId: '',
     description: '',
     isFilterByCurrentUser: false,
     isFilterByUserUnit: false,

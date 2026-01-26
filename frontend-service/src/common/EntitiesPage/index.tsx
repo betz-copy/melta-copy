@@ -1,5 +1,6 @@
 import { Box, Grid } from '@mui/material';
 import { IMongoCategory } from '@packages/category';
+import { isChildTemplate } from '@packages/child-template';
 import { IEntity, IExportEntitiesBody } from '@packages/entity';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
@@ -13,7 +14,6 @@ import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '.
 import { convertToBool } from '../../utils/convertStringToBool';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { LocalStorage } from '../../utils/localStorage';
-import { isChildTemplate } from '../../utils/templates';
 import { TablePageType } from '../EntitiesTableOfTemplate';
 import CardsView, { CardsViewRef } from './CardsView';
 import { EntitiesPageHeadline } from './Headline';

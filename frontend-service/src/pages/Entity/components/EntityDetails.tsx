@@ -9,6 +9,7 @@ import {
     Unarchive,
 } from '@mui/icons-material';
 import { Card, CardContent, Dialog, Grid, IconButton, Menu } from '@mui/material';
+import { isChildTemplate } from '@packages/child-template';
 import { IDeleteEntityBody, IEntity, IEntityExpanded } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { PermissionScope } from '@packages/permission';
@@ -31,7 +32,6 @@ import { deleteEntityRequest, updateEntityStatusRequest } from '../../../service
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';
 import { checkUserTemplatePermission, isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
-import { isChildTemplate } from '../../../utils/templates';
 import LocationPreview from '../../Map/LocationPreview';
 import { EditEntityDetails } from './EditEntityDetails';
 import { EntityDates } from './EntityDates';

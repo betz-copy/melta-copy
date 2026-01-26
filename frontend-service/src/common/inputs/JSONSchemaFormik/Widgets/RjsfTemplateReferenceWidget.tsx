@@ -77,11 +77,7 @@ const RjsfTemplateReferenceWidget = ({
     return (
         <TemplateEntitiesAutocomplete
             {...widgetProps}
-            template={
-                childTemplatesOfRelatedTemplate.length
-                    ? entityTemplates.get(childTemplatesOfRelatedTemplate[0].parentTemplate._id)
-                    : relatedEntityTemplate
-            }
+            template={childTemplatesOfRelatedTemplate.length ? childTemplatesOfRelatedTemplate[0].parentTemplate : relatedEntityTemplate}
             showField={schema.relationshipReference.relatedTemplateField}
             value={value || null}
             label={label}

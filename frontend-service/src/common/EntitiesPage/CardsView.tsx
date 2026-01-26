@@ -1,4 +1,5 @@
 import { Grid } from '@mui/material';
+import { isChildTemplate } from '@packages/child-template';
 import { IEntityWithDirectConnections } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { ISemanticSearchResult } from '@packages/semantic-search';
@@ -15,7 +16,6 @@ import { useWorkspaceStore } from '../../stores/workspace';
 import { convertToBool } from '../../utils/convertStringToBool';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
-import { isChildTemplate } from '../../utils/templates';
 import { InfiniteScroll } from '../InfiniteScroll';
 import { getDefaultFilterFromTemplate } from './TemplateTablesView';
 

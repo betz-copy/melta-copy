@@ -1,9 +1,8 @@
-import { IMongoChildTemplatePopulated } from '@packages/child-template';
-import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import { IMongoRelationshipTemplate } from '@packages/relationship-template';
 import randomColor from 'randomcolor';
+import { ITemplate } from '../interfaces/template';
 
-export const getEntityTemplateColor = (entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated, categoryColor?: string) => {
+export const getEntityTemplateColor = (entityTemplate: ITemplate, categoryColor?: string) => {
     return randomColor({
         hue: categoryColor ?? entityTemplate.category.color,
         seed: entityTemplate.name,
