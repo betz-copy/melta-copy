@@ -81,7 +81,6 @@ const EntityTemplateWizard: React.FC<
 
     const { isLoading, mutateAsync } = useMutation(
         (entityTemplate: EntityTemplateWizardValues) => {
-            // TODO: CHECK IF WORKS
             if (isEditMode) {
                 return updateEntityTemplateRequest((initialValues as EntityTemplateWizardValues & { _id: string })._id, entityTemplate, queryClient);
             } else return createEntityTemplateRequest(entityTemplate, queryClient);

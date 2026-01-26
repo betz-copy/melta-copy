@@ -17,7 +17,6 @@ interface TypeSelectFilterProps {
 }
 
 const TypeSelectFilter: React.FC<TypeSelectFilterProps> = ({ filterField, handleFilterTypeChange, readOnly, type, filterType }) => {
-    // TODO: CHECK IF CORRECT
     const options = useMemo(() => getFilterOptions(type, filterType), [type, filterType]);
 
     return (
