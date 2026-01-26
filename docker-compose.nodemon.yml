@@ -20,7 +20,7 @@ services:
       dockerfile: Dockerfile.base.dev
       args:
         SERVICE_NAME: 'activity-log-service'
-    command: ['npm', 'run', 'dev:nodemon', '-w', 'activity-log-service']
+    command: ['pnpm', '--filter', 'activity-log-service', 'dev:nodemon']
     profiles:
       - nodemon
     volumes:
@@ -34,7 +34,7 @@ services:
       dockerfile: Dockerfile.base.dev
       args:
         SERVICE_NAME: 'user-service'
-    command: ['npm', 'run', 'dev:nodemon', '-w', 'user-service']
+    command: ['pnpm', '--filter', 'user-service', 'dev:nodemon']
     profiles:
       - nodemon
     volumes:
@@ -48,7 +48,7 @@ services:
       dockerfile: Dockerfile.base.dev
       args:
         SERVICE_NAME: 'storage-service'
-    command: ['npm', 'run', 'dev:nodemon', '-w', 'storage-service']
+    command: ['pnpm', '--filter', 'storage-service', 'run', 'dev:nodemon']
     profiles:
       - nodemon
     volumes:
@@ -62,7 +62,7 @@ services:
       dockerfile: Dockerfile.base.dev
       args:
         SERVICE_NAME: 'template-service'
-    command: ['npm', 'run', 'dev:nodemon', '-w', 'template-service']
+    command: ['pnpm', '--filter', 'template-service', 'dev:nodemon']
     profiles:
       - nodemon
     volumes:
@@ -76,7 +76,7 @@ services:
       dockerfile: Dockerfile.base.dev
       args:
         SERVICE_NAME: 'instance-service'
-    command: ['npm', 'run', 'dev:nodemon', '-w', 'instance-service']
+    command: ['pnpm', '--filter', 'instance-service', 'dev:nodemon']
     profiles:
       - nodemon
     volumes:
@@ -90,7 +90,7 @@ services:
       dockerfile: Dockerfile.base.dev
       args:
         SERVICE_NAME: 'global-search-service'
-    command: ['npm', 'run', 'dev:nodemon', '-w', 'global-search-service']
+    command: ['pnpm', '--filter', 'global-search-service', 'dev:nodemon']
     profiles:
       - nodemon
     volumes:
@@ -104,7 +104,7 @@ services:
       dockerfile: Dockerfile.base.dev
       args:
         SERVICE_NAME: 'notification-service'
-    command: ['npm', 'run', 'dev:nodemon', '-w', 'notification-service']
+    command: ['pnpm', '--filter', 'notification-service', 'dev:nodemon']
     profiles:
       - nodemon
     volumes:
@@ -118,7 +118,7 @@ services:
       dockerfile: Dockerfile.base.dev
       args:
         SERVICE_NAME: 'rule-breach-service'
-    command: ['npm', 'run', 'dev:nodemon', '-w', 'rule-breach-service']
+    command: ['pnpm', '--filter', 'rule-breach-service', 'dev:nodemon']
     profiles:
       - nodemon
     volumes:
@@ -132,7 +132,7 @@ services:
       dockerfile: Dockerfile.base.dev
       args:
         SERVICE_NAME: 'process-service'
-    command: ['npm', 'run', 'dev:nodemon', '-w', 'process-service']
+    command: ['pnpm', '--filter', 'process-service', 'dev:nodemon']
     profiles:
       - nodemon
     volumes:
@@ -146,7 +146,7 @@ services:
       dockerfile: Dockerfile.base.dev
       args:
         SERVICE_NAME: 'gantt-service'
-    command: ['npm', 'run', 'dev:nodemon', '-w', 'gantt-service']
+    command: ['pnpm', '--filter', 'gantt-service', 'dev:nodemon']
     profiles:
       - nodemon
     volumes:
@@ -160,7 +160,7 @@ services:
       dockerfile: ./preview-service/Dockerfile.dev
       args:
         SERVICE_NAME: 'preview-service'
-    command: ['npm', 'run', 'dev:nodemon', '-w', 'preview-service']
+    command: ['pnpm', '--filter', 'preview-service', 'dev:nodemon']
     profiles:
       - nodemon
     volumes:
@@ -174,7 +174,7 @@ services:
       dockerfile: Dockerfile.base.dev
       args:
         SERVICE_NAME: 'workspace-service'
-    command: ['npm', 'run', 'dev:nodemon', '-w', 'workspace-service']
+    command: ['pnpm', '--filter', 'workspace-service', 'dev:nodemon']
     profiles:
       - nodemon
     volumes:
@@ -188,7 +188,7 @@ services:
       dockerfile: Dockerfile.base.dev
       args:
         SERVICE_NAME: 'dashboard-service'
-    command: ['npm', 'run', 'dev:nodemon', '-w', 'dashboard-service']
+    command: ['pnpm', '--filter', 'dashboard-service', 'dev:nodemon']
     profiles:
       - nodemon
     volumes:
@@ -202,7 +202,7 @@ services:
       dockerfile: Dockerfile.base.dev
       args:
         SERVICE_NAME: 'cron-service'
-    command: ['npm', 'run', 'dev:nodemon', '-w', 'cron-service']
+    command: ['pnpm', '--filter', 'cron-service', 'dev:nodemon']
     profiles:
       - nodemon
     volumes:
@@ -216,7 +216,7 @@ services:
       dockerfile: Dockerfile.base.dev
       args:
         SERVICE_NAME: 'semantic-service'
-    command: ['npm', 'run', 'dev:nodemon', '-w', 'semantic-service']
+    command: ['pnpm', '--filter', 'semantic-service', 'dev:nodemon']
     profiles:
       - nodemon
     volumes:
