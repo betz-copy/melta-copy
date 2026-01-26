@@ -1,4 +1,5 @@
 import { IMongoCategory } from '@packages/category';
+import { IMongoProps } from '@packages/common';
 import { IUniqueConstraintOfTemplate } from '@packages/entity';
 import {
     IEntitySingleProperty,
@@ -69,10 +70,7 @@ export interface IChildTemplatePopulated
     };
 }
 
-export interface IMongoChildTemplatePopulated extends IChildTemplatePopulated {
-    createdAt: Date;
-    updatedAt: Date;
-}
+export interface IMongoChildTemplatePopulated extends IChildTemplatePopulated, Omit<IMongoProps, '_id'> {}
 
 export interface IChildTemplateWithParent extends Omit<IMongoEntityTemplate, 'properties' | 'category'>, Omit<IChildTemplate, 'properties'> {
     properties: Omit<IProperties, 'properties'> & {

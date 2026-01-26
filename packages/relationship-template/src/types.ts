@@ -14,11 +14,9 @@ export interface IConvertToRelationshipField {
     relationshipReference: IRelationshipReference;
 }
 
-export interface IMongoRelationshipTemplate extends IRelationshipTemplate {
-    _id: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
+import { IMongoProps } from '@packages/common';
+
+export interface IMongoRelationshipTemplate extends IRelationshipTemplate, IMongoProps {}
 
 export type IMongoRelationshipTemplatePopulated = Omit<IMongoRelationshipTemplate, 'sourceEntityId' | 'destinationEntityId'> & {
     sourceEntity: IMongoEntityTemplateWithConstraintsPopulated;

@@ -1,3 +1,4 @@
+import { IMongoProps } from '@packages/common';
 import { IPropertyValue, ISearchFilter } from '@packages/entity';
 
 export enum IChartType {
@@ -63,11 +64,7 @@ export interface IChart {
     usedInDashboard?: boolean;
 }
 
-export interface IMongoChart extends IChart {
-    _id: string;
-    createdAt: string;
-    updatedAt: string;
-}
+export interface IMongoChart extends IChart, IMongoProps {}
 
 export interface IChartBody {
     _id: string;

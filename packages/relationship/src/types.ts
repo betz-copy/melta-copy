@@ -1,3 +1,4 @@
+import { IMongoProps } from '@packages/common';
 import { IEntity, IPropertyValue } from '@packages/entity';
 import { IRelationshipReference } from '@packages/entity-template';
 import { Transaction } from 'neo4j-driver';
@@ -17,11 +18,7 @@ export interface IDeleteRelationshipReference {
 }
 
 export interface IMongoRelationship extends Omit<IRelationship, 'properties'> {
-    properties: Record<string, IPropertyValue> & {
-        _id: string;
-        createdAt: Date;
-        updatedAt: Date;
-    };
+    properties: Record<string, IPropertyValue> & IMongoProps;
 }
 
 export interface IRelationshipPopulated extends Omit<IRelationship, 'sourceEntityId' | 'destinationEntityId'> {

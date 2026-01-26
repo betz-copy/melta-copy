@@ -7,11 +7,9 @@ export interface IFrame {
     usedInDashboard?: boolean;
 }
 
-export interface IMongoIframe extends IFrame {
-    _id: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
+import { IMongoProps } from '@packages/common';
+
+export interface IMongoIframe extends IFrame, IMongoProps {}
 
 export interface ISearchIFramesBody {
     search?: string;

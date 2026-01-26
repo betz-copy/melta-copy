@@ -15,11 +15,9 @@ export interface IPrintingTemplate {
     appendSignatureField: boolean;
 }
 
-export interface IMongoPrintingTemplate extends IPrintingTemplate {
-    _id: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
+import { IMongoProps } from '@packages/common';
+
+export interface IMongoPrintingTemplate extends IPrintingTemplate, IMongoProps {}
 
 type IRelationShipPrintTreeNode = IMongoRelationshipTemplate & {
     _id: string;

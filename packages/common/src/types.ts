@@ -23,3 +23,9 @@ export enum Conjunction {
     AND = 'AND',
     OR = 'OR',
 }
+
+export interface IMongoProps {
+    _id: string;
+    createdAt: Date;
+    updatedAt: Date;
+}

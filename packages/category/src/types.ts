@@ -1,3 +1,5 @@
+import { IMongoProps } from '@packages/common';
+
 export interface ICategory {
     name: string;
     displayName: string;
@@ -6,11 +8,7 @@ export interface ICategory {
     templatesOrder: string[];
 }
 
-export interface IMongoCategory extends ICategory {
-    _id: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
+export interface IMongoCategory extends ICategory, IMongoProps {}
 
 export interface ISearchCategoriesBody {
     search?: string;

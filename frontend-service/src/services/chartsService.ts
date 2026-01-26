@@ -1,5 +1,5 @@
 import { ChartsAndGenerator, IChartPermission, IMongoChart } from '@packages/chart';
-import { MongoBaseFields } from '@packages/dashboard';
+import { IMongoProps } from '@packages/common';
 import axios from '../axios';
 import { environment } from '../globals';
 import { ChartToBackend } from '../interfaces/dashboard';
@@ -11,7 +11,7 @@ export const createChart = async (newChart: ChartToBackend, toDashboard: boolean
     return data;
 };
 
-export const editChart = async (chartId: string, updatedChart: ChartToBackend & Partial<MongoBaseFields>, prevChildTemplateId?: string) => {
+export const editChart = async (chartId: string, updatedChart: ChartToBackend & Partial<IMongoProps>, prevChildTemplateId?: string) => {
     const { usedInDashboard, _id, createdAt: _c, updatedAt: _u, childTemplateId, ...restChart } = updatedChart;
 
     const deleteReferenceDashboardItems = usedInDashboard && updatedChart.permission === IChartPermission.Private;

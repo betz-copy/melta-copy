@@ -1,3 +1,4 @@
+import { IMongoProps } from '@packages/common';
 import { ChartsAndGenerator } from '@packages/chart';
 import { IMongoIframe } from '@packages/iframe';
 
@@ -6,12 +7,6 @@ export enum DashboardItemType {
     Chart = 'chart',
     Iframe = 'iframe',
 }
-export interface MongoBaseFields {
-    _id: string;
-    createdAt: string;
-    updatedAt: string;
-}
-
 export interface TableMetaData {
     _id?: string;
     templateId: string;
@@ -51,5 +46,5 @@ interface IframeItemPopulated {
 
 export type DashboardItemPopulated = TableItem | ChartItemPopulated | IframeItemPopulated;
 
-export type MongoDashboardItem = DashboardItem & MongoBaseFields;
-export type MongoDashboardItemPopulated = DashboardItemPopulated & MongoBaseFields;
+export type MongoDashboardItem = DashboardItem & IMongoProps;
+export type MongoDashboardItemPopulated = DashboardItemPopulated & IMongoProps;

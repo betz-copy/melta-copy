@@ -18,6 +18,8 @@ export const defaultInitialValues: UnitWizardValues = {
     parentId: '',
     disabled: false,
     depth: 0,
+    createdAt: new Date(),
+    updatedAt: new Date(),
 };
 
 const steps: StepType<UnitWizardValues>[] = [

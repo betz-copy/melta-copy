@@ -1,4 +1,4 @@
-import { HexColor } from '@packages/common';
+import { HexColor, IMongoProps } from '@packages/common';
 
 export enum Colors {
     primary = 'primary',
@@ -75,18 +75,10 @@ export interface IBaseConfig {
     type: ConfigTypes;
 }
 
-export interface IMongoBaseConfig extends IBaseConfig {
-    _id: string;
-    createdAt: string;
-    updatedAt: string;
-}
+export interface IMongoBaseConfig extends IBaseConfig, IMongoProps {}
 
 export interface ICategoryOrderConfig extends IBaseConfig {
     order: string[];
 }
 
-export interface IMongoCategoryOrderConfig extends ICategoryOrderConfig {
-    _id: string;
-    createdAt: string;
-    updatedAt: string;
-}
+export interface IMongoCategoryOrderConfig extends ICategoryOrderConfig, IMongoProps {}

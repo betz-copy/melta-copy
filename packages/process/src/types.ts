@@ -1,3 +1,4 @@
+import { IMongoProps } from '@packages/common';
 import { IEntity, IPropertyValue } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated, PropertyType } from '@packages/entity-template';
 import { IUser } from '@packages/user';
@@ -53,16 +54,8 @@ export interface IProcessInstance {
 export interface IProcessInstancePopulated extends Omit<IProcessInstance, 'steps'> {
     steps: IMongoStepInstance[];
 }
-export interface IMongoProcessInstance extends IProcessInstance {
-    _id: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
-export interface IMongoProcessInstancePopulated extends IProcessInstancePopulated {
-    _id: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
+export interface IMongoProcessInstance extends IProcessInstance, IMongoProps {}
+export interface IMongoProcessInstancePopulated extends IProcessInstancePopulated, IMongoProps {}
 
 export interface IMongoProcessInstanceReviewerPopulated extends Omit<IMongoProcessInstance, 'steps'> {
     steps: IMongoStepInstancePopulated[];
@@ -123,11 +116,7 @@ export interface IStepInstance {
     reviewedAt?: Date;
 }
 
-export interface IMongoStepInstance extends IStepInstance {
-    _id: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
+export interface IMongoStepInstance extends IStepInstance, IMongoProps {}
 
 export interface IMongoStepInstancePopulated extends Omit<IMongoStepInstance, 'reviewerId' | 'reviewers'> {
     reviewers: IUser[];
@@ -197,17 +186,9 @@ export interface IUpdateProcessTemplateBody extends Omit<IProcessTemplate, 'step
     steps: (IStepTemplate & { _id: string })[];
 }
 
-export interface IMongoProcessTemplate extends IProcessTemplate {
-    _id: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
+export interface IMongoProcessTemplate extends IProcessTemplate, IMongoProps {}
 
-export interface IMongoProcessTemplatePopulated extends IProcessTemplatePopulated {
-    _id: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
+export interface IMongoProcessTemplatePopulated extends IProcessTemplatePopulated, IMongoProps {}
 
 export interface IMongoProcessTemplateReviewerPopulated extends Omit<IMongoProcessTemplatePopulated, 'steps'> {
     steps: IMongoStepTemplatePopulated[];
@@ -237,11 +218,7 @@ export interface IStepTemplate extends IProcessDetails {
     iconFileId: string | null;
 }
 
-export interface IMongoStepTemplate extends IStepTemplate {
-    _id: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
+export interface IMongoStepTemplate extends IStepTemplate, IMongoProps {}
 
 export interface IMongoStepTemplatePopulated extends Omit<IMongoStepTemplate, 'reviewers'> {
     reviewers: IUser[];

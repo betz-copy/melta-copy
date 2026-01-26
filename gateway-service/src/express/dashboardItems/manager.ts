@@ -1,4 +1,5 @@
-import { ChartItemPopulated, DashboardItemType, MongoBaseFields, MongoDashboardItemPopulated } from '@packages/dashboard';
+import { IMongoProps } from '@packages/common';
+import { ChartItemPopulated, DashboardItemType, MongoDashboardItemPopulated } from '@packages/dashboard';
 import { ISubCompactPermissions } from '@packages/permission';
 import { flatten, groupBy, keyBy, map, partition, sortBy } from 'lodash';
 import DashboardItemService from '../../externalServices/dashboardService/dashboardItemService';
@@ -39,7 +40,7 @@ class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
         }
     }
 
-    private async processChartItems(chartItems: (ChartItemPopulated & MongoBaseFields)[], chartManager: ChartManager, userId: string) {
+    private async processChartItems(chartItems: (ChartItemPopulated & IMongoProps)[], chartManager: ChartManager, userId: string) {
         const chartMetaList = map(chartItems, 'metaData');
         const [childChartsItems, parentChartItems] = partition(chartMetaList, (item) => !!item.childTemplateId);
 

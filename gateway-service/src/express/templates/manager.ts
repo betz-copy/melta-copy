@@ -1,7 +1,8 @@
 import { ICategory, IMongoCategory } from '@packages/category';
 import { IAxisField, IChartType, IColumnOrLineMetaData, INumberMetaData, IPieMetaData } from '@packages/chart';
 import { IChildTemplate, IChildTemplatePopulated, IChildTemplateWithConstraintsPopulated, isChildTemplate } from '@packages/child-template';
-import { DashboardItemType, MongoBaseFields, TableItem } from '@packages/dashboard';
+import { IMongoProps } from '@packages/common';
+import { DashboardItemType, TableItem } from '@packages/dashboard';
 import { IConstraintsOfTemplate, IEntity, IUniqueConstraintOfTemplate, UploadedFile } from '@packages/entity';
 import {
     IEntitySingleProperty,
@@ -877,7 +878,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         const filteredTableItems = allDashboardItems.filter(
             ({ type, metaData }) => type === DashboardItemType.Table && metaData.templateId === templateId && metaData.filter,
-        ) as (TableItem & MongoBaseFields)[];
+        ) as (TableItem & IMongoProps)[];
 
         return processAndUpdateItems(
             filteredTableItems,

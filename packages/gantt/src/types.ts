@@ -23,11 +23,9 @@ export interface IGantt {
     groupBy?: IGanttGroupBy;
 }
 
-export interface IMongoGantt extends IGantt {
-    _id: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
+import { IMongoProps } from '@packages/common';
+
+export interface IMongoGantt extends IGantt, IMongoProps {}
 
 export interface ISearchGanttsBody {
     search?: string;

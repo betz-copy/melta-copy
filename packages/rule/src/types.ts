@@ -1,4 +1,4 @@
-import { Conjunction } from '@packages/common';
+import { Conjunction, IMongoProps } from '@packages/common';
 import { IEntityTemplatePopulated } from '@packages/entity-template';
 import { IMongoRelationshipTemplate } from '@packages/relationship-template';
 
@@ -98,9 +98,7 @@ export interface IRule {
     mail?: IRuleMail;
     doesFormulaHaveTodayFunc: boolean;
 }
-export interface IMongoRule extends IRule {
-    _id: string;
-}
+export interface IMongoRule extends IRule, IMongoProps {}
 
 export type IRuleMap = Map<string, IMongoRule>;
 

@@ -1,3 +1,4 @@
+import { IMongoProps } from '@packages/common';
 import { IMongoCategory } from '@packages/category';
 import { IFilter } from '@packages/child-template';
 import { IPropertyValue, ISearchFilter, IUniqueConstraintOfTemplate } from '@packages/entity';
@@ -131,21 +132,13 @@ export interface IMongoEntityTemplate extends IEntityTemplate {
     _id: string;
 }
 
-export interface IFullMongoEntityTemplate extends IEntityTemplate {
-    _id: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
+export interface IFullMongoEntityTemplate extends IEntityTemplate, IMongoProps {}
 
 export interface IEntityTemplatePopulated extends Omit<IMongoEntityTemplate, 'category'> {
     category: IMongoCategory;
 }
 
-export interface IMongoEntityTemplatePopulated extends IEntityTemplatePopulated {
-    _id: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
+export interface IMongoEntityTemplatePopulated extends IEntityTemplatePopulated, IMongoProps {}
 
 export interface ISearchBody {
     search?: string;

@@ -1,3 +1,5 @@
+import { IMongoProps } from '@packages/common';
+
 export interface IUnit {
     name: string;
     parentId?: string;
@@ -6,9 +8,7 @@ export interface IUnit {
     depth: number;
 }
 
-export interface IMongoUnit extends IUnit {
-    _id: string;
-}
+export interface IMongoUnit extends IUnit, IMongoProps {}
 
 export interface IUnitHierarchy extends IMongoUnit {
     children: IUnitHierarchy[];
