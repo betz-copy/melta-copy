@@ -113,7 +113,6 @@ const ChildTemplateDialog: React.FC<{
             ...rest,
             name: name.replace(`${entityTemplate.name}_`, ''),
             displayName: displayName.replace(`${entityTemplate.displayName}-`, ''),
-            parentTemplate: rest.parentTemplate,
             category: rest._id ? category : entityTemplate.category,
             properties: { properties: newProperties },
             filterByCurrentUserField: rest.filterByCurrentUserField ?? undefined,
