@@ -4,7 +4,6 @@ coverage/
 .turbo/
 halbana-**
 npm_token_secret.txt
-pnpm-lock.yaml
 logs/
 
 # ignore all .env, except in current directory (used for docker-compose)
