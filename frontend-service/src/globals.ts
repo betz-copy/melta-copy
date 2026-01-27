@@ -299,7 +299,7 @@ export const environment = {
     filterOptions: {
         string: ['contains', 'notContains', 'equals', 'notEqual', 'startsWith', 'endsWith'],
         text: ['contains', 'notContains', 'equals', 'notEqual', 'startsWith', 'endsWith'],
-        number: ['equals', 'notEqual', 'greaterThan', 'greaterThanOrEqual', 'lessThan', 'lessThanOrEqual'],
+        number: ['contains', 'equals', 'notEqual', 'greaterThan', 'greaterThanOrEqual', 'lessThan', 'lessThanOrEqual'],
         date: [
             'equals',
             'notEqual',
