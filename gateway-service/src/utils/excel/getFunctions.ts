@@ -20,6 +20,7 @@ import {
     IEntityWithIgnoredRules,
     IFailedEntity,
     IMongoEntityTemplatePopulated,
+    IPropertyValue,
     IUpdateEntityMetadataPopulated,
     IValidationErrorData,
     isChildTemplate,
@@ -162,7 +163,7 @@ type IFailedProperties = {
     format: Exclude<IEntitySingleProperty['format'], undefined>;
 }[];
 
-const handleFailedEntities = (rowData: Record<string, any>, failedProperties: IFailedProperties, failedEntities: IFailedEntity[]) => {
+const handleFailedEntities = (rowData: Record<string, IPropertyValue>, failedProperties: IFailedProperties, failedEntities: IFailedEntity[]) => {
     const failedEntityProperties = {
         ...rowData,
         ...failedProperties.reduce((acc, { key, cellValue }) => {
@@ -259,7 +260,7 @@ export const readExcelFile = async (
                 isFailed = false;
                 if (rowIndex === 1) return; // skip header row
                 const failedProperties: IFailedProperties = [];
-                const rowData: Record<string, any> = {};
+                const rowData: Record<string, IPropertyValue> = {};
 
                 Object.entries(columns).forEach(([key, value], columnIndex) => {
                     const cellValue = row.getCell(columnIndex + 1).value;
@@ -269,6 +270,7 @@ export const readExcelFile = async (
                             failedProperties.push({ key, value, cellValue, format: PropertyFormat.date });
                             isFailed = true;
                         } else rowData[key] = formatCellValue;
+                        // biome-ignore lint/suspicious/noExplicitAny: error any type
                     } catch (error: any) {
                         logger.error("there's an error in the entity", { error });
                         if (error.message.includes(invalidTime)) {

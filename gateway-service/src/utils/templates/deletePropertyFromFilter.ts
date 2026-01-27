@@ -1,4 +1,4 @@
-import { IMongoChart, ISearchFilter, logger, MongoBaseFields, TableItem } from '@microservices/shared';
+import { IMongoChart, ISearchFilter, logger, MongoBaseFields, MongoDashboardItem, TableItem } from '@microservices/shared';
 import { omit } from 'lodash';
 
 export const processFilteredItems = <T>(
@@ -37,7 +37,7 @@ export const processFilteredItems = <T>(
 
 export const updateItems = async <T extends object>(
     items: { id: string; updatedItem: T }[],
-    updateFunction: (id: string, item: T) => Promise<any>,
+    updateFunction: (id: string, item: T) => Promise<MongoDashboardItem> | Promise<IMongoChart>,
     prepareItem?: (item: T) => T,
 ): Promise<void> => {
     await Promise.all(
@@ -55,7 +55,7 @@ export const processAndUpdateItems = async <T extends object>(
     getFilter: (item: T) => string | undefined,
     setFilter: (item: T, filter: string | undefined) => void,
     getId: (item: T) => string,
-    updateFunction: (id: string, item: T) => Promise<any>,
+    updateFunction: (id: string, item: T) => Promise<MongoDashboardItem> | Promise<IMongoChart>,
     prepareItem?: (item: T) => T,
 ): Promise<void> => {
     const processedItems = processFilteredItems(items, removedProperties, getFilter, setFilter, getId);

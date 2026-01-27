@@ -39,7 +39,7 @@ export class AuthService {
     static parseUserToken = (token: string) => {
         try {
             return jwtDecode(token) as UserState['user'] & {};
-        } catch (error) {
+        } catch {
             return null;
         }
     };

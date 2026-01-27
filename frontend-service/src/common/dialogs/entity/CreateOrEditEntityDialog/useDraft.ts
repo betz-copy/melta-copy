@@ -3,14 +3,14 @@ import { Dispatch, SetStateAction, useCallback, useMemo } from 'react';
 import { v4 as uuid } from 'uuid';
 import { environment } from '../../../../globals';
 import { IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
-import { IEntity } from '../../../../interfaces/entities';
+import { IEntity, IPropertyValue } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { useDraftIdStore, useDraftsStore } from '../../../../stores/drafts';
 import { EntityWizardValues } from '..';
 
 const useDraftEntityDialogHook = (
     entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
-    setInitialValuePropsToFilter: Dispatch<SetStateAction<Record<string, any>>>,
+    setInitialValuePropsToFilter: Dispatch<SetStateAction<Record<string, IPropertyValue>>>,
     entityToUpdate: IEntity | undefined,
 ) => {
     const drafts = useDraftsStore((state) => state.drafts);

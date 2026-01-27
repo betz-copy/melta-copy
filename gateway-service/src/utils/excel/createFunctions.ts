@@ -5,6 +5,7 @@ import {
     IEntitySingleProperty,
     IEnumPropertiesColors,
     IMongoEntityTemplatePopulated,
+    IPropertyValue,
     locationConverterToString,
     PropertyFormat,
     PropertyType,
@@ -181,7 +182,7 @@ const createWorksheet = async (
     const worksheet = workbook.addWorksheet(template.displayName);
 
     const sheetColumns: Partial<Excel.Column>[] = [];
-    let columnIndex = 0; // TODO: make data validation work in office excel
+    // let columnIndex = 0; // TODO: make data validation work in office excel
 
     Object.entries(template.properties.properties).forEach(([propertyKey, propertyTemplate]) => {
         const showRelationshipRef = showRelationshipRefColumn(propertyKey, propertyTemplate, relatedTemplatesMap, requiredConstraints);
@@ -194,7 +195,7 @@ const createWorksheet = async (
         if (shouldAddColumn) {
             // TODO: make data validation work in office excel
             // columnDataValidation(worksheet, propertyTemplate, columnIndex);
-            columnIndex++;
+            // columnIndex++;
             sheetColumns.push({
                 key: propertyKey,
                 header: propertyTemplate.title,
@@ -233,7 +234,7 @@ export const getFileName = (fileId: string) => fileId.slice(config.storageServic
 const relationshipRefCell = (
     cell: Excel.Cell,
     [key, value]: [string, IEntitySingleProperty],
-    row: Record<string, any>,
+    row: Record<string, IPropertyValue>,
     workspacePath: string,
     unitsMap: Map<string, string>,
     relatedTemplatesMap: Record<string, IMongoEntityTemplatePopulated>,
@@ -266,7 +267,7 @@ const relationshipRefCell = (
     };
 };
 
-const userArrayCell = (cell: Excel.Cell, row: Record<string, any>, key: string, insertEntities?: boolean) => {
+const userArrayCell = (cell: Excel.Cell, row: Record<string, IPropertyValue>, key: string, insertEntities?: boolean) => {
     const currentValue = row[key];
     cell.value = insertEntities
         ? Array.isArray(currentValue)
@@ -284,7 +285,7 @@ const filesCell = (cell: Excel.Cell, isFileArray: boolean, rowIndex: number, val
 
 const fixComplexProperties = (
     cell: Excel.Cell,
-    row: Record<string, any>,
+    row: Record<string, IPropertyValue>,
     [key, value]: [string, IEntitySingleProperty],
     rowIndex: number,
     workspace: { path: string; id: string },
@@ -336,14 +337,14 @@ const readOnlyCell = (cell: Cell) => {
 };
 
 type FormattedCell = {
-    value: any;
+    value: IPropertyValue;
     numFmt?: string;
     alignment?: Excel.Alignment;
     font?: Partial<Excel.Font>;
 };
 
 const formatCellValue = (
-    rawValue: any,
+    rawValue: IPropertyValue,
     key: string,
     property: IEntitySingleProperty,
     unitsMap: Map<string, string>,

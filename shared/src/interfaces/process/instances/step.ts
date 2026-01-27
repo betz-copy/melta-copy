@@ -1,9 +1,10 @@
+import { IPropertyValue } from '../../entity';
 import { IUser } from '../../user';
 import { InstanceProperties, Status } from './process';
 
 export interface IStepInstance {
     templateId: string;
-    properties?: Record<string, any>;
+    properties?: Record<string, IPropertyValue>;
     comments?: string;
     status: Status;
     reviewers: string[];

@@ -1,4 +1,5 @@
-export const typedObjectEntries = <T extends Object>(obj: T): [keyof T, T[keyof T]][] => {
+/** biome-ignore-all lint/suspicious/noExplicitAny: lol */
+export const typedObjectEntries = <T extends object>(obj: T): [keyof T, T[keyof T]][] => {
     return Object.entries(obj) as any;
 };
 

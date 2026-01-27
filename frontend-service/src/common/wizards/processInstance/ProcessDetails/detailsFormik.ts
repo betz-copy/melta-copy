@@ -1,6 +1,8 @@
+import { AxiosError } from 'axios';
 import { useFormik, yupToFormErrors } from 'formik';
 import i18next from 'i18next';
 import { useMemo } from 'react';
+import { UseMutateAsyncFunction } from 'react-query';
 import * as Yup from 'yup';
 import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated, IProcessDetails, IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
@@ -19,7 +21,7 @@ const validationSchema = Yup.object().shape({
     steps: Yup.object().nullable().required('This field is required'),
 });
 
-export const initDetailsValues = (template: IMongoProcessTemplatePopulated): Object => {
+export const initDetailsValues = (template: IMongoProcessTemplatePopulated): object => {
     const details = {};
     Object.keys(template.details.properties.properties).forEach((field) => {
         details[field] = undefined;
@@ -80,7 +82,7 @@ export const getValidationErrors = async (values) => {
 export const useProcessDetailsFormik = (
     processInstance: IMongoProcessInstancePopulated | undefined,
     processTemplatesMap: IProcessTemplateMap,
-    mutateAsync: (data: ProcessDetailsValues) => Promise<any>,
+    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError, ProcessDetailsValues, unknown>,
 ) => {
     const initialValues = useMemo(() => getInitialDetailsValues(processInstance, processTemplatesMap), [processInstance, processTemplatesMap]);
     const formik = useFormik<ProcessDetailsValues>({

@@ -14,6 +14,7 @@ import {
     IMongoChart,
     IMongoEntityTemplatePopulated,
     IPieMetaData,
+    IPropertyValue,
     ISearchFilter,
     ISubCompactPermissions,
 } from '@microservices/shared';
@@ -167,7 +168,7 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
 
         const generatedCharts = (await this.instanceService.getChartsOfTemplate(templateId, { chartsData, childTemplateId }, units)) as {
             _id: string;
-            chart: { x: any; y: number }[];
+            chart: { x: IPropertyValue; y: number }[];
         }[];
 
         const generatedChartsMap = new Map(generatedCharts.map(({ _id, chart }) => [_id, chart]));

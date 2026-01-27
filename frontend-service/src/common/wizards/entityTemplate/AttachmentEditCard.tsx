@@ -19,12 +19,12 @@ interface AttachmentEditCardProps {
     touched?: FormikTouched<CommonFormInputProperties>;
     errors?: FormikErrors<CommonFormInputProperties>;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    remove: (index: number, isNewProperty: boolean) => any;
+    remove: (index: number, isNewProperty: boolean) => void;
     supportChangeToRequiredWithInstances: boolean;
     supportDeleteForExistingInstances: boolean;
     hasActions?: boolean;
     supportConvertingToMultipleFields?: boolean;
-    dragRef?: any;
+    dragRef?: React.RefObject<null>;
 }
 
 export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({

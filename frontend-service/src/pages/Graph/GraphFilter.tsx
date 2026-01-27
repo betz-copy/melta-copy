@@ -110,7 +110,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
         const { format, type, enum: enumValues } = selectedTemplate.properties.properties[newProperty];
 
         const selectedFilter =
-            (enumValues && initializedFilterField['array']) || (format && initializedFilterField[format]) || (type && initializedFilterField[type]);
+            (enumValues && initializedFilterField.array) || (format && initializedFilterField[format]) || (type && initializedFilterField[type]);
 
         if (selectedFilter) setFilterField(selectedFilter);
     };
@@ -396,8 +396,8 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                                     getOptionDisabled={(option) => {
                                         const propertyTemplate = selectedEntityTemplate?.properties.properties[option];
                                         if (propertyTemplate?.format === 'relationshipReference') {
-                                            const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId!;
-                                            return !entityTemplates?.get(relatedTemplateId);
+                                            const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId;
+                                            return !entityTemplates?.get(relatedTemplateId ?? '');
                                         }
                                         return false;
                                     }}

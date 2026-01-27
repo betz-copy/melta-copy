@@ -28,6 +28,7 @@ class MinIOClient {
     private async wrapDBNotExistsError<T>(func: () => Promise<T>) {
         try {
             return func();
+            // biome-ignore lint/suspicious/noExplicitAny: error is any
         } catch (err: any) {
             // Check if the error is caused by non-existing bucket
             if (err.code !== 'NoSuchBucket') throw err;

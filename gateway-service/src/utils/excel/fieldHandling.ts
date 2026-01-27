@@ -5,6 +5,7 @@ import {
     IMongoChildTemplatePopulated,
     IMongoEntityTemplatePopulated,
     IProperties,
+    IPropertyValue,
     logger,
     NotFoundError,
     NotFoundErrorTypes,
@@ -48,7 +49,7 @@ const updateKartoffelFields = (
     user: IKartoffelUser,
     relatedFieldKey: string,
     templateProperties: IProperties['properties'] | Record<string, IEntitySingleProperty & IChildTemplateProperty>,
-    entityProperties: Record<string, any>,
+    entityProperties: Record<string, IPropertyValue>,
 ): void => {
     const kartoffelFields = Object.entries(templateProperties)
         .filter(([_key, value]) => value?.format === 'kartoffelUserField')
@@ -66,7 +67,7 @@ const updateKartoffelFields = (
 
 export const handleUserFields = async (
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
-    entityProperties: Record<string, any>,
+    entityProperties: Record<string, IPropertyValue>,
     usersMap: Map<string, IKartoffelUser>,
 ): Promise<void> => {
     const templateProperties = template.properties.properties;

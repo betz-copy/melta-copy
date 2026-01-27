@@ -23,6 +23,7 @@ export type ITreeNodeMap = Map<string, { _id: string; children: ITreeNodeMap; ne
 
 export type IEntityTreeNode = IEntity & { children: (IEntityTreeNode & { relationshipId: string })[] };
 
+// biome-ignore lint/suspicious/noExplicitAny: lol
 export const isRelationshipReference = (object: any): object is IEntity => {
     return (
         typeof object === 'object' &&

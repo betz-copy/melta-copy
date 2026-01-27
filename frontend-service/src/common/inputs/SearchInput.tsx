@@ -1,7 +1,7 @@
-import { Search } from '@mui/icons-material';
-import { BaseTextFieldProps, Divider, InputAdornment, TextField, useTheme } from '@mui/material';
+import { Close, Search } from '@mui/icons-material';
+import { BaseTextFieldProps, Divider, IconButton, InputAdornment, TextField, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import { useDarkModeStore } from '../../stores/darkMode';
 
 const SearchInput: React.FC<{
@@ -17,6 +17,7 @@ const SearchInput: React.FC<{
     width?: string;
     isGlobalSearch?: boolean;
     showBorder?: boolean;
+    clearButton?: boolean;
 }> = ({
     value,
     onChange,
@@ -29,15 +30,21 @@ const SearchInput: React.FC<{
     height = '34px',
     width = '231px',
     showBorder = false,
+    clearButton = false,
 }) => {
     const theme = useTheme();
     const darkMode = useDarkModeStore((state) => state.darkMode);
+    const [search, setSearch] = useState(value || '');
+
+    useEffect(() => {
+        onChange(search);
+    }, [search, onChange]);
 
     return (
         <TextField
-            value={value}
+            value={search}
             onChange={(e) => {
-                onChange(e.target.value);
+                setSearch(e.target.value);
                 sessionStorage.clear();
             }}
             onKeyDown={onKeyDown}
@@ -51,7 +58,6 @@ const SearchInput: React.FC<{
                 borderRadius,
                 height,
                 width,
-                padding: '0px, 8px, 0px, 8px',
                 ...(darkMode
                     ? {}
                     : {
@@ -69,24 +75,30 @@ const SearchInput: React.FC<{
                         textAlign: 'right',
                     },
                     endAdornment: (
-                        <InputAdornment
-                            position="end"
-                            sx={{
-                                fontWeight: '400',
-                                letterSpacing: '0em',
-                                lineHeight: '16px',
-                                gap: '10px',
-                            }}
-                        >
+                        <InputAdornment position="end" sx={{ gap: '6px' }}>
+                            {clearButton && search && (
+                                <IconButton
+                                    size="small"
+                                    onClick={() => {
+                                        setSearch('');
+                                        sessionStorage.clear();
+                                    }}
+                                    sx={{ p: 0.5 }}
+                                >
+                                    <Close fontSize="small" />
+                                </IconButton>
+                            )}
+
                             <Divider
                                 orientation="vertical"
-                                style={{
+                                sx={{
                                     width: '1px',
                                     height: '20px',
                                     borderRadius: '1.5px',
                                     backgroundColor: theme.palette.primary.main,
                                 }}
                             />
+
                             {endAdornmentChildren}
                         </InputAdornment>
                     ),

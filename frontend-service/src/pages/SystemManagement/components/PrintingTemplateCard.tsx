@@ -164,10 +164,10 @@ export const PrintingTemplateCard: React.FC<PrintingTemplateCardProps> = ({ prin
                     })}
                     <Divider style={{ width: '100%' }} />
                     <Grid container direction="column" gap="10px" color="textSecondary">
-                        {['compactView', 'addEntityCheckbox', 'appendSignatureField'].map((key) =>
+                        {['addEntityCheckbox', 'appendSignatureField'].map((key) =>
                             showProperty(i18next.t(`wizard.printingTemplate.${key}`), getPropValue(key), darkMode),
                         )}
-                        {showProperty(i18next.t('entityPage.updatedAt'), new Date(printingTemplate.updatedAt).toLocaleDateString(), darkMode)}
+                        {showProperty(i18next.t('entityPage.updatedAt'), new Date(printingTemplate.updatedAt).toLocaleDateString('en-GB'), darkMode)}
                     </Grid>
                 </Grid>
             }

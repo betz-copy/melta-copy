@@ -9,6 +9,7 @@ import PrintOptionsDialog, { IEntityPrint, IPrintOptions, PrintType } from '../.
 import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IFile } from '../../../../interfaces/preview';
+import { IMongoPrintingTemplate } from '../../../../interfaces/printingTemplates';
 import { getEntitiesTreeForPrint } from '../../../../services/entitiesService';
 import { lightTheme } from '../../../../theme';
 import { INestedRelationshipTemplates } from '../..';
@@ -30,13 +31,12 @@ const Print: React.FC<{
     const [printOptions, setPrintOptions] = useState<IPrintOptions>({
         isShowDisabled: true,
         showEntitiesDates: true,
-        showPreviewPropertiesOnly: true,
-        showEntityPrintCheckbox: false,
-        appendSignatureField: false,
+        showPreviewPropertiesOnly: false,
     });
 
     const [selectedRelationShipIds, setSelectedRelationShipIds] = useState<string[]>([]);
     const [isPreparingPdf, setIsPreparingPdf] = useState<boolean>(false);
+    const [selectedPrintingTemplate, setSelectedPrintingTemplate] = useState<IMongoPrintingTemplate>();
 
     const { refetch, isFetching, data } = useQuery({
         queryKey: ['getEntitiesTreeForPrint', expandedEntity.entity.properties._id, selectedRelationShipIds.join(',')],
@@ -52,6 +52,8 @@ const Print: React.FC<{
     };
 
     const handleOpen = () => {
+        setTitle(undefined);
+        setSelectedPrintingTemplate(undefined);
         setSelectedRelationShipIds([]);
         setOpenModal(true);
     };
@@ -75,13 +77,13 @@ const Print: React.FC<{
     const dialogOptions = useMemo(() => {
         const final = {} as IEntityPrint['options'];
 
-        Object.entries(printOptions).forEach(([key, value]) => {
+        for (const [key, value] of Object.entries(printOptions)) {
             final[key] = {
                 show: value,
                 set: () => setPrintOptions((prev) => ({ ...prev, [key]: !value })),
                 label: `entityPage.print.${key}`,
             };
-        });
+        }
 
         return final;
     }, [printOptions]);
@@ -96,7 +98,7 @@ const Print: React.FC<{
 
             {isPreparingPdf && (
                 <div style={{ display: 'none' }}>
-                    <style>{'@page { margin: 15px 10px 15px 10px !important; }'}</style>
+                    <style>{'@page { margin: 15px 10px 15px 10px !important; } body { background-color: white !important; }'}</style>
                     <ThemeProvider theme={lightTheme}>
                         <ComponentToPrint
                             ref={componentRef}
@@ -110,8 +112,14 @@ const Print: React.FC<{
                             }
                             filesToPrint={selectedFiles}
                             setSelectedFiles={setSelectedFiles}
-                            options={{ ...printOptions, showEntityFiles: !!selectedFiles.length }}
+                            options={{
+                                ...printOptions,
+                                showEntityFiles: !!selectedFiles.length,
+                                appendSignatureField: selectedPrintingTemplate?.appendSignatureField,
+                                addEntityCheckbox: selectedPrintingTemplate?.addEntityCheckbox,
+                            }}
                             printTitle={title}
+                            printingTemplate={selectedPrintingTemplate}
                         />
                     </ThemeProvider>
                 </div>
@@ -138,6 +146,9 @@ const Print: React.FC<{
                     title={title}
                     setTitle={setTitle}
                     setSelectedRelationShipIds={setSelectedRelationShipIds}
+                    selectedPrintingTemplate={selectedPrintingTemplate}
+                    setSelectedPrintingTemplate={setSelectedPrintingTemplate}
+                    isPrintEntities={true}
                 />
             )}
 

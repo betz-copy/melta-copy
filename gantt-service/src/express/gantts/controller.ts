@@ -12,7 +12,7 @@ export default class GanttController extends DefaultController<IGantt, GanttMana
     }
 
     async getGanttById(req: Request, res: Response) {
-        res.json(await this.manager.getGanttById(req.params.ganttId));
+        res.json(await this.manager.getGanttById(req.params.ganttId as string));
     }
 
     async createGantt(req: Request, res: Response) {
@@ -20,10 +20,10 @@ export default class GanttController extends DefaultController<IGantt, GanttMana
     }
 
     async deleteGantt(req: Request, res: Response) {
-        res.json(await this.manager.deleteGantt(req.params.ganttId));
+        res.json(await this.manager.deleteGantt(req.params.ganttId as string));
     }
 
     async updateGantt(req: Request, res: Response) {
-        res.json(await this.manager.updateGantt(req.params.ganttId, req.body));
+        res.json(await this.manager.updateGantt(req.params.ganttId as string, req.body));
     }
 }

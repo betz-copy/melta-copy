@@ -13,10 +13,12 @@ import {
     IDeleteEntityBody,
     IEntity,
     IEntityExpanded,
+    IEntityWithDirectConnections,
     IEntityWithIgnoredRules,
     IExportEntitiesBody,
     IGraphFilterBodyBatch,
     IMultipleSelect,
+    IPropertyValue,
     ISearchBatchBody,
     ISearchEntitiesByLocationBody,
     ISearchEntitiesByTemplatesBody,
@@ -166,7 +168,7 @@ export const getExpandedEntityByIdRequest = async (
     const { data } = await axios.post<IEntityExpanded>(`${entities}/expanded/${entityId}`, {
         ...options,
         expandedParams,
-        filters: combineFilters(filters['filter'], childTemplateFilters),
+        filters: combineFilters(filters.filter, childTemplateFilters),
     });
     return data;
 };
@@ -198,7 +200,7 @@ export const getRelationshipSelectTreeForPrint = async (
     const { data } = await axios.post(`${entities}/templatesStructure/${entityId}`, {
         ...options,
         expandedParams,
-        filters: combineFilters(filters['filter'], childTemplateFilters),
+        filters: combineFilters(filters.filter, childTemplateFilters),
     });
     return data;
 };
@@ -212,22 +214,19 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
     const formData = new FormData();
 
     const templateProperties = entity.template.properties.properties;
-    const filesToUpload: any = [];
+    const filesToUpload: IPropertyValue = [];
     const fileUploadPromises: Promise<[string, File]>[] = [];
 
-    Object.entries(entity.attachmentsProperties).forEach(([key, value]: [string, any]) => {
+    Object.entries(entity.attachmentsProperties).forEach(([key, value]: [string, IPropertyValue]) => {
         if (Array.isArray(value)) {
             value.forEach((file, index) => {
-                if (file instanceof File && entity.template.properties.properties[key].items) {
-                    filesToUpload.push([`${key}.${index}`, file]);
-                } else if (file instanceof File) {
-                    filesToUpload.push([`${key}`, file]);
-                }
+                if (file instanceof File && entity.template.properties.properties[key].items) filesToUpload.push([`${key}.${index}`, file]);
+                else if (file instanceof File) filesToUpload.push([`${key}`, file]);
             });
         } else filesToUpload.push([`${key}`, value]);
     });
 
-    Object.entries(entity.properties).forEach(([key, value]: [string, any]) => {
+    Object.entries(entity.properties).forEach(([key, value]: [string, IPropertyValue]) => {
         if (templateProperties[key]?.format === 'signature' && value)
             fileUploadPromises.push(urlToFile(value, templateProperties[key]?.title).then((file) => [key, file]));
     });
@@ -298,13 +297,13 @@ const getBodyForUpdateRequest = async (
     const { template, attachmentsProperties } = newEntityData;
     const formData = new FormData();
 
-    const filesToUpload: any = [];
-    const unchangedFiles: any = []; /// //send single file as array to the back
+    const filesToUpload: IPropertyValue = [];
+    const unchangedFiles: IPropertyValue = []; /// //send single file as array to the back
 
     const templateProperties = template.properties.properties;
     const fileUploadPromises: Promise<[string, File]>[] = [];
 
-    Object.entries(attachmentsProperties).forEach(([key, value]: [string, any]) => {
+    Object.entries(attachmentsProperties).forEach(([key, value]: [string, IPropertyValue]) => {
         if (Array.isArray(value) && value) {
             value.forEach((file, index) => {
                 if (file instanceof File && templateProperties[key].items) {
@@ -433,28 +432,21 @@ export const updateMultipleEntitiesRequest = async (
 
 export const duplicateEntityRequest = async (entityId: string, newEntityData: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
     const formData = new FormData();
-    const filesToUpload: any = [];
-    const unchangedFiles: any = [];
+    const filesToUpload: IPropertyValue = [];
+    const unchangedFiles: IPropertyValue = [];
 
     const { template, properties, attachmentsProperties } = newEntityData;
 
-    Object.entries(attachmentsProperties).forEach(([key, value]: [string, any]) => {
+    Object.entries(attachmentsProperties).forEach(([key, value]: [string, IPropertyValue]) => {
         if (Array.isArray(value) && value) {
             value.forEach((file, index) => {
-                if (file instanceof File && template.properties.properties[key].items) {
-                    filesToUpload.push([`${key}.${index}`, file]);
-                } else if (file instanceof File) {
-                    filesToUpload.push([`${key}`, file]);
-                } else {
-                    unchangedFiles.push([`${key}`, file]);
-                }
+                if (file instanceof File && template.properties.properties[key].items) filesToUpload.push([`${key}.${index}`, file]);
+                else if (file instanceof File) filesToUpload.push([`${key}`, file]);
+                else unchangedFiles.push([`${key}`, file]);
             });
         } else if (value) {
-            if (value instanceof File) {
-                filesToUpload.push([`${key}`, value]);
-            } else {
-                unchangedFiles.push([`${key}`, value]);
-            }
+            if (value instanceof File) filesToUpload.push([`${key}`, value]);
+            else unchangedFiles.push([`${key}`, value]);
         }
     });
 
@@ -550,7 +542,12 @@ export const getCountByTemplateIdsRequest = async (
 };
 
 export const searchEntitiesByTemplatesRequest = async (searchBodyByTemplates: ISearchEntitiesByTemplatesBody) => {
-    const { data } = await axios.post<any>(`${entities}/search/templates`, searchBodyByTemplates);
+    const { data } = await axios.post<{
+        [templateId: string]: {
+            entities: IEntityWithDirectConnections[];
+            count: number;
+        };
+    }>(`${entities}/search/templates`, searchBodyByTemplates);
 
     return data;
 };
@@ -582,7 +579,7 @@ export const getChartOfTemplate = async (
     filter?: ISearchFilter,
     childTemplateId?: string,
 ) => {
-    const { data } = await axios.post<{ x: any; y: number }[][]>(`${entities}/chart/${templateId}`, {
+    const { data } = await axios.post<{ x: IPropertyValue; y: number }[][]>(`${entities}/chart/${templateId}`, {
         chartsData: [{ xAxis, yAxis, filter }],
         childTemplateId,
     });

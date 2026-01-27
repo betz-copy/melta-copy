@@ -45,7 +45,7 @@ class IFramesValidator extends DefaultController {
     }
 
     async validateUserCanGetIFrame(req: Request) {
-        await this.validateUserHasPermissionsToIFrame(req, undefined, req.params.iFrameId);
+        await this.validateUserHasPermissionsToIFrame(req, undefined, req.params.iFrameId as string);
     }
 
     async validateUserCanCreateIFrame(req: Request) {
@@ -59,7 +59,7 @@ class IFramesValidator extends DefaultController {
     }
 
     async validateUserCanUpdateIFrame(req: Request) {
-        await this.validateUserHasPermissionsToIFrame(req, req.body, req.params.iFrameId, true);
+        await this.validateUserHasPermissionsToIFrame(req, req.body, req.params.iFrameId as string, true);
     }
 
     async validateUserCanDeleteIFrame(req: Request) {
@@ -69,7 +69,7 @@ class IFramesValidator extends DefaultController {
         if (deleteReferenceDashboardItems && !userPermissions.admin?.scope)
             throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on dashboard` });
 
-        await this.validateUserHasPermissionsToIFrame(req, undefined, req.params.iFrameId, true);
+        await this.validateUserHasPermissionsToIFrame(req, undefined, req.params.iFrameId as string, true);
     }
 }
 

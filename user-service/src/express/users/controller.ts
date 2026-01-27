@@ -3,11 +3,11 @@ import UsersManager from './manager';
 
 class UsersController {
     static async getUserById(req: Request, res: Response) {
-        res.json(await UsersManager.getUserById(req.params.id, req.body.workspaceIds));
+        res.json(await UsersManager.getUserById(req.params.id as string, req.body.workspaceIds));
     }
 
     static async getUserByExternalId(req: Request, res: Response) {
-        res.json(await UsersManager.getUserByExternalId(req.params.externalId, req.body.workspaceIds));
+        res.json(await UsersManager.getUserByExternalId(req.params.externalId as string, req.body.workspaceIds));
     }
 
     static async searchUserIds(req: Request, res: Response) {
@@ -25,7 +25,7 @@ class UsersController {
     }
 
     static async updateUser(req: Request, res: Response) {
-        res.json(await UsersManager.updateUser(req.params.id, req.body));
+        res.json(await UsersManager.updateUser(req.params.id as string, req.body));
     }
 
     static async updateUsersBulk(req: Request, res: Response) {
@@ -33,7 +33,7 @@ class UsersController {
     }
 
     static async searchUsersByPermissions(req: Request, res: Response) {
-        res.json(await UsersManager.searchUsersByPermissions(req.params.workspaceId, req.query.search as string | undefined));
+        res.json(await UsersManager.searchUsersByPermissions(req.params.workspaceId as string, req.query.search as string | undefined));
     }
 }
 

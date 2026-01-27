@@ -22,13 +22,13 @@ const CustomLink: React.FC<{ href: string; text: string; color?: string }> = ({ 
     );
 };
 
-const VerifyLink: React.FC<{ children?: ReactNode; color?: string }> = ({ children, color }) => {
+const VerifyLink: React.FC<{ children?: ReactNode; color?: string; sx?: object }> = ({ children, color, sx }) => {
     const componentDecorator = (decoratedHref: string, decoratedText: string, key: number) => (
         <CustomLink key={key} href={decoratedHref} text={decoratedText} color={color} />
     );
 
     return (
-        <span style={{ color }}>
+        <span style={{ color, ...sx }}>
             <Linkify componentDecorator={componentDecorator} color={color}>
                 {children}
             </Linkify>

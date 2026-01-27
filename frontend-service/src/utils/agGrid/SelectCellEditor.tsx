@@ -47,7 +47,7 @@ const SelectCellEditor: React.FC<SelectCellEditorProps> = ({ options, value, onV
                     items={tagValue}
                     getItemKey={(item) => item}
                     renderItem={(item, index) => {
-                        const { key, onDelete, ...restTagProps } = getTagProps({ index });
+                        const { key: _k, onDelete, ...restTagProps } = getTagProps({ index });
 
                         return (
                             <ColoredEnumChip

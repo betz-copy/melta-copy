@@ -8,6 +8,8 @@ import {
     Close as CloseIcon,
 } from '@mui/icons-material';
 import { Autocomplete, Avatar, Box, Card, CardContent, Dialog, Grid, IconButton, TextField, Typography, useTheme } from '@mui/material';
+import { ArrowBack as ArrowBackIcon, ArrowForward as ArrowForwardIcon } from '@mui/icons-material';
+import { Avatar, Grid } from '@mui/material';
 import i18next from 'i18next';
 import React, { memo, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from 'react-query';
@@ -196,7 +198,7 @@ export const WalletTransfers = ({ templateId, connectionsTemplates, expandedEnti
 
     const columnDefs: ColDef<WalletTransferData>[] = [
         {
-            width: 10,
+            width: 60,
             sortable: false,
             filter: false,
             flex: 0,
@@ -573,7 +575,7 @@ export const WalletTransfers = ({ templateId, connectionsTemplates, expandedEnti
             <Grid container>
                 <AgGridTable
                     defaultColDef={defaultColDef as ColDef<WalletTransferData>}
-                    getRowId={(data: WalletTransferData) => data.entity.properties._id}
+                    getRowId={(data) => data.entity.properties._id}
                     rowModelProps={rowModelProps}
                     columnDefs={columnDefs}
                     ref={walletTransferTableRef}

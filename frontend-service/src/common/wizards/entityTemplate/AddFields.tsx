@@ -15,7 +15,7 @@ import { arrayTypes, basePropertyTypes, stringFormats } from '../../../services/
 import { entityTemplateUniqueProperties, regexSchema, variableNameValidation } from '../../../utils/validation';
 import { ErrorToast } from '../../ErrorToast';
 import { StepComponentHelpers, StepComponentProps } from '../index';
-import { CommonFormInputProperties, FieldProperty, FilterType, GroupProperty, PropertyItem } from './commonInterfaces';
+import { CommonFormInputProperties, FieldProperty, FilterType, GroupProperty, IAGGridFilter, PropertyItem } from './commonInterfaces';
 import { FieldBlockDND } from './fieldBlock/FieldBlock';
 import { ItemTypes } from './fieldBlock/interfaces';
 import { getFieldData } from './fieldBlock/propertiesTypes';
@@ -131,7 +131,7 @@ const agGridSetFilterSchema = Yup.object({
 
 // Dynamic filter field validation based on `filterType`
 export const filterFieldSchema = (isRequired: boolean = true) =>
-    Yup.lazy((value: any, { parent }) => {
+    Yup.lazy((value: IAGGridFilter, { parent }) => {
         const makeOptional = (schema: Yup.AnySchema) => (isRequired ? schema : schema.notRequired().nullable());
 
         switch (value?.filterType) {
@@ -206,18 +206,14 @@ const groupSchema = Yup.object({
         .min(1, i18next.t('validation.oneField'))
         .test('hasNonArchivedFields', i18next.t('validation.oneField'), (entries) => {
             if (!entries) return false;
-            return entries.some((item: any) => {
-                return item.archive !== true;
-            });
+            return entries.some((item) => (item as CommonFormInputProperties).archive !== true);
         })
         .test('hasNonDeletedFields', i18next.t('validation.oneField'), (entries) => {
             if (!entries) return false;
-            return entries.some((item: any) => {
-                return item.deleted !== true;
-            });
+            return entries.some((item) => (item as CommonFormInputProperties).deleted !== true);
         }),
 });
-const fieldByTypeSchema = Yup.lazy((item: any) => {
+const fieldByTypeSchema = Yup.lazy((item: PropertyItem) => {
     if (item?.type === 'field') return fieldSchema;
     if (item?.type === 'group') return groupSchema;
     return Yup.mixed().notRequired();
@@ -225,16 +221,15 @@ const fieldByTypeSchema = Yup.lazy((item: any) => {
 
 const propertiesSchema = (isAccountTemplate = false) => {
     return Yup.array()
-        .of(fieldByTypeSchema as any)
+        .of(fieldByTypeSchema)
         .min(1, i18next.t('validation.oneField'))
         .test('hasNonAccountBalanceField', i18next.t('validation.accountBalanceField'), (entries) => {
             if (!isAccountTemplate) return true;
             if (!entries) return false;
             return !(entries as PropertyItem[]).every((item) => {
                 if (item.type === 'field') return !item.data?.accountBalance;
-                if (item.type === 'group') {
-                    return item.fields?.every((f) => !f.accountBalance);
-                }
+                if (item.type === 'group') return item.fields?.every((f) => !f.accountBalance);
+
                 return false;
             });
         })
@@ -312,24 +307,21 @@ export const FieldBlockWrapper = ({
     const hasActions = Boolean(initialValues?.actions);
 
     const isAlreadyWalletTemplate = (Object.values(initialValues.properties) as PropertyItem[]).some((property) => {
-        if (property.type === 'field') {
-            return !!property.data.accountBalance;
-        }
-        if (property.type === 'group') {
-            return property.fields.some((field) => !!field.accountBalance);
-        }
+        if (property.type === 'field') return !!property.data.accountBalance;
+
+        if (property.type === 'group') return property.fields.some((field) => !!field.accountBalance);
+
         return false;
     });
 
     const isWalletTemplate = hasAccountBalanceField(Object.values(values.properties) as PropertyItem[]);
 
-    const countMapSearchProperties = Object.values(values.properties).flatMap((property: any) => {
-        if (property.type === 'field' && property.data?.mapSearch) return [property];
+    const propertyValues = Object.values(values.properties) as PropertyItem[];
 
-        if (property.type === 'group' && Array.isArray(property.fields)) return property.fields.filter((field) => field.mapSearch);
-
-        return [];
-    }).length;
+    const countMapSearchProperties = propertyValues.reduce((count, property) => {
+        if (property.type === 'field' && property.data?.mapSearch) return count + 1;
+        return count;
+    }, 0);
 
     if (countMapSearchProperties > mapSearchPropertiesLimit) setBlock(true);
     const { data: areThereInstancesByTemplateIdResponse } = useQuery(
@@ -354,7 +346,7 @@ export const FieldBlockWrapper = ({
         indexesInTypes: { index: number; type: PropertiesTypes; groupIndex?: number }[],
         field: 'deleted' | 'archive',
         value: boolean,
-        currentValues: any,
+        currentValues: EntityTemplateWizardValues,
     ) => {
         const displayValuesCopy = { ...currentValues };
 

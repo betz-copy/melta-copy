@@ -362,7 +362,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         to="/iframes"
                         text={i18next.t('pages.iFrames')}
                         extension={
-                            iFramesInSidebar?.length! ? (
+                            iFramesInSidebar?.length ? (
                                 <Grid container display="flex" flexDirection="column">
                                     <Grid width="150px" maxHeight="450px" sx={{ overflow: 'auto' }}>
                                         {iFramesInSidebar?.map((iFrame) => (
