@@ -1460,6 +1460,12 @@ importers:
       '@packages/config':
         specifier: workspace:*
         version: link:../config
+      '@packages/entity':
+        specifier: workspace:*
+        version: link:../entity
+      '@packages/rule-breach':
+        specifier: workspace:*
+        version: link:../rule-breach
       axios:
         specifier: ^1.11.0
         version: 1.13.2
