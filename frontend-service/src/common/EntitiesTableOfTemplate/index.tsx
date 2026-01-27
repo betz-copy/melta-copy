@@ -882,6 +882,7 @@ const EntitiesTableOfTemplate = forwardRef(
                         rowStyle={onRowSelected ? { cursor: 'pointer' } : undefined}
                         suppressCellFocus
                         onFilterChanged={(params) => {
+                            onFilter?.();
                             if (saveStorageProps.shouldSaveFilter) {
                                 const filterModel = params.api.getFilterModel();
                                 if (isEqual(filterModel, defaultFilterModel))
@@ -902,7 +903,8 @@ const EntitiesTableOfTemplate = forwardRef(
                         defaultColDef={{
                             filterParams: {
                                 maxNumConditions: 1,
-                                buttons: ['reset'],
+                                buttons: ['reset', 'apply'],
+                                
                             },
                             sortable: true,
                             menuTabs: ['filterMenuTab'],
