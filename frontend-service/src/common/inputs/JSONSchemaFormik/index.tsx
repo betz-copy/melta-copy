@@ -404,7 +404,6 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     }, {} as RJSFSchema);
 
     schema.properties = { ...schema.properties, ...(schemaWithGroups ?? {}) };
-    console.log({ errors, values });
 
     return (
         <JSONSchemaForm
