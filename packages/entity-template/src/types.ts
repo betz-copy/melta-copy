@@ -1,6 +1,6 @@
-import { IMongoProps } from '@packages/common';
 import { IMongoCategory } from '@packages/category';
 import { IFilter } from '@packages/child-template';
+import { IMongoProps } from '@packages/common';
 import { IPropertyValue, ISearchFilter, IUniqueConstraintOfTemplate } from '@packages/entity';
 
 export enum PropertyType {

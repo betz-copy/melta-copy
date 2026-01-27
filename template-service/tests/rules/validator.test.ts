@@ -75,16 +75,17 @@ describe('logic of validator of rules', () => {
         const workspaceId = 'test-workspace';
         const ruleValidator = new RuleValidator(workspaceId);
 
-        const getRelationshipTemplateByIdSpy = jest.spyOn(ruleValidator['manager'], 'getTemplateById');
+        const getRelationshipTemplateByIdSpy = jest.spyOn(ruleValidator.manager, 'getTemplateById');
         getRelationshipTemplateByIdSpy.mockImplementation(mockGetRelationshipTemplateByIdWithRuleExamples);
 
+        // biome-ignore lint/complexity/useLiteralKeys: accessing private property for testing
         const getEntityTemplateByIdSpy = jest.spyOn(ruleValidator['entityTemplateManager'], 'getTemplateById');
         getEntityTemplateByIdSpy.mockImplementation(mockGetEntityTemplateByIdWithRuleExamples);
 
-        const searchTemplatesSpy = jest.spyOn(ruleValidator['manager'], 'searchTemplates');
+        const searchTemplatesSpy = jest.spyOn(ruleValidator.manager, 'searchTemplates');
         searchTemplatesSpy.mockImplementation(mockSearchRelationshipTemplatesWithSimpleBody);
 
-        await ruleValidator['validateRuleFormula'](rule);
+        await ruleValidator.validateRuleFormula(rule);
     });
 
     it('should fail rule with non existing relationship template', async () => {
@@ -108,16 +109,17 @@ describe('logic of validator of rules', () => {
         const workspaceId = 'test-workspace';
         const ruleValidator = new RuleValidator(workspaceId);
 
-        const getRelationshipTemplateByIdSpy = jest.spyOn(ruleValidator['manager'], 'getTemplateById');
+        const getRelationshipTemplateByIdSpy = jest.spyOn(ruleValidator.manager, 'getTemplateById');
         getRelationshipTemplateByIdSpy.mockImplementation(mockGetRelationshipTemplateByIdWithRuleExamples);
 
+        // biome-ignore lint/complexity/useLiteralKeys: accessing private property for testing
         const getEntityTemplateByIdSpy = jest.spyOn(ruleValidator['entityTemplateManager'], 'getTemplateById');
         getEntityTemplateByIdSpy.mockImplementation(mockGetEntityTemplateByIdWithRuleExamples);
 
-        const searchTemplatesSpy = jest.spyOn(ruleValidator['manager'], 'searchTemplates');
+        const searchTemplatesSpy = jest.spyOn(ruleValidator.manager, 'searchTemplates');
         searchTemplatesSpy.mockImplementation(mockSearchRelationshipTemplatesWithSimpleBody);
 
-        const validationResultPromise = ruleValidator['validateRuleFormula'](ruleWithUnknownRelationship);
+        const validationResultPromise = ruleValidator.validateRuleFormula(ruleWithUnknownRelationship);
 
         await expect(validationResultPromise).rejects.toThrow();
     });

@@ -1,5 +1,5 @@
-import { IMongoProps } from '@packages/common';
 import { ChartsAndGenerator } from '@packages/chart';
+import { IMongoProps } from '@packages/common';
 import { IMongoIframe } from '@packages/iframe';
 
 export enum DashboardItemType {
