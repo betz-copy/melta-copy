@@ -319,23 +319,24 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: important
     const Widgets: RegistryWidgetsType = React.useMemo(
-        () => ({
-            CommentWidget: getComponent(RjsfCommentWidget, checkboxProps),
-            SelectWidget: getComponent(RjsfSelectWidget, checkboxProps),
-            UnitSelectWidget: getComponent(RjsfUnitSelectWidget, checkboxProps),
-            DateWidget: getComponent(RjsfDateWidget, checkboxProps),
-            DateTimeWidget: getComponent(RjsfDateTimeWidget, checkboxProps),
-            TextWidget: getComponent(RjsfTextWidget, checkboxProps),
-            EmailWidget: getComponent(RjsfTextWidget, checkboxProps),
-            TextAreaWidget: getComponent(RjsfTextAreaWidget, checkboxProps),
-            TemplateReferenceWidget: getComponent(RjsfTemplateReferenceWidget, checkboxProps),
-            LocationWidget: getComponent(RjsfLocationWidget, checkboxProps),
-            UserWidget: getComponent(RjsfUserWidget, checkboxProps),
-            UserArrayWidget: getComponent(RjsfUserArrayWidget, checkboxProps),
-            CheckboxWidget: getComponent(RjsfCheckboxWidget, checkboxProps),
-            SignatureWidget: getComponent(RjsfSignatureWidgets, checkboxProps),
-            UserAvatarWidget: getComponent(RjsfUserAvatarWidget, checkboxProps),
-        }),
+        () =>
+            ({
+                CommentWidget: getComponent(RjsfCommentWidget, checkboxProps),
+                SelectWidget: getComponent(RjsfSelectWidget, checkboxProps),
+                UnitSelectWidget: getComponent(RjsfUnitSelectWidget, checkboxProps),
+                DateWidget: getComponent(RjsfDateWidget, checkboxProps),
+                DateTimeWidget: getComponent(RjsfDateTimeWidget, checkboxProps),
+                TextWidget: getComponent(RjsfTextWidget, checkboxProps),
+                EmailWidget: getComponent(RjsfTextWidget, checkboxProps),
+                TextAreaWidget: getComponent(RjsfTextAreaWidget, checkboxProps),
+                TemplateReferenceWidget: getComponent(RjsfTemplateReferenceWidget, checkboxProps),
+                LocationWidget: getComponent(RjsfLocationWidget, checkboxProps),
+                UserWidget: getComponent(RjsfUserWidget, checkboxProps),
+                UserArrayWidget: getComponent(RjsfUserArrayWidget, checkboxProps),
+                CheckboxWidget: getComponent(RjsfCheckboxWidget, checkboxProps),
+                SignatureWidget: getComponent(RjsfSignatureWidgets, checkboxProps),
+                UserAvatarWidget: getComponent(RjsfUserAvatarWidget, checkboxProps),
+            }) as RegistryWidgetsType,
         [],
     );
 

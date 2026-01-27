@@ -92,7 +92,7 @@ const IconPicker: React.FC<IconPickerProps> = ({ width, height, iconsPerPage, se
                                 <DeleteIcon sx={{ fontSize: 15 }} />
                             </IconButton>
 
-                            {React.createElement(allIcons[selectedIconName], { style: { fontSize: '2rem', color } })}
+                            {React.createElement(allIcons[selectedIconName] as unknown as React.ElementType, { style: { fontSize: '2rem', color } })}
                         </>
                     )}
                 </Grid>
@@ -113,7 +113,9 @@ const IconPicker: React.FC<IconPickerProps> = ({ width, height, iconsPerPage, se
                 <Grid container justifyContent="center">
                     {displayedIcons.slice(displayIndex, displayIndex + iconsPerPage).map(([name, icon]) => (
                         <IconButton key={name} value={name} onClick={handleIconClick}>
-                            {React.createElement(icon, { style: { color: color || darkMode ? 'white' : 'black', fontSize: '1.55rem' } })}
+                            {React.createElement(icon as React.ElementType, {
+                                style: { color: color || darkMode ? 'white' : 'black', fontSize: '1.55rem' },
+                            })}
                         </IconButton>
                     ))}
                 </Grid>
