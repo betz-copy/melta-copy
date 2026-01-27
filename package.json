@@ -5,9 +5,9 @@
     "private": true,
     "packageManager": "pnpm@9.15.0",
     "scripts": {
-        "build": "turbo run build --concurrency=4",
-        "build:packages": "turbo run build --filter='./packages/*' --concurrency=4",
-        "build:services": "turbo run build --filter='*-service' --concurrency=4",
+        "build": "turbo run build",
+        "build:packages": "turbo run build --filter='./packages/*'",
+        "build:services": "turbo run build --filter='*-service'",
         "typecheck": "turbo run typecheck --filter='*-service' --continue",
         "dev": "turbo run dev",
         "test": "turbo run test",
