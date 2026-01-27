@@ -264,7 +264,6 @@ const getComponent = (
             const { label, disabled, name, value, schema, onChange } = props;
             const [checked, setChecked] = useState(checkboxProps.isFieldChecked(name));
 
-            // biome-ignore lint/correctness/useExhaustiveDependencies: important
             useEffect(() => {
                 checkboxProps.onCheckboxChange(name, checked);
             }, [checked, name]);
