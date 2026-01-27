@@ -19,7 +19,8 @@ COPY semantic-service/package*.json ./semantic-service/
 RUN pnpm install --frozen-lockfile --silent
 COPY semantic-service ./semantic-service
 
-RUN pnpm turbo build --filter=semantic-service
+RUN --mount=type=cache,target=/usr/src/app/.turbo \
+    pnpm turbo build --filter=semantic-service
 
 FROM node:22-alpine
 RUN apk add --no-cache antiword

@@ -23,7 +23,8 @@ COPY frontend-service ./frontend-service/
 RUN pnpm install --frozen-lockfile --silent
 
 # Build using Turborepo (only builds frontend-service and its dependencies)
-RUN NODE_OPTIONS=--max-old-space-size=8000 pnpm turbo build --filter=frontend-service
+RUN --mount=type=cache,target=/usr/src/app/.turbo \
+    NODE_OPTIONS=--max-old-space-size=8000 pnpm turbo build --filter=frontend-service
 
 
 FROM nginx:alpine

@@ -31,7 +31,8 @@ COPY preview-service ./preview-service/
 RUN pnpm install --frozen-lockfile --silent
 
 # Build using Turborepo (only builds preview-service and its dependencies)
-RUN pnpm turbo build --filter=preview-service
+RUN --mount=type=cache,target=/usr/src/app/.turbo \
+    pnpm turbo build --filter=preview-service
 
 EXPOSE 8000
 

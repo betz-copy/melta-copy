@@ -25,7 +25,9 @@ COPY ${SERVICE_NAME}/ ./${SERVICE_NAME}/
 RUN pnpm install --frozen-lockfile --silent
 
 # Build using Turborepo (only builds service and its dependencies)
-RUN pnpm turbo build --filter=${SERVICE_NAME}
+# Use BuildKit cache mount to share Turborepo cache between builds
+RUN --mount=type=cache,target=/usr/src/app/.turbo \
+    pnpm turbo build --filter=${SERVICE_NAME}
 
 # ---------------------------
 # Production stage

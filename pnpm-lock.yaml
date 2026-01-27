@@ -111,6 +111,9 @@ importers:
 
   cron-service:
     dependencies:
+      '@packages/action':
+        specifier: workspace:*
+        version: link:../packages/action
       '@packages/entity':
         specifier: workspace:*
         version: link:../packages/entity
@@ -696,6 +699,9 @@ importers:
 
   gateway-service:
     dependencies:
+      '@packages/action':
+        specifier: workspace:*
+        version: link:../packages/action
       '@packages/activity-log':
         specifier: workspace:*
         version: link:../packages/activity-log
@@ -913,6 +919,9 @@ importers:
 
   instance-service:
     dependencies:
+      '@packages/action':
+        specifier: workspace:*
+        version: link:../packages/action
       '@packages/activity-log':
         specifier: workspace:*
         version: link:../packages/activity-log
@@ -1593,6 +1602,9 @@ importers:
 
   rule-breach-service:
     dependencies:
+      '@packages/action':
+        specifier: workspace:*
+        version: link:../packages/action
       '@packages/common':
         specifier: workspace:*
         version: link:../packages/common
@@ -1706,6 +1718,9 @@ importers:
       '@packages/child-template':
         specifier: workspace:*
         version: link:../packages/child-template
+      '@packages/common':
+        specifier: workspace:*
+        version: link:../packages/common
       '@packages/entity-template':
         specifier: workspace:*
         version: link:../packages/entity-template

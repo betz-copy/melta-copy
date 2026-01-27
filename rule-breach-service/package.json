@@ -15,6 +15,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "@packages/action": "workspace:*",
         "@packages/common": "workspace:*",
         "@packages/rule-breach": "workspace:*",
         "@packages/utils": "workspace:*"

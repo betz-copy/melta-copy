@@ -16,6 +16,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "@packages/action": "workspace:*",
         "@packages/entity": "workspace:*",
         "@packages/entity-template": "workspace:*",
         "@packages/notification": "workspace:*",

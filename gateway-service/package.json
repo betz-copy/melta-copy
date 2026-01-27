@@ -15,6 +15,7 @@
     "author": "Itay Marder",
     "license": "ISC",
     "dependencies": {
+        "@packages/action": "workspace:*",
         "@packages/activity-log": "workspace:*",
         "@packages/category": "workspace:*",
         "@packages/chart": "workspace:*",

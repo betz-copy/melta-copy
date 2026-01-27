@@ -23,7 +23,8 @@ RUN --mount=type=secret,id=npm_token \
     pnpm install --frozen-lockfile --silent
 COPY gateway-service ./gateway-service
 
-RUN pnpm turbo build --filter=gateway-service
+RUN --mount=type=cache,target=/usr/src/app/.turbo \
+    pnpm turbo build --filter=gateway-service
 
 RUN rm -f .npmrc
 

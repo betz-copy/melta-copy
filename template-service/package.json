@@ -15,6 +15,7 @@
     "author": "Alexander Gurevich",
     "license": "ISC",
     "dependencies": {
+        "@packages/common": "workspace:*",
         "@packages/category": "workspace:*",
         "@packages/child-template": "workspace:*",
         "@packages/entity-template": "workspace:*",

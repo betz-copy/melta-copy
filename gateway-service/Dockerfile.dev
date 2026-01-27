@@ -26,7 +26,8 @@ RUN --mount=type=secret,id=npm_token \
 COPY gateway-service ./gateway-service
 
 # Build using Turborepo (only builds gateway-service and its dependencies)
-RUN pnpm turbo build --filter=gateway-service
+RUN --mount=type=cache,target=/usr/src/app/.turbo \
+    pnpm turbo build --filter=gateway-service
 
 RUN rm -f .npmrc
 
