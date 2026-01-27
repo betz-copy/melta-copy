@@ -2,7 +2,7 @@ import { InfoOutlined } from '@mui/icons-material';
 import { Box, Grid, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
@@ -17,48 +17,36 @@ import { EntityTemplateWizardValues } from '.';
 import { CommonFormInputProperties } from './commonInterfaces';
 import { WalletTransferAutocomplete } from './WalletTransferAutoComplete';
 
-function validateDifferent(this: Yup.TestContext, value: CommonFormInputProperties | undefined, otherKey: 'from' | 'to') {
-    const otherValue = this.parent[otherKey];
-
-    if (!value || !otherValue) return true;
-
-    const getName = (v) => (v?.name ? v.name : v);
-
-    return getName(value) !== getName(otherValue);
-}
-
 export const walletTransferSettingsSchema = () => {
     return Yup.object({
         walletTransfer: Yup.object({
-            from: Yup.mixed<CommonFormInputProperties>()
-                .required(i18next.t('validation.required'))
-                .test('different-from-and-to', i18next.t('validation.differentDestinations'), function (value) {
-                    return validateDifferent.call(this, value, 'to');
-                }),
-            to: Yup.mixed<CommonFormInputProperties>()
-                .required(i18next.t('validation.required'))
-                .test('different-from-and-to', i18next.t('validation.differentDestinations'), function (value) {
-                    return validateDifferent.call(this, value, 'from');
-                }),
+            from: Yup.mixed<CommonFormInputProperties>().required(i18next.t('validation.required')),
+            to: Yup.mixed<CommonFormInputProperties>().required(i18next.t('validation.required')),
             description: Yup.string().required(i18next.t('validation.required')),
             amount: Yup.string().required(i18next.t('validation.required')),
         })
-            .test('at-least-one-relationshipReference', i18next.t('validation.eitherFromOrToRelationshipReference'), function (values) {
+            .test('wallet-transfer-validation', i18next.t('validation.eitherFromOrToRelationshipReference'), function (values) {
                 if (!values) return true;
 
                 const { from, to } = values as IWalletTransferPopulated;
 
                 if (!from || !to || typeof from === 'string' || typeof to === 'string') return true;
 
-                const isValid = from.type === 'relationshipReference' || to.type === 'relationshipReference';
-                if (!isValid) {
-                    const errorMessage = i18next.t('validation.eitherFromOrToRelationshipReference');
-
+                if (from.type !== 'relationshipReference' && to.type !== 'relationshipReference') {
+                    const errorMessage = i18next.t('validation.atLeastOneWallet');
                     const errors = [
                         this.createError({ path: `${this.path}.from`, message: errorMessage }),
                         this.createError({ path: `${this.path}.to`, message: errorMessage }),
                     ];
+                    return new Yup.ValidationError(errors);
+                }
 
+                if (from.name === to.name) {
+                    const errorMessage = i18next.t('validation.differentDestinations');
+                    const errors = [
+                        this.createError({ path: `${this.path}.from`, message: errorMessage }),
+                        this.createError({ path: `${this.path}.to`, message: errorMessage }),
+                    ];
                     return new Yup.ValidationError(errors);
                 }
 
@@ -72,8 +60,13 @@ export const WalletTransferSettings: React.FC<
     StepComponentProps<EntityTemplateWizardValues & { _id: string }, 'isEditMode'> & {
         isAccountTemplate: boolean;
     }
-> = ({ values, errors, isAccountTemplate, touched, setFieldValue, isEditMode }) => {
+> = ({ values, errors, isAccountTemplate, setFieldValue, isEditMode, submitCount }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
+
+    const initialSubmitCountRef = useRef(submitCount);
+
+    const showErrors = submitCount > initialSubmitCountRef.current;
+    const touchedToPass = showErrors ? { walletTransfer: { from: true, to: true, amount: true, description: true } } : {};
 
     const { data: areThereInstancesByTemplateIdResponse } = useQuery(
         ['areThereInstancesByTemplateId', values._id],
@@ -188,7 +181,7 @@ export const WalletTransferSettings: React.FC<
                             value={incomingFields.find((o) => o.name === fromKeyName) ?? null}
                             onChange={(v) => setFieldValue('walletTransfer.from', v || '')}
                             fieldPath="walletTransfer.from"
-                            touched={touched}
+                            touched={touchedToPass}
                             errors={errors}
                             disabled={!values.walletTransfer || areThereAnyInstances}
                             darkMode={darkMode}
@@ -202,7 +195,7 @@ export const WalletTransferSettings: React.FC<
                             value={outgoingFields.find((o) => o.name === toKeyName) ?? null}
                             onChange={(v) => setFieldValue('walletTransfer.to', v || '')}
                             fieldPath="walletTransfer.to"
-                            touched={touched}
+                            touched={touchedToPass}
                             errors={errors}
                             disabled={!values.walletTransfer || areThereAnyInstances}
                             darkMode={darkMode}
@@ -218,7 +211,7 @@ export const WalletTransferSettings: React.FC<
                             value={allNumFields.find((o) => o.name === values.walletTransfer?.amount) ?? null}
                             onChange={(v) => setFieldValue('walletTransfer.amount', v?.name || '')}
                             fieldPath="walletTransfer.amount"
-                            touched={touched}
+                            touched={touchedToPass}
                             errors={errors}
                             disabled={!values.walletTransfer || areThereAnyInstances}
                             darkMode={darkMode}
@@ -231,7 +224,7 @@ export const WalletTransferSettings: React.FC<
                             value={allTextFields.find((o) => o.name === values.walletTransfer?.description) ?? null}
                             onChange={(v) => setFieldValue('walletTransfer.description', v?.name || '')}
                             fieldPath="walletTransfer.description"
-                            touched={touched}
+                            touched={touchedToPass}
                             errors={errors}
                             disabled={!values.walletTransfer || areThereAnyInstances}
                             darkMode={darkMode}
