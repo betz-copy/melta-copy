@@ -1,18 +1,25 @@
 import { Map as MapIcon } from '@mui/icons-material';
 import { Autocomplete, Box, Dialog, Grid, InputAdornment, TextField } from '@mui/material';
 import { SplitBy } from '@packages/common';
-import { CoordinateSystem, extractUtmLocation, isValidUTM, isValidWGS84, locationConverterToString, stringToCoordinates } from '@packages/utils';
+import {
+    CoordinateSystem,
+    extractUtmLocation,
+    isValidUTM,
+    isValidWGS84,
+    locationConverterToString,
+    mapConfig,
+    stringToCoordinates,
+} from '@packages/map';
 import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import { Cartesian3 } from 'cesium';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
-import { environment } from '../../../../globals';
 import { LocationData } from '../../../../interfaces/location';
 import LocationField from '../../../../pages/Map/LocationField';
 import MeltaTooltip from '../../../MeltaDesigns/MeltaTooltip';
 
-const { polygonPrefix, polygonSuffix } = environment.map.polygon;
+const { polygonPrefix, polygonSuffix } = mapConfig.polygon;
 
 const validatePoint = (point: LocationData, splitBy: SplitBy, schemaValidation?: boolean) => {
     if (!schemaValidation) return true;

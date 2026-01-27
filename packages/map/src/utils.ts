@@ -1,44 +1,17 @@
 import { SplitBy } from '@packages/common';
-import config from '@packages/config';
 import type { Cartesian3 } from 'cesium';
 import proj4 from 'proj4';
-import { BadRequestError } from '../express/error';
+import { mapConfig } from './config';
+import { CoordinateSystem, type CoordinatesResult, Hemisphere, MapItemType, type UTM } from './types';
 
 const locationFormatError = 'location format not valid';
 
 const {
     polygon: { polygonPrefix, polygonSuffix },
-    epsgCode: { wgs84, epsg, southHemiUTM, northHemiUTM },
-    utm: { utmPolygonRegex, utmRegex },
+    epsgCode: { epsg, wgs84, southHemiUTM, northHemiUTM },
+    utm: { utmRegex, utmPolygonRegex, minZone, maxZone, minEasting, maxEasting, minNorthing, maxNorthing },
     wgs84: { maxLongitude, maxLatitude },
-} = config.map;
-
-export enum CoordinateSystem {
-    UTM = 'UTM',
-    WGS84 = 'WGS84',
-}
-
-export enum Hemisphere {
-    N = 'N',
-    S = 'S',
-}
-
-export type UTM = {
-    zone: number; // UTM Zone (1-60)
-    hemi: Hemisphere; // Hemisphere (North or South)
-    east: number; // Easting (6-digit)
-    north: number; // Northing (7-digit)
-};
-
-export enum MapItemType {
-    Polygon = 'polygon',
-    Coordinate = 'coordinate',
-}
-
-export type CoordinatesResult = {
-    type: MapItemType;
-    value: Cartesian3 | Cartesian3[];
-};
+} = mapConfig;
 
 export const utm = (zone: UTM['zone'], hemi: UTM['hemi']) => `${epsg}:${hemi === 'N' ? northHemiUTM : southHemiUTM}${zone}`;
 
@@ -86,7 +59,7 @@ export const convertUTMToWGS84 = (utmLocation: UTM | UTM[]): Cartesian3 | Cartes
 };
 
 export const extractUtmPoint = (utmMatchRegex: RegExpMatchArray | null): UTM => {
-    if (!utmMatchRegex) throw new BadRequestError(locationFormatError);
+    if (!utmMatchRegex) throw new Error(locationFormatError);
 
     const zone = parseInt(utmMatchRegex[1], 10);
     const hemi = utmMatchRegex[2] >= Hemisphere.N ? Hemisphere.N : Hemisphere.S;
@@ -100,7 +73,7 @@ export const extractUtmLocation = (utmString: string): UTM | UTM[] => {
     if (utmString.startsWith(polygonPrefix)) {
         const polygonString = utmString.slice(9, -2);
         const matches = [...polygonString.matchAll(utmPolygonRegex)];
-        if (matches.length === 0) throw new BadRequestError(locationFormatError);
+        if (matches.length === 0) throw new Error(locationFormatError);
 
         return matches.map((match) => extractUtmPoint(match));
     }
@@ -121,7 +94,7 @@ export const parsePolygon = (polygonStr: string): Cartesian3[] | undefined => {
             const longitude = parseFloat(longitudeStr);
             const latitude = parseFloat(latitudeStr);
 
-            if (Number.isNaN(longitude) || Number.isNaN(latitude)) throw new BadRequestError(locationFormatError);
+            if (Number.isNaN(longitude) || Number.isNaN(latitude)) throw new Error(locationFormatError);
 
             return { x: longitude, y: latitude };
         })
@@ -172,8 +145,6 @@ export const locationConverterToString = (
 };
 
 const validateUTM = ({ zone, hemi, east, north }: UTM): boolean => {
-    const { minZone, maxZone, minEasting, maxEasting, minNorthing, maxNorthing } = config.map.utm;
-
     if (zone < minZone || zone > maxZone) return false;
     if (!Object.values(Hemisphere).includes(hemi as Hemisphere)) return false;
     if (east < minEasting || east > maxEasting) return false;

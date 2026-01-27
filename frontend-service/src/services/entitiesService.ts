@@ -16,9 +16,9 @@ import {
     ISearchFilter,
     ISearchResult,
 } from '@packages/entity';
+import { CoordinateSystem } from '@packages/map';
 import { IRelationShipSelectionTree } from '@packages/printing-template';
 import { IBrokenRule, IRuleBreach } from '@packages/rule-breach';
-import { CoordinateSystem } from '@packages/utils';
 import { mapValues } from 'lodash';
 import axios from '../axios';
 import { EntityWizardValues } from '../common/dialogs/entity';

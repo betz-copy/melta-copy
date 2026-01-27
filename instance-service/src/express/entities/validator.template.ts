@@ -12,8 +12,9 @@ import {
     matchValueAgainstFilter,
 } from '@packages/entity';
 import { IEntitySingleProperty, IEntityTemplate, IMongoEntityTemplate } from '@packages/entity-template';
+import { CoordinateSystem } from '@packages/map';
 import { IMongoRelationshipTemplate } from '@packages/relationship-template';
-import { addPropertyToRequest, CoordinateSystem, ValidationError } from '@packages/utils';
+import { addPropertyToRequest, ValidationError } from '@packages/utils';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import axios from 'axios';

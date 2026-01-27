@@ -1,5 +1,5 @@
-import config from '@packages/config';
 import { format, Logger } from 'winston';
+import config from '../config';
 import initializeLogger, { IExtra } from './loggerFactory';
 
 const { logs } = config;

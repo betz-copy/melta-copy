@@ -2,7 +2,7 @@ import { MatrixSetLink } from '@camptocamp/ogc-client/dist/wmts/model';
 import { SplitBy } from '@packages/common';
 import { IEntity, IFilterOfField } from '@packages/entity';
 import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
-import { CoordinatesResult, MapItemType } from '@packages/utils';
+import { CoordinatesResult, MapItemType, mapConfig } from '@packages/map';
 import * as Cesium from 'cesium';
 import { Cartesian3 } from 'cesium';
 import { XMLParser } from 'fast-xml-parser';
@@ -11,12 +11,9 @@ import { ICoordinateSearchResult, IPolygonSearchResult } from '../../interfaces/
 import { LayerProvider, LayerProviderType } from '../../pages/Map/BaseLayers';
 import { convertECEFToWGS84, convertWGS94ToECEF, isValidWGS84 } from './convert';
 
-const {
-    polygon: { polygonPrefix, polygonSuffix },
-    textValueOfLinkTag,
-    tileMatrixSetIdentifiers,
-    tilingSchemeId,
-} = environment.map;
+const { polygonPrefix, polygonSuffix } = mapConfig.polygon;
+
+const { textValueOfLinkTag, tileMatrixSetIdentifiers, tilingSchemeId } = environment.map;
 
 export const zoomNumber = 300000;
 

@@ -3,8 +3,8 @@ import { Autocomplete, AutocompleteInputChangeReason, AutocompleteProps, Box, Te
 import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IEntity, IPropertyValue, ISearchEntitiesOfTemplateBody, ISearchFilter } from '@packages/entity';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { CoordinateSystem } from '@packages/map';
 import { IGetUnits } from '@packages/unit';
-import { CoordinateSystem } from '@packages/utils';
 import { IWorkspace } from '@packages/workspace';
 import i18next from 'i18next';
 import { debounce } from 'lodash';

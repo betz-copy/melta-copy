@@ -1,6 +1,6 @@
 import { IChildTemplatePopulated } from '@packages/child-template';
 import { IEntitySingleProperty, IMongoEntityTemplate } from '@packages/entity-template';
-import { CoordinateSystem } from '@packages/utils';
+import { CoordinateSystem } from '@packages/map';
 
 const generateFromString = (
     { format, relationshipReference, enum: typeEnum }: IEntitySingleProperty,

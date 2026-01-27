@@ -1,9 +1,9 @@
 import { Grid } from '@mui/material';
 import { IEntity, IPropertyValue } from '@packages/entity';
 import { IEntitySingleProperty } from '@packages/entity-template';
+import { CoordinateSystem, extractUtmLocation, locationConverterToString } from '@packages/map';
 import { IGetUnits } from '@packages/unit';
 import { IUser } from '@packages/user';
-import { CoordinateSystem, extractUtmLocation, locationConverterToString } from '@packages/utils';
 import type { Property } from 'csstype';
 import i18next from 'i18next';
 import { ColoredEnumChip } from '../common/ColoredEnumChip';

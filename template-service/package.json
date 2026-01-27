@@ -24,6 +24,7 @@
         "@packages/relationship-template": "workspace:*",
         "@packages/rule": "workspace:*",
         "@packages/utils": "workspace:*",
+        "@packages/map": "workspace:*",
         "@packages/workspace": "workspace:*",
         "ajv": "^8.17.1",
         "ajv-formats": "^3.0.1",

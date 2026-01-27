@@ -55,8 +55,8 @@
         "@packages/category": "workspace:*",
         "@packages/chart": "workspace:*",
         "@packages/child-template": "workspace:*",
+        "@packages/map": "workspace:*",
         "@packages/common": "workspace:*",
-        "@packages/config": "workspace:*",
         "@packages/dashboard": "workspace:*",
         "@packages/entity": "workspace:*",
         "@packages/entity-template": "workspace:*",
@@ -75,7 +75,6 @@
         "@packages/semantic-search": "workspace:*",
         "@packages/unit": "workspace:*",
         "@packages/user": "workspace:*",
-        "@packages/utils": "workspace:*",
         "@packages/workspace": "workspace:*",
         "@react-awesome-query-builder/mui": "^6.6.15",
         "@reactour/tour": "^3.8.0",
@@ -194,6 +193,7 @@
         "typescript-actions": "npm:typescript@^5.9.2",
         "vite": "^7.1.2",
         "vite-plugin-cesium": "^1.2.23",
+        "vite-plugin-node-polyfills": "^0.18.0",
         "vite-plugin-static-copy": "^3.1.1"
     }
 }

@@ -1,7 +1,7 @@
 {
-    "name": "@packages/config",
+    "name": "@packages/map",
     "version": "1.0.0",
-    "description": "config package",
+    "description": "Browser-safe map utilities package",
     "type": "commonjs",
     "main": "dist/index.js",
     "module": "dist/index.mjs",
@@ -18,10 +18,12 @@
         "clean": "rimraf dist"
     },
     "dependencies": {
-        "dotenv": "^16.4.7"
+        "@packages/common": "workspace:*",
+        "proj4": "^2.20.2"
     },
     "devDependencies": {
         "tsup": "^8.5.1",
-        "typescript": "^5.6.2"
+        "typescript": "^5.6.2",
+        "cesium": "^1.132.0"
     }
 }

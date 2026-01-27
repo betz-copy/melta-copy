@@ -39,6 +39,7 @@
         "@packages/unit": "workspace:*",
         "@packages/user": "workspace:*",
         "@packages/utils": "workspace:*",
+        "@packages/map": "workspace:*",
         "@packages/workspace": "workspace:*",
         "@yesodot/passport-shraga": "^1.5.2",
         "busboy": "^1.6.0",

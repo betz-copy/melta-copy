@@ -1,7 +1,7 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: lol */
 import { FunctionKey } from '@packages/common';
-import config from '@packages/config';
 import { NextFunction, Request, Response } from 'express';
+import config from '../config';
 import DefaultController from './controller';
 import { BadRequestError } from './error';
 

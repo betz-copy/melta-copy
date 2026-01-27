@@ -3,5 +3,6 @@ import baseConfig from '../tsup.config';
 
 export default defineConfig({
     ...baseConfig,
-    external: [/^@packages\//, 'dotenv'],
+    format: ['cjs', 'esm'],
+    external: [/^@packages\//, 'proj4', 'cesium'],
 });

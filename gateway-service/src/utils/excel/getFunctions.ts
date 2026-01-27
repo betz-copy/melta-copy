@@ -11,6 +11,15 @@ import { IChildTemplatePopulated, IChildTemplateProperty, isChildTemplate } from
 import { IEntity, IEntityWithDirectRelationships, IPropertyValue, UploadedFile } from '@packages/entity';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated, PropertyFormat } from '@packages/entity-template';
 import {
+    CoordinateSystem,
+    extractUtmLocation,
+    getCoordinateSystem,
+    isValidUTM,
+    isValidWGS84,
+    locationConverterToString,
+    stringToCoordinates,
+} from '@packages/map';
+import {
     IBrokenRule,
     IBrokenRuleEntity,
     IBrokenRulePopulated,
@@ -18,18 +27,7 @@ import {
     IFailedEntity,
     IValidationErrorData,
 } from '@packages/rule-breach';
-import {
-    BadRequestError,
-    CoordinateSystem,
-    extractUtmLocation,
-    getCoordinateSystem,
-    isValidUTM,
-    isValidWGS84,
-    locationConverterToString,
-    logger,
-    ServiceError,
-    stringToCoordinates,
-} from '@packages/utils';
+import { BadRequestError, logger, ServiceError } from '@packages/utils';
 import { AxiosError } from 'axios';
 import Excel, { Cell, CellModel } from 'exceljs';
 import { StatusCodes } from 'http-status-codes';

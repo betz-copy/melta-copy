@@ -4,6 +4,5 @@ export { default as DefaultController } from './express/controller';
 export * from './express/error';
 export { default as dataLogger } from './logger/dataLogger';
 export { default as logger } from './logger/logsLogger';
-export * from './map';
 export { default as DefaultManagerMongo } from './mongo/manager';
 export * from './validation/joi';

@@ -1,6 +1,7 @@
 import { ActionErrors } from '@packages/action';
 import { SplitBy } from '@packages/common';
 import { IEntity, IEntityExpanded, IEntityWithDirectRelationships, IPropertyValue } from '@packages/entity';
+import { mapConfig } from '@packages/map';
 import { IRelationship } from '@packages/relationship';
 import { ValidationError } from '@packages/utils';
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
@@ -11,10 +12,6 @@ import EntityManager from '../../express/entities/manager';
 import { IFormulaCauses } from '../../express/rules/interfaces/formulaWithCauses';
 
 const {
-    map: {
-        polygon: { polygonPrefix, polygonSuffix },
-        srid,
-    },
     timezone,
     neo4j: {
         stringPropertySuffix,
@@ -28,6 +25,11 @@ const {
         userOriginalAndSuffixFieldsMap,
     },
 } = config;
+
+const {
+    polygon: { polygonPrefix, polygonSuffix },
+    srid,
+} = mapConfig;
 
 export type Node = Neo4jNode<number>;
 type Relationship = Neo4jRelationship<number>;

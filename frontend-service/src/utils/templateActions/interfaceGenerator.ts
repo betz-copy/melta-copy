@@ -4,7 +4,7 @@ import {
     IMongoEntityTemplateWithConstraintsPopulated,
     PropertyFormat,
 } from '@packages/entity-template';
-import { CoordinateSystem } from '@packages/utils';
+import { CoordinateSystem } from '@packages/map';
 import { QueryClient } from 'react-query';
 import { IEntityTemplateMap } from '../../interfaces/template';
 

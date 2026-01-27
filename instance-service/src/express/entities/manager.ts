@@ -27,6 +27,7 @@ import {
     PropertyFormat,
     PropertyType,
 } from '@packages/entity-template';
+import { mapConfig } from '@packages/map';
 import { IDeleteRelationshipReference, IRelationship } from '@packages/relationship';
 import { IMongoRelationshipTemplate } from '@packages/relationship-template';
 import { ActionOnFail, IMongoRule, IRuleMail } from '@packages/rule';
@@ -93,13 +94,9 @@ import {
 import { updateColorsForIndicatorRulesWithTodayFunc } from './updateColorsForBrokenRulesWithIndicator';
 import { addStringFieldsAndNormalizeSpecialStringValues } from './validator.template';
 
-const {
-    brokenRulesFakeEntityIdPrefix,
-    deleteEntitiesMaxLimit,
-    map: {
-        wgs84: { maxLatitude, maxLongitude, minLatitude, minLongitude },
-    },
-} = config;
+const { brokenRulesFakeEntityIdPrefix, deleteEntitiesMaxLimit } = config;
+
+const { maxLatitude, maxLongitude, minLatitude, minLongitude } = mapConfig.wgs84;
 
 const { BAD_REQUEST: badRequestStatus } = StatusCodes;
 

@@ -1,5 +1,5 @@
 import { IEntity } from '@packages/entity';
-import { CoordinateSystem } from '@packages/utils';
+import { CoordinateSystem } from '@packages/map';
 import { Cartesian3 } from 'cesium';
 
 export type LatLng = {

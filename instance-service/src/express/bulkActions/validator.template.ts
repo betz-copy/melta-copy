@@ -1,8 +1,9 @@
 import { ActionErrors, ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata } from '@packages/action';
 import { IEntity, IPropertyValue } from '@packages/entity';
 import { IMongoEntityTemplate } from '@packages/entity-template';
+import { CoordinateSystem } from '@packages/map';
 import { IMongoRelationshipTemplate } from '@packages/relationship-template';
-import { CoordinateSystem, ValidationError } from '@packages/utils';
+import { ValidationError } from '@packages/utils';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { Request } from 'express';

@@ -1,6 +1,6 @@
 import { IPropertyValue } from '@packages/entity';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@packages/entity-template';
-import { CoordinateSystem, locationConverterToString } from '@packages/utils';
+import { CoordinateSystem, locationConverterToString } from '@packages/map';
 import Handlebars from 'handlebars';
 import { mapValues } from 'lodash';
 import config from '../../config';
