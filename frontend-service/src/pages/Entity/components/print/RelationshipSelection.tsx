@@ -28,15 +28,22 @@ interface RelationshipSelectionProps {
     setSelectedEntitiesCount: React.Dispatch<React.SetStateAction<number>>;
 }
 
-const getItemLabelComponent = (item: ITreeNode) => (
-    <Grid container flexWrap="nowrap" alignItems="center" gap="5px">
-        {item.sourceEntity.displayName}
-        {<ArrowTail width={11} height={1} color="#9398C2" />}
-        <span style={{ color: '#4752B6' }}>{item.displayName}</span>
-        <img src="/icons/arrow-head.svg" alt="" />
-        {item.destinationEntity.displayName}
-    </Grid>
-);
+const getItemLabelComponent = (item: ITreeNode, highlightedEntityId?: string) => {
+    const isSourceHighlighted = item.sourceEntity._id === highlightedEntityId;
+    const isDestinationHighlighted = item.destinationEntity._id === highlightedEntityId;
+
+    return (
+        <Grid container flexWrap="nowrap" alignItems="center" gap="5px">
+            <span style={isSourceHighlighted ? { fontWeight: 600, color: '#000' } : { color: '#444444' }}>{item.sourceEntity.displayName}</span>
+            <ArrowTail width={11} height={1} color="#9398C2" />
+            <span style={{ color: '#4752B6' }}>{item.displayName}</span>
+            <img src="/icons/arrow-head.svg" alt="" />
+            <span style={isDestinationHighlighted ? { fontWeight: 600, color: '#000' } : { color: '#444444' }}>
+                {item.destinationEntity.displayName}
+            </span>
+        </Grid>
+    );
+};
 
 const getItemLabelText = (item: ITreeNode) => `${item.sourceEntity.displayName} - ${item.displayName} -> ${item.destinationEntity.displayName}`;
 
@@ -72,6 +79,26 @@ const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity,
 
         enabled: !!rootEntityId,
     });
+
+    const highlightedEntityByPath = useMemo(() => {
+        const map = new Map<string, string>();
+
+        if (!relationShips) return map;
+
+        const buildMap = (nodes: ITreeNode[], parentEntityId: string): void => {
+            for (const node of nodes) {
+                const isSourceParent = node.sourceEntity._id === parentEntityId;
+                const highlightedEntityId = isSourceParent ? node.destinationEntity._id : node.sourceEntity._id;
+
+                map.set(node.path, highlightedEntityId);
+
+                if (node.children?.length) buildMap(node.children, highlightedEntityId);
+            }
+        };
+
+        buildMap(relationShips, expandedEntity.entity.templateId);
+        return map;
+    }, [relationShips, expandedEntity.entity.templateId]);
 
     const { expandedIds, onSearch, searchedUnits, setExpandedIds } = useSearchUnits(relationShips ?? [], getItemId, (item, search) =>
         getItemLabelText(item)
@@ -138,7 +165,7 @@ const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity,
                     treeItems={relationShips}
                     getItemId={getItemId}
                     getItemLabel={getItemLabelText}
-                    renderItemLabel={getItemLabelComponent}
+                    renderItemLabel={(item) => getItemLabelComponent(item, highlightedEntityByPath.get(item.path))}
                     removeDivider
                     selectedItems={selectedTreeItemIds}
                     filteredTreeItems={searchedUnits}
@@ -156,7 +183,7 @@ const RelationshipSelection: FC<RelationshipSelectionProps> = ({ expandedEntity,
                         const totalEntitiesCount = calculateSelectedEntitiesCount(finalSelectedIds, getSelectedEntitiesCountById);
 
                         if (totalEntitiesCount > maxEntitiesToPrint) {
-                            toast.error(i18next.t('entityPage.print.limits.warning'));
+                            toast.error(`${i18next.t('entityPage.print.warning.tooManyEntitiesSelected')} ${maxEntitiesToPrint}`);
                         } else {
                             setSelectedEntitiesCount(totalEntitiesCount);
                             setSelectedTreeItemIds(finalSelectedIds);

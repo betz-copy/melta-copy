@@ -1,4 +1,4 @@
-import {
+import type {
     BodyScrollEvent,
     CellClickedEvent,
     CellEditingStoppedEvent,
@@ -29,7 +29,8 @@ import { IGetUnits } from '@packages/unit';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import { isEqual, pickBy, sortBy } from 'lodash';
-import React, { ForwardedRef, forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import type React from 'react';
+import { type ForwardedRef, forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
@@ -60,12 +61,12 @@ import useDeepCompareMemo from '../../utils/hooks/useDeepCompareMemo';
 import { LocalStorage } from '../../utils/localStorage';
 import { tryCatch } from '../../utils/tryCatch';
 import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
-import { EntityWizardValues } from '../dialogs/entity';
+import type { EntityWizardValues } from '../dialogs/entity';
 import { MultiSelectStatusBar } from '../EntitiesPage/MultiSelectStatusBar';
 import { ResizeBox } from '../EntitiesPage/ResizeBox';
 import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
 import { ErrorToast } from '../ErrorToast';
-import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
+import { getColumnDefs, type IGetColumnDefsOptions } from './getColumnDefs';
 
 const { errorCodes } = environment;
 const { cacheBlockSize, maxConcurrentDatasourceRequests, actionPrefix, actionsWidth, rowCountInfiniteModeWithoutExpand } = environment.agGrid;
@@ -132,7 +133,10 @@ export const getDatasource = <Data extends EntityData>(
                 return;
             }
 
-            const agGridRequest = { ...params.request, filterModel: { ...params.request.filterModel } };
+            const agGridRequest = {
+                ...params.request,
+                filterModel: { ...params.request.filterModel },
+            };
 
             const { result: data, err } = await tryCatch(() =>
                 pageType === 'client-side'
@@ -612,7 +616,12 @@ const EntitiesTableOfTemplate = forwardRef(
                 { [`${actionPrefix}${template._id}`]: 200 },
             );
 
-            api.setColumnWidths(Object.entries(columnsWidth).map(([key, newWidth]) => ({ key, newWidth })));
+            api.setColumnWidths(
+                Object.entries(columnsWidth).map(([key, newWidth]) => ({
+                    key,
+                    newWidth,
+                })),
+            );
 
             if (Object.keys(columnsWidth).length) {
                 const updatedWidths = isRemovedFields ? columnsWidth : { ...defaultColumnWidths, ...columnsWidth };
@@ -696,7 +705,9 @@ const EntitiesTableOfTemplate = forwardRef(
 
         useImperativeHandle(ref, () => ({
             getExcelData() {
-                return gridRef.current?.api.getSheetDataForExcel({ sheetName: template.displayName });
+                return gridRef.current?.api.getSheetDataForExcel({
+                    sheetName: template.displayName,
+                });
             },
             resetFilter() {
                 gridRef.current?.api.setFilterModel(defaultFilterModel);
@@ -729,7 +740,10 @@ const EntitiesTableOfTemplate = forwardRef(
             scrollIntoView() {
                 if (!tableRef.current) return;
                 const ro = new ResizeObserver((_el, observer) => {
-                    tableRef.current!.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    tableRef.current!.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'end',
+                    });
                     observer.disconnect();
                 });
                 ro.observe(tableRef.current);
@@ -898,7 +912,7 @@ const EntitiesTableOfTemplate = forwardRef(
                         defaultColDef={{
                             filterParams: {
                                 maxNumConditions: 1,
-                                buttons: ['reset'],
+                                buttons: ['reset', 'apply'],
                             },
                             sortable: true,
                             menuTabs: ['filterMenuTab'],
@@ -992,7 +1006,10 @@ const EntitiesTableOfTemplate = forwardRef(
                                 ...params.data?.properties,
                                 [params.column.getColId()]: isEmpty ? (isRequired || isEmptyArray ? undefined : '') : params.newValue,
                             };
-                            setCurrEntity({ templateId: template._id, properties: params.data?.properties });
+                            setCurrEntity({
+                                templateId: template._id,
+                                properties: params.data?.properties,
+                            });
 
                             const properties = { properties: updatedProperties };
                             gridRef.current?.api.forEachNode((rowNode) => {
@@ -1064,5 +1081,7 @@ const EntitiesTableOfTemplate = forwardRef(
 );
 
 export default EntitiesTableOfTemplate as <Data = EntityData>(
-    props: EntitiesTableOfTemplateProps<Data> & { ref?: ForwardedRef<EntitiesTableOfTemplateRef<Data>> },
+    props: EntitiesTableOfTemplateProps<Data> & {
+        ref?: ForwardedRef<EntitiesTableOfTemplateRef<Data>>;
+    },
 ) => ReturnType<typeof EntitiesTableOfTemplate>;

@@ -31,7 +31,7 @@
     },
     "homepage": "https://github.com/melta-team/melta#readme",
     "devDependencies": {
-        "@biomejs/biome": "^2.1.2",
+        "@biomejs/biome": "^2.3.13",
         "@types/jest": "^30.0.0",
         "@types/mongoose": "^5.11.97",
         "@types/node": "^24.3.0",
