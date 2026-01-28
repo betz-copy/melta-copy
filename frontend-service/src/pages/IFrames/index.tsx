@@ -56,6 +56,7 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
                         `[iFrameDimensions] Invalid JSON in localStorage for key: ${key}`,
                         error,
                     );
+                    return
                 }
 
                 if (isSideBarOpen && !open) {
