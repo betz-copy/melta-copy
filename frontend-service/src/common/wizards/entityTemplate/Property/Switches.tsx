@@ -330,7 +330,6 @@ export const Switches: React.FC<SwitchesProps> = ({
                 </>
             )}
             {isAccountTemplate && value.type === 'number' && (
-                <>
                     <FormControlLabel
                         control={
                             <MeltaSwitch
@@ -353,7 +352,6 @@ export const Switches: React.FC<SwitchesProps> = ({
                         }
                         label={i18next.t('propertyTypes.accountBalance')}
                     />
-                </>
             )}
             {isKartoffelImage && (
                 <FormControlLabel
