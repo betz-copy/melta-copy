@@ -16,7 +16,7 @@ export interface IFrameWizardValues extends Omit<IFrame, 'iconFileId'> {
     icon?: fileDetails;
 }
 export type IFrameWizardBaseType = WizardBaseType<IFrameWizardValues> & {
-    setIFramesOrder: (value: { name: string; id: string }[]) => void;
+    setIFramesOrder: (value: string[]) => void;
 };
 
 const steps: StepType<IFrameWizardValues>[] = [
@@ -38,7 +38,7 @@ const steps: StepType<IFrameWizardValues>[] = [
 export const updateIFramesOrderOnLocalStorage = (data: IMongoIFrame, queryClient: QueryClient) => {
     const iFramesOrder = localStorage.getItem('iFramesOrder');
 
-    let iFramesStored;
+    let iFramesStored : string[];
     if (iFramesOrder) {
         try {
             iFramesStored = JSON.parse(iFramesOrder);
