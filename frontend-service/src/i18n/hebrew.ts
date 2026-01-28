@@ -109,6 +109,8 @@ export default {
         addChildTemplate: 'הוספת תצוגת בן',
         convertToRelationShipFieldClick: 'המרה לשדה קשר',
         aiSummary: 'סיכום AI',
+        aiSummaryCloseConfirmationTitle: 'האם אתם בטוחים?',
+        aiSummaryCloseConfirmationBody: 'סגירת החלון תוביל למחיקת הסיכום הנוכחי',
         copyToClipboard: 'העתק ללוח',
         copiedToClipboard: 'הועתק ללוח',
         close: 'סגירה',

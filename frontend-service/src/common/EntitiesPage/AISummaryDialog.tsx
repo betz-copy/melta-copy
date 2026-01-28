@@ -42,6 +42,8 @@ interface IFileOption {
     name: string;
 }
 
+import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
+
 export const AISummaryDialog: React.FC<AISummaryDialogProps> = ({ open, handleClose, template, selectedRows }) => {
     const theme = useTheme();
     const [step, setStep] = useState<Step>('columns');
@@ -50,6 +52,7 @@ export const AISummaryDialog: React.FC<AISummaryDialogProps> = ({ open, handleCl
     const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
     const [availableFiles, setAvailableFiles] = useState<IFileOption[]>([]);
     const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
+    const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
     const queryClient = useQueryClient();
 
     useEffect(() => {
@@ -155,111 +158,134 @@ export const AISummaryDialog: React.FC<AISummaryDialogProps> = ({ open, handleCl
         },
     );
 
+    const handleCloseRequest = () => {
+        if (step === 'result' && summary) {
+            setIsConfirmCloseOpen(true);
+        } else {
+            handleClose();
+        }
+    };
+
+    const confirmClose = () => {
+        setIsConfirmCloseOpen(false);
+        handleClose();
+    };
+
     return (
-        <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth disableEnforceFocus>
-            <DialogTitle
-                sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    fontWeight: 600,
-                    fontSize: 20,
-                    color: theme.palette.primary.main,
-                }}
-            >
-                <Box display="flex" alignItems="center">
-                    {step === 'files' && (
-                        <IconButton onClick={() => setStep('columns')} sx={{ mr: 1 }}>
-                            <ArrowBack />
-                        </IconButton>
+        <>
+            <Dialog open={open} onClose={handleCloseRequest} maxWidth="md" fullWidth disableEnforceFocus>
+                <DialogTitle
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        fontWeight: 600,
+                        fontSize: 20,
+                        color: theme.palette.primary.main,
+                    }}
+                >
+                    <Box display="flex" alignItems="center">
+                        {step === 'files' && (
+                            <IconButton onClick={() => setStep('columns')} sx={{ mr: 1 }}>
+                                <ArrowBack />
+                            </IconButton>
+                        )}
+                        {step === 'result' && (
+                            <IconButton onClick={() => setStep('files')} sx={{ mr: 1 }}>
+                                <ArrowBack />
+                            </IconButton>
+                        )}
+                        {i18next.t('actions.aiSummary')}
+                    </Box>
+                    {step === 'result' && summary && (
+                        <Tooltip title={i18next.t('actions.copyToClipboard')}>
+                            <IconButton onClick={handleCopy} size="small">
+                                <ContentCopy />
+                            </IconButton>
+                        </Tooltip>
                     )}
-                    {step === 'result' && (
-                        <IconButton onClick={() => setStep('files')} sx={{ mr: 1 }}>
-                            <ArrowBack />
-                        </IconButton>
+                </DialogTitle>
+                <DialogContent>
+                    {isLoading ? (
+                        <Box display="flex" justifyContent="center" alignItems="center" height="200px">
+                            <CircularProgress />
+                        </Box>
+                    ) : step === 'result' ? (
+                        <TextField
+                            multiline
+                            rows={12}
+                            fullWidth
+                            variant="outlined"
+                            value={summary}
+                            onChange={(e) => setSummary(e.target.value)}
+                            sx={{ mt: 1 }}
+                        />
+                    ) : step === 'columns' ? (
+                        <Box sx={{ mt: 2 }}>
+                            <Typography variant="subtitle1" gutterBottom>
+                                {i18next.t('actions.selectColumnsTitle')}
+                            </Typography>
+                            <FormGroup>
+                                {fileColumns.map((col) => (
+                                    <FormControlLabel
+                                        key={col.key}
+                                        control={<Checkbox checked={selectedColumns.includes(col.key)} onChange={() => toggleColumn(col.key)} />}
+                                        label={col.label}
+                                    />
+                                ))}
+                            </FormGroup>
+                        </Box>
+                    ) : (
+                        <Box sx={{ mt: 2 }}>
+                            <Typography variant="subtitle1" gutterBottom>
+                                {i18next.t('actions.selectFilesTitle')} ({selectedFiles.length})
+                            </Typography>
+                            <FormGroup>
+                                {availableFiles.map((file) => (
+                                    <FormControlLabel
+                                        key={file.id}
+                                        control={<Checkbox checked={selectedFiles.includes(file.id)} onChange={() => toggleFile(file.id)} />}
+                                        label={file.name}
+                                    />
+                                ))}
+                            </FormGroup>
+                        </Box>
                     )}
-                    {i18next.t('actions.aiSummary')}
-                </Box>
-                {step === 'result' && summary && (
-                    <Tooltip title={i18next.t('actions.copyToClipboard')}>
-                        <IconButton onClick={handleCopy} size="small">
-                            <ContentCopy />
-                        </IconButton>
-                    </Tooltip>
-                )}
-            </DialogTitle>
-            <DialogContent>
-                {isLoading ? (
-                    <Box display="flex" justifyContent="center" alignItems="center" height="200px">
-                        <CircularProgress />
-                    </Box>
-                ) : step === 'result' ? (
-                    <TextField
-                        multiline
-                        rows={12}
-                        fullWidth
-                        variant="outlined"
-                        value={summary}
-                        onChange={(e) => setSummary(e.target.value)}
-                        sx={{ mt: 1 }}
-                    />
-                ) : step === 'columns' ? (
-                    <Box sx={{ mt: 2 }}>
-                        <Typography variant="subtitle1" gutterBottom>
-                            {i18next.t('actions.selectColumnsTitle')}
-                        </Typography>
-                        <FormGroup>
-                            {fileColumns.map((col) => (
-                                <FormControlLabel
-                                    key={col.key}
-                                    control={<Checkbox checked={selectedColumns.includes(col.key)} onChange={() => toggleColumn(col.key)} />}
-                                    label={col.label}
-                                />
-                            ))}
-                        </FormGroup>
-                    </Box>
-                ) : (
-                    <Box sx={{ mt: 2 }}>
-                        <Typography variant="subtitle1" gutterBottom>
-                            {i18next.t('actions.selectFilesTitle')} ({selectedFiles.length})
-                        </Typography>
-                        <FormGroup>
-                            {availableFiles.map((file) => (
-                                <FormControlLabel
-                                    key={file.id}
-                                    control={<Checkbox checked={selectedFiles.includes(file.id)} onChange={() => toggleFile(file.id)} />}
-                                    label={file.name}
-                                />
-                            ))}
-                        </FormGroup>
-                    </Box>
-                )}
-            </DialogContent>
-            <DialogActions sx={{ padding: '16px 24px' }}>
-                <Button variant="outlined" onClick={handleClose} sx={{ borderRadius: '7px' }}>
-                    {i18next.t('actions.close')}
-                </Button>
-                {!isLoading && step === 'columns' && (
-                    <Button
-                        variant="contained"
-                        onClick={moveToFilesStep}
-                        disabled={selectedColumns.length === 0}
-                        sx={{ borderRadius: '7px', color: 'white' }}
-                    >
-                        {i18next.t('actions.next')}
+                </DialogContent>
+                <DialogActions sx={{ padding: '16px 24px' }}>
+                    <Button variant="outlined" onClick={handleCloseRequest} sx={{ borderRadius: '7px' }}>
+                        {i18next.t('actions.close')}
                     </Button>
-                )}
-                {!isLoading && step === 'files' && (
-                    <Button
-                        variant="contained"
-                        onClick={() => generateSummary()}
-                        disabled={selectedFiles.length === 0}
-                        sx={{ borderRadius: '7px', color: 'white' }}
-                    >
-                        {i18next.t('actions.generate')}
-                    </Button>
-                )}
-            </DialogActions>
-        </Dialog>
+                    {!isLoading && step === 'columns' && (
+                        <Button
+                            variant="contained"
+                            onClick={moveToFilesStep}
+                            disabled={selectedColumns.length === 0}
+                            sx={{ borderRadius: '7px', color: 'white' }}
+                        >
+                            {i18next.t('actions.next')}
+                        </Button>
+                    )}
+                    {!isLoading && step === 'files' && (
+                        <Button
+                            variant="contained"
+                            onClick={() => generateSummary()}
+                            disabled={selectedFiles.length === 0}
+                            sx={{ borderRadius: '7px', color: 'white' }}
+                        >
+                            {i18next.t('actions.generate')}
+                        </Button>
+                    )}
+                </DialogActions>
+            </Dialog>
+
+            <AreYouSureDialog
+                open={isConfirmCloseOpen}
+                handleClose={() => setIsConfirmCloseOpen(false)}
+                onYes={confirmClose}
+                title={i18next.t('actions.aiSummaryCloseConfirmationTitle')}
+                body={i18next.t('actions.aiSummaryCloseConfirmationBody')}
+            />
+        </>
     );
 };

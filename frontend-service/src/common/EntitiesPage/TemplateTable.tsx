@@ -312,8 +312,13 @@ const TemplateTable = forwardRef<
                                 popoverText: i18next.t('entitiesTableOfTemplate.multipleSelect'),
                                 iconButtonProps: {
                                     onClick: () => {
-                                        setMultipleSelect(!multipleSelect);
-                                        if (!(isExpand && !multipleSelect)) setIsExpand(!isExpand);
+                                        if (aiSummarySelectMode) {
+                                            setAiSummarySelectMode(false);
+                                            setMultipleSelect(true);
+                                        } else {
+                                            setMultipleSelect(!multipleSelect);
+                                            if (!(isExpand && !multipleSelect)) setIsExpand(!isExpand);
+                                        }
                                     },
                                 },
                             }}
