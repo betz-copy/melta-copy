@@ -1,11 +1,11 @@
 import { Hive } from '@mui/icons-material';
 import { Card, CardContent, Divider, FormControlLabel, FormGroup, Grid, Typography, useTheme } from '@mui/material';
-import { ICategoryMap } from '@packages/category';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import * as Yup from 'yup';
 import { ViewMode } from '../../../interfaces/dashboard';
+import { ICategoryMap } from '../../../interfaces/template';
 import { useUserStore } from '../../../stores/user';
 import { CustomIcon } from '../../CustomIcon';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';

@@ -12,7 +12,8 @@ import {
 } from '@packages/entity-template';
 import { IMongoPrintingTemplate } from '@packages/printing-template';
 import { IMongoProcessTemplateReviewerPopulated } from '@packages/process';
-import { IMongoRelationshipTemplatePopulated } from '@packages/relationship-template';
+import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '@packages/relationship-template';
+import { IMongoRule } from '@packages/rule';
 import {
     CommonFormInputProperties,
     IFilterTemplate,
@@ -26,13 +27,15 @@ export type IEntityTemplateMap = Map<string, IMongoEntityTemplateWithConstraints
 
 export type IChildTemplateMap = Map<string, IMongoChildTemplateWithConstraintsPopulated>;
 
-export type ITemplateMap = Map<string, ITemplate>;
-
-export type IRelationshipTemplateMap = Map<string, IMongoRelationshipTemplatePopulated>;
+export type IRelationshipTemplateMap = Map<string, IMongoRelationshipTemplate>;
 
 export type IProcessTemplateMap = Map<string, IMongoProcessTemplateReviewerPopulated>;
 
 export type IPrintingTemplateMap = Map<string, IMongoPrintingTemplate>;
+
+export type ICategoryMap = Map<string, IMongoCategory>;
+
+export type IRuleMap = Map<string, IMongoRule>;
 
 export const emptyCategory: IMongoCategory = {
     _id: '',

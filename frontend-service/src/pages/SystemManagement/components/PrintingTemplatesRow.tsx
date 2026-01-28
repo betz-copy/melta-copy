@@ -1,5 +1,5 @@
 import { Dialog, Grid, Typography } from '@mui/material';
-import { IMongoPrintingTemplate, IPrintingTemplateMap } from '@packages/printing-template';
+import { IMongoPrintingTemplate } from '@packages/printing-template';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import SearchInput from '../../../common/inputs/SearchInput';
 import CreateOrEditPrintTemplate from '../../../common/wizards/printingTemplate/createOrEditPrintingTemplate';
+import { IPrintingTemplateMap } from '../../../interfaces/template';
 import { deletePrintingTemplateRequest } from '../../../services/templates/printingTemplateService';
 import { CreateButton } from './CreateButton';
 import { PrintingTemplateCard } from './PrintingTemplateCard';

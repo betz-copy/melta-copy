@@ -16,5 +16,3 @@ export interface ISearchCategoriesBody {
     limit?: number;
     skip?: number;
 }
-
-export type ICategoryMap = Map<string, IMongoCategory>;

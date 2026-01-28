@@ -11,7 +11,6 @@ import {
     Widgets as WidgetsIcon,
 } from '@mui/icons-material';
 import { Box, Button, Grid, IconButton, Slide, Typography, useTheme } from '@mui/material';
-import { ICategoryMap } from '@packages/category';
 import { INotificationCountGroups } from '@packages/notification';
 import { PermissionScope } from '@packages/permission';
 import { RelatedPermission } from '@packages/user';
@@ -21,6 +20,7 @@ import { useQuery, useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
 import { environment } from '../../globals';
 import { PermissionDialogMode } from '../../interfaces/inputs';
+import { ICategoryMap } from '../../interfaces/template';
 import { searchIFrames } from '../../services/iFramesService';
 import { getMyNotificationGroupCountRequest, getMyNotificationsRequest, manyNotificationSeenRequest } from '../../services/notificationService';
 import { useDarkModeStore } from '../../stores/darkMode';

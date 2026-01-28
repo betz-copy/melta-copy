@@ -5,13 +5,13 @@ import { IFilter, IMongoChildTemplateWithConstraintsPopulated } from '@packages/
 import { ISearchFilter } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { ISubCompactPermissions, PermissionScope } from '@packages/permission';
-import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useParams, useSearchParams } from 'wouter';
 import { getChildTemplatesFilter } from '../../common/inputs/TemplateEntitiesAutocomplete';
+import { IRelationshipTemplateMap } from '../../interfaces/template';
 import '../../css/pages.css';
 import { isChildTemplate } from '@packages/child-template';
 import { IChildTemplateMap, IEntityTemplateMap } from '../../interfaces/template';

@@ -1,10 +1,10 @@
 import { Autocomplete, AutocompleteChangeDetails, AutocompleteProps, TextField } from '@mui/material';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
-import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '@packages/relationship-template';
+import { IMongoRelationshipTemplatePopulated } from '@packages/relationship-template';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
-import { IEntityTemplateMap } from '../../interfaces/template';
+import { IEntityTemplateMap, IRelationshipTemplateMap } from '../../interfaces/template';
 import { useUserStore } from '../../stores/user';
 import { getAllAllowedEntities, getAllAllowedRelationships } from '../../utils/permissions/templatePermissions';
 import { populateRelationshipTemplate } from '../../utils/templates';

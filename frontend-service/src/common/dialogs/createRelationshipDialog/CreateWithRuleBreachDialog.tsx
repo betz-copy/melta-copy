@@ -1,5 +1,5 @@
 import { ActionTypes, ICreateRelationshipMetadata, ICreateRelationshipMetadataPopulated } from '@packages/action';
-import { ActionOnFail, IRuleMap } from '@packages/rule';
+import { ActionOnFail } from '@packages/rule';
 import { IRuleBreach, IRuleBreachPopulated } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -8,6 +8,7 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
 import { IErrorResponse } from '../../../interfaces/error';
+import { IRuleMap } from '../../../interfaces/template';
 import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesService';
 import { ErrorToast } from '../../ErrorToast';
 import ExecWithRuleBreachDialog from '../execWithRuleBreachDialog';

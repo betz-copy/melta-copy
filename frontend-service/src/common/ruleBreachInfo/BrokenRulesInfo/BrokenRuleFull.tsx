@@ -1,14 +1,13 @@
 import { ExpandLess as ExpandLessIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { Box, Collapse, Grid, List, ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material';
 import { IActionPopulated } from '@packages/action';
-import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import { IMongoRule } from '@packages/rule';
 import { IBrokenRulePopulated } from '@packages/rule-breach';
 import i18next from 'i18next';
 import { isEqual } from 'lodash';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { IEntityTemplateMap } from '../../../interfaces/template';
+import { IEntityTemplateMap, IRelationshipTemplateMap } from '../../../interfaces/template';
 import {
     getActionsByFailureOnEntity,
     getActionsByFailureOnRelationship,

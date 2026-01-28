@@ -1,5 +1,5 @@
 import { Grid } from '@mui/material';
-import { IMongoProcessTemplateReviewerPopulated, IProcessTemplateMap } from '@packages/process';
+import { IMongoProcessTemplateReviewerPopulated } from '@packages/process';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
@@ -11,6 +11,7 @@ import { InfiniteScroll } from '../../../../common/InfiniteScroll';
 import SearchInput from '../../../../common/inputs/SearchInput';
 import { ProcessTemplateWizard } from '../../../../common/wizards/processTemplate';
 import { environment } from '../../../../globals';
+import { IProcessTemplateMap } from '../../../../interfaces/template';
 import { deleteProcessTemplateRequest, processTemplateObjectToProcessTemplateForm } from '../../../../services/templates/processTemplatesService';
 import { CreateButton } from '../CreateButton';
 import { ProcessTemplateCard } from './ProcessTemplateCard';

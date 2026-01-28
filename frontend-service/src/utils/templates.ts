@@ -2,8 +2,8 @@ import { IMongoCategory } from '@packages/category';
 import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IEntityExpanded, IPropertyValue } from '@packages/entity';
 import { IMongoEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
-import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '@packages/relationship-template';
-import { IChildTemplateMap, IEntityTemplateMap, INestedRelationshipTemplates, ITemplate } from '../interfaces/template';
+import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '@packages/relationship-template';
+import { IChildTemplateMap, IEntityTemplateMap, INestedRelationshipTemplates, IRelationshipTemplateMap, ITemplate } from '../interfaces/template';
 
 export const templatesCompareFunc = (
     templateA: IMongoEntityTemplateWithConstraintsPopulated,

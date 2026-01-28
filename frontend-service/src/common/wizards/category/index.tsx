@@ -1,4 +1,4 @@
-import { ICategory, ICategoryMap } from '@packages/category';
+import { ICategory } from '@packages/category';
 import { FileDetails } from '@packages/common';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -6,6 +6,7 @@ import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { ConfigTypes, IMongoCategoryOrderConfig } from '../../../interfaces/config';
+import { ICategoryMap } from '../../../interfaces/template';
 import { createCategoryRequest, updateCategoryRequest } from '../../../services/templates/categoriesService';
 import { getConfigByTypeRequest } from '../../../services/templates/configService';
 import { useUserStore } from '../../../stores/user';

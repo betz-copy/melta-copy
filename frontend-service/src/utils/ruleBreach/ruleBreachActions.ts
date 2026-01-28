@@ -9,11 +9,10 @@ import {
 import { IEntity } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IRelationshipPopulated } from '@packages/relationship';
-import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import { ICausesOfInstancePopulated, IEntityForBrokenRules, IRelationshipForBrokenRules } from '@packages/rule-breach';
 import { isEqual } from 'lodash';
 import { environment } from '../../globals';
-import { emptyCategory, IEntityTemplateMap } from '../../interfaces/template';
+import { emptyCategory, IEntityTemplateMap, IRelationshipTemplateMap } from '../../interfaces/template';
 
 export const getActionsByFailureOnEntity = (
     failure: { entity: IEntityForBrokenRules; causes: ICausesOfInstancePopulated[] },

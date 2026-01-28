@@ -1,11 +1,10 @@
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
-import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { emptyCategory } from '../../../interfaces/template';
+import { emptyCategory, IRelationshipTemplateMap } from '../../../interfaces/template';
 import {
     createRelationshipTemplateRequest,
     relationshipTemplateFormToRelationshipTemplateObject,

@@ -1,13 +1,14 @@
 import { Close, NavigateBefore } from '@mui/icons-material';
 import { Box, Dialog, Divider, Fab, Grid, IconButton, Step, StepLabel, Stepper } from '@mui/material';
 import { IPropertyValue } from '@packages/entity';
-import { IMongoProcessInstanceReviewerPopulated, IProcessTemplateMap } from '@packages/process';
+import { IMongoProcessInstanceReviewerPopulated } from '@packages/process';
 import { AxiosError } from 'axios';
 import { FormikProvider } from 'formik';
 import i18next from 'i18next';
 import { pickBy } from 'lodash';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { UseMutateAsyncFunction, useQueryClient } from 'react-query';
+import { IProcessTemplateMap } from '../../../interfaces/template';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { getAllFieldsTouched } from '../../../utils/processWizard/formik';
 import { setInitialStepsObject } from '../../../utils/processWizard/steps';

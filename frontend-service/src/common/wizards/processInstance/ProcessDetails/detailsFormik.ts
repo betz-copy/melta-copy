@@ -1,15 +1,11 @@
-import {
-    IMongoProcessInstanceReviewerPopulated,
-    IMongoProcessTemplateReviewerPopulated,
-    IProcessDetails,
-    IProcessTemplateMap,
-} from '@packages/process';
+import { IMongoProcessInstanceReviewerPopulated, IMongoProcessTemplateReviewerPopulated, IProcessDetails } from '@packages/process';
 import { AxiosError } from 'axios';
 import { useFormik, yupToFormErrors } from 'formik';
 import i18next from 'i18next';
 import { useMemo } from 'react';
 import { UseMutateAsyncFunction } from 'react-query';
 import * as Yup from 'yup';
+import { IProcessTemplateMap } from '../../../../interfaces/template';
 import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { splitSpacialProperties } from '../../../../utils/processWizard/formik';
 import { getStepsObjectPopulated } from '../../../../utils/processWizard/steps';

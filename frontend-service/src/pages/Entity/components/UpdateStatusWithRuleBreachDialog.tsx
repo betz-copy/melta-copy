@@ -1,6 +1,6 @@
 import { ActionTypes, IUpdateEntityStatusMetadata, IUpdateEntityStatusMetadataPopulated } from '@packages/action';
 import { IEntity } from '@packages/entity';
-import { ActionOnFail, IRuleMap } from '@packages/rule';
+import { ActionOnFail } from '@packages/rule';
 import { IRuleBreach, IRuleBreachPopulated } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -10,6 +10,7 @@ import { toast } from 'react-toastify';
 import ExecWithRuleBreachDialog from '../../../common/dialogs/execWithRuleBreachDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { IErrorResponse } from '../../../interfaces/error';
+import { IRuleMap } from '../../../interfaces/template';
 import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesService';
 
 const getActionMetadata = (entity: IEntity, disabled: boolean): IUpdateEntityStatusMetadataPopulated => {

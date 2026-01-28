@@ -1,7 +1,6 @@
-import { ICategoryMap, IMongoCategory } from '@packages/category';
+import { IMongoCategory } from '@packages/category';
 import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IConstraint } from '@packages/entity';
-import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
@@ -9,7 +8,13 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
 import { IErrorResponse } from '../../../interfaces/error';
-import { EntityTemplateWizardValues, IChildTemplateMap, IEntityTemplateMap } from '../../../interfaces/template';
+import {
+    EntityTemplateWizardValues,
+    ICategoryMap,
+    IChildTemplateMap,
+    IEntityTemplateMap,
+    IRelationshipTemplateMap,
+} from '../../../interfaces/template';
 import { getAllChildTemplates } from '../../../services/templates/childTemplatesService';
 import { createEntityTemplateRequest, formToJSONSchema, updateEntityTemplateRequest } from '../../../services/templates/entityTemplatesService';
 import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';

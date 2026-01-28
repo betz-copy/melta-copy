@@ -13,7 +13,7 @@ import {
 } from '@packages/action';
 import { IEntity } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
-import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '@packages/relationship-template';
+import { IMongoRelationshipTemplatePopulated } from '@packages/relationship-template';
 import { ActionOnFail, IMongoRule } from '@packages/rule';
 import { IEntityForBrokenRules } from '@packages/rule-breach';
 import { IUser } from '@packages/user';
@@ -21,7 +21,7 @@ import i18next from 'i18next';
 import React, { CSSProperties, ReactNode } from 'react';
 import { useQueryClient } from 'react-query';
 import { environment } from '../../globals';
-import { IEntityTemplateMap } from '../../interfaces/template';
+import { IEntityTemplateMap, IRelationshipTemplateMap } from '../../interfaces/template';
 import { useUserStore } from '../../stores/user';
 import { getAllAllowedEntities, getAllAllowedRelationships } from '../../utils/permissions/templatePermissions';
 import { populateRelationshipTemplate } from '../../utils/templates';

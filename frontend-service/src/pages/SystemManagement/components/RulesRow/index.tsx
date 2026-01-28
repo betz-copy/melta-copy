@@ -1,7 +1,6 @@
 import { FormControlLabel, Grid } from '@mui/material';
-import { ICategoryMap } from '@packages/category';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
-import { ActionOnFail, IMongoRule, IRuleMap } from '@packages/rule';
+import { ActionOnFail, IMongoRule } from '@packages/rule';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
@@ -14,7 +13,7 @@ import SearchInput from '../../../../common/inputs/SearchInput';
 import MeltaCheckbox from '../../../../common/MeltaDesigns/MeltaCheckbox';
 import TemplatesSelectCheckbox from '../../../../common/templatesSelectCheckbox';
 import { RuleWizard } from '../../../../common/wizards/rule';
-import { IEntityTemplateMap } from '../../../../interfaces/template';
+import { ICategoryMap, IEntityTemplateMap, IRuleMap } from '../../../../interfaces/template';
 import { deleteRuleRequest, ruleObjectToRuleForm, updateDisabledRuleRequest } from '../../../../services/templates/rulesService';
 import { useUserStore } from '../../../../stores/user';
 import { useWorkspaceStore } from '../../../../stores/workspace';

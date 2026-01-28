@@ -1,11 +1,10 @@
 import { ChevronLeft, ExpandMore } from '@mui/icons-material';
 import { Button, Divider, Grid, Typography, useTheme } from '@mui/material';
-import { ICategoryMap } from '@packages/category';
 import { IMongoPrintingTemplate } from '@packages/printing-template';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { IEntityTemplateMap } from '../../../interfaces/template';
+import { ICategoryMap, IEntityTemplateMap } from '../../../interfaces/template';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { ViewingCard } from './Card';

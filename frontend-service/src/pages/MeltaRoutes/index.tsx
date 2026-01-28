@@ -1,9 +1,4 @@
 import { Box } from '@mui/material';
-import { ICategoryMap } from '@packages/category';
-import { IPrintingTemplateMap } from '@packages/printing-template';
-import { IProcessTemplateMap } from '@packages/process';
-import { IRelationshipTemplateMap } from '@packages/relationship-template';
-import { IRuleMap } from '@packages/rule';
 import i18next from 'i18next';
 import _ from 'lodash';
 import React, { useEffect, useMemo } from 'react';
@@ -11,7 +6,15 @@ import { useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { LoadingAnimation } from '../../common/LoadingAnimation';
 import { IMongoCategoryOrderConfig } from '../../interfaces/config';
-import { IChildTemplateMap, IEntityTemplateMap } from '../../interfaces/template';
+import {
+    ICategoryMap,
+    IChildTemplateMap,
+    IEntityTemplateMap,
+    IPrintingTemplateMap,
+    IProcessTemplateMap,
+    IRelationshipTemplateMap,
+    IRuleMap,
+} from '../../interfaces/template';
 import { GetAllTemplatesType, getAllTemplates } from '../../services/templates/getAllTemplates';
 import { getUnits } from '../../services/userService';
 import { getFile } from '../../services/workspacesService';

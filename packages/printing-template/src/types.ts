@@ -32,5 +32,3 @@ type IRelationShipPrintTreeNode = IMongoRelationshipTemplate & {
 export type IRelationShipSelectionTree = IRelationShipPrintTreeNode & {
     children: IRelationShipSelectionTree[];
 };
-
-export type IPrintingTemplateMap = Map<string, IMongoPrintingTemplate>;

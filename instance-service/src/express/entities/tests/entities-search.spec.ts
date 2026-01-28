@@ -479,9 +479,9 @@ describe('e2e search entities batch tests', () => {
                 const searchBody: ISearchBatchBody = {
                     skip: 0,
                     limit: 3,
-                    templates: { [defaultTemplateId]: { filter: { $and: { [field]: { $eq: value1 } } } },
+                    templates: { [defaultTemplateId]: { filter: { $and: { [field]: { $eq: value1 } } } } },
                     sort: [],
-                },
+                };
                 const res = await request(app).post('/api/instances/entities/search/batch').send(searchBody);
 
                 expect(res.statusCode).toBe(okStatus);
@@ -1105,10 +1105,8 @@ describe('e2e search entities batch tests', () => {
                         skip: 0,
                         limit: 10,
                         templates: {
-                            [flightEntityTemplate._id]: {
-                            },
-                            [airportEntityTemplate._id]: {
-                            },
+                            [flightEntityTemplate._id]: {},
+                            [airportEntityTemplate._id]: {},
                         },
                         sort: [
                             { field: 'createdAt', sort: 'asc' },
@@ -1130,10 +1128,8 @@ describe('e2e search entities batch tests', () => {
                         skip: 0,
                         limit: 10,
                         templates: {
-                            [flightEntityTemplate._id]: {
-                            },
-                            [entityTemplate._id]: {
-                            },
+                            [flightEntityTemplate._id]: {},
+                            [entityTemplate._id]: {},
                         },
                         sort: [
                             { field: 'createdAt', sort: 'asc' },
@@ -1153,10 +1149,8 @@ describe('e2e search entities batch tests', () => {
                         skip: 0,
                         limit: 10,
                         templates: {
-                            [flightEntityTemplate._id]: {
-                            },
-                            [entityTemplate._id]: {
-                            },
+                            [flightEntityTemplate._id]: {},
+                            [entityTemplate._id]: {},
                         },
                         sort: [
                             { field: 'createdAt', sort: 'asc' },
@@ -1176,10 +1170,8 @@ describe('e2e search entities batch tests', () => {
                         skip: 0,
                         limit: 10,
                         templates: {
-                            [airportEntityTemplate._id]: {
-                            },
-                            [entityTemplate._id]: {
-                            },
+                            [airportEntityTemplate._id]: {},
+                            [entityTemplate._id]: {},
                         },
                         sort: [
                             { field: 'createdAt', sort: 'asc' },

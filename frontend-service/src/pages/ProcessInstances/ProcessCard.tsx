@@ -20,7 +20,6 @@ import {
     IMongoProcessInstanceReviewerPopulated,
     IMongoStepInstancePopulated,
     IMongoStepTemplatePopulated,
-    IProcessTemplateMap,
     Status,
     StatusColors,
     StatusColorsNames,
@@ -39,6 +38,7 @@ import ProcessInstanceWizard from '../../common/wizards/processInstance';
 import CreateOrEditProcess from '../../common/wizards/processInstance/CreateOrEditProcessDialog';
 import { ProcessDetailsValues } from '../../common/wizards/processInstance/ProcessDetails';
 import { getFontColor } from '../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
+import { IProcessTemplateMap } from '../../interfaces/template';
 import { archiveProcessRequest, deleteProcessRequest, updateProcessRequest } from '../../services/processesService';
 import { Print } from './print';
 

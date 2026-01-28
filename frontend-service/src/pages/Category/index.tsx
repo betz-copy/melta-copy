@@ -1,11 +1,10 @@
-import { ICategoryMap } from '@packages/category';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import React, { useEffect } from 'react';
 import { useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
 import EntitiesPage from '../../common/EntitiesPage';
 import { TablePageType } from '../../common/EntitiesTableOfTemplate';
-import { IChildTemplateMap, IEntityTemplateMap, ITemplate } from '../../interfaces/template';
+import { ICategoryMap, IChildTemplateMap, IEntityTemplateMap, ITemplate } from '../../interfaces/template';
 import { useUserStore } from '../../stores/user';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 

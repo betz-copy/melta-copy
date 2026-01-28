@@ -1,6 +1,6 @@
 import { FilterList, Search } from '@mui/icons-material';
 import { Box, FormControl, FormControlLabel, Grid, IconButton, Paper, Radio, RadioGroup, useTheme } from '@mui/material';
-import { IMongoProcessTemplateReviewerPopulated, IProcessTemplateMap, Status } from '@packages/process';
+import { IMongoProcessTemplateReviewerPopulated, Status } from '@packages/process';
 import i18next from 'i18next';
 import debounce from 'lodash/debounce';
 import React, { useCallback, useState } from 'react';
@@ -9,6 +9,7 @@ import DateRange from '../../common/inputs/DateRange';
 import SearchInput from '../../common/inputs/SearchInput';
 import BlueTitle from '../../common/MeltaDesigns/BlueTitle';
 import MeltaCheckbox from '../../common/MeltaDesigns/MeltaCheckbox';
+import { IProcessTemplateMap } from '../../interfaces/template';
 import ProcessInstancesHeadline from './Headline';
 import ProcessesList from './ProcessesList';
 import ProcessTemplatesSelectCheckbox from './ProcessTemplatesCheckbox';

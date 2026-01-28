@@ -1,9 +1,8 @@
 import { Grid, TextField } from '@mui/material';
-import { IProcessTemplateMap } from '@packages/process';
 import i18next from 'i18next';
 import React from 'react';
 import * as Yup from 'yup';
-import { IEntityTemplateMap } from '../../../interfaces/template';
+import { IEntityTemplateMap, IProcessTemplateMap } from '../../../interfaces/template';
 import { variableNameValidation } from '../../../utils/validation';
 import { StepComponentProps } from '../index';
 

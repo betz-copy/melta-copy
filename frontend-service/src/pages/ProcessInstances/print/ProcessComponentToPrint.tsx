@@ -1,10 +1,5 @@
 import { Box, Typography, useTheme } from '@mui/material';
-import {
-    IMongoProcessInstanceReviewerPopulated,
-    IMongoStepInstancePopulated,
-    IMongoStepTemplatePopulated,
-    IProcessTemplateMap,
-} from '@packages/process';
+import { IMongoProcessInstanceReviewerPopulated, IMongoStepInstancePopulated, IMongoStepTemplatePopulated } from '@packages/process';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
@@ -14,6 +9,7 @@ import { ProcessDetailsValues } from '../../../common/wizards/processInstance/Pr
 import { getInitialDetailsValues, useProcessDetailsFormik } from '../../../common/wizards/processInstance/ProcessDetails/detailsFormik';
 import GeneralDetails from '../../../common/wizards/processInstance/ProcessDetails/GeneralDetails';
 import { CommentsDetails, ProcessStep } from '../../../common/wizards/processInstance/ProcessSteps/processStep';
+import { IProcessTemplateMap } from '../../../interfaces/template';
 import { getStepInstanceByStepTemplateId } from '../../../utils/processWizard/steps';
 import { EntityDates } from '../../Entity/components/EntityDates';
 

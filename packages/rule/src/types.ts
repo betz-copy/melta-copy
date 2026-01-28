@@ -100,8 +100,6 @@ export interface IRule {
 }
 export interface IMongoRule extends IRule, IMongoProps {}
 
-export type IRuleMap = Map<string, IMongoRule>;
-
 export interface ISearchRulesBody {
     search?: string;
     entityTemplateIds?: string[];

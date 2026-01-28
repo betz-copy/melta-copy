@@ -1,8 +1,7 @@
 import { Backdrop, Box, Button, CircularProgress } from '@mui/material';
-import { ICategoryMap, IMongoCategory } from '@packages/category';
+import { IMongoCategory } from '@packages/category';
 import { IEntityExpanded } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
-import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import { forceManyBody } from 'd3-force';
 import i18next from 'i18next';
 import { uniqBy, uniqWith } from 'lodash';
@@ -17,7 +16,7 @@ import { useParams } from 'wouter';
 import { ILinkObject, INodeObject } from '../../customTypes';
 import { environment } from '../../globals';
 import { IGraphFilterBody, IGraphFilterBodyBatch } from '../../interfaces/graphFilter';
-import { IChildTemplateMap, IEntityTemplateMap } from '../../interfaces/template';
+import { ICategoryMap, IChildTemplateMap, IEntityTemplateMap, IRelationshipTemplateMap } from '../../interfaces/template';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { expandedEntityToGraphData, fixHighlighted, getFixedGraphLinks, getGraphDataWithNodeSizes, updateNodeLabelIcons } from '../../utils/graph';

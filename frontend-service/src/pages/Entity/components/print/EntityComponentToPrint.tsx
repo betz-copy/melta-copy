@@ -3,11 +3,10 @@ import ShortcutIcon from '@mui/icons-material/Shortcut';
 import { IEntity } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IMongoPrintingTemplate } from '@packages/printing-template';
-import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import React from 'react';
 import { EntityPropertiesInternal } from '../../../../common/EntityProperties';
 import { IPrintOptions } from '../../../../common/print/PrintOptionsDialog';
-import { IEntityTemplateMap } from '../../../../interfaces/template';
+import { IEntityTemplateMap, IRelationshipTemplateMap } from '../../../../interfaces/template';
 import { EntityDates } from '../EntityDates';
 import { IEntityTreeNode } from './ComponentToPrint';
 

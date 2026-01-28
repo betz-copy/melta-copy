@@ -1,5 +1,5 @@
 import { FileDetails } from '@packages/common';
-import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '@packages/process';
+import { IMongoProcessTemplatePopulated } from '@packages/process';
 import { IUser } from '@packages/user';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -7,7 +7,7 @@ import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { v4 as uuid } from 'uuid';
-import { PropertyWizardType } from '../../../interfaces/template';
+import { IProcessTemplateMap, PropertyWizardType } from '../../../interfaces/template';
 import { createProcessTemplateRequest, updateProcessTemplateRequest } from '../../../services/templates/processTemplatesService';
 import { ErrorToast } from '../../ErrorToast';
 import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from '../entityTemplate/CreateTemplateName'; // Import the schema

@@ -6,11 +6,11 @@ import { useQueryClient } from 'react-query';
 import SearchInput from '../../../common/inputs/SearchInput';
 import PermissionsDialog from '../../../common/PermissionsDialog';
 import '../../../css/pages.css';
-import { ICategoryMap } from '@packages/category';
 import { PermissionData } from '@packages/permission';
 import { IRole } from '@packages/role';
 import { IUser, IUserPopulated, RelatedPermission } from '@packages/user';
 import { PermissionDialogMode } from '../../../interfaces/inputs';
+import { ICategoryMap } from '../../../interfaces/template';
 import DeletePermissionsDialog from './deleteDialog';
 import PermissionsTable, { PermissionsTableRef } from './table';
 

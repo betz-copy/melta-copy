@@ -1,7 +1,6 @@
 import { IEntityExpanded } from '@packages/entity';
-import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import { environment } from '../globals';
-import { IEntityTemplateMap, INestedRelationshipTemplates } from '../interfaces/template';
+import { IEntityTemplateMap, INestedRelationshipTemplates, IRelationshipTemplateMap } from '../interfaces/template';
 import { getFullRelationshipTemplates } from './templates';
 
 const { maxPrintLevel } = environment.print;

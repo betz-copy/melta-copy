@@ -1,9 +1,9 @@
 import { Grid, List } from '@mui/material';
 import { IActionPopulated } from '@packages/action';
-import { IRuleMap } from '@packages/rule';
 import { IRuleBreachPopulated } from '@packages/rule-breach';
 import React from 'react';
 import { useQueryClient } from 'react-query';
+import { IRuleMap } from '../../../interfaces/template';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { BrokenRuleCompact } from './BrokenRuleCompact';
 import { BrokenRuleFull } from './BrokenRuleFull';

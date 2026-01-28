@@ -1,18 +1,14 @@
 import { Close, History } from '@mui/icons-material';
 import { Button, Dialog, DialogContent, Grid, IconButton } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import {
-    IMongoProcessInstanceReviewerPopulated,
-    IMongoProcessTemplateReviewerPopulated,
-    IMongoStepTemplatePopulated,
-    IProcessTemplateMap,
-} from '@packages/process';
+import { IMongoProcessInstanceReviewerPopulated, IMongoProcessTemplateReviewerPopulated, IMongoStepTemplatePopulated } from '@packages/process';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
+import { IProcessTemplateMap } from '../../../interfaces/template';
 import { ActivitiesContent } from '../../../pages/Entity/components/activityLog/ActivitiesContent';
 import { deleteProcessRequest, getProcessByIdRequest } from '../../../services/processesService';
 import { useDarkModeStore } from '../../../stores/darkMode';

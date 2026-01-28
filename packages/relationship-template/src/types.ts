@@ -27,5 +27,3 @@ export interface ISearchRelationshipTemplatesBody extends ISearchBody {
     sourceEntityIds?: string[];
     destinationEntityIds?: string[];
 }
-
-export type IRelationshipTemplateMap = Map<string, IMongoRelationshipTemplate>;

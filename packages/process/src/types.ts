@@ -193,7 +193,6 @@ export interface IMongoProcessTemplatePopulated extends IProcessTemplatePopulate
 export interface IMongoProcessTemplateReviewerPopulated extends Omit<IMongoProcessTemplatePopulated, 'steps'> {
     steps: IMongoStepTemplatePopulated[];
 }
-export type IProcessTemplateMap = Map<string, IMongoProcessTemplateReviewerPopulated>;
 
 export interface IBaseSearchProperties {
     ids?: string[];

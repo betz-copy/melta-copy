@@ -1,10 +1,11 @@
-import { ICategoryMap, IMongoCategory } from '@packages/category';
+import { IMongoCategory } from '@packages/category';
 import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { ISubCompactPermissions, PermissionScope } from '@packages/permission';
 import { IMongoRelationshipTemplate } from '@packages/relationship-template';
 import { IMongoRule } from '@packages/rule';
 import { ICurrentUser } from '@packages/user';
+import { ICategoryMap } from '../../interfaces/template';
 
 export const allowedCategories = (categories: ICategoryMap, currentUser: ICurrentUser): IMongoCategory[] => {
     const allowedCategoriesToShow = currentUser.currentWorkspacePermissions?.admin

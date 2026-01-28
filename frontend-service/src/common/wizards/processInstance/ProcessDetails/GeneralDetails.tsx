@@ -1,12 +1,13 @@
 import { Groups2 } from '@mui/icons-material';
 import { Button, Card, CardContent, Divider, Grid, Typography } from '@mui/material';
-import { IMongoProcessTemplateReviewerPopulated, IProcessTemplateMap } from '@packages/process';
+import { IMongoProcessTemplateReviewerPopulated } from '@packages/process';
 import { FormikProvider } from 'formik';
 import i18next from 'i18next';
 import { pickBy } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { environment } from '../../../../globals';
+import { IProcessTemplateMap } from '../../../../interfaces/template';
 import { setInitialStepsObject } from '../../../../utils/processWizard/steps';
 import { IDetailsStepProp } from '.';
 import { initDetailsValues } from './detailsFormik';

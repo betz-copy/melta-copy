@@ -1,16 +1,14 @@
 import { Hive as HiveIcon } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Grid, Tab, Typography, useTheme } from '@mui/material';
-import { ICategoryMap } from '@packages/category';
 import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IEntityExpanded } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
-import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import i18next from 'i18next';
 import { useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { CustomIcon } from '../../common/CustomIcon';
-import { IEntityTemplateMap, INestedRelationshipTemplates } from '../../interfaces/template';
+import { ICategoryMap, IEntityTemplateMap, INestedRelationshipTemplates, IRelationshipTemplateMap } from '../../interfaces/template';
 import { ConnectionsTable } from './ConnectionsTable';
 import { RelationshipIcon } from './RelationshipIcon';
 

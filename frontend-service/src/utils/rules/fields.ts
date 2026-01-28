@@ -1,12 +1,12 @@
 import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
-import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '@packages/relationship-template';
+import { IMongoRelationshipTemplatePopulated } from '@packages/relationship-template';
 import { ActionOnFail, IVariable } from '@packages/rule';
 import { ICurrentUser } from '@packages/user';
 import { Field, Fields, ImmutableTree } from '@react-awesome-query-builder/mui';
 import i18next from 'i18next';
 import { findLast, isEqual } from 'lodash';
 import { environment } from '../../globals';
-import { IEntityTemplateMap } from '../../interfaces/template';
+import { IEntityTemplateMap, IRelationshipTemplateMap } from '../../interfaces/template';
 import { getAllAllowedEntities, getAllAllowedRelationships } from '../permissions/templatePermissions';
 import {
     addDefaultFieldsToTemplate,

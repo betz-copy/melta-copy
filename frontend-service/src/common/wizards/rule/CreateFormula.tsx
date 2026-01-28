@@ -1,6 +1,5 @@
 import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
 import { Grid, ThemeProvider } from '@mui/material';
-import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import {
     Builder,
     BuilderProps,
@@ -17,6 +16,7 @@ import {
 import i18next from 'i18next';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
+import { IRelationshipTemplateMap } from '../../../interfaces/template';
 import { getFieldsConfigOfRule } from '../../../utils/rules/fields';
 import { StepComponentProps, StepType } from '../index';
 import { RuleWizardValues } from '.';

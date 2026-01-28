@@ -1,10 +1,10 @@
 import { IEntity, IEntityExpanded, IPropertyValue } from '@packages/entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
-import { IMongoRelationshipTemplate, IRelationshipTemplateMap } from '@packages/relationship-template';
+import { IMongoRelationshipTemplate } from '@packages/relationship-template';
 import { uniqBy } from 'lodash';
 import { GraphData, LinkObject, NodeObject } from 'react-force-graph-2d';
 import { environment } from '../../globals';
-import { IChildTemplateMap, IEntityTemplateMap } from '../../interfaces/template';
+import { IChildTemplateMap, IEntityTemplateMap, IRelationshipTemplateMap } from '../../interfaces/template';
 import { apiUrlToImageSource } from '../../services/storageService';
 import { drawText, getRectangleDimensionsByString, traceRectangle } from '../canvas';
 import { getEntityTemplateColor, getRelationshipTemplateColor } from '../colors';

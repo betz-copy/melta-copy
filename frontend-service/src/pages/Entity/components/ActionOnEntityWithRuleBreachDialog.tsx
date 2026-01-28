@@ -12,7 +12,7 @@ import {
     IUpdateMultipleEntitiesMetadataPopulated,
 } from '@packages/action';
 import { IEntity } from '@packages/entity';
-import { ActionOnFail, IRuleMap } from '@packages/rule';
+import { ActionOnFail } from '@packages/rule';
 import { IRuleBreach, IRuleBreachPopulated, IRuleBreachRequestPopulated } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -26,6 +26,7 @@ import { ErrorToast } from '../../../common/ErrorToast';
 import { environment } from '../../../globals';
 import { IErrorResponse } from '../../../interfaces/error';
 import { IBrokenRuleEntity, ITablesResults } from '../../../interfaces/excel';
+import { IRuleMap } from '../../../interfaces/template';
 import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesService';
 import { groupActionsByEntityId, groupBrokenRulesByEntity } from '../../../utils/loadEntities';
 

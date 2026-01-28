@@ -1,8 +1,7 @@
 import { Grid } from '@mui/material';
-import { ICategoryMap, IMongoCategory } from '@packages/category';
+import { IMongoCategory } from '@packages/category';
 import { IMongoChildTemplateWithConstraintsPopulated, TemplateItem } from '@packages/child-template';
 import { IEntityTemplate, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
-import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import { keyBy } from 'lodash';
@@ -18,7 +17,7 @@ import SearchInput from '../../../common/inputs/SearchInput';
 import { SelectCheckbox } from '../../../common/SelectCheckBox';
 import { EntityTemplateWizard } from '../../../common/wizards/entityTemplate';
 import { environment } from '../../../globals';
-import { emptyCategory, IChildTemplateMap, IEntityTemplateMap } from '../../../interfaces/template';
+import { emptyCategory, ICategoryMap, IChildTemplateMap, IEntityTemplateMap, IRelationshipTemplateMap } from '../../../interfaces/template';
 import { updateCategoryTemplatesOrderRequest } from '../../../services/templates/categoriesService';
 import { deleteChildTemplate, updateChildTemplateStatusRequest } from '../../../services/templates/childTemplatesService';
 import {

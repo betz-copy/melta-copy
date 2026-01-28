@@ -1,6 +1,6 @@
 import { ActionTypes, IDeleteRelationshipMetadata, IDeleteRelationshipMetadataPopulated } from '@packages/action';
 import { IEntityExpanded } from '@packages/entity';
-import { ActionOnFail, IRuleMap } from '@packages/rule';
+import { ActionOnFail } from '@packages/rule';
 import { IRuleBreach, IRuleBreachPopulated } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -12,6 +12,7 @@ import ExecWithRuleBreachDialog from '../../common/dialogs/execWithRuleBreachDia
 import { ErrorToast } from '../../common/ErrorToast';
 import { environment } from '../../globals';
 import { IErrorResponse } from '../../interfaces/error';
+import { IRuleMap } from '../../interfaces/template';
 import { deleteRelationshipRequest } from '../../services/relationshipsService';
 import { createRuleBreachRequestRequest } from '../../services/ruleBreachesService';
 
