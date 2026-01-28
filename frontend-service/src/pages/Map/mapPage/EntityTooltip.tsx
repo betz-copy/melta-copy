@@ -142,12 +142,12 @@ export const useCesiumTooltip = ({ viewerRef, darkMode, entityTemplateMap, searc
         return () => {
             handler.destroy();
 
-            const r = rootRef.current;
+            const currentRoot = rootRef.current;
 
             rootRef.current = null;
             tooltipRef.current = null;
 
-            if (r) queueMicrotask(() => r.unmount());
+            if (currentRoot) queueMicrotask(() => currentRoot.unmount());
         };
     }, [searchedEntitiesPolygons.length, filteredPolygons.length]);
 };
