@@ -8,8 +8,6 @@ import {
     Close as CloseIcon,
 } from '@mui/icons-material';
 import { Autocomplete, Avatar, Box, Card, CardContent, Dialog, Grid, IconButton, TextField, Typography, useTheme } from '@mui/material';
-import { ArrowBack as ArrowBackIcon, ArrowForward as ArrowForwardIcon } from '@mui/icons-material';
-import { Avatar, Grid } from '@mui/material';
 import i18next from 'i18next';
 import React, { memo, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from 'react-query';
