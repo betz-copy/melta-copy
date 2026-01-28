@@ -85,9 +85,9 @@ export const WalletTransfers = ({ templateId, connectionsTemplates, expandedEnti
         return Array.from(entityTemplates.values()).filter((template) => {
             if (!template.walletTransfer || template.disabled) return false;
 
-            const walletTransfer = template.walletTransfer;
-            const fromProperty = template.properties.properties[walletTransfer.from];
-            const toProperty = template.properties.properties[walletTransfer.to];
+            const { walletTransfer, properties } = template;
+            const fromProperty = properties.properties[walletTransfer.from];
+            const toProperty = properties.properties[walletTransfer.to];
 
             const fromRelatedTemplateId = fromProperty?.relationshipReference?.relatedTemplateId;
             const toRelatedTemplateId = toProperty?.relationshipReference?.relatedTemplateId;

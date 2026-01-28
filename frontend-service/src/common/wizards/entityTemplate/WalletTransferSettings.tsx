@@ -66,7 +66,7 @@ export const WalletTransferSettings: React.FC<
     const initialSubmitCountRef = useRef(submitCount);
 
     const showErrors = submitCount > initialSubmitCountRef.current;
-    const touchedToPass = showErrors ? { walletTransfer: { from: true, to: true, amount: true, description: true } } : {};
+    const forceTouchedWalletTransferFields = showErrors ? { walletTransfer: { from: true, to: true, amount: true, description: true } } : {};
 
     const { data: areThereInstancesByTemplateIdResponse } = useQuery(
         ['areThereInstancesByTemplateId', values._id],
@@ -182,7 +182,7 @@ export const WalletTransferSettings: React.FC<
                             value={incomingFields.find((o) => o.name === fromKeyName) ?? null}
                             onChange={(v) => setFieldValue('walletTransfer.from', v || '')}
                             fieldPath="walletTransfer.from"
-                            touched={touchedToPass}
+                            touched={forceTouchedWalletTransferFields}
                             errors={errors}
                             disabled={!values.walletTransfer || areThereAnyInstances}
                             darkMode={darkMode}
@@ -196,7 +196,7 @@ export const WalletTransferSettings: React.FC<
                             value={outgoingFields.find((o) => o.name === toKeyName) ?? null}
                             onChange={(v) => setFieldValue('walletTransfer.to', v || '')}
                             fieldPath="walletTransfer.to"
-                            touched={touchedToPass}
+                            touched={forceTouchedWalletTransferFields}
                             errors={errors}
                             disabled={!values.walletTransfer || areThereAnyInstances}
                             darkMode={darkMode}
@@ -212,7 +212,7 @@ export const WalletTransferSettings: React.FC<
                             value={allNumFields.find((o) => o.name === values.walletTransfer?.amount) ?? null}
                             onChange={(v) => setFieldValue('walletTransfer.amount', v?.name || '')}
                             fieldPath="walletTransfer.amount"
-                            touched={touchedToPass}
+                            touched={forceTouchedWalletTransferFields}
                             errors={errors}
                             disabled={!values.walletTransfer || areThereAnyInstances}
                             darkMode={darkMode}
@@ -225,7 +225,7 @@ export const WalletTransferSettings: React.FC<
                             value={allTextFields.find((o) => o.name === values.walletTransfer?.description) ?? null}
                             onChange={(v) => setFieldValue('walletTransfer.description', v?.name || '')}
                             fieldPath="walletTransfer.description"
-                            touched={touchedToPass}
+                            touched={forceTouchedWalletTransferFields}
                             errors={errors}
                             disabled={!values.walletTransfer || areThereAnyInstances}
                             darkMode={darkMode}

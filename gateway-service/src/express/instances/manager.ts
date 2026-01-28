@@ -870,16 +870,9 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         if (!sourceWalletId) return;
 
-        let sourceWalletEntity: IEntity | undefined;
-        try {
-            sourceWalletEntity = await this.service.getEntityInstanceById(sourceWalletId);
-        } catch (_error) {
-            return;
-        }
+        const sourceWalletEntity = await this.service.getEntityInstanceById(sourceWalletId);
 
-        if (destWalletId && sourceWalletId === destWalletId) {
-            throw new Error('Source and destination wallets in the transfer are identical');
-        }
+        if (destWalletId && sourceWalletId === destWalletId) throw new Error('Source and destination wallets in the transfer are identical');
 
         const sourceWalletTemplate = await this.entityTemplateService.getEntityTemplateById(sourceWalletEntity.templateId);
         const accountBalancePropertyKey = Object.entries(sourceWalletTemplate.properties.properties).find(([_key, prop]) => prop.accountBalance)?.[0];
@@ -914,26 +907,14 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         let sourceWalletEntity: IEntity | undefined;
         let destinationWalletEntity: IEntity | undefined;
-
-        try {
-            if (sourceProperty.format === 'relationshipReference' && sourceWalletId) {
-                sourceWalletEntity = await this.service.getEntityInstanceById(sourceWalletId);
-            }
-        } catch (_error) {
-            sourceWalletEntity = undefined;
+        if (sourceProperty.format === 'relationshipReference' && sourceWalletId) {
+            sourceWalletEntity = await this.service.getEntityInstanceById(sourceWalletId);
+        }
+        if (destinationProperty.format === 'relationshipReference' && destWalletId) {
+            destinationWalletEntity = await this.service.getEntityInstanceById(destWalletId);
         }
 
-        try {
-            if (destinationProperty.format === 'relationshipReference' && destWalletId) {
-                destinationWalletEntity = await this.service.getEntityInstanceById(destWalletId);
-            }
-        } catch (_error) {
-            destinationWalletEntity = undefined;
-        }
-
-        if (!sourceWalletEntity && !destinationWalletEntity) {
-            return createdEntity;
-        }
+        if (!sourceWalletEntity && !destinationWalletEntity) return createdEntity;
 
         let source: IEntity | undefined;
         let destination: IEntity | undefined;
@@ -1055,9 +1036,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         }
 
         let newDestWalletData: IEntity | undefined;
-        if (template.walletTransfer) {
-            newDestWalletData = await this.createNewDestWalletData(template, instanceData);
-        }
+        if (template.walletTransfer) newDestWalletData = await this.createNewDestWalletData(template, instanceData);
 
         const { createdEntity, actions, emails } = await this.service
             .createEntityInstance(

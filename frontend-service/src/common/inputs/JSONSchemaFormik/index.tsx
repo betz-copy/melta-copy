@@ -192,17 +192,15 @@ export const ajvValidate = (
 
         if (sourceWalletEntity && typeof sourceWalletEntity === 'object' && sourceWalletEntity.properties && transferAmount) {
             const sourceWalletProperties = sourceWalletEntity.properties;
-
             const balanceKey = Object.keys(sourceWalletProperties).find((key) => key === 'amount' || key === 'balance');
 
             if (balanceKey) {
                 const currentBalance = sourceWalletProperties[balanceKey];
                 if (typeof currentBalance === 'number' && currentBalance < transferAmount) {
-                    const error = i18next.t('validation.insufficientWalletBalance', {
+                    walletTemplateErrors[amount] = i18next.t('validation.insufficientWalletBalance', {
                         current: currentBalance,
                         requested: transferAmount,
                     });
-                    walletTemplateErrors[amount] = error;
                 }
             }
         }

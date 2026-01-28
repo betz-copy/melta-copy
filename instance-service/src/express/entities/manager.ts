@@ -846,7 +846,7 @@ class EntityManager extends DefaultManagerNeo4j {
                 return {
                     createdEntity: entityResult.createdEntity,
                     emails: [...(destWalletResult?.emails ?? []), ...entityResult.emails],
-                    actions: undefined, // entityResult.actions,
+                    actions: undefined,
                 };
             })
             .catch((err) => this.throwServiceErrorIfFailedConstraintsValidation(err));
