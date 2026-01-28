@@ -1,67 +1,67 @@
-import { ThemeProvider } from "@mui/material";
-import type { AxiosError } from "axios";
-import { StatusCodes } from "http-status-codes";
-import type React from "react";
-import { createRoot } from "react-dom/client";
-import { QueryClient, QueryClientProvider } from "react-query";
-import { ReactQueryDevtools } from "react-query/devtools";
-import { ToastContainer } from "react-toastify";
-import App from "./App";
-import MuiXLicense from "./common/MuiLicense";
-import { TourWrapper } from "./TourWrapper";
-import "./i18n";
-import "./initWindowGlobal";
-import { useDarkModeStore } from "./stores/darkMode";
-import { darkTheme, lightTheme } from "./theme";
-import "./utils/agGrid";
-import "./utils/cesiumLicense";
+import { ThemeProvider } from '@mui/material';
+import type { AxiosError } from 'axios';
+import { StatusCodes } from 'http-status-codes';
+import type React from 'react';
+import { createRoot } from 'react-dom/client';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { ReactQueryDevtools } from 'react-query/devtools';
+import { ToastContainer } from 'react-toastify';
+import App from './App';
+import MuiXLicense from './common/MuiLicense';
+import { TourWrapper } from './TourWrapper';
+import './i18n';
+import './initWindowGlobal';
+import { useDarkModeStore } from './stores/darkMode';
+import { darkTheme, lightTheme } from './theme';
+import './utils/agGrid';
+import './utils/cesiumLicense';
 
 if (import.meta.hot) {
-	import.meta.hot.on("vite:beforeUpdate", () => console.clear());
+    import.meta.hot.on('vite:beforeUpdate', () => console.clear());
 }
 
 const queryClient = new QueryClient({
-	defaultOptions: {
-		queries: {
-			refetchOnWindowFocus: false,
-			retry: (count, error) => {
-				if ((error as AxiosError).response?.status === StatusCodes.FORBIDDEN) {
-					return false;
-				}
+    defaultOptions: {
+        queries: {
+            refetchOnWindowFocus: false,
+            retry: (count, error) => {
+                if ((error as AxiosError).response?.status === StatusCodes.FORBIDDEN) {
+                    return false;
+                }
 
-				return count < 2;
-			},
-		},
-	},
+                return count < 2;
+            },
+        },
+    },
 });
 
 const Index: React.FC = () => {
-	const darkMode = useDarkModeStore((state) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
-	return (
-		<QueryClientProvider client={queryClient}>
-			<ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
-				<TourWrapper>
-					<App />
-				</TourWrapper>
-				<ToastContainer
-					theme={darkMode ? "dark" : "light"}
-					position="bottom-right"
-					autoClose={5000}
-					limit={5}
-					pauseOnFocusLoss={false}
-					rtl
-					newestOnTop
-				/>
-			</ThemeProvider>
-			<ReactQueryDevtools />
-			<MuiXLicense />
-		</QueryClientProvider>
-	);
+    return (
+        <QueryClientProvider client={queryClient}>
+            <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
+                <TourWrapper>
+                    <App />
+                </TourWrapper>
+                <ToastContainer
+                    theme={darkMode ? 'dark' : 'light'}
+                    position="bottom-right"
+                    autoClose={5000}
+                    limit={5}
+                    pauseOnFocusLoss={false}
+                    rtl
+                    newestOnTop
+                />
+            </ThemeProvider>
+            <ReactQueryDevtools />
+            <MuiXLicense />
+        </QueryClientProvider>
+    );
 };
 
-const container = document.getElementById("root");
+const container = document.getElementById('root');
 if (container) {
-	const root = createRoot(container);
-	root.render(<Index />);
+    const root = createRoot(container);
+    root.render(<Index />);
 }
