@@ -330,28 +330,28 @@ export const Switches: React.FC<SwitchesProps> = ({
                 </>
             )}
             {isAccountTemplate && value.type === 'number' && (
-                    <FormControlLabel
-                        control={
-                            <MeltaSwitch
-                                id={type}
-                                name={type}
-                                onChange={(e) => {
-                                    setValues?.((prev) => {
-                                        const isChecked = !!e.target.checked;
-                                        return {
-                                            ...prev,
-                                            accountBalance: isChecked,
-                                            readOnly: isChecked ? true : undefined,
-                                            required: isChecked ? false : prev.required,
-                                        };
-                                    });
-                                }}
-                                checked={value.accountBalance ?? false}
-                                disabled={(hasAccountBalanceField && !value.accountBalance) || (areThereAnyInstances && isAlreadyWalletTemplate)}
-                            />
-                        }
-                        label={i18next.t('propertyTypes.accountBalance')}
-                    />
+                <FormControlLabel
+                    control={
+                        <MeltaSwitch
+                            id={type}
+                            name={type}
+                            onChange={(e) => {
+                                setValues?.((prev) => {
+                                    const isChecked = !!e.target.checked;
+                                    return {
+                                        ...prev,
+                                        accountBalance: isChecked,
+                                        readOnly: isChecked ? true : undefined,
+                                        required: isChecked ? false : prev.required,
+                                    };
+                                });
+                            }}
+                            checked={value.accountBalance ?? false}
+                            disabled={(hasAccountBalanceField && !value.accountBalance) || (areThereAnyInstances && isAlreadyWalletTemplate)}
+                        />
+                    }
+                    label={i18next.t('propertyTypes.accountBalance')}
+                />
             )}
             {isKartoffelImage && (
                 <FormControlLabel

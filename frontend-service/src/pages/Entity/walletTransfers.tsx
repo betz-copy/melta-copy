@@ -105,7 +105,7 @@ export const WalletTransfers = ({ templateId, connectionsTemplates, expandedEnti
 
     const getInitialProperties = (newTemplate: IMongoEntityTemplatePopulated) => {
         if (!newTemplate.walletTransfer) return {};
-        const props: Record<string, any> = {};
+        const props: Record<string, unknown> = {};
         const fromKey = newTemplate.walletTransfer.from;
         const toKey = newTemplate.walletTransfer.to;
 
@@ -137,7 +137,7 @@ export const WalletTransfers = ({ templateId, connectionsTemplates, expandedEnti
             const nonCurrentWalletEntity = sourceIsWallet ? destinationEntity : sourceEntity;
             const nonCurrentWalletTemplate = sourceIsWallet ? relationshipTemplate.destinationEntity : relationshipTemplate.sourceEntity;
 
-            const createdAt = new Date((connection.relationship.properties as any).createdAt).getTime();
+            const createdAt = new Date((connection.relationship.properties as { createdAt: string }).createdAt).getTime();
             const direction = sourceIsWallet ? Direction.to : Direction.from;
 
             const relatedTemplate = sourceIsWallet ? connection.destinationEntity : connection.sourceEntity;
@@ -314,7 +314,7 @@ export const WalletTransfers = ({ templateId, connectionsTemplates, expandedEnti
                 const entityLink = `/entity/${entityId}${isChildTemplate(data.template) ? `?childTemplateId=${data.template._id}` : ''}`;
 
                 return (
-                    <Grid container flexWrap="nowrap" justifyContent="right" >
+                    <Grid container flexWrap="nowrap" justifyContent="right">
                         <Link href={entityLink} onClick={(e) => !hasPermissionToTemplate && e.preventDefault()}>
                             <IconButtonWithPopover
                                 popoverText={

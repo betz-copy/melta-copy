@@ -849,8 +849,8 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         try {
             const entityTemplate: IMongoEntityTemplatePopulated = await this.entityTemplateService.getEntityTemplateById(createdEntity.templateId);
             await this.sendIndicatorRuleEmailForEntity(createdEntity, entityTemplate, userId, emails);
-        } catch (error) {
-            logger.error("Failed to send indicator rule's email for entity creation", { error });
+        } catch (_error) {
+            logger.error("Failed to send indicator rule's email for entity creation", { error: _error });
         }
     }
 
@@ -873,7 +873,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         let sourceWalletEntity: IEntity | undefined;
         try {
             sourceWalletEntity = await this.service.getEntityInstanceById(sourceWalletId);
-        } catch (error) {
+        } catch (_error) {
             return;
         }
 
