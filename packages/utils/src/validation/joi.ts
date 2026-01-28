@@ -92,6 +92,15 @@ export const filterOfFieldSchema = Joi.object({
 
 export const filterOfTemplateSchema = Joi.object().pattern(Joi.string(), filterOfFieldSchema);
 export const searchFilterSchema = Joi.object({
-    $and: Joi.alternatives(filterOfTemplateSchema, Joi.array().items(filterOfTemplateSchema)),
-    $or: Joi.array().items(filterOfTemplateSchema),
-});
+    $and: Joi.alternatives().try(
+        filterOfTemplateSchema,
+        Joi.array()
+            .items(Joi.alternatives().try(filterOfTemplateSchema, Joi.link('#searchFilter')))
+            .min(1),
+    ),
+    $or: Joi.array()
+        .items(Joi.alternatives().try(filterOfTemplateSchema, Joi.link('#searchFilter')))
+        .min(1),
+})
+    .xor('$and', '$or')
+    .id('searchFilter');

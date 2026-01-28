@@ -20,6 +20,7 @@ export interface UserState {
         currentWorkspacePermissions: ISubCompactPermissions;
         kartoffelId?: string;
         clientSideWorkspaceId?: string;
+        usersUnitsWithInheritance: string[];
     } & IUser;
     setUser: (user: UserState['user']) => void;
 }

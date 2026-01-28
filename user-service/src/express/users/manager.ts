@@ -153,20 +153,15 @@ class UsersManager {
         let roles: string[] | IRole[] | undefined = roleIds;
         if (options?.populated && roleIds && roleIds?.length > 0) roles = await RolesManager.getRolesByIds(roleIds);
 
-        let usersUnitsWithInheritance: string[] = [];
-        if (userWithoutRole.units && Object.keys(userWithoutRole.units).length) {
-            if (options?.addInheritanceToUnits) {
-                const units = await UnitsManager.getUnits({ workspaceIds });
+        if (options?.addInheritanceToUnits && userWithoutRole.units && Object.keys(userWithoutRole.units).length) {
+            const units = await UnitsManager.getUnits({ workspaceIds });
 
-                userWithoutRole.units = Object.fromEntries(
-                    Object.entries(userWithoutRole.units).map(([workspaceId, unitIds]) => [
-                        workspaceId,
-                        UsersManager.getUnitsWithInheritance(units, unitIds),
-                    ]),
-                );
-            }
-
-            usersUnitsWithInheritance = Object.values(userWithoutRole.units).flat();
+            userWithoutRole.units = Object.fromEntries(
+                Object.entries(userWithoutRole.units).map(([workspaceId, unitIds]) => [
+                    workspaceId,
+                    UsersManager.getUnitsWithInheritance(units, unitIds),
+                ]),
+            );
         }
 
         return {
@@ -174,7 +169,6 @@ class UsersManager {
             [options?.populated ? 'roles' : 'roleIds']: roles,
             permissions,
             displayName: `${user.fullName} - ${user.hierarchy}/${user.jobTitle}`,
-            usersUnitsWithInheritance,
         };
     }
 
