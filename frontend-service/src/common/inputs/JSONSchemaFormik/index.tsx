@@ -197,10 +197,7 @@ export const ajvValidate = (
             if (balanceKey) {
                 const currentBalance = sourceWalletProperties[balanceKey];
                 if (typeof currentBalance === 'number' && currentBalance < transferAmount) {
-                    walletTemplateErrors[amount] = i18next.t('validation.insufficientWalletBalance', {
-                        current: currentBalance,
-                        requested: transferAmount,
-                    });
+                    walletTemplateErrors[amount] = i18next.t('validation.insufficientWalletBalance', { current: currentBalance });
                 }
             }
         }

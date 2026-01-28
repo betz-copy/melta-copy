@@ -1178,7 +1178,7 @@ export default {
         isProfileImage: 'תמונת פרופיל',
         sameSourceAndDestWallet: 'לא ניתן לבצע העברה באותו ארנק',
         accountBalanceField: 'בתבנית ארנק חובה לבחור שדה מספרי אחד כערך יתרה',
-        insufficientWalletBalance: 'אין מספיק יתרה בארנק. יתרה נוכחית: {{current}}, סכום מבוקש: {{requested}}',
+        insufficientWalletBalance: 'אין מספיק יתרה בארנק. יתרה נוכחית: {{current}}',
         negativeTransferAmount: 'סכום ההעברה חייב להיות גדול מ-0',
     },
     propertyTypes: {

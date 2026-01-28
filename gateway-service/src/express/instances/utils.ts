@@ -111,7 +111,6 @@ class InstancesUtils extends DefaultController {
     }
 
     async getChildFilters(childTemplateId: string, userId: string): Promise<ISearchFilter | undefined> {
-        console.log('shirellllll');
 
         const [currentUser, workspaceHierarchyIds, childTemplate] = await Promise.all([
             UserService.getUserById(userId),
