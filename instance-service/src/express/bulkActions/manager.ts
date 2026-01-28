@@ -1,5 +1,4 @@
 import {
-    ActionErrors,
     ActionTypes,
     IAction,
     ICreateEntityMetadata,
@@ -8,7 +7,7 @@ import {
     IUpdateEntityMetadata,
 } from '@packages/action';
 import { IActivityLog } from '@packages/activity-log';
-import { IBulkRuleMail, IEntity, IRequiredConstraint } from '@packages/entity';
+import { ActionErrors, IBulkRuleMail, IEntity, IRequiredConstraint } from '@packages/entity';
 import { IMongoEntityTemplate } from '@packages/entity-template';
 import { IRelationship } from '@packages/relationship';
 import { IMongoRelationshipTemplate } from '@packages/relationship-template';

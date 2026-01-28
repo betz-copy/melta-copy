@@ -69,6 +69,7 @@ export interface ICurrentUser extends IUser {
     exp: number;
     iat: number;
     currentWorkspacePermissions: ISubCompactPermissions;
+    usersUnitsWithInheritance: string[];
 }
 
 export type IExternalUser = Omit<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'> &

@@ -1,8 +1,8 @@
-import { ActionErrors, ActionTypes } from '@packages/action';
+import { ActionTypes } from '@packages/action';
 import { IChildTemplatePopulated } from '@packages/child-template';
-import { IEntity, IExcelNotFoundError, IValidationError, UploadedFile } from '@packages/entity';
+import { ActionErrors, IEntity, IExcelNotFoundError, IFailedEntity, IFailedEntityError, IValidationError, UploadedFile } from '@packages/entity';
 import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
-import { IBrokenRuleEntity, IBrokenRulesError, IFailedEntity, IFailedEntityError } from '@packages/rule-breach';
+import { IBrokenRuleEntity, IBrokenRulesError } from '@packages/rule-breach';
 import { BadRequestError, ServiceError, ValidationError } from '@packages/utils';
 import { IWorkspace } from '@packages/workspace';
 import { AxiosError } from 'axios';

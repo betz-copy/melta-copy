@@ -277,3 +277,21 @@ export type IMultipleSelect<T extends boolean = boolean> = {
       });
 
 export type IDeleteEntityBody<T extends boolean = boolean> = IDeleteEntityBodyBase & IMultipleSelect<T>;
+
+export enum ActionErrors {
+    validation = 'VALIDATION',
+    unique = 'UNIQUE',
+    required = 'REQUIRED',
+    filterValidation = 'FILTER_VALIDATION',
+    notFound = 'NOT_FOUND',
+}
+
+export type IFailedEntityError = {
+    type: ActionErrors;
+    metadata: IValidationError | IUniqueConstraint | IRequiredConstraint | IExcelNotFoundError;
+};
+
+export type IFailedEntity = {
+    properties: Record<string, IPropertyValue>;
+    errors: IFailedEntityError[];
+};

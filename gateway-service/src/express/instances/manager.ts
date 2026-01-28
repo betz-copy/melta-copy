@@ -14,6 +14,7 @@ import {
     IEntity,
     IEntityWithDirectRelationships,
     IExportEntitiesBody,
+    IFailedEntity,
     IMultipleSelect,
     IPropertyValue,
     ISearchBatchBody,
@@ -30,7 +31,7 @@ import {
 import { IEntitySingleProperty, IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import { IRelationship } from '@packages/relationship';
 import { IRuleMail } from '@packages/rule';
-import { IBrokenRule, IBrokenRuleEntity, IEntityWithIgnoredRules, IFailedEntity } from '@packages/rule-breach';
+import { IBrokenRule, IBrokenRuleEntity, IEntityWithIgnoredRules } from '@packages/rule-breach';
 import { ISemanticSearchResult } from '@packages/semantic-search';
 import { BadRequestError, logger, NotFoundError } from '@packages/utils';
 import axios from 'axios';
@@ -251,7 +252,6 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             skip: 0,
             limit: 1,
             filter,
-            showRelationships: false,
             sort: [],
         });
 
@@ -375,7 +375,6 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             limit: 1,
             textSearch,
             filter: filters,
-            showRelationships: false,
             sort: sort || [],
         });
 
@@ -386,7 +385,6 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 limit: searchEntitiesChunkSize,
                 textSearch,
                 filter: filters,
-                showRelationships: false,
                 sort: sort || [],
             });
 
@@ -476,7 +474,6 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 ...searchBody.templates,
                 [relatedTemplateId]: {
                     filter: templateFilter,
-                    showRelationships: false,
                 },
             };
         });

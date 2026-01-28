@@ -1,21 +1,15 @@
 import { Grid } from '@mui/material';
-import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import { StepComponentProps } from '../../../../common/wizards';
 import { EntitiesTable } from '../../../../common/wizards/excel/excelSteps/EntitiesTable';
 import { ChartForm } from '../../../../interfaces/dashboard';
-import { IChildTemplateMap, IEntityTemplateMap } from '../../../../interfaces/template';
+import { IChildTemplateMap, IEntityTemplateMap, ITemplate } from '../../../../interfaces/template';
 import { useDebouncedFilter } from '../../../../utils/dashboard/useDebouncedFilter';
 import { ChartGenerator } from '../../../Charts/chartGenerator.tsx';
 
-export const getRelevantEntityTemplate = (
-    entityTemplates: IEntityTemplateMap,
-    templateId: string,
-    childTemplateId?: string,
-): IMongoChildTemplateWithConstraintsPopulated | IMongoEntityTemplateWithConstraintsPopulated => {
+export const getRelevantEntityTemplate = (entityTemplates: IEntityTemplateMap, templateId: string, childTemplateId?: string): ITemplate => {
     const queryClient = useQueryClient();
     const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 

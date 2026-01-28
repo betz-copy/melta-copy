@@ -49,9 +49,13 @@ const ManagePermissions: React.FC<{
         <>
             {(!(
                 mode === PermissionDialogMode.View &&
-                Object.entries(currentPermissions)
-                    .filter(([key]) => ![PermissionType.admin, PermissionType.instances].includes(key as PermissionType))
-                    .some(([_, perm]) => perm?.scope === PermissionScope.write)
+                Object.entries(currentPermissions).reduce(
+                    (hasWrite, [key, perm]) =>
+                        ![PermissionType.admin, PermissionType.instances].includes(key as PermissionType)
+                            ? hasWrite || perm?.scope === PermissionScope.write
+                            : hasWrite,
+                    false,
+                )
             ) ||
                 isAdmin) && (
                 <Box>

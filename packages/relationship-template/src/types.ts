@@ -1,3 +1,4 @@
+import { IMongoProps } from '@packages/common';
 import { IMongoEntityTemplateWithConstraintsPopulated, IRelationshipReference, ISearchBody } from '@packages/entity-template';
 
 export interface IRelationshipTemplate {
@@ -13,8 +14,6 @@ export interface IConvertToRelationshipField {
     displayFieldName: string;
     relationshipReference: IRelationshipReference;
 }
-
-import { IMongoProps } from '@packages/common';
 
 export interface IMongoRelationshipTemplate extends IRelationshipTemplate, IMongoProps {}
 

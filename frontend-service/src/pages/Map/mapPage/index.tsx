@@ -1,4 +1,3 @@
-/** biome-ignore-all lint/correctness/useExhaustiveDependencies: useEffects dependencies */
 import { CircleTwoTone as CircleIcon, Close, StraightenTwoTone as DistanceIcon, PentagonTwoTone as PolygonIcon } from '@mui/icons-material';
 import { Grid, ToggleButton, ToggleButtonGroup, useTheme } from '@mui/material';
 import { IEntity, IFilterOfField, ISearchEntitiesByLocationBody } from '@packages/entity';
@@ -127,10 +126,12 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
         setFilteredResults({ polygons: polygonsItems, coordinates: coordinatesItems });
     };
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: dependencies
     useEffect(() => applyFilterWithShapeSearch(autoSearch, listFields), [polygons, coordinates]);
 
     // useCesiumTooltip({ viewerRef, darkMode, entityTemplateMap, searchedEntitiesPolygons, filteredPolygons }); //TODO: tooltip for map entities
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: dependencies
     useEffect(() => {
         const animateCamera = () => {
             const viewer = viewerRef.current?.cesiumElement;

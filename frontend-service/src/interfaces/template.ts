@@ -10,6 +10,8 @@ import {
     PropertyFormat,
     PropertyType,
 } from '@packages/entity-template';
+import { IMongoPrintingTemplate } from '@packages/printing-template';
+import { IMongoProcessTemplateReviewerPopulated } from '@packages/process';
 import { IMongoRelationshipTemplatePopulated } from '@packages/relationship-template';
 import {
     CommonFormInputProperties,
@@ -25,6 +27,12 @@ export type IEntityTemplateMap = Map<string, IMongoEntityTemplateWithConstraints
 export type IChildTemplateMap = Map<string, IMongoChildTemplateWithConstraintsPopulated>;
 
 export type ITemplateMap = Map<string, ITemplate>;
+
+export type IRelationshipTemplateMap = Map<string, IMongoRelationshipTemplatePopulated>;
+
+export type IProcessTemplateMap = Map<string, IMongoProcessTemplateReviewerPopulated>;
+
+export type IPrintingTemplateMap = Map<string, IMongoPrintingTemplate>;
 
 export const emptyCategory: IMongoCategory = {
     _id: '',

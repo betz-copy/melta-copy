@@ -15,6 +15,7 @@ import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesSe
 const getActionMetadata = (entity: IEntity, disabled: boolean): IUpdateEntityStatusMetadataPopulated => {
     return { entity, disabled };
 };
+
 const UpdateStatusWithRuleBreachDialog: React.FC<{
     isLoadingUpdateEntity: boolean;
     handleClose: () => void;

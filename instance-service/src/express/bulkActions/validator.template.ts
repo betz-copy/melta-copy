@@ -1,5 +1,5 @@
-import { ActionErrors, ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata } from '@packages/action';
-import { IEntity, IPropertyValue } from '@packages/entity';
+import { ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata } from '@packages/action';
+import { ActionErrors, IEntity, IPropertyValue } from '@packages/entity';
 import { IMongoEntityTemplate } from '@packages/entity-template';
 import { CoordinateSystem } from '@packages/map';
 import { IMongoRelationshipTemplate } from '@packages/relationship-template';

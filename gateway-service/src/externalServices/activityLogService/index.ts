@@ -2,9 +2,7 @@ import { IMongoActivityLog } from '@packages/activity-log';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 
-const {
-    activityLogService: { url, requestTimeout, baseRoute },
-} = config;
+const { url, requestTimeout, baseRoute } = config.activityLogService;
 
 class ActivityLogService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {

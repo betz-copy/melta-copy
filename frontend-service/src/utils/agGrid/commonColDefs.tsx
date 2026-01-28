@@ -12,8 +12,8 @@ import {
 } from '@ag-grid-community/core';
 import { PriorityHigh } from '@mui/icons-material';
 import { Box, Grid, Tooltip, tooltipClasses } from '@mui/material';
-import { ActionErrors } from '@packages/action';
 import {
+    ActionErrors,
     IEntity,
     IExcelNotFoundError,
     IRelationshipRefNotFoundError,

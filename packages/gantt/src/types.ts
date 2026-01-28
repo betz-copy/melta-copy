@@ -1,3 +1,5 @@
+import { IMongoProps } from '@packages/common';
+
 export interface IGanttGroupBy {
     entityTemplateId: string;
     groupNameField: string; // must be unique
@@ -22,8 +24,6 @@ export interface IGantt {
     items: IGanttItem[];
     groupBy?: IGanttGroupBy;
 }
-
-import { IMongoProps } from '@packages/common';
 
 export interface IMongoGantt extends IGantt, IMongoProps {}
 

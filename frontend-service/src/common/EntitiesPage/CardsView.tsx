@@ -76,7 +76,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                                     skip: startRow,
                                     limit: infiniteScrollPageCount,
                                     textSearch: searchInput,
-                                    templates: Object.fromEntries(parentTemplates.map((t) => [t._id, { showRelationships: false }])),
+                                    templates: Object.fromEntries(parentTemplates.map((t) => [t._id, {}])),
                                     shouldSemanticSearch: convertToBool(urlSemanticSearch!),
                                 });
 
@@ -99,7 +99,6 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                                     textSearch: searchInput,
                                     templates: {
                                         [template.parentTemplate._id!]: {
-                                            showRelationships: false,
                                             filter,
                                             childTemplateId: template._id,
                                         },

@@ -10,7 +10,6 @@ import { EntityProperties } from '../../../common/EntityProperties';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
-import { ITemplate } from '../../../interfaces/template';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { getEntityTemplateColor } from '../../../utils/colors';

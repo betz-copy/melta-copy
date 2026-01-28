@@ -73,7 +73,7 @@ class FlowCubeManager extends DefaultManagerProxy<null> {
         let filter: ISearchEntitiesOfTemplateBody['filter'];
         if (filterAnd.length > 0) filter = { $and: filterAnd };
 
-        return { filter, limit: config.instanceService.searchEntitiesFlowMaxLimit, skip: 0, showRelationships: false, sort: [] };
+        return { filter, limit: config.instanceService.searchEntitiesFlowMaxLimit, skip: 0, sort: [] };
     }
 
     async searchFlowCube(

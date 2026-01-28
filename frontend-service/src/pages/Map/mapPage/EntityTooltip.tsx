@@ -1,4 +1,3 @@
-/** biome-ignore-all lint/correctness/useExhaustiveDependencies: useEffects dependencies */
 import { IEntity } from '@packages/entity';
 import * as Cesium from 'cesium';
 import i18next from 'i18next';
@@ -72,6 +71,7 @@ export const useCesiumTooltip = ({ viewerRef, darkMode, entityTemplateMap, searc
     const rootRef = useRef<Root | null>(null);
     const tooltipRef = useRef<HTMLDivElement | null>(null);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: dependencies
     useEffect(() => {
         const viewer = viewerRef.current?.cesiumElement;
         if (!viewer) return;

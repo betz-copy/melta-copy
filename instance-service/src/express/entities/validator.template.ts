@@ -1,5 +1,5 @@
-import { ActionErrors } from '@packages/action';
 import {
+    ActionErrors,
     FilterLogicalOperator,
     IFilterGroup,
     IFilterOfField,

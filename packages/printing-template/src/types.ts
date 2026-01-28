@@ -1,3 +1,4 @@
+import { IMongoProps } from '@packages/common';
 import { IMongoEntityTemplate } from '@packages/entity-template';
 import { IMongoRelationshipTemplate } from '@packages/relationship-template';
 
@@ -14,8 +15,6 @@ export interface IPrintingTemplate {
     addEntityCheckbox: boolean;
     appendSignatureField: boolean;
 }
-
-import { IMongoProps } from '@packages/common';
 
 export interface IMongoPrintingTemplate extends IPrintingTemplate, IMongoProps {}
 

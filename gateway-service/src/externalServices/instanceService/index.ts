@@ -142,7 +142,6 @@ class InstancesService extends DefaultExternalServiceApi {
         const { data } = await this.api.post<IEntityWithDirectRelationships[]>(`${baseEntitiesRoute}/get/multiple-select`, {
             ...searchBody,
             templateId,
-            showRelationships: false,
         });
 
         return data;

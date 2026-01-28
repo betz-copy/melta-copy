@@ -233,7 +233,7 @@ export const noOverlappingFlightsInTrip: IRule = {
                                 variableNameSuffix: '2',
                             },
                         },
-                        ruleOfGroup: 'OR',
+                        ruleOfGroup: Conjunction.OR,
                         subFormulas: [
                             {
                                 isEquation: true,

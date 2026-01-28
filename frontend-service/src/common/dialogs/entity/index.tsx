@@ -7,16 +7,7 @@ export const emptyEntityTemplate: IMongoEntityTemplateWithConstraintsPopulated =
     _id: '',
     displayName: '',
     name: '',
-    category: {
-        _id: '',
-        name: '',
-        displayName: '',
-        color: '',
-        templatesOrder: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        iconFileId: null,
-    },
+    category: emptyCategory,
     properties: {
         properties: {},
         required: [],

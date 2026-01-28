@@ -1,6 +1,5 @@
-import { ActionErrors } from '@packages/action';
 import { SplitBy } from '@packages/common';
-import { IEntity, IEntityExpanded, IEntityWithDirectRelationships, IPropertyValue } from '@packages/entity';
+import { ActionErrors, IEntity, IEntityExpanded, IEntityWithDirectRelationships, IPropertyValue } from '@packages/entity';
 import { mapConfig } from '@packages/map';
 import { IRelationship } from '@packages/relationship';
 import { ValidationError } from '@packages/utils';

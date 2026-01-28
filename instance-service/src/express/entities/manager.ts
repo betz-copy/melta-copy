@@ -2439,7 +2439,7 @@ class EntityManager extends DefaultManagerNeo4j {
         const specialProperties = handleChartPropertiesTemplate(entityTemplate);
 
         const chartPromises = chartsData.map(async ({ filter, xAxis, yAxis, _id }) => {
-            const templatesFilter = { [entityTemplate._id]: { filter, showRelationships: false } };
+            const templatesFilter = { [entityTemplate._id]: { filter } };
 
             const { cypherQuery: filterQuery, parameters } = templatesFilterToNeoQuery(templatesFilter, entityTemplatesMap);
             const query = buildChartAggregationQuery(xAxis, yAxis, specialProperties, entityTemplate, filterQuery);

@@ -1,3 +1,5 @@
+import { IMongoProps } from '@packages/common';
+
 export interface IFrame {
     name: string;
     url: string;
@@ -6,8 +8,6 @@ export interface IFrame {
     placeInSideBar?: boolean;
     usedInDashboard?: boolean;
 }
-
-import { IMongoProps } from '@packages/common';
 
 export interface IMongoIframe extends IFrame, IMongoProps {}
 

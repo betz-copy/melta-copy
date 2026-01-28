@@ -187,9 +187,7 @@ export const getEntityForRelationshipInfo = (
                 required: [],
                 type: 'object',
             },
-            category: {
-                ...emptyCategory,
-            },
+            category: emptyCategory,
             disabled: false,
             displayName: '---',
             name: '---',

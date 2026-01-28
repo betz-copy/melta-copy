@@ -1,6 +1,6 @@
 import { Grid } from '@mui/material';
 import { ICategoryMap, IMongoCategory } from '@packages/category';
-import { IMongoChildTemplatePopulated, IMongoChildTemplateWithConstraintsPopulated, TemplateItem } from '@packages/child-template';
+import { IMongoChildTemplateWithConstraintsPopulated, TemplateItem } from '@packages/child-template';
 import { IEntityTemplate, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import { AxiosError } from 'axios';
@@ -163,7 +163,7 @@ const EntityTemplatesRow: React.FC = () => {
                 } else {
                     const { entityTemplate, childTemplates } = data as {
                         entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
-                        childTemplates: IMongoChildTemplatePopulated[];
+                        childTemplates: IMongoChildTemplateWithConstraintsPopulated[];
                     };
 
                     queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>

@@ -21,7 +21,7 @@ import { ErrorToast } from '../../ErrorToast';
 import RelationshipTemplateAutocomplete from '../../inputs/RelationshipTemplateAutocomplete';
 import TemplateTableSelect from '../../inputs/TemplateTableSelect';
 import CreateWithRuleBreachDialog from './CreateWithRuleBreachDialog';
-import StretchableArrowRight from './strechableArrowRight';
+import StretchableArrowRight from './stretchableArrowRight';
 
 const { errorCodes } = environment;
 

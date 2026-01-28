@@ -38,7 +38,6 @@ const getFilteredInstances = async (
     const { count } = await instancesService.searchEntitiesOfTemplateRequest(entityTemplateId, {
         limit: 1,
         skip: 0,
-        showRelationships: false,
         sort: [],
     });
     const today = new Date();
@@ -65,7 +64,6 @@ const getFilteredInstances = async (
         limit: count,
         filter: { $or: dateNotificationFilterQuery },
         skip: 0,
-        showRelationships: false,
         sort: [],
     });
 

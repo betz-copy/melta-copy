@@ -117,11 +117,3 @@ export interface IActionPopulated {
     actionType: ActionTypes;
     actionMetadata: IActionMetadataPopulated;
 }
-
-export enum ActionErrors {
-    validation = 'VALIDATION',
-    unique = 'UNIQUE',
-    required = 'REQUIRED',
-    filterValidation = 'FILTER_VALIDATION',
-    notFound = 'NOT_FOUND',
-}

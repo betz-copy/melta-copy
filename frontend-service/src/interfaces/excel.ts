@@ -1,5 +1,5 @@
-import { ActionErrors, ActionTypes, IAction, IActionMetadataPopulated, ICreateEntityMetadata } from '@packages/action';
-import { IEntity, IPropertyValue, IRequiredConstraint, IUniqueConstraint, IUsersNotFoundError } from '@packages/entity';
+import { ActionTypes, IAction, IActionMetadataPopulated, ICreateEntityMetadata } from '@packages/action';
+import { ActionErrors, IEntity, IPropertyValue, IRequiredConstraint, IUniqueConstraint, IUsersNotFoundError } from '@packages/entity';
 import { IEntitySingleProperty } from '@packages/entity-template';
 import { IBrokenRule, IBrokenRulePopulated } from '@packages/rule-breach';
 import { IEntityWithIgnoredRules } from './entity';

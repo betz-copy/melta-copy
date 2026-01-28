@@ -1,8 +1,9 @@
-import { ActionErrors, ActionTypes, IAction, IActionMetadataPopulated, IActionPopulated, ICreateEntityMetadata } from '@packages/action';
+import { ActionTypes, IAction, IActionMetadataPopulated, IActionPopulated, ICreateEntityMetadata } from '@packages/action';
 import {
+    ActionErrors,
     IConnection,
     IEntity,
-    IExcelNotFoundError,
+    IFailedEntity,
     IPropertyValue,
     IRequiredConstraint,
     IUniqueConstraint,
@@ -206,16 +207,6 @@ export interface IError {
     type: ActionErrors;
     metadata: IValidationError | IUniqueConstraint | IRequiredConstraint;
 }
-
-export type IFailedEntityError = {
-    type: ActionErrors;
-    metadata: IValidationError | IUniqueConstraint | IRequiredConstraint | IExcelNotFoundError;
-};
-
-export type IFailedEntity = {
-    properties: Record<string, IPropertyValue>;
-    errors: IFailedEntityError[];
-};
 
 export type IBrokenRuleEntity = {
     rawBrokenRules: IBrokenRule[];

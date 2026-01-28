@@ -4,7 +4,7 @@ import { Box, Grid, Tab, Typography, useTheme } from '@mui/material';
 import { ICategoryMap } from '@packages/category';
 import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
 import { IEntityExpanded } from '@packages/entity';
-import { IMongoEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IRelationshipTemplateMap } from '@packages/relationship-template';
 import i18next from 'i18next';
 import { useEffect, useMemo, useState } from 'react';
@@ -15,7 +15,7 @@ import { ConnectionsTable } from './ConnectionsTable';
 import { RelationshipIcon } from './RelationshipIcon';
 
 interface EntityConnectionsProps {
-    currentEntityTemplate: IMongoEntityTemplatePopulated;
+    currentEntityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
     templateIds: string[];
     expandedEntity: IEntityExpanded;
     getButtonStateByRelatedTemplate: (relatedTemplate: IMongoEntityTemplateWithConstraintsPopulated) => {

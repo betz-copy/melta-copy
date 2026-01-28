@@ -345,7 +345,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
 
                             {entityTemplate.documentTemplatesIds?.length ? (
                                 <Grid>
-                                    {/* TODO: CHECK IF THIS IS CORRECT */}
                                     <ExportFormats
                                         properties={{ ...expandedEntity.entity.properties, disabled: isEntityDisabled }}
                                         documentTemplateIds={entityTemplate.documentTemplatesIds}

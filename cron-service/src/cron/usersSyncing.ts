@@ -55,7 +55,6 @@ const getAllEntitiesOfTemplates = async (templates: IMongoEntityTemplatePopulate
             const { count } = await instanceService.searchEntitiesOfTemplateRequest(template._id, {
                 limit: 1,
                 skip: 0,
-                showRelationships: false,
                 sort: [],
             });
 
@@ -64,7 +63,6 @@ const getAllEntitiesOfTemplates = async (templates: IMongoEntityTemplatePopulate
             const { entities: instances } = await instanceService.searchEntitiesOfTemplateRequest(template._id, {
                 limit: count,
                 skip: 0,
-                showRelationships: false,
                 sort: [],
             });
 

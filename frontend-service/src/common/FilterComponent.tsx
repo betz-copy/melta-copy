@@ -31,9 +31,7 @@ import { TextFilterInput } from './inputs/FilterInputs/TextFilterInput';
 import { FilterType, IAgGridFilter, IFilterTemplate } from './wizards/entityTemplate/commonInterfaces';
 import { FieldOption } from './wizards/entityTemplate/RelationshipReference/filterEntitiesByCriteria';
 
-const {
-    formats: { loggingDate, loggingDateTime },
-} = environment;
+const { loggingDate, loggingDateTime } = environment.formats;
 
 export const initializedFilterField: Record<string, IAgGridFilter> = {
     'date-time': { filterType: FilterTypes.date, type: BasicFilterOperationTypes.equals, dateFrom: null, dateTo: null },
