@@ -1,7 +1,7 @@
 import { ThemeProvider } from '@mui/material';
-import type { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
 import { StatusCodes } from 'http-status-codes';
-import type React from 'react';
+import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';

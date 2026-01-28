@@ -1,15 +1,14 @@
 /** biome-ignore-all lint/correctness/useExhaustiveDependencies: useEffects dependencies */
 import * as Cesium from 'cesium';
 import i18next from 'i18next';
-import type React from 'react';
-import { useEffect, useRef } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
+import React, { useEffect, useRef } from 'react';
+import { createRoot, Root } from 'react-dom/client';
 import { QueryClientProvider, useQueryClient } from 'react-query';
-import type { CesiumComponentRef } from 'resium';
+import { CesiumComponentRef } from 'resium';
 import { EntityPropertiesInternal } from '../../../common/EntityProperties';
-import type { IEntity } from '../../../interfaces/entities';
-import type { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import type { IPolygonSearchResult } from '../../../interfaces/location';
+import { IEntity } from '../../../interfaces/entities';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { IPolygonSearchResult } from '../../../interfaces/location';
 
 interface EntityTooltipProps {
     entity: IEntity;
