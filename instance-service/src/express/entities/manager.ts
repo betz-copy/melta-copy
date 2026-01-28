@@ -690,7 +690,7 @@ class EntityManager extends DefaultManagerNeo4j {
         return [mainAction, ...actionsOfUpdatedEntities];
     };
 
-    fixActions = (actions: IAction[], results: IEntity[]) => {
+    fixActions = (actions: IAction[], results: IEntity[]) =>
         actions.map((action, index) => {
             const { actionMetadata, actionType } = action;
 
@@ -722,7 +722,6 @@ class EntityManager extends DefaultManagerNeo4j {
 
             return action;
         });
-    };
     private async createEntityPipelineInTransaction(
         transaction: Transaction,
         properties: IEntity['properties'],
