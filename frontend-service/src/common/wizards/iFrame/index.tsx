@@ -38,21 +38,21 @@ const steps: StepType<IFrameWizardValues>[] = [
 export const updateIFramesOrderOnLocalStorage = (data: IMongoIFrame, queryClient: QueryClient) => {
     const iFramesOrder = localStorage.getItem('iFramesOrder');
 
-    let iFramesStored : string[];
+    let iFramesStored: string[];
     if (iFramesOrder) {
         try {
             iFramesStored = JSON.parse(iFramesOrder);
         } catch (error) {
-            iFramesStored=[];
-            console.warn("Failed to parse iFramesOrder from localStorage:", error);
+            iFramesStored = [];
+            console.warn('Failed to parse iFramesOrder from localStorage:', error);
         }
         const index = iFramesStored.indexOf(data._id);
 
         if (index === -1) {
             iFramesStored = [data._id, ...iFramesStored];
         }
-    } else  iFramesStored =[data._id];
-    
+    } else iFramesStored = [data._id];
+
     localStorage.setItem('iFramesOrder', JSON.stringify(iFramesStored));
     queryClient.setQueryData<IMongoIFrame[]>('allIFrames', (oldData) => {
         if (!oldData) {
@@ -86,7 +86,7 @@ const IFrameWizard: React.FC<IFrameWizardBaseType> = ({
         {
             onSuccess: async (data: IMongoIFrame) => {
                 queryClient.setQueryData(['getIFrame', data._id], data);
-                const iFramesStored =  updateIFramesOrderOnLocalStorage(data, queryClient);
+                const iFramesStored = updateIFramesOrderOnLocalStorage(data, queryClient);
                 setIFramesOrder(iFramesStored);
                 i18next.t(isEditMode ? 'wizard.iFrame.editedSuccessfully' : 'wizard.iFrame.createdSuccessfully');
                 handleClose();
