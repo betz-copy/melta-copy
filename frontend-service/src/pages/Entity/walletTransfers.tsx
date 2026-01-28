@@ -307,7 +307,6 @@ export const WalletTransfers = ({ templateId, connectionsTemplates, expandedEnti
             valueFormatter: (p) => p.value?.toLocaleString(),
         },
         {
-            headerName: i18next.t('entityPage.walletTransfer.actions'),
             width: 110,
             cellRenderer: memo<{ data: WalletTransferData }>(({ data }) => {
                 if (!data.template || Object.keys(data.template).length === 0) return null;
@@ -317,7 +316,7 @@ export const WalletTransfers = ({ templateId, connectionsTemplates, expandedEnti
                 const entityLink = `/entity/${entityId}${isChildTemplate(data.template) ? `?childTemplateId=${data.template._id}` : ''}`;
 
                 return (
-                    <Grid container flexWrap="nowrap" justifyContent="center">
+                    <Grid container flexWrap="nowrap" justifyContent="right" >
                         <Link href={entityLink} onClick={(e) => !hasPermissionToTemplate && e.preventDefault()}>
                             <IconButtonWithPopover
                                 popoverText={
