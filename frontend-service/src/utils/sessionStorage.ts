@@ -30,10 +30,14 @@ export class SessionStorage {
     }
 
     public static clearTableState(): void {
+        const keysToRemove: string[] = [];
         for (const key of Object.keys(sessionStorage)) {
             if (SessionStorage.TABLE_STATE_PREFIXES.some((prefix) => key.startsWith(prefix))) {
-                sessionStorage.removeItem(key);
+                keysToRemove.push(key);
             }
+        }
+        for (const key of keysToRemove) {
+            sessionStorage.removeItem(key);
         }
     }
 
