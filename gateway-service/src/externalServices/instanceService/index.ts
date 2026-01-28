@@ -81,7 +81,6 @@ class InstancesService extends DefaultExternalServiceApi {
         childTemplate?: { id: string; filter?: ISearchFilter },
         newDestWalletData?: IEntity,
     ) {
-        console.log('miaoooo');
 
         const { data } = await this.api.post<{ createdEntity: IEntity; actions?: IAction[]; emails?: IRuleMail[] }>(`${baseEntitiesRoute}`, {
             ...entity,
@@ -92,7 +91,6 @@ class InstancesService extends DefaultExternalServiceApi {
             newDestWalletData,
         });
         const fff = data;
-        console.log({ fff });
 
         return data;
     }

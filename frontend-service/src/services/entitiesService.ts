@@ -240,7 +240,6 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
         'properties',
         JSON.stringify(
             mapValues(entity.properties, (property, key) => {
-                console.log({ property, key, f: entity.template.properties.properties[key]?.format });
 
                 switch (entity.template.properties.properties[key]?.format) {
                     case 'relationshipReference':
@@ -278,7 +277,6 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
     if (isChildTemplate(entity.template)) formData.append('childTemplateId', entity.template._id);
 
     if (ignoredRules) formData.append('ignoredRules', JSON.stringify(ignoredRules));
-    console.log(...formData);
 
     const { data } = await axios.post<IEntity>(entities, formData);
     return data;

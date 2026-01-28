@@ -1041,18 +1041,14 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         createAlert: boolean = true,
     ) {
         const { templateId, properties, files: upserstedFiles } = await this.handlePreparationsBeforeCreateEntity(instanceData, files, serialNumbers);
-        console.log('before validateEntityProperties', { instanceData });
 
         await this.instanceUtils.validateEntityProperties(properties, templateId, userId, childTemplateId);
-        console.log('after validateEntityProperties');
 
         const childFilters = childTemplateId ? await this.instanceUtils.getChildFilters(childTemplateId, userId) : undefined;
 
         logger.info('createEntityInstance', { instanceData, files, ignoredRules, userId, serialNumbers, createAlert });
-        console.log('hello');
 
         const template = await this.entityTemplateService.getEntityTemplateById(instanceData.templateId);
-        console.log('byyy');
 
         if (template.walletTransfer) {
             await this.validateWalletTransferBeforeCreate(instanceData, template);
@@ -1062,9 +1058,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         if (template.walletTransfer) {
             newDestWalletData = await this.createNewDestWalletData(template, instanceData);
         }
-        console.log('after newDestWalletData');
 
-        console.dir({ properties }, { depth: null });
         const { createdEntity, actions, emails } = await this.service
             .createEntityInstance(
                 { properties, templateId },
@@ -1075,9 +1069,6 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 newDestWalletData,
             )
             .catch((err) => this.handleBrokenRulesError(err));
-
-        console.log('shirel lioraaaa');
-        console.dir({ createdEntity }, { depth: null });
 
         if (createAlert && ignoredRules.length) {
             await this.ruleBreachesManager.createRuleBreachAlert(
@@ -1093,16 +1084,12 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 userId,
             );
         } else await this.rabbitManager.indexFiles(createdEntity.templateId, createdEntity.properties._id, Object.values(upserstedFiles).flat());
-        console.log('(;efrat');
 
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(createdEntity.templateId);
-        console.log('efrat2');
 
         const newEntity = entityTemplate.walletTransfer
             ? await this.updateWalletsBalanceInTransfer(createdEntity, ignoredRules, userId, entityTemplate, childTemplateId)
             : createdEntity;
-        console.dir({ newEntity }, { depth: null });
-
         if (emails?.length) this.sendIndicatorRuleEmailForCreation(newEntity, userId, emails);
 
         return { ...newEntity, childTemplateId };

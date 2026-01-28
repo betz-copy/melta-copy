@@ -314,11 +314,9 @@ class EntityManager extends DefaultManagerNeo4j {
             Object.entries(entityTemplate.properties.properties).map(async ([name, property]) => {
                 if (property.format === 'relationshipReference') {
                     const relatedEntityId = properties[name];
-                    console.log({ property, name, relatedEntityId });
 
                     if (relatedEntityId) {
                         const { fixedField, relatedEntity } = await this.fixRelationshipReferenceField(relatedEntityId, transaction);
-                        console.log({ fixedField, relatedEntity });
 
                         fixedProperties[name] = fixedField;
 
@@ -337,7 +335,6 @@ class EntityManager extends DefaultManagerNeo4j {
                 }
             }),
         );
-        console.log({ fixedProperties, relatedEntitiesByIds });
 
         const createdEntity = await runInTransactionAndNormalize(
             transaction,
@@ -800,7 +797,6 @@ class EntityManager extends DefaultManagerNeo4j {
             childTemplate = await this.childTemplateManagerService.getChildTemplateById(childTemplateId);
             template = { ...entityTemplate, actions: childTemplate.actions };
         }
-        console.dir({ template, childTemplateId, newDestWalletData }, { depth: null });
         return this.neo4jClient
             .performComplexTransaction('writeTransaction', async (transaction) => {
                 const allActivityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
@@ -830,7 +826,6 @@ class EntityManager extends DefaultManagerNeo4j {
                     if (destWalletResult.activityLogsToCreate) allActivityLogsToCreate.push(...destWalletResult.activityLogsToCreate);
                     properties[template.walletTransfer.to] = newDestWallet?.properties._id;
                 }
-                console.log('before createEntityPipelineInTransaction');
 
                 const entityResult = await this.createEntityPipelineInTransaction(
                     transaction,
@@ -842,18 +837,11 @@ class EntityManager extends DefaultManagerNeo4j {
                     newDestWallet,
                     ignoredRules,
                 );
-                console.log('after createEntityPipelineInTransaction');
-                console.dir({ entityResult }, { depth: null });
                 if (entityResult.activityLogsToCreate) {
                     allActivityLogsToCreate.push(...entityResult.activityLogsToCreate);
                 }
 
                 await Promise.all(allActivityLogsToCreate.map((l) => this.activityLogProducer.createActivityLog(l)));
-                console.log('after activityLogProducer', {
-                    createdEntity: entityResult.createdEntity,
-                    emails: [...(destWalletResult?.emails ?? []), ...entityResult.emails],
-                    actions: entityResult.actions,
-                });
 
                 return {
                     createdEntity: entityResult.createdEntity,
