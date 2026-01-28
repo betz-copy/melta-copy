@@ -81,7 +81,6 @@ class InstancesService extends DefaultExternalServiceApi {
         childTemplate?: { id: string; filter?: ISearchFilter },
         newDestWalletData?: IEntity,
     ) {
-
         const { data } = await this.api.post<{ createdEntity: IEntity; actions?: IAction[]; emails?: IRuleMail[] }>(`${baseEntitiesRoute}`, {
             ...entity,
             ignoredRules,
@@ -90,7 +89,6 @@ class InstancesService extends DefaultExternalServiceApi {
             childTemplate,
             newDestWalletData,
         });
-        const fff = data;
 
         return data;
     }
