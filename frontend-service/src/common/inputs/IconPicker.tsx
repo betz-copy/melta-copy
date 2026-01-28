@@ -114,7 +114,7 @@ const IconPicker: React.FC<IconPickerProps> = ({ width, height, iconsPerPage, se
                     {displayedIcons.slice(displayIndex, displayIndex + iconsPerPage).map(([name, icon]) => (
                         <IconButton key={name} value={name} onClick={handleIconClick}>
                             {React.createElement(icon as React.ElementType, {
-                                style: { color: color || darkMode ? 'white' : 'black', fontSize: '1.55rem' },
+                                style: { color: color ?? (darkMode ? 'white' : 'black'), fontSize: '1.55rem' },
                             })}
                         </IconButton>
                     ))}

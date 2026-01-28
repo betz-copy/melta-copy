@@ -101,7 +101,7 @@ const Tree = <T extends {}>({
             <TreeItem
                 {...props}
                 removeDivider={removeDivider}
-                node={getItemById(props.itemId) || {}}
+                node={getItemById(props.itemId) ?? {}}
                 showIcon={showIcon}
                 // biome-ignore lint/suspicious/noExplicitAny: blame Itay
                 getStyles={getStyles as any}

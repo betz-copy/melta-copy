@@ -34,7 +34,7 @@ const UserInfoCard: React.FC<IUserInfoCardProps> = ({
     const theme = useTheme();
 
     const usersInfoTemplate = usersInfoChildTemplate.parentTemplate;
-    const entityTemplateColor = getEntityTemplateColor(usersInfoTemplate as ITemplate);
+    const entityTemplateColor = getEntityTemplateColor(usersInfoTemplate);
     const { height, width } = workspace!.metadata!.iconSize!;
 
     return (
