@@ -15,6 +15,7 @@ import { useDarkModeStore } from './stores/darkMode';
 import { darkTheme, lightTheme } from './theme';
 import './utils/agGrid';
 import './utils/cesiumLicense';
+import { environment } from './globals';
 
 if (import.meta.hot) {
     import.meta.hot.on('vite:beforeUpdate', () => console.clear());
@@ -54,9 +55,7 @@ const Index: React.FC = () => {
                     newestOnTop
                 />
             </ThemeProvider>
-            {import.meta.env.DEV && (
-                <ReactQueryDevtools />
-            )}
+            {environment.isDev && <ReactQueryDevtools />}
             <MuiXLicense />
         </QueryClientProvider>
     );
