@@ -2,6 +2,7 @@ import { logger } from '@microservices/shared';
 import http from 'http';
 import OpenAI from 'openai';
 import config from '../config';
+import { OpenAIError } from '../express/semantics/errors';
 
 // Effective base URL with IP substitution for Docker networking
 const effectiveBaseUrl = (config.openai.baseUrl || '').replace('host.docker.internal', '172.17.0.1');
@@ -40,7 +41,7 @@ export async function generateSummary(text: string, maxLength: number = 500): Pr
                 { role: 'system', content: systemPrompt },
                 {
                     role: 'user',
-                    content: `Summarize the following text (approx ${maxLength} words). If it contains multiple documents, combine their insights:\n\n${truncatedText}`,
+                    content: config.openai.userPrompt.replace('{{maxLength}}', String(maxLength)).replace('{{text}}', truncatedText),
                 },
             ],
             temperature: config.openai.temperature,
@@ -50,8 +51,157 @@ export async function generateSummary(text: string, maxLength: number = 500): Pr
     } catch (error) {
         logger.error('[generateSummary] OpenAI request failed', error);
         if (error instanceof Error) {
-            throw new Error(`OpenAI summarization failed: ${error.message}`);
+            throw new OpenAIError(`OpenAI summarization failed: ${error.message}`);
         }
-        throw new Error('OpenAI summarization failed: Unknown error');
+        throw new OpenAIError('OpenAI summarization failed: Unknown error');
+    }
+}
+
+export interface IEvaluationResult {
+    grades: {
+        accuracy: number;
+        completeness: number;
+        clarity: number;
+    };
+    hallucinations: string[];
+    missingInfo: string;
+}
+
+export interface IValidationResult {
+    isValid: boolean;
+    detectedIssues: string;
+}
+
+/**
+ * Evaluates the summary for content accuracy against the original text.
+ */
+export async function evaluateSummary(originalText: string, summary: string): Promise<IEvaluationResult> {
+    try {
+        const response = await openai.chat.completions.create({
+            model: config.openai.evaluatorModel,
+            messages: [
+                {
+                    role: 'system',
+                    content: config.openai.evaluatorSystemPrompt,
+                },
+                {
+                    role: 'user',
+                    content: config.openai.evaluatorUserPrompt.replace('{{originalText}}', originalText).replace('{{summary}}', summary),
+                },
+            ],
+            temperature: config.openai.evaluatorTemperature, // Lower temperature for evaluation
+            response_format: { type: 'json_object' },
+        });
+
+        const content = response.choices[0]?.message?.content?.trim();
+        if (!content) throw new OpenAIError('Empty response from evaluator');
+
+        return JSON.parse(content) as IEvaluationResult;
+    } catch (error) {
+        logger.error('[evaluateSummary] Evaluation failed', error);
+        // Fallback: Return low grades to force refinement if possible, or handle strictly
+        return {
+            grades: { accuracy: 0, completeness: 0, clarity: 0 },
+            hallucinations: [],
+            missingInfo: 'Error during evaluation',
+        };
+    }
+}
+
+/**
+ * Validates that the summary follows strict language compliance rules.
+ */
+export async function validateLanguage(summary: string): Promise<IValidationResult> {
+    try {
+        const response = await openai.chat.completions.create({
+            model: config.openai.validatorModel,
+            messages: [
+                {
+                    role: 'system',
+                    content: config.openai.validatorSystemPrompt,
+                },
+                {
+                    role: 'user',
+                    content: config.openai.validatorUserPrompt.replace('{{summary}}', summary),
+                },
+            ],
+            temperature: config.openai.validatorTemperature,
+            response_format: { type: 'json_object' },
+        });
+
+        const content = response.choices[0]?.message?.content?.trim();
+        if (!content) throw new OpenAIError('Empty response from validator');
+
+        const result = JSON.parse(content) as IValidationResult;
+
+        // Explicit strict check for foreign characters (Cyrillic, CJK)
+        // Cyrillic: \u0400-\u04FF, CJK Unified Ideographs: \u4E00-\u9FFF
+        const foreignCharsRegex = /[\u0400-\u04FF\u4E00-\u9FFF]/;
+        if (foreignCharsRegex.test(summary)) {
+            result.isValid = false;
+            result.detectedIssues =
+                result.detectedIssues && result.detectedIssues !== 'None'
+                    ? `${result.detectedIssues}. Detected foreign characters (Cyrillic/Asian).`
+                    : 'Detected foreign characters (Cyrillic/Asian).';
+        }
+
+        return result;
+    } catch (error) {
+        logger.error('[validateLanguage] Validation failed', error);
+        return { isValid: true, detectedIssues: 'Error during validation' };
+    }
+}
+
+/**
+ * Refines the summary based on the evaluation and validation feedback.
+ */
+export async function refineSummary(
+    originalText: string,
+    currentSummary: string,
+    evaluation: IEvaluationResult,
+    validation: IValidationResult,
+): Promise<string> {
+    try {
+        const feedback: string[] = [];
+
+        // Add feedback based on grades
+        if (evaluation.grades.accuracy < 5) feedback.push(`Accuracy needs improvement (Score: ${evaluation.grades.accuracy}/5).`);
+        if (evaluation.grades.completeness < 5) feedback.push(`Completeness needs improvement (Score: ${evaluation.grades.completeness}/5).`);
+        if (evaluation.grades.clarity < 5) feedback.push(`Clarity needs improvement (Score: ${evaluation.grades.clarity}/5).`);
+
+        if (evaluation.hallucinations.length > 0) {
+            feedback.push(`Hallucinations detected: ${evaluation.hallucinations.join(', ')}`);
+        }
+        if (evaluation.missingInfo && evaluation.missingInfo !== 'None') {
+            feedback.push(`Missing Info: ${evaluation.missingInfo}`);
+        }
+        if (!validation.isValid) {
+            feedback.push(`Language Issues: ${validation.detectedIssues}`);
+        }
+
+        const feedbackText = feedback.join('\n');
+
+        const response = await openai.chat.completions.create({
+            model: config.openai.refinerModel,
+            messages: [
+                {
+                    role: 'system',
+                    content: config.openai.refinerSystemPrompt,
+                },
+                {
+                    role: 'user',
+                    content: config.openai.refinerUserPrompt
+                        .replace('{{originalText}}', originalText)
+                        .replace('{{currentSummary}}', currentSummary)
+                        .replace('{{feedback}}', feedbackText),
+                },
+            ],
+            temperature: config.openai.refinerTemperature,
+        });
+
+        return response.choices[0]?.message?.content?.trim() || currentSummary;
+    } catch (error) {
+        logger.error('[refineSummary] Refinement failed', error);
+        return currentSummary; // Fallback to original
     }
 }

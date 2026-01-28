@@ -50,6 +50,9 @@ export const defaultMetadata: IMetadata = {
     },
     numOfRelationshipFieldsToShow: 2,
     twinTemplates: [] as string[],
+    aiSummary: {
+        enabled: false,
+    },
 } as const;
 
 export const useWorkspaceStore = create<WorkspaceState>((set) => ({

@@ -334,20 +334,22 @@ const TemplateTable = forwardRef<
                             icon={<BarChart fontSize="small" />}
                             text={i18next.t('pages.charts')}
                         />
-                        <TableButton
-                            iconButtonWithPopoverProps={{
-                                popoverText: i18next.t('actions.aiSummary'),
-                                iconButtonProps: {
-                                    onClick: () => {
-                                        setAiSummarySelectMode(!aiSummarySelectMode);
-                                        setMultipleSelect(!aiSummarySelectMode);
-                                        if (!isExpand && !aiSummarySelectMode) setIsExpand(true);
+                        {workspace.metadata.aiSummary?.enabled && (
+                            <TableButton
+                                iconButtonWithPopoverProps={{
+                                    popoverText: i18next.t('actions.aiSummary'),
+                                    iconButtonProps: {
+                                        onClick: () => {
+                                            setAiSummarySelectMode(!aiSummarySelectMode);
+                                            setMultipleSelect(!aiSummarySelectMode);
+                                            if (!isExpand && !aiSummarySelectMode) setIsExpand(true);
+                                        },
                                     },
-                                },
-                            }}
-                            icon={<AutoAwesome fontSize="small" />}
-                            text={i18next.t('actions.aiSummary')}
-                        />
+                                }}
+                                icon={<AutoAwesome fontSize="small" />}
+                                text={i18next.t('actions.aiSummary')}
+                            />
+                        )}
                     </Grid>
 
                     <Grid container>

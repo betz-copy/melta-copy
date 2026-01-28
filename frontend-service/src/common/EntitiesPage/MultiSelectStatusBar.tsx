@@ -18,6 +18,7 @@ import { BackendConfigState } from '../../services/backendConfigService';
 import { deleteEntityRequest, updateMultipleEntitiesRequest } from '../../services/entitiesService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { filterModelToFilterOfTemplate } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
 import { filterFieldsFromPropertiesSchema, pickOnlyGivenFields } from '../../utils/pickFieldsPropertiesSchema';
@@ -64,6 +65,9 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({
     const theme = useTheme();
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const { deleteEntitiesLimit } = queryClient.getQueryData<BackendConfigState>('getBackendConfig')!;
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
+    const isAiSummaryEnabled = workspace.metadata.aiSummary?.enabled;
 
     const parentTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;
 
@@ -375,7 +379,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({
                     </Grid>
                 )}
 
-                {aiSummarySelectMode && (
+                {aiSummarySelectMode && isAiSummaryEnabled && (
                     <Grid>
                         <IconButton
                             style={{
