@@ -323,10 +323,7 @@ services:
       - 8015:8000
     <<: *common
 
-  ai-summary-service:
-    ports:
-      - 8018:8000
-    <<: *common
+
 
 volumes:
   elastic_data:

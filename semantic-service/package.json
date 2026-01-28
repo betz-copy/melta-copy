@@ -12,21 +12,26 @@
         "clean": "rimraf dist"
     },
     "dependencies": {
-        "@microservices/shared": "^1.0.0",
         "@elastic/elasticsearch": "^8.15.1",
+        "@microservices/shared": "^1.0.0",
+        "env-var": "^7.5.0",
         "exceljs": "^4.4.0",
+        "http-status-codes": "^2.3.0",
+        "joi": "^18.0.1",
         "jszip": "^3.10.1",
         "llm-chunk": "^0.0.1",
         "mammoth": "^1.8.0",
-        "menashmq": "^0.1.6",
         "minio": "^8.0.1",
+        "multer": "^1.4.5-lts.1",
+        "openai": "^4.56.0",
         "pdf-parse": "^1.1.1",
         "textract": "^2.5.0",
         "xml2js": "^0.6.2"
     },
     "devDependencies": {
-        "@types/textract": "^2.4.5",
+        "@types/multer": "^1.4.11",
         "@types/pdf-parse": "^1.1.4",
+        "@types/textract": "^2.4.5",
         "@types/xml2js": "^0.4.14"
     },
     "author": "",

@@ -1,15 +1,37 @@
-import { createController, ValidateRequest } from '@microservices/shared';
+import { ValidateRequest, wrapController } from '@microservices/shared';
 import { Router } from 'express';
+import multer from 'multer';
+import config from '../../config';
 import SemanticController from './controller';
-import { rerank, search } from './validator.schema';
+import { summarizeRequestSchema } from './validator.schema';
 
 const semanticRouter: Router = Router();
 
-const controller = createController(SemanticController);
+const ALLOWED_MIMETYPES = [
+    'application/pdf',
+    'application/msword', // .doc
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+];
 
-semanticRouter.post('/search', ValidateRequest(search), controller.search);
-semanticRouter.post('/rerank', ValidateRequest(rerank), controller.rerank);
-semanticRouter.post('/createIndex', controller.createIndex);
-semanticRouter.post('/deleteIndex', controller.deleteIndex);
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+        fileSize: config.service.maxRequestSize,
+    },
+    fileFilter: (_req, file, cb) => {
+        if (ALLOWED_MIMETYPES.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only PDF and DOC/DOCX files are allowed'));
+        }
+    },
+});
+
+semanticRouter.post(
+    '/summarize',
+    upload.array('files', config.service.maxUploadFiles),
+    ValidateRequest(summarizeRequestSchema),
+    wrapController(SemanticController.summarize),
+);
 
 export default semanticRouter;

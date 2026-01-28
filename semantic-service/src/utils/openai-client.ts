@@ -1,12 +1,22 @@
+import { logger } from '@microservices/shared';
+import http from 'http';
 import OpenAI from 'openai';
 import config from '../config';
 
-// Initialize OpenAI client
-// If openaiBaseUrl is provided (e.g. for Ollama), it will use that.
-// Otherwise it defaults to OpenAI's standard API.
+// Effective base URL with IP substitution for Docker networking
+const effectiveBaseUrl = (config.openai.baseUrl || '').replace('host.docker.internal', '172.17.0.1');
+
+// Custom HTTP agent with keep-alive disabled to avoid connection pooling issues
+const httpAgent = new http.Agent({
+    keepAlive: false,
+});
+
+// Initialize OpenAI client with custom configuration
 const openai = new OpenAI({
-    apiKey: config.openai.apiKey || 'dummy-key', // Local servers often need a non-empty key
-    baseURL: config.openai.baseUrl,
+    apiKey: config.openai.apiKey || 'dummy-key',
+    baseURL: effectiveBaseUrl,
+    timeout: config.openai.timeout, // client-level timeout for LLM inference
+    httpAgent: httpAgent,
 });
 
 /**
@@ -18,21 +28,10 @@ const openai = new OpenAI({
  */
 export async function generateSummary(text: string, maxLength: number = 500): Promise<string> {
     // Truncate text if it's extremely long to avoid context window issues
-    // GPT-4o has 128k context, local models might be 32k or 8k.
-    // 32k tokens is roughly 120,000 chars. Let's be safe with 100k chars ~ 25k tokens.
-    const maxInputChars = 100000;
+    const maxInputChars = config.openai.maxInputChars;
     const truncatedText = text.length > maxInputChars ? text.substring(0, maxInputChars) + '...[truncated]' : text;
 
-    const systemPrompt = `You are a professional document summarizer.
-**STRICT LANGUAGE RULES**:
-1. Check the language of the source text.
-2. The summary MUST be written **exclusively** in that same language.
-3. If the input is Hebrew, use **ONLY** Hebrew letters (and standard numbers/punctuation). Do NOT output Cyrillic, Chinese, or Arabic characters.
-4. If the input is English, use ONLY English.
-**SYNTHESIS RULES**:
-- Combine information from all provided document partitions into one cohesive narrative.
-- Ignore "--- Document X ---" separators in the output summary.
-- Be concise and factual.`;
+    const systemPrompt = config.openai.systemPrompt;
 
     try {
         const response = await openai.chat.completions.create({
@@ -44,11 +43,12 @@ export async function generateSummary(text: string, maxLength: number = 500): Pr
                     content: `Summarize the following text (approx ${maxLength} words). If it contains multiple documents, combine their insights:\n\n${truncatedText}`,
                 },
             ],
-            temperature: 0.3,
+            temperature: config.openai.temperature,
         });
 
         return response.choices[0]?.message?.content?.trim() || 'No summary generated.';
     } catch (error) {
+        logger.error('[generateSummary] OpenAI request failed', error);
         if (error instanceof Error) {
             throw new Error(`OpenAI summarization failed: ${error.message}`);
         }

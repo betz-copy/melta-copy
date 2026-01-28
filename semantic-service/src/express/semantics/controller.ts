@@ -1,26 +1,13 @@
 import { Request, Response } from 'express';
-import DefaultController from '../../utils/express/controller';
 import SemanticManager from './manager';
 
-class SemanticController extends DefaultController {
-    constructor(workspaceId: string) {
-        super(new SemanticManager(workspaceId));
-    }
+class SemanticController {
+    static async summarize(req: Request, res: Response) {
+        const files = req.files as Express.Multer.File[];
+        const maxLength = req.body?.maxLength ? parseInt(req.body.maxLength, 10) : 50;
 
-    async search(req: Request, res: Response) {
-        res.json(await this.manager.search(req.body));
-    }
-
-    async rerank(req: Request, res: Response) {
-        res.json(await this.manager.rerank(req.body));
-    }
-
-    async createIndex(_req: Request, res: Response) {
-        res.json(await this.manager.createIndex());
-    }
-
-    async deleteIndex(_req: Request, res: Response) {
-        res.json(await this.manager.deleteIndex());
+        const result = await SemanticManager.summarizeFiles(files, maxLength);
+        res.json(result);
     }
 }
 

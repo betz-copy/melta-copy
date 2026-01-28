@@ -18,13 +18,14 @@ import {
 } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
-import { useMutation } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import axios from '../../axios';
 import { environment } from '../../globals';
 import { IChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IAISummaryResponse, summarizeFilesRequest } from '../../services/aiSummaryService';
+import { BackendConfigState } from '../../services/backendConfigService';
 import { getFileName } from '../../utils/getFileName';
 
 interface AISummaryDialogProps {
@@ -49,6 +50,7 @@ export const AISummaryDialog: React.FC<AISummaryDialogProps> = ({ open, handleCl
     const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
     const [availableFiles, setAvailableFiles] = useState<IFileOption[]>([]);
     const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
+    const queryClient = useQueryClient();
 
     useEffect(() => {
         if (open) {
@@ -139,7 +141,8 @@ export const AISummaryDialog: React.FC<AISummaryDialogProps> = ({ open, handleCl
                 throw new Error(i18next.t('errors.noPdfFilesFound'));
             }
 
-            return summarizeFilesRequest(filesToProcess);
+            const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
+            return summarizeFilesRequest(filesToProcess, config?.aiSummaryRequestTimeout);
         },
         {
             onSuccess: (data: IAISummaryResponse) => {

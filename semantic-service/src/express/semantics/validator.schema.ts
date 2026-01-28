@@ -1,23 +1,15 @@
 import * as joi from 'joi';
+import config from '../../config';
 
-// POST /api/semantic/search
-export const search = joi.object({
+// POST /api/semantic/summarize
+export const summarizeRequestSchema = joi.object({
     query: {},
     body: joi.object({
-        textSearch: joi.string().required(),
-        limit: joi.number().default(12),
-        skip: joi.number().default(0),
-        templates: joi.array().items(joi.string()).required(),
-    }),
-    params: {},
-});
-
-// POST /api/semantic/rerank
-export const rerank = joi.object({
-    query: {},
-    body: joi.object({
-        query: joi.string().required(),
-        texts: joi.array().items(joi.string()).required(),
+        maxLength: joi
+            .number()
+            .min(config.summarization.maxLengthMin)
+            .max(config.summarization.maxLengthMax)
+            .default(config.summarization.maxLengthDefault),
     }),
     params: {},
 });

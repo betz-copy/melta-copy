@@ -20,13 +20,16 @@
         "busboy": "^1.6.0",
         "colorspace": "^1.1.4",
         "glob": "^11.0.0",
+        "joi": "^18.0.1",
         "jszip": "^3.10.1",
         "menashmq": "^0.1.6",
         "minio": "^8.0.1",
-        "readable-stream-clone": "^1.0.0"
+        "readable-stream-clone": "^1.0.0",
+        "uuid": "^10.0.0"
     },
     "devDependencies": {
         "@types/amqplib": "^0.10.5",
-        "@types/busboy": "^1.5.4"
+        "@types/busboy": "^1.5.4",
+        "@types/uuid": "^10.0.0"
     }
 }

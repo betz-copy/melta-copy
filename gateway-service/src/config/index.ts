@@ -221,7 +221,7 @@ const config = {
     aiSummaryService: {
         url: env.get('AI_SUMMARY_SERVICE_URL').default('http://ai-summary-service:8000').asString(),
         baseRoute: env.get('AI_SUMMARY_SERVICE_BASE_ROUTE').default('/api/ai-summary').asString(),
-        requestTimeout: env.get('AI_SUMMARY_SERVICE_REQUEST_TIMEOUT').default(60000).asIntPositive(),
+        requestTimeout: env.get('AI_SUMMARY_SERVICE_REQUEST_TIMEOUT').default(180000).asIntPositive(), // 3 minutes for LLM inference
     },
     getUsersLimitForPermissionsOfUsers: env.get('GET_USERS_LIMIT_FOR_PERMISSIONS_OF_USERS').default(20).asIntPositive(),
     kartoffel: {

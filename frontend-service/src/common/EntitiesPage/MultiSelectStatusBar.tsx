@@ -1,6 +1,6 @@
 import { IServerSideSelectionState, IStatusPanelParams } from '@ag-grid-community/core';
 import { CheckCircle, Delete, Edit } from '@mui/icons-material';
-import { Box, CircularProgress, Grid, Typography } from '@mui/material';
+import { Box, CircularProgress, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
@@ -61,6 +61,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({
     });
 
     const queryClient = useQueryClient();
+    const theme = useTheme();
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const { deleteEntitiesLimit } = queryClient.getQueryData<BackendConfigState>('getBackendConfig')!;
 
@@ -328,11 +329,39 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({
             <Grid container spacing={2} alignItems="center">
                 {!aiSummarySelectMode && (
                     <Grid>
+                        <IconButton
+                            style={{
+                                background: theme.palette.primary.main,
+                                borderRadius: '7px',
+                                width: '135px',
+                                height: '35px',
+                                marginTop: '6px',
+                                opacity: selectedRowCount === 0 || selectedRowCount >= deleteEntitiesLimit ? 0.5 : 1,
+                            }}
+                            onClick={() => {
+                                setOpenEditDialog(true);
+                                setAiSummaryDialogOpen(false);
+                            }}
+                            disabled={selectedRowCount === 0 || selectedRowCount >= deleteEntitiesLimit}
+                        >
+                            {isDeleteLoading ? <CircularProgress size="24px" sx={{ color: 'white' }} /> : <Edit fontSize="small" htmlColor="white" />}
+                            <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>
+                                {i18next.t('actions.edit')}
+                            </Typography>
+                        </IconButton>
+                    </Grid>
+                )}
+
+                {!aiSummarySelectMode && (
+                    <Grid>
                         <TableButton
                             iconButtonWithPopoverProps={{
                                 popoverText: i18next.t(`entitiesTableOfTemplate.deleteWithRelationship${workspaceAdmin ? 'Reference' : ''}Warn`),
                                 iconButtonProps: {
-                                    onClick: () => setOpenDeleteDialog(true),
+                                    onClick: () => {
+                                        setOpenDeleteDialog(true);
+                                        setAiSummaryDialogOpen(false);
+                                    },
                                     sx: {
                                         fontSize: '15px',
                                         marginTop: '6px',
@@ -346,43 +375,31 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({
                     </Grid>
                 )}
 
-                {!aiSummarySelectMode && (
+                {aiSummarySelectMode && (
                     <Grid>
-                        <TableButton
-                            iconButtonWithPopoverProps={{
-                                popoverText: i18next.t('actions.edit'),
-                                iconButtonProps: {
-                                    onClick: () => setOpenEditDialog(true),
-                                    sx: {
-                                        fontSize: '15px',
-                                        marginTop: '6px',
-                                    },
-                                },
+                        <IconButton
+                            style={{
+                                background: theme.palette.primary.main,
+                                borderRadius: '7px',
+                                width: '135px',
+                                height: '35px',
+                                marginTop: '6px',
+                                opacity: selectedRowCount === 0 ? 0.5 : 1,
                             }}
-                            icon={isDeleteLoading ? <CircularProgress /> : <Edit fontSize="small" />}
-                            text={i18next.t('actions.edit')}
-                            disableButton={selectedRowCount === 0 || selectedRowCount >= deleteEntitiesLimit}
-                        />
+                            onClick={() => {
+                                setAiSummaryDialogOpen(true);
+                                setOpenEditDialog(false);
+                                setOpenDeleteDialog(false);
+                            }}
+                            disabled={selectedRowCount === 0}
+                        >
+                            <CheckCircle fontSize="small" htmlColor="white" />
+                            <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>
+                                {i18next.t('actions.summarize')}
+                            </Typography>
+                        </IconButton>
                     </Grid>
                 )}
-
-                <Grid>
-                    <TableButton
-                        iconButtonWithPopoverProps={{
-                            popoverText: i18next.t('actions.aiSummary'),
-                            iconButtonProps: {
-                                onClick: () => setAiSummaryDialogOpen(true),
-                                sx: {
-                                    fontSize: '15px',
-                                    marginTop: '6px',
-                                },
-                            },
-                        }}
-                        icon={<CheckCircle fontSize="small" />}
-                        text={i18next.t('actions.summarize')}
-                        disableButton={selectedRowCount === 0}
-                    />
-                </Grid>
 
                 {selectedRowCount >= deleteEntitiesLimit && (
                     <Grid>

@@ -1,71 +1,58 @@
-import { IRerankRequest, logger } from '@microservices/shared';
-import config from '../../config';
-import ModelEmbeddingApiService from '../../externalServices/model/embedding';
-import ModelRerankingApiService from '../../externalServices/model/reranking';
-import ElasticClient from '../../utils/elastic';
-import { splitTextIntoChunks } from '../../utils/fs';
-import MinIOClient from '../../utils/minio/minioClient';
-import { IIndexFilesRequest, ISearchRequest } from './interface';
-
-const {
-    consts: { fileIdLength },
-    minio: { useDevBucket, devBucketPrefix },
-} = config;
+import { logger } from '@microservices/shared';
+import path from 'path';
+import { extractTextFromDoc } from '../../utils/doc-extractor';
+import { generateSummary } from '../../utils/openai-client';
+import { extractTextFromPdf } from '../../utils/pdf-extractor';
+import { NoFilesError } from './errors';
+import { ISummarizeResult } from './interface';
 
 export class SemanticManager {
-    workspaceId: string;
-
-    elasticClient: ElasticClient;
-
-    minioClient: MinIOClient;
-
-    constructor(workspaceId: string) {
-        this.workspaceId = workspaceId;
-        this.elasticClient = new ElasticClient(workspaceId);
-
-        const fixedBucketName = `${useDevBucket ? devBucketPrefix : ''}${workspaceId}`;
-        this.minioClient = new MinIOClient(fixedBucketName);
-    }
-
-    public async search(searchBody: ISearchRequest) {
-        const embeddedQuery = await ModelEmbeddingApiService.embed([searchBody.textSearch]);
-
-        return this.elasticClient.hybridSearch(searchBody.textSearch, embeddedQuery[0], searchBody.limit, searchBody.skip, searchBody.templates);
-    }
-
-    public async rerank(searchBody: IRerankRequest) {
-        return ModelRerankingApiService.rerank(searchBody);
-    }
-
-    public createIndex() {
-        return this.elasticClient.createIndex();
-    }
-
-    public deleteIndex() {
-        return this.elasticClient.deleteIndex();
-    }
-
-    private async indexFile({ minioFileId, templateId, entityId }: Omit<IIndexFilesRequest, 'minioFileIds'> & { minioFileId: string }) {
-        const content = await this.minioClient.readFile(minioFileId);
-
-        if (!content) {
-            logger.error(`Content is None for minioFileId: ${minioFileId}`);
-            return;
+    static async summarizeFiles(files: Express.Multer.File[], maxLength: number): Promise<ISummarizeResult> {
+        if (!files || files.length === 0) {
+            throw new NoFilesError();
         }
 
-        const title = minioFileId.length > fileIdLength ? minioFileId.slice(fileIdLength) : minioFileId;
+        let combinedText = '';
 
-        const chunks = await splitTextIntoChunks(content, title, templateId, entityId, minioFileId, this.workspaceId);
+        for (const file of files) {
+            const buffer = file.buffer;
+            const filename = file.originalname;
+            const ext = path.extname(filename).toLowerCase();
 
-        await this.elasticClient.bulkIndexDocuments(chunks);
-    }
+            logger.info(`Starting extraction for file: ${filename} (${ext})`);
 
-    public async indexFiles(fileData: IIndexFilesRequest) {
-        await Promise.allSettled(fileData.minioFileIds.map((minioFileId: string) => this.indexFile({ ...fileData, minioFileId })));
-    }
+            try {
+                let text = '';
 
-    public deleteFiles(minioFileIds: string[]) {
-        return this.elasticClient.deleteFiles(minioFileIds);
+                if (ext === '.pdf') {
+                    text = await extractTextFromPdf(buffer);
+                } else if (ext === '.doc' || ext === '.docx') {
+                    text = await extractTextFromDoc(buffer);
+                } else {
+                    throw new Error(`Unsupported file type: ${ext}`);
+                }
+
+                logger.info(`Extraction successful for file: ${filename}. Text Length: ${text.length}`);
+                combinedText += `\n\n--- Document: ${filename} ---\n${text}`;
+            } catch (error) {
+                logger.error(`Extraction failed for file: ${filename}`, error);
+            }
+        }
+
+        const validText = combinedText.trim();
+        let summary = 'No text extracted from files.';
+
+        if (validText.length > 0) {
+            logger.info(`Generating summary for combined text. Length: ${validText.length}, MaxLength: ${maxLength}`);
+            summary = await generateSummary(validText, maxLength);
+            logger.info('Summary generation completed.');
+        } else {
+            logger.warn('No valid text to summarize.');
+        }
+
+        return {
+            summary,
+        };
     }
 }
 

@@ -32,6 +32,7 @@ apiRouter.use('/config', (_req, res) => {
         meltaUpdates: config.frontendConfig.meltaUpdates,
         isOutsideDevelopment: config.frontendConfig.isOutsideDevelopment,
         maxEntitiesToPrint: config.frontendConfig.maxEntitiesToPrint,
+        aiSummaryRequestTimeout: config.aiSummaryService.requestTimeout,
     });
 });
 
@@ -96,6 +97,7 @@ apiRouter.use(
         changeOrigin: true,
         on: { proxyReq: fixRequestBody },
         proxyTimeout: config.aiSummaryService.requestTimeout,
+        timeout: config.aiSummaryService.requestTimeout, // Socket timeout
     }),
 );
 
