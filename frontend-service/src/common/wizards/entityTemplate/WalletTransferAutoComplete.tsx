@@ -1,15 +1,16 @@
 import { InfoOutlined } from '@mui/icons-material';
 import { Autocomplete, Box, TextField } from '@mui/material';
-import { FormikErrors, FormikTouched, getIn } from 'formik';
+import { FormikErrors, getIn } from 'formik';
 import { EntityTemplateWizardValues } from '../../../interfaces/template';
 import MeltaTooltip, { TooltipVariant } from '../../MeltaDesigns/MeltaTooltip';
+import { WalletTransferTouched } from './WalletTransferSettings';
 
 interface WalletAutocompleteProps<T> {
     label: string;
     options: T[];
     value: T | null;
     disabled?: boolean;
-    touched: FormikTouched<EntityTemplateWizardValues>;
+    touched: Partial<WalletTransferTouched>;
     errors: FormikErrors<EntityTemplateWizardValues>;
     fieldPath: string;
     onChange: (value: T | null) => void;

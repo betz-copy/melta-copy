@@ -56,6 +56,8 @@ export const walletTransferSettingsSchema = () => {
     });
 };
 
+export type WalletTransferTouched = { walletTransfer: { from: boolean; to: boolean; amount: boolean; description: boolean } };
+
 export const WalletTransferSettings: React.FC<
     StepComponentProps<EntityTemplateWizardValues & { _id: string }, 'isEditMode'> & {
         isAccountTemplate: boolean;
@@ -66,9 +68,9 @@ export const WalletTransferSettings: React.FC<
     const initialSubmitCountRef = useRef(submitCount);
 
     const showErrors = submitCount > initialSubmitCountRef.current;
-    const forceTouchedWalletTransferFields = showErrors
+    const forceTouchedWalletTransferFields: Partial<WalletTransferTouched> = showErrors
         ? { walletTransfer: { from: true, to: true, amount: true, description: true } }
-        : { walletTransfer: undefined };
+        : {};
 
     const { data: areThereInstancesByTemplateIdResponse } = useQuery(
         ['areThereInstancesByTemplateId', values._id],
