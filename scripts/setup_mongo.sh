@@ -20,7 +20,7 @@ mongosh "$MONGODB_URI" --quiet --eval '
     print("Initiating replica set...");
     rs.initiate({
       _id: "rs0",
-      members: [{ _id: 0, host: "mongo:27017", priority: 2 }]
+      members: [{ _id: 0, host: "172.17.0.1:27017", priority: 2 }]
     });
   }
 '
