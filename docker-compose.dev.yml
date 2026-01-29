@@ -13,15 +13,15 @@ services:
   #*   Service infrastructure dependencies:   #
   #-------------------------------------------#
   mongo:
-    image: mongo:5.0.6
+    image: mongo:6.0.11
     <<: *common
-    entrypoint: ['/usr/bin/mongod', '--bind_ip_all', '--replSet', 'rs0', '--wiredTigerCacheSizeGB', '0.25']
+    entrypoint: ['mongod', '--bind_ip_all', '--replSet', 'rs0', '--wiredTigerCacheSizeGB', '0.25']
     mem_limit: 600m
     ports:
       - 27017:27017
 
   mongosetup:
-    image: mongo:5.0.6
+    image: mongo:6.0.11
     <<: *common
     depends_on:
       - mongo

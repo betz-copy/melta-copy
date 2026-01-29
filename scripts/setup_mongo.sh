@@ -1,21 +1,26 @@
 #!/usr/bin/env bash
 
-MONGODB='172.17.0.1:27017'
+set -euo pipefail
 
-sleep 10
+MONGODB_URI="mongodb://172.17.0.1:27017"
 
-mongo --host "${MONGODB}" <<EOF
-  const cfg = {
-    "_id": "rs0",
-    "version": 1,
-    "members": [
-      {
-        "_id": 0,
-        "host": "${MONGODB}",
-        "priority": 2
-      }
-    ]
-  };
-  rs.initiate(cfg);
-  rs.reconfig(cfg, { force: true });
-EOF
+# Wait until mongod is ready
+until mongosh "$MONGODB_URI" --quiet --eval 'db.adminCommand({ ping: 1 }).ok' | grep -q '1'; do
+  echo "Waiting for MongoDB..."
+  sleep 1
+done
+
+# Initiate replica set only if not initiated yet
+mongosh "$MONGODB_URI" --quiet --eval '
+  try {
+    const status = rs.status();
+    // If we got here, RS already initiated
+    print("Replica set already initiated");
+  } catch (e) {
+    print("Initiating replica set...");
+    rs.initiate({
+      _id: "rs0",
+      members: [{ _id: 0, host: "mongo:27017", priority: 2 }]
+    });
+  }
+'
