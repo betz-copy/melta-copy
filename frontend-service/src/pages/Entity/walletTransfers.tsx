@@ -1,17 +1,27 @@
 import { CellClassParams, ColDef, ICellRendererParams, ValueGetterParams } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
-import { ArrowBack as ArrowBackIcon, ArrowForward as ArrowForwardIcon } from '@mui/icons-material';
-import { Avatar, Grid } from '@mui/material';
+import {
+    AccountBalanceWalletOutlined,
+    AddCircle,
+    ArrowBack as ArrowBackIcon,
+    ArrowForward as ArrowForwardIcon,
+    Close as CloseIcon,
+} from '@mui/icons-material';
+import { Autocomplete, Avatar, Box, Card, CardContent, Dialog, Grid, IconButton, TextField, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import React, { memo, useMemo, useRef } from 'react';
+import React, { memo, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { Link } from 'wouter';
 import AgGridTable from '../../common/agGridTable';
+import { CreateOrEditEntityDetails } from '../../common/dialogs/entity/CreateOrEditEntityDialog';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
+import BlueTitle from '../../common/MeltaDesigns/BlueTitle';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 import { environment } from '../../globals';
+import { ICreateOrUpdateWithRuleBreachDialogState } from '../../interfaces/CreateOrEditEntityDialog';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
 import { useUserStore } from '../../stores/user';
 import { Value } from '../../utils/agGrid/Value';
 import { isChildTemplate } from '../../utils/templates';
@@ -54,6 +64,7 @@ export const WalletTransfers = ({ templateId, connectionsTemplates, expandedEnti
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const walletTransferTableRef = useRef<WalletTransferTableRef<WalletTransferData>>(null);
+    const theme = useTheme();
 
     const currentUser = useUserStore((state) => state.user);
     const isAdmin = Boolean(currentUser.currentWorkspacePermissions?.admin) || false;
@@ -68,6 +79,47 @@ export const WalletTransfers = ({ templateId, connectionsTemplates, expandedEnti
             return !!destinationEntity.walletTransfer || !!sourceEntity.walletTransfer;
         })
         .map(({ relationshipTemplate }) => relationshipTemplate);
+
+    // Get all transfer templates that can be used to create a new transfer from/to this wallet
+    const transferTemplates = useMemo(() => {
+        return Array.from(entityTemplates.values()).filter((template) => {
+            if (!template.walletTransfer || template.disabled) return false;
+
+            const { walletTransfer, properties } = template;
+            const fromProperty = properties.properties[walletTransfer.from];
+            const toProperty = properties.properties[walletTransfer.to];
+
+            const fromRelatedTemplateId = fromProperty?.relationshipReference?.relatedTemplateId;
+            const toRelatedTemplateId = toProperty?.relationshipReference?.relatedTemplateId;
+
+            return fromRelatedTemplateId === templateId || toRelatedTemplateId === templateId;
+        });
+    }, [entityTemplates, templateId]);
+
+    const [isSelectDialogOpen, setIsSelectDialogOpen] = useState(false);
+    const [selectedTransferTemplate, setSelectedTransferTemplate] = useState<IMongoEntityTemplatePopulated | null>(null);
+    const [externalErrors, setExternalErrors] = useState({ files: false, unique: {}, action: '' });
+    const [createOrUpdateWithRuleBreachDialogState, setCreateOrUpdateWithRuleBreachDialogState] = useState<ICreateOrUpdateWithRuleBreachDialogState>({
+        isOpen: false,
+    });
+
+    const getInitialProperties = (newTemplate: IMongoEntityTemplatePopulated) => {
+        if (!newTemplate.walletTransfer) return {};
+        const props: Record<string, unknown> = {};
+        const fromKey = newTemplate.walletTransfer.from;
+        const toKey = newTemplate.walletTransfer.to;
+
+        const fromProperty = newTemplate.properties.properties[fromKey];
+        const toProperty = newTemplate.properties.properties[toKey];
+
+        const shouldSetFrom = fromProperty?.relationshipReference?.relatedTemplateId === templateId;
+        const shouldSetTo = toProperty?.relationshipReference?.relatedTemplateId === templateId;
+
+        if (shouldSetFrom) props[fromKey] = expandedEntity.entity;
+        else if (shouldSetTo) props[toKey] = expandedEntity.entity;
+
+        return props;
+    };
 
     const isWalletTemplate = (entityTemplate: IMongoEntityTemplatePopulated) =>
         !!Object.values(entityTemplate.properties.properties).find((property) => !!property.accountBalance) && entityTemplate._id === templateId;
@@ -85,7 +137,7 @@ export const WalletTransfers = ({ templateId, connectionsTemplates, expandedEnti
             const nonCurrentWalletEntity = sourceIsWallet ? destinationEntity : sourceEntity;
             const nonCurrentWalletTemplate = sourceIsWallet ? relationshipTemplate.destinationEntity : relationshipTemplate.sourceEntity;
 
-            const createdAt = new Date(connection.relationship.properties.createdAt).getTime();
+            const createdAt = new Date((connection.relationship.properties as { createdAt: string }).createdAt).getTime();
             const direction = sourceIsWallet ? Direction.to : Direction.from;
 
             const relatedTemplate = sourceIsWallet ? connection.destinationEntity : connection.sourceEntity;
@@ -253,7 +305,6 @@ export const WalletTransfers = ({ templateId, connectionsTemplates, expandedEnti
             valueFormatter: (p) => p.value?.toLocaleString(),
         },
         {
-            headerName: i18next.t('entityPage.walletTransfer.actions'),
             width: 110,
             cellRenderer: memo<{ data: WalletTransferData }>(({ data }) => {
                 if (!data.template || Object.keys(data.template).length === 0) return null;
@@ -263,7 +314,7 @@ export const WalletTransfers = ({ templateId, connectionsTemplates, expandedEnti
                 const entityLink = `/entity/${entityId}${isChildTemplate(data.template) ? `?childTemplateId=${data.template._id}` : ''}`;
 
                 return (
-                    <Grid container flexWrap="nowrap" justifyContent="center">
+                    <Grid container flexWrap="nowrap" justifyContent="right">
                         <Link href={entityLink} onClick={(e) => !hasPermissionToTemplate && e.preventDefault()}>
                             <IconButtonWithPopover
                                 popoverText={
@@ -286,8 +337,239 @@ export const WalletTransfers = ({ templateId, connectionsTemplates, expandedEnti
     const rowModelProps = useMemo(() => getRowModelProps(infiniteScrollPageCount), [orderedConnectionEntitiesWithBalances]);
 
     return (
-        <Grid sx={{ mt: '2rem' }}>
-            <Grid container sx={{ marginTop: 2 }}>
+        <Grid data-tour="connected-entities" sx={{ mt: '2rem' }}>
+            <Grid
+                container
+                alignItems="center"
+                gap="10px"
+                sx={{
+                    backgroundColor: '#CCCFE580',
+                    borderRadius: '20px 20px 0px 0px',
+                    px: 2,
+                    py: 0.8,
+                }}
+            >
+                <Typography
+                    variant="h6"
+                    sx={{
+                        color: '#1E2775',
+                        fontWeight: 600,
+                        fontSize: '18px',
+                        paddingLeft: '55px',
+                    }}
+                >
+                    {i18next.t('entityPage.walletTransfersTitle')}
+                </Typography>
+            </Grid>
+            <Box
+                sx={{
+                    backgroundColor: '#4752B6',
+                    borderRadius: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 40,
+                    height: 40,
+                    mt: '-25px',
+                    ml: 1.5,
+                }}
+            >
+                <AccountBalanceWalletOutlined sx={{ color: '#FFFFFF', fontSize: '22px' }} />
+            </Box>
+            <Grid container sx={{ marginTop: 2, justifyContent: 'flex-end', mb: 1 }}>
+                {transferTemplates.length > 0 && (
+                    <>
+                        <Box
+                            onClick={() => setIsSelectDialogOpen(true)}
+                            sx={{
+                                display: 'flex',
+                                gap: '0.25rem',
+                                alignItems: 'center',
+                                cursor: 'pointer',
+                                fontSize: '0.75rem',
+                                color: theme.palette.primary.main,
+                            }}
+                        >
+                            <AddCircle fontSize="small" />
+                            {i18next.t('entityPage.walletTransfer.addTransfer')}
+                        </Box>
+                        <Dialog
+                            open={isSelectDialogOpen && !selectedTransferTemplate}
+                            onClose={() => setIsSelectDialogOpen(false)}
+                            maxWidth="md"
+                            fullWidth
+                            slotProps={{
+                                paper: {
+                                    sx: {
+                                        overflow: 'hidden',
+                                    },
+                                },
+                            }}
+                        >
+                            <Card sx={{ display: 'flex', flexDirection: 'column', maxHeight: '90vh' }}>
+                                <CardContent
+                                    sx={{
+                                        flex: 1,
+                                        overflowY: 'auto',
+                                        position: 'relative',
+                                        paddingTop: 0,
+                                    }}
+                                >
+                                    <Box
+                                        sx={{
+                                            flexShrink: 0,
+                                            position: 'sticky',
+                                            top: 0,
+                                            zIndex: 10,
+                                            backgroundColor: 'white',
+                                            padding: '16px 24px',
+                                        }}
+                                    >
+                                        <Grid container alignItems="center" justifyContent="space-between">
+                                            <BlueTitle
+                                                title={i18next.t('entityPage.walletTransfer.selectTransferType')}
+                                                component="h6"
+                                                variant="h6"
+                                            />
+                                            <IconButton onClick={() => setIsSelectDialogOpen(false)} sx={{ color: theme.palette.primary.main }}>
+                                                <CloseIcon />
+                                            </IconButton>
+                                        </Grid>
+                                        <Box mt={2}>
+                                            <Autocomplete
+                                                id="template"
+                                                options={transferTemplates}
+                                                getOptionLabel={(option) => option.displayName}
+                                                onChange={(_e, value) => {
+                                                    if (value) {
+                                                        setSelectedTransferTemplate(value);
+                                                        setIsSelectDialogOpen(false);
+                                                    }
+                                                }}
+                                                renderInput={(params) => (
+                                                    <TextField
+                                                        {...params}
+                                                        size="small"
+                                                        fullWidth
+                                                        sx={{
+                                                            '& .MuiInputBase-root': {
+                                                                borderRadius: '10px',
+                                                                width: 300,
+                                                            },
+                                                            '& fieldset': {
+                                                                borderColor: '#CCCFE5',
+                                                                color: '#CCCFE5',
+                                                            },
+                                                            '& label': {
+                                                                color: '#9398C2',
+                                                            },
+                                                        }}
+                                                        name="template"
+                                                        variant="outlined"
+                                                        label={i18next.t('entityTemplate')}
+                                                    />
+                                                )}
+                                            />
+                                        </Box>
+                                    </Box>
+                                </CardContent>
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        gap: 2,
+                                        p: 2,
+                                        borderTop: '1px solid #E0E0E0',
+                                    }}
+                                >
+                                    <Box
+                                        component="button"
+                                        onClick={() => setIsSelectDialogOpen(false)}
+                                        sx={{
+                                            backgroundColor: 'transparent',
+                                            border: '1px solid #4752B6',
+                                            borderRadius: '8px',
+                                            color: '#4752B6',
+                                            padding: '8px 24px',
+                                            cursor: 'pointer',
+                                            fontWeight: 500,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 1,
+                                            '&:hover': {
+                                                backgroundColor: '#F5F6FA',
+                                            },
+                                        }}
+                                    >
+                                        <CloseIcon fontSize="small" />
+                                        {i18next.t('actions.cancel')}
+                                    </Box>
+                                    <Box
+                                        component="button"
+                                        disabled
+                                        sx={{
+                                            backgroundColor: '#E0E0E0',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            color: '#9E9E9E',
+                                            padding: '8px 24px',
+                                            cursor: 'not-allowed',
+                                            fontWeight: 500,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 1,
+                                        }}
+                                    >
+                                        {i18next.t('actions.save')}
+                                        <span>✓</span>
+                                    </Box>
+                                </Box>
+                            </Card>
+                        </Dialog>
+                        {selectedTransferTemplate && (
+                            <Dialog
+                                open={Boolean(selectedTransferTemplate)}
+                                maxWidth="md"
+                                fullWidth
+                                slotProps={{
+                                    paper: {
+                                        sx: {
+                                            overflow: 'hidden',
+                                        },
+                                    },
+                                }}
+                            >
+                                <CreateOrEditEntityDetails
+                                    mutationProps={{
+                                        actionType: ActionTypes.CreateEntity,
+                                        payload: undefined,
+                                        onSuccess: () => {
+                                            queryClient.invalidateQueries({ queryKey: ['getExpandedEntity', expandedEntity.entity.properties._id] });
+                                            setSelectedTransferTemplate(null);
+                                        },
+                                    }}
+                                    entityTemplate={selectedTransferTemplate}
+                                    initialCurrValues={{
+                                        template: selectedTransferTemplate,
+                                        properties: {
+                                            ...getInitialProperties(selectedTransferTemplate),
+                                            disabled: false,
+                                        },
+                                        attachmentsProperties: {},
+                                    }}
+                                    handleClose={() => setSelectedTransferTemplate(null)}
+                                    externalErrors={externalErrors}
+                                    setExternalErrors={setExternalErrors}
+                                    createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}
+                                    setCreateOrUpdateWithRuleBreachDialogState={setCreateOrUpdateWithRuleBreachDialogState}
+                                    getInitialProperties={getInitialProperties}
+                                />
+                            </Dialog>
+                        )}
+                    </>
+                )}
+            </Grid>
+            <Grid container>
                 <AgGridTable
                     defaultColDef={defaultColDef as ColDef<WalletTransferData>}
                     getRowId={(data) => data.entity.properties._id}
