@@ -115,7 +115,7 @@ const RjsfTextWidget = ({
                             </InputAdornment>
                         ) : null,
                 },
-                htmlInput: { readOnly: readonly && disabled },
+                htmlInput: { readOnly: readonly },
                 inputLabel: { shrink: readonly || undefined },
             }}
             dir={getTextDirection(value, schema)}
