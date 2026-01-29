@@ -481,8 +481,9 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                 ) : (
                                                     <Grid>
                                                         <Button
-                                                            variant="outlined"
+                                                            variant="contained"
                                                             startIcon={<EditIcon />}
+                                                            sx={{ borderRadius: '7px' }}
                                                             onClick={() => {
                                                                 setFieldValue(
                                                                     'properties',
@@ -491,7 +492,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                                 setIsStepEditMode(!isStepEditMode);
                                                             }}
                                                         >
-                                                            <Typography>{i18next.t('wizard.processInstance.step.editStepBth')}</Typography>
+                                                            {i18next.t('wizard.processInstance.step.editStepBth')}
                                                         </Button>
                                                     </Grid>
                                                 )}
