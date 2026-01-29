@@ -171,14 +171,33 @@ export const ajvValidate = (
 
     const walletTemplateErrors: FormikErrors<Record<string, IPropertyValue>> = {};
     if (walletTransfer) {
-        const { from, to } = walletTransfer;
-        const sourceWalletEntityId = data[from]?.properties?._id;
-        const destWalletEntityId = data[to]?.properties?._id;
+        const { from, to, amount } = walletTransfer;
+        const sourceWalletEntity = data[from];
+        const destWalletEntity = data[to];
+        const sourceWalletEntityId = sourceWalletEntity?.properties?._id;
+        const destWalletEntityId = destWalletEntity?.properties?._id;
+        const transferAmount = data[amount];
+
+        if (transferAmount !== undefined && transferAmount !== null && transferAmount <= 0) {
+            walletTemplateErrors[amount] = i18next.t('validation.negativeTransferAmount');
+        }
 
         if (sourceWalletEntityId && sourceWalletEntityId === destWalletEntityId) {
             const error = i18next.t('validation.sameSourceAndDestWallet');
             walletTemplateErrors[from] = error;
             walletTemplateErrors[to] = error;
+        }
+
+        if (sourceWalletEntity && typeof sourceWalletEntity === 'object' && sourceWalletEntity.properties && transferAmount) {
+            const sourceWalletProperties = sourceWalletEntity.properties;
+            const balanceKey = Object.keys(sourceWalletProperties).find((key) => key === 'amount' || key === 'balance');
+
+            if (balanceKey) {
+                const currentBalance = sourceWalletProperties[balanceKey];
+                if (typeof currentBalance === 'number' && currentBalance < transferAmount) {
+                    walletTemplateErrors[amount] = i18next.t('validation.insufficientWalletBalance', { current: currentBalance });
+                }
+            }
         }
     }
 

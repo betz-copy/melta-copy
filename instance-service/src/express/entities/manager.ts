@@ -709,7 +709,6 @@ class EntityManager extends DefaultManagerNeo4j {
 
             return action;
         });
-
     private async createEntityPipelineInTransaction(
         transaction: Transaction,
         properties: IEntity['properties'],
@@ -788,7 +787,6 @@ class EntityManager extends DefaultManagerNeo4j {
             childTemplate = await this.childTemplateManagerService.getChildTemplateById(childTemplateId);
             template = { ...entityTemplate, actions: childTemplate.actions };
         }
-
         return this.neo4jClient
             .performComplexTransaction('writeTransaction', async (transaction) => {
                 const allActivityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
@@ -829,7 +827,6 @@ class EntityManager extends DefaultManagerNeo4j {
                     newDestWallet,
                     ignoredRules,
                 );
-
                 if (entityResult.activityLogsToCreate) {
                     allActivityLogsToCreate.push(...entityResult.activityLogsToCreate);
                 }
@@ -839,6 +836,7 @@ class EntityManager extends DefaultManagerNeo4j {
                 return {
                     createdEntity: entityResult.createdEntity,
                     emails: [...(destWalletResult?.emails ?? []), ...entityResult.emails],
+                    actions: undefined,
                 };
             })
             .catch((err) => this.throwServiceErrorIfFailedConstraintsValidation(err));

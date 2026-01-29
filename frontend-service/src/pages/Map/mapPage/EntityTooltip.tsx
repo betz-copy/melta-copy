@@ -3,6 +3,7 @@ import * as Cesium from 'cesium';
 import i18next from 'i18next';
 import React, { useEffect, useRef } from 'react';
 import { createRoot, Root } from 'react-dom/client';
+import { QueryClientProvider, useQueryClient } from 'react-query';
 import { CesiumComponentRef } from 'resium';
 import { EntityPropertiesInternal } from '../../../common/EntityProperties';
 import { IPolygonSearchResult } from '../../../interfaces/location';
@@ -51,6 +52,7 @@ export const EntityTooltip: React.FC<EntityTooltipProps> = ({ entity, darkMode, 
                     textWrap
                     viewFirstLineOfLongText
                     entityTemplates={entityTemplates}
+                    innerStyle={{ width: '50%' }}
                 />
             ) : (
                 i18next.t('graph.noPreviewProperties')
@@ -70,6 +72,7 @@ interface UseCesiumTooltipParams {
 export const useCesiumTooltip = ({ viewerRef, darkMode, entityTemplateMap, searchedEntitiesPolygons, filteredPolygons }: UseCesiumTooltipParams) => {
     const rootRef = useRef<Root | null>(null);
     const tooltipRef = useRef<HTMLDivElement | null>(null);
+    const queryClient = useQueryClient();
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: dependencies
     useEffect(() => {
@@ -129,14 +132,22 @@ export const useCesiumTooltip = ({ viewerRef, darkMode, entityTemplateMap, searc
                 tooltip.style.left = `${mouseX - width / 2}px`;
                 tooltip.style.top = `${top}px`;
 
-                root.render(<EntityTooltip darkMode={darkMode} entity={nodeData} entityTemplates={entityTemplateMap} arrowDirection={direction} />);
+                root.render(
+                    <QueryClientProvider client={queryClient}>
+                        <EntityTooltip darkMode={darkMode} entity={nodeData} entityTemplates={entityTemplateMap} arrowDirection={direction} />
+                    </QueryClientProvider>,
+                );
             });
         }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
-
         return () => {
             handler.destroy();
-            root.unmount();
-            tooltip.remove();
+
+            const currentRoot = rootRef.current;
+
+            rootRef.current = null;
+            tooltipRef.current = null;
+
+            if (currentRoot) queueMicrotask(() => currentRoot.unmount());
         };
     }, [searchedEntitiesPolygons.length, filteredPolygons.length]);
 };

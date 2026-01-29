@@ -25,6 +25,7 @@ import { getFilteredItems, jerusalemCoordinates, locationToWGS84String, stringTo
 import { convertECEFToWGS84, convertWGS94ToECEF } from '../../../utils/map/convert';
 import { BaseLayers } from '../BaseLayers';
 import { MeltaCoordinate, MeltaPolygon } from '../LocationEntities';
+import { useCesiumTooltip } from './EntityTooltip';
 import MapFilters from './MapFilters';
 
 const { maxRadius } = environment.map;
@@ -129,7 +130,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
     // biome-ignore lint/correctness/useExhaustiveDependencies: dependencies
     useEffect(() => applyFilterWithShapeSearch(autoSearch, listFields), [polygons, coordinates]);
 
-    // useCesiumTooltip({ viewerRef, darkMode, entityTemplateMap, searchedEntitiesPolygons, filteredPolygons }); //TODO: tooltip for map entities
+    useCesiumTooltip({ viewerRef, darkMode, entityTemplateMap, searchedEntitiesPolygons, filteredPolygons });
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: dependencies
     useEffect(() => {
@@ -364,6 +365,8 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
 
         setSearchResults({ coordinates: [], polygons: [] });
         setFilterResult([]);
+
+        setSelectedEntity(null);
     };
 
     const onClear = () => {

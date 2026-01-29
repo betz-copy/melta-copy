@@ -288,6 +288,8 @@ export default {
             accountBalance: 'יתרת חשבון',
             actions: 'פעולות',
             initialBalanceDescription: 'יתרה התחלתית',
+            addTransfer: 'העברה חדשה',
+            selectTransferType: 'בחר סוג העברה',
         },
     },
     categoryPage: {
@@ -1171,9 +1173,13 @@ export default {
         invalidProperty: 'שדה לא תקין',
         differentDestinations: 'מקור ויעד לא יכולים להיות זהים',
         eitherFromOrToRelationshipReference: 'נדרש לבחור קשר לתבנית ארנק כמקור או כיעד (או בשניהם)',
+        atLeastOneWallet: 'לפחות אחד מהשדות (מקור או יעד) חייב להיות קשר לארנק',
+        sameWalletType: 'המקור והיעד לא יכולים להיות קשרים לאותו סוג ארנק',
         isProfileImage: 'תמונת פרופיל',
         sameSourceAndDestWallet: 'לא ניתן לבצע העברה באותו ארנק',
         accountBalanceField: 'בתבנית ארנק חובה לבחור שדה מספרי אחד כערך יתרה',
+        insufficientWalletBalance: 'אין מספיק יתרה בארנק. יתרה נוכחית: {{current}}',
+        negativeTransferAmount: 'סכום ההעברה חייב להיות גדול מ-0',
     },
     propertyTypes: {
         string: 'טקסט',

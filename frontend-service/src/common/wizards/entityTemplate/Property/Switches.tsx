@@ -343,6 +343,7 @@ export const Switches: React.FC<SwitchesProps> = ({
                                         ...prev,
                                         accountBalance: isChecked,
                                         readOnly: isChecked ? true : undefined,
+                                        required: isChecked ? false : prev.required,
                                     };
                                 });
                             }}
