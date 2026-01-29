@@ -55,6 +55,7 @@ export const walletTransferSettingsSchema = () => {
             .nullable(),
     });
 };
+
 export type WalletTransferTouched = { walletTransfer: { from: boolean; to: boolean; amount: boolean; description: boolean } };
 
 export const WalletTransferSettings: React.FC<
