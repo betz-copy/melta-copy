@@ -96,20 +96,22 @@ const RjsfTextWidget = ({
             onChange={_onChange}
             onBlur={_onBlur}
             onFocus={_onFocus}
+            sx={readonly ? { cursor: 'default', '& input': { cursor: 'default' } } : undefined}
             onWheel={(e) => {
                 if (inputType === 'number') (e.target as HTMLElement).blur(); // disable number input scroll to change value when focused, but blurring it
             }}
             slotProps={{
                 input: {
+                    disableUnderline: readonly,
                     endAdornment:
-                        inputType === 'number' && schema.serialCurrent === undefined ? (
+                        inputType === 'number' && schema.serialCurrent === undefined && !readonly ? (
                             <InputAdornment position="end">
                                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <IconButton sx={{ padding: 0 }} size="small" onClick={handleIncrement} disabled={readonly || disabled}>
-                                        <KeyboardArrowUp fontSize="small" color={value && !readonly ? 'action' : 'disabled'} />
+                                    <IconButton sx={{ padding: 0 }} size="small" onClick={handleIncrement} disabled={disabled}>
+                                        <KeyboardArrowUp fontSize="small" color={value ? 'action' : 'disabled'} />
                                     </IconButton>
-                                    <IconButton sx={{ padding: 0 }} size="small" onClick={handleDecrement} disabled={readonly || disabled}>
-                                        <KeyboardArrowDown fontSize="small" color={value && !readonly ? 'action' : 'disabled'} />
+                                    <IconButton sx={{ padding: 0 }} size="small" onClick={handleDecrement} disabled={disabled}>
+                                        <KeyboardArrowDown fontSize="small" color={value ? 'action' : 'disabled'} />
                                     </IconButton>
                                 </div>
                             </InputAdornment>

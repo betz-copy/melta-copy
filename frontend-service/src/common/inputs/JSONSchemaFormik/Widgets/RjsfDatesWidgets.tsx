@@ -88,6 +88,9 @@ const getRjsfDateOrDateTimeWidget =
                     enableAccessibleFieldDOMStructure={false}
                     {...(dateOrDateTime === 'date' && { views: datePickerViews })}
                     onChange={(val) => onChangeDateWidget(val)}
+                    slots={{
+                        openPickerIcon: readonly ? () => null : undefined,
+                    }}
                     slotProps={{
                         textField: {
                             ...textFieldProps,
@@ -100,6 +103,7 @@ const getRjsfDateOrDateTimeWidget =
                             onFocus: _onFocus,
                             error: !hideError && !!rawErrors.length,
                             InputLabelProps: { shrink: readonly || undefined },
+                            InputProps: { disableUnderline: readonly },
                             placeholder: defaultValue?.toString(),
                         },
                         actionBar: { actions: ['clear', 'cancel'] },

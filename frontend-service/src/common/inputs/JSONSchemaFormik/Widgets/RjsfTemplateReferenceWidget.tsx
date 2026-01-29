@@ -14,6 +14,7 @@ const RjsfTemplateReferenceWidget = ({
     id,
     required,
     disabled,
+    readonly,
     label,
     value,
     onChange,
@@ -88,6 +89,7 @@ const RjsfTemplateReferenceWidget = ({
             isError={!!rawErrors.length}
             onBlur={handleBlur}
             disabled={disabled || (required && noRelationPermission)}
+            readOnly={readonly}
             noRelationPermission={noRelationPermission}
             relationFilters={filters}
             required={required}

@@ -156,13 +156,14 @@ const RjsfLocationWidget = ({
                                     shrink: readonly || undefined,
                                 },
                                 input: {
-                                    startAdornment: (
+                                    disableUnderline: readonly,
+                                    startAdornment: readonly ? null : (
                                         <InputAdornment
                                             position="start"
                                             onClick={() => (error ? '' : setMapOpen(true))}
                                             style={{ cursor: 'pointer' }}
                                         >
-                                            <MapIcon color={readonly || error ? 'disabled' : 'action'} />
+                                            <MapIcon color={error ? 'disabled' : 'action'} />
                                         </InputAdornment>
                                     ),
                                 },
