@@ -66,8 +66,9 @@ export const WalletTransferSettings: React.FC<
     const initialSubmitCountRef = useRef(submitCount);
 
     const showErrors = submitCount > initialSubmitCountRef.current;
-    const forceTouchedWalletTransferFields = showErrors ? 
-    { walletTransfer: { from: true, to: true, amount: true, description: true } } : {walletTransfer: undefined};
+    const forceTouchedWalletTransferFields = showErrors
+        ? { walletTransfer: { from: true, to: true, amount: true, description: true } }
+        : { walletTransfer: undefined };
 
     const { data: areThereInstancesByTemplateIdResponse } = useQuery(
         ['areThereInstancesByTemplateId', values._id],
