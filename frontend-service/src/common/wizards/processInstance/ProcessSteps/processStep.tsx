@@ -227,20 +227,23 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                 component="h6"
                                                 variant="h6"
                                             />
-                                            <JSONSchemaFormik
-                                                schema={propertiesSchema}
-                                                values={{ ...values, properties: values.properties }}
-                                                setValues={(propertiesValues) => {
-                                                    return setFieldValue('properties', propertiesValues);
-                                                }}
-                                                errors={isSavePressed ? (errors.properties ?? {}) : {}}
-                                                touched={touched.properties ?? {}}
-                                                setFieldTouched={(field) => {
-                                                    return setFieldTouched(`properties.${field}`);
-                                                }}
-                                                readonly={!isStepEditMode}
-                                                toPrint={toPrint}
-                                            />
+                                            <Box sx={{ mt: 2 }}>
+                                                <JSONSchemaFormik
+                                                    schema={propertiesSchema}
+                                                    values={{ ...values, properties: values.properties }}
+                                                    setValues={(propertiesValues) => {
+                                                        return setFieldValue('properties', propertiesValues);
+                                                    }}
+                                                    errors={isSavePressed ? (errors.properties ?? {}) : {}}
+                                                    touched={touched.properties ?? {}}
+                                                    setFieldTouched={(field) => {
+                                                        return setFieldTouched(`properties.${field}`);
+                                                    }}
+                                                    readonly={!isStepEditMode}
+                                                    viewMode={!isStepEditMode ? 'clean' : undefined}
+                                                    toPrint={toPrint}
+                                                />
+                                            </Box>
                                             {toPrint &&
                                                 textAreaValues.length > 0 &&
                                                 textAreaValues.map((textArea) => <TextAreaProperty key={textArea.key} textArea={textArea} />)}

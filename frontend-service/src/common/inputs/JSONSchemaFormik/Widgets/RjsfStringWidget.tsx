@@ -1,5 +1,5 @@
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
-import { IconButton, InputAdornment, TextField } from '@mui/material';
+import { Box, IconButton, InputAdornment, TextField, Typography } from '@mui/material';
 import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import { format, parseISO } from 'date-fns';
@@ -76,6 +76,19 @@ const RjsfTextWidget = ({
         const newValue = Number(value || 0) - 1;
         onChange(newValue);
     };
+
+    if (readonly && formContext?.viewMode === 'clean') {
+        return (
+            <Box display="flex" marginBottom={1}>
+                <Typography variant="body1" sx={{ color: '#9398C2', fontSize: '14px', minWidth: '200px', flexShrink: 0 }}>
+                    {label || schema.title}:
+                </Typography>
+                <Typography variant="body1" sx={{ color: '#53566E', fontSize: '14px' }}>
+                    {finalValue || '-'}
+                </Typography>
+            </Box>
+        );
+    }
 
     return (
         <TextField
