@@ -445,7 +445,7 @@ const buildFullTextSearchQuery = (
     entityIdsToExclude?: string[],
     userEntityId?: string,
 ) => {
-    const query = `*${escapeNeo4jQuerySpecialChars((searchBody.textSearch || '').toLowerCase())}*`;
+    const query = `*${escapeNeo4jQuerySpecialChars(searchBody.textSearch || '')}*`;
     const entityIdMatch = entityIdsToInclude?.length
         ? `
         UNION
