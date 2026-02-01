@@ -2,8 +2,8 @@ import { ListItemButton } from '@mui/material';
 import i18next from 'i18next';
 import React, { ReactNode, useEffect } from 'react';
 import { Link, useRoute } from 'wouter';
-import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import { SessionStorage } from '../../utils/sessionStorage';
+import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import { StyledListItemText } from './NavBar.styled';
 import './NavButton.css';
 
