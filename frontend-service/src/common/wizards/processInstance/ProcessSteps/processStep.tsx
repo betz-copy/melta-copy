@@ -211,9 +211,9 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                 return (
                     <Form style={{ height: '100%', paddingTop: '10px' }}>
                         <Grid container flexDirection="column" justifyContent="space-between" width="100%" height="100%" minHeight="320px">
-                            <Grid container width="100%" height="90%" justifyContent="space-between" flexWrap="nowrap">
+                            <Grid container width="100%" height="90%" justifyContent="flex-start" flexWrap="nowrap" columnGap="1px">
                                 <Grid
-                                    size={{ xs: toPrint ? 0 : 7 }}
+                                    size={{ xs: toPrint ? 0 : 9 }}
                                     maxHeight={toPrint ? undefined : 550}
                                     sx={{
                                         overflowY: 'auto',
@@ -380,6 +380,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                             padding: '5px',
                                             width: '305px',
                                             height: '290px',
+                                            flexShrink: 0,
                                         }}
                                     >
                                         <Grid container flexDirection="column" gap="20px">
