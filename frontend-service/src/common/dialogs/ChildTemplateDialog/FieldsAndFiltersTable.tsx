@@ -108,7 +108,6 @@ const FieldsAndFiltersTable: React.FC<IFieldsAndFiltersTableProps> = ({ formikPr
     const { values, setFieldValue, setFieldTouched } = formikProps;
 
     const [addFilterField, setAddFilterField] = useState<{ dialogType: ChipType; fieldName: string } | undefined>(undefined);
-    console.log('🚀 ~ FieldsAndFiltersTable ~ addFilterField:', addFilterField);
 
     const queryClient = useQueryClient();
     const units = queryClient.getQueryData<IGetUnits>('getUnits')!;
