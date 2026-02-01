@@ -71,7 +71,7 @@ const config = {
     userFieldsSync: {
         usersSyncTime: env.get('USERS_SYNC_TIME').default('0 */12 * * *').asString(),
         isSyncingUsers: env.get('IS_SYNCING_USERS').default('true').asString(),
-    },
+    }, //TODO: check if remove
     rulesWithTodayFunc: {
         runOnStart: env.get('RULES_WITH_TODAY_FUNC_RUN_ON_START').default('false').asBool(), // for development
         cronTime: env.get('RULES_WITH_TODAY_FUNC_CRON_TIME').default('0 0 * * *').asString(),

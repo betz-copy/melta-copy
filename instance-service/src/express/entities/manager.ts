@@ -879,9 +879,13 @@ class EntityManager extends DefaultManagerNeo4j {
             userEntityId: searchBody.userEntityId,
         };
 
-        const searchCypherQuery = searchWithRelationshipsToNeoQuery(searchBodyOfTemplate, new Map([[entityTemplate._id, entityTemplate]]));
+        const searchCypherQuery = await searchWithRelationshipsToNeoQuery(searchBodyOfTemplate, new Map([[entityTemplate._id, entityTemplate]]));
 
-        const searchCountCypherQuery = searchWithRelationshipsToNeoQuery(searchBodyOfTemplate, new Map([[entityTemplate._id, entityTemplate]]), true);
+        const searchCountCypherQuery = await searchWithRelationshipsToNeoQuery(
+            searchBodyOfTemplate,
+            new Map([[entityTemplate._id, entityTemplate]]),
+            true,
+        );
 
         const [entities, count] = await Promise.all([
             this.neo4jClient.readTransaction(
@@ -990,8 +994,8 @@ class EntityManager extends DefaultManagerNeo4j {
             throw new ValidationError(`[NEO4J] Global search index not found.`);
         }
 
-        const searchCypherQuery = searchWithRelationshipsToNeoQuery(searchBody, entityTemplatesMap, false, globalSearchIndexes);
-        const searchCountCypherQuery = searchWithRelationshipsToNeoQuery(searchBody, entityTemplatesMap, true, globalSearchIndexes);
+        const searchCypherQuery = await searchWithRelationshipsToNeoQuery(searchBody, entityTemplatesMap, false, globalSearchIndexes);
+        const searchCountCypherQuery = await searchWithRelationshipsToNeoQuery(searchBody, entityTemplatesMap, true, globalSearchIndexes);
 
         const [entities, count] = await Promise.all([
             this.neo4jClient.readTransaction(
@@ -1235,7 +1239,7 @@ class EntityManager extends DefaultManagerNeo4j {
         const childTemplates = await this.childTemplateManagerService.searchChildTemplates();
         const templateIdsWithChildren = Array.from(new Set([...templateIds, ...childTemplates.map(({ parentTemplate: { _id } }) => _id)]));
 
-        const initialCypherQuery = expandEntityToNeoQuery(
+        const initialCypherQuery = await expandEntityToNeoQuery(
             fixSearchBody,
             id,
             templateIdsWithChildren,
@@ -2483,7 +2487,7 @@ class EntityManager extends DefaultManagerNeo4j {
         const chartPromises = chartsData.map(async ({ filter, xAxis, yAxis, _id }) => {
             const templatesFilter = { [entityTemplate._id]: { filter, showRelationships: false } };
 
-            const { cypherQuery: filterQuery, parameters } = templatesFilterToNeoQuery(templatesFilter, entityTemplatesMap);
+            const { cypherQuery: filterQuery, parameters } = await templatesFilterToNeoQuery(templatesFilter, entityTemplatesMap);
             const query = buildChartAggregationQuery(xAxis, yAxis, specialProperties, entityTemplate, filterQuery);
 
             const chart = await this.neo4jClient.readTransaction(query, normalizeChartResponse, parameters);

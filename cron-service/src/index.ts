@@ -29,7 +29,7 @@ const initializeRabbit = async () => {
 
 const main = async () => {
     await initializeRabbit();
-    if (userFieldsSync.isSyncingUsers) await updateKartoffelFields();
+    if (userFieldsSync.isSyncingUsers) await updateKartoffelFields(); //TODO: check if remove
     if (notifications.displayCronDates) await checkForDateNotifications();
     if (rulesWithTodayFunc.runCron) await runRulesWithTodayFuncCronjob();
 

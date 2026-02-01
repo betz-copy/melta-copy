@@ -9,7 +9,7 @@ import { IKartoffelUser } from '../services/kartoffel/interface';
 import WorkspaceManager from '../workspaces/manager';
 
 const { userFieldsSync } = config;
-
+//TODO:check if remove
 const checkForEntityToUpdate = (
     entity: IEntity,
     entityTemplate: IMongoEntityTemplatePopulated,
