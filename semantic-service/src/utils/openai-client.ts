@@ -63,6 +63,7 @@ export interface IEvaluationResult {
         completeness: number;
         clarity: number;
     };
+    critique: string;
     hallucinations: string[];
     missingInfo: string;
 }
@@ -102,6 +103,7 @@ export async function evaluateSummary(originalText: string, summary: string): Pr
         // Fallback: Return low grades to force refinement if possible, or handle strictly
         return {
             grades: { accuracy: 0, completeness: 0, clarity: 0 },
+            critique: 'Error during evaluation',
             hallucinations: [],
             missingInfo: 'Error during evaluation',
         };
@@ -162,24 +164,13 @@ export async function refineSummary(
     validation: IValidationResult,
 ): Promise<string> {
     try {
-        const feedback: string[] = [];
+        // Use the critique directly as the primary feedback
+        let feedbackText = evaluation.critique;
 
-        // Add feedback based on grades
-        if (evaluation.grades.accuracy < 5) feedback.push(`Accuracy needs improvement (Score: ${evaluation.grades.accuracy}/5).`);
-        if (evaluation.grades.completeness < 5) feedback.push(`Completeness needs improvement (Score: ${evaluation.grades.completeness}/5).`);
-        if (evaluation.grades.clarity < 5) feedback.push(`Clarity needs improvement (Score: ${evaluation.grades.clarity}/5).`);
-
-        if (evaluation.hallucinations.length > 0) {
-            feedback.push(`Hallucinations detected: ${evaluation.hallucinations.join(', ')}`);
-        }
-        if (evaluation.missingInfo && evaluation.missingInfo !== 'None') {
-            feedback.push(`Missing Info: ${evaluation.missingInfo}`);
-        }
+        // Append language validation issues if any
         if (!validation.isValid) {
-            feedback.push(`Language Issues: ${validation.detectedIssues}`);
+            feedbackText += `\nLanguage Issues: ${validation.detectedIssues}`;
         }
-
-        const feedbackText = feedback.join('\n');
 
         const response = await openai.chat.completions.create({
             model: config.openai.refinerModel,
