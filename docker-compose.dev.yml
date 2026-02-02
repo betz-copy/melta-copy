@@ -192,6 +192,9 @@ services:
     <<: *common
 
   template-service:
+    depends_on:
+      mongosetup:
+        condition: service_completed_successfully
     ports:
       - 8002:8000
     <<: *common
@@ -206,6 +209,9 @@ services:
       - logs:/usr/src/app/logs
 
   user-service:
+    depends_on:
+      mongosetup:
+        condition: service_completed_successfully
     ports:
       - 8005:8000
     <<: *common
@@ -213,6 +219,9 @@ services:
       - logs:/usr/src/app/logs
 
   storage-service:
+    depends_on:
+      mongosetup:
+        condition: service_completed_successfully
     ports:
       - 8006:8000
     <<: *common
@@ -220,6 +229,9 @@ services:
       - logs:/usr/src/app/logs
 
   instance-service:
+    depends_on:
+      mongosetup:
+        condition: service_completed_successfully
     ports:
       - 8007:8000
     <<: *common
@@ -241,21 +253,33 @@ services:
       - logs:/usr/src/app/logs
 
   notification-service:
+    depends_on:
+      mongosetup:
+        condition: service_completed_successfully
     <<: *common
     volumes:
       - logs:/usr/src/app/logs
 
   activity-log-service:
+    depends_on:
+      mongosetup:
+        condition: service_completed_successfully
     <<: *common
     volumes:
       - logs:/usr/src/app/logs
 
   rule-breach-service:
+    depends_on:
+      mongosetup:
+        condition: service_completed_successfully
     <<: *common
     volumes:
       - logs:/usr/src/app/logs
 
   process-service:
+    depends_on:
+      mongosetup:
+        condition: service_completed_successfully
     ports:
       - 8008:8000
     <<: *common
@@ -263,6 +287,9 @@ services:
       - logs:/usr/src/app/logs
 
   gantt-service:
+    depends_on:
+      mongosetup:
+        condition: service_completed_successfully
     ports:
       - 8009:8000
     <<: *common
@@ -285,6 +312,9 @@ services:
       - logs:/usr/src/app/logs
 
   workspace-service:
+    depends_on:
+      mongosetup:
+        condition: service_completed_successfully
     ports:
       - 8012:8000
     <<: *common
@@ -292,6 +322,9 @@ services:
       - logs:/usr/src/app/logs
 
   dashboard-service:
+    depends_on:
+      mongosetup:
+        condition: service_completed_successfully
     ports:
       - 8017:8000
     <<: *common
