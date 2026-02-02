@@ -154,7 +154,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                             borderTopLeftRadius: '20px',
                             boxShadow: '10px 10px 15px 10px #888888',
                         }}
-                        sx={{ '& *': { maxWidth: '100%', boxSizing: 'border-box' } }}
+                        sx={{ '& .MuiGrid-root': { maxWidth: '100%', boxSizing: 'border-box' } }}
                     >
                         <Grid container flexDirection="column" width="100%" height="100%">
                             <Grid height="5%">

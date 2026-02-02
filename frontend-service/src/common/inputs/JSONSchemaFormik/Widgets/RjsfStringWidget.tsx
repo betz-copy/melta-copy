@@ -80,10 +80,10 @@ const RjsfTextWidget = ({
     if (readonly && formContext?.viewMode === 'clean') {
         return (
             <Box display="flex" marginBottom={1}>
-                <Typography variant="body1" sx={{ color: '#9398C2', fontSize: '14px', minWidth: '150px', flexShrink: 0 }}>
+                <Typography variant="body2" sx={{ color: 'text.secondary', minWidth: (theme) => theme.spacing(18), flexShrink: 0 }}>
                     {label || schema.title}:
                 </Typography>
-                <Typography variant="body1" sx={{ color: '#53566E', fontSize: '14px' }}>
+                <Typography variant="body2" sx={{ color: 'text.primary' }}>
                     {finalValue || '-'}
                 </Typography>
             </Box>

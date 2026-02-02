@@ -487,7 +487,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                         <Button
                                                             variant="contained"
                                                             startIcon={<EditIcon />}
-                                                            sx={{ borderRadius: '7px' }}
+                                                            sx={{ borderRadius: (theme) => theme.shape.borderRadius }}
                                                             onClick={() => {
                                                                 setFieldValue(
                                                                     'properties',
