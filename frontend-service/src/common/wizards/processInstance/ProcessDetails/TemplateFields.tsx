@@ -1,13 +1,13 @@
 import { Grid } from '@mui/material';
+import { Field } from 'formik';
 import i18next from 'i18next';
 import { Dictionary } from 'lodash';
 import { IProcessSingleProperty } from '../../../../interfaces/processes/processTemplate';
 import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import BlueTitle from '../../../MeltaDesigns/BlueTitle';
+import { EntityReferenceField } from '../EntityReferenceField';
 import { FileAttachments } from './FileAttachmentFields';
 import { SchemaForm } from './SchemaForm';
-import { Field } from 'formik';
-import { EntityReferenceField } from '../EntityReferenceField';
 
 export const TemplateFields = ({
     toPrint,
@@ -59,7 +59,7 @@ export const TemplateFields = ({
                             />
                             {Object.entries((templateEntityReferenceProperties as Dictionary<IProcessSingleProperty>)!).map(
                                 ([fieldName, { title }]) => (
-                                     <Field
+                                    <Field
                                         name={`entityReferences.${fieldName}`}
                                         component={EntityReferenceField}
                                         key={fieldName}

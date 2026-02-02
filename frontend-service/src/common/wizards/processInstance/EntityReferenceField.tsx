@@ -1,3 +1,4 @@
+import { AppRegistration } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Close';
 import {
@@ -11,29 +12,28 @@ import {
     Divider,
     Grid,
     IconButton,
+    styled,
     TextField,
     Typography,
-    styled,
 } from '@mui/material';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
-import React, { useMemo, useRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { AppRegistration } from '@mui/icons-material';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { IReferencedEntityForProcess } from '../../../interfaces/processes/processInstance';
 import { useUserStore } from '../../../stores/user';
+import { getEntityTemplateColor, hexToRgba } from '../../../utils/colors';
+import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
+import { CustomIcon } from '../../CustomIcon';
+import { AddEntityButton } from '../../EntitiesPage/Buttons/AddEntity';
+import EntitiesTableOfTemplateWithQuickFilter from '../../inputs/TemplateTableSelect/EntitiesTableOfTemplateWithQuickFilter';
+import { EntityReference } from './EntityReference';
 import { ProcessDetailsValues } from './ProcessDetails';
+import OpenEntityReference from './ProcessDetails/OpenEntityReference';
 import { ProcessStepValues } from './ProcessSteps';
 import UnknownEntityCard from './UnknownEntityCard';
-import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
-import OpenEntityReference from './ProcessDetails/OpenEntityReference';
-import { EntityReference } from './EntityReference';
-import EntitiesTableOfTemplateWithQuickFilter from '../../inputs/TemplateTableSelect/EntitiesTableOfTemplateWithQuickFilter';
-import { AddEntityButton } from '../../EntitiesPage/Buttons/AddEntity';
-import { CustomIcon } from '../../CustomIcon';
-import { getEntityTemplateColor, hexToRgba } from '../../../utils/colors';
 
 type ProcessFormikProps = ProcessStepValues | ProcessDetailsValues;
 interface ChooseEntityReferenceProps {
@@ -91,8 +91,8 @@ export const EntityReferenceField: React.FC<ChooseEntityReferenceProps> = ({
             .filter((entity) => !entity.disabled);
     }, [entityTemplates, currentUser.currentWorkspacePermissions]);
 
-    const [isChooseTemplateOpen, setIsChooseTemplateOpen] = React.useState<boolean>(false);
-    const [isChooseExistEntityOpen, setIsChooseExistEntityOpen] = React.useState<boolean>(false);
+    const [isChooseTemplateOpen, setIsChooseTemplateOpen] = useState<boolean>(false);
+    const [isChooseExistEntityOpen, setIsChooseExistEntityOpen] = useState<boolean>(false);
 
     const referencedEntityData = (values.entityReferences[field] as IReferencedEntityForProcess) ?? null;
 

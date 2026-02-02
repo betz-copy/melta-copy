@@ -22,10 +22,10 @@ import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFi
 import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 import { ajvValidate, JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
 import BlueTitle from '../../../MeltaDesigns/BlueTitle';
+import { EntityReferenceField } from '../EntityReferenceField';
 import ProcessStatus, { ReviewedAtProcessStatus } from '../ProcessSummaryStep/ProcessStatus';
 import { ProcessStepValues } from '.';
 import { getStepValuesFromStepInstance } from './stepsFormik';
-import { EntityReferenceField } from '../EntityReferenceField';
 
 export const CommentsDetails: FC<{ values: ProcessStepValues | IMongoStepInstancePopulated; toPrint?: boolean }> = ({ values, toPrint }) => {
     if (!values.comments) {
