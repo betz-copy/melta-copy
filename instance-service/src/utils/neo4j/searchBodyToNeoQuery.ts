@@ -4,7 +4,6 @@ import {
     IFilterGroup,
     IFilterOfField,
     IFilterOfTemplate,
-    IKartoffelUser,
     IMongoEntityTemplate,
     ISearchBatchBody,
 } from '@microservices/shared';
@@ -262,7 +261,8 @@ const filterOfFieldToNeoQuery = async (
     const queries: CypherQueryWithParameters[] = await Promise.all(
         Object.entries(filterOfField).map(async ([key, filterRhs]) => {
             const filterType = key as keyof IFilterOfField;
-
+            const isUserField = fieldTemplate.format === 'user';
+            const isUsersField = fieldTemplate.type === 'array' && fieldTemplate.items?.format === 'user';
             if (filterType !== '$not') {
                 if (fieldTemplate.format === 'relationshipReference') {
                     filterField = `\`${field}.properties.${fieldTemplate.relationshipReference!.relatedTemplateField}${
@@ -270,15 +270,14 @@ const filterOfFieldToNeoQuery = async (
                     }\``;
                 }
 
-                if (fieldTemplate.format === 'user' || (fieldTemplate.type === 'array' && fieldTemplate.items?.format === 'user')) {
-                    const kartoffelUsers: IKartoffelUser[] = await Kartoffel.searchUsers(filterRhs as string);
-                    kartoffelUsersIds = kartoffelUsers.map(({ _id, id }) => _id ?? id);
+                if (isUserField || isUsersField) {
+                    kartoffelUsersIds = isUsersField ? filterRhs : (await Kartoffel.searchUsers(filterRhs as string)).map(({ _id, id }) => _id ?? id);
                 }
             }
 
             let partFilterOfFieldQuery: CypherQueryWithParameters;
 
-            if (fieldTemplate.format === 'user' && !!kartoffelUsersIds?.length) {
+            if (isUserField && !!kartoffelUsersIds?.length) {
                 partFilterOfFieldQuery = userFieldFilterToNeoQuery(field, kartoffelUsersIds, `${parametersParentVariableName}.\`${filterType}\``);
             } else {
                 switch (filterType) {
