@@ -98,6 +98,7 @@ const Graph: React.FC = () => {
 
         updateGraphSize();
         window.addEventListener('resize', updateGraphSize);
+
         return () => {
             window.removeEventListener('resize', updateGraphSize);
         };
