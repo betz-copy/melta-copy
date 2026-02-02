@@ -1428,5 +1428,6 @@ export const environment = {
         },
     },
     formulaGetTodayVarName: '!TODAY_VAR', // '!' at start to not intersect with other variables
-    isDev: import.meta.env.DEV && !import.meta.env.VITE_APP_IS_DOCKER,
+    isDev: import.meta.env.DEV,
+    isDocker: import.meta.env.VITE_APP_IS_DOCKER,
 } as const;
