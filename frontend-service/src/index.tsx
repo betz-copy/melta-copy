@@ -55,7 +55,7 @@ const Index: React.FC = () => {
                     newestOnTop
                 />
             </ThemeProvider>
-            {environment.isDev && !environment.isDocker && <ReactQueryDevtools />}
+            {import.meta.env.DEV && <ReactQueryDevtools />}
             <MuiXLicense />
         </QueryClientProvider>
     );
