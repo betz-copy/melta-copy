@@ -16,7 +16,7 @@ export interface IFrameWizardValues extends Omit<IFrame, 'iconFileId'> {
     icon?: fileDetails;
 }
 export type IFrameWizardBaseType = WizardBaseType<IFrameWizardValues> & {
-    setIFramesOrder: (value: { name: string; id: string }[]) => void;
+    setIFramesOrder: (value: string[]) => void;
 };
 
 const steps: StepType<IFrameWizardValues>[] = [
@@ -38,17 +38,22 @@ const steps: StepType<IFrameWizardValues>[] = [
 export const updateIFramesOrderOnLocalStorage = (data: IMongoIFrame, queryClient: QueryClient) => {
     const iFramesOrder = localStorage.getItem('iFramesOrder');
 
+    let iFramesStored: string[];
     if (iFramesOrder) {
-        let iFramesStored = JSON.parse(iFramesOrder);
+        try {
+            iFramesStored = JSON.parse(iFramesOrder);
+        } catch (error) {
+            iFramesStored = [];
+            console.warn('Failed to parse iFramesOrder from localStorage:', error);
+        }
         const index = iFramesStored.indexOf(data._id);
 
         if (index === -1) {
             iFramesStored = [data._id, ...iFramesStored];
-
-            localStorage.setItem('iFramesOrder', JSON.stringify(iFramesStored));
         }
-    } else localStorage.setItem('iFramesOrder', JSON.stringify([data._id]));
+    } else iFramesStored = [data._id];
 
+    localStorage.setItem('iFramesOrder', JSON.stringify(iFramesStored));
     queryClient.setQueryData<IMongoIFrame[]>('allIFrames', (oldData) => {
         if (!oldData) {
             return [data];
@@ -63,6 +68,7 @@ export const updateIFramesOrderOnLocalStorage = (data: IMongoIFrame, queryClient
         updatedData[index] = data;
         return [...updatedData];
     });
+    return iFramesStored;
 };
 const IFrameWizard: React.FC<IFrameWizardBaseType> = ({
     open,
@@ -80,10 +86,8 @@ const IFrameWizard: React.FC<IFrameWizardBaseType> = ({
         {
             onSuccess: async (data: IMongoIFrame) => {
                 queryClient.setQueryData(['getIFrame', data._id], data);
-
-                updateIFramesOrderOnLocalStorage(data, queryClient);
-                setIFramesOrder(JSON.parse(localStorage.getItem('iFramesOrder')!));
-
+                const iFramesStored = updateIFramesOrderOnLocalStorage(data, queryClient);
+                setIFramesOrder(iFramesStored);
                 i18next.t(isEditMode ? 'wizard.iFrame.editedSuccessfully' : 'wizard.iFrame.createdSuccessfully');
                 handleClose();
             },
