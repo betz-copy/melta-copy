@@ -141,7 +141,7 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
                                             width: '100%',
                                         }}
                                         innerStyle={{
-                                            width: displayFullEntity || isDialogMode ? '50%' : '20%',
+                                            width: displayFullEntity || isDialogMode ? '50%' : undefined,
                                             color: 'red',
                                         }}
                                         overridePropertiesToShow={fieldsToDisplay}

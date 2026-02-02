@@ -287,7 +287,6 @@ export const EntityReferenceField: React.FC<ChooseEntityReferenceProps> = ({
                         {displaySmallField ? (
                             <Grid
                                 container
-                                height="25px"
                                 sx={{
                                     backgroundColor: hexToRgba(
                                         getEntityTemplateColor(entityTemplates.get(referencedEntityData.entity.templateId)!),
@@ -304,12 +303,13 @@ export const EntityReferenceField: React.FC<ChooseEntityReferenceProps> = ({
                                 <Grid alignContent="center" alignSelf="center" alignItems="center">
                                     {entityTemplates.get(referencedEntityData.entity.templateId)?.iconFileId ? (
                                         <CustomIcon
+                                            style={{ marginTop: '5px' }}
                                             iconUrl={entityTemplates.get(referencedEntityData.entity.templateId)!.iconFileId || ''}
                                             height="15px"
                                             width="15px"
                                         />
                                     ) : (
-                                        <AppRegistration fontSize="small" height="15px" width="15px" />
+                                        <AppRegistration style={{ marginTop: '5px' }} fontSize="small" height="15px" width="15px" />
                                     )}
                                 </Grid>
                                 <Grid>
