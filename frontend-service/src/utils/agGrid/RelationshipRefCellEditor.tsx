@@ -25,8 +25,6 @@ const RelationshipRefCellEditor: React.FC<RelationshipRefCellEditorProps> = ({
     filters,
     currentEntity,
 }) => {
-    console.log({ template, currentEntity });
-
     const [inputValue, setInputValue] = useState('');
 
     const queryClient = useQueryClient();
