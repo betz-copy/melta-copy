@@ -20,6 +20,7 @@ import {
     IEntityTemplate,
     IEntityWithDirectRelationships,
     IGetUnits,
+    IKartoffelUser,
     IMongoEntityTemplate,
     IMongoRelationshipTemplate,
     IMongoRule,
@@ -56,6 +57,7 @@ import pLimit from 'p-limit';
 import config from '../../config';
 import ActivityLogProducer from '../../externalServices/activityLog/producer';
 import GatewayServiceProducer from '../../externalServices/gateway/producer';
+import Kartoffel from '../../externalServices/kartoffel';
 import ChildTemplateService from '../../externalServices/templates/childTemplateManager';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateManager';
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
@@ -937,13 +939,59 @@ class EntityManager extends DefaultManagerNeo4j {
             : '';
 
         const textSearchFixed = `*${escapeNeo4jQuerySpecialChars((textSearch || '').toLowerCase())}*`;
+        let kartoffelUsersIds: string[] = [];
+
+        if (textSearch) {
+            const kartoffelUsers: IKartoffelUser[] = await Kartoffel.searchUsers(textSearch);
+            kartoffelUsersIds = kartoffelUsers.map(({ _id, id }) => _id ?? id);
+        }
+
+        const templates = await this.entityTemplateManagerService.searchEntityTemplates({ ids: templateIds });
+        const userFields: string[] = [];
+        const usersFields: string[] = [];
+
+        templates.forEach(({ properties: { properties } }) => {
+            Object.entries(properties).forEach(([key, value]) => {
+                if (value.format === 'user') userFields.push(key);
+                if (value.items?.format === 'user') usersFields.push(key);
+            });
+        });
+
+        const kartoffelUserMatch =
+            kartoffelUsersIds.length && userFields.length
+                ? `
+                UNION
+                WITH templateId
+                MATCH (node)
+                WHERE templateId IN labels(node)
+                    AND any(userField IN $userFields WHERE node[userField] IN $kartoffelUsersIds)
+                RETURN node
+            `
+                : '';
+
+        const kartoffelUsersMatch =
+            kartoffelUsersIds.length && usersFields.length
+                ? `
+                UNION
+                ${templateIds
+                    .map(
+                        (templateId) =>
+                            `MATCH (node:\`${templateId}\`)
+                            WHERE any(userField IN $usersFields WHERE node[userField] IS NOT NULL AND any(item IN node[userField] WHERE item IN $kartoffelUsersIds))
+                            RETURN node`,
+                    )
+                    .join(' UNION ')}
+            `
+                : '';
 
         const query = `
             UNWIND $templateIds AS templateId
             CALL (templateId) {
-                WITH $textSearchFixed as textSearch, '${config.neo4j.templateSearchIndexPrefix}' + templateId AS indexName
+                WITH $textSearchFixed as textSearch, '${config.neo4j.templateSearchIndexPrefix}' + templateId AS indexName, templateId
                 CALL db.index.fulltext.queryNodes(indexName, textSearch) YIELD node, score
                 RETURN node
+                ${kartoffelUserMatch}
+                ${kartoffelUsersMatch}
                 ${entityIdMatch}
             }
             RETURN templateId, count(node) as count ${includeSemantic ? ', $semanticSearchResult[templateId] as entitiesWithFiles' : ''};
@@ -952,6 +1000,9 @@ class EntityManager extends DefaultManagerNeo4j {
         return this.neo4jClient.readTransaction(query, normalizeResponseTemplatesCount, {
             templateIds,
             textSearchFixed,
+            ...(kartoffelUsersIds.length && userFields.length && { kartoffelUsersIds }),
+            ...(kartoffelUsersIds.length && userFields.length && { userFields }),
+            ...(kartoffelUsersIds.length && usersFields.length && { usersFields }),
             ...(includeSemantic && { semanticSearchResult }),
         });
     }

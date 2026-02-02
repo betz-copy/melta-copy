@@ -4,6 +4,7 @@ import {
     IFilterGroup,
     IFilterOfField,
     IFilterOfTemplate,
+    IKartoffelUser,
     IMongoEntityTemplate,
     ISearchBatchBody,
 } from '@microservices/shared';
@@ -478,17 +479,70 @@ export const sortToNeo4JSort = (sortModel: ISearchBatchBody['sort']) => {
     return sortModel?.map(({ field, sort }) => `node.${field} ${sort}`).join(',');
 };
 
-const buildFullTextSearchQuery = (
+const buildFullTextSearchQuery = async (
     searchBody: ISearchBatchBody,
     filterQuery: { cypherQuery: string; parameters: object },
     indexHandling: string,
     parameters: object,
     calculateOverallCount: boolean,
+    entityTemplatesMap: Map<string, IMongoEntityTemplate>,
     entityIdsToInclude?: string[],
     entityIdsToExclude?: string[],
     userEntityId?: string,
 ) => {
     const query = `*${escapeNeo4jQuerySpecialChars((searchBody.textSearch || '').toLowerCase())}*`;
+
+    let kartoffelUsersIds: string[] = [];
+    if (searchBody.textSearch) {
+        const kartoffelUsers: IKartoffelUser[] = await Kartoffel.searchUsers(searchBody.textSearch);
+        kartoffelUsersIds = kartoffelUsers.map(({ _id, id }) => _id ?? id);
+    }
+
+    const templates = Object.keys(searchBody.templates)
+        .filter((templateId) => entityTemplatesMap.has(templateId))
+        .map((templateId) => entityTemplatesMap.get(templateId)!);
+
+    const userFields: string[] = [];
+    const usersFields: string[] = [];
+
+    templates.forEach(({ properties: { properties } }) => {
+        Object.entries(properties).forEach(([key, value]) => {
+            if (value.format === 'user') userFields.push(key);
+            if (value.items?.format === 'user') usersFields.push(key);
+        });
+    });
+
+    const templateIds = Object.keys(searchBody.templates).filter((templateId) => entityTemplatesMap.has(templateId));
+    const kartoffelUserMatch =
+        kartoffelUsersIds.length && userFields.length
+            ? `
+                UNION
+                ${templateIds
+                    .map(
+                        (templateId) =>
+                            `MATCH (node:\`${templateId}\`)
+                            WHERE any(userField IN $userFields WHERE node[userField] IN $kartoffelUsersIds)
+                            RETURN node`,
+                    )
+                    .join(' UNION ')}
+            `
+            : '';
+
+    const kartoffelUsersMatch =
+        kartoffelUsersIds.length && usersFields.length
+            ? `
+                UNION
+                ${templateIds
+                    .map(
+                        (templateId) =>
+                            `MATCH (node:\`${templateId}\`)
+                            WHERE any(userField IN $usersFields WHERE node[userField] IS NOT NULL AND any(item IN node[userField] WHERE item IN $kartoffelUsersIds))
+                            RETURN node`,
+                    )
+                    .join(' UNION ')}
+            `
+            : '';
+
     const entityIdMatch = entityIdsToInclude?.length
         ? `
         UNION
@@ -520,6 +574,8 @@ const buildFullTextSearchQuery = (
                     YIELD node, score
                     WHERE ${filterQuery.cypherQuery}
                     RETURN node
+                    ${kartoffelUserMatch}
+                    ${kartoffelUsersMatch}
                     ${entityIdMatch}
                 }
                 ${entityIdExclude}
@@ -530,6 +586,9 @@ const buildFullTextSearchQuery = (
                 query,
                 ...parameters,
                 ...filterQuery.parameters,
+                ...(kartoffelUsersIds.length && userFields.length && { kartoffelUsersIds }),
+                ...(kartoffelUsersIds.length && userFields.length && { userFields }),
+                ...(kartoffelUsersIds.length && usersFields.length && { usersFields }),
                 ...(entityIdsToInclude?.length && { entityIdsToInclude }),
                 ...(entityIdsToExclude?.length && { entityIdsToExclude }),
                 ...(userEntityId && { userEntityId }),
@@ -548,6 +607,7 @@ const buildFullTextSearchQuery = (
                 YIELD node, score
                 WHERE ${filterQuery.cypherQuery}
                 RETURN node
+                ${kartoffelUsersMatch}
                 ${entityIdMatch}
             }
             ${entityIdExclude}
@@ -562,6 +622,9 @@ const buildFullTextSearchQuery = (
             limit: searchBody.limit,
             ...parameters,
             ...filterQuery.parameters,
+            ...(kartoffelUsersIds.length && userFields.length && { kartoffelUsersIds }),
+            ...(kartoffelUsersIds.length && userFields.length && { userFields }),
+            ...(kartoffelUsersIds.length && usersFields.length && { usersFields }),
             ...(entityIdsToInclude?.length && { entityIdsToInclude }),
             ...(entityIdsToExclude?.length && { entityIdsToExclude }),
         },
@@ -589,12 +652,13 @@ const fullTextSearchToNeoQuery = async (
         latestIndex,
     };
 
-    return buildFullTextSearchQuery(
+    return await buildFullTextSearchQuery(
         searchBody,
         filterQuery,
         indexHandling,
         parameters,
         calculateOverallCount,
+        entityTemplatesMap,
         entityIdsToInclude,
         entityIdsToExclude,
         userEntityId,
@@ -621,12 +685,13 @@ const fullTextBatchSearchToNeoQuery = async (
         indexNames: globalSearchIndexes,
     };
 
-    return buildFullTextSearchQuery(
+    return await buildFullTextSearchQuery(
         searchBody,
         filterQuery,
         indexHandling,
         parameters,
         calculateOverallCount,
+        entityTemplatesMap,
         entityIdsToInclude,
         entityIdsToExclude,
     );
@@ -641,7 +706,7 @@ const searchToNeoQuery = async (
     calculateOverallCount = false,
     globalSearchIndexes: string[] = [],
 ): Promise<CypherQueryWithParameters> => {
-    if (globalSearchIndexes.length === 0)
+    if (!globalSearchIndexes.length)
         return fullTextSearchToNeoQuery(
             searchBody,
             entityTemplatesMap,
