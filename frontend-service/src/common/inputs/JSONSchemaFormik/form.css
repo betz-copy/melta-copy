@@ -1,6 +1,6 @@
 /* Supported starting from version 105 of Chrome */
 
-    /* #json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root > .MuiGrid-root:has(.other-field) {
+/* #json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root > .MuiGrid-root:has(.other-field) {
     width: 50%;
     max-width: 50%;
 }
@@ -10,7 +10,7 @@
     max-width: 100%;
 } */
 
-    .half-width-field {
+.half-width-field {
     width: 47%;
     max-width: 47%;
 }
@@ -78,4 +78,3 @@
     flex-direction: column;
     flex-wrap: nowrap;
 }
-
