@@ -137,7 +137,8 @@ export const normalizeFields = async (
     if (userKeys.size && template) {
         const users = await Kartoffel.getUsersByIds(Array.from(userKeys.keys()));
         for (const [key, value] of Object.entries(properties)) {
-            if (template.properties.properties[key]?.format === PropertyFormat.user) {
+            const property = template.properties.properties[key];
+            if (property?.format === PropertyFormat.user) {
                 const foundUser = users.find(({ _id }) => _id === value);
                 if (!foundUser) props[key] = undefined;
                 else {
@@ -149,10 +150,23 @@ export const normalizeFields = async (
                         mail: foundUser.mail,
                         userType: foundUser.entityType,
                     };
+
+                    const kartoffelUserFieldObj = Object.entries(template.properties.properties).reduce(
+                        (acc, [kartoffelKey, prop]) => {
+                            if (prop.format === PropertyFormat.kartoffelUserField && prop.expandedUserField?.relatedUserField === key)
+                                acc[kartoffelKey] = prop;
+                            return acc;
+                        },
+                        {} as Record<string, IPropertyValue>,
+                    );
+
+                    Object.entries(kartoffelUserFieldObj).forEach(([kartoffelKey, kartoffelProp]) => {
+                        props[kartoffelKey] = foundUser[kartoffelProp?.expandedUserField?.kartoffelField || ''];
+                    });
                 }
             }
 
-            if (template.properties.properties[key]?.items?.format === PropertyFormat.user) {
+            if (property?.items?.format === PropertyFormat.user) {
                 const foundUsers = users.filter(({ _id }) => value.includes(_id));
                 props[key] = foundUsers.map((foundUser) => ({
                     _id: foundUser._id || foundUser.id,

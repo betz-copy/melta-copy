@@ -1,4 +1,3 @@
-import { mapValues } from 'lodash';
 import axios from '../axios';
 import { EntityWizardValues } from '../common/dialogs/entity';
 import { IUpdateMultipleEntitiesResponse } from '../common/EntitiesPage/MultiSelectStatusBar';
@@ -26,7 +25,7 @@ import {
     ISearchFilter,
     ISearchResult,
 } from '../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { IMongoEntityTemplatePopulated, PropertyFormat } from '../interfaces/entityTemplates';
 import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
 import { IRelationShipSelectionTree } from '../interfaces/printingTemplates';
 import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
@@ -39,53 +38,89 @@ import { isChildTemplate } from '../utils/templates';
 const { entities, relationships } = environment.api;
 const { uuidFormat } = environment;
 
-// const getPropertiesPreparedForBackend = (entity: IEntityWithIgnoredRules, template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => {
-//     const isUUID = (str: string) => uuidFormat.test(str);
+const OMIT_PROPERTY = Symbol('omit-property');
 
-//     return mapValues(entity.properties, (property, key) => {
-//         switch (template.properties.properties[key]?.format) {
-//             case 'relationshipReference': //TODO: check if all places it used or add boolean
-//                 return property?.properties._id;
+type TemplatePropertiesMap = Record<string, { format?: string; items?: { format?: string } } | undefined>;
+type TransformPropertyHandler = (property: IPropertyValue, key: string) => IPropertyValue | typeof OMIT_PROPERTY | undefined;
 
-//             case 'location': {
-//                 if (!property) return undefined;
-//                 const location = JSON.parse(property);
+const transformProperties = (
+    properties: Record<string, IPropertyValue>,
+    templateProperties: TemplatePropertiesMap,
+    handlers: Partial<Record<string, TransformPropertyHandler>>,
+) =>
+    Object.entries(properties).reduce<Record<string, IPropertyValue>>((acc, [key, property]) => {
+        const templateProperty = templateProperties[key];
 
-//                 if (location.coordinateSystem === CoordinateSystem.UTM)
-//                     return JSON.stringify({
-//                         location: locationConverterToString(location.location),
-//                         coordinateSystem: location.coordinateSystem,
-//                     });
-//                 return JSON.stringify(location);
-//             }
-//             case 'signature':
-//                 return undefined; //TODO: decide which of the signature are good
-//             case 'signature': {
-//                 if (!isUUID(property)) return undefined;
-//                 return property;
-//             }
-//             case 'date': {
-//                 if (!property) return undefined;
-//                 return new Date(property).toISOString().split('T')[0];
-//             }
-//             case 'date-time': {
-//                 if (!property) return undefined;
-//                 return new Date(property).toISOString();
-//             }
-//             case 'user': {
-//                 if (!property) return undefined;
-//                 return JSON.parse(property._id);
-//             }
-//             default: {
-//                 if (template.properties.properties[key]?.items?.format === 'user') {
-//                     if (!property) return undefined;
-//                     return JSON.parse(property._id);
-//                 }
-//                 return property;
-//             }
-//         }
-//     });
-// };
+        if (templateProperty?.format === PropertyFormat.kartoffelUserField) {
+            return acc;
+        }
+
+        const handler = templateProperty?.format ? handlers[templateProperty.format] : undefined;
+        let value: IPropertyValue | typeof OMIT_PROPERTY | undefined;
+
+        if (handler) value = handler(property, key);
+        else if (templateProperty?.items?.format === PropertyFormat.user) value = property ? property.map(({ _id }) => _id) : undefined;
+        else value = property;
+
+        if (value !== OMIT_PROPERTY) acc[key] = value;
+
+        return acc;
+    }, {});
+
+const stringifyLocationWithUtm = (location: { coordinateSystem: CoordinateSystem; location: IPropertyValue }) => {
+    if (location.coordinateSystem === CoordinateSystem.UTM) {
+        return JSON.stringify({
+            location: locationConverterToString(location.location),
+            coordinateSystem: location.coordinateSystem,
+        });
+    }
+
+    return JSON.stringify(location);
+};
+
+const parseLocationFromString = (property: IPropertyValue) => {
+    if (!property) return undefined;
+    const location = JSON.parse(property as string);
+    return stringifyLocationWithUtm(location);
+};
+
+const parseLocationFromAny = (property: IPropertyValue) => {
+    if (!property) return undefined;
+    const location = typeof property === 'string' && property.includes('location') ? JSON.parse(property) : property;
+    return stringifyLocationWithUtm(location);
+};
+
+const stringifyLocation = (property: IPropertyValue) => {
+    if (!property) return undefined;
+    return JSON.stringify(property);
+};
+
+const collectFilesWithUnchanged = (attachmentsProperties: Record<string, IPropertyValue>, templateProperties: TemplatePropertiesMap) => {
+    const filesToUpload: IPropertyValue = [];
+    const unchangedFiles: IPropertyValue = [];
+
+    Object.entries(attachmentsProperties).forEach(([key, value]: [string, IPropertyValue]) => {
+        if (Array.isArray(value) && value) {
+            value.forEach((file, index) => {
+                if (file instanceof File && templateProperties[key]?.items) {
+                    filesToUpload.push([`${key}.${index}`, file]);
+                } else if (file instanceof File) {
+                    filesToUpload.push([`${key}`, file]);
+                } else {
+                    unchangedFiles.push([`${key}`, file]);
+                }
+            });
+        } else if (value) {
+            if (value instanceof File) {
+                filesToUpload.push([`${key}`, value]);
+            } else {
+                unchangedFiles.push([`${key}`, value]);
+            }
+        }
+    });
+
+    return { filesToUpload, unchangedFiles };
+};
 
 export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
     const { data } = await axios.post(`${entities}/export`, body, { responseType: 'blob' });
@@ -110,33 +145,10 @@ export const loadEntitiesRequest = async (
     if (insertBrokenEntities) {
         const formattedInsertBrokenEntities = insertBrokenEntities.map((entity) => ({
             templateId: entity.templateId,
-            properties: mapValues(entity.properties, (property, key) => {
-                switch (template.properties.properties[key]?.format) {
-                    case 'location': {
-                        if (!property) return undefined;
-                        const location = JSON.parse(property);
-
-                        if (location.coordinateSystem === CoordinateSystem.UTM)
-                            return JSON.stringify({
-                                location: locationConverterToString(location.location),
-                                coordinateSystem: location.coordinateSystem,
-                            });
-                        return JSON.stringify(location);
-                    }
-                    case 'signature':
-                        return undefined;
-                    case 'user': {
-                        if (!property) return undefined;
-                        return property._id;
-                    }
-                    default: {
-                        if (template.properties.properties[key]?.items?.format === 'user') {
-                            if (!property) return undefined;
-                            return property.map(({ _id }) => _id);
-                        }
-                        return property;
-                    }
-                }
+            properties: transformProperties(entity.properties, template.properties.properties, {
+                location: (property) => parseLocationFromString(property),
+                signature: () => undefined,
+                user: (property) => (property ? property._id : undefined),
             }),
             ignoredRules: entity.ignoredRules,
         }));
@@ -185,30 +197,11 @@ export const editManyEntitiesByExcelRequest = async (
 
     const entitiesArray = entitiesToUpdate.map((entity) => ({
         templateId: entity.templateId,
-        properties: mapValues(entity.properties, (property, key) => {
-            switch (template.properties.properties[key]?.format) {
-                case 'relationshipReference':
-                    return property?.properties._id;
-                case 'location': {
-                    if (!property) return undefined;
-                    return JSON.stringify(property);
-                }
-                case 'signature': {
-                    if (!isUUID(property)) return undefined;
-                    return property;
-                }
-                case 'user': {
-                    if (!property) return undefined;
-                    return property._id;
-                }
-                default: {
-                    if (template.properties.properties[key]?.items?.format === 'user') {
-                        if (!property) return undefined;
-                        return property.map(({ _id }) => _id);
-                    }
-                    return property;
-                }
-            }
+        properties: transformProperties(entity.properties, template.properties.properties, {
+            relationshipReference: (property) => property?.properties._id,
+            location: (property) => stringifyLocation(property),
+            signature: (property) => (isUUID(property) ? property : undefined),
+            user: (property) => (property ? property._id : undefined),
         }),
         ignoredRules: entity.ignoredRules,
     }));
@@ -305,43 +298,13 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
     formData.append(
         'properties',
         JSON.stringify(
-            mapValues(entity.properties, (property, key) => {
-                switch (entity.template.properties.properties[key]?.format) {
-                    case 'relationshipReference':
-                        return property?.properties._id;
-                    case 'location': {
-                        if (!property) return undefined;
-                        const location = JSON.parse(property);
-
-                        if (location.coordinateSystem === CoordinateSystem.UTM)
-                            return JSON.stringify({
-                                location: locationConverterToString(location.location),
-                                coordinateSystem: location.coordinateSystem,
-                            });
-                        return JSON.stringify(location);
-                    }
-                    case 'signature':
-                        return undefined;
-                    case 'date': {
-                        if (!property) return undefined;
-                        return new Date(property).toISOString().split('T')[0];
-                    }
-                    case 'date-time': {
-                        if (!property) return undefined;
-                        return new Date(property).toISOString();
-                    }
-                    case 'user': {
-                        if (!property) return undefined;
-                        return property._id;
-                    }
-                    default: {
-                        if (entity.template.properties.properties[key]?.items?.format === 'user') {
-                            if (!property) return undefined;
-                            return property.map(({ _id }) => _id);
-                        }
-                        return property;
-                    }
-                }
+            transformProperties(entity.properties, entity.template.properties.properties, {
+                relationshipReference: (property) => property?.properties._id,
+                location: (property) => parseLocationFromString(property),
+                signature: () => undefined,
+                date: (property) => (property ? new Date(property).toISOString().split('T')[0] : undefined),
+                'date-time': (property) => (property ? new Date(property).toISOString() : undefined),
+                user: (property) => (property ? property._id : undefined),
             }),
         ),
     );
@@ -369,31 +332,9 @@ const getBodyForUpdateRequest = async (
     const { template, attachmentsProperties } = newEntityData;
     const formData = new FormData();
 
-    const filesToUpload: IPropertyValue = [];
-    const unchangedFiles: IPropertyValue = []; /// //send single file as array to the back
-
     const templateProperties = template.properties.properties;
     const fileUploadPromises: Promise<[string, File]>[] = [];
-
-    Object.entries(attachmentsProperties).forEach(([key, value]: [string, IPropertyValue]) => {
-        if (Array.isArray(value) && value) {
-            value.forEach((file, index) => {
-                if (file instanceof File && templateProperties[key].items) {
-                    filesToUpload.push([`${key}.${index}`, file]);
-                } else if (file instanceof File) {
-                    filesToUpload.push([`${key}`, file]);
-                } else {
-                    unchangedFiles.push([`${key}`, file]);
-                }
-            });
-        } else if (value) {
-            if (value instanceof File) {
-                filesToUpload.push([`${key}`, value]);
-            } else {
-                unchangedFiles.push([`${key}`, value]);
-            }
-        }
-    });
+    const { filesToUpload, unchangedFiles } = collectFilesWithUnchanged(attachmentsProperties, templateProperties);
 
     for (const [key, value] of Object.entries(newEntityData.properties)) {
         if (templateProperties[key]?.format === 'signature') {
@@ -429,44 +370,13 @@ const getBodyForUpdateRequest = async (
     formData.append(
         'properties',
         JSON.stringify(
-            mapValues(newEntityData.properties, (property, key) => {
-                switch (template.properties.properties[key]?.format) {
-                    case 'relationshipReference':
-                        return property?.properties._id;
-                    case 'location': {
-                        if (!property) return undefined;
-                        const location = typeof property === 'string' && property.includes('location') ? JSON.parse(property) : property;
-
-                        if (location.coordinateSystem === CoordinateSystem.UTM)
-                            return JSON.stringify({
-                                location: locationConverterToString(location.location),
-                                coordinateSystem: location.coordinateSystem,
-                            });
-                        return JSON.stringify(location);
-                    }
-                    case 'signature': {
-                        return isUUID(property) ? property : undefined;
-                    }
-                    case 'date': {
-                        if (!property) return undefined;
-                        return new Date(property).toISOString().split('T')[0];
-                    }
-                    case 'date-time': {
-                        if (!property) return undefined;
-                        return new Date(property).toISOString();
-                    }
-                    case 'user': {
-                        if (!property) return undefined;
-                        return property._id;
-                    }
-                    default: {
-                        if (template.properties.properties[key]?.items?.format === 'user') {
-                            if (!property) return undefined;
-                            return property.map(({ _id }) => _id);
-                        }
-                        return property;
-                    }
-                }
+            transformProperties(newEntityData.properties, template.properties.properties, {
+                relationshipReference: (property) => property?.properties._id,
+                location: (property) => parseLocationFromAny(property),
+                signature: (property) => (isUUID(property) ? property : undefined),
+                date: (property) => (property ? new Date(property).toISOString().split('T')[0] : undefined),
+                'date-time': (property) => (property ? new Date(property).toISOString() : undefined),
+                user: (property) => (property ? property._id : undefined),
             }),
         ),
     );
@@ -513,23 +423,8 @@ export const updateMultipleEntitiesRequest = async (
 
 export const duplicateEntityRequest = async (entityId: string, newEntityData: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
     const formData = new FormData();
-    const filesToUpload: IPropertyValue = [];
-    const unchangedFiles: IPropertyValue = [];
-
     const { template, properties, attachmentsProperties } = newEntityData;
-
-    Object.entries(attachmentsProperties).forEach(([key, value]: [string, IPropertyValue]) => {
-        if (Array.isArray(value) && value) {
-            value.forEach((file, index) => {
-                if (file instanceof File && template.properties.properties[key].items) filesToUpload.push([`${key}.${index}`, file]);
-                else if (file instanceof File) filesToUpload.push([`${key}`, file]);
-                else unchangedFiles.push([`${key}`, file]);
-            });
-        } else if (value) {
-            if (value instanceof File) filesToUpload.push([`${key}`, value]);
-            else unchangedFiles.push([`${key}`, value]);
-        }
-    });
+    const { filesToUpload, unchangedFiles } = collectFilesWithUnchanged(attachmentsProperties, template.properties.properties);
 
     filesToUpload.forEach(([key, value]) => {
         formData.append(key, value as Blob);
@@ -553,43 +448,13 @@ export const duplicateEntityRequest = async (entityId: string, newEntityData: En
     formData.append(
         'properties',
         JSON.stringify(
-            mapValues(properties, (property, key) => {
-                switch (template.properties.properties[key]?.format) {
-                    case 'relationshipReference':
-                        return property?.properties._id;
-                    case 'location': {
-                        if (!property) return undefined;
-                        const location = typeof property === 'string' && property.includes('location') ? JSON.parse(property) : property;
-
-                        if (location.coordinateSystem === CoordinateSystem.UTM)
-                            return JSON.stringify({
-                                location: locationConverterToString(location.location),
-                                coordinateSystem: location.coordinateSystem,
-                            });
-                        return JSON.stringify(location);
-                    }
-                    case 'signature':
-                        return undefined;
-                    case 'date': {
-                        if (!property) return undefined;
-                        return new Date(property).toISOString().split('T')[0];
-                    }
-                    case 'date-time': {
-                        if (!property) return undefined;
-                        return new Date(property).toISOString();
-                    }
-                    case 'user': {
-                        if (!property) return undefined;
-                        return property._id;
-                    }
-                    default: {
-                        if (template.properties.properties[key]?.items?.format === 'user') {
-                            if (!property) return undefined;
-                            return property.map(({ _id }) => _id);
-                        }
-                        return property;
-                    }
-                }
+            transformProperties(properties, template.properties.properties, {
+                relationshipReference: (property) => property?.properties._id,
+                location: (property) => parseLocationFromAny(property),
+                signature: () => undefined,
+                date: (property) => (property ? new Date(property).toISOString().split('T')[0] : undefined),
+                'date-time': (property) => (property ? new Date(property).toISOString() : undefined),
+                user: (property) => (property ? property._id : undefined),
             }),
         ),
     );
