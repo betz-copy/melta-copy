@@ -335,6 +335,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                         actionMetadata.properties,
                         entitiesTemplatesByIds.get(actionMetadata.templateId)!,
                         userId,
+                        undefined,
                         actionMetadata.entityIdToDuplicate,
                     );
 
@@ -431,7 +432,9 @@ export class BulkActionManager extends DefaultManagerNeo4j {
 
                     const neighborsOfUpdatedEntity = await this.entityManager.getNeighborsOfUpdatedEntityForRule(actionMetadata.entityId);
 
-                    neighborsOfUpdatedEntity.forEach(({ neighborOfEntity }) => entityTemplateIds.push(neighborOfEntity.templateId));
+                    neighborsOfUpdatedEntity.forEach(({ neighborOfEntity }) => {
+                        entityTemplateIds.push(neighborOfEntity.templateId);
+                    });
                 }
             },
         };

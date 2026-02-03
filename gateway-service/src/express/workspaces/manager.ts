@@ -76,6 +76,7 @@ class WorkspaceManager extends DefaultManagerProxy {
         return this.updateOne(_id, { ...createdWorkspace, ...fileProperties }, []);
     }
 
+    // biome-ignore lint/suspicious/noExplicitAny: never doubt Hammer
     private async deleteFilesWrapper(id: string, deleteFunc: () => Promise<any>) {
         try {
             return deleteFunc();

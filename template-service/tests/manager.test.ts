@@ -42,14 +42,14 @@ const exampleRelation: IRelationshipTemplate = {
     destinationEntityId: '123451234512345123451234',
 };
 
-const mockMongooseFindOneWithChainingResolveValue = (resolveValue: any) =>
+const mockMongooseFindOneWithChainingResolveValue = (resolveValue: IRelationshipTemplate) =>
     ({
         orFail: jest.fn().mockReturnThis(),
         lean: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue(resolveValue),
     }) as Query<IRelationshipTemplate & Document, IRelationshipTemplate & Document>;
 
-const mockMongooseFindManyWithChainingResolveValue = (resolveValue: any) =>
+const mockMongooseFindManyWithChainingResolveValue = (resolveValue: IRelationshipTemplate[]) =>
     ({
         lean: jest.fn().mockReturnThis(),
         skip: jest.fn().mockReturnThis(),
@@ -133,36 +133,35 @@ describe('manager logic', () => {
             expect(entityTemplateManagerMocked.getEntityTemplatebyId).toBeCalledTimes(1);
             expect(RelationshipTemplateModelMocked.findByIdAndUpdate).toBeCalledTimes(1);
         });
-        it.each(['source', 'dest'] as ['source', 'dest'])(
-            'throw 403 when only %s updated and doesnt exist',
-            async (sourceOrDest: 'source' | 'dest') => {
-                entityTemplateManagerMocked.getEntityTemplatebyId.mockRejectedValueOnce({ response: { status: notFoundStatus } });
+        it.each(['source', 'dest'] as ['source', 'dest'])('throw 403 when only %s updated and doesnt exist', async (sourceOrDest:
+            | 'source'
+            | 'dest') => {
+            entityTemplateManagerMocked.getEntityTemplatebyId.mockRejectedValueOnce({ response: { status: notFoundStatus } });
 
-                const updatedFields: Partial<IRelationshipTemplate> = {};
-                if (sourceOrDest === 'source') updatedFields.sourceEntityId = '123451234512345123451234';
-                else updatedFields.destinationEntityId = '123451234512345123451234';
+            const updatedFields: Partial<IRelationshipTemplate> = {};
+            if (sourceOrDest === 'source') updatedFields.sourceEntityId = '123451234512345123451234';
+            else updatedFields.destinationEntityId = '123451234512345123451234';
 
-                await request(app).put('/api/relationships/templates/123451234512345123451234').send(updatedFields).expect(forbiddenStatus);
+            await request(app).put('/api/relationships/templates/123451234512345123451234').send(updatedFields).expect(forbiddenStatus);
 
-                expect(entityTemplateManagerMocked.getEntityTemplatebyId).toBeCalledTimes(1);
-                expect(RelationshipTemplateModelMocked.findByIdAndUpdate).toBeCalledTimes(0);
-            },
-        );
-        it.each(['source', 'dest'] as ['source', 'dest'])(
-            'throw unknown error when only %s updated and getById throw unknown error',
-            async (sourceOrDest: 'source' | 'dest') => {
-                entityTemplateManagerMocked.getEntityTemplatebyId.mockRejectedValueOnce(new Error('unknown error'));
+            expect(entityTemplateManagerMocked.getEntityTemplatebyId).toBeCalledTimes(1);
+            expect(RelationshipTemplateModelMocked.findByIdAndUpdate).toBeCalledTimes(0);
+        });
+        it.each(['source', 'dest'] as [
+            'source',
+            'dest',
+        ])('throw unknown error when only %s updated and getById throw unknown error', async (sourceOrDest: 'source' | 'dest') => {
+            entityTemplateManagerMocked.getEntityTemplatebyId.mockRejectedValueOnce(new Error('unknown error'));
 
-                const updatedFields: Partial<IRelationshipTemplate> = {};
-                if (sourceOrDest === 'source') updatedFields.sourceEntityId = '123451234512345123451234';
-                else updatedFields.destinationEntityId = '123451234512345123451234';
+            const updatedFields: Partial<IRelationshipTemplate> = {};
+            if (sourceOrDest === 'source') updatedFields.sourceEntityId = '123451234512345123451234';
+            else updatedFields.destinationEntityId = '123451234512345123451234';
 
-                await request(app).put('/api/relationships/templates/123451234512345123451234').send(updatedFields).expect(internalServerErrorStatus);
+            await request(app).put('/api/relationships/templates/123451234512345123451234').send(updatedFields).expect(internalServerErrorStatus);
 
-                expect(entityTemplateManagerMocked.getEntityTemplatebyId).toBeCalledTimes(1);
-                expect(RelationshipTemplateModelMocked.findByIdAndUpdate).toBeCalledTimes(0);
-            },
-        );
+            expect(entityTemplateManagerMocked.getEntityTemplatebyId).toBeCalledTimes(1);
+            expect(RelationshipTemplateModelMocked.findByIdAndUpdate).toBeCalledTimes(0);
+        });
     });
     it('deleteTemplateById', async () => {
         RelationshipTemplateModelMocked.findByIdAndDelete.mockReturnValueOnce(mockMongooseFindOneWithChainingResolveValue(exampleRelation));
@@ -196,21 +195,20 @@ describe('manager logic', () => {
 
             expect(RelationshipTemplateModelMocked.create).toBeCalledTimes(0);
         });
-        it.each(['source', 'dest'] as ['source', 'dest'])(
-            'throw unknown error when %s getById throw unknown error',
-            async (sourceOrDest: 'source' | 'dest') => {
-                entityTemplateManagerMocked.getEntityTemplatebyId.mockImplementation(async (templateId: string) => {
-                    if (sourceOrDest === 'source' && templateId === exampleRelation.sourceEntityId) throw new Error('unknown error');
-                    if (sourceOrDest === 'dest' && templateId === exampleRelation.destinationEntityId) throw new Error('unknown error');
+        it.each(['source', 'dest'] as ['source', 'dest'])('throw unknown error when %s getById throw unknown error', async (sourceOrDest:
+            | 'source'
+            | 'dest') => {
+            entityTemplateManagerMocked.getEntityTemplatebyId.mockImplementation(async (templateId: string) => {
+                if (sourceOrDest === 'source' && templateId === exampleRelation.sourceEntityId) throw new Error('unknown error');
+                if (sourceOrDest === 'dest' && templateId === exampleRelation.destinationEntityId) throw new Error('unknown error');
 
-                    return exampleEntity;
-                });
-                RelationshipTemplateModelMocked.create.mockImplementationOnce(async (doc) => doc);
+                return exampleEntity;
+            });
+            RelationshipTemplateModelMocked.create.mockImplementationOnce(async (doc) => doc);
 
-                await request(app).post('/api/relationships/templates').send(exampleRelation).expect(internalServerErrorStatus);
+            await request(app).post('/api/relationships/templates').send(exampleRelation).expect(internalServerErrorStatus);
 
-                expect(RelationshipTemplateModelMocked.create).toBeCalledTimes(0);
-            },
-        );
+            expect(RelationshipTemplateModelMocked.create).toBeCalledTimes(0);
+        });
     });
 });

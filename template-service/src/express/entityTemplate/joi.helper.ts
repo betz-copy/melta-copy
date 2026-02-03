@@ -50,6 +50,7 @@ ajv.addKeyword({ keyword: 'identifier', type: 'boolean' });
 ajv.addKeyword({ keyword: 'hideFromDetailsPage', type: 'boolean' });
 ajv.addKeyword({ keyword: 'comment', type: 'string' });
 ajv.addKeyword({ keyword: 'color', type: 'string' });
+ajv.addKeyword({ keyword: 'accountBalance', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isProfileImage', type: 'boolean' });
 
 export const stringFormats = [
@@ -139,6 +140,7 @@ const propertiesArraySchema = Joi.array()
             comment: Joi.string().when('format', { not: 'comment', then: Joi.forbidden() }),
             color: Joi.string().when('format', { not: 'comment', then: Joi.forbidden() }),
             hideFromDetailsPage: Joi.boolean().when('format', { not: 'comment', then: Joi.forbidden() }),
+            accountBalance: Joi.boolean().optional(),
             isProfileImage: Joi.boolean()
                 .when('format', { not: 'kartoffelUserField', then: Joi.forbidden() })
                 .when('expandedUserField.kartoffelField', { not: 'image', then: Joi.forbidden() }),
@@ -210,6 +212,14 @@ export const innerFieldGroupsSchema = Joi.array().items(
         fields: Joi.array().items(Joi.string()).unique().required(),
     }),
 );
+
+export const innerWalletTransferSchema = Joi.object({
+    from: Joi.string().required(),
+    to: Joi.string().required(),
+    amount: Joi.string().required(),
+    description: Joi.string().required(),
+}).allow(null);
+
 const customOrderPropertiesValidation: Joi.CustomValidator = (propertiesOrder: string[], helpers) => {
     const { properties } = helpers.state.ancestors[0].properties;
     const propertiesKeys = Object.keys(properties);

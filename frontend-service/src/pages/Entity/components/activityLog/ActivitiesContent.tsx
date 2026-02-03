@@ -112,12 +112,8 @@ const ActivitiesContent: React.FC<{
                             if (newVal === null) return;
                             setActivitiesFilterValue(Array.isArray(newVal) ? newVal.map((val) => val.value) : [newVal.value]);
                         }}
-                        textFieldProps={{}}
                         required={false}
-                        onBlur={() => {}}
-                        onFocus={() => {}}
                         variant="outlined"
-                        rawErrors={[]}
                         label={i18next.t('entityPage.activityLog.activityType')}
                     />
                 </Grid>
@@ -162,7 +158,7 @@ const ActivitiesContent: React.FC<{
                         infiniteScrollPageCount,
                         pageParam,
                         entityTemplate.properties.properties,
-                        activitiesFilterValue && activitiesFilterValue.length ? activitiesFilterValue : ACTIVITY_TYPES,
+                        activitiesFilterValue?.length ? activitiesFilterValue : ACTIVITY_TYPES,
                         searchInput.trim(),
                         startDateInput || undefined,
                         endDateInput || undefined,

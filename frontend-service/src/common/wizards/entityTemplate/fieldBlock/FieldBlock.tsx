@@ -6,8 +6,10 @@ import { debounce } from 'lodash';
 import React, { SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import { DndProvider, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { useQueryClient } from 'react-query';
 import { v4 as uuid } from 'uuid';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { IPropertyValue } from '../../../../interfaces/entities';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { AreYouSureDialog } from '../../../dialogs/AreYouSureDialog';
 import { PropertiesTypes } from '../AddFields';
 import { CommonFormInputProperties, FieldProperty, GroupProperty, PropertyItem } from '../commonInterfaces';
@@ -80,6 +82,10 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
     onDeleteSure,
     remove,
     userPropertiesInTemplate,
+    isAccountTemplate = false,
+    hasAccountBalanceField,
+    isAlreadyWalletTemplate,
+    setIsTransferTemplate,
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
     // copy of values of formik in order to show changes on inputs fast (formik rerenders are slow)
     // using ordered item ref because update functions (push/remove/...) are not updated for the field cards on
@@ -93,6 +99,9 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
     const orderedItemsRef = useRef(orderedItems);
     orderedItemsRef.current = orderedItems;
 
+    const queryClient = useQueryClient();
+    const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates') || new Map();
+
     // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
     useEffect(() => {
         setFieldValue(propertiesType, orderedItems);
@@ -104,6 +113,28 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         orderedItemsRef.current = values[propertiesType];
     }, [values[propertiesType]]);
 
+    useEffect(() => {
+        if (!orderedItems?.length || !templates?.size) return;
+        const templateHasAccountBalance = (template: IMongoEntityTemplatePopulated) =>
+            Object.values(template?.properties?.properties ?? {}).some((property) => property.accountBalance);
+
+        const hasRelatedAccountBalance = (relatedId?: string) => {
+            if (!relatedId) return false;
+            const relatedTemplate = templates.get(relatedId);
+            return relatedTemplate ? templateHasAccountBalance(relatedTemplate) : false;
+        };
+        setIsTransferTemplate?.(
+            orderedItems.some((property) => {
+                if (property.type === 'field' && property.data?.relationshipReference)
+                    return hasRelatedAccountBalance(property.data.relationshipReference.relatedTemplateId);
+                if (property.type === 'group')
+                    return property.fields.some((field) => hasRelatedAccountBalance(field.relationshipReference?.relatedTemplateId));
+                return false;
+            }),
+        );
+    }, [orderedItems, templates, setIsTransferTemplate]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const updateFormikDebounced = useCallback(
         debounce(() => {
             setFieldValue(propertiesType, [...orderedItemsRef.current], true);
@@ -117,7 +148,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         updateFormikDebounced();
     };
 
-    const setFieldDisplayValue = (indexesToUpdate: { index: number; groupIndex?: number }[], field: keyof Values, value: any) => {
+    const setFieldDisplayValue = (indexesToUpdate: { index: number; groupIndex?: number }[], field: keyof Values, value: IPropertyValue) => {
         const displayValuesCopy = [...orderedItemsRef.current] as Values[PropertiesType];
         indexesToUpdate.forEach(({ index, groupIndex }) => {
             if (groupIndex !== undefined) {
@@ -320,7 +351,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
     const onChangeWrapper = (index: number, groupIndex?: number) => (event: React.ChangeEvent<HTMLInputElement>) =>
         onChange(index, event, groupIndex);
 
-    const setFieldDisplayValueWrapper = (index: number, groupIndex?: number) => (field: keyof Values, value: any) =>
+    const setFieldDisplayValueWrapper = (index: number, groupIndex?: number) => (field: keyof Values, value: IPropertyValue) =>
         setFieldDisplayValue([{ index, groupIndex }], field, value);
     const setDisplayValueWrapper = (index: number, groupId?: string) => (value: SetStateAction<CommonFormInputProperties>) =>
         setDisplayValue(index, value, groupId);
@@ -386,6 +417,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         const initialVal = findInitialValue();
 
         return {
+            // biome-ignore lint/suspicious/noExplicitAny: types are shit in this page
             entity: (values as any).displayName,
             value: propertyProp,
             index,
@@ -401,6 +433,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
             supportUserType,
             supportEntityReferenceType,
             supportChangeToRequiredWithInstances,
+            // biome-ignore lint/suspicious/noExplicitAny: types are shit in this page
             templateId: (values as any)._id,
             supportArrayFields,
             supportDeleteForExistingInstances,
@@ -419,6 +452,8 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
             userPropertiesInTemplate,
             onDuplicateKartoffelField,
             propertiesType,
+            hasAccountBalanceField,
+            isAlreadyWalletTemplate,
             values,
         };
     };
@@ -499,23 +534,25 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         updateFormik();
     }, []);
 
-    const [, drop] = useDrop(() => ({
+    type DragFieldItem = CommonFormInputProperties & {
+        index: number;
+    };
+
+    type DragGroupItem = GroupProperty & {
+        index: number;
+    };
+
+    type DragItem = DragFieldItem | DragGroupItem;
+
+    const [, drop] = useDrop<DragItem, void, unknown>(() => ({
         accept: [ItemTypes.FIELD, ItemTypes.GROUP],
-        drop: (item: any, monitor) => {
+        drop: (item, monitor) => {
             if (monitor.didDrop()) return;
 
-            const isGroup = Array.isArray(item.fields);
+            if ('fields' in item) return;
 
-            const dropIndex = item.index ?? 0;
-
-            if (!isGroup) {
-                const toGroupId = null;
-                moveField(item, dropIndex, toGroupId);
-            }
+            moveField(item, item.index, null);
         },
-        collect: (m) => ({
-            isOver: m.isOver({ shallow: true }),
-        }),
     }));
 
     return (
@@ -536,6 +573,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                 <div
                     key={propertiesType}
                     ref={(node) => {
+                        // biome-ignore lint/suspicious/noExplicitAny: lol
                         drop(node as any);
                     }}
                     style={{
@@ -578,6 +616,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                                                 initialValue={initialValues?.[propertiesType]?.find(
                                                     (property) => property.type === 'group' && property.id === item.id,
                                                 )}
+                                                isAccountTemplate={isAccountTemplate}
                                             />
                                         ) : (
                                             <Field
@@ -592,6 +631,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                                                 uniqueConstraints={uniqueConstraints}
                                                 setUniqueConstraints={setUniqueConstraints}
                                                 moveGroup={moveGroup}
+                                                isAccountTemplate={isAccountTemplate}
                                                 values={values}
                                             />
                                         )}
@@ -602,6 +642,11 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                                 <Attachment key={data.id} field={data} index={index} buildProps={{ ...buildProps(data, index) }} onDrop={moveField} />
                             );
                         })}
+                        <div>
+                            {errors?.[propertiesType] === i18next.t('validation.accountBalanceField') && (
+                                <div style={{ color: '#d32f2f' }}>{i18next.t('validation.accountBalanceField')}</div>
+                            )}
+                        </div>
                     </Grid>
                 </div>
                 <Grid>

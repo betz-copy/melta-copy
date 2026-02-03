@@ -25,7 +25,7 @@ export const CustomDateTimePickerToolbar = styled(DateTimePickerToolbar)({
     },
 }) as (props: BaseToolbarProps) => JSX.Element;
 
-const parseDefaultDate = (val: any) => {
+const parseDefaultDate = (val: string | Date | undefined | null): Date | null => {
     if (!val) return null;
 
     const date = new Date(val);
@@ -86,7 +86,7 @@ const getRjsfDateOrDateTimeWidget =
                     value={parseDefaultDate(value)}
                     format={inputFormat}
                     enableAccessibleFieldDOMStructure={false}
-                    views={datePickerViews}
+                    {...(dateOrDateTime === 'date' && { views: datePickerViews })}
                     onChange={(val) => onChangeDateWidget(val)}
                     slotProps={{
                         textField: {

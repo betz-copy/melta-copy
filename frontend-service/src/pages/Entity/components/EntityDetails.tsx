@@ -206,22 +206,29 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                 )}
                                 <Grid
                                     onClick={() => {
-                                        if (canWriteInstance && !isEntityDisabled) setIsEditMode(true);
+                                        if (canWriteInstance && !isEntityDisabled && !currentEntityTemplate?.walletTransfer) setIsEditMode(true);
                                     }}
                                 >
                                     <IconButtonWithPopover
                                         popoverText={
-                                            !canWriteInstance
+                                            // eslint-disable-next-line no-nested-ternary
+                                            !canWriteInstance || currentEntityTemplate?.walletTransfer
                                                 ? i18next.t('permissions.dontHaveWritePermissionsToTemplate')
                                                 : isEntityDisabled
                                                   ? i18next.t('entityPage.disabledEntity')
                                                   : i18next.t('actions.edit')
                                         }
                                         style={{
-                                            cursor: !canWriteInstance || isEntityDisabled ? 'default' : 'pointer',
+                                            cursor:
+                                                !canWriteInstance || isEntityDisabled || !!currentEntityTemplate?.walletTransfer
+                                                    ? 'default'
+                                                    : 'pointer',
                                         }}
                                     >
-                                        <ImageWithDisable srcPath="/icons/edit-icon.svg" disabled={!canWriteInstance || isEntityDisabled} />
+                                        <ImageWithDisable
+                                            srcPath="/icons/edit-icon.svg"
+                                            disabled={!canWriteInstance || isEntityDisabled || !!currentEntityTemplate?.walletTransfer}
+                                        />
                                     </IconButtonWithPopover>
                                 </Grid>
                                 <Grid
@@ -258,7 +265,12 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                             setOpenDeleteDialog(true);
                                             handleClose();
                                         }}
-                                        disabled={!canWriteInstance || entityTemplate.disabled || entity.properties.disabled}
+                                        disabled={
+                                            !canWriteInstance ||
+                                            entityTemplate.disabled ||
+                                            entity.properties.disabled ||
+                                            !!currentEntityTemplate?.walletTransfer
+                                        }
                                         icon={DeleteIcon}
                                         text={i18next.t('actions.delete')}
                                     />

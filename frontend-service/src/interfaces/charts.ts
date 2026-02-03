@@ -1,3 +1,5 @@
+import { IPropertyValue } from './entities';
+
 export interface IChart {
     name: string;
     description: string;
@@ -83,7 +85,7 @@ export type HighchartType = Exclude<IChartType, IChartType.Number>;
 
 export const isAggregation = (field: IAxisField): field is IAggregation => typeof field !== 'string';
 
-export type GeneratedChart = { x: any; y: number }[];
+export type GeneratedChart = { x: IPropertyValue; y: number }[];
 
 export interface ChartsAndGenerator extends IMongoChart {
     chart: GeneratedChart;

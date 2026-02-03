@@ -16,7 +16,7 @@ import { isEqual } from 'lodash';
 import React, { memo, SetStateAction } from 'react';
 import { useQueryClient } from 'react-query';
 import { environment } from '../../../globals';
-import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
+import { IPropertyValue, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import { IEntityTemplateMap, PropertyExternalWizardType } from '../../../interfaces/entityTemplates';
 import { arrayTypes } from '../../../services/templates/entityTemplatesService';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
@@ -40,9 +40,9 @@ export interface FieldEditCardProps {
     setValues?: (value: SetStateAction<CommonFormInputProperties>) => void;
     touched?: FormikTouched<CommonFormInputProperties>;
     errors?: FormikErrors<CommonFormInputProperties>;
-    setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
+    setFieldValue: (field: keyof CommonFormInputProperties, value: IPropertyValue) => void;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    remove: (index: number, isNewProperty: boolean, groupIndex?: number) => any;
+    remove: (index: number, isNewProperty: boolean, groupIndex?: number) => void;
     archive?: (index: number, groupIndex?: number) => void;
     supportSerialNumberType: boolean;
     supportEntityReferenceType: boolean;
@@ -68,6 +68,9 @@ export interface FieldEditCardProps {
     onDuplicateKartoffelField?: (fieldIndex: number, groupIndex?: number) => void;
     groupIndex?: number;
     propertiesType: string;
+    isAccountTemplate?: boolean;
+    hasAccountBalanceField?: boolean;
+    isAlreadyWalletTemplate?: boolean;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -109,6 +112,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     onDuplicateKartoffelField,
     groupIndex,
     propertiesType,
+    isAccountTemplate,
+    hasAccountBalanceField,
+    isAlreadyWalletTemplate,
 }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -141,6 +147,15 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
 
     const isNewProperty = !initialValue;
     const isDisabled = Boolean(isEditMode && !isNewProperty && areThereAnyInstances);
+
+    const isRequiredWalletTransferField = React.useMemo(() => {
+        if (!values?.walletTransfer) return false;
+
+        const walletTransfer = (values as Record<string, IPropertyValue>).walletTransfer;
+        const from = typeof walletTransfer.from === 'string' ? walletTransfer.from : walletTransfer.from.name;
+        const to = typeof walletTransfer.to === 'string' ? walletTransfer.to : walletTransfer.to.name;
+        return from === value.name || to === value.name || walletTransfer?.amount === value.name;
+    }, [values, value.name]);
 
     const createNewUniqueGroup = (groupName) => {
         if (groupName) {
@@ -394,6 +409,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                     supportUnique={supportUnique}
                                     supportIdentifier={supportIdentifier}
                                     hasIdentifier={hasIdentifier}
+                                    isAccountTemplate={isAccountTemplate}
+                                    hasAccountBalanceField={hasAccountBalanceField}
+                                    isAlreadyWalletTemplate={isAlreadyWalletTemplate}
+                                    isRequiredWalletTransferField={isRequiredWalletTransferField}
                                 />
                                 <Grid display="flex">
                                     {locationSearchFields?.show &&
@@ -445,13 +464,18 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                         </MeltaTooltip>
                                     )}
                                     <MeltaTooltip
-                                        disableHoverListener={!initialValue?.required}
+                                        disableHoverListener={!value.required}
                                         title={i18next.t('wizard.entityTemplate.cantDeleteUniqueOrRequiredFields')}
                                     >
                                         <Box>
                                             <IconButton
                                                 onClick={() => remove(index, isNewProperty, groupIndex)}
-                                                disabled={!supportDeleteForExistingInstances || initialValue?.required || hasActions}
+                                                disabled={
+                                                    !supportDeleteForExistingInstances ||
+                                                    value.required ||
+                                                    hasActions ||
+                                                    (value.accountBalance && areThereAnyInstances)
+                                                }
                                             >
                                                 {value.deleted ? <DeleteOff /> : <DeleteIcon />}
                                             </IconButton>
@@ -618,6 +642,7 @@ export const MemoFieldEditCard = memo(
         isEqual(prev.errors, next.errors) &&
         isEqual(prev.uniqueConstraints, next.uniqueConstraints) &&
         isEqual(prev.locationSearchFields, next.locationSearchFields) &&
+        isEqual(prev.hasAccountBalanceField, next.hasAccountBalanceField) &&
         isEqual(prev.hasIdentifier, next.hasIdentifier) &&
         isEqual(prev.userPropertiesInTemplate, next.userPropertiesInTemplate),
 );

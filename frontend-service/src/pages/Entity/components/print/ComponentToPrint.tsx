@@ -5,10 +5,12 @@ import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import BlueTitle from '../../../../common/MeltaDesigns/BlueTitle';
 import { FileToPrint } from '../../../../common/print/FileToPrint';
+import { IPrintOptions } from '../../../../common/print/PrintOptionsDialog';
 import { environment } from '../../../../globals';
 import { IEntity } from '../../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IFile } from '../../../../interfaces/preview';
+import { IMongoPrintingTemplate } from '../../../../interfaces/printingTemplates';
 import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { EntityComponentToPrint } from './EntityComponentToPrint';
 
@@ -20,19 +22,12 @@ const ComponentToPrint = React.forwardRef<
         entityTemplate: IMongoEntityTemplatePopulated;
         entity?: IEntityTreeNode;
         filesToPrint?: IFile[];
-        setSelectedFiles?: React.Dispatch<React.SetStateAction<IFile[]>>;
-        setFilesLoadingStatus: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
-        options: {
-            showDisabled: boolean;
-            showEntityDates: boolean;
-            showEntityFiles: boolean;
-            showPreviewPropertiesOnly: boolean;
-            addEntityCheckbox?: boolean;
-            appendSignatureField?: boolean;
-        };
+        setSelectedFiles?: React.Dispatch<React.SetStateAction<(IFile & { isLoading: boolean })[]>>;
+        options: IPrintOptions & { showEntityFiles: boolean };
         printTitle?: string;
+        printingTemplate?: IMongoPrintingTemplate;
     }
->(({ entityTemplate, entity, options, filesToPrint = [], setSelectedFiles, setFilesLoadingStatus, printTitle }, ref) => {
+>(({ entityTemplate, entity, options, filesToPrint = [], setSelectedFiles, printTitle, printingTemplate }, ref) => {
     const theme = useTheme();
     const queryClient = useQueryClient();
 
@@ -44,10 +39,20 @@ const ComponentToPrint = React.forwardRef<
         [queryClient],
     );
 
-    if (!entity) return <></>;
+    if (!entity) return <div />;
 
     const signatureFields = (
-        <Grid container flexDirection="column" marginTop="2.5rem" width="100%" rowGap="1.25rem">
+        <Grid
+            container
+            flexDirection="column"
+            marginTop="2.5rem"
+            width="100%"
+            rowGap="1.25rem"
+            sx={{
+                pageBreakInside: 'avoid',
+                breakInside: 'avoid',
+            }}
+        >
             {environment.signatureFields.map((role) => (
                 <Grid key={role} container width="100%" justifyContent="space-around">
                     <Grid width="6.25rem">
@@ -81,8 +86,11 @@ const ComponentToPrint = React.forwardRef<
                     entity={entity}
                     options={options}
                     hierarchicalChildren={entity.children}
+                    printingTemplate={printingTemplate}
                 />
             </Grid>
+
+            {options?.appendSignatureField && signatureFields}
 
             {options.showEntityFiles && filesToPrint.length > 0 && (
                 <>
@@ -94,26 +102,24 @@ const ComponentToPrint = React.forwardRef<
                             style={{ marginTop: '2rem' }}
                         />
                     </Grid>
-                    {filesToPrint.map((file) => {
-                        return (
-                            <FileToPrint
-                                file={file}
-                                key={`${file.id}-${file.contentType}`}
-                                onPreviewLoadingFinished={(error?: boolean) => {
-                                    setFilesLoadingStatus?.((prev) => ({ ...prev, [file.id]: false }));
+                    {filesToPrint.map((file) => (
+                        <FileToPrint
+                            file={file}
+                            key={`${file.id}-${file.contentType}`}
+                            onPreviewLoadingFinished={(error?: boolean) => {
+                                setSelectedFiles?.((prev) => {
                                     if (error) {
                                         toast.error(i18next.t('entityPage.previewRefetch'));
-                                        setSelectedFiles?.((prevSelectedFiles) =>
-                                            prevSelectedFiles.filter((selectedFile) => selectedFile.id !== file.id),
-                                        );
+                                        return prev.filter((f) => f.id !== file.id);
                                     }
-                                }}
-                            />
-                        );
-                    })}
+
+                                    return prev.map((f) => (f.id === file.id ? { ...f, isLoading: false } : f));
+                                });
+                            }}
+                        />
+                    ))}
                 </>
             )}
-            {options?.appendSignatureField && signatureFields}
         </Box>
     );
 });

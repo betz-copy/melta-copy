@@ -1,27 +1,34 @@
+import { WmtsEndpoint } from '@camptocamp/ogc-client';
 import Bowser from 'bowser';
 import i18next from 'i18next';
-import React, { useEffect, useState } from 'react';
-import { useQuery } from 'react-query';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import { useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useLocation, useSearchParams } from 'wouter';
 import { LoadingAnimation } from './common/LoadingAnimation';
 import './css/index.css';
 import './css/loading.css';
+import { enableFallbackWithoutWorker } from '@camptocamp/ogc-client';
 import { environment } from './globals';
 import Main from './Main';
 import { useMatomoInstance } from './matomo';
-import MatomoWrapper, { MatomoTracker } from './matomoWrapper';
+import MatomoWrapper, { type MatomoTracker } from './matomoWrapper';
 import ClientSidePage from './pages/ClientSidePage';
 import ErrorPage from './pages/ErrorPage';
 import { AuthService } from './services/authService';
-import { BackendConfigState, getBackendConfigRequest } from './services/backendConfigService';
+import { type BackendConfigState, getBackendConfigRequest } from './services/backendConfigService';
+import { getMapLayer } from './services/mapService';
 import { getMyUserRequest } from './services/userService';
 import { getById, getWorkspaceHierarchyIds } from './services/workspacesService';
 import { useDarkModeStore } from './stores/darkMode';
 import { useUserStore } from './stores/user';
 import { useWorkspaceStore } from './stores/workspace';
+import { extractImageryUrl } from './utils/map';
 import { getWorkspacePermissions } from './utils/permissions';
+
+enableFallbackWithoutWorker();
 
 const App: React.FC = () => {
     const [isLoadingUser, setIsLoadingUser] = useState(true);
@@ -32,6 +39,7 @@ const App: React.FC = () => {
     const [searchParams] = useSearchParams();
 
     const matomoInstance = useMatomoInstance();
+    const queryClient = useQueryClient();
 
     useEffect(() => {
         const browser = Bowser.getParser(window.navigator.userAgent);
@@ -40,7 +48,11 @@ const App: React.FC = () => {
         });
 
         if (!isValidBrowser) {
-            toast.error(i18next.t('error.unsupportedChromeVersion'), { autoClose: false, theme: 'colored', style: { fontSize: 'large' } });
+            toast.error(i18next.t('error.unsupportedChromeVersion'), {
+                autoClose: false,
+                theme: 'colored',
+                style: { fontSize: 'large' },
+            });
         }
     }, []);
 
@@ -50,11 +62,40 @@ const App: React.FC = () => {
     const setDarkMode = useDarkModeStore((state) => state.setDarkMode);
     const workspaceStore = useWorkspaceStore((state) => state.workspace);
 
+    useQuery('getMapLayers', () => undefined, { enabled: false });
     const { isError: isErrorBackendConfig } = useQuery<BackendConfigState>('getBackendConfig', getBackendConfigRequest, {
         onError: () => {
             toast.error(i18next.t('error.config'));
         },
         enabled: !isLoadingUser && !isErrorMyUser,
+        onSuccess: async ({ isOutsideDevelopment, getMapLayers }) => {
+            if (isOutsideDevelopment || !getMapLayers) return;
+
+            const { url, params, layers, token, capabilitiesLinkSchema, cesiumLinkSchema, layerLinkTag, capabilitiesUrl } = getMapLayers;
+
+            const mapLayers = await Promise.all(
+                layers?.map(async (layer) => {
+                    const xml = await getMapLayer(url, params, layer.body, token);
+
+                    const layerProvider = extractImageryUrl(
+                        xml,
+                        capabilitiesLinkSchema,
+                        cesiumLinkSchema,
+                        layer.name,
+                        layer.displayName,
+                        layer.type,
+                        layerLinkTag,
+                    );
+
+                    const endpoint = await new WmtsEndpoint(`${capabilitiesUrl}?url=${layerProvider.url}`).isReady();
+                    const wmtsLayer = endpoint.getLayerByName(layerProvider.id);
+
+                    return { ...layerProvider, ...wmtsLayer };
+                }),
+            );
+
+            queryClient.setQueryData('getMapLayers', mapLayers);
+        },
     });
 
     const { data: hierarchyIds } = useQuery({
@@ -72,7 +113,10 @@ const App: React.FC = () => {
             if (workspacePermissions) currentUser.permissions[workspaceStore._id] = workspacePermissions;
 
             if (currentUser.currentWorkspacePermissions !== currentUser.permissions[workspaceStore._id])
-                setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[workspaceStore._id] });
+                setUser({
+                    ...currentUser,
+                    currentWorkspacePermissions: currentUser.permissions[workspaceStore._id],
+                });
         };
 
         handleWorkspace();

@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: never doubt Noam */
 import { IFormula } from '.';
 import { IVariable } from './argument';
 

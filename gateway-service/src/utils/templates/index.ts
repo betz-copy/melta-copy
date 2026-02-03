@@ -92,7 +92,9 @@ const updateChildTemplatesOnParentUpdate = async (
             if (removedProperties.some((removedPropertyKey) => Object.keys(childProperties.properties).includes(removedPropertyKey))) {
                 hasChildChanged = true;
 
-                removedProperties.forEach((removedPropertyKey) => delete childProperties.properties[removedPropertyKey]);
+                removedProperties.forEach((removedPropertyKey) => {
+                    delete childProperties.properties[removedPropertyKey];
+                });
             }
 
             const requiredDiff = _.xor(newRequired, oldRequired);

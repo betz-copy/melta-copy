@@ -60,9 +60,10 @@ const {
 export const MeltaRoutesInner: React.FC = () => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { isDrawerOpen, isDashboardHomePage } = workspace.metadata;
-    const [title, setTitle] = useState('');
-    const [open, setOpen] = useState(isDrawerOpen);
-    const [openMeltaUpdates, setOpenMeltaUpdates] = useState(false);
+
+    const [title, setTitle] = useState<string>('');
+    const [open, setOpen] = useState<boolean>(isDrawerOpen);
+    const [openMeltaUpdates, setOpenMeltaUpdates] = useState<boolean>(false);
 
     const [location, navigate] = useLocation();
     const [entityMatch, entityParams] = useRoute('/entity/:entityId');
@@ -155,12 +156,13 @@ export const MeltaRoutesInner: React.FC = () => {
     useEffect(() => {
         const meltaUpdatesShown = LocalStorage.get<string>(environment.meltaUpdatesShown);
 
-        if (config?.meltaUpdates && meltaUpdatesShown !== JSON.stringify(config.meltaUpdates)) setOpenMeltaUpdates(true);
+        if (config?.meltaUpdates && meltaUpdatesShown !== JSON.stringify(config.meltaUpdates.details) && !!config?.meltaUpdates.display)
+            setOpenMeltaUpdates(true);
     }, [config?.meltaUpdates]);
 
     const handleClose = () => {
         setOpenMeltaUpdates(false);
-        LocalStorage.set(environment.meltaUpdatesShown, JSON.stringify(config?.meltaUpdates));
+        LocalStorage.set(environment.meltaUpdatesShown, JSON.stringify(config?.meltaUpdates.details));
     };
 
     useEffect(() => {
@@ -332,14 +334,7 @@ export const MeltaRoutesInner: React.FC = () => {
                     <ScrollToTop fadeInTrigger={trigger} />
                 </Box>
             </MainBox>
-            {config?.meltaUpdates && (
-                <MeltaUpdates
-                    open={openMeltaUpdates}
-                    handleClose={handleClose}
-                    meltaUpdates={config?.meltaUpdates}
-                    titleDescription={config?.meltaUpdatesDescription}
-                />
-            )}
+            {config?.meltaUpdates && <MeltaUpdates open={openMeltaUpdates} handleClose={handleClose} meltaUpdates={config?.meltaUpdates} />}
         </>
     );
 };

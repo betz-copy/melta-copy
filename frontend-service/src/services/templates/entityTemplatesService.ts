@@ -1,7 +1,7 @@
 import { QueryClient } from 'react-query';
 import { v4 as uuid } from 'uuid';
 import axios from '../../axios';
-import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from '../../common/wizards/entityTemplate';
+import { EntityTemplateFormInputProperties, EntityTemplateWizardValues, PropertyWizardType } from '../../common/wizards/entityTemplate';
 import { CommonFormInputProperties, FieldGroupData, GroupProperty, PropertyItem } from '../../common/wizards/entityTemplate/commonInterfaces';
 import {
     FilterModelToFilterRecord,
@@ -9,6 +9,7 @@ import {
 } from '../../common/wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
 import { environment } from '../../globals';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { ISearchFilter } from '../../interfaces/entities';
 import {
     IEntitySingleProperty,
     IEntityTemplate,
@@ -23,7 +24,7 @@ import { getFileName } from '../../utils/getFileName';
 
 const { entityTemplates } = environment.api;
 
-export const PropertyWizardType = {
+export const PropertyWizardTypes = {
     ...PropertyType,
     ...PropertyFormat,
     ...PropertyExternalWizardType,
@@ -33,7 +34,7 @@ export const basePropertyTypes = [PropertyType.string, PropertyType.number, Prop
 export const stringFormats = Object.values(PropertyFormat);
 export const arrayTypes = [PropertyExternalWizardType.multipleFiles, PropertyExternalWizardType.enumArray, PropertyExternalWizardType.users];
 
-export const parseFilters = (filters: any) => (typeof filters === 'string' ? JSON.parse(filters) : filters);
+export const parseFilters = (filters: string | ISearchFilter) => (typeof filters === 'string' ? JSON.parse(filters) : filters);
 type ExtractedProps<T> = {
     properties: T[];
     propertiesPath: Record<string, string>;
@@ -77,14 +78,14 @@ export const entityTemplateObjectToEntityTemplateForm = (
 
     const propertyData = (key: string, fieldGroup?: FieldGroupData) => {
         const value = properties.properties[key];
-        let type: any = value.format || value.type;
+        let type: PropertyWizardType = value.format || value.type;
 
-        if (value.serialStarter !== undefined) type = PropertyWizardType.serialNumber;
-        else if (value.enum) type = PropertyWizardType.enum;
-        else if (value.pattern) type = PropertyWizardType.pattern;
-        else if (value.items?.enum) type = PropertyWizardType.enumArray;
-        else if (value.items?.format === PropertyFormat.fileId) type = PropertyWizardType.multipleFiles;
-        else if (value.items?.format === PropertyFormat.user) type = PropertyWizardType.users;
+        if (value.serialStarter !== undefined) type = PropertyWizardTypes.serialNumber;
+        else if (value.enum) type = PropertyWizardTypes.enum;
+        else if (value.pattern) type = PropertyWizardTypes.pattern;
+        else if (value.items?.enum) type = PropertyWizardTypes.enumArray;
+        else if (value.items?.format === PropertyFormat.fileId) type = PropertyWizardTypes.multipleFiles;
+        else if (value.items?.format === PropertyFormat.user) type = PropertyWizardTypes.users;
         else if (value.format) {
             switch (value.format) {
                 case PropertyFormat.unitField:
@@ -152,6 +153,7 @@ export const entityTemplateObjectToEntityTemplateForm = (
             isProfileImage: value.isProfileImage || undefined,
             comment: value.comment,
             color: value.color,
+            accountBalance: value.accountBalance,
         };
 
         if (value.format === PropertyFormat.fileId || value.items?.format === PropertyFormat.fileId) {
@@ -345,6 +347,7 @@ const buildBasePropertySchema = (property: EntityTemplateFormInputProperties, qu
         relationshipReference,
         expandedUserField,
         options,
+        accountBalance,
     } = property;
 
     const propertyType = getPropertyType(type);
@@ -352,6 +355,7 @@ const buildBasePropertySchema = (property: EntityTemplateFormInputProperties, qu
     return {
         title,
         type: propertyType,
+        // biome-ignore lint/suspicious/noExplicitAny: fixed after the refactor
         format: stringFormats.includes(type as any) ? (type as PropertyFormat) : undefined,
         enum: type === 'enum' ? options : undefined,
         items:
@@ -385,6 +389,7 @@ const buildBasePropertySchema = (property: EntityTemplateFormInputProperties, qu
             : undefined,
         comment,
         expandedUserField,
+        accountBalance,
     };
 };
 
@@ -432,7 +437,6 @@ const processStandardProperty = (
         propertiesOrder: string[];
         propertiesPreview: string[];
         mapSearchProperties: string[];
-        serialsUniqueConstraints: string[];
         enumPropertiesColors: IEntityTemplate['enumPropertiesColors'] | undefined;
     },
     isEditMode: boolean,
@@ -450,7 +454,6 @@ const processStandardProperty = (
     if (property.hide) schema.hide.push(property.name);
     if (property.preview) state.propertiesPreview.push(property.name);
     if (property.mapSearch) state.mapSearchProperties.push(property.name);
-    if (property.type === 'serialNumber') state.serialsUniqueConstraints.push(property.name);
 
     state.enumPropertiesColors = collectEnumColors(property, state.enumPropertiesColors);
 };
@@ -489,10 +492,10 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         propertiesTypeOrder,
         documentTemplatesIds: _documentTemplatesIds,
         fieldGroups: _fieldGroups,
+        walletTransfer,
         ...restOfProperties
     } = values;
 
-    const serialsUniqueConstraints: string[] = [];
     const propertiesOrder: string[] = [];
     const attachmentPropertiesOrder: string[] = [];
     const propertiesPreview: string[] = [];
@@ -517,21 +520,19 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         propertiesOrder,
         propertiesPreview,
         mapSearchProperties,
-        serialsUniqueConstraints,
         enumPropertiesColors,
     };
 
-    extractProps.forEach((property) => processStandardProperty(property, extractProps, schema, state, isEditMode, queryClient));
-    extractArchiveProps.forEach((property) => processStandardProperty(property, extractProps, schema, state, isEditMode, queryClient));
+    extractProps.forEach((property) => {
+        processStandardProperty(property, extractProps, schema, state, isEditMode, queryClient);
+    });
+    extractArchiveProps.forEach((property) => {
+        processStandardProperty(property, extractProps, schema, state, isEditMode, queryClient);
+    });
 
-    extractAttachmentProps.forEach((property) =>
-        processAttachmentProperty(property, extractAttachmentProps, schema, attachmentPropertiesOrder, isEditMode),
-    );
-
-    const serialUniqueConstraints = serialsUniqueConstraints.map((serial) => ({
-        groupName: '',
-        properties: [serial],
-    }));
+    extractAttachmentProps.forEach((property) => {
+        processAttachmentProperty(property, extractAttachmentProps, schema, attachmentPropertiesOrder, isEditMode);
+    });
 
     enumPropertiesColors = state.enumPropertiesColors;
 
@@ -546,9 +547,17 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         propertiesTypeOrder,
         propertiesPreview,
         enumPropertiesColors,
-        uniqueConstraints: [...(restOfProperties.uniqueConstraints ?? []), ...serialUniqueConstraints],
+        uniqueConstraints: restOfProperties.uniqueConstraints ?? [],
         mapSearchProperties,
         fieldGroups: updatedFieldGroups,
+        walletTransfer: walletTransfer
+            ? {
+                  from: typeof walletTransfer.from === 'string' ? walletTransfer.from : walletTransfer.from.name,
+                  to: typeof walletTransfer.to === 'string' ? walletTransfer.to : walletTransfer.to.name,
+                  description: walletTransfer.description,
+                  amount: walletTransfer.amount,
+              }
+            : null,
     };
 };
 
@@ -570,7 +579,11 @@ const appendEntityTemplateFormData = (
         else if (original.icon.file?.name) formData.append('iconFileId', original.icon.file.name);
     }
 
-    original?.documentTemplatesIds?.filter((item): item is File => item instanceof File).forEach((file) => formData.append('files', file));
+    original?.documentTemplatesIds
+        ?.filter((item): item is File => item instanceof File)
+        .forEach((file) => {
+            formData.append('files', file);
+        });
 
     const docTemplateIds = original?.documentTemplatesIds?.filter(isStringOrNamedObject).map((item) => (typeof item === 'string' ? item : item.name));
 
@@ -590,6 +603,7 @@ const appendEntityTemplateFormData = (
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
     formData.append('fieldGroups', JSON.stringify(entityTemplate.fieldGroups));
+    entityTemplate.walletTransfer && formData.append('walletTransfer', JSON.stringify(entityTemplate.walletTransfer));
 };
 
 export const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWizardValues, queryClient: QueryClient) => {

@@ -27,6 +27,7 @@ import {
     INotificationMetadata,
     INotificationMetadataPopulated,
     InstancesSubclassesPermissions,
+    IPropertyValue,
     IRelationship,
     IRelationshipForBrokenRules,
     IRuleBreach,
@@ -213,6 +214,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     > {
         const ruleBreachRequest = await this.service.getRuleBreachRequestById(ruleBreachRequestId);
         this.checkIfRuleBreachRequestIsReviewable(ruleBreachRequest);
+        // biome-ignore lint/suspicious/noExplicitAny: lol
         let actionsResults: any;
 
         if (ruleBreachRequest.actions.length > 1) {
@@ -271,6 +273,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                         { actionMetadata: actionMetadata as IUpdateEntityStatusMetadata, actionType },
                         ruleBreachRequest.brokenRules,
                     );
+                // biome-ignore lint/suspicious/noExplicitAny: error is any
             } catch (error: any) {
                 if (error.metadata.errorCode === errorCodes.ruleBlock)
                     await this.service.updateRuleBreachRequestBrokenRules(ruleBreachRequestId, error.metadata.rawBrokenRules);
@@ -410,7 +413,9 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
         const viewers = new Set<string>(userIdsWithPermission);
 
-        extraViewers.forEach((extraViewer) => viewers.add(extraViewer));
+        extraViewers.forEach((extraViewer) => {
+            viewers.add(extraViewer);
+        });
 
         await this.rabbitManager.createNotification(Array.from(viewers), type, metadata, populatedMetaData);
     }
@@ -427,7 +432,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         const instancesManager = new InstancesManager(this.workspaceId);
 
         await instancesManager.createRelationshipInstance(
-            { templateId: relationshipTemplateId, sourceEntityId, destinationEntityId, properties: {} as any },
+            { templateId: relationshipTemplateId, sourceEntityId, destinationEntityId, properties: {} },
             brokenRules,
             originUserId,
             false,
@@ -1021,7 +1026,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         };
     }
 
-    public async getPopulatedRelationshipReferences(entityTemplate: IMongoEntityTemplatePopulated, properties: Record<string, any>) {
+    public async getPopulatedRelationshipReferences(entityTemplate: IMongoEntityTemplatePopulated, properties: Record<string, IPropertyValue>) {
         const populatedProperties = JSON.parse(JSON.stringify(properties));
 
         await Promise.all(

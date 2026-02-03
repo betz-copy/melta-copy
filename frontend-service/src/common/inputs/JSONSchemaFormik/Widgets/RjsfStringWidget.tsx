@@ -50,6 +50,7 @@ const RjsfTextWidget = ({
     const inputType = (type || schema.type) === 'string' ? 'text' : `${type || schema.type}`;
 
     const isTextArea = containsHTMLTags(value);
+    // biome-ignore lint/suspicious/noExplicitAny: lol
     let finalValue: any;
 
     const isoDateRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/;
@@ -114,7 +115,7 @@ const RjsfTextWidget = ({
                             </InputAdornment>
                         ) : null,
                 },
-                htmlInput: { readOnly: readonly },
+                htmlInput: { readOnly: readonly && disabled },
                 inputLabel: { shrink: readonly || undefined },
             }}
             dir={getTextDirection(value, schema)}

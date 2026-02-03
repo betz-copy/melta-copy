@@ -20,7 +20,7 @@ class NotificationsController extends DefaultController<NotificationsManager> {
     }
 
     async notificationsSeen(req: Request, res: Response) {
-        res.json(await this.manager.notificationsSeen(req.params.notificationId, req.user!));
+        res.json(await this.manager.notificationsSeen(req.params.notificationId as string, req.user!));
     }
 
     async manyNotificationsSeen(req: Request, res: Response) {

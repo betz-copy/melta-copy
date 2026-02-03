@@ -98,6 +98,7 @@ export const createEntityRequestSchema = Joi.object({
         userId: Joi.string().required(),
         duplicatedFromId: Joi.string().optional(),
         childTemplate: Joi.object({ id: Joi.string().required(), filter: searchFilterSchema.optional() }).optional(),
+        newDestWalletData: Joi.object().optional(),
     },
     query: {},
     params: {},

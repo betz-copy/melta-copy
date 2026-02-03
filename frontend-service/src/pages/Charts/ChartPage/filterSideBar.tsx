@@ -52,6 +52,7 @@ const FilterSideBar = <T extends TableForm | ChartForm>(
                             hideChooseAll={viewMode === ViewMode.ReadOnly}
                         />
                     </Grid>
+                    {/** biome-ignore lint/suspicious/noExplicitAny: error is any */}
                     {(errors as any).columns && <FormHelperText error>{(errors as any).columns}</FormHelperText>}
 
                     <Grid>

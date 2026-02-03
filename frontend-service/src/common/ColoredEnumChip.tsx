@@ -9,6 +9,7 @@ interface ColoredEnumChipProps {
     style?: CSSProperties;
     icon?: React.ReactElement;
     searchValue?: string;
+    // biome-ignore lint/suspicious/noExplicitAny: as The Beatles say, let it be
     onDelete?: React.EventHandler<any>;
     deleteIcon?: React.ReactElement;
     color?: string;

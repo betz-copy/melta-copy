@@ -87,7 +87,7 @@ const EntitiesPage = <T extends IMongoEntityTemplatePopulated | IMongoChildTempl
                         .filter((child) => child?.parentTemplate._id === templateId)
                         .map((child) => child?._id);
 
-                    [...childTemplateIds, templateId].map((tempId) => {
+                    [...childTemplateIds, templateId].forEach((tempId) => {
                         const reference = templateTablesViewRef.current?.templateTablesRefs?.[tempId];
                         if (reference) reference.refreshServerSide();
                     });

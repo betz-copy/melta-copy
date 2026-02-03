@@ -35,7 +35,9 @@ const OpenPreviewContent: React.FC<{
             >
                 {img ?? <FileIcon extension={getFileExtension(fileName)} style={{ height: '18px' }} />}
                 {showText && (
-                    <Typography
+                    <HighlightText
+                        text={text}
+                        searchedText={highlightAll ? text : searchValue}
                         color={color}
                         sx={{
                             marginRight: '5px',
@@ -45,9 +47,7 @@ const OpenPreviewContent: React.FC<{
                             whiteSpace: 'nowrap',
                             maxWidth: '100%',
                         }}
-                    >
-                        <HighlightText text={text} searchedText={highlightAll ? text : searchValue} />
-                    </Typography>
+                    />
                 )}
 
                 {highlightAll && (

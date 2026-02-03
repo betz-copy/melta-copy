@@ -1,12 +1,15 @@
-import { Readable } from 'stream';
+import { Readable } from 'node:stream';
 import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridSetFilter, IAGGridTextFilter } from '../utils/agGrid/interfaces';
 import { IMongoEntityTemplatePopulated } from './entityTemplates';
 import { IFailedEntity } from './excel';
-import { IRelationship } from './relationships';
+import { IMongoRelationship, IRelationship } from './relationships';
 import { IMongoRelationshipTemplate } from './relationshipTemplates';
 import { ICreateEntityMetadata } from './ruleBreaches/actionMetadata';
 import { IBrokenRule } from './ruleBreaches/ruleBreach';
 import { ISemanticSearchResult } from './semanticSearch';
+
+// biome-ignore lint/suspicious/noExplicitAny: property type any
+export type IPropertyValue = any;
 
 export interface IEntity {
     templateId: string;
@@ -16,12 +19,12 @@ export interface IEntity {
         createdAt: string;
         updatedAt: string;
         disabled: boolean;
-    } & Record<string, any>;
+    } & Record<string, IPropertyValue>;
     coloredFields?: Record<string, string>;
 }
 
 export type IConnection = {
-    relationship: Pick<IRelationship, 'templateId' | 'properties'>;
+    relationship: Pick<IMongoRelationship, 'templateId' | 'properties'>;
     sourceEntity: IEntity;
     destinationEntity: IEntity;
 };
@@ -36,7 +39,7 @@ export interface IUniqueConstraint {
     constraintName: string;
     templateId: string;
     properties: string[];
-    values?: Record<string, any>;
+    values?: Record<string, IPropertyValue>;
 }
 
 export interface IRequiredConstraint {
@@ -105,7 +108,7 @@ export interface IFilterOfField {
     $not?: IFilterOfField;
 }
 
-export type IFilterOfTemplate<T extends Record<string, any> = Record<string, any>> = {
+export type IFilterOfTemplate<T extends Record<string, IPropertyValue> = Record<string, IPropertyValue>> = {
     [field in keyof T]?: IFilterOfField;
 };
 
@@ -121,14 +124,14 @@ export type AndFilter = {
     [FilterLogicalOperator.OR]?: never;
 };
 
-type OrFilter = {
+export type OrFilter = {
     [FilterLogicalOperator.OR]: IFilterGroup[];
     [FilterLogicalOperator.AND]?: never;
 };
 
 export type ISearchFilter = AndFilter | OrFilter;
 
-export type ISearchSort<T extends Record<string, any> = Record<string, any>> = Array<{
+export type ISearchSort<T extends Record<string, IPropertyValue> = Record<string, IPropertyValue>> = Array<{
     field: keyof T;
     sort: 'asc' | 'desc';
 }>;
@@ -220,7 +223,7 @@ export interface IExportEntitiesBody {
             sort?: ISearchSort;
             displayColumns?: string[];
             headersOnly?: boolean;
-            insertEntities?: Record<string, any>[];
+            insertEntities?: Record<string, IPropertyValue>[];
             isChildTemplate?: boolean;
         };
     };
