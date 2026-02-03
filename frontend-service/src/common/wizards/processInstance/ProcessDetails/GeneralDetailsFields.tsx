@@ -138,7 +138,7 @@ export const GeneralDetailsFields = ({
                                 value={values.startDate}
                                 onChange={(newStartDate) => setFieldValue('startDate', newStartDate)}
                                 views={datePickerViews}
-                                slots={{ textField: (params) => <TextField {...params} />, openPickerIcon: viewMode ? () => null : undefined }}
+                                slots={{ openPickerIcon: viewMode ? () => null : undefined }}
                                 slotProps={{
                                     textField: {
                                         size: 'small',
@@ -190,7 +190,8 @@ export const GeneralDetailsFields = ({
                                         InputProps: { disableUnderline: viewMode },
                                     },
                                 }}
-                                readOnly={viewMode}                            />
+                                readOnly={viewMode}
+                            />
                         </LocalizationProvider>
                     </Grid>
                 </Grid>
