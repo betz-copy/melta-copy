@@ -114,7 +114,6 @@ class InstancesUtils extends DefaultController {
             WorkspaceService.getWorkspaceHierarchyIds(this.workspaceId),
             this.entityTemplateService.getChildTemplateById(childTemplateId),
         ]);
-
         return getDefaultFilterFromChildTemplate(childTemplate, currentUser, { id: this.workspaceId, hierarchyIds: workspaceHierarchyIds });
     }
 }

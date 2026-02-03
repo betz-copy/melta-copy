@@ -129,9 +129,7 @@ export const formatToString = (data: {
                 </Grid>
             );
         }
-        if (format === 'unitField') {
-            return units.find(({ _id }) => _id === value)?.name;
-        }
+        if (format === 'unitField') return units.find(({ _id }) => _id === value)?.name;
     }
     if (format === 'location') {
         const convertLocation = (value: LocationData) =>
