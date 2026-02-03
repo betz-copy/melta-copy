@@ -14,12 +14,12 @@ import { isEntityFitsToChildTemplate } from '../utils/childTemplates';
 import { getEntityTemplateColor } from '../utils/colors';
 import { locationConverterToString } from '../utils/map/convert';
 import { isWorkspaceAdmin } from '../utils/permissions/instancePermissions';
+import { getFirstXFilledPropsKeys } from '../utils/templates';
 import { ColoredEnumChip } from './ColoredEnumChip';
 import { CustomIcon } from './CustomIcon';
 import { EntityPropertiesInternal } from './EntityProperties';
 import { CoordinateSystem } from './inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
 import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
-import { getFirstXFilledPropsKeys } from '../utils/templates';
 
 interface RelationshipReferenceViewProps {
     entity: IEntity | string;
@@ -40,7 +40,6 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
     const currentUser = useUserStore((state) => state.user);
     const currentUserKartoffelId = currentUser?.kartoffelId;
     const { numOfPreviewFieldsToShow } = workspace.metadata;
-
 
     const { height, width } = workspace.metadata.iconSize;
     const queryClient = useQueryClient();
@@ -174,28 +173,26 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
                 }}
                 arrow
                 placement="top"
-               title={
-    (() => {
-        if (!templateToInternal) {
-            return <Typography color="#53566E">{i18next.t('templateEntitiesAutocomplete.noPreviewFields')}</Typography>;
-        }
-        
-        const fieldsToShow = getFirstXFilledPropsKeys(numOfPreviewFieldsToShow, templateToInternal, entity);
-        
-        return !fieldsToShow.length ? (
-            <Typography color="#53566E">{i18next.t('templateEntitiesAutocomplete.noPreviewFields')}</Typography>
-        ) : (
-            <EntityPropertiesInternal
-                properties={entity.properties}
-                coloredFields={entity.coloredFields}
-                entityTemplate={templateToInternal}
-                overridePropertiesToShow={fieldsToShow}
-                mode="normal"
-                textWrap
-            />
-        );
-    })()
-}
+                title={(() => {
+                    if (!templateToInternal) {
+                        return <Typography color="#53566E">{i18next.t('templateEntitiesAutocomplete.noPreviewFields')}</Typography>;
+                    }
+
+                    const fieldsToShow = getFirstXFilledPropsKeys(numOfPreviewFieldsToShow, templateToInternal, entity);
+
+                    return !fieldsToShow.length ? (
+                        <Typography color="#53566E">{i18next.t('templateEntitiesAutocomplete.noPreviewFields')}</Typography>
+                    ) : (
+                        <EntityPropertiesInternal
+                            properties={entity.properties}
+                            coloredFields={entity.coloredFields}
+                            entityTemplate={templateToInternal}
+                            overridePropertiesToShow={fieldsToShow}
+                            mode="normal"
+                            textWrap
+                        />
+                    );
+                })()}
             >
                 {!template ? (
                     chip
