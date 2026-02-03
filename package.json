@@ -4,6 +4,11 @@
     "description": "",
     "private": true,
     "packageManager": "pnpm@9.15.0",
+    "pnpm": {
+        "overrides": {
+            "@syncfusion/ej2-base": "github:MeltaTeam/not-stolen-base"
+        }
+    },
     "scripts": {
         "build": "turbo run build --concurrency=4",
         "build:packages": "turbo run build --filter='./packages/*' --concurrency=4",
