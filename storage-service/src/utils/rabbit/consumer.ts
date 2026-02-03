@@ -14,7 +14,7 @@ class DeleteFilesConsumer {
             await filesManager.deleteFiles(fileIds);
 
             msg.ack();
-        } catch (err: any) {
+        } catch (err: unknown) {
             msg.nack(false);
 
             throw new ServiceError(undefined, 'Rabbit consumer error:', { error: err });

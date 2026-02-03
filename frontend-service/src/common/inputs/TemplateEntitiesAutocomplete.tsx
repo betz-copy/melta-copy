@@ -7,7 +7,7 @@ import { useInfiniteQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
 import { IChildTemplateMap, IChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { AndFilter, IEntity, ISearchEntitiesOfTemplateBody, ISearchFilter } from '../../interfaces/entities';
+import { AndFilter, IEntity, IPropertyValue, ISearchEntitiesOfTemplateBody, ISearchFilter } from '../../interfaces/entities';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IGetUnits } from '../../interfaces/units';
 import { IWorkspace } from '../../interfaces/workspaces';
@@ -118,9 +118,9 @@ const TemplateEntitiesAutocomplete: React.FC<{
     const getDependentFieldsValues = (
         filters?: string,
         currentEntity?: EntityWizardValues['properties'],
-    ): { dependentFields: Record<string, any>; newFilters: ISearchFilter[] } => {
+    ): { dependentFields: Record<string, IPropertyValue>; newFilters: ISearchFilter[] } => {
         const newFilters: ISearchFilter[] = [];
-        const dependentFields: Record<string, any> = {};
+        const dependentFields: Record<string, IPropertyValue> = {};
 
         if (!filters) return { dependentFields, newFilters };
 
@@ -128,13 +128,13 @@ const TemplateEntitiesAutocomplete: React.FC<{
         const andFilters = Array.isArray(parsedFilters.$and) ? parsedFilters.$and : [parsedFilters];
 
         for (const filter of andFilters) {
-            const newFilter: Record<string, any> = {};
+            const newFilter: Record<string, IPropertyValue> = {};
 
             for (const key in filter) {
                 const condition = filter[key];
                 for (const op in condition) {
                     const val = condition[op];
-                    const newCondition: Record<string, any> = {};
+                    const newCondition: Record<string, IPropertyValue> = {};
 
                     if (typeof val === 'string' && val.startsWith(fieldFilterPrefix)) {
                         const fieldName = val.replace(fieldFilterPrefix, '');
@@ -215,7 +215,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
         if (data) setAllEntities(data.pages.flatMap(({ entities }) => entities.map(({ entity }) => entity)));
     }, [data]);
 
-    const handleInputChange = (_e: any, newValue: string, reason: AutocompleteInputChangeReason) => {
+    const handleInputChange = (_e: React.SyntheticEvent, newValue: string, reason: AutocompleteInputChangeReason) => {
         setInputValue(newValue);
         onDisplayValueChange?.(_e, newValue, reason);
         if (reason === 'input') debouncedSearch(newValue);
@@ -250,12 +250,12 @@ const TemplateEntitiesAutocomplete: React.FC<{
     orderedProperties
         .filter((prop) => prop !== showField && !displayKeys.includes(prop))
         .slice(0, metadata.numOfRelationshipFieldsToShow - 1)
-        .forEach((prop) => displayKeys.push(prop));
+        .forEach((prop) => {
+            displayKeys.push(prop);
+        });
 
-    const convertPropertyToString = (value: any, property: IEntitySingleProperty | undefined): string | undefined => {
-        if (property?.format === 'unitField') {
-            return units.find((unit) => unit._id === value)?.name ?? '';
-        }
+    const convertPropertyToString = (value: IPropertyValue, property: IEntitySingleProperty | undefined): string | undefined => {
+        if (property?.format === 'unitField') return units.find((unit) => unit._id === value)?.name ?? '';
 
         if (typeof value === 'object') {
             if (value.location) {
@@ -387,7 +387,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
                         ref={props['data-option-index'] === allEntities.length - 1 ? lastElementRef : null}
                         style={{ display: 'flex', alignItems: 'center', gap: '8px', whiteSpace: 'nowrap' }}
                     >
-                        {option.properties['_id'] === twinWalletId ? (
+                        {option.properties._id === twinWalletId ? (
                             <Box display="flex" alignItems="center" width="100%">
                                 <Add color="primary" />
                                 <Typography

@@ -7,13 +7,14 @@ export interface IProcessSingleProperty {
     format?: 'date' | 'date-time' | 'email' | 'fileId' | 'entityReference' | 'text-area' | 'signature';
     enum?: string[];
     items?: {
-        type: 'string';
+        type: PropertyType.string;
         enum?: string[];
         format?: 'fileId';
     };
     pattern?: string;
     patternCustomErrorMessage?: string;
 }
+
 export interface IProcessDetails {
     properties: {
         type: 'object';

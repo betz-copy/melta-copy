@@ -1,6 +1,6 @@
-import { FilterLogicalOperator, IFilterGroup, ISearchEntitiesOfTemplateBody, ISearchFilter } from '../interfaces/entity';
+import { FilterLogicalOperator, IEntity, IFilterGroup, IPropertyValue, ISearchEntitiesOfTemplateBody, ISearchFilter } from '../interfaces/entity';
 
-const evaluateOperator = (op: string, actual: any, expected: any): boolean => {
+const evaluateOperator = (op: string, actual: IPropertyValue, expected: IPropertyValue): boolean => {
     switch (op) {
         case '$eq':
             return actual === expected;
@@ -35,7 +35,7 @@ const evaluateOperator = (op: string, actual: any, expected: any): boolean => {
     }
 };
 
-const matchValueAgainstFilter = (data: Record<string, any>, filter?: ISearchFilter | IFilterGroup): string | undefined => {
+const matchValueAgainstFilter = (data: IEntity['properties'], filter?: ISearchFilter | IFilterGroup): string | undefined => {
     if (!filter) return undefined;
 
     if ('$and' in filter && Array.isArray(filter.$and)) {

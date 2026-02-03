@@ -105,17 +105,20 @@ class ClientSideManager extends DefaultManagerProxy<null> {
         return createdEntity;
     }
 
-    async getMyNotifications(user: Express.User, query: any) {
+    // biome-ignore lint/suspicious/noExplicitAny: query axios any
+    async getMyNotifications(user: Express.User, query: Record<string, any>) {
         const notifications = await this.notificationsService.getMyNotifications(user, query);
         return notifications;
     }
 
-    async getMyNotificationGroupCount(user: Express.User, query: any) {
+    // biome-ignore lint/suspicious/noExplicitAny: query axios any
+    async getMyNotificationGroupCount(user: Express.User, query: Record<string, any>) {
         const notificationGroupCount = await this.notificationsService.getMyNotificationGroupCount(user, query);
         return notificationGroupCount;
     }
 
-    async manyNotificationSeen(user: Express.User, query: any) {
+    // biome-ignore lint/suspicious/noExplicitAny: query axios any
+    async manyNotificationSeen(user: Express.User, query: Record<string, any>) {
         const notifications = await this.notificationsService.manyNotificationsSeen(user, query);
         return notifications;
     }

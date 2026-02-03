@@ -6,6 +6,7 @@ import { DebouncedFunc, isEqual } from 'lodash';
 import React, { Dispatch, SetStateAction, useEffect, useMemo } from 'react';
 import { IExternalErrors } from '../../../../interfaces/CreateOrEditEntityDialog';
 import { IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
+import { IPropertyValue } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import { filterFieldsFromPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
@@ -25,8 +26,8 @@ const EditProps: React.FC<{
     errors: FormikState<EntityWizardValues>['errors'];
     touched: FormikState<EntityWizardValues>['touched'];
     setFieldTouched: FormikHelpers<EntityWizardValues>['setFieldTouched'];
-    initialValuePropsToFilter: Record<string, any>;
-    setInitialValuePropsToFilter: Dispatch<SetStateAction<Record<string, any>>>;
+    initialValuePropsToFilter: Record<string, IPropertyValue>;
+    setInitialValuePropsToFilter: Dispatch<SetStateAction<Record<string, IPropertyValue>>>;
     isMultipleSelection: boolean;
     entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
     wasDirty: boolean;
@@ -47,7 +48,7 @@ const EditProps: React.FC<{
     showTitle?: boolean;
     chooseMode?: IChooseTemplateMode;
     parentId?: string;
-    getInitialProperties?: (newTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => Record<string, any>;
+    getInitialProperties?: (newTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => Record<string, IPropertyValue>;
 }> = ({
     setFieldValue,
     values,
@@ -108,13 +109,13 @@ const EditProps: React.FC<{
         // (if the value changes it won't be undefined and it will consider it dirty)
         const isSignatureField = (key: string) => values.template?.properties.properties[key]?.format === 'signature';
         const valuePropsToFilter = { ...values.properties };
-        Object.keys(valuePropsToFilter).forEach((key) =>
-            valuePropsToFilter[key] === undefined || isSignatureField(key) ? delete valuePropsToFilter[key] : {},
-        );
+        Object.keys(valuePropsToFilter).forEach((key) => {
+            valuePropsToFilter[key] === undefined || isSignatureField(key) ? delete valuePropsToFilter[key] : {};
+        });
 
-        Object.keys(initialValuePropsToFilter).forEach((key) =>
-            initialValuePropsToFilter[key] === undefined || isSignatureField(key) ? delete initialValuePropsToFilter[key] : {},
-        );
+        Object.keys(initialValuePropsToFilter).forEach((key) => {
+            initialValuePropsToFilter[key] === undefined || isSignatureField(key) ? delete initialValuePropsToFilter[key] : {};
+        });
 
         return !isEqual(valuePropsToFilter, initialValuePropsToFilter);
     }, [values.properties, initialValuePropsToFilter, values.template]);
@@ -134,7 +135,9 @@ const EditProps: React.FC<{
 
     if (isMultipleSelection) {
         const uniqueFields: string[] = [];
-        values.template.uniqueConstraints.forEach((groupField) => uniqueFields.push(...groupField.properties));
+        values.template.uniqueConstraints.forEach((groupField) => {
+            uniqueFields.push(...groupField.properties);
+        });
         uniqueFields.forEach((uniqueField) => {
             schema.properties[uniqueField].readOnly = true;
         });

@@ -289,6 +289,7 @@ export const ganttItemValidationSchema = Yup.object({
     groupByRelationshipId: Yup.string()
         .nullable()
         // the original type of 'ctx' is missing the 'from' property
+        // biome-ignore lint/suspicious/noExplicitAny: never doubt Yahalom
         .test('testGroupByRelationshipId', i18next.t('gantts.requiredGroupByRelationship'), (value, ctx: any) => {
             const root = ctx.from[ctx.from.length - 1].value;
 

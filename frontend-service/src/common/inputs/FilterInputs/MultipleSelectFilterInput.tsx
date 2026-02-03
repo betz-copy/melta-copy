@@ -48,9 +48,9 @@ const MultipleSelectFilterInput: React.FC<MultipleSelectFilterInputProps> = ({
                     },
                     select: {
                         multiple: true,
-                        renderValue: (selected: any) => (
+                        renderValue: (selected: unknown) => (
                             <div>
-                                {selected.map((value: string) => (
+                                {(selected as string[]).map((value) => (
                                     <Chip key={value} label={value === null ? i18next.t('filters.empty') : value} style={{ marginRight: 5 }} />
                                 ))}
                             </div>

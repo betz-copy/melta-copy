@@ -1,4 +1,4 @@
-import { ISearchFilter } from './entity';
+import { IPropertyValue, ISearchFilter } from './entity';
 
 export enum IChartType {
     Column = 'column',
@@ -83,7 +83,7 @@ export enum OptionsType {
     AggregationAndAllProperties = 'aggregationAndAllProperties',
 }
 
-type GeneratorChart = { x: any; y: number }[];
+type GeneratorChart = { x: IPropertyValue; y: number }[];
 
 export interface ChartsAndGenerator extends IMongoChart {
     chart: GeneratorChart;

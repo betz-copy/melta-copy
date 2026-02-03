@@ -19,7 +19,7 @@ import { ComponentToPrint } from './ComponentToPrint';
 const Print: React.FC<{
     processTemplate: IMongoProcessTemplatePopulated;
     processInstance: IMongoProcessInstancePopulated;
-    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
+    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError, ProcessDetailsValues, unknown>;
     setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstancePopulated>>;
     setIsProcessChanged: React.Dispatch<React.SetStateAction<boolean>>;
     isProcessCard?: boolean;
@@ -29,8 +29,7 @@ const Print: React.FC<{
     const [openModal, setOpenModal] = useState<boolean>(false);
 
     const [files, setFiles] = useState<IFile[]>([]);
-    const [selectedFiles, setSelectedFiles] = useState<IFile[]>(files);
-    const [filesLoadingStatus, setFilesLoadingStatus] = useState<Record<string, boolean>>({});
+    const [selectedFiles, setSelectedFiles] = useState<(IFile & { isLoading: boolean })[]>([]);
 
     const [title, setTitle] = useState<string | undefined>(undefined);
 
@@ -82,9 +81,9 @@ const Print: React.FC<{
                         filesToPrint={selectedFiles}
                         setSelectedFiles={setSelectedFiles}
                         mutateAsync={mutateAsync}
-                        setFilesLoadingStatus={setFilesLoadingStatus}
                         setCurrProcessInstance={setCurrProcessInstance}
                         setIsProcessChanged={setIsProcessChanged}
+                        printTitle={title}
                     />
                 </ThemeProvider>
             </div>
@@ -97,8 +96,6 @@ const Print: React.FC<{
                     setFiles={setFiles}
                     selectedFiles={selectedFiles}
                     setSelectedFiles={setSelectedFiles}
-                    filesLoadingStatus={filesLoadingStatus}
-                    setFilesLoadingStatus={setFilesLoadingStatus}
                     onClick={handlePrint}
                     title={title}
                     setTitle={setTitle}

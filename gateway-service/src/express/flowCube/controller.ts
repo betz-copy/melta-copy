@@ -9,7 +9,7 @@ class FlowCubeController extends DefaultController<FlowCubeManager> {
 
     async searchFlowCube(req: Request, res: Response) {
         const { workspaceId, templateId } = req.params;
-        res.json(await this.manager.searchFlowCube(workspaceId, templateId, req.body));
+        res.json(await this.manager.searchFlowCube(workspaceId as string, templateId as string, req.body));
     }
 
     static async searchWorkspaces(req: Request, res: Response) {

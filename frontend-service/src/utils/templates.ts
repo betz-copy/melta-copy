@@ -1,6 +1,6 @@
 import { IMongoCategory } from '../interfaces/categories';
 import { IChildTemplateMap, IChildTemplatePopulated, IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
-import { IEntity, IEntityExpanded } from '../interfaces/entities';
+import { IEntity, IEntityExpanded, IPropertyValue } from '../interfaces/entities';
 import { IEntityTemplateMap, IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../interfaces/relationshipTemplates';
 import { INestedRelationshipTemplates } from '../pages/Entity';
@@ -103,7 +103,7 @@ export const getFullRelationshipTemplates = (
 
         if (isSelfProperty || !connection) continue;
 
-        const hasInstances = expandedEntity?.connections.some(({ relationship: { templateId } }) => templateId === relationshipTemplate._id)!;
+        const hasInstances = expandedEntity?.connections.some(({ relationship: { templateId } }) => templateId === relationshipTemplate._id);
 
         if (filterOnlyThoseWithInstances && !hasInstances) continue;
 
@@ -137,7 +137,7 @@ export const isRelationshipConnectedToEntityTemplate = (
     return sourceEntity._id === entityTemplate._id || destinationEntity._id === entityTemplate._id;
 };
 
-export const mapTemplates = <T extends Record<string, any> & { _id: string }>(templates: T[], sortByField: keyof T = 'displayName') => {
+export const mapTemplates = <T extends Record<string, IPropertyValue> & { _id: string }>(templates: T[], sortByField: keyof T = 'displayName') => {
     const map: Map<string, T> = new Map();
 
     const sortedTemplates = templates.sort((a, b) => a[sortByField].localeCompare(b[sortByField]));
@@ -191,12 +191,8 @@ export const getFirstXPropsKeys = (numOfPropsToShow: number, entityTemplate: IEn
     ];
 };
 
-export const getFirstXFilledPropsKeys = (
-    numOfPropsToShow: number,
-    entityTemplate: IEntityTemplatePopulated,
-    entity: IEntity,
-): string[] => {
-      if (entityTemplate.propertiesPreview.length) return entityTemplate.propertiesPreview;
+export const getFirstXFilledPropsKeys = (numOfPropsToShow: number, entityTemplate: IEntityTemplatePopulated, entity: IEntity): string[] => {
+    if (entityTemplate.propertiesPreview.length) return entityTemplate.propertiesPreview;
     return getFirstXPropsKeys(numOfPropsToShow, entityTemplate).filter((field) => {
         const value = entity.properties[field];
         return value != null && value !== '';

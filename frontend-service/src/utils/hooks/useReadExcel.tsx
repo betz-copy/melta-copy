@@ -2,14 +2,15 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import * as XLSX from 'xlsx';
+import { IPropertyValue } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { ExcelStepStatus, IExcelSteps } from '../../interfaces/excel';
 import { useWorkspaceStore } from '../../stores/workspace';
 
-const convertFileDataToRowData = (gridData: any[][], headers: string[], template: IMongoEntityTemplatePopulated) => {
+const convertFileDataToRowData = (gridData: (string | number | null)[][], headers: string[], template: IMongoEntityTemplatePopulated) => {
     return gridData
         .map((row) => {
-            const rowObject: { [key: string]: any } = {};
+            const rowObject: Record<string, IPropertyValue> = {};
             headers.forEach((header, index) => {
                 const templateHeader = Object.entries(template.properties.properties).find(([_, value]) => value.title === header);
                 if (!templateHeader) return;
@@ -24,12 +25,15 @@ const convertFileDataToRowData = (gridData: any[][], headers: string[], template
         .filter((rowObject) => rowObject !== null);
 };
 
-const importDataToGrid = (fileData: any[][], template: IMongoEntityTemplatePopulated): { properties: Record<string, any> }[] | [] => {
+const importDataToGrid = (
+    fileData: (string | number | null)[][],
+    template: IMongoEntityTemplatePopulated,
+): { properties: Record<string, IPropertyValue> }[] | [] => {
     if (!fileData.length) return [];
 
     const headers = fileData[0] as string[];
     const newRows = convertFileDataToRowData(fileData.slice(1), headers, template);
-    return (newRows || []).filter((row): row is { properties: Record<string, any> } => row !== null);
+    return (newRows || []).filter((row): row is { properties: Record<string, IPropertyValue> } => row !== null);
 };
 
 const createFileObject = (filesLimit: number, files?: File[]): Record<string, File> | undefined => {
@@ -49,7 +53,7 @@ const createFileObject = (filesLimit: number, files?: File[]): Record<string, Fi
 };
 
 export const useReadExcel = () => {
-    const [rowData, setRowData] = useState<any[]>([]);
+    const [rowData, setRowData] = useState<{ properties: Record<string, IPropertyValue> }[]>([]);
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { entitiesFileLimit, filesLimit } = workspace.metadata.excel;
 
@@ -64,7 +68,7 @@ export const useReadExcel = () => {
 
         setRowData([]);
 
-        const entities: { properties: Record<string, any> }[] = [];
+        const entities: { properties: Record<string, IPropertyValue> }[] = [];
         const fileReadPromises = Array.from(Object.values(fileObject)).map((file) => {
             const excelExtension = ['.xlsx', '.xls'];
             if (!excelExtension.some((ext) => file.name.toLowerCase().endsWith(ext))) throw new Error('Invalid File Type');
@@ -79,12 +83,14 @@ export const useReadExcel = () => {
 
                         const worksheetName = Object.keys(workbook.Sheets)[0] as string;
                         if (template.displayName.trim() !== worksheetName.trim()) throw new Error('Invalid File: wrong template');
-                        const fileData: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                        const fileData: (string | number | null)[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
                         const newEntities = importDataToGrid(fileData, template);
                         if ((newEntities?.length || 0) > entitiesFileLimit) reject(new Error(file.name));
                         else {
-                            newEntities?.forEach((newEntity) => entities.push(newEntity));
+                            newEntities?.forEach((newEntity) => {
+                                entities.push(newEntity);
+                            });
                             resolve();
                         }
                     } catch (err) {

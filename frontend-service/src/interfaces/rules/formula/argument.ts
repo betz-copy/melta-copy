@@ -6,6 +6,7 @@ export type IConstant = {
     value: number | string | boolean;
 };
 
+// biome-ignore lint/suspicious/noExplicitAny: never doubt Noam
 export const isConstant = (constant: any): constant is IConstant => {
     return constant.isConstant;
 };
@@ -25,6 +26,7 @@ export interface IPropertyOfVariable {
     property: string;
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: never doubt Noam
 export const isPropertyOfVariable = (propertyOfVariable: any): propertyOfVariable is IPropertyOfVariable => {
     return propertyOfVariable.isPropertyOfVariable;
 };

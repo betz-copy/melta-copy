@@ -38,7 +38,7 @@ import { WalletTransferSettings, walletTransferSettingsSchema } from './WalletTr
 
 const { errorCodes } = environment;
 
-type PropertyWizardType = keyof typeof PropertyType | keyof typeof PropertyFormat | keyof typeof PropertyExternalWizardType;
+export type PropertyWizardType = keyof typeof PropertyType | keyof typeof PropertyFormat | keyof typeof PropertyExternalWizardType;
 
 export interface EntityTemplateFormInputProperties {
     name: string;
@@ -138,22 +138,25 @@ const EntityTemplateWizard: React.FC<
     const currentUser = useUserStore((state) => state.user);
     const setUser = useUserStore((state) => state.setUser);
     const currentWorkspace = useWorkspaceStore((state) => state.workspace);
-    const [exportFormats, setExportFormats] = useState(false);
+
+    const [exportFormats, setExportFormats] = useState<boolean>(false);
     const [isAccountTemplate, setIsAccountTemplate] = useState<boolean>(false);
     const [isTransferTemplate, setIsTransferTemplate] = useState<boolean>(false);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         const isWalletTemplate = hasAccountBalanceField(initialValues.properties);
         setIsAccountTemplate(isWalletTemplate ?? false);
     }, [initialValues.properties, open]);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         setExportFormats((initialValues.documentTemplatesIds?.length ?? 0) > 0);
         setIsTransferTemplate(!!initialValues.walletTransfer || false);
     }, [open]);
 
     const currentTemplateId = isEditMode ? (initialValues as EntityTemplateWizardValues & { _id: string })._id : undefined;
-    const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates') || new Map();
+    const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const createTemplateSettingsSchema = useCreateOrEditTemplateNameSchema(templates, currentTemplateId);
     const walletTransferSchema = walletTransferSettingsSchema();
@@ -175,7 +178,9 @@ const EntityTemplateWizard: React.FC<
             onSuccess: async ({ template: data, childTemplates }) => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
                 queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) => {
-                    childTemplates.forEach((child) => childTemplateMap!.set(child._id, child));
+                    childTemplates.forEach((child) => {
+                        childTemplateMap!.set(child._id, child);
+                    });
                     return childTemplateMap!;
                 });
 
@@ -310,13 +315,7 @@ const EntityTemplateWizard: React.FC<
             ? [
                   {
                       label: i18next.t('wizard.entityTemplate.walletTransfer.walletTransferSettings'),
-                      component: (props) => (
-                          <WalletTransferSettings
-                              {...props}
-                              isAccountTemplate={isAccountTemplate}
-                              isEditMode={isEditMode}
-                          />
-                      ),
+                      component: (props) => <WalletTransferSettings {...props} isAccountTemplate={isAccountTemplate} isEditMode={isEditMode} />,
                       alignItems: 'start',
                       validationSchema: walletTransferSchema,
                   },

@@ -9,6 +9,7 @@ import {
     IFilterOfField,
     IMongoEntityTemplate,
     IMongoRelationshipTemplate,
+    IPropertyValue,
     ISearchBatchBody,
     ISearchEntitiesByTemplatesBody,
     ISearchEntitiesOfTemplateBody,
@@ -122,7 +123,7 @@ export class EntityValidator extends DefaultController {
         return entityTemplate;
     }
 
-    validateEntity(entityTemplate: IMongoEntityTemplate, properties: Record<string, any>) {
+    validateEntity(entityTemplate: IMongoEntityTemplate, properties: Record<string, IPropertyValue>) {
         const validateFunction = ajv.compile(entityTemplate.properties);
         const valid = validateFunction(properties);
 
@@ -144,7 +145,7 @@ export class EntityValidator extends DefaultController {
         }
     }
 
-    validatePropertiesMatchFilters(properties: Record<string, any>, filter?: ISearchFilter) {
+    validatePropertiesMatchFilters(properties: Record<string, IPropertyValue>, filter?: ISearchFilter) {
         const notValidKey = matchValueAgainstFilter(properties, filter);
         if (notValidKey)
             throw new FilterValidation(`Property ${notValidKey} do not match the filter`, {
@@ -181,7 +182,7 @@ export class EntityValidator extends DefaultController {
     }
 
     async validateConstraintsOfTemplate(req: Request) {
-        const entityTemplate = await this.getEntityTemplateByIdOrThrowValidationError(req.params.templateId);
+        const entityTemplate = await this.getEntityTemplateByIdOrThrowValidationError(req.params.templateId as string);
 
         const { properties } = entityTemplate;
         const propertiesKeys = Object.keys(properties.properties);
@@ -271,7 +272,9 @@ export class EntityValidator extends DefaultController {
         if (filterOfField.$rgx) this.validateStrictStringFilterOfField(filterOfField.$rgx, templateOfField, `${path}.$rgx`);
 
         if (filterOfField.$in) {
-            filterOfField.$in.forEach((inItem, index) => this.validateSimplePartFilterOfField(inItem, templateOfField, `${path}.$in.${index}`));
+            filterOfField.$in.forEach((inItem, index) => {
+                this.validateSimplePartFilterOfField(inItem, templateOfField, `${path}.$in.${index}`);
+            });
         }
 
         if (filterOfField.$not) {
@@ -306,11 +309,15 @@ export class EntityValidator extends DefaultController {
     ) {
         const { $or, $and } = filter;
         if ($or) {
-            $or.forEach((orPart, index) => this.validateFilterOfTemplate(orPart, template, `${pathOfFilterField}.$or.${index}`));
+            $or.forEach((orPart, index) => {
+                this.validateFilterOfTemplate(orPart, template, `${pathOfFilterField}.$or.${index}`);
+            });
         }
         if (!$and) return;
         if (Array.isArray($and)) {
-            $and.forEach((andPart, index) => this.validateFilterOfTemplate(andPart, template, `${pathOfFilterField}.$and.${index}`));
+            $and.forEach((andPart, index) => {
+                this.validateFilterOfTemplate(andPart, template, `${pathOfFilterField}.$and.${index}`);
+            });
         } else {
             this.validateFilterOfTemplate($and, template, `${pathOfFilterField}.$and`);
         }
@@ -388,14 +395,14 @@ export class EntityValidator extends DefaultController {
         const { filter, showRelationships, sort }: ISearchEntitiesOfTemplateBody = req.body;
         const { templateId } = req.params;
 
-        const entityTemplate = await this.getEntityTemplateByIdOrThrowValidationError(templateId);
+        const entityTemplate = await this.getEntityTemplateByIdOrThrowValidationError(templateId as string);
         const entityTemplateForValidation = addDefaultFieldsToTemplate(entityTemplate);
 
-        const relationshipTemplatesMap = await this.getRelationshipTemplatesRelatedToEntityTemplates([templateId]);
+        const relationshipTemplatesMap = await this.getRelationshipTemplatesRelatedToEntityTemplates([templateId as string]);
 
         if (filter) this.validateFilterOfTemplate(filter, entityTemplateForValidation, 'filter');
 
-        this.validateShowRelationships(showRelationships, templateId, relationshipTemplatesMap, 'showRelationships');
+        this.validateShowRelationships(showRelationships, templateId as string, relationshipTemplatesMap, 'showRelationships');
 
         sort?.forEach(({ field }, sortIndex) => {
             const fieldTemplate = entityTemplateForValidation.properties.properties[field];
@@ -532,13 +539,13 @@ export const getFilesName = (files: string[]): string => {
  * @returns flattened entity (i.e. an object with no nested properties, using key paths as keys).
  */
 export const addStringFieldsAndNormalizeSpecialStringValues = async (
-    entityProperties: Record<string, any>,
+    entityProperties: Record<string, IPropertyValue>,
     entityTemplate: IMongoEntityTemplate | IEntityTemplate,
     entityTemplateService: EntityTemplateManagerService,
     coloredFields?: Record<string, string>,
     recursiveRelationshipReference = false,
-): Promise<Record<string, any>> => {
-    const normalizedEntity: Record<string, any> = {};
+): Promise<Record<string, IPropertyValue>> => {
+    const normalizedEntity: Record<string, IPropertyValue> = {};
 
     await Promise.all(
         Object.entries(entityTemplate.properties.properties).map(async ([key, value]) => {
@@ -605,7 +612,7 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
             }
 
             if (type === 'string' && format === 'relationshipReference' && typeof propertyValue === 'object') {
-                let relationShipPropValue: Record<string, any> = 'properties' in propertyValue ? propertyValue.properties : propertyValue;
+                let relationShipPropValue: Record<string, IPropertyValue> = 'properties' in propertyValue ? propertyValue.properties : propertyValue;
 
                 if (recursiveRelationshipReference) {
                     const relatedEntityTemplate = await entityTemplateService.getEntityTemplateById(propertyValue.templateId);

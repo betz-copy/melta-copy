@@ -2,13 +2,14 @@ import { fromZonedTime } from 'date-fns-tz';
 import Neo4j, { Node, QueryResult } from 'neo4j-driver';
 import config from '../config';
 
+const { url, auth } = config.neo4j;
+
+// biome-ignore lint/suspicious/noExplicitAny: it's a script, who cares
+export type IPropertyValue = any;
 export interface IEntity {
     templateId: string;
-    properties: Record<string, any>;
+    properties: Record<string, IPropertyValue>;
 }
-const {
-    neo4j: { url, auth },
-} = config;
 
 export const initializeNeo = async () => {
     const driver = Neo4j.driver(url, Neo4j.auth.basic(auth.username, auth.password), { disableLosslessIntegers: true });
@@ -32,7 +33,7 @@ export const formatDate = (date: string) => {
     return date.slice(0, 10);
 };
 
-const normalizeFields = (properties: Record<string, any>): Record<string, any> => {
+const normalizeFields = (properties: Record<string, IPropertyValue>): Record<string, IPropertyValue> => {
     const props = {};
 
     Object.entries(properties).forEach(([key, value]) => {

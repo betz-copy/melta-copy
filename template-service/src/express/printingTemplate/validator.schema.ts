@@ -1,8 +1,8 @@
-import { MongoIdSchema, variableNameValidation } from '@microservices/shared';
+import { MongoIdSchema } from '@microservices/shared';
 import Joi from 'joi';
 
 const printingTemplateBodySchema = Joi.object({
-    name: variableNameValidation.required(),
+    name: Joi.string().required(),
     sections: Joi.array()
         .items(
             Joi.object({

@@ -4,7 +4,7 @@ import WorkspaceManager from '../../express/workspaces/manager';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 
 const updatePastAlertDateNotification = async (entityTemplateService: EntityTemplateService, entityTemplate: IMongoEntityTemplatePopulated) => {
-    const { _id, createdAt, updatedAt, disabled, ...restProperties } = entityTemplate;
+    const { _id, createdAt: _c, updatedAt: _u, disabled: _d, ...restProperties } = entityTemplate;
     let updatedProperties = '';
 
     let hasDateNotification = false;

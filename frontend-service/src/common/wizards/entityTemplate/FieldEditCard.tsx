@@ -16,7 +16,7 @@ import { isEqual } from 'lodash';
 import React, { memo, SetStateAction } from 'react';
 import { useQueryClient } from 'react-query';
 import { environment } from '../../../globals';
-import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
+import { IPropertyValue, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import { IEntityTemplateMap, PropertyExternalWizardType } from '../../../interfaces/entityTemplates';
 import { arrayTypes } from '../../../services/templates/entityTemplatesService';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
@@ -40,9 +40,9 @@ export interface FieldEditCardProps {
     setValues?: (value: SetStateAction<CommonFormInputProperties>) => void;
     touched?: FormikTouched<CommonFormInputProperties>;
     errors?: FormikErrors<CommonFormInputProperties>;
-    setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
+    setFieldValue: (field: keyof CommonFormInputProperties, value: IPropertyValue) => void;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    remove: (index: number, isNewProperty: boolean, groupIndex?: number) => any;
+    remove: (index: number, isNewProperty: boolean, groupIndex?: number) => void;
     archive?: (index: number, groupIndex?: number) => void;
     supportSerialNumberType: boolean;
     supportEntityReferenceType: boolean;
@@ -151,7 +151,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const isRequiredWalletTransferField = React.useMemo(() => {
         if (!values?.walletTransfer) return false;
 
-        const walletTransfer = (values as Record<string, any>).walletTransfer;
+        const walletTransfer = (values as Record<string, IPropertyValue>).walletTransfer;
         const from = typeof walletTransfer.from === 'string' ? walletTransfer.from : walletTransfer.from.name;
         const to = typeof walletTransfer.to === 'string' ? walletTransfer.to : walletTransfer.to.name;
         return from === value.name || to === value.name || walletTransfer?.amount === value.name;
@@ -464,7 +464,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                         </MeltaTooltip>
                                     )}
                                     <MeltaTooltip
-                                        disableHoverListener={!initialValue?.required}
+                                        disableHoverListener={!value.required}
                                         title={i18next.t('wizard.entityTemplate.cantDeleteUniqueOrRequiredFields')}
                                     >
                                         <Box>
@@ -472,7 +472,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 onClick={() => remove(index, isNewProperty, groupIndex)}
                                                 disabled={
                                                     !supportDeleteForExistingInstances ||
-                                                    initialValue?.required ||
+                                                    value.required ||
                                                     hasActions ||
                                                     (value.accountBalance && areThereAnyInstances)
                                                 }

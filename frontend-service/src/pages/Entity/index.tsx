@@ -9,7 +9,7 @@ import { useParams, useSearchParams } from 'wouter';
 import { getChildTemplatesFilter } from '../../common/inputs/TemplateEntitiesAutocomplete';
 import '../../css/pages.css';
 import '../../css/pages.css';
-import { IChildTemplateMap, IChildTemplatePopulated } from '../../interfaces/childTemplates';
+import { IChildTemplateMap, IChildTemplatePopulated, IFilter } from '../../interfaces/childTemplates';
 import { ISearchFilter } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { PermissionScope } from '../../interfaces/permissions';
@@ -66,7 +66,7 @@ export const getButtonState = (
 export interface INestedRelationshipTemplates {
     relationshipTemplate: IMongoRelationshipTemplatePopulated;
     isExpandedEntityRelationshipSource: boolean; // for relationship that is of format currentEntityTemplate -> currentEntityTemplate, we want it twice, once with outgoing connections of expandedEntity, and once with incoming connections of expandedEntity
-    hasInstances: boolean;
+    hasInstances?: boolean;
     depth: number;
     parentRelationship?: IMongoRelationshipTemplatePopulated;
     children: INestedRelationshipTemplates[];
@@ -91,7 +91,7 @@ const Entity: React.FC = () => {
 
     const groupChildTemplate = groupChildTemplatesByParent(childTemplates, entityTemplates);
 
-    const filters: any =
+    const filters: IFilter =
         Object.entries(groupChildTemplate).length > 0
             ? Object.fromEntries(
                   Object.entries(groupChildTemplate)

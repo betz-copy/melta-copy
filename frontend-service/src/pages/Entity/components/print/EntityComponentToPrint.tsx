@@ -3,8 +3,10 @@
 import ShortcutIcon from '@mui/icons-material/Shortcut';
 import React from 'react';
 import { EntityPropertiesInternal } from '../../../../common/EntityProperties';
+import { IPrintOptions } from '../../../../common/print/PrintOptionsDialog';
 import { IEntity } from '../../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { IMongoPrintingTemplate } from '../../../../interfaces/printingTemplates';
 import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { EntityDates } from '../EntityDates';
 import { IEntityTreeNode } from './ComponentToPrint';
@@ -12,36 +14,36 @@ import { IEntityTreeNode } from './ComponentToPrint';
 interface IEntityComponentToPrintProps {
     entityTemplate: IMongoEntityTemplatePopulated;
     entity: IEntity;
-    options: {
-        showEntityDates: boolean;
-        showDisabled: boolean;
-        addEntityCheckbox?: boolean;
-        showPreviewPropertiesOnly?: boolean;
-    };
+    options: Pick<IPrintOptions, 'showEntitiesDates' | 'addEntityCheckbox' | 'showPreviewPropertiesOnly'>;
     hierarchicalChildren?: IEntityTreeNode[];
     depth?: number;
+    isFirstChild?: boolean;
     entityTemplates: IEntityTemplateMap;
     relationships: IRelationshipTemplateMap;
+    printingTemplate?: IMongoPrintingTemplate;
 }
 
 const EntityComponentToPrint: React.FC<IEntityComponentToPrintProps> = React.memo(
-    ({ entityTemplate, entity, options, hierarchicalChildren, depth = 0, entityTemplates, relationships }) => {
+    ({ entityTemplate, entity, options, hierarchicalChildren, depth = 0, entityTemplates, relationships, printingTemplate }) => {
         const rowStyle: React.CSSProperties = {
             display: 'flex',
             flexDirection: 'column',
-            padding: depth > 0 ? '10px 0px 0px 20px' : '20px 0px',
+            padding: '0px',
             width: '100%',
+            marginTop: depth > 0 ? '13px' : '0px',
         };
 
         const containerStyle: React.CSSProperties = {
             display: 'flex',
             flexDirection: 'column',
             backgroundColor: depth === 1 ? '#CCCFE526' : 'transparent',
-            marginTop: depth === 0 ? '10px' : '0px',
-            paddingBottom: '10px',
+            marginTop: depth === 1 ? '10px' : '0px',
+            padding: depth === 1 ? '0px 13px 10px 20px' : '0px',
             borderRadius: '8px',
             width: '100%',
         };
+
+        const selectedTemplate = printingTemplate?.sections.find((section) => section.entityTemplateId === entityTemplate._id);
 
         const rootEntityComponent = (
             <div style={{ backgroundColor: '#CCCFE526', border: '1px solid #CCCFE5', borderRadius: '12px', width: '100%', padding: '1rem' }}>
@@ -56,13 +58,23 @@ const EntityComponentToPrint: React.FC<IEntityComponentToPrintProps> = React.mem
                     isPrintingMode
                     showByGroups
                     style={{ width: '100%', display: 'flex', flexDirection: 'row' }}
+                    printingTemplateSection={selectedTemplate}
                 />
-                {options.showEntityDates && <EntityDates createdAt={entity.properties.createdAt} updatedAt={entity.properties.updatedAt} toPrint />}
+                {options.showEntitiesDates && <EntityDates createdAt={entity.properties.createdAt} updatedAt={entity.properties.updatedAt} toPrint />}
             </div>
         );
 
         const connectionRow = (
-            <div style={{ display: 'flex', width: '100%', gap: '10px', alignItems: 'center', flexDirection: 'row' }}>
+            <div
+                style={{
+                    display: 'flex',
+                    width: '100%',
+                    gap: '10px',
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    paddingRight: depth > 2 ? `${(depth - 2) * 30}px` : '0px',
+                }}
+            >
                 <div style={{ display: 'flex', flexDirection: 'row', gap: '10px', alignItems: 'center' }}>
                     {depth > 1 && <ShortcutIcon sx={{ fontSize: 16, color: '#9398C2', transform: 'rotate(180deg)' }} />}
                     {options.addEntityCheckbox && <div style={{ width: '20px', height: '20px', borderRadius: '6px', border: '1px solid black' }} />}
@@ -80,6 +92,9 @@ const EntityComponentToPrint: React.FC<IEntityComponentToPrintProps> = React.mem
                         minWidth: 0,
                         width: '100%',
                         flexWrap: 'nowrap',
+                        opacity: entity.properties.disabled ? 0.5 : 1,
+                        pageBreakInside: 'avoid',
+                        breakInside: 'avoid',
                     }}
                 >
                     <span style={{ fontWeight: '600', fontSize: '14px', whiteSpace: 'nowrap' }}>{entityTemplate.displayName}</span>
@@ -96,6 +111,7 @@ const EntityComponentToPrint: React.FC<IEntityComponentToPrintProps> = React.mem
                             showByGroups
                             textWrap
                             style={{ width: '100%', display: 'flex', flexDirection: 'row', alignItems: 'center' }}
+                            printingTemplateSection={selectedTemplate}
                         />
                     </div>
                 </div>
@@ -107,29 +123,29 @@ const EntityComponentToPrint: React.FC<IEntityComponentToPrintProps> = React.mem
                 {depth === 0 ? rootEntityComponent : connectionRow}
                 {hierarchicalChildren?.length ? (
                     <div style={containerStyle}>
-                        {hierarchicalChildren.map((child) => {
+                        {hierarchicalChildren.map((child, index) => {
                             const template = entityTemplates.get(child.templateId);
                             const relationship = relationships.get(child.relationshipId);
                             if (!template || !relationship) return null;
 
                             return (
-                                <div key={child.properties._id} style={{ paddingRight: depth > 0 ? '30px' : '0px' }}>
+                                <div key={child.properties._id}>
                                     <EntityComponentToPrint
                                         depth={depth + 1}
+                                        isFirstChild={index === 0}
                                         entityTemplate={template}
                                         entity={child}
                                         options={options}
                                         hierarchicalChildren={child.children}
                                         entityTemplates={entityTemplates}
                                         relationships={relationships}
+                                        printingTemplate={printingTemplate}
                                     />
                                 </div>
                             );
                         })}
                     </div>
-                ) : (
-                    <div style={{ marginTop: '10px' }} />
-                )}
+                ) : null}
             </div>
         );
     },

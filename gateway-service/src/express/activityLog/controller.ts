@@ -8,7 +8,7 @@ class ActivityLogController extends DefaultController<ActivityLogManager> {
     }
 
     async getActivity(req: Request, res: Response) {
-        res.json(await this.manager.getActivity(req.params.entityId, req.query));
+        res.json(await this.manager.getActivity(req.params.entityId as string, req.query));
     }
 }
 

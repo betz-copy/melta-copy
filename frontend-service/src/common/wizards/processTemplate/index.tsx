@@ -61,7 +61,7 @@ const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues
     isEditMode = false,
 }) => {
     const queryClient = useQueryClient();
-    const templates = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates') || new Map();
+    const templates = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
 
     const createTemplateSettingsSchema = useCreateOrEditTemplateNameSchema(templates, initialValues._id);
 
@@ -97,7 +97,7 @@ const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues
             component: (props, { isEditMode }) => (
                 <CreateTemplateName {...props} isEditMode={isEditMode} gridProps={{ direction: 'column', alignItems: 'center', spacing: 1 }} />
             ),
-            validationSchema: createTemplateSettingsSchema,
+            validationSchema: createTemplateSettingsSchema.omit(['category']),
         },
         {
             label: i18next.t('wizard.processTemplate.otherDetails'),

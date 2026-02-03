@@ -1,3 +1,5 @@
+import { IPropertyValue } from '@microservices/shared';
+
 interface IBaseActivityLog {
     _id: string;
     timestamp: Date;
@@ -28,12 +30,12 @@ interface IDuplicateEntityMetadata extends IBaseActivityLog {
 
 interface IUpdateEntityMetadata extends IBaseActivityLog {
     action: 'UPDATE_ENTITY' | 'UPDATE_PROCESS';
-    metadata: { updatedFields: [{ fieldName: string; oldValue: any; newValue: any }] };
+    metadata: { updatedFields: [{ fieldName: string; oldValue: IPropertyValue; newValue: IPropertyValue }] };
 }
 
 export interface IUpdateProcessStepMetadata extends IBaseActivityLog {
     action: 'UPDATE_PROCESS_STEP';
-    metadata: { updatedFields?: [{ fieldName: string; oldValue: any; newValue: any }]; comments?: string; status?: Status };
+    metadata: { updatedFields?: [{ fieldName: string; oldValue: IPropertyValue; newValue: IPropertyValue }]; comments?: string; status?: Status };
 }
 
 export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IDuplicateEntityMetadata | IUpdateEntityMetadata | IUpdateProcessStepMetadata;

@@ -14,6 +14,7 @@ import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IWalletTransfer }
 import { matchValueAgainstFilter } from '../../../utils/filters';
 import { uiSchemaUtils } from './ utils';
 import './form.css';
+import { IPropertyValue } from '../../../interfaces/entities';
 import InputAccordion from './InputAccordion';
 import RjsfCheckboxWidget from './Widgets/RjsfCheckboxWidget';
 import RjsfCommentWidget from './Widgets/RjsfCommentWidget';
@@ -37,7 +38,10 @@ export type ErrorMessage<T extends string | LeafError> = {
     [key: string]: T | ErrorMessage<T>;
 };
 
-const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
+const ajvErrorsToFormikErrors = (
+    schema: IMongoEntityTemplatePopulated['properties'],
+    ajvErrors: ErrorObject[],
+): FormikErrors<Record<string, IPropertyValue>> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
         if (ajvError.keyword === 'required') return [ajvError.params.missingProperty, i18next.t('validation.required')];
 
@@ -53,6 +57,7 @@ const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properti
     return Object.fromEntries(formikErrorsEntries);
 };
 
+// biome-ignore lint/complexity/noBannedTypes: lol
 const convertErrorsToNestedGroups = <T extends ErrorMessage<string> | ErrorSchema<{}>>(
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
     originalErrors: T,
@@ -70,9 +75,9 @@ const convertErrorsToNestedGroups = <T extends ErrorMessage<string> | ErrorSchem
 
 export const ajvValidate = (
     schema: IMongoEntityTemplatePopulated['properties'],
-    data: Record<string, any>,
+    data: Record<string, IPropertyValue>,
     walletTransfer?: IWalletTransfer | null,
-): FormikErrors<any> => {
+): FormikErrors<Record<string, IPropertyValue>> => {
     const ajv = new Ajv({ allErrors: true });
     addFormats(ajv);
 
@@ -130,7 +135,9 @@ export const ajvValidate = (
         'display',
         'accountBalance',
         'isProfileImage',
-    ].forEach((keyword) => ajv.addKeyword({ keyword }));
+    ].forEach((keyword) => {
+        ajv.addKeyword({ keyword });
+    });
 
     ajv.addKeyword({
         keyword: 'identifier',
@@ -150,7 +157,7 @@ export const ajvValidate = (
     const ajvErrors = validateFunction.errors ?? [];
     const formikErrors = ajvErrorsToFormikErrors(schema, ajvErrors);
 
-    const childTemplateFilterErrors: FormikErrors<any> = {};
+    const childTemplateFilterErrors: FormikErrors<Record<string, IPropertyValue>> = {};
 
     Object.entries(schema.properties || {}).forEach(([field, propertySchema]) => {
         const propertyFilter = propertySchema?.filters;
@@ -164,16 +171,35 @@ export const ajvValidate = (
             childTemplateFilterErrors[field] = i18next.t('validation.fieldFilterCondition');
     });
 
-    const walletTemplateErrors: FormikErrors<any> = {};
+    const walletTemplateErrors: FormikErrors<Record<string, IPropertyValue>> = {};
     if (walletTransfer) {
-        const { from, to } = walletTransfer;
-        const sourceWalletEntityId = data[from]?.properties?._id;
-        const destWalletEntityId = data[to]?.properties?._id;
+        const { from, to, amount } = walletTransfer;
+        const sourceWalletEntity = data[from];
+        const destWalletEntity = data[to];
+        const sourceWalletEntityId = sourceWalletEntity?.properties?._id;
+        const destWalletEntityId = destWalletEntity?.properties?._id;
+        const transferAmount = data[amount];
+
+        if (transferAmount !== undefined && transferAmount !== null && transferAmount <= 0) {
+            walletTemplateErrors[amount] = i18next.t('validation.negativeTransferAmount');
+        }
 
         if (sourceWalletEntityId && sourceWalletEntityId === destWalletEntityId) {
             const error = i18next.t('validation.sameSourceAndDestWallet');
             walletTemplateErrors[from] = error;
             walletTemplateErrors[to] = error;
+        }
+
+        if (sourceWalletEntity && typeof sourceWalletEntity === 'object' && sourceWalletEntity.properties && transferAmount) {
+            const sourceWalletProperties = sourceWalletEntity.properties;
+            const balanceKey = Object.keys(sourceWalletProperties).find((key) => key === 'amount' || key === 'balance');
+
+            if (balanceKey) {
+                const currentBalance = sourceWalletProperties[balanceKey];
+                if (typeof currentBalance === 'number' && currentBalance < transferAmount) {
+                    walletTemplateErrors[amount] = i18next.t('validation.insufficientWalletBalance', { current: currentBalance });
+                }
+            }
         }
     }
 
@@ -183,13 +209,13 @@ export const ajvValidate = (
 const formikErrorsToRjsfExtraErrorsRec = (
     formikErrors: ErrorMessage<string> | string,
     template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
-): ErrorSchema<{}> => {
+): ErrorSchema<object> => {
     if (typeof formikErrors === 'string') return { __errors: [formikErrors] };
 
     if (Array.isArray(formikErrors)) return formikErrors.map((err) => formikErrorsToRjsfExtraErrorsRec(err, template));
 
     if (typeof formikErrors === 'object' && formikErrors !== null) {
-        const newObj: Record<string, any> = {};
+        const newObj: Record<string, IPropertyValue> = {};
         for (const key in formikErrors) {
             newObj[key] = formikErrorsToRjsfExtraErrorsRec(formikErrors[key], template);
         }
@@ -235,7 +261,6 @@ const getComponent = (
             const { label, disabled, name, value, schema, onChange } = props;
             const [checked, setChecked] = useState(checkboxProps.isFieldChecked(name));
 
-            // biome-ignore lint/correctness/useExhaustiveDependencies: important
             useEffect(() => {
                 checkboxProps.onCheckboxChange(name, checked);
             }, [checked, name]);
@@ -265,11 +290,17 @@ const getComponent = (
 
 interface JSONSchemaFormFormikProps {
     schema: IMongoEntityTemplatePopulated['properties'];
+    // biome-ignore lint/suspicious/noExplicitAny: json schema formik is generic
     values: any;
+    // biome-ignore lint/suspicious/noExplicitAny: json schema formik is generic
     setValues: FormikHelpers<any>['setValues'];
+    // biome-ignore lint/complexity/noBannedTypes: json schema formik is generic
     errors: FormikErrors<{}>;
+    // biome-ignore lint/complexity/noBannedTypes: json schema formik is generic
     uniqueErrors?: FormikErrors<{}>;
+    // biome-ignore lint/suspicious/noExplicitAny: json schema formik is generic
     touched: FormikTouched<any>;
+    // biome-ignore lint/suspicious/noExplicitAny: json schema formik is generic
     setFieldTouched: FormikHelpers<any>['setFieldTouched'];
     isEditMode?: boolean;
     readonly?: boolean;
@@ -305,7 +336,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             const biggerFieldCss = innerDiv.querySelector('.fullWidth') || checkboxProps;
             const classesToAdd: string[] = [];
 
-            classesToAdd.push(biggerFieldCss ? 'full-width-field' : 'half-width-field');
+            classesToAdd.push(`${biggerFieldCss ? 'full' : 'half'}-width-field`);
             if (biggerFieldCss) classesToAdd.push('direction-rtl');
             if (checkboxProps) classesToAdd.push('no-padding-top');
 
@@ -350,7 +381,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 propsAcc[field] = propertyInSchema;
                 return propsAcc;
             },
-            {} as Record<string, any>,
+            {} as Record<string, IPropertyValue>,
         );
 
         acc[name] = {
