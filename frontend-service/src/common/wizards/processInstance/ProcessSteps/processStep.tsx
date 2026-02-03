@@ -355,7 +355,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                     isViewMode={!isStepEditMode}
                                                     title={title}
                                                     errorText={
-                                                        errors.entityReferences?.[fieldName] && touched.entityReferences?.[fieldName]
+                                                        errors.entityReferences?.[fieldName]
                                                             ? JSON.stringify(errors.entityReferences?.[fieldName])
                                                             : null
                                                     }

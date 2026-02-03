@@ -65,6 +65,13 @@ export const TemplateFields = ({
                                         key={fieldName}
                                         field={fieldName}
                                         values={values}
+                                        validate={(changedValue) => {
+                                            return (
+                                                values.template.details.properties.required?.includes(fieldName) &&
+                                                !changedValue &&
+                                                i18next.t('validation.requiredEntity')
+                                            );
+                                        }}
                                         errors={errors}
                                         touched={touched}
                                         setFieldValue={setFieldValue}
