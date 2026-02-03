@@ -257,15 +257,11 @@ const EntityTemplatesRow: React.FC = () => {
         }
     };
 
-    const { mutateAsync } = useMutation<
-        IMongoEntityTemplateWithConstraintsPopulated,
-        AxiosError,
-        { entityTemplateId: string; entityTemplate: IEntityTemplate; category: IMongoCategory }
-    >(
-        async ({ entityTemplateId, entityTemplate, category }) => {
+    const { mutateAsync } = useMutation(
+        ({ entityTemplateId, entityTemplate, category }: { entityTemplateId: string; entityTemplate: IEntityTemplate; category: IMongoCategory }) => {
             setLoadedEntityTemplateId(entityTemplateId);
 
-            return await updateEntityTemplateRequest(
+            return updateEntityTemplateRequest(
                 entityTemplateId,
                 {
                     ...entityTemplate,
@@ -275,8 +271,14 @@ const EntityTemplatesRow: React.FC = () => {
             );
         },
         {
-            onSuccess(data) {
+            onSuccess({ template: data, childTemplates }) {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
+                queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) => {
+                    childTemplates.forEach((child) => {
+                        childTemplateMap!.set(child._id, child);
+                    });
+                    return childTemplateMap!;
+                });
 
                 queryClient.invalidateQueries(searchEntityTemplatesQueryKey);
                 const updatedUserPermissions = updateUserPermissionForEntityTemplate(data, currentUser, currentWorkspace._id);

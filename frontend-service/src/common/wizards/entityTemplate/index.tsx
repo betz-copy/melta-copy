@@ -77,7 +77,7 @@ const EntityTemplateWizard: React.FC<
         setIsTransferTemplate(!!initialValues.walletTransfer || false);
     }, [open]);
 
-    const currentTemplateId = isEditMode ? (initialValues as EntityTemplateWizardValues & { _id: string })._id : undefined;
+    const currentTemplateId = isEditMode ? initialValues._id : undefined;
     const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const createTemplateSettingsSchema = useCreateOrEditTemplateNameSchema(templates, currentTemplateId);
@@ -85,14 +85,22 @@ const EntityTemplateWizard: React.FC<
     const addFieldsSettingsSchema = addFieldsSchema(isAccountTemplate);
 
     const { isLoading, mutateAsync } = useMutation(
-        (entityTemplate: EntityTemplateWizardValues) => {
+        async (entityTemplate: EntityTemplateWizardValues) => {
             if (isEditMode) {
-                return updateEntityTemplateRequest((initialValues as EntityTemplateWizardValues & { _id: string })._id, entityTemplate, queryClient);
-            } else return createEntityTemplateRequest(entityTemplate, queryClient);
+                return await updateEntityTemplateRequest(initialValues._id ?? '', entityTemplate, queryClient);
+            }
+            const createdTemplate = await createEntityTemplateRequest(entityTemplate, queryClient);
+            return { template: createdTemplate, childTemplates: [] };
         },
         {
-            onSuccess: async (data) => {
+            onSuccess: async ({ template: data, childTemplates }) => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
+                queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) => {
+                    childTemplates.forEach((child) => {
+                        childTemplateMap!.set(child._id, child);
+                    });
+                    return childTemplateMap!;
+                });
 
                 queryClient.invalidateQueries(searchEntityTemplatesQueryKey);
 

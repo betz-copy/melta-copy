@@ -638,7 +638,11 @@ export const updateEntityTemplateRequest = async (
     const originalWizardValues = 'attachmentProperties' in updatedEntityTemplate ? (updatedEntityTemplate as EntityTemplateWizardValues) : undefined;
     appendEntityTemplateFormData(entityTemplate, formData, originalWizardValues);
 
-    const { data } = await axios.put<IMongoEntityTemplateWithConstraintsPopulated>(`${entityTemplates}/${entityTemplateId}`, formData);
+    const { data } = await axios.put<{
+        template: IMongoEntityTemplateWithConstraintsPopulated;
+        childTemplates: IMongoChildTemplateWithConstraintsPopulated[];
+    }>(`${entityTemplates}/${entityTemplateId}`, formData);
+
     return data;
 };
 
