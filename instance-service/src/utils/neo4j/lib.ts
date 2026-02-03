@@ -3,6 +3,7 @@ import {
     IEntity,
     IEntityExpanded,
     IEntityWithDirectRelationships,
+    IKartoffelUser,
     IMongoEntityTemplate,
     IPropertyValue,
     IRelationship,
@@ -73,20 +74,6 @@ export const normalizeFields = async (
                 });
             }
         }
-        // if (key.includes('.') && key.endsWith(`${usersFieldsPropertySuffix}`)) {
-        //     // Find the user field of the key (everything before the suffix)
-        //     const currentUserField = usersArrayOriginalAndSuffixFieldsMap.find(({ suffixFieldName }) =>
-        //         key.includes(suffixFieldName),
-        //     )!.suffixFieldName;
-        //     usersArrayKeys.add(key.split(currentUserField)[0]);
-        //     continue;
-        // }
-
-        // if (key.includes('.') && key.endsWith(`${userFieldPropertySuffix}`)) {
-        //     const currentUserField = userOriginalAndSuffixFieldsMap.find(({ suffixFieldName }) => key.includes(suffixFieldName))!.suffixFieldName;
-        //     userKeys.add(key.split(currentUserField)[0]);
-        //     continue;
-        // }
 
         if (value instanceof neo4j.types.LocalDateTime) {
             props[key] = fromZonedTime(new Date(value.toString()), timezone).toISOString();
@@ -115,41 +102,25 @@ export const normalizeFields = async (
         props[key] = value;
     }
 
-    // if (usersArrayKeys.size) {
-    //     for (const userKey of usersArrayKeys) {
-    //         props[userKey] = properties[`${userKey}${usersArrayOriginalAndSuffixFieldsMap[0].suffixFieldName}${usersFieldsPropertySuffix}`].map(
-    //             (_id: string, index: string | number) => {
-    //                 const objToReturn: Record<string, unknown> = {};
-
-    //                 for (const userField of usersArrayOriginalAndSuffixFieldsMap) {
-    //                     objToReturn[userField.originalFieldName] =
-    //                         properties[`${userKey}${userField.suffixFieldName}${usersFieldsPropertySuffix}`][index];
-    //                 }
-
-    //                 return JSON.stringify({
-    //                     ...objToReturn,
-    //                 });
-    //             },
-    //         );
-    //     }
-    // }
+    const transformUser = (foundUser: IKartoffelUser) => ({
+        _id: foundUser._id || foundUser.id,
+        fullName: foundUser.fullName,
+        jobTitle: foundUser.jobTitle,
+        hierarchy: foundUser.hierarchy,
+        mail: foundUser.mail,
+        userType: foundUser.entityType,
+    });
 
     if (userKeys.size && template) {
         const users = await Kartoffel.getUsersByIds(Array.from(userKeys.keys()));
+
         for (const [key, value] of Object.entries(properties)) {
             const property = template.properties.properties[key];
             if (property?.format === PropertyFormat.user) {
                 const foundUser = users.find(({ _id }) => _id === value);
                 if (!foundUser) props[key] = undefined;
                 else {
-                    props[key] = {
-                        _id: foundUser._id || foundUser.id,
-                        fullName: foundUser.fullName,
-                        jobTitle: foundUser.jobTitle,
-                        hierarchy: foundUser.hierarchy,
-                        mail: foundUser.mail,
-                        userType: foundUser.entityType,
-                    };
+                    props[key] = transformUser(foundUser);
 
                     const kartoffelUserFieldObj = Object.entries(template.properties.properties).reduce(
                         (acc, [kartoffelKey, prop]) => {
@@ -168,28 +139,9 @@ export const normalizeFields = async (
 
             if (property?.items?.format === PropertyFormat.user) {
                 const foundUsers = users.filter(({ _id }) => value.includes(_id));
-                props[key] = foundUsers.map((foundUser) => ({
-                    _id: foundUser._id || foundUser.id,
-                    fullName: foundUser.fullName,
-                    jobTitle: foundUser.jobTitle,
-                    hierarchy: foundUser.hierarchy,
-                    mail: foundUser.mail,
-                    userType: foundUser.entityType,
-                }));
+                props[key] = foundUsers.map((foundUser) => transformUser(foundUser));
             }
         }
-
-        // for (const userKey of userKeys) {
-        //     const objToReturn: Record<string, unknown> = {};
-
-        //     for (const userField of userOriginalAndSuffixFieldsMap) {
-        //         objToReturn[userField.originalFieldName] = properties[`${userKey}${userField.suffixFieldName}${userFieldPropertySuffix}`];
-        //     }
-
-        //     props[userKey] = JSON.stringify({
-        //         ...objToReturn,
-        //     });
-        // }
     }
 
     return { properties: props, coloredFields };

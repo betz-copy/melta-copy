@@ -26,10 +26,6 @@ const {
 export const handleChartPropertiesTemplate = (entityTemplate: IMongoEntityTemplate) => {
     const specialProperties: Record<string, string> = {};
     Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
-        // if (value.format === 'user') specialProperties[key] = `${key}.fullName${userFieldPropertySuffix}`;
-
-        // if (value.items?.format === 'user') specialProperties[key] = `${key}.fullNames${usersFieldsPropertySuffix}`;
-
         if (value.format === 'relationshipReference') specialProperties[key] = `${key}.properties._id${relationshipReferencePropertySuffix}`;
     });
 

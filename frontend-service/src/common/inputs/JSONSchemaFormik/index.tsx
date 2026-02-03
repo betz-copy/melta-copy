@@ -102,14 +102,6 @@ export const ajvValidate = (
             return !!(user._id && user.fullName && user.mail);
         },
     });
-    // ajv.addFormat('user', uuidFormat);
-    // ajv.addFormat('user', {
-    //     validate: (value) => {
-    //         console.log({ value });
-    //         if (typeof value === 'string') return true;
-    //         return value?._id && value?.fullName && value?.jobTitle && value?.hierarchy && value?.mail;
-    //     },
-    // });
 
     ajv.addFormat('text-area', /.*/);
     ajv.addFormat('location', (value: string) => validateLocation(JSON.parse(value), true) === false);
@@ -151,7 +143,6 @@ export const ajvValidate = (
         errors: false,
     });
 
-    // const formats = ['location', 'relationshipReference'];
     const schemaToValidate = {
         ...schema,
         properties: Object.entries(schema.properties).reduce((acc, [key, prop]) => {
@@ -412,7 +403,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             onChange={({ formData }) => {
                 Object.entries(formData as Record<string, IEntitySingleProperty>).forEach(([key, value]) => {
                     if (JSON.stringify(value) === JSON.stringify([undefined]) || JSON.stringify(value) === JSON.stringify([null]))
-                        formData[key] = undefined; //TODO: CHECK IF REMOVE
+                        formData[key] = undefined;
 
                     // if the value is an object without properties, we assume it's a grouped field and flatten it
                     // rjsf library does support grouped fields, but we do not save them as so in the db.

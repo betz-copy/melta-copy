@@ -2453,34 +2453,12 @@ class EntityManager extends DefaultManagerNeo4j {
         propertiesToRemove.push(`${property}.templateId${config.neo4j.relationshipReferencePropertySuffix}`);
     }
 
-    // getUserProperties(userProperty: string) {
-    //     return config.neo4j.userOriginalAndSuffixFieldsMap.map(
-    //         (userField) => `${userProperty}${userField.suffixFieldName}${config.neo4j.userFieldPropertySuffix}`,
-    //     );
-    // }
-
-    // getUsersArrayProperties(userProperty: string) {
-    //     return config.neo4j.usersArrayOriginalAndSuffixFieldsMap.map(
-    //         (userField) => `${userProperty}${userField.suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`,
-    //     );
-    // }
-
     async deletePropertiesOfTemplate(templateId: string, properties: string[], currentTemplateProperties: Record<string, IEntitySingleProperty>) {
         const propertiesToRemove: string[] = [];
         const relationshipTemplatesToRemove: string[] = [];
 
         for (const property of properties) {
             const propertyTemplate = currentTemplateProperties[property];
-
-            // if (propertyTemplate.format === PropertyFormat.user) {
-            //     propertiesToRemove.push(...this.getUserProperties(property));
-            //     continue;
-            // }
-
-            // if (propertyTemplate.items?.format === PropertyFormat.user) {
-            //     propertiesToRemove.push(...this.getUsersArrayProperties(property));
-            //     continue;
-            // }
 
             const { type, format, items } = propertyTemplate;
             propertiesToRemove.push(property);

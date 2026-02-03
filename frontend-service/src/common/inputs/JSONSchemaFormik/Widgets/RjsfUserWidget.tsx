@@ -34,7 +34,6 @@ const RjsfUserWidget = ({
             value={
                 currentUser
                     ? {
-                          //   _id: currentUser._id,
                           displayName: `${currentUser.fullName} - ${currentUser.hierarchy}`,
                           userType: currentUser.entityType,
                           ...currentUser,

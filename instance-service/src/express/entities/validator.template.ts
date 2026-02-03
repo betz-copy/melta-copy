@@ -557,23 +557,6 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
             const propertyValue = entityProperties[key];
             const { type, format, items } = value;
 
-            // if (format === 'user') {
-            //     config.neo4j.userOriginalAndSuffixFieldsMap.forEach(({ suffixFieldName, originalFieldName }) => {
-            //         normalizedEntity[`${key}${suffixFieldName}${config.neo4j.userFieldPropertySuffix}`] =
-            //             JSON.parse(propertyValue)[originalFieldName];
-            //     });
-            //     return;
-            // }
-
-            // if (type === 'array' && items?.format === 'user') {
-            //     config.neo4j.usersArrayOriginalAndSuffixFieldsMap.forEach(({ suffixFieldName, originalFieldName }) => {
-            //         normalizedEntity[`${key}${suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`] = propertyValue.map(
-            //             (user: string) => JSON.parse(user)[originalFieldName],
-            //         );
-            //     });
-            //     return;
-            // }
-
             // For Neo4j fulltext search (supports only string properties)
             if (type !== 'string') {
                 normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = String(propertyValue);

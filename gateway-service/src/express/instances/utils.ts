@@ -56,8 +56,7 @@ class InstancesUtils extends DefaultController {
 
                     case 'user': {
                         try {
-                            const userId: string = value;
-                            await Kartoffel.getUserById(userId);
+                            await Kartoffel.getUserById(value);
                         } catch {
                             throw new ValidationError('must be user', {
                                 message: 'must be user',

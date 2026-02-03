@@ -61,6 +61,7 @@ const DashboardItemDetails = <T extends DashboardItemForm>({
                         ? (step.validationSchema as Schema).isValidSync(formikProps.values, { abortEarly: false })
                         : true,
                 );
+
                 return (
                     <Form>
                         <DashboardItemDetailsHeader
