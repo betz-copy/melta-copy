@@ -10,7 +10,7 @@ import { createUnit, updateUnit } from '../../../../../services/userService';
 import { useWorkspaceStore } from '../../../../../stores/workspace';
 import { CreateOrEditStep, createOrEditSchema } from './CreateOrEdit';
 
-export type UnitWizardValues = Omit<IMongoUnit, 'workspaceId'>;
+export type UnitWizardValues = Omit<IMongoUnit, 'workspaceId' | 'createdAt' | 'updatedAt'>;
 
 export const defaultInitialValues: UnitWizardValues = {
     _id: '',
@@ -18,8 +18,6 @@ export const defaultInitialValues: UnitWizardValues = {
     parentId: '',
     disabled: false,
     depth: 0,
-    createdAt: new Date(),
-    updatedAt: new Date(),
 };
 
 const steps: StepType<UnitWizardValues>[] = [
