@@ -52,7 +52,6 @@ export const normalizeFields = async (
     const props = {};
     const coloredFields = {};
 
-    // const usersArrayKeys: Set<string> = new Set<string>();
     const userKeys: Set<string> = new Set();
 
     for (const [key, value] of Object.entries(properties)) {
@@ -259,7 +258,7 @@ export const normalizeReturnedRelationship =
         );
 
         if (['singleResponse', 'singleResponseNotNullable'].includes(response))
-            return (relationships.length > 0 ? relationships[0] : null) as Response<T, IRelationship>;
+            return (relationships.length ? relationships[0] : null) as Response<T, IRelationship>;
 
         return relationships as Response<T, IRelationship>;
     };

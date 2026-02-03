@@ -163,9 +163,7 @@ export default class Manager extends DefaultManagerNeo4j {
     async upsertChangedTemplateSearchIndex(changedTemplateId: string) {
         const changedTemplate = await this.templateManagerService.getEntityTemplateById(changedTemplateId);
         const relationshipReferencesProperties = await this.getRelationshipReferencesPropertiesIndex(changedTemplate);
-        // const userProperties = this.getUserPropertiesIndex(changedTemplate);
 
-        // const allProperties = [...relationshipReferencesProperties, ...userProperties, ...this.getTemplatePropertiesIndex(changedTemplate)];
         const allProperties = [...relationshipReferencesProperties, ...this.getTemplatePropertiesIndex(changedTemplate)];
 
         await this.upsertSearchIndex(`${templateSearchIndexPrefix}${changedTemplateId}`, [changedTemplateId], allProperties);

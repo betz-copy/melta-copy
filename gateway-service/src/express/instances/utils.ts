@@ -92,9 +92,8 @@ class InstancesUtils extends DefaultController {
                 }
 
                 if (prop?.items?.format === 'user') {
-                    const userIds: string[] = value;
-                    const users = await Kartoffel.getUsersByIds(userIds);
-                    if (userIds.length !== users.length) {
+                    const users = await Kartoffel.getUsersByIds(value);
+                    if (value.length !== users.length) {
                         throw new ValidationError('must be users', {
                             message: 'must be users',
                             path: key,
