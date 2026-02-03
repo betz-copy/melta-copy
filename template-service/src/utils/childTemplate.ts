@@ -2,8 +2,8 @@ import { getChildPropertiesFiltered, IChildTemplatePopulatedFromDb, IMongoChildT
 import { IFullMongoEntityTemplate } from '@packages/entity-template';
 
 const populateChildTemplateWithParent = (childTemplate: IChildTemplatePopulatedFromDb): IMongoChildTemplatePopulated => {
-    const { parentTemplate, ...child } = childTemplate;
-    const { properties, ...parent } = parentTemplate;
+    const { parentTemplateId, ...child } = childTemplate;
+    const { properties, ...parent } = parentTemplateId;
 
     const childPropertyKeys = Object.keys(child.properties.properties);
 
@@ -45,7 +45,8 @@ const populateChildTemplateWithParent = (childTemplate: IChildTemplatePopulatedF
     return {
         ...parent,
         ...child,
-        parentTemplate,
+        parentTemplateId: parentTemplateId._id,
+        parentTemplate: parentTemplateId,
         actions: child.actions || undefined,
         properties: {
             ...properties,

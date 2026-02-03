@@ -50,9 +50,9 @@ export interface IMongoChildTemplate extends IChildTemplate {
     _id: string;
 }
 
-export interface IChildTemplatePopulatedFromDb extends Omit<IMongoChildTemplate, 'category'> {
-    parentTemplate: IMongoEntityTemplatePopulated;
+export interface IChildTemplatePopulatedFromDb extends Omit<IMongoChildTemplate, 'category' | 'parentTemplateId'> {
     category: IMongoCategory;
+    parentTemplateId: IMongoEntityTemplatePopulated;
 }
 
 export interface ISearchChildTemplatesBody extends ISearchBody {
@@ -64,7 +64,9 @@ export interface ISearchChildTemplatesBody extends ISearchBody {
 // When populating child, it will ask the parent for all of its properties.
 export interface IChildTemplatePopulated
     extends Omit<IMongoEntityTemplate, 'properties' | 'category'>,
-        Omit<IChildTemplatePopulatedFromDb, 'properties'> {
+        Omit<IChildTemplatePopulatedFromDb, 'properties' | 'parentTemplateId'> {
+    parentTemplateId: string;
+    parentTemplate: IMongoEntityTemplatePopulated;
     properties: Omit<IProperties, 'properties'> & {
         properties: Record<string, IEntitySingleProperty & IChildTemplateProperty>;
     };

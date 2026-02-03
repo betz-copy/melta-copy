@@ -48,7 +48,7 @@ class ChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate> {
         const populatedWithParent = await this.model
             .find(query)
             .populate<Pick<IChildTemplatePopulatedFromDb, 'category'>>('category')
-            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplate'>>({
+            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplateId'>>({
                 path: 'parentTemplateId',
                 populate: { path: 'category' },
             })
@@ -64,7 +64,7 @@ class ChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate> {
         const populatedWithParent = await this.model
             .find()
             .populate<Pick<IChildTemplatePopulatedFromDb, 'category'>>('category')
-            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplate'>>({
+            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplateId'>>({
                 path: 'parentTemplateId',
                 populate: { path: 'category' },
             })
@@ -78,7 +78,7 @@ class ChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate> {
         const populatedWithParent = await this.model
             .findById(id)
             .populate<Pick<IChildTemplatePopulatedFromDb, 'category'>>('category')
-            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplate'>>({
+            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplateId'>>({
                 path: 'parentTemplateId',
                 populate: { path: 'category' },
             })
@@ -136,7 +136,7 @@ class ChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate> {
         const populatedWithParent = await this.model
             .findByIdAndUpdate(id, { disabled: disabledStatus }, { new: true })
             .populate<Pick<IChildTemplatePopulatedFromDb, 'category'>>('category')
-            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplate'>>({
+            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplateId'>>({
                 path: 'parentTemplateId',
                 populate: { path: 'category' },
             })
@@ -153,7 +153,7 @@ class ChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate> {
         const populatedWithParent = await this.model
             .find({ parentTemplateId })
             .populate<Pick<IChildTemplatePopulatedFromDb, 'category'>>('category')
-            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplate'>>({
+            .populate<Pick<IChildTemplatePopulatedFromDb, 'parentTemplateId'>>({
                 path: 'parentTemplateId',
                 populate: { path: 'category' },
             })
