@@ -7,7 +7,7 @@ class SemanticController {
         const maxLength = req.body?.maxLength ? parseInt(req.body.maxLength, 10) : 50;
 
         const result = await SemanticManager.summarizeFiles(files, maxLength);
-        res.json(result);
+        res.json({ summary: result });
     }
 }
 

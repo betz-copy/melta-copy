@@ -11,8 +11,8 @@ const config = {
         maxUploadFiles: env.get('MAX_UPLOAD_FILES').default(10).asIntPositive(),
     },
     openai: {
-        apiKey: env.get('OPENAI_API_KEY').asString(),
-        baseUrl: env.get('OPENAI_BASE_URL').asString(),
+        apiKey: env.get('OPENAI_API_KEY').required().asString(),
+        baseURL: env.get('OPENAI_BASE_URL').required().asString(),
         model: env.get('OPENAI_MODEL').default('aminadaven/dictalm2.0-instruct:q4_k_m').asString(),
         evaluatorModel: env
             .get('OPENAI_MODEL_EVALUATOR')
@@ -107,18 +107,13 @@ Ensure the final result matches the language of the source text and is accurate.
     },
 
     logs: {
-        label: env.get('LOG_LABEL').default('ai-summary').asString(),
+        label: env.get('LOG_LABEL').default('semantic-service').asString(),
         previewLength: env.get('LOG_PREVIEW_LENGTH').default(100).asIntPositive(),
         extraDefault: {
-            serviceName: env.get('LOG_SERVICE_NAME').default('ai-summary-service').asString(),
+            serviceName: env.get('LOG_SERVICE_NAME').default('semantic-service').asString(),
             environment: env.get('LOG_ENVIRONMENT').default('dev').asString(),
         },
     },
 };
-
-// Validation
-if (!config.openai.apiKey && !config.openai.baseUrl) {
-    console.warn('⚠️  Warning: OPENAI_API_KEY or OPENAI_BASE_URL should be set.');
-}
 
 export default config;

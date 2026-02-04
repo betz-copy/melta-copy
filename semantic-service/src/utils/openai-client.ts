@@ -2,10 +2,25 @@ import { logger } from '@microservices/shared';
 import http from 'http';
 import OpenAI from 'openai';
 import config from '../config';
-import { OpenAIError } from '../express/semantics/errors';
+import { OpenAIError } from './errors';
+import { IEvaluationResult, IValidationResult } from './types';
 
-// Effective base URL with IP substitution for Docker networking
-const effectiveBaseUrl = (config.openai.baseUrl || '').replace('host.docker.internal', '172.17.0.1');
+const { apiKey, baseURL, timeout, model, evaluatorModel, validatorModel, refinerModel } = config.openai;
+const {
+    systemPrompt,
+    userPrompt,
+    evaluatorSystemPrompt,
+    evaluatorUserPrompt,
+    validatorSystemPrompt,
+    validatorUserPrompt,
+    refinerSystemPrompt,
+    refinerUserPrompt,
+    maxInputChars,
+    temperature,
+    evaluatorTemperature,
+    validatorTemperature,
+    refinerTemperature,
+} = config.openai;
 
 // Custom HTTP agent with keep-alive disabled to avoid connection pooling issues
 const httpAgent = new http.Agent({
@@ -14,10 +29,10 @@ const httpAgent = new http.Agent({
 
 // Initialize OpenAI client with custom configuration
 const openai = new OpenAI({
-    apiKey: config.openai.apiKey || 'dummy-key',
-    baseURL: effectiveBaseUrl,
-    timeout: config.openai.timeout, // client-level timeout for LLM inference
-    httpAgent: httpAgent,
+    apiKey,
+    baseURL,
+    timeout, // client-level timeout for LLM inference
+    httpAgent,
 });
 
 /**
@@ -29,22 +44,19 @@ const openai = new OpenAI({
  */
 export async function generateSummary(text: string, maxLength: number = 500): Promise<string> {
     // Truncate text if it's extremely long to avoid context window issues
-    const maxInputChars = config.openai.maxInputChars;
-    const truncatedText = text.length > maxInputChars ? text.substring(0, maxInputChars) + '...[truncated]' : text;
-
-    const systemPrompt = config.openai.systemPrompt;
+    const truncatedText = text.length > maxInputChars ? `${text.substring(0, maxInputChars)}...[truncated]` : text;
 
     try {
         const response = await openai.chat.completions.create({
-            model: config.openai.model,
+            model,
             messages: [
                 { role: 'system', content: systemPrompt },
                 {
                     role: 'user',
-                    content: config.openai.userPrompt.replace('{{maxLength}}', String(maxLength)).replace('{{text}}', truncatedText),
+                    content: userPrompt.replace('{{maxLength}}', String(maxLength)).replace('{{text}}', truncatedText),
                 },
             ],
-            temperature: config.openai.temperature,
+            temperature,
         });
 
         return response.choices[0]?.message?.content?.trim() || 'No summary generated.';
@@ -57,40 +69,24 @@ export async function generateSummary(text: string, maxLength: number = 500): Pr
     }
 }
 
-export interface IEvaluationResult {
-    grades: {
-        accuracy: number;
-        completeness: number;
-        clarity: number;
-    };
-    critique: string;
-    hallucinations: string[];
-    missingInfo: string;
-}
-
-export interface IValidationResult {
-    isValid: boolean;
-    detectedIssues: string;
-}
-
 /**
  * Evaluates the summary for content accuracy against the original text.
  */
 export async function evaluateSummary(originalText: string, summary: string): Promise<IEvaluationResult> {
     try {
         const response = await openai.chat.completions.create({
-            model: config.openai.evaluatorModel,
+            model: evaluatorModel,
             messages: [
                 {
                     role: 'system',
-                    content: config.openai.evaluatorSystemPrompt,
+                    content: evaluatorSystemPrompt,
                 },
                 {
                     role: 'user',
-                    content: config.openai.evaluatorUserPrompt.replace('{{originalText}}', originalText).replace('{{summary}}', summary),
+                    content: evaluatorUserPrompt.replace('{{originalText}}', originalText).replace('{{summary}}', summary),
                 },
             ],
-            temperature: config.openai.evaluatorTemperature, // Lower temperature for evaluation
+            temperature: evaluatorTemperature, // Lower temperature for evaluation
             response_format: { type: 'json_object' },
         });
 
@@ -116,18 +112,18 @@ export async function evaluateSummary(originalText: string, summary: string): Pr
 export async function validateLanguage(summary: string): Promise<IValidationResult> {
     try {
         const response = await openai.chat.completions.create({
-            model: config.openai.validatorModel,
+            model: validatorModel,
             messages: [
                 {
                     role: 'system',
-                    content: config.openai.validatorSystemPrompt,
+                    content: validatorSystemPrompt,
                 },
                 {
                     role: 'user',
-                    content: config.openai.validatorUserPrompt.replace('{{summary}}', summary),
+                    content: validatorUserPrompt.replace('{{summary}}', summary),
                 },
             ],
-            temperature: config.openai.validatorTemperature,
+            temperature: validatorTemperature,
             response_format: { type: 'json_object' },
         });
 
@@ -173,21 +169,21 @@ export async function refineSummary(
         }
 
         const response = await openai.chat.completions.create({
-            model: config.openai.refinerModel,
+            model: refinerModel,
             messages: [
                 {
                     role: 'system',
-                    content: config.openai.refinerSystemPrompt,
+                    content: refinerSystemPrompt,
                 },
                 {
                     role: 'user',
-                    content: config.openai.refinerUserPrompt
+                    content: refinerUserPrompt
                         .replace('{{originalText}}', originalText)
                         .replace('{{currentSummary}}', currentSummary)
                         .replace('{{feedback}}', feedbackText),
                 },
             ],
-            temperature: config.openai.refinerTemperature,
+            temperature: refinerTemperature,
         });
 
         return response.choices[0]?.message?.content?.trim() || currentSummary;

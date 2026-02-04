@@ -1,6 +1,7 @@
 node_modules/
 dist/
 coverage/
+.turbo/
 halbana-**
 
 # ignore all .env, except in current directory (used for docker-compose)

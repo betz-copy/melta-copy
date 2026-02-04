@@ -2,16 +2,15 @@ import { logger } from '@microservices/shared';
 import path from 'path';
 import config from '../../config';
 import { extractTextFromDoc } from '../../utils/doc-extractor';
+import { NoFilesError } from '../../utils/errors';
 import { evaluateSummary, generateSummary, refineSummary, validateLanguage } from '../../utils/openai-client';
 import { extractTextFromPdf } from '../../utils/pdf-extractor';
-import { NoFilesError } from './errors';
-import { ISummarizeResult } from './interface';
+
+const { enableEvaluation, maxRefinementIterations } = config.summarization;
 
 export class SemanticManager {
-    static async summarizeFiles(files: Express.Multer.File[], maxLength: number): Promise<ISummarizeResult> {
-        if (!files || files.length === 0) {
-            throw new NoFilesError();
-        }
+    static async readFilesAsText(files: Express.Multer.File[]): Promise<string> {
+        if (!files?.length) throw new NoFilesError();
 
         let combinedText = '';
 
@@ -41,24 +40,28 @@ export class SemanticManager {
             }
         }
 
-        const validText = combinedText.trim();
+        return combinedText.trim();
+    }
+
+    static async summarizeFiles(files: Express.Multer.File[], maxLength: number): Promise<string> {
+        const validText = await SemanticManager.readFilesAsText(files);
+
         let summary = 'No text extracted from files.';
 
-        if (validText.length > 0) {
+        if (validText.length) {
             logger.info(`Generating summary for combined text. Length: ${validText.length}, MaxLength: ${maxLength}`);
             summary = await generateSummary(validText, maxLength);
             logger.info('Summary generation completed.');
 
-            if (config.summarization.enableEvaluation) {
+            if (enableEvaluation) {
                 logger.info('Starting AI Evaluation pipeline (Iterative)...');
 
                 let iteration = 0;
                 let needsRefinement = true;
-                const maxIterations = config.summarization.maxRefinementIterations;
 
-                while (iteration < maxIterations && needsRefinement) {
+                while (iteration < maxRefinementIterations && needsRefinement) {
                     iteration++;
-                    logger.info(`Evaluation/Refinement Iteration ${iteration}/${maxIterations}`);
+                    logger.info(`Evaluation/Refinement Iteration ${iteration}/${maxRefinementIterations}`);
 
                     const [evaluation, validation] = await Promise.all([evaluateSummary(validText, summary), validateLanguage(summary)]);
 
@@ -83,18 +86,14 @@ export class SemanticManager {
                         needsRefinement = false;
                     }
 
-                    if (iteration >= maxIterations && needsRefinement) {
-                        logger.warn(`Max iterations (${maxIterations}) reached. Stopping refinement despite remaining issues.`);
+                    if (iteration >= maxRefinementIterations && needsRefinement) {
+                        logger.warn(`Max iterations (${maxRefinementIterations}) reached. Stopping refinement despite remaining issues.`);
                     }
                 }
             }
-        } else {
-            logger.warn('No valid text to summarize.');
-        }
+        } else logger.warn('No valid text to summarize.');
 
-        return {
-            summary,
-        };
+        return summary;
     }
 }
 

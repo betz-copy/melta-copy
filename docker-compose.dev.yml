@@ -275,12 +275,13 @@ services:
     volumes:
       - logs:/usr/src/app/logs
 
-  # mailer-service:
-  #   depends_on:
-  #     - redis
-  #   ports:
-  #     - 8010:8000
-  #   <<: *common
+  mailer-service:
+    depends_on:
+      - rabbit
+      - redis
+    ports:
+      - 8010:8000
+    <<: *common
 
   preview-service:
     ports:
@@ -323,15 +324,8 @@ services:
       - 8015:8000
     <<: *common
 
-
-
 volumes:
   elastic_data:
   logstash_data:
   kibana_data:
   logs: {}
-
-networks:
-  network:
-    driver: bridge
-    name: infra-network

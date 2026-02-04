@@ -5,7 +5,6 @@
     "private": true,
     "workspaces": [
         "activity-log-service",
-
         "cron-service",
         "dashboard-service",
         "gantt-service",

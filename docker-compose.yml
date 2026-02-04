@@ -302,7 +302,6 @@ services:
       FRONTEND_MAP_CAPABILITIES_URL: ${FRONTEND_MAP_CAPABILITIES_URL}
       AI_SUMMARY_SERVICE_REQUEST_TIMEOUT: ${AI_SUMMARY_SERVICE_REQUEST_TIMEOUT}
 
-
   # frontend-service:
   #   build:
   #     context: ./frontend-service
@@ -315,16 +314,16 @@ services:
     volumes:
       - ./nginx:/etc/nginx/conf.d
 
-  # mailer-service:
-  #   image: registry.gitlab.com/yesodot/rnd/terminal-rabaz/dropbox/microservices/mailer-service:latest
-  #   environment:
-  #     PORT: 8000
-  #     MAIL_HOSTS: ${MAIL_HOSTS}
-  #     MAIL_USER: ${MAIL_USER}
-  #     MAIL_PASS: ${MAIL_PASS}
-  #     USE_AUTH: 'true'
-  #     RABBIT_URI: ${RABBIT_URL}
-  #     REDIS_CONNECTION_URI: ${REDIS_HOST}
+  mailer-service:
+    image: registry.gitlab.com/yesodot/rnd/terminal-rabaz/dropbox/microservices/mailer-service:latest
+    environment:
+      PORT: 8000
+      MAIL_HOSTS: ${MAIL_HOSTS}
+      MAIL_USER: ${MAIL_USER}
+      MAIL_PASS: ${MAIL_PASS}
+      USE_AUTH: 'true'
+      RABBIT_URI: ${RABBIT_URL}
+      REDIS_CONNECTION_URI: ${REDIS_HOST}
 
   cron-service:
     build:
@@ -375,8 +374,6 @@ services:
       OPENAI_TEMPERATURE: 0.3
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    networks:
-      - network
 
   mock-model-api:
     build:
@@ -384,8 +381,3 @@ services:
       dockerfile: Dockerfile
     environment:
       JINA_API_KEY: ${JINA_API_KEY}
-
-networks:
-  network:
-    name: infra-network
-    driver: bridge
