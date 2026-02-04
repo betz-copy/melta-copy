@@ -1,7 +1,6 @@
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
 import { Grid, Typography, tooltipClasses, useTheme } from '@mui/material';
 import { IEntity } from '@packages/entity';
-import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { CoordinateSystem } from '@packages/map';
 import { IGetUnits } from '@packages/unit';
 import i18next from 'i18next';
