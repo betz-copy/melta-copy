@@ -76,9 +76,9 @@ This script will:
 
 1. Remove all `*-services` folders that are no longer used.
 2. Clean old `node_modules` directories.
-3. Install new shared packages.
+3. Install new packages.
 4. Build all Docker images.
-5. Build all shared code.
+5. Build all packages.
 6. Stop any existing frontend/UI instances.
 7. Start the UI.
 
@@ -106,9 +106,9 @@ This script will use **Docker Compose** to build and start the microservices def
     ```bash
     pnpm install
     ```
-2. Build the shared service:
+2. Build the packages:
     ```bash
-    pnpm run build -w shared
+    pnpm run build:packages
     ```
 3. Start the frontend:
     ```bash
@@ -121,7 +121,7 @@ You can now access the Melta application via `http://localhost` (or a different 
 
 ## Building the Project
 
-To build **all** services (including shared services) in one go, run:
+To build **all** services (including packages) in one go, run:
 
 ```bash
 pnpm run build
