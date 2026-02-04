@@ -18,7 +18,7 @@ import {
 import CircularProgress from '@mui/material/CircularProgress';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { CustomIcon } from '../../common/CustomIcon';
@@ -90,8 +90,8 @@ export const StepIcon: React.FC<{
     >;
     displayTitle?: boolean;
 }> = ({ step, stepTemplate, iconColor, setOpen, displayTitle = true }) => {
-    const stageNameRef = React.useRef<any>(null);
-    const [isOverflowing, setIsOverflowing] = useState(false);
+    const stageNameRef = useRef<HTMLSpanElement>(null);
+    const [isOverflowing, setIsOverflowing] = useState<boolean>(false);
 
     useEffect(() => {
         const stageName = stageNameRef.current;
@@ -144,10 +144,10 @@ export const StepIcon: React.FC<{
                     )}
                 </Box>
                 {step.status === Status.Approved && (
-                    <img src="/icons/check-icon.svg" style={{ marginRight: '35px', marginTop: '35px', position: 'absolute' }} />
+                    <img src="/icons/check-icon.svg" alt="check" style={{ marginRight: '35px', marginTop: '35px', position: 'absolute' }} />
                 )}
                 {step.status === Status.Rejected && (
-                    <img src="/icons/uncheck-icon.svg" style={{ marginRight: '35px', marginTop: '35px', position: 'absolute' }} />
+                    <img src="/icons/uncheck-icon.svg" alt="uncheck" style={{ marginRight: '35px', marginTop: '35px', position: 'absolute' }} />
                 )}
                 {displayTitle && (
                     <Typography ref={stageNameRef} noWrap sx={{ maxWidth: '70px', textOverflow: 'ellipsis' }} variant="caption" color="#787C9E">
@@ -162,7 +162,12 @@ export const StepIcon: React.FC<{
 const StepIconComponent = (
     stepInstance: IMongoStepInstancePopulated,
     stepTemplate: IMongoStepTemplatePopulated,
-    setOpen: (x: any) => any,
+    setOpen: React.Dispatch<
+        React.SetStateAction<{
+            isOpen: boolean;
+            defaultStepTemplate?: IMongoStepTemplatePopulated;
+        }>
+    >,
     stepStatus: Status,
     stepId: string,
 ) => (
@@ -243,7 +248,7 @@ const ProcessCard: React.FC<{
             },
         },
     );
-    const { mutateAsync: archiveProcessMutate, isLoading: isLodingArchiveProcess } = useMutation(
+    const { mutateAsync: archiveProcessMutate, isLoading: isLoadingArchiveProcess } = useMutation(
         (process: IMongoProcessInstancePopulated) => {
             return archiveProcessRequest(process._id, !process.archived);
         },
@@ -337,8 +342,7 @@ const ProcessCard: React.FC<{
                                                         currProcessInstance.archived ? i18next.t('actions.unArchived') : i18next.t('actions.archived')
                                                     }
                                                     icon={
-                                                        // eslint-disable-next-line no-nested-ternary
-                                                        isLodingArchiveProcess ? (
+                                                        isLoadingArchiveProcess ? (
                                                             <CircularProgress size={20} />
                                                         ) : currProcessInstance.archived ? (
                                                             <Unarchive color="action" />

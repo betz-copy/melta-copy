@@ -1,6 +1,6 @@
 /* eslint-disable consistent-return */
 /* eslint-disable no-underscore-dangle */
-import { styled, TextField, TextFieldProps } from '@mui/material';
+import { styled, TextFieldProps } from '@mui/material';
 import { DateTimePickerToolbar, dateTimePickerToolbarClasses, LocalizationProvider, PickersLocaleText } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -12,9 +12,12 @@ import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import i18next from 'i18next';
 import React, { JSX } from 'react';
-import { environment } from '../../../globals';
+import { environment } from '../../../../globals';
 
-const { date, dateTime } = environment.formats;
+const {
+    formats: { date, dateTime },
+    datePickerViews,
+} = environment;
 
 export const CustomDateTimePickerToolbar = styled(DateTimePickerToolbar)({
     [`& .${dateTimePickerToolbarClasses.timeContainer}`]: {
@@ -22,11 +25,11 @@ export const CustomDateTimePickerToolbar = styled(DateTimePickerToolbar)({
     },
 }) as (props: BaseToolbarProps) => JSX.Element;
 
-const parseDefaultDate = (val: any) => {
+const parseDefaultDate = (val: string | Date | undefined | null): Date | null => {
     if (!val) return null;
 
     const date = new Date(val);
-    if (isNaN(date.getTime())) return null;
+    if (Number.isNaN(date.getTime())) return null;
     return date;
 };
 
@@ -63,11 +66,8 @@ const getRjsfDateOrDateTimeWidget =
 
         const MuiDatePicker = dateOrDateTime === 'date' ? DatePicker : DateTimePicker;
 
-        const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => {
-            const isEmpty = !newValue;
-            if (isEmpty) onChange(defaultValue);
-            onBlur(id, isEmpty ? defaultValue : newValue);
-        };
+        const _onBlur = () => {};
+
         const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, newValue);
 
         const onChangeDateWidget = (date: Date | null) => {
@@ -84,11 +84,10 @@ const getRjsfDateOrDateTimeWidget =
             >
                 <MuiDatePicker
                     value={parseDefaultDate(value)}
+                    format={inputFormat}
                     enableAccessibleFieldDOMStructure={false}
+                    {...(dateOrDateTime === 'date' && { views: datePickerViews })}
                     onChange={(val) => onChangeDateWidget(val)}
-                    slots={{
-                        textField: (params) => <TextField {...params} style={{ textAlign: 'right' }} inputformat={inputFormat} />,
-                    }}
                     slotProps={{
                         textField: {
                             ...textFieldProps,

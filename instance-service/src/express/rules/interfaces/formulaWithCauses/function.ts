@@ -4,6 +4,7 @@ import { ICause } from './cause';
 
 export interface IRegularFunctionCauses {
     arguments: IArgumentCauses[];
+    // biome-ignore lint/suspicious/noExplicitAny: never doubt Noam
     resultValue: any;
 }
 

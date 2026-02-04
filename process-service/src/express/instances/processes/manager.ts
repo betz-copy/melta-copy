@@ -1,5 +1,3 @@
-/* eslint-disable no-restricted-syntax */
-
 import {
     ActionsLog,
     CreateProcessReqBody,
@@ -20,7 +18,6 @@ import {
     UpdateProcessReqBody,
     ValidationError,
 } from '@microservices/shared';
-/* eslint-disable class-methods-use-this */
 import { Request } from 'express';
 import { ClientSession, FilterQuery, Types, UpdateWriteOpResult } from 'mongoose';
 import config from '../../../config';
@@ -94,7 +91,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
     async validateUpdateProcessInstance(req: Request) {
         const { steps, details }: UpdateProcessReqBody = req.body;
 
-        const template = await this.getProcessTemplateByProcessId(req.params.id);
+        const template = await this.getProcessTemplateByProcessId(req.params.id as string);
 
         if (steps) {
             const [stepTemplates, stepInstances] = await Promise.all([

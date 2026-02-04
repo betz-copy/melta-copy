@@ -18,7 +18,7 @@ import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { PermissionScope } from '../../interfaces/permissions';
 import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
-import { IRelationship } from '../../interfaces/relationships';
+import { IMongoRelationship, IRelationship } from '../../interfaces/relationships';
 import { useClientSideUserStore } from '../../stores/clientSideUser';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
@@ -148,7 +148,7 @@ export const ConnectionsTable: React.FC<{
 
     const userHasWritePermissions = isUserHasWritePermissions(currentClientSideUser, currentUser, template);
 
-    const onCreateRelationship = (createdRelationship: IRelationship, sourceEntity: IEntity, destinationEntity: IEntity) => {
+    const onCreateRelationship = (createdRelationship: IMongoRelationship, sourceEntity: IEntity, destinationEntity: IEntity) => {
         const doesCreatedRelationshipWithCurrEntity = [createdRelationship.sourceEntityId, createdRelationship.destinationEntityId].includes(
             expandedEntity.entity.properties._id!,
         );
@@ -306,7 +306,7 @@ export const ConnectionsTable: React.FC<{
                         popoverText: isEditButtonsDisabled
                             ? disabledButtonText
                             : i18next.t(`entityPage.deleteRelationshipPopoverText${relationshipTemplate.isProperty ? '-cant' : ''}`),
-                        onClick: (connectionToDelete: any) => {
+                        onClick: (connectionToDelete) => {
                             setDeleteRelationshipDialogState({ open: true, connectionToDelete });
                         },
                         disabledButton: isEditButtonsDisabled || relationshipTemplate.isProperty || false,

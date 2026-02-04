@@ -3,6 +3,7 @@ import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
+import { IPropertyValue } from '../../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { CommonFormInputProperties, ConvertToRelationshipFieldFormInputProperties, IRelationshipReference } from '../commonInterfaces';
 
@@ -11,7 +12,7 @@ export interface FieldEditCardProps {
     index: number;
     touched?: FormikTouched<CommonFormInputProperties | ConvertToRelationshipFieldFormInputProperties>;
     errors?: FormikErrors<CommonFormInputProperties | ConvertToRelationshipFieldFormInputProperties>;
-    setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
+    setFieldValue: (field: keyof CommonFormInputProperties, value: IPropertyValue) => void;
     isDisabled?: boolean;
     convertToRelationshipField?: {
         options: IMongoEntityTemplatePopulated[];

@@ -8,11 +8,11 @@ interface MeltaCheckboxProps {
     indeterminate?: boolean;
     disabled?: boolean;
     onChange?: (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => void;
-    sxChecked?: SxProps<any>;
-    sxIndeterminate?: SxProps<any>;
-    sxEmpty?: SxProps<any>;
+    sxChecked?: SxProps;
+    sxIndeterminate?: SxProps;
+    sxEmpty?: SxProps;
     sxIcon?: CSSProperties;
-    sx?: SxProps<any>;
+    sx?: SxProps;
     checkboxSx?: SxProps;
 }
 
@@ -31,7 +31,7 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({
     const theme = useTheme();
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
-    const checkBoxColor = useMemo(() => (darkMode ? theme.palette.primary.main : '#4752B6'), [darkMode]);
+    const checkBoxColor = useMemo(() => (darkMode ? theme.palette.primary.main : '#4752B6'), [darkMode, theme.palette.primary.main]);
 
     const defaultCheckboxSx: SxProps = {
         borderRadius: '4px',

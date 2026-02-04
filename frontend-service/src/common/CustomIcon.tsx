@@ -34,13 +34,13 @@ export const CustomImage: React.FC<CustomImageProps> = ({ imageUrl, width, heigh
         : {
               style: {
                   ...style,
-                  backgroundColor: color || (darkMode ? '#FFFFFF' : '#000000'),
+                  backgroundColor: color || (darkMode ? 'white' : 'black'),
                   WebkitMaskImage: `url(${imgSrc})`,
                   WebkitMaskSize: 'contain',
               },
           };
 
-    return <img height={height} width={width} className={className} {...customProps} />;
+    return <img height={height} width={width} className={className} alt="" {...customProps} />;
 };
 
 interface CustomIconProps extends Omit<CustomImageProps, 'imageUrl'> {

@@ -75,6 +75,7 @@ const TableCard: React.FC<{ metaData: TableMetaData & { _id: string } }> = ({ me
                 templates: {
                     [template._id]: {
                         filter: getFilterModal(
+                            // biome-ignore lint/suspicious/noNonNullAssertedOptionalChain: lol
                             filterModelToFilterOfTemplate(entitiesTableRef.current?.getFilterModel()!, template),
                             metaData.filter && JSON.parse(metaData.filter),
                         ),
@@ -93,11 +94,13 @@ const TableCard: React.FC<{ metaData: TableMetaData & { _id: string } }> = ({ me
         },
     );
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
     useEffect(() => {
         window.addEventListener('resize', resizeTable);
         return () => window.removeEventListener('resize', resizeTable);
     }, []);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: re-render
     useEffect(() => {
         const observer = new ResizeObserver(resizeTable);
         if (containerRef.current) observer.observe(containerRef.current);

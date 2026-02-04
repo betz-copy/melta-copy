@@ -20,32 +20,32 @@ class ChildTemplateController extends DefaultController<IMongoChildTemplate, Chi
     }
 
     async getChildTemplateById(req: Request, res: Response) {
-        res.json(await this.manager.getChildTemplateById(req.params.id));
+        res.json(await this.manager.getChildTemplateById(req.params.id as string));
     }
 
     async updateChildTemplate(req: Request, res: Response) {
-        res.json(await this.manager.updateChildTemplate(req.params.id, req.body));
+        res.json(await this.manager.updateChildTemplate(req.params.id as string, req.body));
     }
 
     async deleteChildTemplate(req: Request, res: Response) {
-        res.json(await this.manager.deleteChildTemplate(req.params.id));
+        res.json(await this.manager.deleteChildTemplate(req.params.id as string));
     }
 
     async updateEntityTemplateAction(req: Request, res: Response) {
         const { templateId: id } = req.params;
         const actionToUpsert = fetchPropertyFromRequest<string>(req, 'actions');
 
-        res.json(await this.manager.updateEntityTemplateAction(id, actionToUpsert));
+        res.json(await this.manager.updateEntityTemplateAction(id as string, actionToUpsert));
     }
 
     async updateChildTemplateStatus(req: Request, res: Response) {
         const { templateId: id } = req.params;
-        res.json(await this.manager.updateChildTemplateStatus(id, req.body.disabled));
+        res.json(await this.manager.updateChildTemplateStatus(id as string, req.body.disabled));
     }
 
     async multiUpdateChildTemplateStatusByParentId(req: Request, res: Response) {
         const { parentId } = req.params;
-        res.json(await this.manager.multiUpdateChildTemplateStatusByParentId(parentId, req.body.disabled));
+        res.json(await this.manager.multiUpdateChildTemplateStatusByParentId(parentId as string, req.body.disabled));
     }
 }
 

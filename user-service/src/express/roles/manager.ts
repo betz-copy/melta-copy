@@ -1,5 +1,3 @@
-/* eslint-disable no-param-reassign */
-
 import {
     IBaseRole,
     IRole,
@@ -42,7 +40,6 @@ class RolesManager {
         workspaceIds: string[] | undefined,
         limit: number,
         step: number,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         { name, permissionsManagement, templatesManagement, rulesManagement, processesManagement, ...query }: FilterQuery<IBaseRole> = {},
         { name: nameSort }: Record<string, number> = {},
     ): Promise<{ roles: IBaseRole[]; count: number }> {

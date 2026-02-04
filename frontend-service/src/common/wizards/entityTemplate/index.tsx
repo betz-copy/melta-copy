@@ -1,15 +1,21 @@
-/* eslint-disable @typescript-eslint/no-shadow */
-/* eslint-disable react/no-unstable-nested-components */
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
 import { IConstraint, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
-import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import {
+    IEntityTemplateMap,
+    IEntityTemplatePopulated,
+    IWalletTransfer,
+    IWalletTransferPopulated,
+    PropertyExternalWizardType,
+    PropertyFormat,
+    PropertyType,
+} from '../../../interfaces/entityTemplates';
 import { IErrorResponse } from '../../../interfaces/error';
 import fileDetails from '../../../interfaces/fileDetails';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
@@ -23,18 +29,21 @@ import { mapTemplates } from '../../../utils/templates';
 import { ErrorToast } from '../../ErrorToast';
 import { StepType, Wizard, WizardBaseType } from '../index';
 import { AddFields, addFieldsSchema } from './AddFields';
-import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
 import { ChooseIcon } from './ChooseIcon';
-import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
+import { useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
+import { CreateTemplateSettings } from './CreateTemplateSettings';
 import { FieldGroupData, IFilterTemplate, PropertyItem } from './commonInterfaces';
 import { UploadExportFormats } from './UploadExportFormats';
+import { WalletTransferSettings, walletTransferSettingsSchema } from './WalletTransferSettings';
 
 const { errorCodes } = environment;
+
+export type PropertyWizardType = keyof typeof PropertyType | keyof typeof PropertyFormat | keyof typeof PropertyExternalWizardType;
 
 export interface EntityTemplateFormInputProperties {
     name: string;
     title: string;
-    type: string;
+    type: PropertyWizardType;
     id: string;
     options: string[];
     pattern: string;
@@ -70,6 +79,7 @@ export interface EntityTemplateFormInputProperties {
     hideFromDetailsPage?: boolean;
     comment?: string;
     color?: string;
+    accountBalance?: boolean;
     isProfileImage?: boolean;
 }
 
@@ -78,16 +88,28 @@ type EntityTemplatePropertyByType = { type: 'field'; data: EntityTemplateFormInp
 export interface EntityTemplateWizardValues
     extends Omit<
         IEntityTemplatePopulated,
-        'properties' | 'iconFileId' | 'propertiesOrder' | 'propertiesPreview' | 'enumPropertiesColors' | 'uniqueConstraints' | 'documentTemplatesIds'
+        | 'properties'
+        | 'iconFileId'
+        | 'propertiesOrder'
+        | 'propertiesPreview'
+        | 'enumPropertiesColors'
+        | 'uniqueConstraints'
+        | 'documentTemplatesIds'
+        | 'walletTransfer'
     > {
     properties: PropertyItem[];
     attachmentProperties: EntityTemplatePropertyByType[];
     archiveProperties: EntityTemplatePropertyByType[];
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
-    icon?: fileDetails;
     documentTemplatesIds?: File[];
     enumPropertiesColors?: string[];
+    icon?: fileDetails;
+    walletTransfer?: IWalletTransferPopulated | IWalletTransfer | null;
+    _id?: string;
 }
+
+export const hasAccountBalanceField = (properties) =>
+    properties.some((property) => (property.type === 'field' ? !!property.data?.accountBalance : property.fields?.some((f) => !!f.accountBalance)));
 
 const EntityTemplateWizard: React.FC<
     WizardBaseType<EntityTemplateWizardValues> & { searchEntityTemplatesQueryKey: (string | IMongoCategory[])[] }
@@ -112,173 +134,216 @@ const EntityTemplateWizard: React.FC<
     },
     isEditMode = false,
 }) => {
-        const queryClient = useQueryClient();
-        const currentUser = useUserStore((state) => state.user);
-        const setUser = useUserStore((state) => state.setUser);
-        const currentWorkspace = useWorkspaceStore((state) => state.workspace);
+    const queryClient = useQueryClient();
+    const currentUser = useUserStore((state) => state.user);
+    const setUser = useUserStore((state) => state.setUser);
+    const currentWorkspace = useWorkspaceStore((state) => state.workspace);
 
-        const currentTemplateId = isEditMode ? (initialValues as EntityTemplateWizardValues & { _id: string })._id : undefined;
-        const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates') || new Map();
+    const [exportFormats, setExportFormats] = useState<boolean>(false);
+    const [isAccountTemplate, setIsAccountTemplate] = useState<boolean>(false);
+    const [isTransferTemplate, setIsTransferTemplate] = useState<boolean>(false);
 
-        const createTemplateNameSchema = useCreateOrEditTemplateNameSchema(templates, currentTemplateId);
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
+    useEffect(() => {
+        const isWalletTemplate = hasAccountBalanceField(initialValues.properties);
+        setIsAccountTemplate(isWalletTemplate ?? false);
+    }, [initialValues.properties, open]);
 
-        const { isLoading, mutateAsync } = useMutation(
-            async (entityTemplate: EntityTemplateWizardValues) => {
-                if (isEditMode) {
-                    return await updateEntityTemplateRequest(
-                        (initialValues as EntityTemplateWizardValues & { _id: string })._id,
-                        entityTemplate,
-                        queryClient,
-                    );
-                }
-                const createdTemplate = await createEntityTemplateRequest(entityTemplate, queryClient);
-                return { template: createdTemplate, childTemplates: [] };
-            },
-            {
-                onSuccess: async ({ template: data, childTemplates }) => {
-                    queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
-                    queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) => {
-                        childTemplates.forEach((child) => childTemplateMap!.set(child._id, child));
-                        return childTemplateMap!;
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
+    useEffect(() => {
+        setExportFormats((initialValues.documentTemplatesIds?.length ?? 0) > 0);
+        setIsTransferTemplate(!!initialValues.walletTransfer || false);
+    }, [open]);
+
+    const currentTemplateId = isEditMode ? (initialValues as EntityTemplateWizardValues & { _id: string })._id : undefined;
+    const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
+    const createTemplateSettingsSchema = useCreateOrEditTemplateNameSchema(templates, currentTemplateId);
+    const walletTransferSchema = walletTransferSettingsSchema();
+    const addFieldsSettingsSchema = addFieldsSchema(isAccountTemplate);
+
+    const { isLoading, mutateAsync } = useMutation(
+        async (entityTemplate: EntityTemplateWizardValues) => {
+            if (isEditMode) {
+                return await updateEntityTemplateRequest(
+                    (initialValues as EntityTemplateWizardValues & { _id: string })._id,
+                    entityTemplate,
+                    queryClient,
+                );
+            }
+            const createdTemplate = await createEntityTemplateRequest(entityTemplate, queryClient);
+            return { template: createdTemplate, childTemplates: [] };
+        },
+        {
+            onSuccess: async ({ template: data, childTemplates }) => {
+                queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
+                queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) => {
+                    childTemplates.forEach((child) => {
+                        childTemplateMap!.set(child._id, child);
                     });
+                    return childTemplateMap!;
+                });
 
-                    queryClient.invalidateQueries(searchEntityTemplatesQueryKey);
+                queryClient.invalidateQueries(searchEntityTemplatesQueryKey);
 
-                    if (isEditMode) {
-                        toast.success(i18next.t('wizard.entityTemplate.editedSuccessfully'));
-
-                        try {
-                            const childTemplates: IMongoChildTemplatePopulated[] = await getAllChildTemplates();
-                            queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', mapTemplates(childTemplates, 'name'));
-                        } catch (error) {
-                            console.error(error);
-                            toast.error(i18next.t('wizard.failedToUpdateSystemData'));
-                        }
-                    } else {
-                        toast.success(i18next.t('wizard.entityTemplate.createdSuccessfully'));
-                        try {
-                            queryClient.setQueryData<ICategoryMap>('getCategories', (categories) => {
-                                const newCategoryMap = new Map(categories!);
-                                newCategoryMap.set(data.category._id, data.category);
-
-                                return newCategoryMap;
-                            });
-                        } catch (error) {
-                            console.error(error);
-                            toast.error(i18next.t('wizard.failedToUpdateSystemData'));
-                        }
-                    }
+                if (isEditMode) {
+                    toast.success(i18next.t('wizard.entityTemplate.editedSuccessfully'));
 
                     try {
-                        const relationshipTemplates = await getAllRelationshipTemplatesRequest();
-                        queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', mapTemplates(relationshipTemplates));
+                        const childTemplates: IMongoChildTemplatePopulated[] = await getAllChildTemplates();
+                        queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', mapTemplates(childTemplates, 'name'));
                     } catch (error) {
                         console.error(error);
                         toast.error(i18next.t('wizard.failedToUpdateSystemData'));
                     }
+                } else {
+                    toast.success(i18next.t('wizard.entityTemplate.createdSuccessfully'));
+                    try {
+                        queryClient.setQueryData<ICategoryMap>('getCategories', (categories) => {
+                            const newCategoryMap = new Map(categories!);
+                            newCategoryMap.set(data.category._id, data.category);
 
-                    const updatedUserPermissions = updateUserPermissionForEntityTemplate(data, currentUser, currentWorkspace._id);
-                    setUser(updatedUserPermissions);
-                    handleClose();
-                },
-                onError: (error: AxiosError, entityTemplateValues) => {
-                    const errorMetadata = (error.response?.data as IErrorResponse)?.metadata;
-
-                    if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToDeleteField) {
-                        const { type, property, relatedTemplateName } = errorMetadata;
-
-                        const errorMessages = {
-                            rules: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInRules', { property })}`,
-                            gantts: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInGantts', { property })}`,
-                            relationshipReference: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInRelationshipReference', {
-                                property,
-                                relatedTemplateName,
-                            })}`,
-                            charts: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInCharts', { property })}`,
-                        };
-
-                        toast.error(errorMessages[type]);
-                        return;
+                            return newCategoryMap;
+                        });
+                    } catch (error) {
+                        console.error(error);
+                        toast.error(i18next.t('wizard.failedToUpdateSystemData'));
                     }
-                    if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToCreateConstraints) {
-                        const { constraint }: { constraint: IConstraint } = errorMetadata;
-
-                        const newEntityTemplate = formToJSONSchema(entityTemplateValues, false, queryClient);
-
-                        if (constraint.type === 'REQUIRED') {
-                            const { title: constraintPropertyDisplayName } = newEntityTemplate.properties.properties[constraint.property];
-                            toast.error(
-                                `${i18next.t(
-                                    'wizard.entityTemplate.failedToUpdateRequiredConstraintsBecauseOfEntitiesWithMissing',
-                                )} ${constraintPropertyDisplayName}`,
-                            );
-                        } else {
-                            const constraintPropsDisplayNames = constraint.properties.map((prop) => newEntityTemplate.properties.properties[prop].title);
-
-                            const constraintPropsListString = constraintPropsDisplayNames.map((prop) => `"${prop}"`).join('+');
-                            toast.error(
-                                `${i18next.t(
-                                    'wizard.entityTemplate.failedToUpdateUniqueConstraintsBecauseOfEntitiesWithDuplicates',
-                                )} ${constraintPropsListString}`,
-                            );
-                        }
-
-                        return;
-                    }
-
-                    toast.error(
-                        <ErrorToast
-                            axiosError={error}
-                            defaultErrorMessage={i18next.t(`wizard.entityTemplate.${isEditMode ? 'failedToEdit' : 'failedToCreate'}`)}
-                        />,
-                    );
-
-                    console.error('failed to create/update entity template. error', error);
-                },
-            },
-        );
-
-        const steps: StepType<EntityTemplateWizardValues>[] = [
-            {
-                label: i18next.t('wizard.entityTemplate.chooseCategory'),
-                component: (props) => <ChooseCategory {...props} />,
-                validationSchema: chooseCategorySchema,
-            },
-            {
-                label: i18next.t('wizard.entityTemplate.chooseEntityTemplateName'),
-                component: (props, { isEditMode }) => <CreateTemplateName {...props} isEditMode={isEditMode} />,
-                validationSchema: createTemplateNameSchema,
-            },
-            {
-                label: i18next.t('wizard.entityTemplate.chooseIcon'),
-                component: (props) => <ChooseIcon {...props} />,
-            },
-            {
-                label: i18next.t('wizard.entityTemplate.properties'),
-                component: (props, { isEditMode, setBlock }) => <AddFields {...props} isEditMode={isEditMode} setBlock={setBlock} />,
-                validationSchema: addFieldsSchema,
-            },
-            {
-                label: i18next.t('wizard.entityTemplate.exportDocuments'),
-                component: (props) => <UploadExportFormats {...props} />,
-            },
-        ];
-
-        return (
-            <Wizard
-                open={open}
-                handleClose={handleClose}
-                initialValues={initialValues}
-                initialStep={initialStep}
-                isEditMode={isEditMode}
-                title={
-                    `${i18next.t(`wizard.entityTemplate.${isEditMode ? 'update' : 'create'}Title`)}${isEditMode ? `- ${initialValues.displayName}` : ''}`
                 }
-                steps={steps}
-                isLoading={isLoading}
-                submitFunction={(values) => mutateAsync(values)}
-            />
-        );
-    };
+
+                try {
+                    const relationshipTemplates = await getAllRelationshipTemplatesRequest();
+                    queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', mapTemplates(relationshipTemplates));
+                } catch (error) {
+                    console.error(error);
+                    toast.error(i18next.t('wizard.failedToUpdateSystemData'));
+                }
+
+                const updatedUserPermissions = updateUserPermissionForEntityTemplate(data, currentUser, currentWorkspace._id);
+                setUser(updatedUserPermissions);
+                handleClose();
+            },
+            onError: (error: AxiosError, entityTemplateValues) => {
+                const errorMetadata = (error.response?.data as IErrorResponse)?.metadata;
+
+                if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToDeleteField) {
+                    const { type, property, relatedTemplateName } = errorMetadata;
+
+                    const errorMessages = {
+                        rules: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInRules', { property })}`,
+                        gantts: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInGantts', { property })}`,
+                        relationshipReference: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInRelationshipReference', {
+                            property,
+                            relatedTemplateName,
+                        })}`,
+                        charts: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInCharts', { property })}`,
+                    };
+
+                    toast.error(errorMessages[type]);
+                    return;
+                }
+                if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToCreateConstraints) {
+                    const { constraint }: { constraint: IConstraint } = errorMetadata;
+
+                    const newEntityTemplate = formToJSONSchema(entityTemplateValues, false, queryClient);
+
+                    if (constraint.type === 'REQUIRED') {
+                        const { title: constraintPropertyDisplayName } = newEntityTemplate.properties.properties[constraint.property];
+                        toast.error(
+                            `${i18next.t(
+                                'wizard.entityTemplate.failedToUpdateRequiredConstraintsBecauseOfEntitiesWithMissing',
+                            )} ${constraintPropertyDisplayName}`,
+                        );
+                    } else {
+                        const constraintPropsDisplayNames = constraint.properties.map((prop) => newEntityTemplate.properties.properties[prop].title);
+
+                        const constraintPropsListString = constraintPropsDisplayNames.map((prop) => `"${prop}"`).join('+');
+                        toast.error(
+                            `${i18next.t(
+                                'wizard.entityTemplate.failedToUpdateUniqueConstraintsBecauseOfEntitiesWithDuplicates',
+                            )} ${constraintPropsListString}`,
+                        );
+                    }
+
+                    return;
+                }
+
+                toast.error(
+                    <ErrorToast
+                        axiosError={error}
+                        defaultErrorMessage={i18next.t(`wizard.entityTemplate.${isEditMode ? 'failedToEdit' : 'failedToCreate'}`)}
+                    />,
+                );
+
+                console.error('failed to create/update entity template. error', error);
+            },
+        },
+    );
+
+    const steps: StepType<EntityTemplateWizardValues>[] = [
+        {
+            label: i18next.t('wizard.entityTemplate.entitySettings'),
+            component: (props, { isEditMode }) => (
+                <CreateTemplateSettings
+                    {...props}
+                    isEditMode={isEditMode}
+                    exportFormats={{ value: exportFormats, set: setExportFormats }}
+                    isAccountTemplate={{ value: isAccountTemplate, set: setIsAccountTemplate }}
+                />
+            ),
+            alignItems: 'start',
+            validationSchema: createTemplateSettingsSchema,
+        },
+        {
+            label: i18next.t('wizard.entityTemplate.chooseIcon'),
+            component: (props) => <ChooseIcon {...props} />,
+        },
+        {
+            label: i18next.t('wizard.entityTemplate.properties'),
+            component: (props, { isEditMode, setBlock }) => (
+                <AddFields
+                    {...props}
+                    isEditMode={isEditMode}
+                    setBlock={setBlock}
+                    isAccountTemplate={isAccountTemplate}
+                    setIsTransferTemplate={setIsTransferTemplate}
+                />
+            ),
+            validationSchema: addFieldsSettingsSchema,
+        },
+        ...(isTransferTemplate && !isAccountTemplate
+            ? [
+                  {
+                      label: i18next.t('wizard.entityTemplate.walletTransfer.walletTransferSettings'),
+                      component: (props) => <WalletTransferSettings {...props} isAccountTemplate={isAccountTemplate} isEditMode={isEditMode} />,
+                      alignItems: 'start',
+                      validationSchema: walletTransferSchema,
+                  },
+              ]
+            : []),
+        ...(exportFormats
+            ? [
+                  {
+                      label: i18next.t('wizard.entityTemplate.exportDocuments'),
+                      component: (props) => <UploadExportFormats {...props} />,
+                  } satisfies StepType<EntityTemplateWizardValues>,
+              ]
+            : []),
+    ];
+
+    return (
+        <Wizard
+            open={open}
+            handleClose={handleClose}
+            initialValues={initialValues}
+            initialStep={initialStep}
+            isEditMode={isEditMode}
+            title={`${i18next.t(`wizard.entityTemplate.${isEditMode ? 'update' : 'create'}Title`)}${isEditMode ? `- ${initialValues.displayName}` : ''}`}
+            steps={steps}
+            isLoading={isLoading}
+            submitFunction={(values) => mutateAsync(values)}
+        />
+    );
+};
 
 export { EntityTemplateWizard };

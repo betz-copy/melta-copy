@@ -9,7 +9,8 @@ interface ColoredEnumChipProps {
     style?: CSSProperties;
     icon?: React.ReactElement;
     searchValue?: string;
-    onDelete?: (event: any) => void;
+    // biome-ignore lint/suspicious/noExplicitAny: as The Beatles say, let it be
+    onDelete?: React.EventHandler<any>;
     deleteIcon?: React.ReactElement;
     color?: string;
 }
@@ -19,13 +20,11 @@ export const ColoredEnumChip: React.FC<ColoredEnumChipProps> = ({ label, enumCol
     const isDarkMode = theme.palette.mode === 'dark';
 
     const shouldHighlight = Boolean(searchValue && label?.toString().includes(searchValue));
-    // eslint-disable-next-line no-nested-ternary
-    const textColor = color ?? (enumColor === 'default' ? (isDarkMode ? '#fff' : '#000') : enumColor);
+    const textColor = color ?? (enumColor === 'default' ? (isDarkMode ? 'white' : 'black') : enumColor);
 
     let backgroundColor: string;
     if (enumColor !== 'default' && enumColor) backgroundColor = colorWithOpacity(enumColor, shouldHighlight ? 0.25 : 0.1);
     else {
-        // eslint-disable-next-line no-lonely-if
         if (isDarkMode) backgroundColor = shouldHighlight ? '#4F4F4F' : '#303030';
         else backgroundColor = shouldHighlight ? '#d3d1d1' : '#F7F7F7';
     }

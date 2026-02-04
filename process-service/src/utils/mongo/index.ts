@@ -11,13 +11,13 @@ import { ClientSession, connection, FilterQuery, Model, PipelineStage, Types } f
 import config from '../../config';
 
 export const transaction = async <T, Func extends (session: ClientSession) => Promise<T>>(func: Func): Promise<T> => {
-    let ret;
+    let ret: T | undefined;
 
     await connection.transaction(async (session) => {
         ret = await func(session);
     });
 
-    return ret;
+    return ret!;
 };
 
 export const getTemplateAggregation = async (model: Model<IProcessInstance> | Model<IStepInstance>, foreignCollectionName: string, id: string) => {

@@ -1,16 +1,13 @@
 import { Box, Button, CircularProgress, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material';
 import { Form, Formik, FormikProps } from 'formik';
 import i18next from 'i18next';
-import _ from 'lodash';
-import _cloneDeep from 'lodash.clonedeep';
-import _debounce from 'lodash.debounce';
-import React, { useMemo, useState } from 'react';
+import { cloneDeep, debounce, isEqual } from 'lodash';
+import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
 import { IChildTemplateMap } from '../../interfaces/childTemplates';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import { IGetUnits } from '../../interfaces/units';
 import { IUser, PermissionData, RelatedPermission } from '../../interfaces/users';
 import { deletePermissions } from '../../pages/PermissionsManagement/components/deleteDialog';
 import {
@@ -21,12 +18,11 @@ import {
     updateUserRoleIdsRequest,
 } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
-import { useUnitStore } from '../../stores/unit';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { createDialogCategories, isPermissionsEquals, userHasNoPermissions } from '../../utils/permissions/permissionOfUserDialog';
 import RoleAutocomplete from '../inputs/RoleAutocomplete';
-import UnitAutocomplete from '../inputs/UnitAutocomplete';
+import UnitSelect from '../inputs/UnitTreeSelect';
 import UserAutocomplete from '../inputs/UserAutocomplete';
 import BlueTitle from '../MeltaDesigns/BlueTitle';
 import ManagePermissions from './managePermissions';
@@ -45,7 +41,7 @@ export const defaultEmptyUser = {
     units: {},
     permissions: {},
     displayName: '',
-    currentUnits: [],
+    usersUnitsWithInheritance: [],
 } as IUser;
 
 export const getDefaultEmptyUser = (workspaceId: string) => ({
@@ -64,7 +60,7 @@ export const getDefaultEmptyUser = (workspaceId: string) => ({
     units: {
         [workspaceId]: [],
     },
-    currentUnits: [],
+    usersUnitsWithInheritance: [],
 });
 
 const MyPermissions: React.FC<{
@@ -84,9 +80,6 @@ const MyPermissions: React.FC<{
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
-    const units = queryClient.getQueryData<IGetUnits>('getUnits')!;
-    const filteredUnits = useUnitStore((state) => state.filteredUnits);
-    const unitOptions = useMemo(() => (mode === 'view' ? units : filteredUnits), [mode, units, filteredUnits]);
 
     const { mutateAsync: createUser } = useMutation(
         (formUser: IUser) => createUserRequest(formUser.kartoffelId, formUser.permissions, workspace._id, formUser.roleIds, formUser.units),
@@ -161,7 +154,7 @@ const MyPermissions: React.FC<{
 
                 onSuccess?.({ ...existingUser, permissions: newPermissions });
 
-                if (existingUser?._id === currentUser._id && !_.isEqual(currentUser.currentWorkspacePermissions, newPermissions[workspace._id])) {
+                if (existingUser?._id === currentUser._id && !isEqual(currentUser.currentWorkspacePermissions, newPermissions[workspace._id])) {
                     setUser({
                         ...currentUser,
                         permissions: { ...currentUser.permissions, ...newPermissions },
@@ -187,13 +180,13 @@ const MyPermissions: React.FC<{
         retry: false,
     });
 
-    const searchRolesOptionsDebounced = _debounce(searchRolesOptions, 1000);
+    const searchRolesOptionsDebounced = debounce(searchRolesOptions, 1000);
 
     const prevRole = workspaceRoles?.find((role) => existingUser?.roleIds?.includes(role._id));
 
     return (
         <Formik
-            initialValues={existingUser ? _cloneDeep(existingUser) : (getDefaultEmptyUser(workspace._id) as IUser)}
+            initialValues={existingUser ? cloneDeep(existingUser) : (getDefaultEmptyUser(workspace._id) as IUser)}
             validationSchema={Yup.object({
                 fullName: Yup.string().nullable().required(i18next.t('validation.required')),
             }).unknown(true)}
@@ -209,16 +202,14 @@ const MyPermissions: React.FC<{
 
                 if (mode === 'create') await createUser(formUser);
                 else {
-                    if (!currentRole && !_.isEqual(existingUser?.permissions, formUser.permissions)) {
+                    if (!currentRole && !isEqual(existingUser?.permissions, formUser.permissions)) {
                         await syncUserPermissions(formUser); // update personal permissions (without roles)
-                    } else if (!_.isEqual(prevRole, currentRole)) {
+                    } else if (!isEqual(prevRole, currentRole)) {
                         if (prevRole === undefined && !!currentRole) await deletePermissionsOfUser(); // when role added instead of personal permissions, remove personal permissions
                         await updateUserRoleId(formUser); // role changed, added or deleted
                     }
 
-                    if (!_.isEqual(existingUser?.units, formUser.units)) {
-                        await updateUserUnits({ id: formUser._id, units: formUser.units });
-                    }
+                    if (!isEqual(existingUser?.units, formUser.units)) await updateUserUnits({ id: formUser._id, units: formUser.units });
                 }
             }}
         >
@@ -290,27 +281,14 @@ const MyPermissions: React.FC<{
                             )}
 
                             <Box sx={{ bgcolor: darkMode ? '#242424' : 'white', marginBottom: '15px', marginTop: '5px' }}>
-                                <UnitAutocomplete
-                                    value={
-                                        values.units?.[workspace._id]?.flatMap((unitId) => unitOptions.find(({ _id }) => _id === unitId) ?? []) ?? []
-                                    }
-                                    options={unitOptions}
-                                    onChange={(_e, chosenUnits, reason) => {
-                                        if (reason === 'clear') {
-                                            setFieldValue('units', {
-                                                ...values.units,
-                                                [workspace._id]: [],
-                                            });
-                                            return;
-                                        }
-                                        setFieldValue('units', { ...values.units, [workspace._id]: chosenUnits.map(({ _id }) => _id) });
+                                <UnitSelect
+                                    label={i18next.t('unitAutocomplete.label')}
+                                    disabled={mode === 'view'}
+                                    value={values.units?.[workspace._id] ?? []}
+                                    onChange={(chosenUnits) => {
+                                        setFieldValue(`units.${workspace._id}`, !Array.isArray(chosenUnits) ? [chosenUnits] : chosenUnits);
                                     }}
-                                    onBlur={handleBlur}
-                                    readOnly={mode === 'view'}
-                                    isError={Boolean(touched.roleIds && errors.roleIds)}
-                                    helperText={touched.roleIds ? errors.roleIds : ''}
-                                    enableClear={mode !== 'view'}
-                                    isLoading={isLoading}
+                                    multiple
                                 />
                             </Box>
 
@@ -334,7 +312,7 @@ const MyPermissions: React.FC<{
                                             disabled={
                                                 userHasNoPermissions(values.permissions[workspace._id]) &&
                                                 isPermissionsEquals(initialValues.permissions, values.permissions) &&
-                                                _.isEqual(initialValues.units, values.units)
+                                                isEqual(initialValues.units, values.units)
                                             }
                                             variant="contained"
                                         >

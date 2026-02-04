@@ -11,25 +11,26 @@ import { deletePrintingTemplateRequest } from '../../../services/templates/print
 import { CreateButton } from './CreateButton';
 import { PrintingTemplateCard } from './PrintingTemplateCard';
 
+export interface IDeleteDialogState {
+    isOpen: boolean;
+    printingTemplateId: string | null;
+}
+
+export interface IWizardDialogState {
+    isOpen: boolean;
+    printingTemplate: IMongoPrintingTemplate | null;
+}
+
 const PrintingTemplatesRow: React.FC = () => {
-    const [searchText, setSearchText] = useState('');
+    const [searchText, setSearchText] = useState<string>('');
     const queryClient = useQueryClient();
 
-    const [deletePrintingTemplateDialogState, setDeletePrintingTemplateDialogState] = useState<{
-        isDialogOpen: boolean;
-        printingTemplateId: string | null;
-    }>({
-        isDialogOpen: false,
-        printingTemplateId: null,
-    });
+    const closeWizard = { isOpen: false, printingTemplate: null };
+    const closeDeleteDialog = { isOpen: false, printingTemplateId: null };
 
-    const [printingTemplateWizardDialogState, setPrintingTemplateWizardDialogState] = useState<{
-        isWizardOpen: boolean;
-        printingTemplate: IMongoPrintingTemplate | null;
-    }>({
-        isWizardOpen: false,
-        printingTemplate: null,
-    });
+    const [deleteDialog, setDeleteDialog] = useState<IDeleteDialogState>(closeDeleteDialog);
+
+    const [wizardDialog, setWizardDialog] = useState<IWizardDialogState>(closeWizard);
 
     const processTemplatesMap = queryClient.getQueryData<IPrintingTemplateMap>('getPrintingTemplates')!;
     const printingTemplates = Array.from(processTemplatesMap.values());
@@ -41,7 +42,7 @@ const PrintingTemplatesRow: React.FC = () => {
                 return data!;
             });
             toast.success(i18next.t('wizard.printingTemplate.deletedSuccessfully'));
-            setDeletePrintingTemplateDialogState({ isDialogOpen: false, printingTemplateId: null });
+            setDeleteDialog(closeDeleteDialog);
         },
         onError: () => {
             toast.error(i18next.t('wizard.printingTemplate.failedToDelete'));
@@ -49,6 +50,17 @@ const PrintingTemplatesRow: React.FC = () => {
     });
 
     const filteredTemplates = printingTemplates.filter((printingTemplate) => searchText === '' || printingTemplate.name.includes(searchText));
+
+    const emptyPrintTemplate = {
+        name: '',
+        sections: [],
+        compactView: true,
+        addEntityCheckbox: false,
+        appendSignatureField: false,
+        _id: '',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+    };
 
     return (
         <Grid container direction="column" marginBottom="30px" gap="30px">
@@ -58,54 +70,37 @@ const PrintingTemplatesRow: React.FC = () => {
                 </Grid>
                 <Grid>
                     <CreateButton
-                        onClick={() => setPrintingTemplateWizardDialogState({ isWizardOpen: true, printingTemplate: null })}
+                        onClick={() => setWizardDialog({ ...closeWizard, isOpen: true })}
                         text={i18next.t('systemManagement.newPrintingTemplate')}
                     />
                 </Grid>
             </Grid>
-            <Grid direction="column" width="100%">
+            <Grid direction="column" width="100%" sx={{ gap: '1rem' }} container>
                 {filteredTemplates.map((printingTemplate) => (
                     <Grid key={printingTemplate._id}>
                         <PrintingTemplateCard
                             printingTemplate={printingTemplate}
-                            setPrintingTemplateWizardDialogState={setPrintingTemplateWizardDialogState}
-                            setDeletePrintingTemplateDialogState={setDeletePrintingTemplateDialogState}
+                            setWizardDialog={setWizardDialog}
+                            setDeleteDialog={setDeleteDialog}
                         />
                     </Grid>
                 ))}
                 {!filteredTemplates.length && <Typography>{i18next.t('noOptions')}</Typography>}
             </Grid>
-            <Dialog
-                open={printingTemplateWizardDialogState.isWizardOpen}
-                onClose={() => setPrintingTemplateWizardDialogState({ isWizardOpen: false, printingTemplate: null })}
-                maxWidth="lg"
-                fullWidth
-            >
-                {printingTemplateWizardDialogState.isWizardOpen && (
+            <Dialog open={wizardDialog.isOpen} onClose={() => setWizardDialog(closeWizard)} maxWidth="lg" fullWidth>
+                {wizardDialog.isOpen && (
                     <CreateOrEditPrintTemplate
-                        printingTemplate={
-                            printingTemplateWizardDialogState.printingTemplate || {
-                                name: '',
-                                sections: [],
-                                compactView: true,
-                                addEntityCheckbox: false,
-                                appendSignatureField: false,
-                                _id: '',
-                                createdAt: new Date(),
-                                updatedAt: new Date(),
-                            }
-                        }
-                        onClose={() => setPrintingTemplateWizardDialogState({ isWizardOpen: false, printingTemplate: null })}
+                        printingTemplate={wizardDialog.printingTemplate || emptyPrintTemplate}
+                        isEditMode={!!wizardDialog.printingTemplate}
+                        onClose={() => setWizardDialog(closeWizard)}
                     />
                 )}
             </Dialog>
             <AreYouSureDialog
-                open={deletePrintingTemplateDialogState.isDialogOpen}
-                handleClose={() => setDeletePrintingTemplateDialogState({ isDialogOpen: false, printingTemplateId: null })}
+                open={deleteDialog.isOpen}
+                handleClose={() => setDeleteDialog(closeDeleteDialog)}
                 onYes={() => {
-                    if (deletePrintingTemplateDialogState.printingTemplateId) {
-                        deleteMutation.mutate(deletePrintingTemplateDialogState.printingTemplateId);
-                    }
+                    if (deleteDialog.printingTemplateId) deleteMutation.mutate(deleteDialog.printingTemplateId);
                 }}
                 isLoading={deleteMutation.isLoading}
             />

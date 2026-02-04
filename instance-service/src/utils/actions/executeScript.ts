@@ -1,11 +1,9 @@
-/* eslint-disable import/prefer-default-export */
-
+import * as vm from 'node:vm';
 import { BadRequestError, IChildTemplatePopulated, IEntity, IMongoEntityTemplate, ValidationError } from '@microservices/shared';
 import { isDate } from 'date-fns';
 import { formatDate } from 'date-fns/format';
 import { Transaction } from 'neo4j-driver';
 import * as ts from 'typescript-actions';
-import * as vm from 'vm';
 import config from '../../config';
 import { IEntityCrudAction, IExecutionOutput, isRelationshipReference } from '../../express/entities/interface';
 import EntityManager from '../../express/entities/manager';

@@ -1,4 +1,4 @@
-import isEqualWith from 'lodash.isequalwith';
+import { isEqualWith } from 'lodash';
 import { IMongoCategory } from '../../interfaces/categories';
 import { IMongoChildTemplatePopulated, ViewType } from '../../interfaces/childTemplates';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -12,6 +12,7 @@ export const userHasNoPermissions = (permissions: ISubCompactPermissions) => {
         permissions?.templates?.scope !== PermissionScope.write &&
         permissions?.processes?.scope !== PermissionScope.write &&
         permissions?.rules?.scope !== PermissionScope.write &&
+        permissions?.units?.scope !== PermissionScope.write &&
         Object.keys(permissions?.instances?.categories ?? {}).length === 0
     );
 };

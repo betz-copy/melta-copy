@@ -2,11 +2,7 @@ import { Close, ExpandMore } from '@mui/icons-material';
 import { Autocomplete, Grid, MenuItem, TextField, TextFieldProps } from '@mui/material';
 import { RJSFSchema } from '@rjsf/utils';
 import React from 'react';
-import { useQueryClient } from 'react-query';
-import { IMongoUnit } from '../../interfaces/units';
-import { IUser } from '../../interfaces/users';
-import { useUnitStore } from '../../stores/unit';
-import { useUserStore } from '../../stores/user';
+import { IPropertyValue } from '../../interfaces/entities';
 import OverflowWrapper from '../../utils/agGrid/OverflowWrapper';
 import { ColoredEnumChip } from '../ColoredEnumChip';
 import MeltaCheckbox from '../MeltaDesigns/MeltaCheckbox';
@@ -23,12 +19,12 @@ const MultipleSelect: React.FC<{
     schema?: RJSFSchema;
     selectedValue: ISelectOption | ISelectOption[] | null;
     onChange: (event: React.SyntheticEvent, newVal: ISelectOption | ISelectOption[] | null) => void;
-    onBlur: (event: React.FocusEvent<HTMLInputElement>) => void;
-    onFocus: (event: React.FocusEvent<HTMLInputElement>) => void;
+    onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
+    onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void;
     variant: 'standard' | 'outlined';
-    rawErrors: string[];
-    textFieldProps: any;
-    value?: any;
+    rawErrors?: string[];
+    textFieldProps?: Partial<TextFieldProps>;
+    value?: IPropertyValue;
     multiple?: boolean;
     disabled?: boolean;
     readonly?: boolean;
@@ -40,13 +36,12 @@ const MultipleSelect: React.FC<{
 }> = ({
     id,
     items,
-    schema,
     selectedValue,
     onChange,
     onBlur,
     onFocus,
     variant,
-    rawErrors,
+    rawErrors = [],
     textFieldProps,
     value,
     multiple,
@@ -58,19 +53,6 @@ const MultipleSelect: React.FC<{
     placeholder,
     required,
 }) => {
-    const currentUser = useUserStore<IUser>((state) => state.user);
-
-    const filteredUnits = useUnitStore((state) => state.filteredUnits);
-
-    const queryClient = useQueryClient();
-    const units = queryClient.getQueryData<IMongoUnit[]>('getUnits');
-
-    if (schema?.format === 'unitField') {
-        items = (disabled ? units : filteredUnits)?.map((unit) => ({ label: unit.name, value: unit._id })) ?? [];
-
-        if (!currentUser.isRoot) items = items.filter((unit) => currentUser.currentUnits.includes(unit.value));
-    }
-
     return (
         <Autocomplete<ISelectOption, boolean, false, false>
             id={id}
@@ -124,7 +106,7 @@ const MultipleSelect: React.FC<{
                         onBlur={onBlur}
                         onFocus={onFocus}
                         variant={variant}
-                        error={!!rawErrors.length}
+                        error={!!rawErrors?.length}
                         label={label}
                         placeholder={placeholder}
                         slotProps={{

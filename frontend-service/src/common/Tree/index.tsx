@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/correctness/useExhaustiveDependencies: useEffect dependencies */
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
 import { Box, Divider, SxProps, Theme, ThemeProvider } from '@mui/material';
 import { RichTreeViewPro, RichTreeViewProProps, TreeItemProps, TreeViewBaseItem, UseTreeItemStatus, useTreeViewApiRef } from '@mui/x-tree-view-pro';
@@ -7,16 +8,19 @@ import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'rea
 import { SelectAll } from './SelectAll';
 import TreeItem from './TreeItem';
 
-export interface TreeProps<T extends Record<string, any>> extends Omit<RichTreeViewProProps<T, true>, 'onDragEnd' | 'items'> {
+type IFlattenedTree<T extends {}, K extends boolean> = Omit<TreeViewBaseItem<T>, 'children'> & (K extends true ? { path: string } : object);
+
+export interface TreeProps<T extends {}> extends Omit<RichTreeViewProProps<T, true>, 'onDragEnd' | 'items'> {
     // All of the treeItems that the tree has.
     treeItems: TreeViewBaseItem<T>[];
     getItemId: (item: T) => string;
     getItemLabel: (item: T) => string;
+    // Custom render for the item label
+    renderItemLabel?: (node: T) => React.ReactNode;
     // Display a selectAll checkbox
     selectAll?: boolean;
-    onSelectItems?: (itemIds: string | string[]) => any;
+    onSelectItems?: (itemIds: string | string[]) => void;
     isDraggable?: boolean;
-    allowMultiSelect?: boolean;
     allowDraggingBetweenParents?: boolean;
     preSelectedItemsIds?: string[];
     preExpandedItemIds?: string[];
@@ -36,28 +40,31 @@ export interface TreeProps<T extends Record<string, any>> extends Omit<RichTreeV
     };
 }
 
-export const flattenTree = <T extends {}>(
+export const flattenTree = <T extends {}, K extends boolean>(
     treeItems: TreeViewBaseItem<T>[],
-    getItemId: (item: T) => string,
+    getItemId: (item: TreeViewBaseItem<T>) => string,
     shouldCountParents: boolean,
-    flattenedNodes: Omit<TreeViewBaseItem<T>, 'children'>[] = [],
-): Omit<TreeViewBaseItem<T>, 'children'>[] => {
+    includePath: K = true as K,
+    flattenedNodes: IFlattenedTree<T, K>[] = [],
+    parentPath = '',
+): IFlattenedTree<T, K>[] => {
     treeItems.forEach((treeItem) => {
         const { children, ...rest } = treeItem;
+        const currentId = getItemId(rest as T);
+        const path = parentPath ? `${parentPath}/${currentId}` : currentId;
+        const newNode = { ...rest, ...(includePath && { path }) };
 
-        if (children) {
-            flattenTree(children, getItemId, shouldCountParents, flattenedNodes);
+        if (children?.length) {
+            flattenTree(children, getItemId, shouldCountParents, includePath, flattenedNodes, path);
 
-            if (shouldCountParents) flattenedNodes.push(rest);
-        } else {
-            flattenedNodes.push(rest);
-        }
+            if (shouldCountParents) flattenedNodes.push(newNode);
+        } else flattenedNodes.push(newNode);
     });
 
     return flattenedNodes;
 };
 
-const Tree = <T extends Record<string, any>>({
+const Tree = <T extends {}>({
     treeItems,
     onSelectItems,
     getItemId,
@@ -66,7 +73,6 @@ const Tree = <T extends Record<string, any>>({
     preExpandedItemIds,
     allowDraggingBetweenParents = true,
     isSelectable = true,
-    allowMultiSelect = true,
     isDraggable = false,
     dragAllowNewRoot = true,
     additionalOptions,
@@ -79,6 +85,8 @@ const Tree = <T extends Record<string, any>>({
     onClick,
     onKeyUp,
     selectionPropagation = { descendants: true, parents: true }, // In order to auto select children
+    multiSelect = true,
+    renderItemLabel,
     ...restOfProps
 }: TreeProps<T>): React.ReactElement => {
     const [expandedItemsIds, setExpandedItemsIds] = useState<string[]>(preExpandedItemIds ?? []);
@@ -95,7 +103,9 @@ const Tree = <T extends Record<string, any>>({
                 removeDivider={removeDivider}
                 node={getItemById(props.itemId)}
                 showIcon={showIcon}
+                // biome-ignore lint/suspicious/noExplicitAny: blame Itay
                 getStyles={getStyles as any}
+                renderItemLabel={renderItemLabel as (node: unknown) => ReactNode}
                 additionalOptions={additionalOptions as ((node: unknown) => ReactNode)[]}
             />
         ),
@@ -103,11 +113,10 @@ const Tree = <T extends Record<string, any>>({
     );
 
     const flattenTreeIds = useMemo(
-        () => flattenTree(treeItems, getItemId, !selectionPropagation.parents).map((node) => getItemId(node as T)),
+        () => flattenTree(treeItems, getItemId, !selectionPropagation.parents).map((node) => getItemId(node as unknown as T)),
         [getItemId, treeItems, selectionPropagation],
     );
 
-    // biome-ignore lint/correctness/useExhaustiveDependencies: infinite loop
     useEffect(() => {
         onSelectItems?.(selectedItemIds);
     }, [selectedItemIds]);
@@ -116,7 +125,6 @@ const Tree = <T extends Record<string, any>>({
         setExpandedItemsIds(preExpandedItemIds ?? []);
     }, [preExpandedItemIds]);
 
-    // biome-ignore lint/correctness/useExhaustiveDependencies: infinite loop
     useEffect(() => {
         if (!_.isEqual(preSelectedItemsIds, selectedItemIds)) {
             setSelectedItemIds(preSelectedItemsIds ?? []);
@@ -136,7 +144,6 @@ const Tree = <T extends Record<string, any>>({
             <ThemeProvider theme={{ direction: 'rtl' }}>
                 <RichTreeViewPro
                     checkboxSelection={isSelectable}
-                    multiSelect
                     items={filteredTreeItems}
                     getItemId={getItemId}
                     getItemLabel={getItemLabel}
@@ -162,6 +169,7 @@ const Tree = <T extends Record<string, any>>({
                     }}
                     onItemPositionChange={onDragEnd}
                     selectionPropagation={selectionPropagation}
+                    multiSelect={multiSelect}
                     {...restOfProps}
                 />
             </ThemeProvider>

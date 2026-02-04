@@ -1,3 +1,38 @@
 .print-body {
-    background-color: #fff !important;
+    background-color: #fff;
+}
+
+.print-body * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+.print-section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+.page-break {
+    page-break-after: always;
+    break-after: page;
+}
+
+@media print {
+    html,
+    body {
+        height: initial;
+        overflow: initial;
+    }
+}
+
+.entity-container {
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 100px;
+    break-inside: avoid;
+}
+
+@media print {
+    .entity-container {
+        content-visibility: visible;
+    }
 }

@@ -8,7 +8,7 @@ import {
     ISearchBatchBody,
 } from '@microservices/shared';
 import { fromZonedTime } from 'date-fns-tz';
-import mapValues from 'lodash.mapvalues';
+import { mapValues } from 'lodash';
 import { Date as Neo4jDate, DateTime as Neo4jDateTime } from 'neo4j-driver';
 import config from '../../config';
 import addDefaultFieldsToTemplate from '../addDefaultsFieldsToEntityTemplate';
@@ -29,7 +29,7 @@ export const escapeNeo4jQuerySpecialChars = (quickFilter: string) => {
     return quickFilter.replace(new RegExp(escapeNeo4jQueryRegexStr, 'g'), '\\$&');
 };
 
-export type CypherQueryWithParameters = { cypherQuery: string; parameters: Record<string, any> };
+export type CypherQueryWithParameters = { cypherQuery: string; parameters: object };
 
 const convertRhsToRelativeDate = (operator: string, rhs: boolean | string | number | null, isDateTime: boolean = false): Date => {
     // fromZonedTime is used because for all non-relative date filters are in UTC, but new Date() is in Israel time
@@ -179,11 +179,14 @@ const caseInsensitiveEqualFilterOfField = (field: string, rhs: NonNullable<IFilt
     return { cypherQuery: `toLower(node.${field}) = toLower($${rhsParamPath})`, parameters: { [rhsParamName]: rhs } };
 };
 
-const regexFilterOfField = (field: string, rhs: NonNullable<IFilterOfField['$eqi']>, parametersParentVariableName: string) => {
+const regexFilterOfField = (field: string, rhs: NonNullable<IFilterOfField['$rgx']>, parametersParentVariableName: string) => {
     const rhsParamName = 'rhs';
     const rhsParamPath = `${parametersParentVariableName}.${rhsParamName}`;
 
-    return { cypherQuery: `node.${field} =~ $${rhsParamPath}`, parameters: { [rhsParamName]: rhs } };
+    return {
+        cypherQuery: `toLower(node.${field}) =~ toLower($${rhsParamPath})`,
+        parameters: { [rhsParamName]: rhs },
+    };
 };
 
 const notFilterOfField = (
@@ -192,7 +195,6 @@ const notFilterOfField = (
     parametersParentVariableName: string,
     fieldTemplate: IEntitySingleProperty,
 ): CypherQueryWithParameters => {
-    // eslint-disable-next-line no-use-before-define -- recursive use
     const filterOfFieldQuery = filterOfFieldToNeoQuery(field, innerFilterOfField, parametersParentVariableName, fieldTemplate);
 
     return { cypherQuery: `NOT (${filterOfFieldQuery.cypherQuery})`, parameters: filterOfFieldQuery.parameters };
@@ -331,8 +333,13 @@ const filterOfFieldToNeoQuery = (
     return {
         cypherQuery: queries.map((query) => `(${query.cypherQuery})`).join(' AND '),
         parameters: queries
-            .map(({ parameters }) => parameters)
-            .reduce((prevParameters, currParameters) => ({ ...prevParameters, ...currParameters }), {}),
+            .map((q) => q.parameters)
+            .reduce<Record<string, unknown>>((acc, curr) => {
+                for (const key in curr) {
+                    if (Object.hasOwn(curr, key)) acc[key] = curr[key];
+                }
+                return acc;
+            }, {}),
     };
 };
 
@@ -345,7 +352,6 @@ const filterOfTemplateToNeoQuery = (
         .filter(([_field, filterOfField]) => Boolean(filterOfField))
         .map(([filterKey, filterOfField]) => {
             if (filterKey === FilterLogicalOperator.AND || filterKey === FilterLogicalOperator.OR) {
-                // eslint-disable-next-line no-use-before-define
                 return filterLogicalOperatorsToNeoQuery(filterKey, filterOfField, parametersParentVariableName, entityTemplate);
             }
 
@@ -360,11 +366,10 @@ const filterOfTemplateToNeoQuery = (
                 parameters: { [filterKey]: filterOfFieldQuery.parameters },
             };
         });
+
     return {
         cypherQuery: fieldsNeoQueries.map((fieldNeoQuery) => `(${fieldNeoQuery.cypherQuery})`).join(' AND '),
-        parameters: fieldsNeoQueries
-            .map(({ parameters }) => parameters)
-            .reduce((prevParameters, currParameters) => ({ ...prevParameters, ...currParameters }), {}),
+        parameters: Object.assign({}, ...fieldsNeoQueries.map(({ parameters }) => parameters)),
     };
 };
 
@@ -401,7 +406,6 @@ export const templatesFilterToNeoQuery = (
     entityTemplatesMap: Map<string, IMongoEntityTemplate>,
 ): CypherQueryWithParameters => {
     const filterParamsVariableName = 'filterParams';
-
     const templatesFiltersQueries: CypherQueryWithParameters[] = Object.entries(templatesFilter).map(([templateId, { filter }]) => {
         if (!filter) {
             return { cypherQuery: `node:\`${templateId}\``, parameters: {} };
@@ -429,9 +433,7 @@ export const templatesFilterToNeoQuery = (
     return {
         cypherQuery: templatesFiltersQueries.map(({ cypherQuery }) => `(${cypherQuery})`).join(' OR '),
         parameters: {
-            [filterParamsVariableName]: templatesFiltersQueries
-                .map(({ parameters }) => parameters)
-                .reduce((prevParameters, currParameters) => ({ ...prevParameters, ...currParameters }), {}),
+            [filterParamsVariableName]: Object.assign({}, ...templatesFiltersQueries.map(({ parameters }) => parameters)),
         },
     };
 };
@@ -442,9 +444,9 @@ export const sortToNeo4JSort = (sortModel: ISearchBatchBody['sort']) => {
 
 const buildFullTextSearchQuery = (
     searchBody: ISearchBatchBody,
-    filterQuery: { cypherQuery: string; parameters: any },
+    filterQuery: { cypherQuery: string; parameters: object },
     indexHandling: string,
-    parameters: any,
+    parameters: object,
     calculateOverallCount: boolean,
     entityIdsToInclude?: string[],
     entityIdsToExclude?: string[],

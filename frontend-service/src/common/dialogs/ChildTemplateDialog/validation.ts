@@ -1,6 +1,7 @@
 import i18next from 'i18next';
 import * as Yup from 'yup';
 import { IChildTemplateFormProperty, IFieldChip } from '../../../interfaces/childTemplates';
+import { IPropertyValue } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { matchValueAgainstFilter } from '../../../utils/filters';
 import { variableNameValidation } from '../../../utils/validation';
@@ -26,7 +27,7 @@ const getFilterOperator = (filterField: IFieldChip['filterField']) => {
         case 'number':
         case 'date':
             if (filterField.type === 'inRange') {
-                return operatorMap['between'];
+                return operatorMap.between;
             }
 
             return operatorMap[filterField.type];
@@ -53,7 +54,7 @@ const getFilterValue = (filterField: IFieldChip['filterField']) => {
     }
 };
 
-const checkMatchValidation = (filterField: IFieldChip['filterField'], fieldName: string, value: any) => {
+const checkMatchValidation = (filterField: IFieldChip['filterField'], fieldName: string, value: IPropertyValue) => {
     const data = { [fieldName]: value };
 
     const operator = getFilterOperator(filterField);
@@ -83,9 +84,7 @@ const childTemplatePropertySchema = (propKey: string, fieldName: string) =>
 
             const { defaultValue, filters } = value;
 
-            return filters && filters.length && defaultValue
-                ? filters.some((filterField) => checkMatchValidation(filterField, propKey, defaultValue))
-                : true;
+            return filters?.length && defaultValue ? filters.some((filterField) => checkMatchValidation(filterField, propKey, defaultValue)) : true;
         });
 
 export const childTemplateSchema = (existingNames: string[], existingDisplayNames: string[], parentTemplate: IMongoEntityTemplatePopulated) =>

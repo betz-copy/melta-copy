@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unstable-nested-components */
 import { CircularProgress } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -49,7 +48,7 @@ const Chart: React.FC = () => {
     });
 
     const { isLoading, mutateAsync } = useMutation({
-        mutationFn: async (chartData: ChartForm & { _id?: string }) => {
+        mutationFn: async ({ _id, ...chartData }: ChartForm & { _id?: string }) => {
             const baseChart = {
                 ...chartData,
                 createdBy: currentUser._id,
@@ -61,10 +60,10 @@ const Chart: React.FC = () => {
             }
 
             // Add existing chart to dashboard
-            if (chartData._id)
+            if (_id)
                 return createDashboardItem({
                     type: DashboardItemType.Chart,
-                    metaData: chartData._id,
+                    metaData: _id,
                 });
 
             return createChart(baseChart, isDashboardPage);
@@ -107,7 +106,7 @@ const Chart: React.FC = () => {
         },
     );
 
-    const template = chart && entityTemplates.get(chart?.templateId!);
+    const template = chart && entityTemplates.get(chart?.templateId);
 
     useEffect(() => {
         if (chart && chartId) setViewMode(ViewMode.ReadOnly);
@@ -142,7 +141,7 @@ const Chart: React.FC = () => {
             ...baseValues,
             ...(chart ? {} : { templateId: currTemplateId }),
             childTemplateId: childTemplate?._id,
-            filter: chart?.filter ? FilterModelToFilterRecord(parseFilters(chart?.filter), template?._id!, queryClient) : undefined,
+            filter: chart?.filter ? FilterModelToFilterRecord(parseFilters(chart?.filter), template?._id ?? '', queryClient) : undefined,
         };
     };
 

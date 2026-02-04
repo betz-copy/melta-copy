@@ -1,4 +1,4 @@
-import _forEach from 'lodash.foreach';
+import { forEach } from 'lodash';
 import mongoose, { Types } from 'mongoose';
 import config from '../config';
 
@@ -12,18 +12,17 @@ export const initializeMongo = async () => {
     console.log('Mongo connection established');
 };
 
-export const transformObjectIdKeysToString = (doc: any) => {
-    _forEach(doc, (val, key) => {
-        if (val instanceof Types.ObjectId) {
-            // eslint-disable-next-line no-param-reassign
-            doc[key] = val.toString();
-        }
+export const transformObjectIdKeysToString = (doc: Record<string, unknown>) => {
+    forEach(doc, (val, key) => {
+        if (val instanceof Types.ObjectId) doc[key] = val.toString();
     });
 };
 
-export const transformResultDocsObjectIdKeysToString = (res: any | any[]) => {
+export const transformResultDocsObjectIdKeysToString = (res: Record<string, unknown> | Record<string, unknown>[]) => {
     if (Array.isArray(res)) {
-        res.forEach((doc) => transformObjectIdKeysToString(doc));
+        res.forEach((doc) => {
+            transformObjectIdKeysToString(doc);
+        });
         return;
     }
 

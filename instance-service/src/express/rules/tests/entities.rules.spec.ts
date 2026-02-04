@@ -1,3 +1,4 @@
+import { IPropertyValue } from '@microservices/shared';
 import config from '../../../config';
 import { IMongoEntityTemplate } from '../../../externalServices/templates/interfaces/entityTemplates';
 import { getMockAdapterTemplateManager } from '../../../externalServices/tests/axios.mock';
@@ -39,7 +40,7 @@ const {
 
 const updateEntityAndExpectRuleBlock = async (
     entityId: string,
-    entityProperties: Record<string, any>,
+    entityProperties: Record<string, IPropertyValue>,
     entityTemplate: IMongoEntityTemplate,
     brokenRule: IBrokenRule,
 ) => {
@@ -59,12 +60,13 @@ const updateEntityAndExpectRuleBlock = async (
             brokenRules: expect.any(Array),
         }),
     );
+    // biome-ignore lint/suspicious/noExplicitAny: never doubt Noam
     expect(sortBrokenRules((err as any).metadata.brokenRules)).toStrictEqual(sortBrokenRules([brokenRule]));
 };
 
 const updateEntityAndExpectToSucceed = async (
     entityId: string,
-    entityProperties: Record<string, any>,
+    entityProperties: Record<string, IPropertyValue>,
     entityTemplate: IMongoEntityTemplate,
     ignoredRules: IBrokenRule[] = [],
 ) => {

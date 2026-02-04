@@ -89,7 +89,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                                     template,
                                     true,
                                     currentUserKartoffelId,
-                                    currentUser.currentUnits,
+                                    currentUser.usersUnitsWithInheritance,
                                     isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
                                 );
 
@@ -138,8 +138,9 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                             const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
                             const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 
+                            // biome-ignore lint/suspicious/noNonNullAssertedOptionalChain: lol
                             const entityTemplate = entityTemplates?.get(entity.templateId)!;
-                            const childEntityTemplate = childTemplateId ? childTemplates?.get(childTemplateId)! : undefined;
+                            const childEntityTemplate = childTemplateId ? childTemplates?.get(childTemplateId) : undefined;
                             const template = childEntityTemplate ?? entityTemplate;
 
                             return (

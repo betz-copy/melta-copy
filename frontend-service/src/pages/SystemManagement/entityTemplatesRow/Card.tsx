@@ -162,6 +162,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
 
     const isFile = (value: IEntitySingleProperty) => value.format === 'fileId' || value.items?.format === 'fileId';
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: isFile will infinite re-render
     const filesProps = useMemo(
         () =>
             Object.entries(
@@ -169,7 +170,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                     ? childTemplates.get(entityTemplate._id)?.properties.properties || {}
                     : entityTemplate.properties?.properties || {},
             ).filter(([, value]) => isFile(value) && value.display !== false),
-        [childTemplates, entityTemplate._id],
+        [childTemplates, entityTemplate._id, entityTemplate.properties?.properties],
     );
 
     return (
@@ -248,6 +249,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                 onDuplicateClick={
                                     childTemplates?.get(entityTemplate._id)
                                         ? () => {
+                                              // biome-ignore lint/suspicious/noNonNullAssertedOptionalChain: lol
                                               const childTemplate = childTemplates?.get(entityTemplate._id)!;
                                               setAddChildTemplateDialogState({
                                                   isWizardOpen: true,
@@ -340,8 +342,8 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                             <Grid>
                                                 <Typography variant="body2">{childTemplates.get(entityTemplate._id)?.description}</Typography>
                                                 <Grid container spacing={1} sx={{ mt: 1 }}>
-                                                    {getChildTemplateChips(childTemplates.get(entityTemplate._id)!).map((chip, index) => (
-                                                        <Grid key={index}>
+                                                    {getChildTemplateChips(childTemplates.get(entityTemplate._id)!).map((chip) => (
+                                                        <Grid key={chip.color}>
                                                             <ColoredEnumChip enumColor={chip.color} label={chip.label} />
                                                         </Grid>
                                                     ))}

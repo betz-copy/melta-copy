@@ -137,8 +137,13 @@ class UserService {
         return data;
     }
 
-    static async getUnits(params: Partial<IUnit> & Pick<IUnit, 'workspaceId'>) {
+    static async getUnits(params: Partial<Omit<IUnit, 'workspaceId'>> & { workspaceIds: string[] }) {
         const { data } = await UserService.userService.get<IGetUnits>(`${unitsRoute}`, { params });
+        return data;
+    }
+
+    static async getUnitById(unitId: string) {
+        const { data } = await UserService.userService.get<IMongoUnit>(`${unitsRoute}/${unitId}`);
         return data;
     }
 
@@ -157,8 +162,8 @@ class UserService {
         return data;
     }
 
-    static async getUnitHierarchy(workspaceId: string) {
-        const { data } = await UserService.userService.get<IUnitHierarchy[]>(`${unitsRoute}/${workspaceId}/hierarchy`);
+    static async getUnitHierarchy(workspaceId: string, userId: string) {
+        const { data } = await UserService.userService.get<IUnitHierarchy[]>(`${unitsRoute}/${workspaceId}/hierarchy`, { params: { userId } });
         return data;
     }
 }

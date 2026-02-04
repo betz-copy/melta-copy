@@ -27,6 +27,7 @@ import { useMeltaPlusStore } from '../../stores/meltaPlus';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { sideBarTransition } from '../../theme';
+import { buildUrl } from '../../utils/buildUrl';
 import { CustomIcon, CustomImage } from '../CustomIcon';
 import { GlobalSearchBar } from '../EntitiesPage/Headline';
 import IconButtonWithPopover from '../IconButtonWithPopover';
@@ -40,7 +41,7 @@ import { Drawer, DrawerDivider } from './SideBar.styled';
 import { CloseDrawerButton, OpenDrawerButton } from './ToggleDrawerButtons';
 
 interface SideBarProps {
-    toggleDrawer: () => any;
+    toggleDrawer: () => void;
     isDrawerOpen: boolean;
 }
 
@@ -48,6 +49,7 @@ const {
     notifications,
     searchPath,
     dashboard: { dashboardPath },
+    searchParams: { viewModeKey, searchKey, semanticSearchKey, viewModeOptions },
 } = environment;
 
 const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
@@ -207,8 +209,13 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         {isDrawerOpen ? (
                             <GlobalSearchBar
                                 onSearch={(searchValue) => {
-                                    handleChangeActiveButton(true, 'search');
-                                    navigate(`${searchPath}?search=${searchValue}&viewMode=templates-tables-view`);
+                                    handleChangeActiveButton(true, searchKey);
+                                    navigate(
+                                        buildUrl(searchPath, {
+                                            [searchKey]: searchValue,
+                                            [viewModeKey]: viewModeOptions.templatesTables,
+                                        }),
+                                    );
                                 }}
                                 placeholder={i18next.t('pages.globalSearch')}
                                 size="small"
@@ -234,7 +241,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                     placement="left"
                                     style={{ ...iconSize }}
                                 >
-                                    <img src="/icons/search-icon.svg" style={{ alignSelf: 'center', height: '25px' }} />
+                                    <img src="/icons/search-icon.svg" alt="search-icon" style={{ alignSelf: 'center', height: '25px' }} />
                                 </IconButtonWithPopover>
                             </Grid>
                         )}
@@ -286,7 +293,11 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             ) && (
                                 <NavButton
                                     key={category._id}
-                                    to={`/category/${category._id}`}
+                                    to={buildUrl(`/category/${category._id}`, {
+                                        [semanticSearchKey]: false,
+                                        [searchKey]: '',
+                                        [viewModeKey]: viewModeOptions.templatesTables,
+                                    })}
                                     text={category.displayName}
                                     isDrawerOpen={isDrawerOpen}
                                     onChangeToActive={(isActive) => {
@@ -351,7 +362,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         to="/iframes"
                         text={i18next.t('pages.iFrames')}
                         extension={
-                            iFramesInSidebar?.length! ? (
+                            iFramesInSidebar?.length ? (
                                 <Grid container display="flex" flexDirection="column">
                                     <Grid width="150px" maxHeight="450px" sx={{ overflow: 'auto' }}>
                                         {iFramesInSidebar?.map((iFrame) => (
@@ -535,8 +546,8 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     </>
                 )}
                 <Grid container direction="row" justifyContent="center" gap={isDrawerOpen ? 3 : 1} mb={1}>
-                    <img src="/icons/sapir.svg" style={{ width: isDrawerOpen ? 40 : 30, height: isDrawerOpen ? 40 : 30 }} />
-                    <img src="/icons/yesodot.svg" style={{ width: isDrawerOpen ? 40 : 30, height: isDrawerOpen ? 40 : 30 }} />
+                    <img src="/icons/sapir.svg" alt="sapir" style={{ width: isDrawerOpen ? 40 : 30, height: isDrawerOpen ? 40 : 30 }} />
+                    <img src="/icons/yesodot.svg" alt="yesodot" style={{ width: isDrawerOpen ? 40 : 30, height: isDrawerOpen ? 40 : 30 }} />
                 </Grid>
                 <Grid>
                     <IconButton

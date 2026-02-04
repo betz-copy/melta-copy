@@ -7,6 +7,8 @@ import {
     IMongoEntityTemplatePopulated,
     IMongoRule,
     IRelationship,
+    PropertyFormat,
+    PropertyType,
     ServiceError,
 } from '@microservices/shared';
 import { StatusCodes } from 'http-status-codes';
@@ -53,8 +55,8 @@ const buildNewRelationshipField = (
 ): IEntitySingleProperty => {
     return {
         title: displayFieldName,
-        type: 'string',
-        format: 'relationshipReference',
+        type: PropertyType.string,
+        format: PropertyFormat.relationshipReference,
         relationshipReference: {
             relationshipTemplateId,
             relationshipTemplateDirection,
@@ -90,7 +92,9 @@ const updateChildTemplatesOnParentUpdate = async (
             if (removedProperties.some((removedPropertyKey) => Object.keys(childProperties.properties).includes(removedPropertyKey))) {
                 hasChildChanged = true;
 
-                removedProperties.forEach((removedPropertyKey) => delete childProperties.properties[removedPropertyKey]);
+                removedProperties.forEach((removedPropertyKey) => {
+                    delete childProperties.properties[removedPropertyKey];
+                });
             }
 
             const requiredDiff = _.xor(newRequired, oldRequired);

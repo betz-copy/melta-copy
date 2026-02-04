@@ -58,6 +58,7 @@ const config = {
         relativeDateFilters: env.get('RELATIVE_DATE_FILTERS').default('thisWeek,thisMonth,thisYear,untilToday,fromToday').asArray(),
         updateColorsForRulesWithTodayFuncParallelLimit: env.get('UPDATE_COLORS_FOR_RULES_WITH_TODAY_FUNC_PARALLEL_LIMIT').default(20).asIntPositive(),
         sendAlertForRulesWithTodayFuncParallelLimit: env.get('SEND_ALERTS_FOR_RULES_WITH_TODAY_FUNC_PARALLEL_LIMIT').default(100).asIntPositive(),
+        relationshipPathSeparator: env.get('RELATIONSHIP_PATH_SEPARATOR').default('&').asString(),
     },
     rabbit: {
         url: env.get('RABBIT_URL').required().asUrlString(),

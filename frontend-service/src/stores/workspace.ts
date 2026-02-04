@@ -49,6 +49,8 @@ export const defaultMetadata: IMetadata = {
         sourceFieldForColor: '',
     },
     numOfRelationshipFieldsToShow: 2,
+    numOfPreviewFieldsToShow: 5,
+    twinTemplates: [] as string[],
 } as const;
 
 export const useWorkspaceStore = create<WorkspaceState>((set) => ({

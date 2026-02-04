@@ -16,21 +16,28 @@ import {
     useTreeItem,
 } from '@mui/x-tree-view-pro';
 import React, { useMemo } from 'react';
+import { IPropertyValue } from '../../interfaces/entities';
 import { CustomIcon } from '../CustomIcon';
 import MeltaCheckbox from '../MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import { TreeProps } from '.';
 
-const LabelWithToolTip = ({ children, className }) => (
+const LabelWithToolTip: React.FC<{
+    className?: string;
+    tooltipTitle: string;
+    children: React.ReactNode;
+}> = ({ children, className, tooltipTitle }) => (
     <Box
         className={className}
         sx={{
             display: 'inline-block',
             position: 'relative',
             overflow: 'hidden',
+            minWidth: 0,
+            flex: 1,
         }}
     >
-        <MeltaTooltip title={children}>
+        <MeltaTooltip title={tooltipTitle}>
             <Typography
                 sx={{
                     fontSize: '14px',
@@ -71,13 +78,14 @@ const draggableHandle = (
     </TreeItemIconContainer>
 );
 
-const TreeItem = React.forwardRef(function CustomTreeItem<T extends Record<string, any>>(
+const TreeItem = React.forwardRef(function CustomTreeItem<T extends Record<string, IPropertyValue>>(
     props: TreeItemProps & {
         node: T;
         additionalOptions?: TreeProps<T>['additionalOptions'];
         getStyles?: TreeProps<T>['getStyles'];
         removeDivider?: TreeProps<T>['removeDivider'];
         showIcon?: TreeProps<T>['showIcon'];
+        renderItemLabel?: TreeProps<T>['renderItemLabel'];
     },
     ref: React.Ref<HTMLLIElement>,
 ) {
@@ -96,7 +104,7 @@ const TreeItem = React.forwardRef(function CustomTreeItem<T extends Record<strin
     const theme = useTheme();
 
     const checkBoxProps = getCheckboxProps();
-    const item = (publicAPI as any).getItem(itemId);
+    const item = publicAPI.getItem(itemId);
 
     const rootProps = getRootProps(other) as ReturnType<typeof getRootProps>;
     const { draggable, onDragStart, onDragOver, onDragEnd, ...otherRootProps } = rootProps;
@@ -121,8 +129,11 @@ const TreeItem = React.forwardRef(function CustomTreeItem<T extends Record<strin
 
     const styles = getStyles?.({ node, status, itemDepth });
 
+    const labelText = String(label ?? '');
+    const labelNode = props.renderItemLabel ? props.renderItemLabel(node) : labelText;
+
     return (
-        // @ts-ignore
+        // @ts-expect-error
         <TreeItemProvider {...props} ref={ref} itemId={itemId}>
             <TreeItemRoot
                 {...rootProps}
@@ -157,13 +168,16 @@ const TreeItem = React.forwardRef(function CustomTreeItem<T extends Record<strin
                                 </TreeItemIconContainer>
                             ))}
 
-                        {checkBoxProps.visible && (
+                        {/** biome-ignore lint/suspicious/noExplicitAny: blame Itay */}
+                        {(checkBoxProps as any).visible && (
                             <Box onClick={(e) => e.stopPropagation()}>
                                 <MeltaCheckbox {...checkBoxProps} sxChecked={{ width: '18px', height: '18px' }} />
                             </Box>
                         )}
 
-                        <LabelWithToolTip {...getLabelProps()} />
+                        <LabelWithToolTip {...getLabelProps()} tooltipTitle={labelText}>
+                            {labelNode}
+                        </LabelWithToolTip>
 
                         {additionalRowIcon}
 

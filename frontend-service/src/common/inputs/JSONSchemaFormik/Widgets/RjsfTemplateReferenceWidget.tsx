@@ -3,11 +3,12 @@ import { useFormikContext } from 'formik';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { IChildTemplateMap } from '../../../interfaces/childTemplates';
-import { IEntity } from '../../../interfaces/entities';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { EntityWizardValues } from '../../dialogs/entity';
-import TemplateEntitiesAutocomplete from '../TemplateEntitiesAutocomplete';
+import { IChildTemplateMap } from '../../../../interfaces/childTemplates';
+import { IEntity } from '../../../../interfaces/entities';
+import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import { useWorkspaceStore } from '../../../../stores/workspace';
+import { EntityWizardValues } from '../../../dialogs/entity';
+import TemplateEntitiesAutocomplete from '../../TemplateEntitiesAutocomplete';
 
 const RjsfTemplateReferenceWidget = ({
     id,
@@ -23,9 +24,16 @@ const RjsfTemplateReferenceWidget = ({
     uiSchema,
     formContext,
     placeholder,
+    options,
     ...widgetProps
 }: WidgetProps) => {
+    const { template } = options;
+    const properties = template.properties.properties;
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { twinTemplates } = workspace.metadata;
+
     const [inputValue, setInputValue] = useState<string>('');
+    const fieldName = Object.keys(properties).find((key) => properties[key].title === label);
 
     const { values } = useFormikContext();
 
@@ -51,6 +59,22 @@ const RjsfTemplateReferenceWidget = ({
 
     const noRelationPermission = !relatedEntityTemplate && !childTemplatesOfRelatedTemplate.length;
 
+    const sourceTransfer = properties[template.walletTransfer?.from];
+    const destTransfer = properties[template.walletTransfer?.to];
+
+    const isSourceWallet = sourceTransfer?.format === 'relationshipReference';
+    const isDestWallet = destTransfer?.format === 'relationshipReference';
+
+    const sourceWalletTemplateId = sourceTransfer?.relationshipReference?.relatedTemplateId;
+    const destWalletTemplateId = destTransfer?.relationshipReference?.relatedTemplateId;
+
+    const shouldLinkWallets =
+        template.walletTransfer &&
+        isSourceWallet &&
+        isDestWallet &&
+        twinTemplates.includes(sourceWalletTemplateId) &&
+        twinTemplates.includes(destWalletTemplateId);
+
     return (
         <TemplateEntitiesAutocomplete
             {...widgetProps}
@@ -68,6 +92,8 @@ const RjsfTemplateReferenceWidget = ({
             relationFilters={filters}
             required={required}
             isChildTemplate={!relatedEntityTemplate}
+            isSourceTransferKey={Boolean(template.walletTransfer?.from === fieldName)}
+            isTwinTransfer={Boolean(shouldLinkWallets && fieldName === template.walletTransfer.to)}
             currentEntity={(values as EntityWizardValues).properties}
             helperText={required && noRelationPermission ? i18next.t('templateEntitiesAutocomplete.noWritePermissions') : undefined}
         />

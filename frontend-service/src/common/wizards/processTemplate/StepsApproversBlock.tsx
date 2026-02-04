@@ -1,4 +1,3 @@
-/* eslint-disable react/no-array-index-key */
 import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { AccordionDetails, AccordionSummary, Box, FormControlLabel, Grid, Typography } from '@mui/material';
 import { FieldArray, FormikErrors } from 'formik';
@@ -53,7 +52,7 @@ const StepsApproversBlock: React.FC<
                                     ))}
                                 </Grid>
                                 {errorsOfStep?.reviewers === i18next.t('validation.oneField') && (
-                                    <div style={{ color: '#d32f2f', alignItems: 'center', justifyContent: 'center' }}>
+                                    <div style={{ color: 'error', alignItems: 'center', justifyContent: 'center' }}>
                                         {i18next.t('validation.oneStepApprover')}
                                     </div>
                                 )}

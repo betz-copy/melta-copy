@@ -1,5 +1,5 @@
 import { BadRequestError, Colors, IMetadata, IWorkspace } from '@microservices/shared';
-import mongoose from 'mongoose';
+import mongoose, { CallbackError } from 'mongoose';
 import config from '../../config';
 import { AllowedEmptyString } from '../../utils/mongoose';
 
@@ -46,12 +46,20 @@ const MetadataSchema = new mongoose.Schema<IMetadata>(
             sourceFieldForColor: { type: String },
         },
         numOfRelationshipFieldsToShow: { type: Number },
+        numOfPreviewFieldsToShow: { type: Number },
+        twinTemplates: { type: [String] },
     },
     { _id: false },
 );
 
 const ColorsSchema = new mongoose.Schema<IWorkspace['colors']>(
-    Object.values(Colors).reduce((acc, color) => ({ ...acc, [color]: { type: String, required: true } }), {}),
+    Object.values(Colors).reduce(
+        (acc, color) => {
+            acc[color] = { type: String, required: true };
+            return acc;
+        },
+        {} as Record<string, { type: StringConstructor; required: boolean }>,
+    ),
     { _id: false, versionKey: false },
 );
 
@@ -88,12 +96,12 @@ const WorkspacesSchema = new mongoose.Schema<IWorkspace>(
     { timestamps: true, versionKey: false },
 );
 
-const handleMongooseDuplicateKeyError = (error: any, _doc: mongoose.Document, next: any) => {
-    if (error.name === 'MongoServerError' && error.code === 11000) {
+type MongoError = CallbackError & { code?: number; name?: string };
+
+const handleMongooseDuplicateKeyError = (error: MongoError, _doc: mongoose.Document, next: (err?: MongoError) => void) => {
+    if (error.name === 'MongoServerError' && error.code === 11000)
         next(new BadRequestError('workspace with the same name already exists in this path'));
-    } else {
-        next(error);
-    }
+    else next(error);
 };
 
 WorkspacesSchema.post('save', handleMongooseDuplicateKeyError);

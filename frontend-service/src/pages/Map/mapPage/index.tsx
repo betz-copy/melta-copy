@@ -48,14 +48,12 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
 
     const viewerRef = useRef<CesiumComponentRef<Cesium.Viewer>>(null);
 
-    const [{ autoSearch, listFields, dirty }, setFilters] = useState<{
+    const [{ autoSearch, listFields }, setFilters] = useState<{
         autoSearch: string;
         listFields: Record<string, IFilterOfField['$in']>;
-        dirty: boolean;
     }>({
         autoSearch: '',
         listFields: {},
-        dirty: false,
     });
 
     const [shapeType, setShapeType] = useState<ShapeType | null>(null);
@@ -366,6 +364,8 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
 
         setSearchResults({ coordinates: [], polygons: [] });
         setFilterResult([]);
+
+        setSelectedEntity(null);
     };
 
     const onClear = () => {
@@ -373,7 +373,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
         setShapeType(null);
         setCameraFocus(null);
         setSearchShape({ circle: emptyCircle, polygon: [], line: [] });
-        setFilters({ autoSearch: '', listFields: {}, dirty: false });
+        setFilters({ autoSearch: '', listFields: {} });
         setSelectedEntity(null);
     };
 
@@ -487,7 +487,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                                     setCameraFocus(null);
                                 }}
                                 sourceTemplate={sourceTemplate}
-                                filters={{ value: { autoSearch, listFields, dirty }, set: setFilters }}
+                                filters={{ value: { autoSearch, listFields }, set: setFilters }}
                                 isSearchShape={isSearchShape}
                                 applyFilterWithShapeSearch={applyFilterWithShapeSearch}
                                 numOfViewedEntitiesText={i18next.t(`location.showingEntities${isSearchShape ? 'OfTotal' : 'Count'}`, {
@@ -506,23 +506,17 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                             >
                                 <MeltaTooltip title={i18next.t('location.circle')}>
                                     <ToggleButton value="circle">
-                                        <CircleIcon
-                                            sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#1E2775', borderRadius: 7 }}
-                                        />
+                                        <CircleIcon sx={{ width: '20px', height: '20px', color: theme.palette.primary.main, borderRadius: 7 }} />
                                     </ToggleButton>
                                 </MeltaTooltip>
                                 <MeltaTooltip title={i18next.t('location.searchByPolygon')}>
                                     <ToggleButton value="polygon">
-                                        <PolygonIcon
-                                            sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#1E2775', borderRadius: 7 }}
-                                        />
+                                        <PolygonIcon sx={{ width: '20px', height: '20px', color: theme.palette.primary.main, borderRadius: 7 }} />
                                     </ToggleButton>
                                 </MeltaTooltip>
                                 <MeltaTooltip title={i18next.t('location.line')}>
                                     <ToggleButton value="line">
-                                        <DistanceIcon
-                                            sx={{ width: '20px', height: '20px', color: darkMode ? '#9398c2' : '#1E2775', borderRadius: 7 }}
-                                        />
+                                        <DistanceIcon sx={{ width: '20px', height: '20px', color: theme.palette.primary.main, borderRadius: 7 }} />
                                     </ToggleButton>
                                 </MeltaTooltip>
                             </ToggleButtonGroup>

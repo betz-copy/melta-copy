@@ -139,12 +139,20 @@ InstancesRouter.post(
     InstanceManagerProxy,
 );
 
+InstancesRouter.post('/entities/printEntities/:id', InstancesValidatorMiddleware.validateUserCanReadEntityInstance, InstanceManagerProxy);
+
+InstancesRouter.post(
+    '/entities/templatesStructure/:id',
+    InstancesValidatorMiddleware.validateUserCanReadEntityInstance,
+    InstancesValidatorMiddleware.validateUserCanGetExpandedEntity,
+    InstanceManagerProxy,
+);
+
 InstancesRouter.post(
     '/entities',
     busboyMiddleware,
     ValidateRequest(createEntityInstanceSchema),
     InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
-    InstancesValidatorMiddleware.validateEntityProperties,
     InstancesControllerMiddleware.createEntityInstance,
 );
 
@@ -154,7 +162,6 @@ InstancesRouter.put(
     ValidateRequest(updateEntityInstanceSchema),
     InstancesValidatorMiddleware.validateUserCanWriteEntityInstance,
     InstancesValidatorMiddleware.validateUserCanIgnoreRules,
-    InstancesValidatorMiddleware.validateEntityProperties,
     InstancesControllerMiddleware.updateEntityInstance,
 );
 
@@ -163,7 +170,6 @@ InstancesRouter.post(
     busboyMiddleware,
     ValidateRequest(updateEntityInstanceSchema),
     InstancesValidatorMiddleware.validateUserCanWriteEntityInstance,
-    InstancesValidatorMiddleware.validateEntityProperties,
     InstancesControllerMiddleware.duplicateEntityInstance,
 );
 

@@ -7,16 +7,18 @@ import { Link } from 'wouter';
 import { IChildTemplateMap } from '../interfaces/childTemplates';
 import { IEntity } from '../interfaces/entities';
 import { IEntityTemplateMap } from '../interfaces/entityTemplates';
+import { IGetUnits } from '../interfaces/units';
 import { useUserStore } from '../stores/user';
 import { useWorkspaceStore } from '../stores/workspace';
 import { isEntityFitsToChildTemplate } from '../utils/childTemplates';
 import { getEntityTemplateColor } from '../utils/colors';
 import { locationConverterToString } from '../utils/map/convert';
 import { isWorkspaceAdmin } from '../utils/permissions/instancePermissions';
+import { getFirstXFilledPropsKeys } from '../utils/templates';
 import { ColoredEnumChip } from './ColoredEnumChip';
 import { CustomIcon } from './CustomIcon';
 import { EntityPropertiesInternal } from './EntityProperties';
-import { CoordinateSystem } from './inputs/JSONSchemaFormik/RjsfLocationWidget';
+import { CoordinateSystem } from './inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
 import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
 
 interface RelationshipReferenceViewProps {
@@ -37,6 +39,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
     const workspace = useWorkspaceStore((state) => state.workspace);
     const currentUser = useUserStore((state) => state.user);
     const currentUserKartoffelId = currentUser?.kartoffelId;
+    const { numOfPreviewFieldsToShow } = workspace.metadata;
 
     const { height, width } = workspace.metadata.iconSize;
     const queryClient = useQueryClient();
@@ -46,6 +49,8 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
     const allowedChildTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
     const childTemplatesOfRelatedTemplate =
         Array.from(allowedChildTemplates.values()).filter((child) => child.parentTemplate._id === relatedTemplateId) ?? [];
+
+    const units = queryClient.getQueryData<IGetUnits>('getUnits')!;
 
     const template = entityTemplates.get(relatedTemplateId);
     const relatedTemplate = template ?? childTemplatesOfRelatedTemplate[0]?.parentTemplate;
@@ -57,10 +62,12 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
             !template,
             entity,
             currentUserKartoffelId,
-            currentUser.currentUnits,
+            currentUser.usersUnitsWithInheritance,
             isWorkspaceAdmin(currentUser?.permissions?.[workspace._id]),
         ),
     );
+
+    const templateToInternal = React.useMemo(() => template ?? adjustedChildTemplate, [template, adjustedChildTemplate]);
 
     if (typeof entity === 'string' || typeof entity === 'number')
         return (
@@ -88,6 +95,9 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
         );
 
     const relationshipObjectToField = (): string => {
+        if (relatedTemplate?.properties.properties[relatedTemplateField].format === 'unitField')
+            return units.find((unit) => unit._id === entity.properties[relatedTemplateField])?.name ?? '';
+
         if (relatedTemplate?.properties.properties[relatedTemplateField].format === 'location') {
             return entity.properties[`${relatedTemplateField}_coordinateSystem`] === CoordinateSystem.UTM
                 ? (locationConverterToString(entity.properties[relatedTemplateField].location, CoordinateSystem.WGS84, CoordinateSystem.UTM) ?? '')
@@ -163,20 +173,26 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
                 }}
                 arrow
                 placement="top"
-                title={
-                    !relatedTemplate?.propertiesPreview.length ? (
+                title={(() => {
+                    if (!templateToInternal) {
+                        return <Typography color="#53566E">{i18next.t('templateEntitiesAutocomplete.noPreviewFields')}</Typography>;
+                    }
+
+                    const fieldsToShow = getFirstXFilledPropsKeys(numOfPreviewFieldsToShow, templateToInternal, entity);
+
+                    return !fieldsToShow.length ? (
                         <Typography color="#53566E">{i18next.t('templateEntitiesAutocomplete.noPreviewFields')}</Typography>
                     ) : (
                         <EntityPropertiesInternal
                             properties={entity.properties}
                             coloredFields={entity.coloredFields}
-                            entityTemplate={template ?? adjustedChildTemplate!}
-                            showPreviewPropertiesOnly
+                            entityTemplate={templateToInternal}
+                            overridePropertiesToShow={fieldsToShow}
                             mode="normal"
                             textWrap
                         />
-                    )
-                }
+                    );
+                })()}
             >
                 {!template ? (
                     chip

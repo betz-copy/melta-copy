@@ -1,43 +1,60 @@
-.e-timeline-month-view .e-date-header-wrap table col,
-.e-timeline-month-view .e-content-wrap table col {
-    width: 180px !important;
-}
-.e-timeline-month-view .e-appointment {
-    height: 50px !important;
-}
-
-.e-schedule-toolbar-container > .e-header-popup {
-    left: auto !important;
-}
-.e-more-popup-wrapper {
-    width: auto !important;
-}
-.e-appointment-details > div {
-    width: 100% !important;
-}
-div.e-indicator.e-icons {
-    width: fit-content !important;
-}
+/* ===============================
+   Base appointment styles FIRST
+   =============================== */
 
 .e-appointment {
-    border-radius: 8px !important;
-    opacity: 0.9 !important;
+    border-radius: 8px;
+    opacity: 0.9;
 }
+
 .e-appointment.e-appointment-border,
 .e-appointment:focus {
-    box-shadow: none !important;
-    filter: brightness(1.1) !important;
+    box-shadow: none;
+    filter: brightness(1.1);
+}
+
+/* ===============================
+   Timeline month view overrides
+   =============================== */
+
+.e-timeline-month-view .e-date-header-wrap table col,
+.e-timeline-month-view .e-content-wrap table col {
+    width: 180px;
+}
+
+.e-timeline-month-view .e-appointment {
+    height: 50px;
+}
+
+/* ===============================
+   Schedule layout tweaks
+   =============================== */
+
+.e-schedule-toolbar-container > .e-header-popup {
+    left: auto;
+}
+
+.e-more-popup-wrapper {
+    width: auto;
+}
+
+.e-appointment-details > div {
+    width: 100%;
+}
+
+div.e-indicator.e-icons {
+    width: fit-content;
 }
 
 .e-more-indicator {
-    background: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.35)) !important;
+    background: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.35));
 }
 
 .e-schedule .e-resource-tree-popup {
-    right: 0 !important;
-    width: 100% !important;
+    right: 0;
+    width: 100%;
 }
 
 .e-schedule-toolbar-container {
-    display: none !important;
+    display: none;
 }

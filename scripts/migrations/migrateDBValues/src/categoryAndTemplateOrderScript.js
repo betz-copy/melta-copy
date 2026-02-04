@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { ObjectId } from 'mongodb';
 import mongoose from 'mongoose';
 import config from './config/index.js';
@@ -113,7 +111,7 @@ const setCategoryAndTemplateOrder = async (dbList) => {
                         order: categoryIds,
                     });
                 } catch (error) {
-                    console.log(`Failed to create categoryOrder at workspace ${db.databaseName}`);
+                    console.error(`Failed to create categoryOrder at workspace ${db.databaseName}`, { error });
                 }
 
                 await Promise.all(
@@ -138,7 +136,9 @@ const main = async () => {
     } catch (error) {
         console.error('Error:', error);
     } finally {
-        mongoose.connections.forEach((conn) => conn.close());
+        mongoose.connections.forEach((conn) => {
+            conn.close();
+        });
     }
 };
 

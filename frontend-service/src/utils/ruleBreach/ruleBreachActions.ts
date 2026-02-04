@@ -1,4 +1,4 @@
-import isEqual from 'lodash.isequal';
+import { isEqual } from 'lodash';
 import { environment } from '../../globals';
 import { IEntity } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -134,21 +134,22 @@ export const getEntityForEntityInfo = (entity: IEntity | string | null, actions:
             },
         };
     }
-    const updatedProperties = actions.reduce(
-        (previousUpdatedProperties, currentAction) => {
-            if (
-                currentAction.actionType === ActionTypes.UpdateEntity &&
-                (currentAction.actionMetadata as IUpdateEntityMetadataPopulated).entity?.properties._id === (entity as IEntity).properties._id
-            ) {
-                return {
-                    ...previousUpdatedProperties,
-                    ...(currentAction.actionMetadata as IUpdateEntityMetadataPopulated).updatedFields,
-                };
+    // Start by cloning once
+    const updatedProperties = { ...(entity as IEntity).properties };
+
+    for (const action of actions) {
+        if (
+            action.actionType === ActionTypes.UpdateEntity &&
+            (action.actionMetadata as IUpdateEntityMetadataPopulated).entity?.properties._id === (entity as IEntity).properties._id
+        ) {
+            const updatedFields = (action.actionMetadata as IUpdateEntityMetadataPopulated).updatedFields;
+
+            // Merge updatedFields manually
+            for (const key in updatedFields) {
+                if (Object.hasOwn(updatedFields, key)) updatedProperties[key] = updatedFields[key];
             }
-            return previousUpdatedProperties;
-        },
-        (entity as IEntity).properties,
-    );
+        }
+    }
 
     return {
         templateId: (entity as IEntity).templateId,

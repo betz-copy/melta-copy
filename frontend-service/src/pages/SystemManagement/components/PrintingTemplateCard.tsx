@@ -3,39 +3,32 @@ import { Button, Divider, Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
+import { ICategoryMap } from '../../../interfaces/categories';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { IMongoPrintingTemplate } from '../../../interfaces/printingTemplates';
+import { useDarkModeStore } from '../../../stores/darkMode';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';
+import { IDeleteDialogState, IWizardDialogState } from './PrintingTemplatesRow';
+import { showProperty } from './RulesRow';
 
 interface PrintingTemplateCardProps {
     printingTemplate: IMongoPrintingTemplate;
-    setPrintingTemplateWizardDialogState: (
-        value: React.SetStateAction<{
-            isWizardOpen: boolean;
-            printingTemplate: IMongoPrintingTemplate | null;
-        }>,
-    ) => void;
-    setDeletePrintingTemplateDialogState: (
-        value: React.SetStateAction<{
-            isDialogOpen: boolean;
-            printingTemplateId: string | null;
-        }>,
-    ) => void;
+    setWizardDialog: (value: React.SetStateAction<IWizardDialogState>) => void;
+    setDeleteDialog: (value: React.SetStateAction<IDeleteDialogState>) => void;
 }
 
-export const PrintingTemplateCard: React.FC<PrintingTemplateCardProps> = ({
-    printingTemplate,
-    setPrintingTemplateWizardDialogState,
-    setDeletePrintingTemplateDialogState,
-}) => {
+export const PrintingTemplateCard: React.FC<PrintingTemplateCardProps> = ({ printingTemplate, setWizardDialog, setDeleteDialog }) => {
     const theme = useTheme();
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
     const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
     const [expandedEntities, setExpandedEntities] = useState<string[]>([]);
     const queryClient = useQueryClient();
-    const categoriesMap = queryClient.getQueryData<Map<string, any>>('getCategories');
-    const entityTemplatesMap = queryClient.getQueryData<Map<string, any>>('getEntityTemplates');
+    const categoriesMap = queryClient.getQueryData<ICategoryMap>('getCategories');
+    const entityTemplatesMap = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
 
     const workspace = useWorkspaceStore((state) => state.workspace);
 
@@ -45,14 +38,13 @@ export const PrintingTemplateCard: React.FC<PrintingTemplateCardProps> = ({
         return acc;
     }, {});
 
-    const toggleCategory = (e: React.MouseEvent, categoryId: string) => {
+    const onClick = (e: React.MouseEvent, toggleId: string, type: 'category' | 'entity' = 'category') => {
         e.stopPropagation();
-        setExpandedCategories((prev) => (prev.includes(categoryId) ? prev.filter((id) => id !== categoryId) : [...prev, categoryId]));
+        const updated = (prev: string[]) => (prev.includes(toggleId) ? prev.filter((id) => toggleId !== id) : [...prev, toggleId]);
+        type === 'category' ? setExpandedCategories(updated) : setExpandedEntities(updated);
     };
-    const toggleEntity = (e: React.MouseEvent, entityId: string) => {
-        e.stopPropagation();
-        setExpandedEntities((prev) => (prev.includes(entityId) ? prev.filter((id) => id !== entityId) : [...prev, entityId]));
-    };
+
+    const getPropValue = (key: string) => i18next.t(`booleanOptions.${printingTemplate[key] ? 'yes' : 'no'}`);
 
     return (
         <ViewingCard
@@ -88,10 +80,10 @@ export const PrintingTemplateCard: React.FC<PrintingTemplateCardProps> = ({
                                 <CardMenu
                                     onOptionsIconClose={() => setIsHoverOnCard(false)}
                                     onEditClick={() => {
-                                        setPrintingTemplateWizardDialogState({ isWizardOpen: true, printingTemplate });
+                                        setWizardDialog({ isOpen: true, printingTemplate });
                                     }}
                                     onDeleteClick={() => {
-                                        setDeletePrintingTemplateDialogState({ isDialogOpen: true, printingTemplateId: printingTemplate._id });
+                                        setDeleteDialog({ isOpen: true, printingTemplateId: printingTemplate._id });
                                     }}
                                 />
                             )}
@@ -108,12 +100,12 @@ export const PrintingTemplateCard: React.FC<PrintingTemplateCardProps> = ({
                         return (
                             <Grid key={categoryId} container direction="column">
                                 <Button
-                                    onClick={(e) => toggleCategory(e, categoryId)}
+                                    onClick={(e) => onClick(e, categoryId)}
                                     style={{
                                         justifyContent: 'flex-start',
                                         textTransform: 'none',
                                         fontWeight: 600,
-                                        fontSize: workspace?.metadata?.mainFontSizes?.headlineSubTitleFontSize || 16,
+                                        fontSize: workspace?.metadata?.mainFontSizes?.headlineSubTitleFontSize,
                                         color: theme.palette.primary.main,
                                         paddingLeft: 0,
                                     }}
@@ -130,7 +122,7 @@ export const PrintingTemplateCard: React.FC<PrintingTemplateCardProps> = ({
                                             return (
                                                 <Grid key={entityId} container direction="column">
                                                     <Button
-                                                        onClick={(e) => toggleEntity(e, entityId)}
+                                                        onClick={(e) => onClick(e, entityId, 'entity')}
                                                         style={{
                                                             justifyContent: 'flex-start',
                                                             textTransform: 'none',
@@ -172,21 +164,10 @@ export const PrintingTemplateCard: React.FC<PrintingTemplateCardProps> = ({
                     })}
                     <Divider style={{ width: '100%' }} />
                     <Grid container direction="column" gap="10px" color="textSecondary">
-                        <Typography fontSize="14px">
-                            {i18next.t('wizard.printingTemplate.compactView')}:
-                            {printingTemplate.compactView ? i18next.t('booleanOptions.yes') : i18next.t('booleanOptions.no')}
-                        </Typography>
-                        <Typography fontSize="14px">
-                            {i18next.t('wizard.printingTemplate.addEntityCheckbox')}:
-                            {printingTemplate.addEntityCheckbox ? i18next.t('booleanOptions.yes') : i18next.t('booleanOptions.no')}
-                        </Typography>
-                        <Typography fontSize="14px">
-                            {i18next.t('wizard.printingTemplate.appendSignatureField')}:
-                            {printingTemplate.appendSignatureField ? i18next.t('booleanOptions.yes') : i18next.t('booleanOptions.no')}
-                        </Typography>
-                        <Typography fontSize="14px">
-                            {i18next.t('entityPage.updatedAt')}: {new Date(printingTemplate.updatedAt).toLocaleDateString()}
-                        </Typography>
+                        {['addEntityCheckbox', 'appendSignatureField'].map((key) =>
+                            showProperty(i18next.t(`wizard.printingTemplate.${key}`), getPropValue(key), darkMode),
+                        )}
+                        {showProperty(i18next.t('entityPage.updatedAt'), new Date(printingTemplate.updatedAt).toLocaleDateString('en-GB'), darkMode)}
                     </Grid>
                 </Grid>
             }

@@ -166,7 +166,9 @@ const EntityTemplatesRow: React.FC = () => {
                     queryClient.invalidateQueries(searchEntityTemplatesQueryKey);
 
                     queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) => {
-                        childTemplates.forEach((template) => (childTemplateMap ?? new Map()).set(template._id, template));
+                        childTemplates.forEach((template) => {
+                            (childTemplateMap ?? new Map()).set(template._id, template);
+                        });
 
                         return new Map(childTemplateMap);
                     });
@@ -178,6 +180,7 @@ const EntityTemplatesRow: React.FC = () => {
                 if (!disabled && !isChild) toast.warn(i18next.t('childTemplate.enableChildren'));
             },
             onError: (err, { disabled, isChild }) => {
+                // biome-ignore lint/suspicious/noExplicitAny: error is any
                 if (((err as AxiosError).response?.data as any).message === 'Cannot enable child template under a disabled parent template')
                     toast.error(i18next.t('childTemplate.enableUnderDisabledParent'));
                 else if (disabled) toast.error(i18next.t(`${isChild ? 'child' : 'wizard.entity'}Template.failedToDisable`));
@@ -202,6 +205,7 @@ const EntityTemplatesRow: React.FC = () => {
                     const relationshipTemplates = await getAllRelationshipTemplatesRequest();
                     queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', mapTemplates(relationshipTemplates));
                 } catch (error) {
+                    console.error('Failed to update relationship templates after entity template deletion:', error);
                     toast.error(i18next.t('wizard.failedToUpdateSystemData'));
                 }
             },
@@ -264,7 +268,9 @@ const EntityTemplatesRow: React.FC = () => {
             onSuccess({ template: data, childTemplates }) {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
                 queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) => {
-                    childTemplates.forEach((child) => childTemplateMap!.set(child._id, child));
+                    childTemplates.forEach((child) => {
+                        childTemplateMap!.set(child._id, child);
+                    });
                     return childTemplateMap!;
                 });
 
@@ -359,6 +365,7 @@ const EntityTemplatesRow: React.FC = () => {
         }
     };
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         setCategoriesToShow(categoriesToShow.map((category) => categories.get(category._id)!));
     }, [categories]);
@@ -452,7 +459,6 @@ const EntityTemplatesRow: React.FC = () => {
                 handleClose={() => setEntityTemplateWizardDialogState({ isWizardOpen: false, entityTemplate: null })}
                 initialValues={entityTemplateObjectToEntityTemplateForm(entityTemplateWizardDialogState.entityTemplate, queryClient)}
                 isEditMode={Boolean(entityTemplateWizardDialogState.entityTemplate?._id)}
-                initialStep={entityTemplateWizardDialogState.entityTemplate?.category._id ? 1 : 0}
                 searchEntityTemplatesQueryKey={searchEntityTemplatesQueryKey}
             />
             <AreYouSureDialog
@@ -463,19 +469,23 @@ const EntityTemplatesRow: React.FC = () => {
                 onYes={handleDelete}
                 isLoading={deleteTemplateIsLoading}
             />
-            <CodeEditorDialog
-                open={addActionsToEntityTemplateDialogState.isWizardOpen}
-                handleClose={() => setAddActionsToEntityTemplateDialogState({ isWizardOpen: false, entityTemplate: null })}
-                templateItem={addActionsToEntityTemplateDialogState.entityTemplate}
-                searchText={searchText}
-                categoriesToShow={categoriesToShow}
-            />
-            <ChildTemplateDialog
-                open={addChildTemplateDialogState.isWizardOpen}
-                handleClose={() => setAddChildTemplateDialogState({ isWizardOpen: false, entityTemplate: null })}
-                entityTemplate={addChildTemplateDialogState.entityTemplate}
-                mutationProps={addChildTemplateDialogState.mutationProps}
-            />
+            {addActionsToEntityTemplateDialogState.entityTemplate && (
+                <CodeEditorDialog
+                    open={addActionsToEntityTemplateDialogState.isWizardOpen}
+                    handleClose={() => setAddActionsToEntityTemplateDialogState({ isWizardOpen: false, entityTemplate: null })}
+                    templateItem={addActionsToEntityTemplateDialogState.entityTemplate}
+                    searchText={searchText}
+                    categoriesToShow={categoriesToShow}
+                />
+            )}
+            {addChildTemplateDialogState.entityTemplate && addChildTemplateDialogState.mutationProps && (
+                <ChildTemplateDialog
+                    open={addChildTemplateDialogState.isWizardOpen}
+                    handleClose={() => setAddChildTemplateDialogState({ isWizardOpen: false, entityTemplate: null })}
+                    entityTemplate={addChildTemplateDialogState.entityTemplate}
+                    mutationProps={addChildTemplateDialogState.mutationProps}
+                />
+            )}
         </Grid>
     );
 };

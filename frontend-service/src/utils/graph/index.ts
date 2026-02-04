@@ -1,10 +1,8 @@
-/* eslint-disable no-param-reassign */
-import uniqBy from 'lodash.uniqby';
+import { uniqBy } from 'lodash';
 import { GraphData, LinkObject, NodeObject } from 'react-force-graph-2d';
-
 import { environment } from '../../globals';
 import { IChildTemplateMap } from '../../interfaces/childTemplates';
-import { IEntity, IEntityExpanded } from '../../interfaces/entities';
+import { IEntity, IEntityExpanded, IPropertyValue } from '../../interfaces/entities';
 import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { apiUrlToImageSource } from '../../services/storageService';
@@ -47,7 +45,7 @@ export const getSizeOfNodeByConnections = (nodeId: string, links: LinkObject[]) 
 };
 
 // this function is used to fixed weird behavior of the graph engine which is to populate the links to the real objects
-export const getFixedGraphLinks = (links: Record<string, any>[] | string[]): LinkObject[] => {
+export const getFixedGraphLinks = (links: Record<string, IPropertyValue>[] | string[]): LinkObject[] => {
     const fixedLinks = links.map((link) => {
         const { source, target, ...other } = link;
 

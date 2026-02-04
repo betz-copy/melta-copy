@@ -8,7 +8,7 @@ interface MeltaSwitchProps {
     checked: boolean;
     onChange: (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => void;
     disabled?: boolean;
-    overrideSx?: SxProps<any>;
+    overrideSx?: SxProps;
     onKeyDown?: (e: React.KeyboardEvent) => void;
 }
 

@@ -2,6 +2,7 @@ import { ListItemButton } from '@mui/material';
 import i18next from 'i18next';
 import React, { ReactNode, useEffect } from 'react';
 import { Link, useRoute } from 'wouter';
+import { SessionStorage } from '../../utils/sessionStorage';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import { StyledListItemText } from './NavBar.styled';
 import './NavButton.css';
@@ -29,7 +30,8 @@ const NavButton: React.FC<NavButtonProps> = ({
     onClick,
     extension,
 }) => {
-    const [isActive] = useRoute(to);
+    const route = to.startsWith('/category/') ? to.split('?')[0] : to;
+    const [isActive] = useRoute(route);
 
     useEffect(() => {
         if (isActive) onChangeToActive(isActive);
@@ -41,9 +43,7 @@ const NavButton: React.FC<NavButtonProps> = ({
             return;
         }
 
-        if (!isActive) {
-            sessionStorage.clear();
-        }
+        if (!isActive) SessionStorage.clearTableState();
 
         onClick?.();
     };

@@ -1,18 +1,31 @@
-/* eslint-disable no-param-reassign */
-
-import { IBaseUser, IRole, ISubCompactPermissions, IUser, IUserAgGridRequest, IUserPopulated, RelatedPermission } from '@microservices/shared';
-import { FilterQuery } from 'mongoose';
+import {
+    IBaseUser,
+    IMongoUnit,
+    IRole,
+    ISubCompactPermissions,
+    IUser,
+    IUserAgGridRequest,
+    IUserPopulated,
+    RelatedPermission,
+} from '@microservices/shared';
+import { FilterQuery, UpdateQuery } from 'mongoose';
 import { typedObjectEntries } from '../../utils';
 import { translateAgGridFilterModel, translateAgGridSortModel } from '../../utils/agGrid';
 import PermissionsManager from '../permissions/manager';
 import RolesManager from '../roles/manager';
+import UnitsManager from '../units/manager';
 import { UserDoesNotExistError } from './errors';
 import UsersModel from './model';
 
 class UsersManager {
-    static async getUserById(id: string, workspaceIds?: string[], withPermissions: boolean = true): Promise<IUser | Partial<IUser>> {
+    static async getUserById(
+        id: string,
+        workspaceIds?: string[],
+        withPermissions: boolean = true,
+        addInheritanceToUnits = true,
+    ): Promise<IUser | Partial<IUser>> {
         const baseUser = await UsersModel.findById(id).orFail(new UserDoesNotExistError(id)).lean().exec();
-        return withPermissions ? UsersManager.baseUserToUser(baseUser, workspaceIds) : baseUser;
+        return withPermissions ? UsersManager.baseUserToUser(baseUser, workspaceIds, { addInheritanceToUnits }) : baseUser;
     }
 
     static async getUserByExternalId(id: string, workspaceIds?: string[]): Promise<IUser> {
@@ -115,7 +128,7 @@ class UsersManager {
     }
 
     static async updateUser(id: string, updateData: Partial<IBaseUser>): Promise<IUser> {
-        const updateQuery: any = { ...updateData };
+        const updateQuery: UpdateQuery<IBaseUser> = { ...updateData };
 
         if (updateQuery.roleIds === null) {
             delete updateQuery.roleIds; // remove from $set
@@ -133,24 +146,39 @@ class UsersManager {
         );
     }
 
-    private static async baseUserToUser(user: IBaseUser, workspaceIds?: string[], populated?: boolean): Promise<IUser | IUserPopulated> {
+    private static async baseUserToUser(
+        user: IBaseUser,
+        workspaceIds?: string[],
+        options?: { populated?: boolean; addInheritanceToUnits?: boolean },
+    ): Promise<IUser | IUserPopulated> {
         const { roleIds, ...userWithoutRole } = user;
 
         const permissions = await PermissionsManager.getCompactPermissionsOfRelatedId(user._id, workspaceIds);
 
         let roles: string[] | IRole[] | undefined = roleIds;
-        if (populated && roleIds && roleIds?.length > 0) roles = await RolesManager.getRolesByIds(roleIds);
+        if (options?.populated && roleIds && roleIds?.length > 0) roles = await RolesManager.getRolesByIds(roleIds);
+
+        if (options?.addInheritanceToUnits && userWithoutRole.units && Object.keys(userWithoutRole.units).length) {
+            const units = await UnitsManager.getUnits({ workspaceIds });
+
+            userWithoutRole.units = Object.fromEntries(
+                Object.entries(userWithoutRole.units).map(([workspaceId, unitIds]) => [
+                    workspaceId,
+                    UsersManager.getUnitsWithInheritance(units, unitIds),
+                ]),
+            );
+        }
 
         return {
             ...userWithoutRole,
-            [populated ? 'roles' : 'roleIds']: roles,
+            [options?.populated ? 'roles' : 'roleIds']: roles,
             permissions,
             displayName: `${user.fullName} - ${user.hierarchy}/${user.jobTitle}`,
         };
     }
 
     private static async appendPermissionsToUsers(users: IBaseUser[], populated?: boolean): Promise<IUser[] | IUserPopulated[]> {
-        return Promise.all(users.map((user) => UsersManager.baseUserToUser(user, undefined, populated)));
+        return Promise.all(users.map((user) => UsersManager.baseUserToUser(user, undefined, { populated })));
     }
 
     static async searchUsersByPermissions(workspaceId: string, search?: string, pagination?: { step: number; limit: number }): Promise<IUser[]> {
@@ -194,6 +222,31 @@ class UsersManager {
         return UsersModel.find({ roleIds: { $in: [roleId] } })
             .lean()
             .exec();
+    }
+
+    /**
+     * Populate the children of the userUnitIds according to the unit array
+     * @param units the full array of the units
+     * @param userUnitIds the array of unit ids the user has permission to
+     * @returns ids of the units the user has permission to and their children.
+     */
+    static getUnitsWithInheritance(units: IMongoUnit[], userUnitIds: string[]) {
+        const userUnits = new Set(userUnitIds);
+        const unitsCopy = [...units];
+
+        for (const unitId of userUnits) {
+            // no walrus operator :(
+            while (true) {
+                const childIndex = unitsCopy.findIndex(({ parentId }) => String(parentId) === String(unitId));
+
+                if (childIndex === -1) break;
+
+                userUnits.add(unitsCopy[childIndex]._id);
+                unitsCopy.splice(childIndex, 1);
+            }
+        }
+
+        return Array.from(userUnits);
     }
 }
 

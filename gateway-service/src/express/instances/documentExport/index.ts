@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import { IEntity, IMongoEntityTemplatePopulated } from '@microservices/shared';
 import { load } from 'cheerio';
 import { ImageRun, IPatch, PatchType, patchDocument, TextRun } from 'docx';
@@ -288,7 +287,6 @@ export const patchDocumentAsStream = async (
         patchIterations += 1
     ) {
         patchedDocument = newPatchedDocument;
-        // eslint-disable-next-line no-await-in-loop
         newPatchedDocument = await patchDocument(patchedDocument, { patches, keepOriginalStyles: true });
     }
 

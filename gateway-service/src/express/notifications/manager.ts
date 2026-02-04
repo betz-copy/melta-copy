@@ -66,11 +66,13 @@ class NotificationsManager extends DefaultManagerProxy<NotificationService> {
         return this.populateNotifications(notifications, user.id);
     }
 
-    async getMyNotificationCount(user: Express.User, query: any): Promise<number> {
+    // biome-ignore lint/suspicious/noExplicitAny: query axios any
+    async getMyNotificationCount(user: Express.User, query: Record<string, any>): Promise<number> {
         return this.service.getNotificationCount({ ...query, viewerId: user.id });
     }
 
-    async getMyNotificationGroupCount(user: Express.User, query: any) {
+    // biome-ignore lint/suspicious/noExplicitAny: query axios any
+    async getMyNotificationGroupCount(user: Express.User, query: Record<string, any>) {
         return this.service.getNotificationGroupCount({ ...query, viewerId: user.id });
     }
 
@@ -79,7 +81,8 @@ class NotificationsManager extends DefaultManagerProxy<NotificationService> {
         return this.populateNotification(notification, user.id);
     }
 
-    async manyNotificationsSeen(user: Express.User, query: any): Promise<INotificationPopulated[]> {
+    // biome-ignore lint/suspicious/noExplicitAny: query axios any
+    async manyNotificationsSeen(user: Express.User, query: Record<string, any>): Promise<INotificationPopulated[]> {
         const notifications = await this.service.manyNotificationsSeen({ ...query, viewerId: user.id });
         return this.populateNotifications(notifications, user.id);
     }

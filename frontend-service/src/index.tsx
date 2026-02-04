@@ -17,7 +17,6 @@ import './utils/agGrid';
 import './utils/cesiumLicense';
 
 if (import.meta.hot) {
-    // eslint-disable-next-line no-console
     import.meta.hot.on('vite:beforeUpdate', () => console.clear());
 }
 
@@ -55,7 +54,7 @@ const Index: React.FC = () => {
                     newestOnTop
                 />
             </ThemeProvider>
-            <ReactQueryDevtools />
+            {import.meta.env.DEV && <ReactQueryDevtools />}
             <MuiXLicense />
         </QueryClientProvider>
     );

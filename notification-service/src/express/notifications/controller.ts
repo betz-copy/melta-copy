@@ -1,4 +1,4 @@
-import { DefaultController, INotification } from '@microservices/shared';
+import { DefaultController, IBasicNotificationQuery, INotification } from '@microservices/shared';
 import { Request, Response } from 'express';
 import { NotificationsManager } from './manager';
 
@@ -8,7 +8,7 @@ class NotificationsController extends DefaultController<INotification, Notificat
     }
 
     async getNotifications(req: Request, res: Response) {
-        const { limit, step, ...query } = req.query as any;
+        const { limit, step, ...query } = req.query as unknown as IBasicNotificationQuery & { limit: number; step: number };
 
         res.json(await this.manager.getNotifications(limit, step, query));
     }
@@ -25,7 +25,7 @@ class NotificationsController extends DefaultController<INotification, Notificat
 
     async getNotificationById(req: Request, res: Response) {
         const { notificationId } = req.params;
-        res.json(await this.manager.getNotificationById(notificationId));
+        res.json(await this.manager.getNotificationById(notificationId as string));
     }
 
     async createNotification(req: Request, res: Response) {
@@ -36,7 +36,7 @@ class NotificationsController extends DefaultController<INotification, Notificat
         const { notificationId } = req.params;
         const { viewerId } = req.body;
 
-        res.json(await this.manager.notificationSeen(notificationId, viewerId));
+        res.json(await this.manager.notificationSeen(notificationId as string, viewerId));
     }
 
     async manyNotificationSeen(req: Request, res: Response) {

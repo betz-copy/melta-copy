@@ -1,0 +1,234 @@
+services:
+  gateway-service:
+    build:
+      context: .
+      dockerfile: gateway-service/Dockerfile.dev
+      secrets:
+        - npm_token
+    volumes:
+      - ./gateway-service/src:/usr/src/app/gateway-service/src 
+      - logs:/usr/src/app/logs
+      - /usr/src/app/gateway-service/node_modules
+    ports:
+      - "8003:8000"
+    profiles:
+      - nodemon
+
+  activity-log-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.base.dev
+      args:
+        SERVICE_NAME: 'activity-log-service'
+    command: ['npm', 'run', 'dev:nodemon', '-w', 'activity-log-service']
+    profiles:
+      - nodemon
+    volumes:
+      - ./activity-log-service/src:/usr/src/app/activity-log-service/src 
+      - logs:/usr/src/app/logs
+      - /usr/src/app/activity-log-service/node_modules
+
+  user-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.base.dev
+      args:
+        SERVICE_NAME: 'user-service'
+    command: ['npm', 'run', 'dev:nodemon', '-w', 'user-service']
+    profiles:
+      - nodemon
+    volumes:
+      - ./user-service/src:/usr/src/app/user-service/src 
+      - logs:/usr/src/app/logs
+      - /usr/src/app/user-service/node_modules
+
+  storage-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.base.dev
+      args:
+        SERVICE_NAME: 'storage-service'
+    command: ['npm', 'run', 'dev:nodemon', '-w', 'storage-service']
+    profiles:
+      - nodemon
+    volumes:
+      - ./storage-service/src:/usr/src/app/storage-service/src 
+      - logs:/usr/src/app/logs
+      - /usr/src/app/storage-service/node_modules
+
+  template-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.base.dev
+      args:
+        SERVICE_NAME: 'template-service'
+    command: ['npm', 'run', 'dev:nodemon', '-w', 'template-service']
+    profiles:
+      - nodemon
+    volumes:
+      - ./template-service/src:/usr/src/app/template-service/src 
+      - logs:/usr/src/app/logs
+      - /usr/src/app/template-service/node_modules
+
+  instance-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.base.dev
+      args:
+        SERVICE_NAME: 'instance-service'
+    command: ['npm', 'run', 'dev:nodemon', '-w', 'instance-service']
+    profiles:
+      - nodemon
+    volumes:
+      - ./instance-service/src:/usr/src/app/instance-service/src 
+      - logs:/usr/src/app/logs
+      - /usr/src/app/instance-service/node_modules
+
+  global-search-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.base.dev
+      args:
+        SERVICE_NAME: 'global-search-service'
+    command: ['npm', 'run', 'dev:nodemon', '-w', 'global-search-service']
+    profiles:
+      - nodemon
+    volumes:
+      - ./global-search-service/src:/usr/src/app/global-search-service/src 
+      - logs:/usr/src/app/logs
+      - /usr/src/app/global-search-service/node_modules
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.base.dev
+      args:
+        SERVICE_NAME: 'notification-service'
+    command: ['npm', 'run', 'dev:nodemon', '-w', 'notification-service']
+    profiles:
+      - nodemon
+    volumes:
+      - ./notification-service/src:/usr/src/app/notification-service/src 
+      - logs:/usr/src/app/logs
+      - /usr/src/app/notification-service/node_modules
+
+  rule-breach-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.base.dev
+      args:
+        SERVICE_NAME: 'rule-breach-service'
+    command: ['npm', 'run', 'dev:nodemon', '-w', 'rule-breach-service']
+    profiles:
+      - nodemon
+    volumes:
+      - ./rule-breach-service/src:/usr/src/app/rule-breach-service/src 
+      - logs:/usr/src/app/logs
+      - /usr/src/app/rule-breach-service/node_modules
+
+  process-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.base.dev
+      args:
+        SERVICE_NAME: 'process-service'
+    command: ['npm', 'run', 'dev:nodemon', '-w', 'process-service']
+    profiles:
+      - nodemon
+    volumes:
+      - ./process-service/src:/usr/src/app/process-service/src 
+      - logs:/usr/src/app/logs
+      - /usr/src/app/process-service/node_modules
+
+  gantt-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.base.dev
+      args:
+        SERVICE_NAME: 'gantt-service'
+    command: ['npm', 'run', 'dev:nodemon', '-w', 'gantt-service']
+    profiles:
+      - nodemon
+    volumes:
+      - ./gantt-service/src:/usr/src/app/gantt-service/src 
+      - logs:/usr/src/app/logs
+      - /usr/src/app/gantt-service/node_modules
+
+  preview-service:
+    build:
+      context: .
+      dockerfile: ./preview-service/Dockerfile.dev
+      args:
+        SERVICE_NAME: 'preview-service'
+    command: ['npm', 'run', 'dev:nodemon', '-w', 'preview-service']
+    profiles:
+      - nodemon
+    volumes:
+      - ./preview-service/src:/usr/src/app/preview-service/src 
+      - logs:/usr/src/app/logs
+      - /usr/src/app/preview-service/node_modules
+
+  workspace-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.base.dev
+      args:
+        SERVICE_NAME: 'workspace-service'
+    command: ['npm', 'run', 'dev:nodemon', '-w', 'workspace-service']
+    profiles:
+      - nodemon
+    volumes:
+      - ./workspace-service/src:/usr/src/app/workspace-service/src 
+      - logs:/usr/src/app/logs
+      - /usr/src/app/workspace-service/node_modules
+
+  dashboard-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.base.dev
+      args:
+        SERVICE_NAME: 'dashboard-service'
+    command: ['npm', 'run', 'dev:nodemon', '-w', 'dashboard-service']
+    profiles:
+      - nodemon
+    volumes:
+      - ./dashboard-service/src:/usr/src/app/dashboard-service/src 
+      - logs:/usr/src/app/logs
+      - /usr/src/app/dashboard-service/node_modules
+
+  cron-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.base.dev
+      args:
+        SERVICE_NAME: 'cron-service'
+    command: ['npm', 'run', 'dev:nodemon', '-w', 'cron-service']
+    profiles:
+      - nodemon
+    volumes:
+      - ./cron-service/src:/usr/src/app/cron-service/src 
+      - logs:/usr/src/app/logs
+      - /usr/src/app/cron-service/node_modules
+
+  semantic-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.base.dev
+      args:
+        SERVICE_NAME: 'semantic-service'
+    command: ['npm', 'run', 'dev:nodemon', '-w', 'semantic-service']
+    profiles:
+      - nodemon
+    volumes:
+      - ./semantic-service/src:/usr/src/app/semantic-service/src 
+      - logs:/usr/src/app/logs
+      - /usr/src/app/semantic-service/node_modules
+
+  
+
+secrets:
+  npm_token:
+    file: ./npm_token_secret.txt
+
+volumes:
+  logs: {}

@@ -1,12 +1,11 @@
 import { ClientSession, connection } from 'mongoose';
 
-// eslint-disable-next-line import/prefer-default-export
-export const transaction = async <T, F extends (session: ClientSession) => Promise<T>>(func: F): Promise<T> => {
-    let ret;
+export const transaction = async <T, Func extends (session: ClientSession) => Promise<T>>(func: Func): Promise<T> => {
+    let ret: T | undefined;
 
     await connection.transaction(async (session) => {
         ret = await func(session);
     });
 
-    return ret;
+    return ret!;
 };

@@ -377,19 +377,19 @@ const RelationshipTemplatesRow: React.FC = () => {
                     {isSrcRelationChecked ? (
                         <Grid container flexWrap="nowrap">
                             <IconButton style={{ borderRadius: '5px' }}>
-                                <img src="/icons/checked-src-relation.svg" />
+                                <img src="/icons/checked-src-relation.svg" alt="checked-src-relation" />
                             </IconButton>
                             <IconButton style={{ borderRadius: '5px' }} onClick={() => setIsSrcRelationChecked(false)}>
-                                <img src="/icons/unchecked-dest-relation.svg" />
+                                <img src="/icons/unchecked-dest-relation.svg" alt="unchecked-dest-relation" />
                             </IconButton>
                         </Grid>
                     ) : (
                         <Grid container flexWrap="nowrap">
                             <IconButton style={{ borderRadius: '5px' }} onClick={() => setIsSrcRelationChecked(true)}>
-                                <img src="/icons/unchecked-src-relation.svg" />
+                                <img src="/icons/unchecked-src-relation.svg" alt="unchecked-src-relation" />
                             </IconButton>
                             <IconButton style={{ borderRadius: '5px' }}>
-                                <img src="/icons/checked-dest-relation.svg" />
+                                <img src="/icons/checked-dest-relation.svg" alt="checked-dest-relation" />
                             </IconButton>
                         </Grid>
                     )}
@@ -525,7 +525,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                 handleClose={() => setConvertToRelationshipFieldDialogState({ isDialogOpen: false, relationshipTemplate: null })}
                 onYes={({ fieldName, displayFieldName, relationshipReference }) =>
                     convertRelationshipToRelationShipFieldRequest({
-                        id: convertToRelationshipFieldDialogState.relationshipTemplate?._id!,
+                        id: convertToRelationshipFieldDialogState.relationshipTemplate?._id ?? '',
                         fieldName,
                         displayFieldName,
                         relationshipReference,

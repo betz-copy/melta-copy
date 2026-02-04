@@ -6,10 +6,13 @@ import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
-import { CustomDateTimePickerToolbar } from '../../common/inputs/JSONSchemaFormik/RjsfDatesWidgets';
+import { CustomDateTimePickerToolbar } from '../../common/inputs/JSONSchemaFormik/Widgets/RjsfDatesWidgets';
 import { environment } from '../../globals';
 
-const { dateTime, date: dateFormat } = environment.formats;
+const {
+    formats: { dateTime, date: dateFormat },
+    datePickerViews,
+} = environment;
 
 interface DateTimeCellEditorProps {
     value: string | Date | null;
@@ -28,7 +31,6 @@ const DateTimeCellEditor: React.FC<DateTimeCellEditorProps> = ({ value, onValueC
 
     const handleDateChange = (newValue: Date | null) => {
         setSelectedValue(newValue);
-        // eslint-disable-next-line no-nested-ternary
         onValueChange(newValue === null ? null : dateOrDateTime === 'date' ? format(newValue, 'yyyy-MM-dd') : newValue);
     };
 
@@ -36,7 +38,11 @@ const DateTimeCellEditor: React.FC<DateTimeCellEditorProps> = ({ value, onValueC
         <LocalizationProvider
             dateAdapter={AdapterDateFns}
             adapterLocale={he}
-            localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true }) as PickersLocaleText}
+            localeText={
+                i18next.t('muiDatePickersLocaleText', {
+                    returnObjects: true,
+                }) as PickersLocaleText
+            }
         >
             <FormControl fullWidth>
                 {dateOrDateTime === 'dateTime' ? (
@@ -46,7 +52,9 @@ const DateTimeCellEditor: React.FC<DateTimeCellEditorProps> = ({ value, onValueC
                         format={dateTime}
                         enableAccessibleFieldDOMStructure={false}
                         ampm={false}
-                        slots={{ toolbar: CustomDateTimePickerToolbar, textField: (params) => <TextField {...params} /> }}
+                        slots={{
+                            toolbar: CustomDateTimePickerToolbar,
+                        }}
                         slotProps={{
                             actionBar: { actions: ['clear', 'cancel', 'accept'] },
                             textField: { fullWidth: true },
@@ -58,6 +66,7 @@ const DateTimeCellEditor: React.FC<DateTimeCellEditorProps> = ({ value, onValueC
                         onChange={handleDateChange}
                         format={dateFormat}
                         enableAccessibleFieldDOMStructure={false}
+                        views={datePickerViews}
                         slots={{ toolbar: CustomDateTimePickerToolbar, textField: (params) => <TextField {...params} /> }}
                         slotProps={{
                             actionBar: { actions: ['clear', 'cancel', 'accept'] },

@@ -1,5 +1,3 @@
-/* eslint-disable no-param-reassign */
-
 // original code taken from https://codepen.io/iiSeptum/pen/qBZeLg
 
 /**
@@ -115,7 +113,7 @@ export const waterSimulation = () => {
             for (let xOff = -1; xOff < 2; xOff++) {
                 for (let yOff = -1; yOff < 2; yOff++) {
                     const cell = grid[(cellY + yOff) * numX + (cellX + xOff)];
-                    if (cell && cell.length) {
+                    if (cell?.length) {
                         for (let a = 0, l = cell.length; a < l; a++) {
                             const particle = cell.close[a];
                             if (particle !== this) {

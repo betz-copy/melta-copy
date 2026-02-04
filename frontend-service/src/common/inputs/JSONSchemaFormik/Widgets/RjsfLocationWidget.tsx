@@ -1,16 +1,16 @@
-import { Map } from '@mui/icons-material';
+import { Map as MapIcon } from '@mui/icons-material';
 import { Autocomplete, Box, Dialog, Grid, InputAdornment, TextField } from '@mui/material';
 import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import { Cartesian3 } from 'cesium';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
-import { environment } from '../../../globals';
-import { SplitBy } from '../../../interfaces/entities';
-import LocationField from '../../../pages/Map/LocationField';
-import { stringToCoordinates } from '../../../utils/map';
-import { extractUtmLocation, isValidUTM, isValidWGS84, locationConverterToString } from '../../../utils/map/convert';
-import MeltaTooltip from '../../MeltaDesigns/MeltaTooltip';
+import { environment } from '../../../../globals';
+import { SplitBy } from '../../../../interfaces/entities';
+import LocationField from '../../../../pages/Map/LocationField';
+import { stringToCoordinates } from '../../../../utils/map';
+import { extractUtmLocation, isValidUTM, isValidWGS84, locationConverterToString } from '../../../../utils/map/convert';
+import MeltaTooltip from '../../../MeltaDesigns/MeltaTooltip';
 
 const { polygonPrefix, polygonSuffix } = environment.map.polygon;
 
@@ -102,6 +102,7 @@ const RjsfLocationWidget = ({
     const [mapOpen, setMapOpen] = useState(false);
     const [newLocationValue, setNewLocationValue] = useState<string | undefined>('');
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         setNewLocationValue(getInitialLocation(value));
     }, []);
@@ -161,7 +162,7 @@ const RjsfLocationWidget = ({
                                             onClick={() => (error ? '' : setMapOpen(true))}
                                             style={{ cursor: 'pointer' }}
                                         >
-                                            <Map color={readonly || error ? 'disabled' : 'action'} />
+                                            <MapIcon color={readonly || error ? 'disabled' : 'action'} />
                                         </InputAdornment>
                                     ),
                                 },

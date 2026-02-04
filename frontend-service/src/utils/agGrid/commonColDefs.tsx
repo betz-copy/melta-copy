@@ -12,6 +12,7 @@ import {
 import { PriorityHigh } from '@mui/icons-material';
 import { Box, Grid, Tooltip, tooltipClasses } from '@mui/material';
 import i18next from 'i18next';
+import { isEmpty } from 'lodash';
 import { EntityWizardValues } from '../../common/dialogs/entity';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
@@ -29,7 +30,7 @@ import {
     IUsersNotFoundError,
     NotFoundErrorTypes,
 } from '../../interfaces/entities';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated, PropertyFormat } from '../../interfaces/entityTemplates';
 import { IError, IFailedEntity, IValidationError } from '../../interfaces/excel';
 import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
@@ -38,6 +39,7 @@ import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import { IGetUnits, IMongoUnit } from '../../interfaces/units';
 import { IUser, PermissionData } from '../../interfaces/users';
 import OpenMap from '../../pages/Map/OpenMap';
+import { PropertyWizardTypes } from '../../services/templates/entityTemplatesService';
 import { getDateWithoutTime, getLongDate } from '../date';
 import { getFileName } from '../getFileName';
 import { convertToPlainText } from '../HtmlTagsStringValue';
@@ -48,6 +50,8 @@ import OverflowWrapper from './OverflowWrapper';
 import RelationshipRefCellEditor from './RelationshipRefCellEditor';
 import SelectCellEditor from './SelectCellEditor';
 import { Value } from './Value';
+
+const { failed } = environment.color;
 
 type IColDefData = EntityData | IRuleBreachPopulated | PermissionData | IRuleBreachRequestPopulated | undefined;
 
@@ -61,6 +65,7 @@ const isPropertyInvalid = <Data extends IColDefData>(props: ICellRendererParams<
     if (!ignoreType || !hasErrors(props.data)) return undefined;
 
     return props.data.errors.find((error) => {
+        if (isEmpty(error.metadata)) return false;
         switch (error.type) {
             case ActionErrors.required:
                 return (error.metadata as IRequiredConstraint).property.split('.').filter(Boolean)[0] === property;
@@ -69,7 +74,7 @@ const isPropertyInvalid = <Data extends IColDefData>(props: ICellRendererParams<
                     (errorProperty) => errorProperty.split('.').filter(Boolean)[0] === property,
                 );
             case ActionErrors.validation:
-                return (error.metadata as IValidationError).path.split('/').filter(Boolean)[0] === property;
+                return (error.metadata as IValidationError)?.path.split('/').filter(Boolean)[0] === property;
             case ActionErrors.notFound: {
                 return (error.metadata as INotFoundError).property === property;
             }
@@ -115,11 +120,10 @@ const errorColDef = <Data extends IColDefData>(
                     propertyName: relatedIdentifier,
                 });
             } else if (errorMetadata.type === NotFoundErrorTypes.userNotFound) {
-                const { attemptedIds, type } = error.metadata as IUsersNotFoundError;
-                if (type === NotFoundErrorTypes.userNotFound)
-                    message = i18next.t(`wizard.entity.loadEntities.${attemptedIds.length > 1 ? 'usersNotFound' : 'userNotFound'}`, {
-                        attemptedIds: attemptedIds.join(','),
-                    });
+                const { attemptedIds } = errorMetadata as IUsersNotFoundError;
+                message = i18next.t(`wizard.entity.loadEntities.${attemptedIds.length > 1 ? 'usersNotFound' : 'userNotFound'}`, {
+                    attemptedIds: attemptedIds.join(','),
+                });
             }
             break;
         }
@@ -129,7 +133,7 @@ const errorColDef = <Data extends IColDefData>(
 
     return (
         <Box display="flex" justifyContent="center" alignItems="center" gap={1} width="100%">
-            <Value hideValue={false} value={props.value ?? i18next.t('validation.required')} enumColor="#A40000" />
+            <Value hideValue={false} value={props.value ?? i18next.t('validation.required')} enumColor={failed} />
             <Tooltip
                 title={message}
                 placement="top"
@@ -142,7 +146,7 @@ const errorColDef = <Data extends IColDefData>(
                                 backgroundColor: 'white',
                                 borderRadius: '10px',
                                 marginLeft: '5px',
-                                color: '#A40000',
+                                color: failed,
                                 fontWeight: 400,
                                 boxShadow: '0px 2.05px 6.16px 0px #00000040',
                             },
@@ -449,30 +453,41 @@ export const enumColDef = <Data extends EntityData>(
     searchValue: string | undefined = undefined,
     editable: (data: any) => boolean = () => false,
 ): ColDef => {
-    const filterParams: ISetFilterParams<Data, string | undefined> = {
-        suppressMiniFilter: true,
-        values: [...values, undefined],
+    const filterParams: ISetFilterParams<Data, string | null> = {
+        values: [...values, null],
+        suppressMiniFilter: false,
+        excelMode: 'windows',
+        applyMiniFilterWhileTyping: false,
+        ...({
+            suppressAddCurrentSelectionToFilter: true,
+            suppressSelectAll: false,
+            refreshValuesOnOpen: false,
+        } as Partial<ISetFilterParams<Data, string | null>>),
+        buttons: ['apply', 'reset'],
+        closeOnApply: false,
     };
 
     return {
         field,
         headerName: value.title,
         valueGetter,
-        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
+        filter: 'agSetColumnFilter',
+        filterParams,
+        cellRenderer: (props: ICellRendererParams<Data, string | null>) => {
             const error = isPropertyInvalid(props, field, ignoreType);
             if (error) return errorColDef(props, error, value);
+            const displayValue = props.value === null ? '' : props.value;
+
             return (
                 <Value
                     searchValue={searchValue}
                     hideValue={hideValue}
-                    value={props.value ?? ''}
-                    enumColor={(props.value && enumColorOptions?.[props.value]) ?? 'default'}
+                    value={displayValue ?? ''}
+                    enumColor={(displayValue && enumColorOptions?.[displayValue]) ?? 'default'}
                     color={getColor(props, field)}
                 />
             );
         },
-        filter: 'agSetColumnFilter',
-        filterParams,
         width: hardcodedWidth,
         flex: isLastColumn ? 1 : 0,
         hide: hideColumn,
@@ -480,8 +495,9 @@ export const enumColDef = <Data extends EntityData>(
         cellEditor: SelectCellEditor,
         cellEditorParams: {
             options: values,
-            multiple: false,
+            multiple: true,
             colorsOptions: enumColorOptions,
+            enableSearch: true,
         },
     };
 };
@@ -572,7 +588,7 @@ export const userColDef = <Data extends IUser>(
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, any | undefined>) => {
             const error = isPropertyInvalid(props, field, ignoreType);
-            if (error) return errorColDef(props, error, { ...value, format: 'user' });
+            if (error) return errorColDef(props, error, { ...value, format: PropertyFormat.user });
             if (!props.value) return '';
 
             if (ignoreType && !stringifiedJSONtoObj(props.value))
@@ -630,7 +646,7 @@ export const userArrayColDef = <Data extends IEntity>(
             if (error) {
                 const errorValue = Array.isArray(props.value) ? props.value.join(', ') : props.value;
 
-                return errorColDef({ ...props, value: errorValue }, error, { ...value, format: 'users' });
+                return errorColDef({ ...props, value: errorValue }, error, { ...value, format: PropertyWizardTypes.users as any });
             }
 
             if (!props.value) return '';
@@ -847,6 +863,7 @@ const getUnitField = (units: IGetUnits, unitId: string, property: keyof IGetUnit
 
 export const unitColDef = <Data extends IColDefData>(
     field: string,
+    valueGetter,
     value: Partial<IEntitySingleProperty>,
     units: IGetUnits,
     hardcodedWidth: number | undefined,
@@ -869,16 +886,15 @@ export const unitColDef = <Data extends IColDefData>(
 
     return {
         field,
-        valueGetter: ({ data }) => {
-            const value = data.properties[field];
-            return environment.objectIdRegex.test(value) ? getUnitField(units, value, 'name') : value;
-        },
+        valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
             const error = isPropertyInvalid(props, field, ignoreType);
             if (error) return errorColDef(props, error, value);
+            const cellValue = props.valueFormatted !== '' ? props.valueFormatted : props.value;
 
-            return <Value hideValue={hideValue} color={getColor(props, field)} value={props.value?.toString() ?? ''} searchValue={searchValue} />;
+            return <Value hideValue={hideValue} color={getColor(props, field)} value={cellValue ?? ''} searchValue={searchValue} />;
         },
+        valueFormatter: ({ value }) => getUnitField(units, value, 'name'),
         headerName: value.title,
         filter: 'agSetColumnFilter',
         filterParams,
@@ -886,7 +902,7 @@ export const unitColDef = <Data extends IColDefData>(
         flex: isLastColumn ? 1 : 0,
         hide: hideColumn,
         tooltipValueGetter: (params) => {
-            const path = getUnitField(units, params.data.properties[field], 'path');
+            const path = getUnitField(units, params.data?.properties?.[field], 'path');
             return path ? `${path}/` : '';
         },
         editable: false,
