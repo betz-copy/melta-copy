@@ -1,7 +1,9 @@
 import { Box, Typography } from '@mui/material';
 import { WidgetProps } from '@rjsf/utils';
+import i18next from 'i18next';
 import React from 'react';
 import MeltaCheckbox from '../../../MeltaDesigns/MeltaCheckbox';
+import { CleanViewRow, isCleanView } from './CleanView';
 
 const RjsfCheckboxWidget = ({
     id,
@@ -30,9 +32,18 @@ const RjsfCheckboxWidget = ({
         onChange(checked);
     };
 
+    if (isCleanView(readonly, formContext)) {
+        return (
+            <CleanViewRow
+                label={label || schema.title}
+                value={value ? i18next.t('booleanOptions.yes', { defaultValue: 'Yes' }) : i18next.t('booleanOptions.no', { defaultValue: 'No' })}
+            />
+        );
+    }
+
     return (
         <Box display="flex" alignItems="center">
-            <MeltaCheckbox {...textFieldProps} disabled={disabled} onChange={_onChange} checked={Boolean(value)} />
+            <MeltaCheckbox {...textFieldProps} disabled={disabled || readonly} onChange={_onChange} checked={!!value} />
             <Typography sx={{ color: '#9398C2' }}>{label}</Typography>
         </Box>
     );

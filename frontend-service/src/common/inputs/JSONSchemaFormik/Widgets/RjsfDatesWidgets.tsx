@@ -13,6 +13,7 @@ import { he } from 'date-fns/locale';
 import i18next from 'i18next';
 import React, { JSX } from 'react';
 import { environment } from '../../../../globals';
+import { CleanViewRow, isCleanView } from './CleanView';
 
 const {
     formats: { date, dateTime },
@@ -76,6 +77,12 @@ const getRjsfDateOrDateTimeWidget =
             return onChange(dateString);
         };
 
+        if (isCleanView(readonly, formContext)) {
+            const parsedDate = parseDefaultDate(value);
+            const cleanValue = parsedDate ? format(parsedDate, inputFormat) : undefined;
+            return <CleanViewRow label={label || schema.title} value={cleanValue} />;
+        }
+
         return (
             <LocalizationProvider
                 dateAdapter={AdapterDateFns}
@@ -88,6 +95,9 @@ const getRjsfDateOrDateTimeWidget =
                     enableAccessibleFieldDOMStructure={false}
                     {...(dateOrDateTime === 'date' && { views: datePickerViews })}
                     onChange={(val) => onChangeDateWidget(val)}
+                    slots={{
+                        openPickerIcon: readonly ? () => null : undefined,
+                    }}
                     slotProps={{
                         textField: {
                             ...textFieldProps,
@@ -100,6 +110,7 @@ const getRjsfDateOrDateTimeWidget =
                             onFocus: _onFocus,
                             error: !hideError && !!rawErrors.length,
                             InputLabelProps: { shrink: readonly || undefined },
+                            InputProps: { disableUnderline: readonly },
                             placeholder: defaultValue?.toString(),
                         },
                         actionBar: { actions: ['clear', 'cancel'] },
