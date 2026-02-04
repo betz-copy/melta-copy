@@ -14,8 +14,8 @@ export const useSearchParams = <T extends Record<string, string>>(defaultValue?:
             navigationLocation += `?${new URLSearchParams(params as T).toString()}`;
         }
 
-        navigate(navigationLocation, { replace: isDefault, state: window.history.state});
-      };
+        navigate(navigationLocation, { replace: isDefault, state: window.history.state });
+    };
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: set will re-render every time
     useEffect(() => {
