@@ -10,6 +10,7 @@ import { environment } from '../../../globals';
 import { IErrorResponse } from '../../../interfaces/error';
 import {
     EntityTemplateWizardValues,
+    emptyCategory,
     ICategoryMap,
     IChildTemplateMap,
     IEntityTemplateMap,
@@ -42,7 +43,7 @@ const defaultInitialValues: EntityTemplateWizardValues = {
     name: '',
     displayName: '',
     icon: undefined,
-    category: { displayName: '', name: '', _id: '', color: '', templatesOrder: [], createdAt: new Date(), updatedAt: new Date(), iconFileId: null },
+    category: emptyCategory,
     disabled: false,
     properties: [],
     archiveProperties: [],

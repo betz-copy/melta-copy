@@ -73,7 +73,7 @@ export const WalletTransfers = ({ templateId, connectionsTemplates, expandedEnti
     }, [entityTemplates, templateId]);
 
     const [isSelectDialogOpen, setIsSelectDialogOpen] = useState(false);
-    const [selectedTransferTemplate, setSelectedTransferTemplate] = useState<IMongoEntityTemplatePopulated | null>(null);
+    const [selectedTransferTemplate, setSelectedTransferTemplate] = useState<ITemplate | null>(null);
     const [externalErrors, setExternalErrors] = useState({ files: false, unique: {}, action: '' });
     const [createOrUpdateWithRuleBreachDialogState, setCreateOrUpdateWithRuleBreachDialogState] = useState<ICreateOrUpdateWithRuleBreachDialogState>({
         isOpen: false,
@@ -524,9 +524,9 @@ export const WalletTransfers = ({ templateId, connectionsTemplates, expandedEnti
                                             setSelectedTransferTemplate(null);
                                         },
                                     }}
-                                    entityTemplate={selectedTransferTemplate as ITemplate}
+                                    entityTemplate={selectedTransferTemplate}
                                     initialCurrValues={{
-                                        template: selectedTransferTemplate as ITemplate,
+                                        template: selectedTransferTemplate,
                                         properties: {
                                             ...getInitialProperties(selectedTransferTemplate),
                                             disabled: false,

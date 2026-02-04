@@ -54,7 +54,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
 
     const template = entityTemplates.get(relatedTemplateId);
     const relatedTemplate = template ?? childTemplatesOfRelatedTemplate[0]?.parentTemplate;
-    const entityTemplateColor = relatedTemplate ? getEntityTemplateColor(relatedTemplate as IMongoEntityTemplateWithConstraintsPopulated) : undefined;
+    const entityTemplateColor = relatedTemplate ? getEntityTemplateColor(relatedTemplate) : undefined;
 
     const adjustedChildTemplate = childTemplatesOfRelatedTemplate.find((child) =>
         isEntityFitsToChildTemplate(
