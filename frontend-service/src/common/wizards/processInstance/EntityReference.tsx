@@ -102,31 +102,32 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
                                         </Grid>
                                     </Grid>
                                     {!isDialogMode && (
-                                        <Grid container width="70px" justifyContent="space-between" flexWrap="nowrap">
+                                        <Grid container justifyContent="space-between" flexWrap="nowrap">
                                             <Grid>
                                                 <IconButton sx={{ width: '30px', height: '30px' }}>
                                                     <VisibilityIcon sx={{ color: '#1E2775' }} />
                                                 </IconButton>
                                             </Grid>
-                                            <Grid
-                                                onClick={(event) => {
-                                                    event.stopPropagation();
-                                                }}
-                                            >
-                                                <IconButton
-                                                    sx={{ width: '30px', height: '30px' }}
+                                            {editMode && (
+                                                <Grid
                                                     onClick={(event) => {
                                                         event.stopPropagation();
-                                                        setFieldValue(`entityReferences.${field}`, null);
-                                                    }}
-                                                    disabled={!editMode}
-                                                    onPointerDown={(e) => {
-                                                        e.stopPropagation();
                                                     }}
                                                 >
-                                                    <CloseIcon sx={{ color: '#1E2775' }} />
-                                                </IconButton>
-                                            </Grid>
+                                                    <IconButton
+                                                        sx={{ width: '30px', height: '30px' }}
+                                                        onClick={(event) => {
+                                                            event.stopPropagation();
+                                                            setFieldValue(`entityReferences.${field}`, null);
+                                                        }}
+                                                        onPointerDown={(e) => {
+                                                            e.stopPropagation();
+                                                        }}
+                                                    >
+                                                        <CloseIcon sx={{ color: '#1E2775' }} />
+                                                    </IconButton>
+                                                </Grid>
+                                            )}
                                         </Grid>
                                     )}
                                 </Grid>

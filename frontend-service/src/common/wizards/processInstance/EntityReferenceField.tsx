@@ -97,7 +97,7 @@ export const EntityReferenceField: React.FC<ChooseEntityReferenceProps> = ({
 
     const referencedEntityData = (values.entityReferences[field] as IReferencedEntityForProcess) ?? null;
 
-    const referencedEntityTemplate = entityTemplates.get(referencedEntityData.entity.templateId);
+    const referencedEntityTemplate = referencedEntityData?.entity?.templateId ? entityTemplates.get(referencedEntityData.entity.templateId) : null;
 
     const userHasPermissions = !referencedEntityData?.entityTemplate
         ? undefined
