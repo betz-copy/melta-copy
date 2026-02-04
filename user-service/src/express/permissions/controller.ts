@@ -6,7 +6,7 @@ class PermissionsController {
         const { relatedId } = req.params;
         const { workspaceIds, permissionType } = req.body;
 
-        res.json(await PermissionsManager.getCompactPermissionsOfRelatedId(relatedId, workspaceIds, permissionType));
+        res.json(await PermissionsManager.getCompactPermissionsOfRelatedId(relatedId as string, workspaceIds, permissionType));
     }
 
     static async syncCompactPermissions(req: Request, res: Response) {

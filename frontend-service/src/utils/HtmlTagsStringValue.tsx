@@ -27,7 +27,7 @@ export const renderHTML = (value: string) => {
     const linkifiedHtml = linkifyHtml(value, { target: '_blank' });
     const styledHtml = linkifiedHtml.replace(/<a /g, '<a style="color: #166BD4;" ');
     // biome-ignore lint/security/noDangerouslySetInnerHtml: blame Efrat
-    return <div dangerouslySetInnerHTML={{ __html: styledHtml }} />;
+    return <span dangerouslySetInnerHTML={{ __html: styledHtml }} />;
 };
 
 export const containsHTMLTags = (value: string) => /<[a-z][\s\S]*>/i.test(value);

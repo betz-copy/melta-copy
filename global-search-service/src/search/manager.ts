@@ -102,11 +102,11 @@ export default class Manager extends DefaultManagerNeo4j {
             Object.entries(template.properties.properties).map(async ([key, value]) => {
                 if (value.format === 'relationshipReference') {
                     const relatedTemplate = await this.templateManagerService.getEntityTemplateById(value.relationshipReference!.relatedTemplateId);
-                    this.getTemplatePropertiesIndex(relatedTemplate).forEach((innerProperty) =>
+                    this.getTemplatePropertiesIndex(relatedTemplate).forEach((innerProperty) => {
                         relationshipReferencesProperties.push(
                             `${key}.properties.${innerProperty}${config.neo4j.relationshipReferencePropertySuffix}`,
-                        ),
-                    );
+                        );
+                    });
                 }
             }),
         );
@@ -144,14 +144,18 @@ export default class Manager extends DefaultManagerNeo4j {
         const allTemplatesProperties = new Set<string>();
 
         templates.forEach((template) => {
-            this.getTemplatePropertiesIndex(template).forEach((property) => allTemplatesProperties.add(property));
+            this.getTemplatePropertiesIndex(template).forEach((property) => {
+                allTemplatesProperties.add(property);
+            });
         });
 
         await Promise.all(
             templates.map(async (template) => {
                 const relationshipReferencesProperties = await this.getRelationshipReferencesPropertiesIndex(template);
                 const userProperties = this.getUserPropertiesIndex(template);
-                [...relationshipReferencesProperties, ...userProperties].forEach((property) => allTemplatesProperties.add(property));
+                [...relationshipReferencesProperties, ...userProperties].forEach((property) => {
+                    allTemplatesProperties.add(property);
+                });
             }),
         );
 

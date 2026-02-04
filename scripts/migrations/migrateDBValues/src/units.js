@@ -100,7 +100,9 @@ const main = async () => {
     } catch (error) {
         console.error('Error:', error);
     } finally {
-        mongoose.connections.forEach((conn) => conn.close());
+        mongoose.connections.forEach((conn) => {
+            conn.close();
+        });
     }
 };
 

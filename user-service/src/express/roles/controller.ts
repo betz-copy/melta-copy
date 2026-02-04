@@ -3,7 +3,7 @@ import RolesManager from './manager';
 
 class RolesController {
     static async getRoleById(req: Request, res: Response) {
-        res.json(await RolesManager.getRoleById(req.params.id, req.body.workspaceIds));
+        res.json(await RolesManager.getRoleById(req.params.id as string, req.body.workspaceIds));
     }
 
     static async searchRoleIds(req: Request, res: Response) {
@@ -21,7 +21,7 @@ class RolesController {
     }
 
     static async updateRole(req: Request, res: Response) {
-        res.json(await RolesManager.updateRole(req.params.id, req.body));
+        res.json(await RolesManager.updateRole(req.params.id as string, req.body));
     }
 
     static async updateRolesBulk(req: Request, res: Response) {
@@ -29,7 +29,7 @@ class RolesController {
     }
 
     static async searchRolesByPermissions(req: Request, res: Response) {
-        res.json(await RolesManager.searchRolesByPermissions(req.params.workspaceId));
+        res.json(await RolesManager.searchRolesByPermissions(req.params.workspaceId as string));
     }
 
     static async getAllWorkspaceRoles(req: Request, res: Response) {
@@ -37,7 +37,7 @@ class RolesController {
     }
 
     static async getUserRolePerWorkspace(req: Request, res: Response) {
-        res.json(await RolesManager.getUserRolePerWorkspace(req.body.roleIds, req.params.workspaceId));
+        res.json(await RolesManager.getUserRolePerWorkspace(req.body.roleIds, req.params.workspaceId as string));
     }
 }
 

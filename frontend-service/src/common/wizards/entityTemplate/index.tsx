@@ -178,7 +178,9 @@ const EntityTemplateWizard: React.FC<
             onSuccess: async ({ template: data, childTemplates }) => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
                 queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) => {
-                    childTemplates.forEach((child) => childTemplateMap!.set(child._id, child));
+                    childTemplates.forEach((child) => {
+                        childTemplateMap!.set(child._id, child);
+                    });
                     return childTemplateMap!;
                 });
 

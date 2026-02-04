@@ -51,6 +51,7 @@ export interface IMetadata {
         sourceFieldForColor: string;
     };
     numOfRelationshipFieldsToShow: number;
+    numOfPreviewFieldsToShow: number;
     twinTemplates: string[];
     aiSummary: {
         enabled: boolean;

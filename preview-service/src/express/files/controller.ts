@@ -11,7 +11,7 @@ class FilesController extends DefaultController<FilesManager> {
         const { fileId } = req.params;
         const contentType = req.query.contentType as string;
 
-        const resultStream = await this.manager.getFilePreview(fileId, contentType);
+        const resultStream = await this.manager.getFilePreview(fileId as string, contentType);
 
         res.setHeader('Content-Type', 'application/pdf');
 

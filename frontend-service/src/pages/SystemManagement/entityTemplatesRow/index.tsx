@@ -166,7 +166,9 @@ const EntityTemplatesRow: React.FC = () => {
                     queryClient.invalidateQueries(searchEntityTemplatesQueryKey);
 
                     queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) => {
-                        childTemplates.forEach((template) => (childTemplateMap ?? new Map()).set(template._id, template));
+                        childTemplates.forEach((template) => {
+                            (childTemplateMap ?? new Map()).set(template._id, template);
+                        });
 
                         return new Map(childTemplateMap);
                     });
@@ -266,7 +268,9 @@ const EntityTemplatesRow: React.FC = () => {
             onSuccess({ template: data, childTemplates }) {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
                 queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) => {
-                    childTemplates.forEach((child) => childTemplateMap!.set(child._id, child));
+                    childTemplates.forEach((child) => {
+                        childTemplateMap!.set(child._id, child);
+                    });
                     return childTemplateMap!;
                 });
 

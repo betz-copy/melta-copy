@@ -493,11 +493,15 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
                 limit: config.instanceService.searchEntitiesFlowMaxLimit,
             });
 
-            userIdsWithPermission.forEach((userId) => reviewersIds.add(userId));
+            userIdsWithPermission.forEach((userId) => {
+                reviewersIds.add(userId);
+            });
         }
 
         steps.forEach(({ reviewers }) => {
-            reviewers.forEach(({ _id }) => reviewersIds.add(_id));
+            reviewers.forEach(({ _id }) => {
+                reviewersIds.add(_id);
+            });
         });
 
         return Array.from(reviewersIds);

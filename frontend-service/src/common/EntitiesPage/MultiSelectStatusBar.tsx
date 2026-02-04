@@ -196,7 +196,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({
 
             const relatedTemplateIds = Object.values(template.properties.properties)
                 .filter((value) => value?.format === 'relationshipReference')
-                .map((value) => value.relationshipReference?.relatedTemplateId!);
+                .map((value) => value.relationshipReference?.relatedTemplateId ?? '');
 
             setUpdatedTemplateIds?.(relatedTemplateIds);
         }

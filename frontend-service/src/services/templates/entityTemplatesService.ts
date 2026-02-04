@@ -437,7 +437,6 @@ const processStandardProperty = (
         propertiesOrder: string[];
         propertiesPreview: string[];
         mapSearchProperties: string[];
-        serialsUniqueConstraints: string[];
         enumPropertiesColors: IEntityTemplate['enumPropertiesColors'] | undefined;
     },
     isEditMode: boolean,
@@ -455,7 +454,6 @@ const processStandardProperty = (
     if (property.hide) schema.hide.push(property.name);
     if (property.preview) state.propertiesPreview.push(property.name);
     if (property.mapSearch) state.mapSearchProperties.push(property.name);
-    if (property.type === 'serialNumber') state.serialsUniqueConstraints.push(property.name);
 
     state.enumPropertiesColors = collectEnumColors(property, state.enumPropertiesColors);
 };
@@ -498,7 +496,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         ...restOfProperties
     } = values;
 
-    const serialsUniqueConstraints: string[] = [];
     const propertiesOrder: string[] = [];
     const attachmentPropertiesOrder: string[] = [];
     const propertiesPreview: string[] = [];
@@ -523,21 +520,19 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         propertiesOrder,
         propertiesPreview,
         mapSearchProperties,
-        serialsUniqueConstraints,
         enumPropertiesColors,
     };
 
-    extractProps.forEach((property) => processStandardProperty(property, extractProps, schema, state, isEditMode, queryClient));
-    extractArchiveProps.forEach((property) => processStandardProperty(property, extractProps, schema, state, isEditMode, queryClient));
+    extractProps.forEach((property) => {
+        processStandardProperty(property, extractProps, schema, state, isEditMode, queryClient);
+    });
+    extractArchiveProps.forEach((property) => {
+        processStandardProperty(property, extractProps, schema, state, isEditMode, queryClient);
+    });
 
-    extractAttachmentProps.forEach((property) =>
-        processAttachmentProperty(property, extractAttachmentProps, schema, attachmentPropertiesOrder, isEditMode),
-    );
-
-    const serialUniqueConstraints = serialsUniqueConstraints.map((serial) => ({
-        groupName: '',
-        properties: [serial],
-    }));
+    extractAttachmentProps.forEach((property) => {
+        processAttachmentProperty(property, extractAttachmentProps, schema, attachmentPropertiesOrder, isEditMode);
+    });
 
     enumPropertiesColors = state.enumPropertiesColors;
 
@@ -552,7 +547,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         propertiesTypeOrder,
         propertiesPreview,
         enumPropertiesColors,
-        uniqueConstraints: [...(restOfProperties.uniqueConstraints ?? []), ...serialUniqueConstraints],
+        uniqueConstraints: restOfProperties.uniqueConstraints ?? [],
         mapSearchProperties,
         fieldGroups: updatedFieldGroups,
         walletTransfer: walletTransfer
@@ -584,7 +579,11 @@ const appendEntityTemplateFormData = (
         else if (original.icon.file?.name) formData.append('iconFileId', original.icon.file.name);
     }
 
-    original?.documentTemplatesIds?.filter((item): item is File => item instanceof File).forEach((file) => formData.append('files', file));
+    original?.documentTemplatesIds
+        ?.filter((item): item is File => item instanceof File)
+        .forEach((file) => {
+            formData.append('files', file);
+        });
 
     const docTemplateIds = original?.documentTemplatesIds?.filter(isStringOrNamedObject).map((item) => (typeof item === 'string' ? item : item.name));
 

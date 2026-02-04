@@ -1,4 +1,4 @@
-import {
+import type {
     BodyScrollEvent,
     CellClickedEvent,
     CellEditingStoppedEvent,
@@ -21,25 +21,26 @@ import {
 } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
 import { Box, CircularProgress, debounce } from '@mui/material';
-import { AxiosError } from 'axios';
+import type { AxiosError } from 'axios';
 import i18next from 'i18next';
 import { isEqual, pickBy, sortBy } from 'lodash';
-import React, { ForwardedRef, forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import type React from 'react';
+import { type ForwardedRef, forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import '../../css/resizeTable.css';
 import '../../css/table.css';
 import { environment } from '../../globals';
-import { IChildTemplateMap, IChildTemplatePopulated, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { EntityData, IDeleteEntityBody, IEntity, IEntityExpanded, ISearchFilter, IUniqueConstraint } from '../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IErrorResponse } from '../../interfaces/error';
-import { IRelationship } from '../../interfaces/relationships';
-import { ActionTypes, IAction, IActionPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
-import { IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
-import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
-import { IGetUnits } from '../../interfaces/units';
+import type { IChildTemplateMap, IChildTemplatePopulated, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
+import type { EntityData, IDeleteEntityBody, IEntity, IEntityExpanded, ISearchFilter, IUniqueConstraint } from '../../interfaces/entities';
+import type { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import type { IErrorResponse } from '../../interfaces/error';
+import type { IRelationship } from '../../interfaces/relationships';
+import { ActionTypes, type IAction, type IActionPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
+import type { IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
+import type { ISemanticSearchResult } from '../../interfaces/semanticSearch';
+import type { IGetUnits } from '../../interfaces/units';
 import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { searchEntitiesOfTemplateClientSideRequest } from '../../services/clientSideService';
 import {
@@ -55,18 +56,18 @@ import { useWorkspaceStore } from '../../stores/workspace';
 import { agGridLocaleText } from '../../utils/agGrid/agGridLocaleText';
 import { agGridToSearchEntitiesOfTemplateRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
-import { IAGGridRequest } from '../../utils/agGrid/interfaces';
+import type { IAGGridRequest } from '../../utils/agGrid/interfaces';
 import useDeepCompareMemo from '../../utils/hooks/useDeepCompareMemo';
 import { LocalStorage } from '../../utils/localStorage';
 import { isChildTemplate } from '../../utils/templates';
 import { tryCatch } from '../../utils/tryCatch';
 import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
-import { EntityWizardValues } from '../dialogs/entity';
+import type { EntityWizardValues } from '../dialogs/entity';
 import { MultiSelectStatusBar } from '../EntitiesPage/MultiSelectStatusBar';
 import { ResizeBox } from '../EntitiesPage/ResizeBox';
 import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
 import { ErrorToast } from '../ErrorToast';
-import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
+import { getColumnDefs, type IGetColumnDefsOptions } from './getColumnDefs';
 
 const { errorCodes } = environment;
 const { cacheBlockSize, maxConcurrentDatasourceRequests, actionPrefix, actionsWidth, rowCountInfiniteModeWithoutExpand } = environment.agGrid;
@@ -133,7 +134,10 @@ export const getDatasource = <Data extends EntityData>(
                 return;
             }
 
-            const agGridRequest = { ...params.request, filterModel: { ...params.request.filterModel } };
+            const agGridRequest = {
+                ...params.request,
+                filterModel: { ...params.request.filterModel },
+            };
 
             const { result: data, err } = await tryCatch(() =>
                 pageType === 'client-side'
@@ -141,7 +145,10 @@ export const getDatasource = <Data extends EntityData>(
                           parentTemplateId,
                           clientSideUserEntityId!,
                           agGridToSearchEntitiesOfTemplateRequest(
-                              { ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest,
+                              {
+                                  ...agGridRequest,
+                                  quickFilter: quickFilterText,
+                              } as IAGGridRequest,
                               template,
                               // tableCount, // comment out  waiting for Itay
                               defaultFilter,
@@ -149,7 +156,10 @@ export const getDatasource = <Data extends EntityData>(
                       )
                     : searchEntitiesOfTemplateRequest(parentTemplateId, {
                           ...agGridToSearchEntitiesOfTemplateRequest(
-                              { ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest,
+                              {
+                                  ...agGridRequest,
+                                  quickFilter: quickFilterText,
+                              } as IAGGridRequest,
                               template,
                               // tableCount, // comment out  waiting for Itay
                               defaultFilter,
@@ -227,7 +237,9 @@ export const getRowModelProps = <Data extends EntityData>(
 const LoadingCellRenderer = () => <CircularProgress size={20} sx={{ marginLeft: 1 }} />;
 
 export type EntitiesTableOfTemplateProps<Data> = {
-    template: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) & { entitiesWithFiles?: ISemanticSearchResult[string] };
+    template: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) & {
+        entitiesWithFiles?: ISemanticSearchResult[string];
+    };
     entities?: Data[];
     onRowSelected?: (data: Data) => void;
     showNavigateToRowButton: boolean;
@@ -580,7 +592,7 @@ const EntitiesTableOfTemplate = forwardRef(
 
         const calculateRemainingWidth = (columnStates: ColumnState[], hasActions: boolean, isRemovedFields: boolean): number => {
             const usedWidth: number = isRemovedFields ? 0 : Object.values(defaultColumnWidths).reduce((sum, width) => sum + width, 0);
-            const totalGridWidth: number = tableRef.current?.offsetWidth!;
+            const totalGridWidth: number = tableRef.current?.offsetWidth ?? 0;
             const widthConsumed: number = columnStates.reduce((sum, col) => sum + col.width!, 0);
             return totalGridWidth - usedWidth - widthConsumed - (hasActions ? actionsWidth : 0);
         };
@@ -619,7 +631,12 @@ const EntitiesTableOfTemplate = forwardRef(
                 { [`${actionPrefix}${template._id}`]: 200 },
             );
 
-            api.setColumnWidths(Object.entries(columnsWidth).map(([key, newWidth]) => ({ key, newWidth })));
+            api.setColumnWidths(
+                Object.entries(columnsWidth).map(([key, newWidth]) => ({
+                    key,
+                    newWidth,
+                })),
+            );
 
             if (Object.keys(columnsWidth).length) {
                 const updatedWidths = isRemovedFields ? columnsWidth : { ...defaultColumnWidths, ...columnsWidth };
@@ -703,7 +720,9 @@ const EntitiesTableOfTemplate = forwardRef(
 
         useImperativeHandle(ref, () => ({
             getExcelData() {
-                return gridRef.current?.api.getSheetDataForExcel({ sheetName: template.displayName });
+                return gridRef.current?.api.getSheetDataForExcel({
+                    sheetName: template.displayName,
+                });
             },
             resetFilter() {
                 gridRef.current?.api.setFilterModel(defaultFilterModel);
@@ -736,7 +755,10 @@ const EntitiesTableOfTemplate = forwardRef(
             scrollIntoView() {
                 if (!tableRef.current) return;
                 const ro = new ResizeObserver((_el, observer) => {
-                    tableRef.current!.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    tableRef.current!.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'end',
+                    });
                     observer.disconnect();
                 });
                 ro.observe(tableRef.current);
@@ -906,7 +928,7 @@ const EntitiesTableOfTemplate = forwardRef(
                         defaultColDef={{
                             filterParams: {
                                 maxNumConditions: 1,
-                                buttons: ['reset'],
+                                buttons: ['reset', 'apply'],
                             },
                             sortable: true,
                             menuTabs: ['filterMenuTab'],
@@ -1000,7 +1022,10 @@ const EntitiesTableOfTemplate = forwardRef(
                                 ...params.data?.properties,
                                 [params.column.getColId()]: isEmpty ? (isRequired || isEmptyArray ? undefined : '') : params.newValue,
                             };
-                            setCurrEntity({ templateId: template._id, properties: params.data?.properties });
+                            setCurrEntity({
+                                templateId: template._id,
+                                properties: params.data?.properties,
+                            });
 
                             const properties = { properties: updatedProperties };
                             gridRef.current?.api.forEachNode((rowNode) => {
@@ -1072,5 +1097,7 @@ const EntitiesTableOfTemplate = forwardRef(
 );
 
 export default EntitiesTableOfTemplate as <Data = EntityData>(
-    props: EntitiesTableOfTemplateProps<Data> & { ref?: ForwardedRef<EntitiesTableOfTemplateRef<Data>> },
+    props: EntitiesTableOfTemplateProps<Data> & {
+        ref?: ForwardedRef<EntitiesTableOfTemplateRef<Data>>;
+    },
 ) => ReturnType<typeof EntitiesTableOfTemplate>;
