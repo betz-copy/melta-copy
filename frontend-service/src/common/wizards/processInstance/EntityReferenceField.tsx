@@ -34,6 +34,7 @@ import { ProcessDetailsValues } from './ProcessDetails';
 import OpenEntityReference from './ProcessDetails/OpenEntityReference';
 import { ProcessStepValues } from './ProcessSteps';
 import UnknownEntityCard from './UnknownEntityCard';
+import { environment } from '../../../globals';
 
 type ProcessFormikProps = ProcessStepValues | ProcessDetailsValues;
 interface ChooseEntityReferenceProps {
@@ -52,7 +53,7 @@ interface ChooseEntityReferenceProps {
 const CardFieldName = styled(Typography)(({ theme }) => ({
     top: '8px',
     left: '20px',
-    hight: '3px',
+    height: '3px',
     position: 'relative',
     width: 'fit-content',
     fontSize: '11px',
@@ -90,11 +91,13 @@ export const EntityReferenceField: React.FC<ChooseEntityReferenceProps> = ({
             )
             .filter((entity) => !entity.disabled);
     }, [entityTemplates, currentUser.currentWorkspacePermissions]);
-
-    const [isChooseTemplateOpen, setIsChooseTemplateOpen] = useState<boolean>(false);
-    const [isChooseExistEntityOpen, setIsChooseExistEntityOpen] = useState<boolean>(false);
+    
+    type Mode = 'idle' | 'chooseTemplate' | 'chooseEntity'; 
+    const [chooseMode, setChooseMode] = useState<Mode>('idle'); 
 
     const referencedEntityData = (values.entityReferences[field] as IReferencedEntityForProcess) ?? null;
+
+    const referencedEntityTemplate = entityTemplates.get(referencedEntityData.entity.templateId)
 
     const userHasPermissions = !referencedEntityData?.entityTemplate
         ? undefined
@@ -105,15 +108,12 @@ export const EntityReferenceField: React.FC<ChooseEntityReferenceProps> = ({
               PermissionScope.read,
           );
 
-    const disabled = !referencedEntityData?.entityTemplate || userHasPermissions === false;
+    const canCreateEntity = Boolean(referencedEntityData?.entityTemplate) && userHasPermissions === true;
 
-    const handleRemoveEntity = (event) => {
-        setTimeout(() => {
-            setIsChooseTemplateOpen(false);
-            setFieldValue(`entityReferences.${field}`, null);
-            setFieldValue(`entityReferences.${field}.entityTemplate`, null);
-            handleBlur(`entityReferences.${field}`)(event);
-        }, 500);
+    const handleRemoveEntity = (event: React.MouseEvent) => {
+        setChooseMode('idle');
+        setFieldValue(`entityReferences.${field}`, null);
+        handleBlur(`entityReferences.${field}`)(event);
     };
 
     if (typeof values.entityReferences[field] === 'string') {
@@ -140,7 +140,7 @@ export const EntityReferenceField: React.FC<ChooseEntityReferenceProps> = ({
 
     return (
         <Grid paddingBottom={2} height="100%">
-            <Typography color="#9398C2" fontSize="14px">
+            <Typography color={environment.entityReferenceField.titleColor} fontSize="14px">
                 {title}
             </Typography>
             <Collapse
@@ -150,18 +150,18 @@ export const EntityReferenceField: React.FC<ChooseEntityReferenceProps> = ({
                 unmountOnExit
                 ref={ref}
             >
-                {!isChooseTemplateOpen && (
+                {chooseMode !== 'chooseTemplate' && (
                     <Button
                         onClick={() => {
-                            setIsChooseTemplateOpen(true);
+                            setChooseMode('chooseTemplate');
                         }}
                         startIcon={<AddIcon style={{ fontSize: '25px' }} />}
                         size="large"
                     >
-                        <Typography fontSize="15px">{i18next.t('processInstancesPage.entityToRef')}</Typography>
+                        <Typography variant='body1'>{i18next.t('processInstancesPage.entityToRef')}</Typography>
                     </Button>
                 )}
-                {isChooseTemplateOpen && (
+                {chooseMode === 'chooseTemplate' && (
                     <Grid
                         container
                         width="100%"
@@ -200,38 +200,38 @@ export const EntityReferenceField: React.FC<ChooseEntityReferenceProps> = ({
                                 <Grid>
                                     <Button
                                         onClick={() => {
-                                            setIsChooseExistEntityOpen(true);
+                                            setChooseMode('chooseEntity');
                                         }}
                                         variant="text"
                                         size="medium"
-                                        sx={{ backgroundColor: '#EBEFFA', paddingX: '20px', borderRadius: '7px' }}
+                                        sx={{ backgroundColor: environment.entityReferenceField.backgroundColor, paddingX: '20px', borderRadius: '7px' }}
                                     >
-                                        <Typography fontSize="15px" color="#1E2775">
+                                        <Typography variant='body1' color={environment.entityReferenceField.textColor}>
                                             {i18next.t('processInstancesPage.chooseEntityRef')}
                                         </Typography>
                                     </Button>
                                 </Grid>
                                 <Grid>
-                                    <Typography color="#9398C2" fontSize="15px">
+                                    <Typography variant='body1' color={environment.entityReferenceField.titleColor}>
                                         {i18next.t('input.imagePicker.or')}
                                     </Typography>
                                 </Grid>
                                 <Grid>
                                     <AddEntityButton
                                         initialStep={1}
-                                        disabled={disabled}
+                                        disabled={!canCreateEntity}
                                         popoverText=""
                                         initialValues={{
                                             template: referencedEntityData?.entityTemplate,
                                             properties: { disabled: false },
                                             attachmentsProperties: {},
                                         }}
-                                        style={{ backgroundColor: '#EBEFFA', borderRadius: '7px', paddingRight: '20px', paddingLeft: '20px' }}
+                                        style={{ backgroundColor: environment.entityReferenceField.backgroundColor, borderRadius: '7px', paddingRight: '20px', paddingLeft: '20px' }}
                                         onSuccessCreate={(value) => {
                                             setFieldValue(`entityReferences.${field}.entity`, value);
                                         }}
                                     >
-                                        <Typography fontSize="15px" color="#1E2775">
+                                        <Typography variant='body1' color={environment.entityReferenceField.textColor}>
                                             {i18next.t('processInstancesPage.createNewEntityRef')}
                                         </Typography>
                                     </AddEntityButton>
@@ -241,13 +241,13 @@ export const EntityReferenceField: React.FC<ChooseEntityReferenceProps> = ({
                     </Grid>
                 )}
             </Collapse>
-            <Dialog open={isChooseExistEntityOpen} onClose={() => setIsChooseExistEntityOpen(false)} maxWidth="lg">
+            <Dialog open={chooseMode === 'chooseEntity'} onClose={() => setChooseMode('idle')} maxWidth="lg">
                 <Card sx={{ width: 700 }}>
                     <CardHeader
                         action={
                             <IconButton
                                 onClick={() => {
-                                    setIsChooseExistEntityOpen(false);
+                                    setChooseMode('idle');
                                 }}
                             >
                                 <RemoveIcon />
@@ -260,8 +260,7 @@ export const EntityReferenceField: React.FC<ChooseEntityReferenceProps> = ({
                             entityTemplate={referencedEntityData?.entityTemplate}
                             onRowSelected={(value) => {
                                 setFieldValue(`entityReferences.${field}.entity`, value);
-                                setIsChooseExistEntityOpen(false);
-                                setIsChooseTemplateOpen(false);
+                                setChooseMode('idle');
                             }}
                             hideNonPreview
                         />
@@ -269,9 +268,7 @@ export const EntityReferenceField: React.FC<ChooseEntityReferenceProps> = ({
                 </Card>
             </Dialog>
 
-            {referencedEntityData?.entity && entityTemplates.get(referencedEntityData.entity.templateId) && (
-                // TODO: handle required fields in general fields, and entity ref field required field errors....
-
+            {referencedEntityData?.entity && referencedEntityTemplate && (
                 <Grid height="100%">
                     <OpenEntityReference
                         key={field}
@@ -289,7 +286,7 @@ export const EntityReferenceField: React.FC<ChooseEntityReferenceProps> = ({
                                 container
                                 sx={{
                                     backgroundColor: hexToRgba(
-                                        getEntityTemplateColor(entityTemplates.get(referencedEntityData.entity.templateId)!),
+                                        getEntityTemplateColor(referencedEntityTemplate!),
                                         0.2,
                                     ),
                                     borderRadius: '5px',
@@ -301,10 +298,10 @@ export const EntityReferenceField: React.FC<ChooseEntityReferenceProps> = ({
                                 gap="10px"
                             >
                                 <Grid alignContent="center" alignSelf="center" alignItems="center">
-                                    {entityTemplates.get(referencedEntityData.entity.templateId)?.iconFileId ? (
+                                    {referencedEntityTemplate?.iconFileId ? (
                                         <CustomIcon
                                             style={{ marginTop: '5px' }}
-                                            iconUrl={entityTemplates.get(referencedEntityData.entity.templateId)!.iconFileId || ''}
+                                            iconUrl={referencedEntityTemplate!.iconFileId || ''}
                                             height="15px"
                                             width="15px"
                                         />
@@ -316,9 +313,9 @@ export const EntityReferenceField: React.FC<ChooseEntityReferenceProps> = ({
                                     <Typography
                                         align="center"
                                         fontSize="12px"
-                                        color={getEntityTemplateColor(entityTemplates.get(referencedEntityData.entity.templateId)!)}
+                                        color={getEntityTemplateColor(referencedEntityTemplate!)}
                                     >
-                                        {entityTemplates.get(referencedEntityData.entity.templateId)?.displayName}
+                                        {referencedEntityTemplate?.displayName}
                                     </Typography>
                                 </Grid>
                             </Grid>
