@@ -20,6 +20,7 @@ import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import { useMemo, useRef, useState } from 'react';
 import { useQueryClient } from 'react-query';
+import { environment } from '../../../globals';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { IReferencedEntityForProcess } from '../../../interfaces/processes/processInstance';
@@ -34,7 +35,6 @@ import { ProcessDetailsValues } from './ProcessDetails';
 import OpenEntityReference from './ProcessDetails/OpenEntityReference';
 import { ProcessStepValues } from './ProcessSteps';
 import UnknownEntityCard from './UnknownEntityCard';
-import { environment } from '../../../globals';
 
 type ProcessFormikProps = ProcessStepValues | ProcessDetailsValues;
 interface ChooseEntityReferenceProps {
@@ -91,13 +91,13 @@ export const EntityReferenceField: React.FC<ChooseEntityReferenceProps> = ({
             )
             .filter((entity) => !entity.disabled);
     }, [entityTemplates, currentUser.currentWorkspacePermissions]);
-    
-    type Mode = 'idle' | 'chooseTemplate' | 'chooseEntity'; 
-    const [chooseMode, setChooseMode] = useState<Mode>('idle'); 
+
+    type Mode = 'idle' | 'chooseTemplate' | 'chooseEntity';
+    const [chooseMode, setChooseMode] = useState<Mode>('idle');
 
     const referencedEntityData = (values.entityReferences[field] as IReferencedEntityForProcess) ?? null;
 
-    const referencedEntityTemplate = entityTemplates.get(referencedEntityData.entity.templateId)
+    const referencedEntityTemplate = entityTemplates.get(referencedEntityData.entity.templateId);
 
     const userHasPermissions = !referencedEntityData?.entityTemplate
         ? undefined
@@ -158,7 +158,7 @@ export const EntityReferenceField: React.FC<ChooseEntityReferenceProps> = ({
                         startIcon={<AddIcon style={{ fontSize: '25px' }} />}
                         size="large"
                     >
-                        <Typography variant='body1'>{i18next.t('processInstancesPage.entityToRef')}</Typography>
+                        <Typography variant="body1">{i18next.t('processInstancesPage.entityToRef')}</Typography>
                     </Button>
                 )}
                 {chooseMode === 'chooseTemplate' && (
@@ -204,15 +204,19 @@ export const EntityReferenceField: React.FC<ChooseEntityReferenceProps> = ({
                                         }}
                                         variant="text"
                                         size="medium"
-                                        sx={{ backgroundColor: environment.entityReferenceField.backgroundColor, paddingX: '20px', borderRadius: '7px' }}
+                                        sx={{
+                                            backgroundColor: environment.entityReferenceField.backgroundColor,
+                                            paddingX: '20px',
+                                            borderRadius: '7px',
+                                        }}
                                     >
-                                        <Typography variant='body1' color={environment.entityReferenceField.textColor}>
+                                        <Typography variant="body1" color={environment.entityReferenceField.textColor}>
                                             {i18next.t('processInstancesPage.chooseEntityRef')}
                                         </Typography>
                                     </Button>
                                 </Grid>
                                 <Grid>
-                                    <Typography variant='body1' color={environment.entityReferenceField.titleColor}>
+                                    <Typography variant="body1" color={environment.entityReferenceField.titleColor}>
                                         {i18next.t('input.imagePicker.or')}
                                     </Typography>
                                 </Grid>
@@ -226,12 +230,17 @@ export const EntityReferenceField: React.FC<ChooseEntityReferenceProps> = ({
                                             properties: { disabled: false },
                                             attachmentsProperties: {},
                                         }}
-                                        style={{ backgroundColor: environment.entityReferenceField.backgroundColor, borderRadius: '7px', paddingRight: '20px', paddingLeft: '20px' }}
+                                        style={{
+                                            backgroundColor: environment.entityReferenceField.backgroundColor,
+                                            borderRadius: '7px',
+                                            paddingRight: '20px',
+                                            paddingLeft: '20px',
+                                        }}
                                         onSuccessCreate={(value) => {
                                             setFieldValue(`entityReferences.${field}.entity`, value);
                                         }}
                                     >
-                                        <Typography variant='body1' color={environment.entityReferenceField.textColor}>
+                                        <Typography variant="body1" color={environment.entityReferenceField.textColor}>
                                             {i18next.t('processInstancesPage.createNewEntityRef')}
                                         </Typography>
                                     </AddEntityButton>
@@ -285,10 +294,7 @@ export const EntityReferenceField: React.FC<ChooseEntityReferenceProps> = ({
                             <Grid
                                 container
                                 sx={{
-                                    backgroundColor: hexToRgba(
-                                        getEntityTemplateColor(referencedEntityTemplate!),
-                                        0.2,
-                                    ),
+                                    backgroundColor: hexToRgba(getEntityTemplateColor(referencedEntityTemplate!), 0.2),
                                     borderRadius: '5px',
                                     paddingX: '10px',
                                     cursor: 'pointer',
@@ -310,11 +316,7 @@ export const EntityReferenceField: React.FC<ChooseEntityReferenceProps> = ({
                                     )}
                                 </Grid>
                                 <Grid>
-                                    <Typography
-                                        align="center"
-                                        fontSize="12px"
-                                        color={getEntityTemplateColor(referencedEntityTemplate!)}
-                                    >
+                                    <Typography align="center" fontSize="12px" color={getEntityTemplateColor(referencedEntityTemplate!)}>
                                         {referencedEntityTemplate?.displayName}
                                     </Typography>
                                 </Grid>
