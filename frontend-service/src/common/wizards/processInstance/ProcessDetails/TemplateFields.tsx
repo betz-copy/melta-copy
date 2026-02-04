@@ -1,11 +1,12 @@
 import { Grid } from '@mui/material';
+import { Field } from 'formik';
 import i18next from 'i18next';
 import { Dictionary } from 'lodash';
 import { IProcessSingleProperty } from '../../../../interfaces/processes/processTemplate';
 import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import BlueTitle from '../../../MeltaDesigns/BlueTitle';
+import { EntityReferenceField } from '../EntityReferenceField';
 import { FileAttachments } from './FileAttachmentFields';
-import OpenEntityReference from './OpenEntityReference';
 import { SchemaForm } from './SchemaForm';
 
 export const TemplateFields = ({
@@ -48,26 +49,41 @@ export const TemplateFields = ({
                             }}
                         />
                     )}
-                    {Object.keys(templateEntityReferenceProperties!).length !== 0 && (
+                    {Object.keys(templateEntityReferenceProperties!).length > 0 && (
                         <Grid padding={1}>
                             <BlueTitle
                                 title={i18next.t('wizard.processInstance.refEntities')}
                                 component="h6"
                                 variant="h6"
-                                style={{ marginBottom: '22px' }}
+                                style={{ marginBottom: '22px', fontSize: '16px' }}
                             />
                             {Object.entries((templateEntityReferenceProperties as Dictionary<IProcessSingleProperty>)!).map(
                                 ([fieldName, { title }]) => (
-                                    <OpenEntityReference
+                                    <Field
+                                        name={`entityReferences.${fieldName}`}
+                                        component={EntityReferenceField}
                                         key={fieldName}
-                                        errors={errors}
-                                        fieldName={fieldName}
-                                        handleBlur={handleBlur}
-                                        setFieldValue={setFieldTouched}
-                                        title={title}
-                                        touched={touched}
+                                        field={fieldName}
                                         values={values}
-                                        viewMode={viewMode}
+                                        validate={(changedValue) => {
+                                            return (
+                                                values.template.details.properties.required?.includes(fieldName) &&
+                                                !changedValue &&
+                                                i18next.t('validation.requiredEntity')
+                                            );
+                                        }}
+                                        errors={errors}
+                                        touched={touched}
+                                        setFieldValue={setFieldValue}
+                                        handleBlur={handleBlur}
+                                        isViewMode={viewMode}
+                                        title={title}
+                                        errorText={
+                                            errors.entityReferences?.[fieldName] && touched.entityReferences?.[fieldName]
+                                                ? JSON.stringify(errors.entityReferences?.[fieldName])
+                                                : null
+                                        }
+                                        displaySmallField={viewMode}
                                     />
                                 ),
                             )}
