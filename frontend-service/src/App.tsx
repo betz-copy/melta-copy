@@ -110,12 +110,16 @@ const App: React.FC = () => {
 
         const handleWorkspace = async () => {
             const workspacePermissions = await getWorkspacePermissions(currentUser.permissions, hierarchyIds!);
-            if (workspacePermissions) currentUser.permissions[workspaceStore._id] = workspacePermissions;
+            const newPermissions = workspacePermissions
+                ? { ...currentUser.permissions, [workspaceStore._id]: workspacePermissions }
+                : currentUser.permissions;
+            const newCurrentWorkspacePermissions = newPermissions[workspaceStore._id];
 
-            if (currentUser.currentWorkspacePermissions !== currentUser.permissions[workspaceStore._id])
+            if (currentUser.currentWorkspacePermissions !== newCurrentWorkspacePermissions)
                 setUser({
                     ...currentUser,
-                    currentWorkspacePermissions: currentUser.permissions[workspaceStore._id],
+                    permissions: newPermissions,
+                    currentWorkspacePermissions: newCurrentWorkspacePermissions,
                 });
         };
 
@@ -146,8 +150,7 @@ const App: React.FC = () => {
                 const adminWorkspaceIds = workspaceIds.filter((workspaceId) => userFromDb.permissions[workspaceId].admin);
 
                 const isAdminRoot = (await Promise.all(adminWorkspaceIds.map((id) => getById(id)))).some((workspace) => workspace.path === '/');
-                user.isRoot = isAdminRoot;
-                setUser({ ...user, ...userFromDb });
+                setUser({ ...user, ...userFromDb, isRoot: isAdminRoot });
                 setDarkMode(userFromDb.preferences?.darkMode || false);
 
                 if (workspaceIds.length === 1) {
