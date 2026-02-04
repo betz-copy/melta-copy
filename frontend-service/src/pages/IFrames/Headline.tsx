@@ -19,7 +19,7 @@ import { ConfirmDeleteDashboardItem, ConfirmEditCommonItem } from '../Dashboard/
 
 const IFrameHeadline: React.FC<{
     iFrame: IMongoIframe;
-    setIFramesOrder?: (value) => void;
+    setIFramesOrder?: (value: string[]) => void;
     isIFramePage: boolean;
     setIFrameDeleted?: React.Dispatch<React.SetStateAction<boolean>>;
 }> = ({ iFrame, setIFramesOrder, isIFramePage, setIFrameDeleted }) => {

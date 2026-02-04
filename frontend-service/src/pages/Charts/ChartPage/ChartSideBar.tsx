@@ -38,7 +38,7 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
     const { isDashboardPage, viewMode } = props;
     const { values, setValues, errors, touched, handleChange, setFieldValue } = props as FormikProps<ChartForm>;
 
-    const currentUser = useUserStore();
+    const currentUser = useUserStore((state) => state.user);
     const theme = useTheme();
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -204,8 +204,8 @@ const ChartSideBar: React.FC<StepComponentProps<ChartForm> & { isDashboardPage: 
                                             disabled={
                                                 viewMode === ViewMode.ReadOnly ||
                                                 (viewMode === ViewMode.Edit &&
-                                                    values.createdBy !== currentUser.user._id &&
-                                                    !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions))
+                                                    values.createdBy !== currentUser._id &&
+                                                    !isWorkspaceAdmin(currentUser.currentWorkspacePermissions))
                                             }
                                         >
                                             {!isDashboardPage && (

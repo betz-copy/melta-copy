@@ -19,10 +19,10 @@ interface ChartItemProps {
 
 const ChartItem: React.FC<ChartItemProps> = ({ chartDetails, isHoverOnCard, indexInGrid, onDelete, onEdit }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
-    const currentUser = useUserStore();
+    const currentUser = useUserStore((state) => state.user);
     const { createdBy, chart, type } = chartDetails;
 
-    const hasWritePermission = createdBy !== currentUser.user._id && !isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions);
+    const hasWritePermission = createdBy !== currentUser._id && !isWorkspaceAdmin(currentUser.currentWorkspacePermissions);
 
     return (
         <Box style={{ width: '100%', height: '100%', position: 'relative' }}>

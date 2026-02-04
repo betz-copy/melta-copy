@@ -6,6 +6,7 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { getEntityTemplateColor } from '../../../utils/colors';
+import { getFirstXFilledPropsKeys } from '../../../utils/templates';
 import { CustomIcon } from '../../CustomIcon';
 import { EntityPropertiesInternal } from '../../EntityProperties';
 import { EntityTemplateColor } from '../../EntityTemplateColor';
@@ -21,7 +22,11 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({ entity, entityTemplate, 
 
     const theme = useTheme();
     const workspace = useWorkspaceStore((state) => state.workspace);
-    const { headlineSubTitleFontSize } = workspace.metadata.mainFontSizes;
+    const {
+        numOfPreviewFieldsToShow,
+        mainFontSizes: { headlineSubTitleFontSize },
+    } = workspace.metadata;
+
     if (!entity) return <Grid />;
 
     const entityTemplateColor = entityTemplate ? getEntityTemplateColor(entityTemplate) : '';
@@ -56,10 +61,14 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({ entity, entityTemplate, 
         </Grid>
     );
 
-    const entityPropertiesTooltip =
-        !entityTemplate || !entity ? (
-            ''
-        ) : !entityTemplate.propertiesPreview.length ? (
+    const entityPropertiesTooltip = (() => {
+        if (!entityTemplate || !entity) {
+            return '';
+        }
+
+        const fieldsToShow = getFirstXFilledPropsKeys(numOfPreviewFieldsToShow, entityTemplate, entity);
+
+        return !fieldsToShow.length ? (
             i18next.t('graph.noPreviewProperties')
         ) : (
             <EntityPropertiesInternal
@@ -73,13 +82,14 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({ entity, entityTemplate, 
                     width: '100%',
                 }}
                 innerStyle={{ width: '30%', color: 'red' }}
-                showPreviewPropertiesOnly
+                overridePropertiesToShow={fieldsToShow}
                 textWrap
                 mode="normal"
                 propertiesToHighlightColor="red"
                 propertiesToHighlight={failedProperties}
             />
         );
+    })();
 
     return (
         <Grid container onClick={() => setOpen((prev) => !prev)}>

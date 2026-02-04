@@ -1,6 +1,6 @@
 import { IMongoCategory } from '@packages/category';
 import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
-import { IEntityExpanded, IPropertyValue } from '@packages/entity';
+import { IEntity, IEntityExpanded, IPropertyValue } from '@packages/entity';
 import { IMongoEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '@packages/relationship-template';
 import { IChildTemplateMap, IEntityTemplateMap, INestedRelationshipTemplates, IRelationshipTemplateMap, ITemplate } from '../interfaces/template';
@@ -192,4 +192,12 @@ export const getFirstXPropsKeys = (numOfPropsToShow: number, entityTemplate: IMo
             )
             .slice(0, Math.max(numOfPropsToShow - entityTemplate.propertiesPreview.length, 0)),
     ];
+};
+
+export const getFirstXFilledPropsKeys = (numOfPropsToShow: number, entityTemplate: IMongoEntityTemplatePopulated, entity: IEntity): string[] => {
+    if (entityTemplate.propertiesPreview.length) return entityTemplate.propertiesPreview;
+    return getFirstXPropsKeys(numOfPropsToShow, entityTemplate).filter((field) => {
+        const value = entity.properties[field];
+        return value != null && value !== '';
+    });
 };

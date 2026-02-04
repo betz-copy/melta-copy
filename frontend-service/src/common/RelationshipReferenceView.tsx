@@ -15,6 +15,7 @@ import { isEntityFitsToChildTemplate } from '../utils/childTemplates';
 import { getEntityTemplateColor } from '../utils/colors';
 import { locationConverterToString } from '../utils/map/convert';
 import { isWorkspaceAdmin } from '../utils/permissions/instancePermissions';
+import { getFirstXFilledPropsKeys } from '../utils/templates';
 import { ColoredEnumChip } from './ColoredEnumChip';
 import { CustomIcon } from './CustomIcon';
 import { EntityPropertiesInternal } from './EntityProperties';
@@ -38,6 +39,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
     const workspace = useWorkspaceStore((state) => state.workspace);
     const currentUser = useUserStore((state) => state.user);
     const currentUserKartoffelId = currentUser?.kartoffelId;
+    const { numOfPreviewFieldsToShow } = workspace.metadata;
 
     const { height, width } = workspace.metadata.iconSize;
     const queryClient = useQueryClient();
@@ -171,20 +173,26 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
                 }}
                 arrow
                 placement="top"
-                title={
-                    !templateToInternal || !relatedTemplate?.propertiesPreview.length ? (
+                title={(() => {
+                    if (!templateToInternal) {
+                        return <Typography color="#53566E">{i18next.t('templateEntitiesAutocomplete.noPreviewFields')}</Typography>;
+                    }
+
+                    const fieldsToShow = getFirstXFilledPropsKeys(numOfPreviewFieldsToShow, templateToInternal, entity);
+
+                    return !fieldsToShow.length ? (
                         <Typography color="#53566E">{i18next.t('templateEntitiesAutocomplete.noPreviewFields')}</Typography>
                     ) : (
                         <EntityPropertiesInternal
                             properties={entity.properties}
                             coloredFields={entity.coloredFields}
                             entityTemplate={templateToInternal}
-                            showPreviewPropertiesOnly
+                            overridePropertiesToShow={fieldsToShow}
                             mode="normal"
                             textWrap
                         />
-                    )
-                }
+                    );
+                })()}
             >
                 {!template ? (
                     chip

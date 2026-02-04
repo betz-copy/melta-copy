@@ -1463,9 +1463,8 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             const disabledEntity = entities.find((entity) => entity.properties.disabled === true);
             if (disabledEntity) throw new BadRequestError('cannot delete, some entities are disabled');
             if (childTemplateId) {
-                const notFilterValid = entities.find(async (entity) =>
-                    matchValueAgainstFilter(entity.properties, await this.instanceUtils.getChildFilters(childTemplateId, userId)),
-                );
+                const childFilters = await this.instanceUtils.getChildFilters(childTemplateId, userId);
+                const notFilterValid = entities.find((entity) => matchValueAgainstFilter(entity.properties, childFilters));
 
                 if (notFilterValid)
                     throw new FilterValidation(`cannot delete, entity ${notFilterValid.properties._id} is not valid according to filters`);
