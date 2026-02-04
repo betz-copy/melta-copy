@@ -22,7 +22,7 @@ import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFi
 import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 import { ajvValidate, JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
 import BlueTitle from '../../../MeltaDesigns/BlueTitle';
-import { EntityReference } from '../EntityReference';
+import { EntityReferenceField } from '../EntityReferenceField';
 import ProcessStatus, { ReviewedAtProcessStatus } from '../ProcessSummaryStep/ProcessStatus';
 import { ProcessStepValues } from '.';
 import { getStepValuesFromStepInstance } from './stepsFormik';
@@ -213,7 +213,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                         <Grid container flexDirection="column" justifyContent="space-between" width="100%" height="100%" minHeight="320px">
                             <Grid container width="100%" height="90%" justifyContent="flex-start" flexWrap="nowrap" columnGap="1px">
                                 <Grid
-                                    size={{ xs: toPrint ? 0 : 9 }}
+                                    size={{ xs: toPrint ? 0 : 8 }}
                                     maxHeight={toPrint ? undefined : 550}
                                     sx={{
                                         overflowY: 'auto',
@@ -329,18 +329,18 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                             )}
                                         </Grid>
                                     )}
-                                    {Object.keys(templateEntityReferenceProperties!).length !== 0 && (
-                                        <Grid padding={1}>
+                                    {Object.keys(templateEntityReferenceProperties!).length > 0 && (
+                                        <Grid padding={1} height="150px">
                                             <BlueTitle
                                                 title={i18next.t('wizard.processInstance.refEntities')}
                                                 component="h6"
                                                 variant="h6"
-                                                style={{ marginBottom: '22px' }}
+                                                style={{ marginBottom: '22px', fontSize: '16px' }}
                                             />
                                             {Object.entries(templateEntityReferenceProperties!).map(([fieldName, { title }]) => (
                                                 <Field
                                                     name={`entityReferences.${fieldName}`}
-                                                    component={EntityReference}
+                                                    component={EntityReferenceField}
                                                     validate={(changedValue) => {
                                                         return (
                                                             required.includes(fieldName) &&
@@ -358,7 +358,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                     isViewMode={!isStepEditMode}
                                                     title={title}
                                                     errorText={
-                                                        errors.entityReferences?.[fieldName] && touched.entityReferences?.[fieldName]
+                                                        errors.entityReferences?.[fieldName]
                                                             ? JSON.stringify(errors.entityReferences?.[fieldName])
                                                             : null
                                                     }
@@ -371,19 +371,19 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                     <Grid
                                         container
                                         direction="column"
-                                        spacing={2}
                                         justifyContent="space-between"
                                         alignItems="center"
+                                        width="100%"
                                         sx={{
                                             backgroundColor: darkMode ? 'rgb(26 26 26 / 35%)' : '#F2F4FA',
                                             borderRadius: '20px',
-                                            padding: '5px',
+                                            padding: '20px',
                                             width: '305px',
                                             height: '290px',
                                             flexShrink: 0,
                                         }}
                                     >
-                                        <Grid container flexDirection="column" gap="20px">
+                                        <Grid container flexDirection="column" gap="20px" width="100%">
                                             <Grid>
                                                 <ProcessStatus
                                                     title={i18next.t('wizard.processInstance.step.stepStatus')}
@@ -391,7 +391,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                     editStatus={{ setFieldValue, isEditMode: isStepEditMode, values }}
                                                 />
                                             </Grid>
-                                            <Grid width={250} height="fit-content" maxHeight="100px">
+                                            <Grid height="fit-content" maxHeight="100px" width="100%">
                                                 {isStepEditMode ? (
                                                     <TextField
                                                         label={i18next.t('wizard.processInstance.step.comment')}
