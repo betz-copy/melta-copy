@@ -413,7 +413,9 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
         const viewers = new Set<string>(userIdsWithPermission);
 
-        extraViewers.forEach((extraViewer) => viewers.add(extraViewer));
+        extraViewers.forEach((extraViewer) => {
+            viewers.add(extraViewer);
+        });
 
         await this.rabbitManager.createNotification(Array.from(viewers), type, metadata, populatedMetaData);
     }

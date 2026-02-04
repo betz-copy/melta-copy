@@ -164,7 +164,9 @@ class EntityManager extends DefaultManagerNeo4j {
                             (rule) => !rulesIds.has(rule._id),
                         ),
                     );
-                    relevantRules.forEach((rule) => rulesIds.add(rule._id));
+                    relevantRules.forEach((rule) => {
+                        rulesIds.add(rule._id);
+                    });
                 } else if (reason.type === RunRuleReason.dependentViaAggregation) {
                     relevantRules.push(
                         ...filterDependentRulesViaAggregation(
@@ -173,7 +175,9 @@ class EntityManager extends DefaultManagerNeo4j {
                             reason.updatedProperties,
                         ).filter((rule) => !rulesIds.has(rule._id)),
                     );
-                    relevantRules.forEach((rule) => rulesIds.add(rule._id));
+                    relevantRules.forEach((rule) => {
+                        rulesIds.add(rule._id);
+                    });
                 }
             });
 
@@ -715,7 +719,6 @@ class EntityManager extends DefaultManagerNeo4j {
 
             return action;
         });
-
     private async createEntityPipelineInTransaction(
         transaction: Transaction,
         properties: IEntity['properties'],
@@ -794,7 +797,6 @@ class EntityManager extends DefaultManagerNeo4j {
             childTemplate = await this.childTemplateManagerService.getChildTemplateById(childTemplateId);
             template = { ...entityTemplate, actions: childTemplate.actions };
         }
-
         return this.neo4jClient
             .performComplexTransaction('writeTransaction', async (transaction) => {
                 const allActivityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
@@ -835,7 +837,6 @@ class EntityManager extends DefaultManagerNeo4j {
                     newDestWallet,
                     ignoredRules,
                 );
-
                 if (entityResult.activityLogsToCreate) {
                     allActivityLogsToCreate.push(...entityResult.activityLogsToCreate);
                 }
@@ -845,6 +846,7 @@ class EntityManager extends DefaultManagerNeo4j {
                 return {
                     createdEntity: entityResult.createdEntity,
                     emails: [...(destWalletResult?.emails ?? []), ...entityResult.emails],
+                    actions: undefined,
                 };
             })
             .catch((err) => this.throwServiceErrorIfFailedConstraintsValidation(err));
@@ -916,7 +918,7 @@ class EntityManager extends DefaultManagerNeo4j {
         `
             : '';
 
-        const textSearchFixed = `*${escapeNeo4jQuerySpecialChars((textSearch || '').toLowerCase())}*`;
+        const textSearchFixed = `*${escapeNeo4jQuerySpecialChars(textSearch)}*`;
 
         const query = `
             UNWIND $templateIds AS templateId
@@ -1883,7 +1885,7 @@ class EntityManager extends DefaultManagerNeo4j {
         if (template.actions && isBodyFunctionHasContent(template.actions, IEntityCrudAction.onUpdateEntity)) {
             const actions = await this.buildActionsArray(IEntityCrudAction.onUpdateEntity, entityProperties, template, userId, {
                 ...entity,
-                properties: unPopulatedOldEntityProperties,
+                properties: unPopulatedOldEntityProperties.properties,
             });
 
             const bulkManager = new BulkActionManager(this.workspaceId);

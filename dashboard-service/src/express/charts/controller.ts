@@ -8,12 +8,12 @@ class ChartController extends DefaultController<IMongoChart, ChartManager> {
     }
 
     async getChartById(req: Request, res: Response) {
-        res.json(await this.manager.getChartById(req.params.chartId));
+        res.json(await this.manager.getChartById(req.params.chartId as string));
     }
 
     async getChartByTemplateId(req: Request, res: Response) {
         const { textSearch, childTemplateId } = req.body;
-        res.json(await this.manager.getChartsByTemplateId(req.params.templateId, textSearch, childTemplateId));
+        res.json(await this.manager.getChartsByTemplateId(req.params.templateId as string, textSearch, childTemplateId));
     }
 
     async createChart(req: Request, res: Response) {
@@ -21,11 +21,11 @@ class ChartController extends DefaultController<IMongoChart, ChartManager> {
     }
 
     async deleteChart(req: Request, res: Response) {
-        res.json(await this.manager.deleteChart(req.params.chartId));
+        res.json(await this.manager.deleteChart(req.params.chartId as string));
     }
 
     async updateChart(req: Request, res: Response) {
-        res.json(await this.manager.updateChart(req.params.chartId, req.body));
+        res.json(await this.manager.updateChart(req.params.chartId as string, req.body));
     }
 }
 

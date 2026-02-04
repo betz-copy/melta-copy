@@ -1,4 +1,3 @@
-import { TextField } from '@mui/material';
 import { LocalizationProvider, MobileDatePicker, PickersLocaleText } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { he } from 'date-fns/locale';
@@ -30,7 +29,11 @@ const DateFilterComponent: React.FC<{
             <LocalizationProvider
                 dateAdapter={AdapterDateFns}
                 adapterLocale={he}
-                localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true }) as PickersLocaleText}
+                localeText={
+                    i18next.t('muiDatePickersLocaleText', {
+                        returnObjects: true,
+                    }) as PickersLocaleText
+                }
             >
                 <MobileDatePicker
                     value={date}
@@ -41,7 +44,6 @@ const DateFilterComponent: React.FC<{
                     label={i18next.t('wizard.date')}
                     slots={{
                         toolbar: CustomDateTimePickerToolbar,
-                        textField: (params) => <TextField {...params} />,
                     }}
                     slotProps={{
                         textField: { fullWidth: true },

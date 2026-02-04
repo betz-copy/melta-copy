@@ -294,6 +294,12 @@ export const environment = {
             columnsOrder: 'columnsOrder-',
             columnWidths: 'columnWidths-',
         },
+        sessionStorage: {
+            currentPage: 'currentPage-',
+            scrollPosition: 'scrollPosition-',
+            isExpand: 'isExpand-',
+            resizeHeight: 'resizeHeight-',
+        },
         unitFieldSplitDepth: 2,
     },
     filterOptions: {

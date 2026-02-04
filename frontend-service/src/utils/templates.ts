@@ -1,7 +1,7 @@
 import { IMongoCategory } from '../interfaces/categories';
 import { IChildTemplateMap, IChildTemplatePopulated, IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
-import { IEntityExpanded, IPropertyValue } from '../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { IEntity, IEntityExpanded, IPropertyValue } from '../interfaces/entities';
+import { IEntityTemplateMap, IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../interfaces/relationshipTemplates';
 import { INestedRelationshipTemplates } from '../pages/Entity';
 
@@ -103,7 +103,7 @@ export const getFullRelationshipTemplates = (
 
         if (isSelfProperty || !connection) continue;
 
-        const hasInstances = expandedEntity?.connections.some(({ relationship: { templateId } }) => templateId === relationshipTemplate._id)!;
+        const hasInstances = expandedEntity?.connections.some(({ relationship: { templateId } }) => templateId === relationshipTemplate._id);
 
         if (filterOnlyThoseWithInstances && !hasInstances) continue;
 
@@ -177,7 +177,7 @@ export const addDefaultFieldsToTemplate = <T extends IMongoEntityTemplatePopulat
     };
 };
 
-export const getFirstXPropsKeys = (numOfPropsToShow: number, entityTemplate: IMongoEntityTemplatePopulated): string[] => {
+export const getFirstXPropsKeys = (numOfPropsToShow: number, entityTemplate: IEntityTemplatePopulated): string[] => {
     return [
         ...entityTemplate.propertiesPreview,
         ...entityTemplate.propertiesOrder
@@ -189,6 +189,14 @@ export const getFirstXPropsKeys = (numOfPropsToShow: number, entityTemplate: IMo
             )
             .slice(0, Math.max(numOfPropsToShow - entityTemplate.propertiesPreview.length, 0)),
     ];
+};
+
+export const getFirstXFilledPropsKeys = (numOfPropsToShow: number, entityTemplate: IEntityTemplatePopulated, entity: IEntity): string[] => {
+    if (entityTemplate.propertiesPreview.length) return entityTemplate.propertiesPreview;
+    return getFirstXPropsKeys(numOfPropsToShow, entityTemplate).filter((field) => {
+        const value = entity.properties[field];
+        return value != null && value !== '';
+    });
 };
 
 export const isChildTemplate = (

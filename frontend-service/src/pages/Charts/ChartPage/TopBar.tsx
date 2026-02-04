@@ -41,13 +41,12 @@ const ChartTopBar: React.FC<IChartTopBar> = ({
     setFilters,
 }) => {
     const theme = useTheme();
-    const currentUser = useUserStore();
+    const currentUser = useUserStore((state) => state.user);
     const workspace = useWorkspaceStore((state) => state.workspace);
 
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-    const hasEditAndDeletePermission =
-        formik.values.createdBy === currentUser.user._id || isWorkspaceAdmin(currentUser.user.currentWorkspacePermissions);
+    const hasEditAndDeletePermission = formik.values.createdBy === currentUser._id || isWorkspaceAdmin(currentUser.currentWorkspacePermissions);
 
     return (
         <Box>

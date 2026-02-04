@@ -12,15 +12,17 @@ export default class ProcessTemplatesController extends DefaultController<Proces
     }
 
     async getTemplateById(req: Request, res: Response) {
-        res.json(await this.manager.getProcessTemplate(req.params.id, req.user!.id));
+        res.json(await this.manager.getProcessTemplate(req.params.id as string, req.user!.id));
     }
 
     async updateProcessTemplate(req: Request, res: Response) {
-        res.json(await this.manager.updateProcessTemplate(req.params.id, req.body, req.files || (req.file ? [req.file] : []), req.user!.id));
+        res.json(
+            await this.manager.updateProcessTemplate(req.params.id as string, req.body, req.files || (req.file ? [req.file] : []), req.user!.id),
+        );
     }
 
     async deleteProcessTemplate(req: Request, res: Response) {
-        res.json(await this.manager.deleteProcessTemplate(req.params.id));
+        res.json(await this.manager.deleteProcessTemplate(req.params.id as string));
     }
 
     async searchProcessTemplates(req: Request, res: Response) {
