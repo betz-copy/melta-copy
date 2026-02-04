@@ -2,6 +2,7 @@ import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { useMemo, useState } from 'react';
 import SearchInput from '../../../common/inputs/SearchInput';
+import { IPropertyValue } from '../../../interfaces/entities';
 import { defaultMetadata, useWorkspaceStore } from '../../../stores/workspace';
 import { deepClone, getDefaultValue, getValueByPath, setNestedValue } from '../../../utils/configs/configsUtils';
 import { Field, IValue } from './Field';
@@ -11,7 +12,7 @@ const ConfigurationManagement: React.FC = () => {
     const updateWorkspaceMetadata = useWorkspaceStore((state) => state.updateWorkspaceMetadata);
 
     const configs = workspace.metadata;
-    const [updatedConfigs, setUpdatedConfigs] = useState<Record<string, any>>({});
+    const [updatedConfigs, setUpdatedConfigs] = useState<Record<string, IPropertyValue>>({});
     const [searchText, setSearchText] = useState<string>('');
 
     useMemo(() => {
@@ -26,7 +27,7 @@ const ConfigurationManagement: React.FC = () => {
         });
     };
 
-    const collectFilteredFields = (configs: Record<string, any>, parentKey = ''): React.ReactNode[] => {
+    const collectFilteredFields = (configs: Record<string, IPropertyValue>, parentKey = ''): React.ReactNode[] => {
         let fields: React.ReactNode[] = [];
         Object.entries(configs).forEach(([key, value]) => {
             const fullKey = parentKey ? `${parentKey}.${key}` : key;

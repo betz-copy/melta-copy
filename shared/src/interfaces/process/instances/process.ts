@@ -1,4 +1,4 @@
-import { IEntity } from '../../entity';
+import { IEntity, IPropertyValue } from '../../entity';
 import { IMongoEntityTemplateWithConstraintsPopulated } from '../../entityTemplate';
 import { IUser } from '../../user';
 import { IBaseSearchProperties } from '../templates/process';
@@ -38,7 +38,7 @@ export enum StatusBackgroundColors {
     Archived = '#B0B0B0',
 }
 
-export type InstanceProperties = Record<string, any>;
+export type InstanceProperties = Record<string, IPropertyValue>;
 
 export interface IProcessInstance {
     templateId: string;

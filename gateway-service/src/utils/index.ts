@@ -5,7 +5,7 @@ import { isEqual } from 'lodash';
 
 export const promisePipe = promisify(pipeline);
 
-export const tryCatch = async <Func extends (...args: any[]) => any>(func: Func, ...args: Parameters<Func>) => {
+export const tryCatch = async <Func extends (...args: unknown[]) => unknown>(func: Func, ...args: Parameters<Func>) => {
     try {
         return { result: (await func(...args)) as Awaited<ReturnType<Func>> };
     } catch (err) {
@@ -19,26 +19,23 @@ export const filteredMap = <T, V>(arr: T[], func: (value: T) => { include: true;
     for (let i = 0; i < arr.length; i++) {
         const { include, value } = func(arr[i]);
 
-        if (include) {
-            newArr.push(value);
-        }
+        if (include) newArr.push(value);
     }
 
     return newArr;
 };
 
-export const objectContains = <T extends Object>(obj: T, subObj: any) => {
+// biome-ignore lint/suspicious/noExplicitAny: seems fine
+export const objectContains = <T extends object>(obj: T, subObj: any) => {
     for (const key in subObj) {
-        if (!isEqual(obj[key], subObj[key])) {
-            return false;
-        }
+        if (!isEqual(obj[key], subObj[key])) return false;
     }
 
     return true;
 };
 
-export const typedObjectEntries = <T extends Object>(obj: T): [keyof T, T[keyof T]][] => {
-    return Object.entries(obj) as any;
+export const typedObjectEntries = <T extends object>(obj: T): [keyof T, T[keyof T]][] => {
+    return Object.entries(obj) as [keyof T, T[keyof T]][];
 };
 
 export const isProfileFileType = (profilePath: string): boolean => {

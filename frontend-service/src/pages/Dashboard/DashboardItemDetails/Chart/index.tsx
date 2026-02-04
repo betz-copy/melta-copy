@@ -106,7 +106,7 @@ const Chart: React.FC = () => {
         },
     );
 
-    const template = chart && entityTemplates.get(chart?.templateId!);
+    const template = chart && entityTemplates.get(chart?.templateId);
 
     useEffect(() => {
         if (chart && chartId) setViewMode(ViewMode.ReadOnly);
@@ -141,7 +141,7 @@ const Chart: React.FC = () => {
             ...baseValues,
             ...(chart ? {} : { templateId: currTemplateId }),
             childTemplateId: childTemplate?._id,
-            filter: chart?.filter ? FilterModelToFilterRecord(parseFilters(chart?.filter), template?._id!, queryClient) : undefined,
+            filter: chart?.filter ? FilterModelToFilterRecord(parseFilters(chart?.filter), template?._id ?? '', queryClient) : undefined,
         };
     };
 

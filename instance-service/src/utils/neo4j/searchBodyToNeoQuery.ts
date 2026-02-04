@@ -179,11 +179,14 @@ const caseInsensitiveEqualFilterOfField = (field: string, rhs: NonNullable<IFilt
     return { cypherQuery: `toLower(node.${field}) = toLower($${rhsParamPath})`, parameters: { [rhsParamName]: rhs } };
 };
 
-const regexFilterOfField = (field: string, rhs: NonNullable<IFilterOfField['$eqi']>, parametersParentVariableName: string) => {
+const regexFilterOfField = (field: string, rhs: NonNullable<IFilterOfField['$rgx']>, parametersParentVariableName: string) => {
     const rhsParamName = 'rhs';
     const rhsParamPath = `${parametersParentVariableName}.${rhsParamName}`;
 
-    return { cypherQuery: `node.${field} =~ $${rhsParamPath}`, parameters: { [rhsParamName]: rhs } };
+    return {
+        cypherQuery: `toLower(node.${field}) =~ toLower($${rhsParamPath})`,
+        parameters: { [rhsParamName]: rhs },
+    };
 };
 
 const notFilterOfField = (
@@ -330,8 +333,13 @@ const filterOfFieldToNeoQuery = (
     return {
         cypherQuery: queries.map((query) => `(${query.cypherQuery})`).join(' AND '),
         parameters: queries
-            .map(({ parameters }) => parameters)
-            .reduce((prevParameters, currParameters) => ({ ...prevParameters, ...currParameters }), {}),
+            .map((q) => q.parameters)
+            .reduce<Record<string, unknown>>((acc, curr) => {
+                for (const key in curr) {
+                    if (Object.hasOwn(curr, key)) acc[key] = curr[key];
+                }
+                return acc;
+            }, {}),
     };
 };
 
@@ -398,7 +406,6 @@ export const templatesFilterToNeoQuery = (
     entityTemplatesMap: Map<string, IMongoEntityTemplate>,
 ): CypherQueryWithParameters => {
     const filterParamsVariableName = 'filterParams';
-
     const templatesFiltersQueries: CypherQueryWithParameters[] = Object.entries(templatesFilter).map(([templateId, { filter }]) => {
         if (!filter) {
             return { cypherQuery: `node:\`${templateId}\``, parameters: {} };

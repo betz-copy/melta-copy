@@ -4,22 +4,23 @@ import { pickBy } from 'lodash';
 import React from 'react';
 import ReactDiffViewer from 'react-diff-viewer';
 import { useQueryClient } from 'react-query';
+import { IPropertyValue } from '../../interfaces/entities';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IUpdateEntityMetadataPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
 import { IGetUnits } from '../../interfaces/units';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { formatToString } from '../../utils/entityProperties';
 import { getFileName } from '../../utils/getFileName';
 import { containsHTMLTags } from '../../utils/HtmlTagsStringValue';
-import { formatToString } from '../EntityProperties';
 
 const getEntityPropertyString = (
-    value: any,
+    value: IPropertyValue,
     propertyTemplate: IEntitySingleProperty,
-    oldValue: any,
+    oldValue: IPropertyValue,
     entityTemplates: IEntityTemplateMap,
     units: IGetUnits,
     darkMode: boolean,
-    items?: any,
+    items?: IEntitySingleProperty['items'],
 ) => {
     const { format } = propertyTemplate;
 
@@ -69,12 +70,12 @@ const getEntityPropertyString = (
 };
 
 const getEntityPropertiesString = (
-    entityProperties: Record<string, any>,
+    entityProperties: Record<string, IPropertyValue>,
     entityTemplates: IEntityTemplateMap,
     entityTemplate: IMongoEntityTemplatePopulated,
     units: IGetUnits,
     darkMode: boolean,
-    oldEntityProperties?: Record<string, any>,
+    oldEntityProperties?: Record<string, IPropertyValue>,
 ) => {
     const fieldPropertiesStrings = Object.entries(entityTemplate?.properties?.properties || []).map(([propertyKey, propertyTemplate]) => {
         const oldValue = oldEntityProperties?.[propertyKey];

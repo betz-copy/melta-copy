@@ -1,5 +1,6 @@
 import { JsonGroup, JsonItem, JsonRule, JsonRuleGroupExt, RuleProperties } from '@react-awesome-query-builder/mui';
 import { environment } from '../../globals';
+import { IPropertyValue } from '../../interfaces/entities';
 import { IFormula } from '../../interfaces/rules/formula';
 import { IArgument, IConstant, IPropertyOfVariable, IVariable } from '../../interfaces/rules/formula/argument';
 import { IEquation, IOperatorBool } from '../../interfaces/rules/formula/equation';
@@ -99,7 +100,7 @@ export class RuleParser {
         }
     };
 
-    private static constantParser = (value: any, valueType: ValueType): IConstant => {
+    private static constantParser = (value: IPropertyValue, valueType: ValueType): IConstant => {
         if (value === null || value === undefined) throw new Error('value can not be empty');
 
         let parsedValue = value;

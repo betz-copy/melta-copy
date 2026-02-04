@@ -20,6 +20,28 @@ const FieldGroupSchema = new mongoose.Schema(
     { _id: false },
 );
 
+const walletTransferSchema = new mongoose.Schema(
+    {
+        from: {
+            type: String,
+            required: true,
+        },
+        to: {
+            type: String,
+            required: true,
+        },
+        description: {
+            type: String,
+            required: true,
+        },
+        amount: {
+            type: String,
+            required: true,
+        },
+    },
+    { _id: false },
+);
+
 const EntityTemplateSchema = new mongoose.Schema(
     {
         name: {
@@ -76,6 +98,9 @@ const EntityTemplateSchema = new mongoose.Schema(
         },
         fieldGroups: {
             type: [FieldGroupSchema],
+        },
+        walletTransfer: {
+            type: walletTransferSchema,
         },
     },
     {

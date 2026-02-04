@@ -317,7 +317,7 @@ const TemplateTable = forwardRef<
                             }}
                             icon={<SelectMultipleIcon fontSize="small" />}
                             text={i18next.t('entitiesTableOfTemplate.multipleSelect')}
-                            disableButton={!userHasWritePermissions}
+                            disableButton={!userHasWritePermissions || !!template.walletTransfer}
                         />
                         <TableButton
                             iconButtonWithPopoverProps={{
@@ -514,7 +514,8 @@ const TemplateTable = forwardRef<
 
                                 setUpdatedEntities?.(
                                     Object.values(entity.properties).filter(
-                                        (property): property is IEntity => typeof property === 'object' && 'templateId' in property,
+                                        (property): property is IEntity =>
+                                            typeof property === 'object' && 'templateId' in property && 'properties' in property,
                                     ),
                                 );
                             }

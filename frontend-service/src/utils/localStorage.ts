@@ -1,5 +1,7 @@
+import { IPropertyValue } from '../interfaces/entities';
+
 export class LocalStorage {
-    public static set(key: string, value: any) {
+    public static set(key: string, value: IPropertyValue) {
         localStorage.setItem(key, JSON.stringify(value));
     }
 

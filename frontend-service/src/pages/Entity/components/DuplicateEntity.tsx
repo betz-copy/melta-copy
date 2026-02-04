@@ -29,7 +29,7 @@ import { DuplicateTopBar } from './DuplicateTopBar';
 
 const { errorCodes } = environment;
 
-const DuplicateEntity: React.FC<{}> = () => {
+const DuplicateEntity: React.FC = () => {
     const { state } = window.history;
 
     const {
@@ -142,7 +142,7 @@ const DuplicateEntity: React.FC<{}> = () => {
             }}
             validate={(values) => {
                 const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(entityTemplate.properties);
-                const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties);
+                const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties, values.template.walletTransfer);
                 if (Object.keys(propertiesErrors).length === 0) {
                     return {};
                 }

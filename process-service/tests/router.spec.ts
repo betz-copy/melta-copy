@@ -4,6 +4,7 @@ import {
     IMongoProcessTemplatePopulated,
     IMongoStepInstance,
     IProcessInstance,
+    IPropertyValue,
     ServiceError,
     Status,
     UpdateProcessReqBody,
@@ -73,7 +74,7 @@ const prepareDataForUpdateProcessInstance = (
     };
     return updateData;
 };
-const errPropertiesType = (instanceProperties: Record<string, any>): Record<string, any> => {
+const errPropertiesType = (instanceProperties: Record<string, IPropertyValue>): Record<string, IPropertyValue> => {
     return Object.entries(instanceProperties).reduce((acc, [key, value]) => {
         let newValue: string | number | boolean;
 

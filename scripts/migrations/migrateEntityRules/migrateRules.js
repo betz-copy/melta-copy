@@ -308,6 +308,8 @@ const main = async () => {
     await migrateNoOverlappingRules();
     await migrateRuleBreaches();
 
-    mongoose.connections.forEach((conn) => conn.close());
+    mongoose.connections.forEach((conn) => {
+        conn.close();
+    });
 };
 main();

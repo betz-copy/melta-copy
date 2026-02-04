@@ -2,6 +2,7 @@ import { forEach } from 'lodash';
 import { ClientSession, startSession, Types } from 'mongoose';
 import { tryCatch } from '.';
 
+// biome-ignore lint/suspicious/noExplicitAny: lol
 export const withTransaction = async <Func extends (session: ClientSession) => Promise<any>>(func: Func): Promise<Awaited<ReturnType<Func>>> => {
     const session = await startSession();
     // biome-ignore lint/suspicious/noImplicitAnyLet: to avoid build errors
@@ -28,7 +29,9 @@ export const transformObjectIdKeysToString = (doc: Record<string, unknown>) => {
 
 export const transformResultDocsObjectIdKeysToString = (res: Record<string, unknown> | Record<string, unknown>[]) => {
     if (Array.isArray(res)) {
-        res.forEach((doc) => transformObjectIdKeysToString(doc));
+        res.forEach((doc) => {
+            transformObjectIdKeysToString(doc);
+        });
         return;
     }
 

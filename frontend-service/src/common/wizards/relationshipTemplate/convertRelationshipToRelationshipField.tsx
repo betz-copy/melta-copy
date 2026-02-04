@@ -23,8 +23,8 @@ const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleC
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const destEntity: IMongoEntityTemplatePopulated = entityTemplates.get(relationshipTemplate?.destinationEntityId!)!;
-    const srcEntity: IMongoEntityTemplatePopulated = entityTemplates.get(relationshipTemplate?.sourceEntityId!)!;
+    const destEntity: IMongoEntityTemplatePopulated = entityTemplates.get(relationshipTemplate?.destinationEntityId ?? '')!;
+    const srcEntity: IMongoEntityTemplatePopulated = entityTemplates.get(relationshipTemplate?.sourceEntityId ?? '')!;
     const [relatedTemplateId, setRelatedTemplateId] = useState<string>('');
     const newSourceEntity = relatedTemplateId === destEntity?._id ? srcEntity : destEntity;
     const fieldNamesExisting = newSourceEntity?.propertiesOrder;
@@ -138,7 +138,7 @@ const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleC
                                                 isDisabled={false}
                                                 convertToRelationshipField={{
                                                     options: [srcEntity, destEntity],
-                                                    originSourceEntityId: srcEntity?._id!,
+                                                    originSourceEntityId: srcEntity?._id,
                                                     setRelatedTemplateId,
                                                 }}
                                             />

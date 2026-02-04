@@ -8,6 +8,7 @@ import {
     IEntity,
     IMongoEntityTemplate,
     IMongoRelationshipTemplate,
+    IPropertyValue,
     ValidationError,
 } from '@microservices/shared';
 import Ajv from 'ajv';
@@ -80,6 +81,7 @@ ajv.addKeyword({
     keyword: 'serialCurrent',
     type: 'number',
 });
+ajv.addKeyword({ keyword: 'accountBalance', type: 'boolean' });
 
 class BulkActionValidator extends DefaultController {
     private entityManager: EntityManager;
@@ -108,10 +110,8 @@ class BulkActionValidator extends DefaultController {
         }
     }
 
-    private validateEntity(entityTemplate: IMongoEntityTemplate, metadataProperties: Record<string, any>) {
-        if (!entityTemplate) {
-            throw new ValidationError(`Entity template doesnt exist`, metadataProperties);
-        }
+    private validateEntity(entityTemplate: IMongoEntityTemplate, metadataProperties: Record<string, IPropertyValue>) {
+        if (!entityTemplate) throw new ValidationError(`Entity template doesnt exist`, metadataProperties);
 
         const validateFunction = ajv.compile(entityTemplate.properties);
         const valid = validateFunction(metadataProperties);
@@ -141,7 +141,7 @@ class BulkActionValidator extends DefaultController {
         const relationshipTemplatesIds = new Set<string>();
         const entityTemplatesIds = new Set<string>();
 
-        (actionsGroups as IAction[][]).forEach((actionsGroup) =>
+        (actionsGroups as IAction[][]).forEach((actionsGroup) => {
             actionsGroup.forEach((action) => {
                 if (action.actionType === ActionTypes.CreateRelationship) {
                     const metadata = action.actionMetadata as ICreateRelationshipMetadata;
@@ -154,8 +154,8 @@ class BulkActionValidator extends DefaultController {
 
                     entityTemplatesIds.add(metadata.templateId);
                 }
-            }),
-        );
+            });
+        });
 
         const [entities, relationshipTemplates, entitiesTemplates] = await Promise.all([
             this.entityManager.getEntitiesByIds([...entitiesIds]),
@@ -169,7 +169,7 @@ class BulkActionValidator extends DefaultController {
         const relationshipTemplatesByRelationshipTemplatesIds = groupBy(relationshipTemplates, (relationshipTemplate) => relationshipTemplate._id);
         const entitiesTemplatesByEntitiesTemplatesIds = groupBy(entitiesTemplates, (entityTemplate) => entityTemplate._id);
 
-        (actionsGroups as IAction[][]).forEach((actionsGroup) =>
+        (actionsGroups as IAction[][]).forEach((actionsGroup) => {
             actionsGroup.forEach((action, index) => {
                 if (action.actionType === ActionTypes.CreateRelationship) {
                     const metadata = action.actionMetadata as ICreateRelationshipMetadata;
@@ -192,8 +192,8 @@ class BulkActionValidator extends DefaultController {
                         this.validateEntity(entitiesTemplatesByEntitiesTemplatesIds[metadata.templateId][0], { ...metadata.properties, index });
                     }
                 }
-            }),
-        );
+            });
+        });
     }
 }
 

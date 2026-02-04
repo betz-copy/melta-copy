@@ -8,6 +8,7 @@ export const defaultValidationOptions: Joi.ValidationOptions = {
     convert: true,
 };
 
+// biome-ignore lint/suspicious/noExplicitAny: lol
 export const normalizeRequest = (req: any, value: any) => {
     req.originalBody = req.body;
     req.body = value.body;
@@ -19,7 +20,7 @@ export const normalizeRequest = (req: any, value: any) => {
     req.params = value.params;
 };
 
-const ValidateRequest = (schema: Joi.ObjectSchema<any>, options: Joi.ValidationOptions = defaultValidationOptions) => {
+const ValidateRequest = <T extends object>(schema: Joi.ObjectSchema<T>, options: Joi.ValidationOptions = defaultValidationOptions) => {
     const validator = async (req: Request) => {
         const { error, value } = schema.unknown().validate(req, options);
         if (error) throw error;
@@ -29,12 +30,14 @@ const ValidateRequest = (schema: Joi.ObjectSchema<any>, options: Joi.ValidationO
     return wrapValidator(validator);
 };
 
-export const basicValidateRequest = (schema: Joi.ObjectSchema<any>, value: any, options: Joi.ValidationOptions = defaultValidationOptions) => {
+export const basicValidateRequest = <T extends object>(
+    schema: Joi.ObjectSchema<T>,
+    value: unknown,
+    options: Joi.ValidationOptions = defaultValidationOptions,
+): T => {
     const { error, value: newValue } = schema.unknown().validate(value, options);
 
-    if (error) {
-        throw error;
-    }
+    if (error) throw error;
 
     return newValue;
 };

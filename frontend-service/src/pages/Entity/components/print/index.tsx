@@ -1,13 +1,16 @@
 import { PrintOutlined } from '@mui/icons-material';
-import { Button, ThemeProvider } from '@mui/material';
+import { Backdrop, Button, CircularProgress, ThemeProvider } from '@mui/material';
 import i18next from 'i18next';
-import React, { useEffect, useRef, useState } from 'react';
-import { UseReactToPrintOptions, useReactToPrint } from 'react-to-print';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useQuery } from 'react-query';
+import { useReactToPrint } from 'react-to-print';
 import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
-import PrintOptionsDialog, { PrintType } from '../../../../common/print/PrintOptionsDialog';
-import { IConnection, IEntityExpanded } from '../../../../interfaces/entities';
+import PrintOptionsDialog, { IEntityPrint, IPrintOptions, PrintType } from '../../../../common/print/PrintOptionsDialog';
+import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IFile } from '../../../../interfaces/preview';
+import { IMongoPrintingTemplate } from '../../../../interfaces/printingTemplates';
+import { getEntitiesTreeForPrint } from '../../../../services/entitiesService';
 import { lightTheme } from '../../../../theme';
 import { INestedRelationshipTemplates } from '../..';
 import { ComponentToPrint } from './ComponentToPrint';
@@ -17,56 +20,73 @@ const Print: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
     expandedEntity: IEntityExpanded;
     connections: INestedRelationshipTemplates[];
-}> = ({ entityTemplate, expandedEntity, connections }) => {
+}> = ({ entityTemplate, expandedEntity }) => {
     const componentRef = useRef(null);
 
     const [openModal, setOpenModal] = useState<boolean>(false);
-
     const [files, setFiles] = useState<IFile[]>([]);
-    const [selectedFiles, setSelectedFiles] = useState<IFile[]>(files);
-    const [filesLoadingStatus, setFilesLoadingStatus] = useState<Record<string, boolean>>({});
-
-    const [selectedConnections, setSelectedConnections] = useState<INestedRelationshipTemplates[]>([]);
-    const [connectionsTemplates, setConnectionsTemplates] = useState<INestedRelationshipTemplates[]>(connections);
-    const [connectionsInstances, setConnectionsInstances] = useState<IConnection[]>([]);
-
+    const [selectedFiles, setSelectedFiles] = useState<(IFile & { isLoading: boolean })[]>([]);
     const [title, setTitle] = useState<string | undefined>(undefined);
 
-    const [showDisabled, setShowDisabled] = useState<boolean>(true);
-    const [showEntityDates, setShowEntityDates] = useState<boolean>(true);
-    const [showPreviewPropertiesOnly, setShowPreviewPropertiesOnly] = useState<boolean>(false);
+    const [printOptions, setPrintOptions] = useState<IPrintOptions>({
+        isShowDisabled: true,
+        showEntitiesDates: true,
+        showPreviewPropertiesOnly: false,
+    });
 
-    useEffect(() => {
-        setConnectionsTemplates(connections);
-    }, [connections]);
+    const [selectedRelationShipIds, setSelectedRelationShipIds] = useState<string[]>([]);
+    const [isPreparingPdf, setIsPreparingPdf] = useState<boolean>(false);
+    const [selectedPrintingTemplate, setSelectedPrintingTemplate] = useState<IMongoPrintingTemplate>();
+
+    const { refetch, isFetching, data } = useQuery({
+        queryKey: ['getEntitiesTreeForPrint', expandedEntity.entity.properties._id, selectedRelationShipIds.join(',')],
+        queryFn: () => getEntitiesTreeForPrint(expandedEntity.entity.properties._id, selectedRelationShipIds, printOptions.isShowDisabled),
+        enabled: false,
+        onSuccess: () => {
+            setIsPreparingPdf(true);
+        },
+    });
 
     const handleClose = () => {
-        setSelectedConnections([]);
         setOpenModal(false);
     };
 
-    const handleOpen = async () => {
-        setSelectedConnections([]);
+    const handleOpen = () => {
+        setTitle(undefined);
+        setSelectedPrintingTemplate(undefined);
+        setSelectedRelationShipIds([]);
         setOpenModal(true);
     };
 
+    const documentTitle = `${entityTemplate.category.displayName}-${entityTemplate.displayName}-${new Date().toLocaleDateString('en-uk')}`;
+
     const handlePrint = useReactToPrint({
         contentRef: componentRef,
-        documentTitle: `${entityTemplate.category.displayName}-${entityTemplate.displayName}-${new Date().toLocaleDateString('en-uk')}`,
+        documentTitle,
         bodyClass: 'print-body',
-    } as UseReactToPrintOptions);
-
-    const getPageMargins = '@page { margin: 15px 10px 15px 10px !important; }';
-
-    const options = {
-        disabled: { show: showDisabled, set: setShowDisabled, label: 'entityPage.print.showDisabled' },
-        previewPropertiesOnly: {
-            show: showPreviewPropertiesOnly,
-            set: setShowPreviewPropertiesOnly,
-            label: 'entityPage.print.showOnlyPreviewProperties',
+        onAfterPrint: () => setIsPreparingPdf(false),
+        onBeforePrint: async () => {
+            setIsPreparingPdf(true);
         },
-        entityDates: { show: showEntityDates, set: setShowEntityDates, label: 'entityPage.print.showEntityDates' },
-    };
+    });
+
+    useEffect(() => {
+        if (isPreparingPdf && selectedFiles.every(({ isLoading }) => !isLoading)) handlePrint();
+    }, [isPreparingPdf, handlePrint, selectedFiles]);
+
+    const dialogOptions = useMemo(() => {
+        const final = {} as IEntityPrint['options'];
+
+        for (const [key, value] of Object.entries(printOptions)) {
+            final[key] = {
+                show: value,
+                set: () => setPrintOptions((prev) => ({ ...prev, [key]: !value })),
+                label: `entityPage.print.${key}`,
+            };
+        }
+
+        return final;
+    }, [printOptions]);
 
     return (
         <>
@@ -76,22 +96,35 @@ const Print: React.FC<{
                 </Button>
             </MeltaTooltip>
 
-            <div style={{ display: 'none' }}>
-                <style>{getPageMargins}</style>
-                <ThemeProvider theme={lightTheme}>
-                    <ComponentToPrint
-                        ref={componentRef}
-                        entityTemplate={entityTemplate}
-                        expandedEntity={expandedEntity}
-                        connectionsTemplates={selectedConnections}
-                        connectionsInstances={connectionsInstances}
-                        filesToPrint={selectedFiles}
-                        setSelectedFiles={setSelectedFiles}
-                        setFilesLoadingStatus={setFilesLoadingStatus}
-                        options={{ showDisabled, showEntityDates, showEntityFiles: !!selectedFiles.length, showPreviewPropertiesOnly }}
-                    />
-                </ThemeProvider>
-            </div>
+            {isPreparingPdf && (
+                <div style={{ display: 'none' }}>
+                    <style>{'@page { margin: 15px 10px 15px 10px !important; } body { background-color: white !important; }'}</style>
+                    <ThemeProvider theme={lightTheme}>
+                        <ComponentToPrint
+                            ref={componentRef}
+                            entityTemplate={entityTemplate}
+                            entity={
+                                data ?? {
+                                    ...expandedEntity.entity,
+                                    relationshipId: '',
+                                    children: [],
+                                }
+                            }
+                            filesToPrint={selectedFiles}
+                            setSelectedFiles={setSelectedFiles}
+                            options={{
+                                ...printOptions,
+                                showEntityFiles: !!selectedFiles.length,
+                                appendSignatureField: selectedPrintingTemplate?.appendSignatureField,
+                                addEntityCheckbox: selectedPrintingTemplate?.addEntityCheckbox,
+                            }}
+                            printTitle={title}
+                            printingTemplate={selectedPrintingTemplate}
+                        />
+                    </ThemeProvider>
+                </div>
+            )}
+
             {openModal && (
                 <PrintOptionsDialog
                     open={openModal}
@@ -99,27 +132,32 @@ const Print: React.FC<{
                         type: PrintType.Entity,
                         instance: expandedEntity,
                         template: entityTemplate,
-                        entityConnections: {
-                            connectionsTemplates,
-                            setConnectionsTemplates,
-                            setConnectionsInstances,
-                            selectedConnections,
-                            setSelectedConnections,
-                        },
-                        options,
+                        options: dialogOptions,
                     }}
                     handleClose={handleClose}
                     files={files}
                     setFiles={setFiles}
                     selectedFiles={selectedFiles}
                     setSelectedFiles={setSelectedFiles}
-                    filesLoadingStatus={filesLoadingStatus}
-                    setFilesLoadingStatus={setFilesLoadingStatus}
-                    onClick={handlePrint}
+                    onClick={() => {
+                        handleClose();
+                        selectedRelationShipIds.length ? refetch() : setIsPreparingPdf(true);
+                    }}
                     title={title}
                     setTitle={setTitle}
+                    setSelectedRelationShipIds={setSelectedRelationShipIds}
+                    selectedPrintingTemplate={selectedPrintingTemplate}
+                    setSelectedPrintingTemplate={setSelectedPrintingTemplate}
+                    isPrintEntities={true}
                 />
             )}
+
+            <Backdrop open={isFetching || isPreparingPdf} sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 2 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+                    <CircularProgress color="inherit" />
+                    <span style={{ fontWeight: 'bold' }}>{i18next.t(`entityPage.print.${isFetching ? 'fetchingData' : 'generatingPdf'}`)}</span>
+                </div>
+            </Backdrop>
         </>
     );
 };

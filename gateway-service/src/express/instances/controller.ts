@@ -1,7 +1,7 @@
 import { promises as fsp } from 'node:fs';
+import { promisify } from 'node:util';
 import { IDeleteEntityBody, ISearchEntitiesByLocationBody } from '@microservices/shared';
 import { Request, Response } from 'express';
-import { promisify } from 'util';
 import DefaultController from '../../utils/express/controller';
 import InstancesManager from './manager';
 
@@ -78,7 +78,7 @@ class InstancesController extends DefaultController<InstancesManager> {
 
         res.json(
             await this.manager.updateEntityInstance(
-                req.params.id,
+                req.params.id as string,
                 instanceData,
                 req.files || (req.file ? [req.file] : []),
                 ignoredRules,
@@ -99,7 +99,7 @@ class InstancesController extends DefaultController<InstancesManager> {
 
     async searchEntitiesOfTemplate(req: Request, res: Response) {
         const { childTemplateIds, externalId, ...restBody } = req.body;
-        res.json(await this.manager.searchEntitiesOfTemplate(req.params.templateId, restBody, req.user!.id, childTemplateIds, externalId));
+        res.json(await this.manager.searchEntitiesOfTemplate(req.params.templateId as string, restBody, req.user!.id, childTemplateIds, externalId));
     }
 
     async getEntitiesCountByTemplates(req: Request, res: Response) {
@@ -111,7 +111,7 @@ class InstancesController extends DefaultController<InstancesManager> {
         const { ignoredRules, childTemplateId, ...instanceData } = req.body;
         res.json(
             await this.manager.duplicateEntityInstance(
-                req.params.id,
+                req.params.id as string,
                 instanceData,
                 req.files || (req.file ? [req.file] : []),
                 ignoredRules,
@@ -136,12 +136,12 @@ class InstancesController extends DefaultController<InstancesManager> {
     async deleteRelationshipInstance(req: Request, res: Response) {
         const { ignoredRules } = req.body;
 
-        res.json(await this.manager.deleteRelationshipInstance(req.params.id, ignoredRules, req.user!.id));
+        res.json(await this.manager.deleteRelationshipInstance(req.params.id as string, ignoredRules, req.user!.id));
     }
 
     async updateEntityStatus(req: Request, res: Response) {
         const { disabled, ignoredRules } = req.body;
-        res.json(await this.manager.updateEntityStatus(req.params.id, disabled, ignoredRules, req.user!.id));
+        res.json(await this.manager.updateEntityStatus(req.params.id as string, disabled, ignoredRules, req.user!.id));
     }
 
     async exportEntityToDocumentTemplate(req: Request, res: Response) {
@@ -152,7 +152,7 @@ class InstancesController extends DefaultController<InstancesManager> {
         res.send(
             await this.manager.exportEntityToDocumentTemplate({
                 documentTemplateId: req.query.documentTemplateId as string,
-                entity: await this.manager.service.getEntityInstanceById(req.params.entityId),
+                entity: await this.manager.service.getEntityInstanceById(req.params.entityId as string),
             }),
         );
     }
@@ -164,7 +164,7 @@ class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async getChartOfTemplate(req: Request, res: Response) {
-        res.json(await this.manager.getChartOfTemplate(req.params.templateId, req.body, req.user!.id));
+        res.json(await this.manager.getChartOfTemplate(req.params.templateId as string, req.body, req.user!.id));
     }
 }
 

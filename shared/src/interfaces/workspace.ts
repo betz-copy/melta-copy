@@ -51,6 +51,7 @@ export interface IMetadata {
         sourceFieldForColor: string;
     };
     numOfRelationshipFieldsToShow: number;
+    twinTemplates: string[];
 }
 
 export interface IWorkspace {

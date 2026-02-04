@@ -11,7 +11,12 @@ export interface FlowParameters {
     isRequired?: string;
     Description?: string;
     IsSingleValue?: string;
-    Options?: Array<any>;
+    Options?:
+        | {
+              Name: string;
+              Value: string;
+          }[]
+        | undefined;
 }
 
 export interface FlowFields {

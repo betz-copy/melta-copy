@@ -6,6 +6,7 @@ import { useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
 import * as Yup from 'yup';
 import { IChildTemplateMap, IChildTemplatePopulated, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
+import { IPropertyValue } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { useClientSideUserStore } from '../../../stores/clientSideUser';
@@ -36,7 +37,7 @@ const ChooseTemplate: React.FC<{
     parentId?: string;
     chooseMode?: IChooseTemplateMode;
     entityId?: string;
-    getInitialProperties?: (newTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => Record<string, any>;
+    getInitialProperties?: (newTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => Record<string, IPropertyValue>;
 }> = ({ values, touched, errors, setFieldValue, chooseMode, parentId, getInitialProperties }) => {
     const { categoryId } = useParams<{ categoryId?: string }>();
     const queryClient = useQueryClient();

@@ -13,6 +13,7 @@ export interface IEquation {
     rhsArgument: IArgument;
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: never doubt Noam
 export const isEquation = (equation: any): equation is IEquation => {
     return equation.isEquation;
 };

@@ -9,6 +9,14 @@ export interface IRelationship {
     destinationEntityId: string;
 }
 
+export interface IMongoRelationship extends Omit<IRelationship, 'properties'> {
+    properties: object & {
+        _id: string;
+        createdAt: Date;
+        updatedAt: Date;
+    };
+}
+
 export interface IRelationshipPopulated {
     templateId: string;
     properties: object & {

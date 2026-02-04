@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noExplicitAny: lol */
 import { NextFunction, Request, Response } from 'express';
 import config from '../../config';
 import { FunctionKey } from '../../types';
@@ -43,9 +44,9 @@ export const createController = <T extends InstanceType<typeof DefaultController
 
                     if (typeof workspaceId !== 'string') return next(new BadRequestError('Invalid workspace id in header'));
 
-                    if (isMiddleware) return (new Controller(workspaceId)[funcName] as Function)(req, res, next).then(next).catch(next);
+                    if (isMiddleware) return new Controller(workspaceId)[funcName](req, res, next).then(next).catch(next);
 
-                    return (new Controller(workspaceId)[funcName] as Function)(req, res, next).catch(next);
+                    return new Controller(workspaceId)[funcName](req, res, next).catch(next);
                 };
             },
         },

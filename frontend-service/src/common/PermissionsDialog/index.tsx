@@ -33,10 +33,10 @@ const PermissionsDialog: React.FC<{
 
     const initialTab = mode === 'view' ? 'myAccount' : 'myPermissions';
     const [tabValue, setTabValue] = useState(initialTab);
-    const [isPreferencesUpdated, setIsPreferencesUpdated] = useState(false);
-    const [isUnsavedChangesDialogOpen, setIsUnsavedChangesDialogOpen] = useState(false);
+    const [isPreferencesUpdated, setIsPreferencesUpdated] = useState<boolean>(false);
+    const [isUnsavedChangesDialogOpen, setIsUnsavedChangesDialogOpen] = useState<boolean>(false);
 
-    const [openMeltaUpdates, setOpenMeltaUpdates] = useState(false);
+    const [openMeltaUpdates, setOpenMeltaUpdates] = useState<boolean>(false);
     const queryClient = useQueryClient();
     const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
 
@@ -90,9 +90,8 @@ const PermissionsDialog: React.FC<{
                             <Grid>
                                 <TabList
                                     onChange={(_event, newValue) => {
-                                        if (newValue === 'myPermissions' && isPreferencesUpdated) {
-                                            setIsUnsavedChangesDialogOpen(true);
-                                        } else setTabValue(newValue);
+                                        if (newValue === 'myPermissions' && isPreferencesUpdated) setIsUnsavedChangesDialogOpen(true);
+                                        else setTabValue(newValue);
                                     }}
                                     scrollButtons="auto"
                                     variant="scrollable"
@@ -113,13 +112,11 @@ const PermissionsDialog: React.FC<{
                                 </TabList>
                             </Grid>
                             <Grid>
-                                {Object.entries(tabsComponentsMapping).map(([tabName, tabComponent]) => {
-                                    return (
-                                        <TabPanel key={tabName} value={tabName} sx={{ padding: 0 }}>
-                                            {tabComponent}
-                                        </TabPanel>
-                                    );
-                                })}
+                                {Object.entries(tabsComponentsMapping).map(([tabName, tabComponent]) => (
+                                    <TabPanel key={tabName} value={tabName} sx={{ padding: 0 }}>
+                                        {tabComponent}
+                                    </TabPanel>
+                                ))}
                             </Grid>
                         </Grid>
                     </TabContext>
@@ -137,14 +134,11 @@ const PermissionsDialog: React.FC<{
                                 {i18next.t('showTour')}
                             </Button>
                         )}
-                        <Button
-                            onClick={() => {
-                                setOpenMeltaUpdates(true);
-                            }}
-                            disabled={!config?.meltaUpdates}
-                        >
-                            {i18next.t('meltaUpdates.btn')}
-                        </Button>
+                        {!!config?.meltaUpdates.display && (
+                            <Button onClick={() => setOpenMeltaUpdates(true)} disabled={!config?.meltaUpdates}>
+                                {i18next.t('meltaUpdates.btn')}
+                            </Button>
+                        )}
                     </Grid>
                 </Box>
             )}
@@ -159,18 +153,11 @@ const PermissionsDialog: React.FC<{
                     setTabValue(tabValue);
                     setIsUnsavedChangesDialogOpen(false);
                 }}
-                handleClose={() => {
-                    setIsUnsavedChangesDialogOpen(false);
-                }}
+                handleClose={() => setIsUnsavedChangesDialogOpen(false)}
                 body={i18next.t('user.areYouSure')}
             />
-            {config?.meltaUpdates && (
-                <MeltaUpdates
-                    open={openMeltaUpdates}
-                    handleClose={handleCloseMeltaUpdates}
-                    meltaUpdates={config?.meltaUpdates}
-                    titleDescription={config?.meltaUpdatesDescription}
-                />
+            {config?.meltaUpdates && !!config?.meltaUpdates.display && (
+                <MeltaUpdates open={openMeltaUpdates} handleClose={handleCloseMeltaUpdates} meltaUpdates={config?.meltaUpdates} />
             )}
         </Dialog>
     );

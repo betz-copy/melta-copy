@@ -1,13 +1,13 @@
 import { Grid, Typography } from '@mui/material';
 import React, { CSSProperties, Fragment } from 'react';
 import { useQueryClient } from 'react-query';
-import { formatToString } from '../../../../common/EntityProperties';
 import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
 import { environment } from '../../../../globals';
 import { IEntity } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IGetUnits } from '../../../../interfaces/units';
 import { useDarkModeStore } from '../../../../stores/darkMode';
+import { formatToString } from '../../../../utils/entityProperties';
 
 const { ganttSettings } = environment;
 

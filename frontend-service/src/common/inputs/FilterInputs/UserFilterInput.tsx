@@ -43,7 +43,7 @@ const UserFilterInput: React.FC<UserFilterProps> = ({ filterField, handleFilterT
                             : undefined
                     }
                     currentUser={{ value: currentUser, set: setCurrentUser }}
-                    handleOnChange={(user: IKartoffelUserStringFields | null, _values?: any) =>
+                    handleOnChange={(user: IKartoffelUserStringFields | null, _values?: { _id: string; displayName: string }) =>
                         handleFilterFieldChange({
                             ...filterField,
                             filter: user

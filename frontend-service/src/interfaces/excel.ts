@@ -1,5 +1,5 @@
 import { IMongoChildTemplatePopulated } from './childTemplates';
-import { IEntity, IEntityWithIgnoredRules, IRequiredConstraint, IUniqueConstraint, IUsersNotFoundError } from './entities';
+import { IEntity, IEntityWithIgnoredRules, IPropertyValue, IRequiredConstraint, IUniqueConstraint, IUsersNotFoundError } from './entities';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from './entityTemplates';
 import { ActionErrors, ActionTypes, IAction, IActionMetadataPopulated, ICreateEntityMetadata } from './ruleBreaches/actionMetadata';
 import { IBrokenRule, IBrokenRulePopulated } from './ruleBreaches/ruleBreach';
@@ -24,7 +24,7 @@ export type IBrokenRuleEntity = {
         actionMetadata: IActionMetadataPopulated;
     }[];
     rawActions: IAction[];
-    entities: { properties: Record<string, any> | IEntity['properties'] }[];
+    entities: { properties: Record<string, IPropertyValue> | IEntity['properties'] }[];
 };
 
 export interface IError {
@@ -33,7 +33,7 @@ export interface IError {
 }
 
 export interface IFailedEntity {
-    properties: Record<string, any>;
+    properties: Record<string, IPropertyValue>;
     errors: IError[];
     coloredFields?: Record<string, string>;
 }

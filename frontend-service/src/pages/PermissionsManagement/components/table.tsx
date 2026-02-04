@@ -3,10 +3,11 @@ import { AgGridReact } from '@ag-grid-community/react';
 import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 import { Chip, Grid, IconButton } from '@mui/material';
 import i18next from 'i18next';
-import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
+import React, { ForwardedRef, forwardRef, useMemo } from 'react';
 import ScrollContainer from 'react-indiana-drag-scroll';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import AgGridTable from '../../../common/agGridTable';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { environment } from '../../../globals';
 import { IMongoCategory } from '../../../interfaces/categories';
@@ -17,11 +18,10 @@ import { IGetUnits } from '../../../interfaces/units';
 import { IUser, PermissionData, RelatedPermission } from '../../../interfaces/users';
 import { IWorkspace } from '../../../interfaces/workspaces';
 import { searchRolesRequest, searchUsersRequest } from '../../../services/userService';
-import { useDarkModeStore } from '../../../stores/darkMode';
 import { useWorkspaceStore } from '../../../stores/workspace';
-import { agGridLocaleText } from '../../../utils/agGrid/agGridLocaleText';
 import { translatedEnumColDef } from '../../../utils/agGrid/commonColDefs';
 import { tryCatch } from '../../../utils/tryCatch';
+import { WalletTransferData } from '../../Entity/walletTransfers';
 
 const { infiniteScrollPageCount } = environment.permission;
 
@@ -41,7 +41,7 @@ const getChipsFromArray = (chips: { key: string; label: string }[]) => (
     </ScrollContainer>
 );
 
-const defaultColDef: ColDef<PermissionData> = {
+export const defaultColDef: ColDef<PermissionData | WalletTransferData> = {
     editable: false,
     sortable: false,
     flex: 1,
@@ -285,27 +285,9 @@ const PermissionsTable = forwardRef<PermissionsTableRef<PermissionData>, Permiss
         { permissionType, categories, onDeletePermissions, onEditPermissions, quickFilterText, getRowId },
         ref: ForwardedRef<PermissionsTableRef<PermissionData>>,
     ) => {
-        const darkMode = useDarkModeStore((state) => state.darkMode);
         const workspace = useWorkspaceStore((state) => state.workspace);
-        const gridRef = useRef<AgGridReact<PermissionData>>(null);
-
         const queryClient = useQueryClient();
         const units = queryClient.getQueryData<IGetUnits>('getUnits')!;
-
-        const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
-
-        useImperativeHandle(ref, () => ({
-            refreshServerSide() {
-                gridRef.current?.api.refreshServerSide({ purge: true });
-            },
-            updateRowDataClientSide(data: PermissionData) {
-                gridRef.current?.api.forEachNode((rowNode) => {
-                    if (rowNode.data && getRowId(data) === getRowId(rowNode.data)) {
-                        rowNode.updateData(data);
-                    }
-                });
-            },
-        }));
 
         const datasourceOnFail = (error: unknown) => {
             console.error('failed loading all users:', error);
@@ -319,46 +301,13 @@ const PermissionsTable = forwardRef<PermissionsTableRef<PermissionData>, Permiss
         );
 
         return (
-            <AgGridReact<PermissionData>
-                ref={gridRef}
-                className={`ag-theme-material${darkMode ? '-dark' : ''}`}
-                containerStyle={{
-                    height: '780px',
-                    width: '100%',
-                    marginBottom: '30px',
-                    fontFamily: 'Rubik',
-                    fontSize: `${defaultFontSize}px`,
-                    borderRadius: '70px',
-                }}
-                defaultColDef={defaultColDef}
-                columnDefs={columnDefs(workspace._id, permissionType, categories, onDeletePermissions, onEditPermissions, units)}
-                getRowId={({ data }) => getRowId(data)}
-                {...rowModelProps}
-                paginationAutoPageSize
-                rowHeight={defaultRowHeight}
-                rowStyle={{ alignItems: 'center' }}
-                enableRtl
-                enableCellTextSelection
-                suppressMovableColumns
-                suppressCsvExport
-                suppressExcelExport
-                suppressContextMenu
-                sideBar={{
-                    toolPanels: [
-                        {
-                            id: 'columns',
-                            labelDefault: 'Columns',
-                            labelKey: 'columns',
-                            iconKey: 'columns',
-                            toolPanel: 'agColumnsToolPanel',
-                            toolPanelParams: { suppressRowGroups: true, suppressValues: true, suppressPivotMode: true },
-                        },
-                    ],
-                    position: 'left',
-                }}
+            <AgGridTable
+                defaultColDef={defaultColDef as ColDef<PermissionData>}
+                getRowId={getRowId}
                 quickFilterText={quickFilterText}
-                localeText={agGridLocaleText}
-                animateRows
+                rowModelProps={rowModelProps}
+                columnDefs={columnDefs(workspace._id, permissionType, categories, onDeletePermissions, onEditPermissions, units)}
+                ref={ref}
             />
         );
     },
