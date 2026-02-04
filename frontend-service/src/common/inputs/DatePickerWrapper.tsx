@@ -1,5 +1,4 @@
 import { SxProps } from '@mui/material';
-import TextField from '@mui/material/TextField';
 import { PickersLocaleText } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -44,7 +43,11 @@ const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
     <LocalizationProvider
         dateAdapter={AdapterDateFns}
         adapterLocale={he}
-        localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true }) as PickersLocaleText}
+        localeText={
+            i18next.t('muiDatePickersLocaleText', {
+                returnObjects: true,
+            }) as PickersLocaleText
+        }
     >
         <DatePicker
             format={date}
@@ -55,20 +58,24 @@ const DatePickerWrapper: React.FC<DatePickerWrapperProps> = ({
             label={label}
             value={!value ? null : typeof value === 'string' ? new Date(value) : value}
             onChange={onChange}
-            slots={{ textField: (params) => <TextField {...params} size="small" fullWidth /> }}
+            onAccept={onChange}
+            readOnly={readOnly || disableKeyboardInput}
+            disabled={readOnly}
             slotProps={{
+                field: {
+                    readOnly: readOnly || disableKeyboardInput,
+                },
                 textField: {
-                    size: 'small',
-                    fullWidth: true,
-                    sx: { boxSizing: 'border-box', width: '100%', ...sx },
-                    InputProps: {
-                        style: { borderRadius: borderRadius || (!directionIsRow ? '7px' : isStartDate ? '0px 7px 7px 0px' : '7px 0px 0px 7px') },
+                    sx: {
+                        boxSizing: 'border-box',
+                        width: '100%',
+                        ...sx,
+                        '& .MuiInputBase-root': {
+                            borderRadius: borderRadius || (!directionIsRow ? '7px' : isStartDate ? '0px 7px 7px 0px' : '7px 0px 0px 7px'),
+                        },
                     },
-                    inputProps: { readOnly: disableKeyboardInput || readOnly },
                 },
             }}
-            readOnly={readOnly}
-            disabled={readOnly}
         />
     </LocalizationProvider>
 );

@@ -27,7 +27,7 @@ export const textFilterToFilterOfTemplate = (field: string, { type, filter }: IA
     const escapeRegExp = (string: string) => string.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 
     const filterValue = filterType === FilterType.field ? `${fieldFilterPrefix}${filter}` : filter;
-    const escapedValue = filterType === FilterType.field ? filterValue : filterValue ? escapeRegExp(filterValue!) : '';
+    const escapedValue = filterType === FilterType.field ? filterValue : filterValue ? escapeRegExp(String(filterValue)!) : '';
 
     switch (type) {
         case 'equals':
