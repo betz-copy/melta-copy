@@ -6,6 +6,7 @@ import { IEntity } from '../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { useDarkModeStore } from '../stores/darkMode';
 import { useWorkspaceStore } from '../stores/workspace';
+import { getFirstXFilledPropsKeys } from '../utils/templates';
 import { EntityPropertiesInternal } from './EntityProperties';
 import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
 
@@ -30,14 +31,21 @@ export const EntityLink: React.FC<EntityLinkProps> = ({
 }) => {
     const theme = useTheme();
     const workspace = useWorkspaceStore((state) => state.workspace);
-    const { headlineSubTitleFontSize } = workspace.metadata.mainFontSizes;
+    const {
+        numOfPreviewFieldsToShow,
+        mainFontSizes: { headlineSubTitleFontSize },
+    } = workspace.metadata;
 
     const linkText = entityTemplate ? entityTemplate.displayName : i18next.t('ruleBreachInfo.updateEntityActionInfo.unknownEntity');
     const darkMode = useDarkModeStore((state) => state.darkMode);
-    const entityPropertiesTooltip =
-        !entityTemplate || !entity ? (
-            i18next.t('ruleBreachInfo.deletedEntity')
-        ) : !entityTemplate.propertiesPreview.length ? (
+    const entityPropertiesTooltip = (() => {
+        if (!entityTemplate || !entity) {
+            return i18next.t('ruleBreachInfo.deletedEntity');
+        }
+
+        const fieldsToShow = entityPropertiesToShowTooltipOverride ?? getFirstXFilledPropsKeys(numOfPreviewFieldsToShow, entityTemplate, entity);
+
+        return !fieldsToShow.length ? (
             i18next.t('graph.noPreviewProperties')
         ) : (
             <Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>
@@ -46,14 +54,14 @@ export const EntityLink: React.FC<EntityLinkProps> = ({
                     coloredFields={entity.coloredFields}
                     entityTemplate={entityTemplate}
                     darkMode={darkMode}
-                    showPreviewPropertiesOnly
-                    overridePropertiesToShow={entityPropertiesToShowTooltipOverride}
+                    overridePropertiesToShow={fieldsToShow}
                     propertiesToHighlight={entityPropertiesToHighlightTooltip}
                     propertiesToHighlightColor={entityPropertiesToHighlightColor}
                     mode="white"
                 />
             </Grid>
         );
+    })();
 
     return (
         <MeltaTooltip
