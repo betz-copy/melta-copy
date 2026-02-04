@@ -51,6 +51,11 @@ export const environment = {
             card: 'cards-view',
         },
     },
+    entityReferenceField: {
+        backgroundColor: '#EBEFFA',
+        titleColor: '#9398C2',
+        textColor: '#1E2775',
+    },
     graphSettings: {
         nodeConnectionsCountRangesToNodeSize: {
             '0-2': 3,
