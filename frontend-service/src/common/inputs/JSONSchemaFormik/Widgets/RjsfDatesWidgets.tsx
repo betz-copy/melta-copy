@@ -13,6 +13,7 @@ import { he } from 'date-fns/locale';
 import i18next from 'i18next';
 import React, { JSX } from 'react';
 import { environment } from '../../../../globals';
+import { CleanViewRow, isCleanView } from './CleanView';
 
 const {
     formats: { date, dateTime },
@@ -75,6 +76,12 @@ const getRjsfDateOrDateTimeWidget =
             const dateString = dateOrDateTime === 'date' ? format(date, 'yyyy-MM-dd') : date.toISOString();
             return onChange(dateString);
         };
+
+        if (isCleanView(readonly, formContext)) {
+            const parsedDate = parseDefaultDate(value);
+            const cleanValue = parsedDate ? format(parsedDate, inputFormat) : undefined;
+            return <CleanViewRow label={label || schema.title} value={cleanValue} />;
+        }
 
         return (
             <LocalizationProvider

@@ -9,6 +9,7 @@ import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { useWorkspaceStore } from '../../../../stores/workspace';
 import { EntityWizardValues } from '../../../dialogs/entity';
 import TemplateEntitiesAutocomplete from '../../TemplateEntitiesAutocomplete';
+import { CleanViewRow, isCleanView } from './CleanView';
 
 const RjsfTemplateReferenceWidget = ({
     id,
@@ -75,6 +76,12 @@ const RjsfTemplateReferenceWidget = ({
         isDestWallet &&
         twinTemplates.includes(sourceWalletTemplateId) &&
         twinTemplates.includes(destWalletTemplateId);
+
+    if (isCleanView(readonly, formContext)) {
+        const relatedField = schema.relationshipReference?.relatedTemplateField;
+        const cleanValue = relatedField ? value?.properties?.[relatedField] : (value?.name ?? value?._id);
+        return <CleanViewRow label={label || schema.title} value={cleanValue} />;
+    }
 
     return (
         <TemplateEntitiesAutocomplete

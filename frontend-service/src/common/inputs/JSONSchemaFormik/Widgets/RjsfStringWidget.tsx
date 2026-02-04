@@ -1,5 +1,5 @@
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
-import { Box, IconButton, InputAdornment, TextField, Typography } from '@mui/material';
+import { IconButton, InputAdornment, TextField } from '@mui/material';
 import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import { format, parseISO } from 'date-fns';
@@ -7,6 +7,7 @@ import React from 'react';
 import { environment } from '../../../../globals';
 import { containsHTMLTags, convertToPlainText } from '../../../../utils/HtmlTagsStringValue';
 import { getFixedNumber, getTextDirection } from '../../../../utils/stringValues';
+import { CleanViewRow, isCleanView } from './CleanView';
 
 const RjsfTextWidget = ({
     id,
@@ -77,17 +78,8 @@ const RjsfTextWidget = ({
         onChange(newValue);
     };
 
-    if (readonly && formContext?.viewMode === 'clean') {
-        return (
-            <Box display="flex" marginBottom={1}>
-                <Typography variant="body2" sx={{ color: 'text.secondary', minWidth: (theme) => theme.spacing(18), flexShrink: 0 }}>
-                    {label || schema.title}:
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'text.primary' }}>
-                    {finalValue || '-'}
-                </Typography>
-            </Box>
-        );
+    if (isCleanView(readonly, formContext)) {
+        return <CleanViewRow label={label || schema.title} value={finalValue} />;
     }
 
     return (
