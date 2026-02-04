@@ -34,6 +34,7 @@ export const SchemaForm = ({ viewMode, values, errors, touched, setFieldValue, s
                 touched={touched.details ?? {}}
                 setFieldTouched={(field) => setFieldTouched(`details.${field}`)}
                 readonly={viewMode}
+                viewMode={viewMode ? 'clean' : undefined}
                 toPrint={toPrint}
             />
             {toPrint && textAreaValues.length > 0 && textAreaValues.map((textArea) => <TextAreaProperty key={textArea.key} textArea={textArea} />)}
