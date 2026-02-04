@@ -232,6 +232,7 @@ const createPatchesFromEntity = async (
                         type: PatchType.PARAGRAPH,
                         children: [
                             new ImageRun({
+                                type: 'png',
                                 data: imageBuffer,
                                 transformation: {
                                     width: 95,
@@ -278,8 +279,9 @@ export const patchDocumentAsStream = async (
 
     // Due to the fact that 'patchDocument' function can patch only one instance of a string per patch,
     // we need to check if the document can no longer change with the patches
-    let patchedDocument = await patchDocument(arrayBuffer, { patches, keepOriginalStyles: true });
-    let newPatchedDocument = await patchDocument(patchedDocument, { patches, keepOriginalStyles: true });
+    const patchOptions = { data: arrayBuffer, patches, keepOriginalStyles: true, outputType: 'uint8array' as const };
+    let patchedDocument = await patchDocument(patchOptions);
+    let newPatchedDocument = await patchDocument({ ...patchOptions, data: patchedDocument });
 
     // Prevent infinite loop and re-patch while there are patches.
     for (
@@ -288,7 +290,7 @@ export const patchDocumentAsStream = async (
         patchIterations += 1
     ) {
         patchedDocument = newPatchedDocument;
-        newPatchedDocument = await patchDocument(patchedDocument, { patches, keepOriginalStyles: true });
+        newPatchedDocument = await patchDocument({ ...patchOptions, data: patchedDocument });
     }
 
     // const nodeBuffer = Buffer.from(arrayBuffer);
@@ -306,7 +308,7 @@ export const patchDocumentAsStream = async (
             keysToDelete?.map((patch) => [patch, { type: PatchType.PARAGRAPH, children: [new TextRun('')] }]),
         );
         // Apply the new patches to the document
-        patchedDocument = await patchDocument(patchedDocument, { patches: emptyPatches, keepOriginalStyles: true });
+        patchedDocument = await patchDocument({ data: patchedDocument, patches: emptyPatches, keepOriginalStyles: true, outputType: 'uint8array' });
     }
 
     return Buffer.from(patchedDocument);
