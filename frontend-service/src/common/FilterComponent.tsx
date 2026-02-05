@@ -45,6 +45,12 @@ export const initializedFilterField: Record<string, IAgGridFilter> = {
 export const isValidAGGridFilter = (filter: IAgGridFilter | undefined): boolean => {
     if (!filter) return false;
 
+    if (
+        filter.filterType !== FilterTypes.set &&
+        (filter.type === BasicFilterOperationTypes.blank || filter.type === BasicFilterOperationTypes.notBlank)
+    )
+        return true;
+
     switch (filter.filterType) {
         case FilterTypes.text:
             return filter.filter !== undefined && filter.filter !== '';
