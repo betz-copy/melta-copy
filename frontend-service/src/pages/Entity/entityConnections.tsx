@@ -194,7 +194,6 @@ export const EntityConnections: React.FC<EntityConnectionsProps> = ({
 
                                             return (
                                                 <ConnectionsTable
-                                                    // eslint-disable-next-line react/no-array-index-key
                                                     key={connectionTemplate.relationshipTemplate._id}
                                                     expandedEntity={expandedEntity}
                                                     templateIds={templateIds}
