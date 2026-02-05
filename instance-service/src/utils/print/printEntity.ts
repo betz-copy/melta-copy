@@ -84,6 +84,18 @@ export const buildEntityTree =
         const { records } = result;
         if (!records?.length) return null;
 
+        const entityTemplateService = new EntityTemplateService(workspaceId);
+        const templateCache = new Map<string, IMongoEntityTemplate>();
+
+        const getOrCacheEntityTemplate = async (templateId: string) => {
+            const cached = templateCache.get(templateId);
+            if (cached) return cached;
+
+            const template = await entityTemplateService.getEntityTemplateById(templateId);
+            templateCache.set(templateId, template);
+            return template;
+        };
+
         const entityCache: EntityCache = new Map();
         const adjacencyList: AdjacencyList = new Map();
         const processedEdges = new Set<string>();
@@ -95,9 +107,12 @@ export const buildEntityTree =
             if (!node1 || !node2 || !relationship) continue;
 
             const templateId1 = node1.labels[0];
-            const entityTemplate1 = await new EntityTemplateService(workspaceId).getEntityTemplateById(templateId1);
             const templateId2 = node2.labels[0];
-            const entityTemplate2 = await new EntityTemplateService(workspaceId).getEntityTemplateById(templateId2);
+
+            const [entityTemplate1, entityTemplate2] = await Promise.all([
+                getOrCacheEntityTemplate(templateId1),
+                getOrCacheEntityTemplate(templateId2),
+            ]);
 
             const entity1 = await getOrCacheEntity(node1, entityCache, entityTemplate1);
             const entity2 = await getOrCacheEntity(node2, entityCache, entityTemplate2);

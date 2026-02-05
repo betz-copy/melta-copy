@@ -1,7 +1,6 @@
-import { BadRequestError } from '@microservices/shared';
+import { BadRequestError, IKartoffelUser } from '@microservices/shared';
 import axios from 'axios';
-import config from '../../config';
-import { IKartoffelUser } from './interface';
+import config from '../config';
 
 const { url, baseEntitiesRoute, searchRoute, fieldToSearch, getByIdRoute, requestTimeout, profilePath, maxPageSize } = config.kartoffel;
 

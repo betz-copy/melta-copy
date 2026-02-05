@@ -9,7 +9,6 @@ const {
 } = config;
 
 class EntityTemplateService extends TemplatesManagerService {
-    // entity templates
     async getEntityTemplateById(id: string) {
         const { data } = await this.api.get<IMongoEntityTemplate>(`${getByIdRoute}/${id}`);
 

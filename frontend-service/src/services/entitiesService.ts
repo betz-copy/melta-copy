@@ -51,9 +51,7 @@ const transformProperties = (
     Object.entries(properties).reduce<Record<string, IPropertyValue>>((acc, [key, property]) => {
         const templateProperty = templateProperties[key];
 
-        if (templateProperty?.format === PropertyFormat.kartoffelUserField) {
-            return acc;
-        }
+        if (templateProperty?.format === PropertyFormat.kartoffelUserField) return acc;
 
         const handler = templateProperty?.format ? handlers[templateProperty.format] : undefined;
         let value: IPropertyValue | typeof OMIT_PROPERTY | undefined;
@@ -66,6 +64,17 @@ const transformProperties = (
 
         return acc;
     }, {});
+
+const transformDate = (property: IPropertyValue) => (property ? new Date(property).toISOString().split('T')[0] : undefined);
+
+const transformDateTime = (property: IPropertyValue) => (property ? new Date(property).toISOString() : undefined);
+
+const transformUser = (property: IPropertyValue) => (property ? property._id : undefined);
+
+const transformRelationshipRef = (property: IPropertyValue) => property?.properties._id;
+
+const isUUID = (str: string) => uuidFormat.test(str);
+const transformSignature = (property) => (isUUID(property) ? property : undefined);
 
 const stringifyLocationWithUtm = (location: { coordinateSystem: CoordinateSystem; location: IPropertyValue }) => {
     if (location.coordinateSystem === CoordinateSystem.UTM) {
@@ -81,12 +90,14 @@ const stringifyLocationWithUtm = (location: { coordinateSystem: CoordinateSystem
 const parseLocationFromString = (property: IPropertyValue) => {
     if (!property) return undefined;
     const location = JSON.parse(property as string);
+
     return stringifyLocationWithUtm(location);
 };
 
 const parseLocationFromAny = (property: IPropertyValue) => {
     if (!property) return undefined;
     const location = typeof property === 'string' && property.includes('location') ? JSON.parse(property) : property;
+
     return stringifyLocationWithUtm(location);
 };
 
@@ -100,22 +111,15 @@ const collectFilesWithUnchanged = (attachmentsProperties: Record<string, IProper
     const unchangedFiles: IPropertyValue = [];
 
     Object.entries(attachmentsProperties).forEach(([key, value]: [string, IPropertyValue]) => {
-        if (Array.isArray(value) && value) {
+        if (Array.isArray(value)) {
             value.forEach((file, index) => {
-                if (file instanceof File && templateProperties[key]?.items) {
-                    filesToUpload.push([`${key}.${index}`, file]);
-                } else if (file instanceof File) {
-                    filesToUpload.push([`${key}`, file]);
-                } else {
-                    unchangedFiles.push([`${key}`, file]);
-                }
+                if (file instanceof File && templateProperties[key]?.items) filesToUpload.push([`${key}.${index}`, file]);
+                else if (file instanceof File) filesToUpload.push([`${key}`, file]);
+                else unchangedFiles.push([`${key}`, file]);
             });
         } else if (value) {
-            if (value instanceof File) {
-                filesToUpload.push([`${key}`, value]);
-            } else {
-                unchangedFiles.push([`${key}`, value]);
-            }
+            if (value instanceof File) filesToUpload.push([`${key}`, value]);
+            else unchangedFiles.push([`${key}`, value]);
         }
     });
 
@@ -146,9 +150,9 @@ export const loadEntitiesRequest = async (
         const formattedInsertBrokenEntities = insertBrokenEntities.map((entity) => ({
             templateId: entity.templateId,
             properties: transformProperties(entity.properties, template.properties.properties, {
-                location: (property) => parseLocationFromString(property),
+                location: parseLocationFromString,
                 signature: () => undefined,
-                user: (property) => (property ? property._id : undefined),
+                user: transformUser,
             }),
             ignoredRules: entity.ignoredRules,
         }));
@@ -187,7 +191,6 @@ export const editManyEntitiesByExcelRequest = async (
     entitiesToUpdate: IEntityWithIgnoredRules[],
 ): Promise<ITablesResults> => {
     const formData = new FormData();
-    const isUUID = (str: string) => uuidFormat.test(str);
 
     formData.append('templateId', isChildTemplate(template) ? template.parentTemplate?._id : template._id);
 
@@ -198,10 +201,10 @@ export const editManyEntitiesByExcelRequest = async (
     const entitiesArray = entitiesToUpdate.map((entity) => ({
         templateId: entity.templateId,
         properties: transformProperties(entity.properties, template.properties.properties, {
-            relationshipReference: (property) => property?.properties._id,
-            location: (property) => stringifyLocation(property),
-            signature: (property) => (isUUID(property) ? property : undefined),
-            user: (property) => (property ? property._id : undefined),
+            relationshipReference: transformRelationshipRef,
+            location: stringifyLocation,
+            signature: transformSignature,
+            user: transformUser,
         }),
         ignoredRules: entity.ignoredRules,
     }));
@@ -299,12 +302,12 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
         'properties',
         JSON.stringify(
             transformProperties(entity.properties, entity.template.properties.properties, {
-                relationshipReference: (property) => property?.properties._id,
-                location: (property) => parseLocationFromString(property),
+                relationshipReference: transformRelationshipRef,
+                location: parseLocationFromString,
                 signature: () => undefined,
-                date: (property) => (property ? new Date(property).toISOString().split('T')[0] : undefined),
-                'date-time': (property) => (property ? new Date(property).toISOString() : undefined),
-                user: (property) => (property ? property._id : undefined),
+                date: transformDate,
+                'date-time': transformDateTime,
+                user: transformUser,
             }),
         ),
     );
@@ -371,12 +374,12 @@ const getBodyForUpdateRequest = async (
         'properties',
         JSON.stringify(
             transformProperties(newEntityData.properties, template.properties.properties, {
-                relationshipReference: (property) => property?.properties._id,
-                location: (property) => parseLocationFromAny(property),
-                signature: (property) => (isUUID(property) ? property : undefined),
-                date: (property) => (property ? new Date(property).toISOString().split('T')[0] : undefined),
-                'date-time': (property) => (property ? new Date(property).toISOString() : undefined),
-                user: (property) => (property ? property._id : undefined),
+                relationshipReference: transformRelationshipRef,
+                location: parseLocationFromAny,
+                signature: transformSignature,
+                date: transformDate,
+                'date-time': transformDateTime,
+                user: transformUser,
             }),
         ),
     );
@@ -449,12 +452,12 @@ export const duplicateEntityRequest = async (entityId: string, newEntityData: En
         'properties',
         JSON.stringify(
             transformProperties(properties, template.properties.properties, {
-                relationshipReference: (property) => property?.properties._id,
-                location: (property) => parseLocationFromAny(property),
-                signature: () => undefined,
-                date: (property) => (property ? new Date(property).toISOString().split('T')[0] : undefined),
-                'date-time': (property) => (property ? new Date(property).toISOString() : undefined),
-                user: (property) => (property ? property._id : undefined),
+                relationshipReference: transformRelationshipRef,
+                location: parseLocationFromAny,
+                signature: transformSignature,
+                date: transformDate,
+                'date-time': transformDateTime,
+                user: transformUser,
             }),
         ),
     );

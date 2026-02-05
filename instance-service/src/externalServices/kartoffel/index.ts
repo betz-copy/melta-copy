@@ -1,9 +1,8 @@
-import { BadRequestError } from '@microservices/shared';
+import { IKartoffelUser } from '@microservices/shared';
 import axios from 'axios';
 import config from '../../config';
-import { IKartoffelUser } from './interface';
 
-const { url, baseEntitiesRoute, searchRoute, fieldToSearch, getByIdRoute, requestTimeout, profilePath, maxPageSize } = config.kartoffel;
+const { url, baseEntitiesRoute, searchRoute, fieldToSearch, requestTimeout, maxPageSize } = config.kartoffel;
 
 class Kartoffel {
     private static kartoffel = axios.create({
@@ -23,11 +22,6 @@ class Kartoffel {
         return data;
     };
 
-    static getUserById = async (id: string) => {
-        const { data } = await this.kartoffel.get<IKartoffelUser>(`${getByIdRoute}/${id}`);
-        return data;
-    };
-
     static getUsersByIds = async (ids: string[]) => {
         const { data } = await this.kartoffel.get<IKartoffelUser[]>(``, {
             params: {
@@ -36,31 +30,6 @@ class Kartoffel {
                 pageSize: maxPageSize,
             },
         });
-        return data;
-    };
-
-    static getUserProfile = async (kartoffelId: string) => {
-        const { identityCard, personalNumber } = await this.getUserById(kartoffelId);
-        try {
-            const { data } = await axios.get(`${url}${baseEntitiesRoute}/${personalNumber ?? identityCard}/${profilePath}`, {
-                responseType: 'stream',
-            });
-            return data;
-        } catch (error) {
-            throw new BadRequestError('Kartoffel profile not found', { error });
-        }
-    };
-
-    // identityCards refer to tz, but the kartoffel field name is identityCard
-    static getUsersByIdentityCards = async (identityCards: string[]): Promise<IKartoffelUser[]> => {
-        const { data } = await this.kartoffel.get<IKartoffelUser[]>(``, {
-            params: {
-                identityCards: identityCards,
-                page: 1,
-                pageSize: maxPageSize,
-            },
-        });
-
         return data;
     };
 }

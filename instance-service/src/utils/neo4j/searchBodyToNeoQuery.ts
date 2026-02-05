@@ -256,14 +256,13 @@ const filterOfFieldToNeoQuery = async (
     parametersParentVariableName: string,
     fieldTemplate: IEntitySingleProperty,
 ): Promise<CypherQueryWithParameters> => {
-    let filterField = field;
-    let kartoffelUsersIds: string[] | null = null;
-
     const queries: CypherQueryWithParameters[] = await Promise.all(
         Object.entries(filterOfField).map(async ([key, filterRhs]) => {
+            let filterField = field;
             const filterType = key as keyof IFilterOfField;
             const isUserField = fieldTemplate.format === 'user';
             const isUsersField = fieldTemplate.type === 'array' && fieldTemplate.items?.format === 'user';
+            let kartoffelUsersIds: string[] | null = null;
             if (filterType !== '$not') {
                 if (fieldTemplate.format === 'relationshipReference') {
                     filterField = `\`${field}.properties.${fieldTemplate.relationshipReference!.relatedTemplateField}${
@@ -522,6 +521,7 @@ const buildFullTextSearchQuery = async (
                         (templateId) =>
                             `MATCH (node:\`${templateId}\`)
                             WHERE any(userField IN $userFields WHERE node[userField] IN $kartoffelUsersIds)
+                            AND (${filterQuery.cypherQuery})
                             RETURN node`,
                     )
                     .join(' UNION ')}
@@ -537,6 +537,7 @@ const buildFullTextSearchQuery = async (
                         (templateId) =>
                             `MATCH (node:\`${templateId}\`)
                             WHERE any(userField IN $usersFields WHERE node[userField] IS NOT NULL AND any(item IN node[userField] WHERE item IN $kartoffelUsersIds))
+                            AND (${filterQuery.cypherQuery})
                             RETURN node`,
                     )
                     .join(' UNION ')}

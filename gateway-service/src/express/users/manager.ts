@@ -6,6 +6,8 @@ import {
     ICompactNullablePermissions,
     ICompactPermissions,
     IExternalUser,
+    IKartoffelUser,
+    IKartoffelUserDigitalIdentity,
     IPermission,
     IRole,
     ISubCompactPermissions,
@@ -19,7 +21,6 @@ import {
 import { menash } from 'menashmq';
 import config from '../../config';
 import Kartoffel from '../../externalServices/kartoffel';
-import { IKartoffelUser, IKartoffelUserDigitalIdentity } from '../../externalServices/kartoffel/interface';
 import StorageService from '../../externalServices/storageService';
 import UserService from '../../externalServices/userService';
 import { isProfileFileType, objectContains } from '../../utils';

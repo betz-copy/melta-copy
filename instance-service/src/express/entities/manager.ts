@@ -1206,7 +1206,7 @@ class EntityManager extends DefaultManagerNeo4j {
      * @param acc accumulator, accumulates the unflattened fields and in the end becomes the unflattened entity properties
      * @returns the unflattened properties of the previously flattened entity
      */
-    static fixReturnedEntityReferencesFields(properties: IEntity['properties'], acc: IEntity['properties'] = {}) {
+    static async fixReturnedEntityReferencesFields(properties: IEntity['properties'], acc: IEntity['properties'] = {}) {
         Object.entries(properties).forEach(([key, value]) => {
             if (!key.endsWith(config.neo4j.relationshipReferencePropertySuffix)) {
                 acc[key] = value;
@@ -1218,11 +1218,13 @@ class EntityManager extends DefaultManagerNeo4j {
 
         acc = unflatten(acc);
 
-        Object.entries(acc).forEach(async ([key, value]) => {
-            if (!value.properties) return;
-            const { properties: props, coloredFields } = await normalizeFields(flatten(value.properties, { safe: true }));
-            acc[key] = { ...value, properties: EntityManager.fixReturnedEntityReferencesFields(props), coloredFields };
-        });
+        await Promise.all(
+            Object.entries(acc).map(async ([key, value]) => {
+                if (!value?.properties) return;
+                const { properties: props, coloredFields } = await normalizeFields(flatten(value.properties, { safe: true }));
+                acc[key] = { ...value, properties: await EntityManager.fixReturnedEntityReferencesFields(props), coloredFields };
+            }),
+        );
 
         return acc;
     }

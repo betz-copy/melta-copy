@@ -99,7 +99,7 @@ export const ajvValidate = (
         validate: (_schema, user) => {
             if (!user) return true;
             if (user === ByCurrentDefaultValue.byCurrentUser) return true;
-            return !!(user._id && user.fullName && user.mail);
+            return !!(user._id && user.fullName && user.mail && user.jobTitle && user.hierarchy);
         },
     });
 
