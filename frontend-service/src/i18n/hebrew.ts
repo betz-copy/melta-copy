@@ -1824,6 +1824,8 @@ export default {
         empty: 'ריק',
         equals: 'שווה',
         notEqual: 'לא שווה',
+        blank: 'ריק',
+        notBlank: 'לא ריק',
         date: {
             equals: 'שווה',
             notEqual: 'לא שווה',
@@ -1837,6 +1839,8 @@ export default {
             thisYear: 'השנה',
             untilToday: 'עד היום',
             fromToday: 'מהיום',
+            blank: 'ריק',
+            notBlank: 'לא ריק',
         },
         text: {
             equals: 'שווה',
@@ -1845,6 +1849,8 @@ export default {
             endsWith: 'מסתיים ב',
             contains: 'מכיל',
             notContains: 'אינו מכיל',
+            blank: 'ריק',
+            notBlank: 'לא ריק',
         },
         number: {
             equals: 'שווה',
@@ -1853,6 +1859,9 @@ export default {
             lessThanOrEqual: 'קטן או שווה ל',
             greaterThanOrEqual: 'גדול או שווה ל',
             greaterThan: 'גדול מ',
+            inRange: 'בין',
+            blank: 'ריק',
+            notBlank: 'לא ריק',
         },
         field: { equals: 'שווה', notEqual: 'לא שווה' },
     },

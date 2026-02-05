@@ -68,6 +68,7 @@ type PropertiesDetailsProps = {
     searchedText?: string;
     darkMode?: boolean;
     preview?: boolean;
+    innerFieldsDirection?: 'column' | 'row';
 };
 
 const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
@@ -87,6 +88,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
     innerStyle,
     textWrap,
     preview,
+    innerFieldsDirection,
 }) => {
     const queryClient = useQueryClient();
 
@@ -105,7 +107,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
     return (
         <>
             {propertiesOrderedToShow.map((propertyKey) => {
-                const propertySchema = entityTemplate.properties.properties[propertyKey];
+                const propertySchema = entityTemplate.properties.properties[propertyKey] || {};
                 const { format, type, serialCurrent, calculateTime, title, color, comment, relationshipReference } = propertySchema;
                 const propertyValue = comment ?? properties[propertyKey];
                 const hideField = entityTemplate.properties.hide.includes(propertyKey);
@@ -241,6 +243,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                                 flexWrap: 'nowrap',
                                 alignItems: textWrap ? 'flex-start' : 'center',
                                 gap: '10px',
+                                flexDirection: innerFieldsDirection,
                             }}
                         >
                             {!comment && (

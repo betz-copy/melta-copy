@@ -129,7 +129,7 @@ const columnDefs = (
     {
         field: 'categoriesPermissions',
         headerName: i18next.t('permissions.permissionsOfUserDialog.instancesPermissions'),
-        valueGetter: (params) => params.data?.permissions[workspaceId].instances?.categories,
+        valueGetter: (params) => params.data?.permissions?.[workspaceId]?.instances?.categories,
         filter: false, // todo: do set filter with `.includes` logic
         // filter: 'agSetColumnFilter',
         // filterParams: {
