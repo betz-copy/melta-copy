@@ -23,7 +23,7 @@ const referencedEntityToEntityId = (entityReferences: Record<string, IReferenced
     return Object.entries(entityReferences)
         .filter(([_key, value]) => value)
         .reduce((entityIdsObject, [key, value]) => {
-            entityIdsObject[key] = typeof value === 'string' ? value : value!.entity.properties._id;
+            entityIdsObject[key] = typeof value === 'string' ? value : value!.entity?.properties._id;
             return entityIdsObject;
         }, {});
 };

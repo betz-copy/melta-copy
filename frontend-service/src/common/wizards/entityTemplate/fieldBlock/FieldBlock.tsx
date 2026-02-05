@@ -134,7 +134,6 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         );
     }, [orderedItems, templates, setIsTransferTemplate]);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const updateFormikDebounced = useCallback(
         debounce(() => {
             setFieldValue(propertiesType, [...orderedItemsRef.current], true);

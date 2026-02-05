@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { MenuItem, Menu as MuiMenu } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';

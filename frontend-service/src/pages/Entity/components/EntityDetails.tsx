@@ -211,7 +211,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                 >
                                     <IconButtonWithPopover
                                         popoverText={
-                                            // eslint-disable-next-line no-nested-ternary
                                             !canWriteInstance || currentEntityTemplate?.walletTransfer
                                                 ? i18next.t('permissions.dontHaveWritePermissionsToTemplate')
                                                 : isEntityDisabled
