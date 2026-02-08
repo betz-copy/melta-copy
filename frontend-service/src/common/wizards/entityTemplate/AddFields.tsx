@@ -126,7 +126,15 @@ const agGridDateFilterSchema = (parentFilterType: FilterType = FilterType.value)
 
 const agGridSetFilterSchema = Yup.object({
     filterType: Yup.string().oneOf(['set']).required(i18next.t('validation.required')),
-    values: Yup.array().of(Yup.string().nullable()).min(1, i18next.t('validation.atLeastOne')).required(i18next.t('validation.required')),
+    values: Yup.array()
+        .of(
+            Yup.lazy((value) => {
+                if (typeof value === 'object' && value !== null) return Yup.object();
+                return Yup.string().nullable();
+            }),
+        )
+        .min(1, i18next.t('validation.atLeastOne'))
+        .required(i18next.t('validation.required')),
 });
 
 // Dynamic filter field validation based on `filterType`
