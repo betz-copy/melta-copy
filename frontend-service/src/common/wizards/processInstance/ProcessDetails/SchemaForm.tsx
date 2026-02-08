@@ -17,7 +17,7 @@ export const SchemaForm = ({ viewMode, values, errors, touched, setFieldValue, s
         }));
 
     return (
-        <Box paddingTop={0.5} paddingLeft={1} width="100%">
+        <Box paddingTop={0.5} paddingLeft={1} width="100%" className="process-instance-view">
             {!viewMode && (
                 <BlueTitle
                     title={i18next.t('wizard.entityTemplate.properties')}
@@ -34,6 +34,7 @@ export const SchemaForm = ({ viewMode, values, errors, touched, setFieldValue, s
                 touched={touched.details ?? {}}
                 setFieldTouched={(field) => setFieldTouched(`details.${field}`)}
                 readonly={viewMode}
+                viewMode={viewMode ? 'clean' : undefined}
                 toPrint={toPrint}
             />
             {toPrint && textAreaValues.length > 0 && textAreaValues.map((textArea) => <TextAreaProperty key={textArea.key} textArea={textArea} />)}

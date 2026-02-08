@@ -11,6 +11,7 @@ import LocationField from '../../../../pages/Map/LocationField';
 import { stringToCoordinates } from '../../../../utils/map';
 import { extractUtmLocation, isValidUTM, isValidWGS84, locationConverterToString } from '../../../../utils/map/convert';
 import MeltaTooltip from '../../../MeltaDesigns/MeltaTooltip';
+import { CleanViewRow, isCleanView } from './CleanView';
 
 const { polygonPrefix, polygonSuffix } = environment.map.polygon;
 
@@ -135,6 +136,24 @@ const RjsfLocationWidget = ({
         setMapOpen(false);
     };
 
+    if (isCleanView(readonly, formContext)) {
+        let parsedValue: string | LocationData | undefined = value as string | LocationData | undefined;
+
+        if (typeof value === 'string' && value.includes('coordinateSystem')) {
+            try {
+                parsedValue = JSON.parse(value) as LocationData;
+            } catch {
+                parsedValue = value;
+            }
+        }
+
+        const locationValue = typeof parsedValue === 'string' ? parsedValue : parsedValue?.location;
+        const coordinateSystemValue = typeof parsedValue === 'string' ? undefined : parsedValue?.coordinateSystem;
+        const cleanValue = coordinateSystemValue ? `${locationValue} (${coordinateSystemValue})` : locationValue;
+
+        return <CleanViewRow label={label || schema.title} value={cleanValue} />;
+    }
+
     return (
         <Box width="100%">
             <Grid container justifyContent="space-between" alignContent="center" width="100%">
@@ -156,13 +175,14 @@ const RjsfLocationWidget = ({
                                     shrink: readonly || undefined,
                                 },
                                 input: {
-                                    startAdornment: (
+                                    disableUnderline: readonly,
+                                    startAdornment: readonly ? null : (
                                         <InputAdornment
                                             position="start"
                                             onClick={() => (error ? '' : setMapOpen(true))}
                                             style={{ cursor: 'pointer' }}
                                         >
-                                            <MapIcon color={readonly || error ? 'disabled' : 'action'} />
+                                            <MapIcon color={error ? 'disabled' : 'action'} />
                                         </InputAdornment>
                                     ),
                                 },
