@@ -150,7 +150,9 @@ const ActivitiesContent: React.FC<{
                         infiniteScrollPageCount,
                         pageParam,
                         entityTemplate.properties.properties,
-                        activitiesFilterValue?.length ? activitiesFilterValue : Object.values(ActionsLog),
+                        activitiesFilterValue?.length
+                            ? activitiesFilterValue
+                            : (Object.values(ActionsLog).filter((action) => action !== ActionsLog.VIEW_ENTITY) as ActionsLog[]),
                         searchInput.trim(),
                         startDateInput || undefined,
                         endDateInput || undefined,
