@@ -8,6 +8,7 @@ import {
     IAgGridNumberFilter,
     IAgGridSetFilter,
     IAgGridTextFilter,
+    isBlankOrNotBlankFilter,
     isRelativeDateFilter,
     NumberFilterOperationTypes,
     TextFilterOperationTypes,
@@ -45,11 +46,7 @@ export const initializedFilterField: Record<string, IAgGridFilter> = {
 export const isValidAGGridFilter = (filter: IAgGridFilter | undefined): boolean => {
     if (!filter) return false;
 
-    if (
-        filter.filterType !== FilterTypes.set &&
-        (filter.type === BasicFilterOperationTypes.blank || filter.type === BasicFilterOperationTypes.notBlank)
-    )
-        return true;
+    if (filter.filterType !== FilterTypes.set && isBlankOrNotBlankFilter(filter.type)) return true;
 
     switch (filter.filterType) {
         case FilterTypes.text:

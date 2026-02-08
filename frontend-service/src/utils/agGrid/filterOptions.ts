@@ -1,6 +1,7 @@
 import {
     BasicFilterOperationTypes,
     FilterTypes,
+    isBlankOrNotBlankFilter,
     NumberFilterOperationTypes,
     RelativeDateFilters,
     TextFilterOperationTypes,
@@ -23,7 +24,7 @@ export const getFilterOptions = (type: string, excludeComplexFilters = false): s
             allOptions = [...basicFilters, ...numberFilters];
             break;
         case FilterTypes.date:
-            allOptions = [...basicFilters, ...numberFilters, ...dateRelativeFilters];
+            allOptions = [...basicFilters, ...numberFilters, ...dateRelativeFilters].filter((option) => !isBlankOrNotBlankFilter(option));
             break;
         default:
             allOptions = basicFilters;

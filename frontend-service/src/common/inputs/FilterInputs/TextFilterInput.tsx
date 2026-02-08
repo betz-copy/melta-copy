@@ -1,5 +1,12 @@
 import { Grid } from '@mui/material';
-import { BasicFilterOperationTypes, FilterTypes, IAgGridDateFilter, IAgGridNumberFilter, IAgGridTextFilter } from '@packages/rule-breach';
+import {
+    BasicFilterOperationTypes,
+    FilterTypes,
+    IAgGridDateFilter,
+    IAgGridNumberFilter,
+    IAgGridTextFilter,
+    isBlankOrNotBlankFilter,
+} from '@packages/rule-breach';
 import React, { useEffect } from 'react';
 import { IGraphFilterBody } from '../../../interfaces/graphFilter';
 import { StyledFilterInput } from './StyledFilterInput';
@@ -33,6 +40,8 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
     hideFilterType = false,
     forceEqualsType = false,
 }) => {
+    const isBlankOrNotBlankType = isBlankOrNotBlankFilter(filterField?.type);
+
     // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
         if (forceEqualsType && filterField && filterField.type !== BasicFilterOperationTypes.equals)
@@ -59,34 +68,36 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
             )}
 
             <Grid size={{ xs: hideFilterType ? 12 : entityFilter ? 7 : 12 }}>
-                <StyledFilterInput
-                    size="small"
-                    fullWidth
-                    type={type}
-                    value={filterField?.filter !== undefined ? String(filterField.filter) : ''}
-                    disabled={readOnly}
-                    error={error}
-                    helperText={helperText}
-                    onChange={(e) => {
-                        const { value } = e.target;
-                        const updatedFilter =
-                            type === FilterTypes.number
-                                ? ({
-                                      ...filterField,
-                                      filter: value ? Number(value) : undefined,
-                                      type: forceEqualsType ? BasicFilterOperationTypes.equals : filterField?.type,
-                                  } as IAgGridNumberFilter)
-                                : ({
-                                      ...filterField,
-                                      filter: value || undefined,
-                                      type: forceEqualsType ? BasicFilterOperationTypes.equals : filterField?.type,
-                                  } as IAgGridTextFilter);
+                {!isBlankOrNotBlankType && (
+                    <StyledFilterInput
+                        size="small"
+                        fullWidth
+                        type={type}
+                        value={filterField?.filter !== undefined ? String(filterField.filter) : ''}
+                        disabled={readOnly}
+                        error={error}
+                        helperText={helperText}
+                        onChange={(e) => {
+                            const { value } = e.target;
+                            const updatedFilter =
+                                type === FilterTypes.number
+                                    ? ({
+                                          ...filterField,
+                                          filter: value ? Number(value) : undefined,
+                                          type: forceEqualsType ? BasicFilterOperationTypes.equals : filterField?.type,
+                                      } as IAgGridNumberFilter)
+                                    : ({
+                                          ...filterField,
+                                          filter: value || undefined,
+                                          type: forceEqualsType ? BasicFilterOperationTypes.equals : filterField?.type,
+                                      } as IAgGridTextFilter);
 
-                        handleFilterFieldChange(updatedFilter);
-                    }}
-                    readOnly={readOnly}
-                    forceOutlined
-                />
+                            handleFilterFieldChange(updatedFilter);
+                        }}
+                        readOnly={readOnly}
+                        forceOutlined
+                    />
+                )}
             </Grid>
         </Grid>
     );
