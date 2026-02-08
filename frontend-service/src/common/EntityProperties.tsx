@@ -1,14 +1,15 @@
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
 import { Divider, IconButton, Typography } from '@mui/material';
 import _ from 'lodash';
-import React, { CSSProperties, JSX, useState } from 'react';
+import type React from 'react';
+import { type CSSProperties, type JSX, useState } from 'react';
 import { pdfjs } from 'react-pdf';
 import { useQueryClient } from 'react-query';
 import { environment } from '../globals';
-import { IEntity } from '../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
-import { IPrintSection } from '../interfaces/printingTemplates';
-import { IGetUnits } from '../interfaces/units';
+import type { IEntity } from '../interfaces/entities';
+import type { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import type { IPrintSection } from '../interfaces/printingTemplates';
+import type { IGetUnits } from '../interfaces/units';
 import { useDarkModeStore } from '../stores/darkMode';
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
 import { formatToString, getPropertyColor, getUserAvatar } from '../utils/entityProperties';
@@ -67,6 +68,7 @@ type PropertiesDetailsProps = {
     searchedText?: string;
     darkMode?: boolean;
     preview?: boolean;
+    innerFieldsDirection?: 'column' | 'row';
 };
 
 const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
@@ -86,6 +88,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
     innerStyle,
     textWrap,
     preview,
+    innerFieldsDirection,
 }) => {
     const queryClient = useQueryClient();
 
@@ -240,6 +243,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                                 flexWrap: 'nowrap',
                                 alignItems: textWrap ? 'flex-start' : 'center',
                                 gap: '10px',
+                                flexDirection: innerFieldsDirection,
                             }}
                         >
                             {!comment && (
@@ -362,7 +366,12 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
 
     return (
         <div style={{ display: 'flex', flexDirection: 'row' }}>
-            {imageOfKartoffelKeys.map((key) => getUserAvatar(entityTemplate, key, properties, { size: 120, border: 4 }))}
+            {imageOfKartoffelKeys.map((key) =>
+                getUserAvatar(entityTemplate, key, properties, {
+                    size: 120,
+                    border: 4,
+                }),
+            )}
             {showDivider && <Divider title={dividerTitle} sx={{ marginY: '1rem' }} />}
             <div style={{ margin: '1rem 0' }}>{dividerTitle && <BlueTitle title={dividerTitle} component="p" variant="subtitle1" />}</div>
             <div

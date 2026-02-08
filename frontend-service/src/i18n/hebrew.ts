@@ -394,6 +394,7 @@ export default {
         cannotDeleteWithEntities: 'לא ניתן למחוק תבנית זאת, קיימות תחתיה ישויות',
         entityTemplateEditDisabled: 'אין הרשאות עריכה לתבנית',
         ruleTemplateEditDisabled: 'אין הרשאות עריכה לחוק',
+        entityInstanceReadDisabled: 'אין הרשאות לצפייה ביישות זו',
         cannotDeleteWithRelationship: 'לא ניתן למחוק קשר זה, קיימים תחתיו קשרים',
         cannotEditRelationship: 'לא ניתן לערוך קשר. מכיל ישות ללא הרשאות עריכה',
         cannotPerformActionEntityDisabled: 'לא ניתן לבצע פעולה זו, מכיל ישות מושבתת',
@@ -1451,6 +1452,9 @@ export default {
         approvedProcesses: 'תהליכים מאושרים',
         rejectedProcesses: 'תהליכים דחויים',
         archivedProcesses: 'תהליכים בארכיון',
+        createNewEntityRef: 'יצירת יישות חדשה',
+        chooseEntityRef: 'בחירת יישות',
+        entityToRef: 'שיוך יישות',
     },
     iFrames: {
         arrangementIFrames: 'סידור מופעים',
@@ -1899,6 +1903,7 @@ export default {
             sourceFieldForColor: 'עמוד מפה-צבע תוצאות חיפוש עפ”י שדה (מקור)',
         },
         numOfRelationshipFieldsToShow: 'מספר שדות לתצוגת שדה שיוך ליישות',
+        numOfPreviewFieldsToShow: 'מספר שדות לתצוגה מקדימה',
         twinTemplates: 'תבניות זהות',
     },
     childTemplate: {
