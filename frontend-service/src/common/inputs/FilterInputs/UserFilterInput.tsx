@@ -6,6 +6,7 @@ import { IGraphFilterBody } from '../../../interfaces/entities';
 import { IKartoffelUserStringFields } from '../../../interfaces/users';
 import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
+import { serializeUser } from '../JSONSchemaFormik/Widgets/RjsfUserArrayWidget';
 import { UserInput } from '../UserInput';
 
 interface UserFilterProps {
@@ -46,15 +47,7 @@ const UserFilterInput: React.FC<UserFilterProps> = ({ filterField, handleFilterT
                     handleOnChange={(user: IKartoffelUserStringFields | null, _values?: { _id: string; displayName: string }) =>
                         handleFilterFieldChange({
                             ...filterField,
-                            filter: user
-                                ? JSON.stringify({
-                                      _id: user._id || user.id,
-                                      fullName: user.fullName,
-                                      jobTitle: user.jobTitle,
-                                      hierarchy: user.hierarchy,
-                                      mail: user.mail,
-                                  })
-                                : undefined,
+                            filter: user ? serializeUser(user) : undefined,
                         } as IAGGridTextFilter)
                     }
                     isError={false}

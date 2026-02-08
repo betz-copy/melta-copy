@@ -42,7 +42,7 @@ const ajv = new Ajv();
 ajv.addFormat('fileId', ajvCustomFormats.fileIdFieldRegex);
 ajv.addFormat('signature', ajvCustomFormats.signatureFieldRegex);
 ajv.addFormat('comment', ajvCustomFormats.commentFieldRegex);
-ajv.addFormat('user', /^[0-9a-fA-F]{24}$|^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/);
+ajv.addFormat('user', /^[0-9a-fA-F]{24}$/);
 ajv.addFormat('kartoffelUserField', /.*/);
 ajv.addFormat('unitField', ajvCustomFormats.unitFieldRegex);
 ajv.addFormat('text-area', ajvCustomFormats.textAreaFieldRegex);

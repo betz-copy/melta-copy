@@ -34,7 +34,7 @@ const MultipleUserFilterInput: React.FC<MultipleUserFilterInputProps> = ({
             label=""
             onChange={(_e, chosenUser, reason) => {
                 if (reason !== 'selectOption' || !chosenUser) return;
-                handleCheckboxChange(isUsersArray ? [chosenUser] : [chosenUser._id], true);
+                handleCheckboxChange(isUsersArray ? [chosenUser] : [chosenUser], true);
 
                 setInputValue('');
             }}

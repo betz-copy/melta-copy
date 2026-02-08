@@ -1,6 +1,7 @@
 import { IAGGridFilter } from '../common/wizards/entityTemplate/commonInterfaces';
 import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridSetFilter, IAGGridTextFilter } from '../utils/agGrid/interfaces';
 import { IMongoCategory } from './categories';
+import { IUserField } from './entities';
 import { IEntitySingleProperty, IMongoEntityTemplate, IMongoEntityTemplatePopulated } from './entityTemplates';
 
 export interface IFieldFilter {
@@ -43,7 +44,7 @@ export enum ByCurrentDefaultValue {
 export type IFilter = any;
 
 export interface IChildTemplateProperty {
-    defaultValue?: string | number | boolean | Date | string[] | ByCurrentDefaultValue;
+    defaultValue?: string | number | boolean | Date | string[] | ByCurrentDefaultValue | IUserField;
     filters?: Record<string, unknown>;
     isEditableByUser?: boolean;
     display?: boolean;

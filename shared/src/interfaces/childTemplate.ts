@@ -1,5 +1,5 @@
 import { IMongoCategory } from './category';
-import { IUniqueConstraintOfTemplate } from './entity';
+import { IUniqueConstraintOfTemplate, IUserField } from './entity';
 import {
     IEntitySingleProperty,
     IFullMongoEntityTemplate,
@@ -24,7 +24,7 @@ export enum ByCurrentDefaultValue {
 export type IFilter = any;
 
 export interface IChildTemplateProperty {
-    defaultValue?: string | number | boolean | Date | string[] | ByCurrentDefaultValue;
+    defaultValue?: string | number | boolean | Date | string[] | ByCurrentDefaultValue | IUserField;
     filters?: Record<string, unknown>;
     isEditableByUser?: boolean;
     display?: boolean;

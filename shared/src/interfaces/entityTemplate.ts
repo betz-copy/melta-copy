@@ -67,6 +67,8 @@ export interface IEntitySingleProperty {
     filters?: IFilter;
     defaultValue?: IPropertyValue;
     accountBalance?: boolean;
+    isFilterByCurrentUser?: boolean;
+    isFilterByUserUnit?: boolean;
 }
 export interface IProperties {
     type: 'object';

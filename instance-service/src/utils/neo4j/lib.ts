@@ -7,6 +7,7 @@ import {
     IMongoEntityTemplate,
     IPropertyValue,
     IRelationship,
+    IUserField,
     PropertyFormat,
     SplitBy,
     ValidationError,
@@ -32,9 +33,9 @@ const {
 export type Node = Neo4jNode<number>;
 type Relationship = Neo4jRelationship<number>;
 
-const transformUser = (foundUser: IKartoffelUser) => ({
-    _id: foundUser._id || foundUser.id,
-    fullName: foundUser.fullName,
+const transformUser = (foundUser: IKartoffelUser): IUserField => ({
+    _id: foundUser._id || foundUser.id!,
+    fullName: foundUser.fullName!,
     jobTitle: foundUser.jobTitle,
     hierarchy: foundUser.hierarchy,
     mail: foundUser.mail,
@@ -374,7 +375,7 @@ export const normalizeSearchWithRelationships = async (result: QueryResult, work
                     otherEntity: await nodeToEntity(otherEntity, await getTemplateById(otherEntity.labels[0])),
                 })),
             );
-            
+
             return {
                 entity: await nodeToEntity(node, await getTemplateById(node.labels[0]), true),
                 relationships: normalizedRelationships,

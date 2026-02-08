@@ -14,6 +14,7 @@ import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IWalletTransfer }
 import { matchValueAgainstFilter } from '../../../utils/filters';
 import { uiSchemaUtils } from './ utils';
 import './form.css';
+import { pickBy } from 'lodash';
 import InputAccordion from './InputAccordion';
 import RjsfCheckboxWidget from './Widgets/RjsfCheckboxWidget';
 import RjsfCommentWidget from './Widgets/RjsfCommentWidget';
@@ -142,34 +143,36 @@ export const ajvValidate = (
         validate: (v) => v !== undefined,
         errors: false,
     });
+    const formatsToExclude = ['location', 'relationshipReference'];
 
     const schemaToValidate = {
         ...schema,
-        properties: Object.entries(schema.properties).reduce((acc, [key, prop]) => {
-            if (prop.format === 'user') {
-                acc[key] = {
-                    ...prop,
-                    type: 'object',
-                    validateUser: true,
-                    format: undefined,
-                };
-            } else if (prop.type === 'array' && prop.items && prop.items.format === 'user') {
-                acc[key] = {
-                    ...prop,
-                    items: {
-                        ...prop.items,
+        properties: Object.entries(pickBy(schema.properties, (value) => !formatsToExclude.includes(value.format ?? ''))).reduce(
+            (acc, [key, prop]) => {
+                if (prop.format === 'user') {
+                    acc[key] = {
+                        ...prop,
                         type: 'object',
                         validateUser: true,
                         format: undefined,
-                    },
-                };
-            } else if (prop.format === 'location') {
-                acc[key] = { ...prop, type: 'object', format: undefined };
-            } else {
-                acc[key] = prop;
-            }
-            return acc;
-        }, {}),
+                    };
+                } else if (prop.type === 'array' && prop.items && prop.items.format === 'user') {
+                    acc[key] = {
+                        ...prop,
+                        items: {
+                            ...prop.items,
+                            type: 'object',
+                            validateUser: true,
+                            format: undefined,
+                        },
+                    };
+                } else {
+                    acc[key] = prop;
+                }
+                return acc;
+            },
+            {},
+        ),
     };
 
     const validateFunction = ajv.compile(schemaToValidate);

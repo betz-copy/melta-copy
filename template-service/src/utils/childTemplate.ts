@@ -1,35 +1,75 @@
 import {
     getChildPropertiesFiltered,
     IChildTemplatePopulatedFromDb,
+    IChildTemplateProperty,
+    IEntitySingleProperty,
     IFullMongoEntityTemplate,
+    IKartoffelUser,
     IMongoChildTemplatePopulated,
+    IUserField,
 } from '@microservices/shared';
+import Kartoffel from '../externalServices/kartoffel';
 
-const populateChildTemplateWithParent = (childTemplate: IChildTemplatePopulatedFromDb): IMongoChildTemplatePopulated => {
+const transformUser = (foundUser: IKartoffelUser): IUserField => ({
+    _id: foundUser._id || foundUser.id!,
+    fullName: foundUser.fullName!,
+    jobTitle: foundUser.jobTitle,
+    hierarchy: foundUser.hierarchy,
+    mail: foundUser.mail,
+    userType: foundUser.entityType,
+});
+
+const populateChildTemplateWithParent = async (childTemplate: IChildTemplatePopulatedFromDb): Promise<IMongoChildTemplatePopulated> => {
     const { parentTemplateId: parentTemplate, ...child } = childTemplate;
     const { properties, ...parent } = parentTemplate;
 
     const childPropertyKeys = Object.keys(child.properties.properties);
 
+    const userIdToKey: Record<string, string> = {};
+    const filteredProps: Array<[string, IChildTemplateProperty & IEntitySingleProperty]> = [];
+
+    for (const [key, parentProp] of Object.entries(properties.properties)) {
+        if (!childPropertyKeys.includes(key)) continue;
+        const { defaultValue, filters, isEditableByUser, display } = child.properties.properties[key];
+        if (defaultValue && parentProp.format === 'user') userIdToKey[defaultValue as string] = key;
+
+        filteredProps.push([
+            key,
+            {
+                ...parentProp,
+                defaultValue,
+                filters,
+                isFilterByCurrentUser: child.filterByCurrentUserField === key,
+                isFilterByUserUnit: child.filterByUnitUserField === key,
+                isEditableByUser,
+                display,
+            },
+        ]);
+    }
+
+    const userIdToUser: Record<string, IUserField> = {};
+    if (Object.keys(userIdToKey).length) {
+        const userIds = Object.keys(userIdToKey);
+        const users = (await Kartoffel.getUsersByIds(userIds)).map(transformUser);
+        users.forEach((user, idx) => {
+            userIdToUser[userIds[idx]] = user;
+        });
+    }
+
     const childProperties = getChildPropertiesFiltered(
         Object.fromEntries(
-            Object.entries(properties.properties)
-                .filter(([key]) => childPropertyKeys.includes(key))
-                .map(([key, parentProp]) => {
-                    const { defaultValue, filters, isEditableByUser, display } = child.properties.properties[key];
+            filteredProps.map(([key, prop]) => {
+                if (prop.defaultValue && parentTemplate.properties.properties[key].format === 'user') {
                     return [
                         key,
                         {
-                            ...parentProp,
-                            defaultValue,
-                            filters,
-                            isFilterByCurrentUser: child.filterByCurrentUserField === key,
-                            isFilterByUserUnit: child.filterByUnitUserField === key,
-                            isEditableByUser,
-                            display,
+                            ...prop,
+                            defaultValue: userIdToUser[prop.defaultValue] || undefined,
                         },
                     ];
-                }),
+                }
+                return [key, prop];
+            }),
         ),
     );
 

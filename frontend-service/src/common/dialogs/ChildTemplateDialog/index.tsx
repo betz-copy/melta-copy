@@ -34,7 +34,7 @@ import {
     IMongoChildTemplatePopulated,
     ViewType,
 } from '../../../interfaces/childTemplates';
-import { FilterLogicalOperator } from '../../../interfaces/entities';
+import { FilterLogicalOperator, IUserField } from '../../../interfaces/entities';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { createChildTemplate, updateChildTemplate } from '../../../services/templates/childTemplatesService';
 import { parseFilters } from '../../../services/templates/entityTemplatesService';
@@ -198,10 +198,15 @@ const ChildTemplateDialog: React.FC<{
                     const { name, displayName, ...pickedValues } = pick(values, childTemplateKeys) as unknown as IChildTemplate;
 
                     const newProperties = Object.fromEntries(
-                        Object.entries(values.properties.properties).map(([key, { filters, ...rest }]) => [
+                        Object.entries(values.properties.properties).map(([key, { filters, defaultValue, ...rest }]) => [
                             key,
                             {
                                 ...rest,
+                                defaultValue: defaultValue
+                                    ? entityTemplate.properties.properties[key].format === 'user'
+                                        ? (defaultValue as unknown as IUserField)._id
+                                        : defaultValue
+                                    : undefined,
                                 filters: filters
                                     ? filterDocumentToFilterBackend(
                                           values.parentTemplate._id || entityTemplate._id,

@@ -11,6 +11,15 @@ import { ISemanticSearchResult } from './semanticSearch';
 // biome-ignore lint/suspicious/noExplicitAny: property type any
 export type IPropertyValue = any;
 
+export interface IUserField {
+    _id: string;
+    fullName: string;
+    jobTitle?: string;
+    hierarchy?: string;
+    mail?: string;
+    userType?: string;
+}
+
 export interface IEntity {
     templateId: string;
     childTemplateId?: string;

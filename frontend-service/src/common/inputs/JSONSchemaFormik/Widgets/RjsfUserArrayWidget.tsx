@@ -1,6 +1,15 @@
 import { WidgetProps } from '@rjsf/utils';
 import { useState } from 'react';
+import { IUserField } from '../../../../interfaces/entities';
 import { UserArrayInput } from '../../UserArrayInput';
+
+export const serializeUser = (user): IUserField => ({
+    _id: user?._id ?? user?.id,
+    fullName: user?.fullName,
+    jobTitle: user?.jobTitle,
+    hierarchy: user?.hierarchy,
+    mail: user?.mail,
+});
 
 const RjsfUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, onFocus, options, required }: WidgetProps) => {
     const [inputValue, setInputValue] = useState('');
@@ -10,14 +19,6 @@ const RjsfUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, o
     const [currentUsers, setCurrentUsers] = useState(Array.isArray(users) ? users.filter(Boolean) : []);
 
     if (!currentUsers.length || !currentUsers[0]) onChange(undefined);
-
-    const serializeUser = (user) => ({
-        _id: user?._id ?? user?.id,
-        fullName: user?.fullName,
-        jobTitle: user?.jobTitle,
-        hierarchy: user?.hierarchy,
-        mail: user?.mail,
-    });
 
     return (
         <UserArrayInput

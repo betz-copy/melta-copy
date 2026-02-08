@@ -10,6 +10,15 @@ import { IAgGridDateFilter, IAgGridNumberFilter, IAgGridSetFilter, IAgGridTextFi
 // biome-ignore lint/suspicious/noExplicitAny: prop value is any
 export type IPropertyValue = any;
 
+export interface IUserField {
+    _id: string;
+    fullName: string;
+    jobTitle?: string;
+    hierarchy?: string;
+    mail?: string;
+    userType?: string;
+}
+
 export interface IEntity {
     templateId: string;
     properties: Record<string, IPropertyValue>;

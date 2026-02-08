@@ -30,7 +30,7 @@ ajv.addFormat('signature', /.*/);
 ajv.addFormat('comment', /.*/);
 ajv.addFormat('kartoffelUserField', /.*/);
 ajv.addFormat('unitField', /.*/);
-ajv.addFormat('user', /^[0-9a-fA-F]{24}$|^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/);
+ajv.addFormat('user', /^[0-9a-fA-F]{24}$/);
 ajv.addFormat('text-area', /.*/);
 ajv.addFormat('relationshipReference', /.*/);
 ajv.addFormat('location', {

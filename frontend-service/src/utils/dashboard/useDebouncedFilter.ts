@@ -15,11 +15,11 @@ export const useDebouncedFilter = (values: FilterProcessingInput, queryClient: Q
     const memoizedFilter = useMemo((): ISearchFilter | undefined => {
         const { filter, templateId } = values;
 
-        if (!templateId || !filter || filter.length === 0) return undefined;
+        if (!templateId || !filter || !filter.length) return undefined;
 
         const validFilters = filter.filter(({ filterField }) => isValidAGGridFilter(filterField));
 
-        if (validFilters.length === 0) return undefined;
+        if (!validFilters.length) return undefined;
 
         return filterTemplateToSearchFilter(validFilters, templateId, queryClient);
     }, [values, queryClient]);
