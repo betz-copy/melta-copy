@@ -1,11 +1,17 @@
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useQueryClient } from 'react-query';
 import SearchInput from '../../../common/inputs/SearchInput';
 import { IPropertyValue } from '../../../interfaces/entities';
+import { IMetadata } from '../../../interfaces/workspaces';
+import { BackendConfigState } from '../../../services/backendConfigService';
+import { updateMetadata } from '../../../services/workspacesService';
 import { defaultMetadata, useWorkspaceStore } from '../../../stores/workspace';
 import { deepClone, getDefaultValue, getValueByPath, setNestedValue } from '../../../utils/configs/configsUtils';
 import { Field, IValue } from './Field';
+
+const isGatewayConfig = (path: string) => ['excel.entitiesFileLimit', 'excel.filesLimit'].includes(path);
 
 const ConfigurationManagement: React.FC = () => {
     const workspace = useWorkspaceStore((state) => state.workspace);
@@ -19,6 +25,8 @@ const ConfigurationManagement: React.FC = () => {
         setUpdatedConfigs(deepClone(configs));
     }, [configs]);
 
+    const queryClient = useQueryClient();
+
     const updateConfig = useCallback((path: string, newValue: IValue) => {
         setUpdatedConfigs((prevConfigs) => {
             const updated = deepClone(prevConfigs);
@@ -26,6 +34,40 @@ const ConfigurationManagement: React.FC = () => {
             return updated;
         });
     }, []);
+
+    const saveConfig = useCallback(
+        async (keyPath: string, val: IValue) => {
+            updateConfig(keyPath, val);
+
+            const changes: Partial<IMetadata> = {};
+            const keys = keyPath.split('.');
+
+            if (keys.length > 1) {
+                const parentKey = keys[0];
+                const parentObject = deepClone(workspace.metadata?.[parentKey] || {});
+                setNestedValue(parentObject, keys.slice(1).join('.'), val);
+                changes[parentKey] = parentObject;
+            } else changes[keyPath] = val;
+
+            await updateMetadata(workspace._id, changes);
+            updateWorkspaceMetadata(changes);
+
+            if (isGatewayConfig(keyPath)) {
+                queryClient.setQueryData<BackendConfigState>('getBackendConfig', (oldData) => {
+                    if (!oldData) throw new Error('Backend config data is undefined');
+
+                    return {
+                        ...oldData,
+                        excel: {
+                            ...oldData.excel,
+                            [keys[1]]: val,
+                        },
+                    };
+                });
+            }
+        },
+        [workspace.metadata, workspace._id, updateWorkspaceMetadata, updateConfig, queryClient],
+    );
 
     const filteredFields = useMemo(() => {
         const collectFilteredFields = (cfgs: Record<string, IPropertyValue>, parentKey = ''): React.ReactNode[] => {
@@ -43,10 +85,7 @@ const ConfigurationManagement: React.FC = () => {
                                 keyPath={fullKey}
                                 value={getValueByPath(updatedConfigs, fullKey)}
                                 defaultValue={getDefaultValue(fullKey, defaultMetadata)}
-                                updateConfig={updateConfig}
-                                workspaceMetadata={workspace.metadata}
-                                updateWorkspaceMetadata={updateWorkspaceMetadata}
-                                workspaceId={workspace._id}
+                                onSave={saveConfig}
                             />,
                         );
                     }
@@ -56,7 +95,7 @@ const ConfigurationManagement: React.FC = () => {
         };
 
         return collectFilteredFields(configs);
-    }, [configs, updatedConfigs, searchText, workspace.metadata, workspace._id, updateWorkspaceMetadata, updateConfig]);
+    }, [configs, updatedConfigs, searchText, saveConfig]);
 
     return (
         <Grid container spacing={3}>

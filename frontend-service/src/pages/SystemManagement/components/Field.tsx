@@ -1,13 +1,8 @@
 import { Autocomplete, InputAdornment, TextField } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
-import { useQueryClient } from 'react-query';
 import MeltaSwitch from '../../../common/MeltaDesigns/MeltaSwitch';
 import { environment } from '../../../globals';
-import { IMetadata, IWorkspace } from '../../../interfaces/workspaces';
-import { BackendConfigState } from '../../../services/backendConfigService';
-import { updateMetadata } from '../../../services/workspacesService';
-import { deepClone, setNestedValue } from '../../../utils/configs/configsUtils';
 import FieldCard from './FieldCard';
 
 const { unit } = environment;
@@ -18,15 +13,10 @@ interface FieldProps {
     keyPath: string;
     value: IValue;
     defaultValue: IValue;
-    updateConfig: (path: string, newValue: IValue) => void;
-    workspaceMetadata: IWorkspace['metadata'];
-    updateWorkspaceMetadata: (changes: Partial<IMetadata>) => void;
-    workspaceId: string;
+    onSave: (keyPath: string, newValue: IValue) => Promise<void>;
 }
 
-const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfig, workspaceMetadata, updateWorkspaceMetadata, workspaceId }) => {
-    const queryClient = useQueryClient();
-
+const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, onSave }) => {
     const translateConfigProp = i18next.t(`DynamicsConfigs.${keyPath}`);
 
     const [inputValue, setInputValue] = useState<IValue>(value);
@@ -40,50 +30,17 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
 
     const isValidInput = (val: IValue) => val !== unit && val !== null && !(typeof val === 'number' && Number.isNaN(val));
 
-    const isGatewayConfig = (path: string) => ['excel.entitiesFileLimit', 'excel.filesLimit'].includes(path);
-
-    const updateConfigValue = async (val: IValue) => {
-        updateConfig(keyPath, val);
-
-        const changes: Partial<IMetadata> = {};
-        const keys = keyPath.split('.');
-
-        if (keys.length > 1) {
-            const parentKey = keys[0];
-            const parentObject = deepClone(workspaceMetadata?.[parentKey] || {});
-            setNestedValue(parentObject, keys.slice(1).join('.'), val);
-            changes[parentKey] = parentObject;
-        } else changes[keyPath] = val;
-
-        await updateMetadata(workspaceId, changes);
-        updateWorkspaceMetadata(changes);
-
-        if (isGatewayConfig(keyPath)) {
-            queryClient.setQueryData<BackendConfigState>('getBackendConfig', (oldData) => {
-                if (!oldData) throw new Error('Backend config data is undefined');
-
-                return {
-                    ...oldData,
-                    excel: {
-                        ...oldData.excel,
-                        [keys[1]]: val,
-                    },
-                };
-            });
-        }
-
-        setIsModified(false);
-    };
-
     const handleUpdate = async () => {
         if (!isValidInput(inputValue)) return;
-        updateConfigValue(inputValue);
+        await onSave(keyPath, inputValue);
+        setIsModified(false);
     };
 
     const handleReset = async () => {
         if (defaultValue === undefined) return;
         setInputValue(defaultValue);
-        updateConfigValue(defaultValue);
+        await onSave(keyPath, defaultValue);
+        setIsModified(false);
     };
 
     const handleInputChange = (newValue: IValue) => {
