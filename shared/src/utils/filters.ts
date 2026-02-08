@@ -1,4 +1,6 @@
 import { FilterLogicalOperator, IEntity, IFilterGroup, IPropertyValue, ISearchEntitiesOfTemplateBody, ISearchFilter } from '../interfaces/entity';
+import { IMongoEntityTemplate, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplate';
+import { IKartoffelUser } from '../interfaces/user';
 
 const evaluateOperator = (op: string, actual: IPropertyValue, expected: IPropertyValue): boolean => {
     switch (op) {
@@ -35,30 +37,34 @@ const evaluateOperator = (op: string, actual: IPropertyValue, expected: IPropert
     }
 };
 
-const matchValueAgainstFilter = (data: IEntity['properties'], filter?: ISearchFilter | IFilterGroup): string | undefined => {
+const matchValueAgainstFilter = async (
+    data: IEntity['properties'],
+    entityTemplate: IMongoEntityTemplate | IMongoEntityTemplatePopulated,
+    getUserById: (id: string) => Promise<IKartoffelUser>,
+    filter?: ISearchFilter | IFilterGroup,
+): Promise<string | undefined> => {
     if (!filter) return undefined;
 
     if ('$and' in filter && Array.isArray(filter.$and)) {
         for (const subFilter of filter.$and) {
-            const result = matchValueAgainstFilter(data, subFilter);
+            const result = await matchValueAgainstFilter(data, entityTemplate, getUserById, subFilter);
             if (result) return result;
         }
         return undefined;
     }
 
     if ('$or' in filter && Array.isArray(filter.$or)) {
-        const results = filter.$or.map((subFilter) => matchValueAgainstFilter(data, subFilter));
+        const results = await Promise.all(filter.$or.map((subFilter) => matchValueAgainstFilter(data, entityTemplate, getUserById, subFilter)));
         if (results.some((r) => !r)) return undefined;
         return results.find((r) => r);
     }
 
     const [field, condition] = Object.entries(filter)[0];
-    const actual = data[field];
+    const actual = entityTemplate.properties.properties[field].format === 'user' ? (await getUserById(data[field])).fullName : data[field];
+    console.log({ hi: data[field], actual });
 
     for (const [op, expected] of Object.entries(condition)) {
-        if (!evaluateOperator(op, actual, expected)) {
-            return field;
-        }
+        if (!evaluateOperator(op, actual, expected)) return field;
     }
 
     return undefined;

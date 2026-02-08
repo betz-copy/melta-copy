@@ -2,7 +2,7 @@ import { IKartoffelUser } from '@microservices/shared';
 import axios from 'axios';
 import config from '../../config';
 
-const { url, baseEntitiesRoute, searchRoute, fieldToSearch, requestTimeout, maxPageSize } = config.kartoffel;
+const { url, baseEntitiesRoute, searchRoute, getByIdRoute, fieldToSearch, requestTimeout, maxPageSize } = config.kartoffel;
 
 class Kartoffel {
     private static kartoffel = axios.create({
@@ -12,12 +12,15 @@ class Kartoffel {
     });
 
     static searchUsers = async (queryString: string): Promise<IKartoffelUser[]> => {
+        console.log({ queryString });
+
         const { data } = await this.kartoffel.get<IKartoffelUser[]>(searchRoute, {
             params: {
                 fields: fieldToSearch,
                 queryString,
             },
         });
+        console.log({ data });
 
         return data;
     };
@@ -30,6 +33,11 @@ class Kartoffel {
                 pageSize: maxPageSize,
             },
         });
+        return data;
+    };
+
+    static getUserById = async (id: string) => {
+        const { data } = await this.kartoffel.get<IKartoffelUser>(`${getByIdRoute}/${id}`);
         return data;
     };
 }

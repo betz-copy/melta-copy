@@ -27,6 +27,7 @@ import { Request } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
 import FilterValidation from '../../error';
+import Kartoffel from '../../externalServices/kartoffel';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateManager';
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import addDefaultFieldsToTemplate from '../../utils/addDefaultsFieldsToEntityTemplate';
@@ -139,8 +140,9 @@ export class EntityValidator extends DefaultController {
         }
     }
 
-    validatePropertiesMatchFilters(properties: Record<string, IPropertyValue>, filter?: ISearchFilter) {
-        const notValidKey = matchValueAgainstFilter(properties, filter);
+    async validatePropertiesMatchFilters(properties: Record<string, IPropertyValue>, entityTemplate: IMongoEntityTemplate, filter?: ISearchFilter) {
+        const notValidKey = await matchValueAgainstFilter(properties, entityTemplate, async (id: string) => await Kartoffel.getUserById(id), filter);
+
         if (notValidKey)
             throw new FilterValidation(`Property ${notValidKey} do not match the filter`, {
                 properties,
@@ -165,7 +167,7 @@ export class EntityValidator extends DefaultController {
 
         this.validateEntity(entityTemplate, properties);
 
-        if (childTemplate?.filter) this.validatePropertiesMatchFilters(req.body.properties, childTemplate.filter);
+        if (childTemplate?.filter) await this.validatePropertiesMatchFilters(properties, entityTemplate, childTemplate.filter);
 
         addPropertyToRequest(req, 'entityTemplate', entityTemplate);
     }

@@ -57,6 +57,7 @@ import FilterValidation from '../../error';
 import ChartService from '../../externalServices/dashboardService/chartService';
 import DashboardItemService from '../../externalServices/dashboardService/dashboardItemService';
 import InstancesService from '../../externalServices/instanceService';
+import Kartoffel from '../../externalServices/kartoffel';
 import { PreviewService } from '../../externalServices/previewService';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import StorageService from '../../externalServices/storageService';
@@ -1477,7 +1478,15 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             if (disabledEntity) throw new BadRequestError('cannot delete, some entities are disabled');
             if (childTemplateId) {
                 const childFilters = await this.instanceUtils.getChildFilters(childTemplateId, userId);
-                const notFilterValid = entities.find((entity) => matchValueAgainstFilter(entity.properties, childFilters));
+                const notFilterValid = entities.find(
+                    async (entity) =>
+                        await matchValueAgainstFilter(
+                            entity.properties,
+                            template,
+                            async (id: string) => await Kartoffel.getUserById(id),
+                            childFilters,
+                        ),
+                );
 
                 if (notFilterValid)
                     throw new FilterValidation(`cannot delete, entity ${notFilterValid.properties._id} is not valid according to filters`);

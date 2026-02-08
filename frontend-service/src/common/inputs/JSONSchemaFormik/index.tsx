@@ -189,7 +189,13 @@ export const ajvValidate = (
         const parsedFilter = typeof propertyFilter === 'string' ? JSON.parse(propertyFilter) : propertyFilter;
         if (typeof parsedFilter !== 'object' || parsedFilter === null) return;
 
-        const value = data[field];
+        const value =
+            data[field] !== undefined
+                ? typeof data[field] === 'object' && 'fullName' in data[field]
+                    ? data[field].fullName
+                    : data[field]
+                : undefined;
+
         if (!matchValueAgainstFilter({ [field]: value }, parsedFilter))
             childTemplateFilterErrors[field] = i18next.t('validation.fieldFilterCondition');
     });
