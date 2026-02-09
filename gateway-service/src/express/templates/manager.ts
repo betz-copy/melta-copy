@@ -1086,9 +1086,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         entities.forEach((entity) => {
             newExpandedUserFields.forEach((expandedUserFieldKey) => {
                 const userKey = updatedTemplateData.properties.properties[expandedUserFieldKey].expandedUserField?.relatedUserField;
-                if (userKey && entity.entity.properties[userKey] && JSON.parse(entity.entity.properties[userKey])._id) {
-                    usersIds.add(JSON.parse(entity.entity.properties[userKey])._id);
-                }
+                if (userKey && entity.entity.properties[userKey] && entity.entity.properties[userKey]._id)
+                    usersIds.add(entity.entity.properties[userKey]._id);
             });
         });
 
