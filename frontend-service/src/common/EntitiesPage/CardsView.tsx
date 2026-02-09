@@ -19,10 +19,10 @@ import { isChildTemplate } from '../../utils/templates';
 import { InfiniteScroll } from '../InfiniteScroll';
 import { getDefaultFilterFromTemplate } from './TemplateTablesView';
 
-const {  
-    entitiesCardsView: { infiniteScrollPageCount },  
-    features: { isActiveSemanticSearch },  
-} = environment;  
+const {
+    entitiesCardsView: { infiniteScrollPageCount },
+    features: { isActiveSemanticSearch },
+} = environment;
 
 export interface CardsViewRef {
     refetch: () => void;
