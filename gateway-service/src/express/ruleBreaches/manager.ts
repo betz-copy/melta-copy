@@ -313,7 +313,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
             }
 
             if (value.items?.format === 'user' && entity.properties[key]) {
-                const userArray = entity.properties[key].map((user) => JSON.parse(user));
+                const userArray = entity.properties[key].map((user) => user);
                 users.push(...userArray);
             }
         });

@@ -1103,7 +1103,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                 const expandedUserFieldValue = updatedTemplateData.properties.properties[expandedUserFieldKey];
                 const userKey = expandedUserFieldValue.expandedUserField?.relatedUserField;
                 const userFieldValue = userKey ? entity.entity.properties[userKey] : undefined;
-                const userId = userFieldValue ? JSON.parse(userFieldValue)._id : undefined;
+                const userId = userFieldValue ? userFieldValue._id : undefined;
 
                 if (userId && userKey) {
                     const kartoffelUser = kartoffelUsersMapById[userId] ? kartoffelUsersMapById[userId][0] : undefined;

@@ -269,10 +269,6 @@ const TemplateEntitiesAutocomplete: React.FC<{
                     const parsedArray = value.map((prop) => {
                         if (prop?.fullName) return prop.fullName;
 
-                        const parsed = JSON.parse(prop);
-
-                        if (parsed.fullName) return parsed.fullName;
-
                         return prop;
                     });
                     return parsedArray.join(', ');
@@ -281,17 +277,13 @@ const TemplateEntitiesAutocomplete: React.FC<{
                 }
             }
 
-            if (value.fullName && value.mail && value.hierarchy && value.id && value.jobTitle) {
-                return value.fullName;
-            }
+            if (value.fullName && value.mail && value.hierarchy && value._id && value.jobTitle) return value.fullName;
 
             return value.toString();
         }
 
         try {
-            const parsedUser = JSON.parse(value);
-
-            return typeof parsedUser === 'object' ? parsedUser.fullName : parsedUser;
+            return typeof value === 'object' ? value?.fullName : value;
         } catch {
             return value;
         }
