@@ -2,6 +2,7 @@ import {
     BadRequestError,
     childTemplateKeys,
     dePopulateChildProperties,
+    IChildTemplatePopulated,
     IConstraintsOfTemplate,
     IEntitySingleProperty,
     IMongoEntityTemplatePopulated,
@@ -77,13 +78,11 @@ const getRelatedTemplateIds = (template: IMongoEntityTemplatePopulated) => {
 
 const updateChildTemplatesOnParentUpdate = async (
     entityTemplateService: EntityTemplateService,
-    parentId: string,
+    childTemplates: IChildTemplatePopulated[],
     removedProperties: string[],
     newRequired: string[],
     oldRequired: string[],
 ) => {
-    const childTemplates = await entityTemplateService.searchChildTemplates({ parentTemplatesIds: [parentId] });
-
     return Promise.all(
         childTemplates.flatMap((childTemplate) => {
             let hasChildChanged = false;

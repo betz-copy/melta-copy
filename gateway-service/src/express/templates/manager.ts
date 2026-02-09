@@ -1238,6 +1238,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             delete restOfTemplatePropertiesObject.properties[key].isNewPropNameEqualDeletedPropName;
         });
 
+        const childTemplates = await this.entityTemplateService.searchChildTemplates({ parentTemplatesIds: [id] });
+
         const updatedTemplate = await this.entityTemplateService.updateEntityTemplate(id, {
             ...restOfTemplateData,
             properties: restOfTemplatePropertiesObject,
@@ -1268,7 +1270,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         const updatedChildTemplates = await updateChildTemplatesOnParentUpdate(
             this.entityTemplateService,
-            id,
+            childTemplates,
             removedProperties,
             updatedTemplateData.properties.required,
             required,
