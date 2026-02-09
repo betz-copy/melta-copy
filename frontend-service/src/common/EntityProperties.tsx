@@ -173,13 +173,10 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                     getNumLines(stringFormatValue) > 1 &&
                     stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
 
-                const textDirection =
-                    format && !environment.excludedFormats.includes(format)
-                        ? getTextDirection(propertyValue, {
-                              type,
-                              serialCurrent,
-                          })
-                        : 'rtl';
+                const textDirection = getTextDirection(propertyValue, {
+                    type,
+                    serialCurrent,
+                });
 
                 const titleTypography = (
                     <Typography
