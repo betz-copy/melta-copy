@@ -20,6 +20,7 @@ import { InfiniteScroll } from '../InfiniteScroll';
 import { getDefaultFilterFromTemplate } from './TemplateTablesView';
 
 const { infiniteScrollPageCount } = environment.entitiesCardsView;
+const { isActiveSemanticSearch } = environment.features;
 
 export interface CardsViewRef {
     refetch: () => void;
@@ -35,8 +36,13 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
     const [entitiesCount, setEntitiesCount] = useState<number | null>(null);
     const [openCardsMap, setOpenCardsMap] = useState<Map<string, boolean>>(new Map());
     const queryClient = useQueryClient();
-    const [urlSearchParams, _setUrlSearchParams] = useSearchParams();
-    const urlSemanticSearch = urlSearchParams.get('semanticSearch');
+    let urlSemanticSearch: string | null = null;
+    if (isActiveSemanticSearch) {
+        const [urlSearchParams, _setUrlSearchParams] = useSearchParams();
+        urlSemanticSearch = urlSearchParams.get('semanticSearch');
+    } else {
+        urlSemanticSearch = 'false';
+    }
 
     const refetch = () => queryClient.invalidateQueries(['searchEntities', templateIds, searchInput, urlSemanticSearch], { exact: true });
     useImperativeHandle(ref, () => ({ refetch }));

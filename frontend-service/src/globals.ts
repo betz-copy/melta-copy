@@ -345,6 +345,9 @@ export const environment = {
     },
     loadExcel: { excelExtension: '.xlsx', acceptedFilesTypes: { 'excel/xlsx': ['.xlsx', '.xls'] }, entityId: '$0._id' },
     draftAutoSaveDebounce: 250,
+    features: {
+        isActiveSemanticSearch: false,
+    },
     map: {
         maxRadius: 30000,
         squareLength: 2500,

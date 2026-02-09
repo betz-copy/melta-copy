@@ -19,6 +19,9 @@ import { TablePageType } from '../EntitiesTableOfTemplate';
 import CardsView, { CardsViewRef } from './CardsView';
 import { EntitiesPageHeadline } from './Headline';
 import TemplateTablesView, { TemplateTablesViewRef } from './TemplateTablesView';
+import { environment } from '../../globals';
+
+const { isActiveSemanticSearch } = environment.features;
 
 type EntitiesPageProps<T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated> = {
     templates: T[];
@@ -45,16 +48,15 @@ const EntitiesPage = <T extends IMongoEntityTemplatePopulated | IMongoChildTempl
 }: EntitiesPageProps<T>) => {
     const templateTablesViewRef = useRef<TemplateTablesViewRef>(null);
     const cardsViewRef = useRef<CardsViewRef>(null);
-
     const [urlSearchParams, setUrlSearchParams] = useSearchParams({
-        semanticSearch: LocalStorage.get('semanticSearch') ?? 'true',
+        ...(isActiveSemanticSearch ? { semanticSearch: LocalStorage.get('semanticSearch') ?? 'true' } : {}),
         search: '',
         viewMode: 'templates-tables-view',
     });
     const search = urlSearchParams.get('search')!;
 
     const [searchInput, setSearchInput] = useState(search);
-    const urlSemanticSearch = urlSearchParams.get('semanticSearch');
+    const urlSemanticSearch = isActiveSemanticSearch ? urlSearchParams.get('semanticSearch') : 'false';
     const [updatedEntities, setUpdatedEntities] = useState<IEntity[]>([]);
     const [updatedTemplateIds, setUpdatedTemplateIds] = useState<string[]>([]);
 
