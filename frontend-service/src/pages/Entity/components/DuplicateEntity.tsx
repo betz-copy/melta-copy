@@ -36,7 +36,7 @@ const DuplicateEntity: React.FC = () => {
     const [_match, params] = useRoute('/entity/:entityId/duplicate');
 
     if (!state) {
-        console.log('No state found in history. Redirecting to entity page.');
+        console.error('No state found in history. Redirecting to entity page.');
         const { entityId } = params!;
         navigate(`/entity/${entityId}`);
     }

@@ -63,12 +63,28 @@ export const GlobalSearchBar: React.FC<{
     const theme = useTheme();
     const { trackEvent } = useMatomo();
 
-    const [debouncedSearchValue, setDebouncedSearchValue] = useState<string>(inputValue ?? '');
-
     const [urlSearchParams, setUrlSearchParams] = useSearchParams();
     const [semanticSearch, setSemanticSearch] = useLocalStorage<boolean>('semanticSearch', false);
     const urlSemanticSearch = urlSearchParams.get('semanticSearch');
     const boolUrl = convertToBool(urlSemanticSearch!);
+
+    const [debouncedSearchValue, setDebouncedSearchValue] = useState<string>(inputValue ?? '');
+
+    const debouncedSearch = useCallback(
+        debounce((value: string) => {
+            if (value !== valueForSearchButtonRef.current) {
+                valueForSearchButtonRef.current = value;
+                onSearch(value);
+                if (gridApi) gridApi.setGridOption('quickFilterText', value);
+                trackEvent({
+                    category: 'search',
+                    action: isActiveSemanticSearch ? (semanticSearch! ? 'on' : 'off') : 'off',
+                });
+            }
+        }, 300),
+        [],
+    );
+
     useEffect(() => {
         // If a value exists in the url, override the value in the localStorage.
         // ⚠️ May cause back-button loop when syncing URL and localStorage (adds param on mount → triggers navigation).
@@ -78,6 +94,14 @@ export const GlobalSearchBar: React.FC<{
         if (realValue !== semanticSearch) setSemanticSearch(realValue);
         if (realValue !== boolUrl) setUrlSearchParams({ ...Object.fromEntries(urlSearchParams.entries()), semanticSearch: realValue.toString() });
     }, [boolUrl, semanticSearch, urlSemanticSearch, setSemanticSearch, setUrlSearchParams, urlSearchParams]);
+
+    useEffect(() => {
+        if (!autoSearch) return;
+
+        debouncedSearch(debouncedSearchValue);
+
+        return () => debouncedSearch.cancel();
+    }, [debouncedSearchValue, autoSearch, debouncedSearch]);
 
     const aiToolTip = useCallback(
         () =>
@@ -102,29 +126,6 @@ export const GlobalSearchBar: React.FC<{
             ) : null,
         [boolUrl, setUrlSearchParams, urlSearchParams, urlSemanticSearch],
     );
-
-    const debouncedSearch = useCallback(
-        debounce((value: string) => {
-            if (value !== valueForSearchButtonRef.current) {
-                valueForSearchButtonRef.current = value;
-                onSearch(value);
-                if (gridApi) gridApi.setGridOption('quickFilterText', value);
-                trackEvent({
-                    category: 'search',
-                    action: isActiveSemanticSearch ? (semanticSearch! ? 'on' : 'off') : 'off',
-                });
-            }
-        }, 300),
-        [],
-    );
-
-    useEffect(() => {
-        if (!autoSearch) return;
-
-        debouncedSearch(debouncedSearchValue);
-
-        return () => debouncedSearch.cancel();
-    }, [debouncedSearchValue, autoSearch, debouncedSearch]);
 
     return (
         <SearchInput
