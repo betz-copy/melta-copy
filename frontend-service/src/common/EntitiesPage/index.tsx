@@ -5,6 +5,7 @@ import { mapValues } from 'lodash';
 import React, { useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import { environment } from '../../globals';
 import { IMongoCategory } from '../../interfaces/categories';
 import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { IEntity, IExportEntitiesBody } from '../../interfaces/entities';
@@ -19,7 +20,6 @@ import { TablePageType } from '../EntitiesTableOfTemplate';
 import CardsView, { CardsViewRef } from './CardsView';
 import { EntitiesPageHeadline } from './Headline';
 import TemplateTablesView, { TemplateTablesViewRef } from './TemplateTablesView';
-import { environment } from '../../globals';
 
 const { isActiveSemanticSearch } = environment.features;
 

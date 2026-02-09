@@ -8,7 +8,7 @@ import { pickBy } from 'lodash';
 import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
-import { useLocation } from 'wouter';
+import { useLocation, useRoute } from 'wouter';
 import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { getInitialValuesWithDefaults } from '../../../common/dialogs/entity/CreateOrEditEntityDialog';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
@@ -26,7 +26,6 @@ import { useSearchParams } from '../../../utils/hooks/useSearchParams';
 import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
 import { DuplicateTopBar } from './DuplicateTopBar';
-import { useRoute } from 'wouter';
 
 const { errorCodes } = environment;
 

@@ -13,6 +13,7 @@ import { BaseTextFieldProps, Box, CircularProgress, Grid, IconButton, ToggleButt
 import i18next from 'i18next';
 import { debounce } from 'lodash';
 import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
+import { environment } from '../../globals';
 import { IMongoCategory } from '../../interfaces/categories';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { IEntity } from '../../interfaces/entities';
@@ -28,7 +29,6 @@ import BlueTitle from '../MeltaDesigns/BlueTitle';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import TemplatesSelectCheckbox from '../templatesSelectCheckbox';
 import { AddEntityButton } from './Buttons/AddEntity';
-import { environment } from '../../globals';
 
 const { isActiveSemanticSearch } = environment.features;
 
