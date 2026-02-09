@@ -26,11 +26,21 @@ import { useSearchParams } from '../../../utils/hooks/useSearchParams';
 import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
 import { DuplicateTopBar } from './DuplicateTopBar';
+import { useRoute } from 'wouter';
 
 const { errorCodes } = environment;
 
 const DuplicateEntity: React.FC = () => {
     const { state } = window.history;
+
+    const [_, navigate] = useLocation();
+
+    if (!state) {
+        console.log('No state found in history. Redirecting to entity page.');
+        const [_match, params] = useRoute('/entity/:entityId/duplicate');
+        const { entityId } = params!;
+        navigate(`/entity/${entityId}`);
+    }
 
     const {
         entityTemplate,
@@ -39,11 +49,6 @@ const DuplicateEntity: React.FC = () => {
         entityTemplate: IMongoEntityTemplatePopulated;
         expandedEntity: IEntityExpanded;
     };
-
-    const [_, navigate] = useLocation();
-    if (!state) {
-        navigate(`/entity/${entity?.properties._id}`);
-    }
 
     const [searchParams, _setSearchParams] = useSearchParams();
     const childTemplateId = searchParams.get('childTemplateId') ?? undefined;
