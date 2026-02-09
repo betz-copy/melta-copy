@@ -36,13 +36,10 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
     const [entitiesCount, setEntitiesCount] = useState<number | null>(null);
     const [openCardsMap, setOpenCardsMap] = useState<Map<string, boolean>>(new Map());
     const queryClient = useQueryClient();
+    const [urlSearchParams, _setUrlSearchParams] = useSearchParams();
+
     let urlSemanticSearch: string | null = null;
-    if (isActiveSemanticSearch) {
-        const [urlSearchParams, _setUrlSearchParams] = useSearchParams();
-        urlSemanticSearch = urlSearchParams.get('semanticSearch');
-    } else {
-        urlSemanticSearch = 'false';
-    }
+    urlSemanticSearch = isActiveSemanticSearch ? urlSearchParams.get('semanticSearch') : 'false';
 
     const refetch = () => queryClient.invalidateQueries(['searchEntities', templateIds, searchInput, urlSemanticSearch], { exact: true });
     useImperativeHandle(ref, () => ({ refetch }));
@@ -67,14 +64,19 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
             <Grid>
                 <Grid container>
                     <InfiniteScroll<
-                        IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string]; childTemplateId?: string }
+                        IEntityWithDirectConnections & {
+                            minioFileIdsWithTexts?: ISemanticSearchResult[string][string];
+                            childTemplateId?: string;
+                        }
                     >
                         queryKey={['searchEntities', templateIds, searchInput, urlSemanticSearch]}
                         queryFunction={async ({ pageParam: startRow = 0 }) => {
                             const childTemplates = templates.filter(isChildTemplate);
                             const parentTemplates = templates.filter((template) => !isChildTemplate(template));
 
-                            const entities: (IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string] })[] = [];
+                            const entities: (IEntityWithDirectConnections & {
+                                minioFileIdsWithTexts?: ISemanticSearchResult[string][string];
+                            })[] = [];
                             let count = 0;
 
                             if (parentTemplates.length) {

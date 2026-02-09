@@ -65,26 +65,23 @@ export const GlobalSearchBar: React.FC<{
 
     const [debouncedSearchValue, setDebouncedSearchValue] = useState<string>(inputValue ?? '');
 
-    let aiToolTip;
-    let semanticSearch: boolean;
-    if (isActiveSemanticSearch) {
-        const [urlSearchParams, setUrlSearchParams] = useSearchParams();
-        const [semanticSearch, setSemanticSearch] = useLocalStorage<boolean>('semanticSearch', true);
-        const urlSemanticSearch = urlSearchParams.get('semanticSearch');
-        const boolUrl = convertToBool(urlSemanticSearch!);
+    const [urlSearchParams, setUrlSearchParams] = useSearchParams();
+    const [semanticSearch, setSemanticSearch] = useLocalStorage<boolean>('semanticSearch', true);
+    const urlSemanticSearch = urlSearchParams.get('semanticSearch');
+    const boolUrl = convertToBool(urlSemanticSearch!);
+    useEffect(() => {
+        // If a value exists in the url, override the value in the localStorage.
+        // ⚠️ May cause back-button loop when syncing URL and localStorage (adds param on mount → triggers navigation).
 
-        useEffect(() => {
-            // If a value exists in the url, override the value in the localStorage.
-            // ⚠️ May cause back-button loop when syncing URL and localStorage (adds param on mount → triggers navigation).
+        const realValue = urlSemanticSearch ? boolUrl : semanticSearch;
 
-            const realValue = urlSemanticSearch ? boolUrl : semanticSearch;
+        if (realValue !== semanticSearch) setSemanticSearch(realValue);
+        if (realValue !== boolUrl) setUrlSearchParams({ ...Object.fromEntries(urlSearchParams.entries()), semanticSearch: realValue.toString() });
+    }, [boolUrl, semanticSearch, urlSemanticSearch, setSemanticSearch, setUrlSearchParams, urlSearchParams]);
 
-            if (realValue !== semanticSearch) setSemanticSearch(realValue);
-            if (realValue !== boolUrl) setUrlSearchParams({ ...Object.fromEntries(urlSearchParams.entries()), semanticSearch: realValue.toString() });
-        }, [boolUrl, semanticSearch, urlSemanticSearch, setSemanticSearch, setUrlSearchParams, urlSearchParams]);
-
-        aiToolTip = useCallback(
-            () => (
+    const aiToolTip = useCallback(
+        () =>
+            isActiveSemanticSearch ? (
                 <MeltaTooltip
                     title={boolUrl ? i18next.t('globalSearch.turnOffSemanticSearch') : i18next.t('globalSearch.turnOnSemanticSearch')}
                     arrow
@@ -102,10 +99,9 @@ export const GlobalSearchBar: React.FC<{
                         {boolUrl ? <AutoAwesome color="primary" /> : <AutoAwesomeOutlined />}
                     </IconButton>
                 </MeltaTooltip>
-            ),
-            [boolUrl, setUrlSearchParams, urlSearchParams, urlSemanticSearch],
-        );
-    }
+            ) : null,
+        [boolUrl, setUrlSearchParams, urlSearchParams, urlSemanticSearch],
+    );
 
     const debouncedSearch = useCallback(
         debounce((value: string) => {

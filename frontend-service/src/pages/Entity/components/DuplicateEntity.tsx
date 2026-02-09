@@ -34,10 +34,10 @@ const DuplicateEntity: React.FC = () => {
     const { state } = window.history;
 
     const [_, navigate] = useLocation();
+    const [_match, params] = useRoute('/entity/:entityId/duplicate');
 
     if (!state) {
         console.log('No state found in history. Redirecting to entity page.');
-        const [_match, params] = useRoute('/entity/:entityId/duplicate');
         const { entityId } = params!;
         navigate(`/entity/${entityId}`);
     }
