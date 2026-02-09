@@ -1,6 +1,6 @@
 import { IMongoEntityTemplate, ISearchEntityTemplatesBody } from '@microservices/shared';
 import config from '../../config';
-import TemplatesManagerService from '.';
+import TemplatesService from '.';
 
 const {
     templateService: {
@@ -8,7 +8,7 @@ const {
     },
 } = config;
 
-class EntityTemplateService extends TemplatesManagerService {
+class EntityTemplateService extends TemplatesService {
     async getEntityTemplateById(id: string) {
         const { data } = await this.api.get<IMongoEntityTemplate>(`${getByIdRoute}/${id}`);
 

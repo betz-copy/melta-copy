@@ -93,20 +93,20 @@ ajv.addKeyword({
 ajv.addKeyword({ keyword: 'accountBalance', type: 'boolean' });
 
 export class EntityValidator extends DefaultController {
-    private entityTemplateManagerService: EntityTemplateService;
+    private entityTemplateService: EntityTemplateService;
 
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
 
     constructor(workspaceId: string) {
         super(undefined);
 
-        this.entityTemplateManagerService = new EntityTemplateService(workspaceId);
+        this.entityTemplateService = new EntityTemplateService(workspaceId);
         this.relationshipsTemplateManagerService = new RelationshipsTemplateManagerService(workspaceId);
     }
 
     private async getEntityTemplateByIdOrThrowValidationError(templateId: string) {
         const { result: entityTemplate, err: getEntityTemplateByIdErr } = await tryCatch(() =>
-            this.entityTemplateManagerService.getEntityTemplateById(templateId),
+            this.entityTemplateService.getEntityTemplateById(templateId),
         );
         if (getEntityTemplateByIdErr || !entityTemplate) {
             if (axios.isAxiosError(getEntityTemplateByIdErr) && getEntityTemplateByIdErr.response?.status === StatusCodes.NOT_FOUND)
@@ -413,7 +413,7 @@ export class EntityValidator extends DefaultController {
     async validateSearchByTemplatesBody(req: Request) {
         const { searchConfigs }: ISearchEntitiesByTemplatesBody = req.body;
         const templateIds = Object.keys(searchConfigs);
-        const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({ ids: templateIds });
+        const entityTemplates = await this.entityTemplateService.searchEntityTemplates({ ids: templateIds });
         if (entityTemplates.length < templateIds.length) {
             throw new ValidationError(`some of the templates in search doesnt exist. found only [${entityTemplates.map(({ _id }) => _id)}]`);
         }
@@ -444,7 +444,7 @@ export class EntityValidator extends DefaultController {
     async validateSearchBatchBody(req: Request) {
         const searchBody: ISearchBatchBody = req.body;
         const templateIds = Object.keys(searchBody.templates);
-        const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({ ids: templateIds });
+        const entityTemplates = await this.entityTemplateService.searchEntityTemplates({ ids: templateIds });
         if (entityTemplates.length < templateIds.length) {
             throw new ValidationError(`some of the templates in search doesnt exist. found only [${entityTemplates.map(({ _id }) => _id)}]`);
         }
@@ -470,7 +470,7 @@ export class EntityValidator extends DefaultController {
     async validateFilterBatchBody(req: Request) {
         const searchBody: IGetExpandedEntityBody['filters'] = req.body.filters;
         const templateIds = Object.keys(searchBody);
-        const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({ ids: templateIds });
+        const entityTemplates = await this.entityTemplateService.searchEntityTemplates({ ids: templateIds });
         if (entityTemplates.length < templateIds.length)
             throw new ValidationError(`some of the templates in search doesn't exist. found only [${entityTemplates.map(({ _id }) => _id)}]`);
 
@@ -489,7 +489,7 @@ export class EntityValidator extends DefaultController {
 
     async validatePrintBody(req: Request) {
         const searchBody: IGetExpandedEntityBody['filters'] = req.body.filters;
-        const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({});
+        const entityTemplates = await this.entityTemplateService.searchEntityTemplates({});
         const relationShips = await this.relationshipsTemplateManagerService.searchRelationshipTemplates();
 
         const entityTemplatesMap = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
@@ -590,8 +590,18 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
                 return;
             }
 
+            if (format === 'user' && typeof propertyValue === 'object') {
+                normalizedEntity[key] = propertyValue._id;
+                return;
+            }
+
+            if (items?.format === 'user' && typeof propertyValue === 'object') {
+                normalizedEntity[key] = propertyValue.map((user) => user._id);
+                return;
+            }
+
             if (type === 'string' && format === 'relationshipReference' && typeof propertyValue === 'object') {
-                let relationShipPropValue: Record<string, IPropertyValue> = 'properties' in propertyValue ? propertyValue.properties : propertyValue;
+                let relationshipPropValue: Record<string, IPropertyValue> = 'properties' in propertyValue ? propertyValue.properties : propertyValue;
 
                 if (recursiveRelationshipReference) {
                     const relatedEntityTemplate = await entityTemplateService.getEntityTemplateById(propertyValue.templateId);
@@ -600,7 +610,7 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
                         ({ format: nestedFormat }) => nestedFormat === 'relationshipReference',
                     );
 
-                    relationShipPropValue = await addStringFieldsAndNormalizeSpecialStringValues(
+                    relationshipPropValue = await addStringFieldsAndNormalizeSpecialStringValues(
                         propertyValue.properties,
                         relatedEntityTemplate,
                         entityTemplateService,
@@ -610,7 +620,7 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
                 }
 
                 normalizedEntity[`${key}.templateId${neo4j.relationshipReferencePropertySuffix}`] = value.relationshipReference!.relatedTemplateId;
-                Object.entries(relationShipPropValue).forEach(([innerKey, innerProperty]) => {
+                Object.entries(relationshipPropValue).forEach(([innerKey, innerProperty]) => {
                     if (innerKey !== 'coloredProperties')
                         normalizedEntity[`${key}.properties.${innerKey}${neo4j.relationshipReferencePropertySuffix}`] = innerProperty;
                 });

@@ -1,6 +1,6 @@
 import { IChildTemplatePopulated, ISearchEntityTemplatesBody } from '@microservices/shared';
 import config from '../../config';
-import TemplatesManagerService from '.';
+import TemplatesService from '.';
 
 const {
     templateService: {
@@ -8,7 +8,7 @@ const {
     },
 } = config;
 
-class ChildTemplateService extends TemplatesManagerService {
+class ChildTemplateService extends TemplatesService {
     async getChildTemplateById(id: string) {
         const { data } = await this.api.get<IChildTemplatePopulated>(`${getByIdRoute}/${id}`);
 

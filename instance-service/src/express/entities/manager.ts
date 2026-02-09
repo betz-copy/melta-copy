@@ -118,7 +118,7 @@ const {
 const { BAD_REQUEST: badRequestStatus } = StatusCodes;
 
 class EntityManager extends DefaultManagerNeo4j {
-    private entityTemplateManagerService: EntityTemplateService;
+    private entityTemplateService: EntityTemplateService;
 
     private childTemplateManagerService: ChildTemplateService;
 
@@ -132,7 +132,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
     constructor(workspaceId: string) {
         super(workspaceId);
-        this.entityTemplateManagerService = new EntityTemplateService(workspaceId);
+        this.entityTemplateService = new EntityTemplateService(workspaceId);
         this.relationshipsTemplateManagerService = new RelationshipsTemplateManagerService(workspaceId);
         this.relationshipManager = new RelationshipManager(workspaceId);
         this.activityLogProducer = new ActivityLogProducer(workspaceId);
@@ -198,7 +198,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
         const ruleFailuresPromises = Array.from(entitiesRelevantRulesMap.entries()).map(async ([entityId, { rules }]) => {
             const entity = await this.getEntityByIdInTransaction(entityId, transaction);
-            const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entity.templateId);
+            const entityTemplate = await this.entityTemplateService.getEntityTemplateById(entity.templateId);
             return runRulesOnEntity(transaction, entityId, rules, entityTemplate);
         });
 
@@ -219,7 +219,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
         const relevantRules = filterDependentRulesViaAggregation(rulesOfEntity, dependentRelationshipTemplateId, updatedProperties);
 
-        const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entityTemplateId);
+        const entityTemplate = await this.entityTemplateService.getEntityTemplateById(entityTemplateId);
 
         return runRulesOnEntity(transaction, entityId, relevantRules, entityTemplate);
     };
@@ -341,14 +341,15 @@ class EntityManager extends DefaultManagerNeo4j {
         const createdEntity = await runInTransactionAndNormalize(
             transaction,
             `CREATE (e: \`${entityTemplate._id}\` $properties) RETURN e`,
-            normalizeReturnedEntity('singleResponseNotNullable', { type: 'pure', metadata: entityTemplate }, false),
+            normalizeReturnedEntity('singleResponseNotNullable', this.workspaceId, entityTemplate, false),
             {
                 properties: {
                     ...generateDefaultProperties(),
-                    ...(await addStringFieldsAndNormalizeSpecialStringValues(fixedProperties, entityTemplate, this.entityTemplateManagerService)),
+                    ...(await addStringFieldsAndNormalizeSpecialStringValues(fixedProperties, entityTemplate, this.entityTemplateService)),
                 },
             },
         );
+        console.log({ createdEntity });
 
         await Promise.all(
             Object.entries(entityTemplate.properties.properties).map(async ([name, property]) => {
@@ -385,7 +386,7 @@ class EntityManager extends DefaultManagerNeo4j {
         const entity = await runInTransactionAndNormalize(
             transaction,
             `MATCH (e {_id: '${id}'}) RETURN e`,
-            normalizeReturnedEntity('singleResponse', { type: 'function', metadata: this.workspaceId }, isGetMode),
+            normalizeReturnedEntity('singleResponse', this.workspaceId, undefined, isGetMode),
         );
 
         if (!entity) throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
@@ -425,11 +426,11 @@ class EntityManager extends DefaultManagerNeo4j {
 
     async fixRelationshipReferenceField(relatedEntityId: string, transaction: Transaction) {
         const relatedEntity = await this.getEntityByIdInTransaction(relatedEntityId, transaction);
-        const relatedEntityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(relatedEntity.templateId);
+        const relatedEntityTemplate = await this.entityTemplateService.getEntityTemplateById(relatedEntity.templateId);
         const relatedEntityFixProperties = await addStringFieldsAndNormalizeSpecialStringValues(
             relatedEntity.properties,
             relatedEntityTemplate,
-            this.entityTemplateManagerService,
+            this.entityTemplateService,
             undefined,
             true,
         );
@@ -447,7 +448,7 @@ class EntityManager extends DefaultManagerNeo4j {
     }
 
     async getRelatedEntitiesOfEntity(originalTemplateId: string, originalEntityIds: string[], transaction: Transaction) {
-        const allEntityTemplates = await this.entityTemplateManagerService.getTemplatesUsingRelationshipReference(originalTemplateId);
+        const allEntityTemplates = await this.entityTemplateService.getTemplatesUsingRelationshipReference(originalTemplateId);
         const relatedEntityIdsByFieldToChange: Record<string, string[]> = {};
 
         await Promise.all(
@@ -476,7 +477,7 @@ class EntityManager extends DefaultManagerNeo4j {
     }
 
     async getAllRelationshipReferencesEntityTemplates(templateId: string, actions?: string) {
-        const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({ limit: 0, skip: 0 });
+        const entityTemplates = await this.entityTemplateService.searchEntityTemplates({ limit: 0, skip: 0 });
         const templatesMap = new Map(entityTemplates.map((template) => [template._id, template]));
 
         const baseTemplate = templatesMap.get(templateId)!;
@@ -819,7 +820,7 @@ class EntityManager extends DefaultManagerNeo4j {
                 let newDestWallet: IEntity | undefined;
 
                 if (template.walletTransfer && newDestWalletData) {
-                    const destTemplate = await this.entityTemplateManagerService.getEntityTemplateById(newDestWalletData.templateId);
+                    const destTemplate = await this.entityTemplateService.getEntityTemplateById(newDestWalletData.templateId);
 
                     destWalletResult = await this.createEntityPipelineInTransaction(
                         transaction,
@@ -944,7 +945,7 @@ class EntityManager extends DefaultManagerNeo4j {
             kartoffelUsersIds = kartoffelUsers.map(({ _id, id }) => _id ?? id);
         }
 
-        const templates = await this.entityTemplateManagerService.searchEntityTemplates({ ids: templateIds });
+        const templates = await this.entityTemplateService.searchEntityTemplates({ ids: templateIds });
         const userFields: string[] = [];
         const usersFields: string[] = [];
 
@@ -1031,7 +1032,7 @@ class EntityManager extends DefaultManagerNeo4j {
             WHERE e.\`${relationshipReferenceFieldName}.properties._id${config.neo4j.relationshipReferencePropertySuffix}\` IN $entityIds
             RETURN e
             `,
-            normalizeReturnedEntity('multipleResponses', { type: 'function', metadata: this.workspaceId }),
+            normalizeReturnedEntity('multipleResponses', this.workspaceId),
             { entityIds },
         );
     }
@@ -1193,7 +1194,7 @@ class EntityManager extends DefaultManagerNeo4j {
     async getEntityById(id: string, isGetMode: boolean = true) {
         const node = await this.neo4jClient.readTransaction(
             `MATCH (e {_id: '${id}'}) RETURN e`,
-            normalizeReturnedEntity('singleResponse', { type: 'function', metadata: this.workspaceId }, isGetMode),
+            normalizeReturnedEntity('singleResponse', this.workspaceId, undefined, isGetMode),
         );
 
         if (!node) throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
@@ -1206,7 +1207,12 @@ class EntityManager extends DefaultManagerNeo4j {
      * @param acc accumulator, accumulates the unflattened fields and in the end becomes the unflattened entity properties
      * @returns the unflattened properties of the previously flattened entity
      */
-    static async fixReturnedEntityReferencesFields(properties: IEntity['properties'], acc: IEntity['properties'] = {}) {
+    static async fixReturnedEntityReferencesFields(
+        properties: IEntity['properties'],
+        template: IMongoEntityTemplate,
+        workspaceId: string,
+        acc: IEntity['properties'] = {},
+    ) {
         Object.entries(properties).forEach(([key, value]) => {
             if (!key.endsWith(config.neo4j.relationshipReferencePropertySuffix)) {
                 acc[key] = value;
@@ -1221,8 +1227,17 @@ class EntityManager extends DefaultManagerNeo4j {
         await Promise.all(
             Object.entries(acc).map(async ([key, value]) => {
                 if (!value?.properties) return;
-                const { properties: props, coloredFields } = await normalizeFields(flatten(value.properties, { safe: true }));
-                acc[key] = { ...value, properties: await EntityManager.fixReturnedEntityReferencesFields(props), coloredFields };
+                const entityTemplateService = new EntityTemplateService(workspaceId);
+                const relatedTemplateId = template.properties.properties[key].relationshipReference?.relatedTemplateId;
+                if (!relatedTemplateId) return;
+                const relatedTemplate = await entityTemplateService.getEntityTemplateById(relatedTemplateId);
+                const { properties: props, coloredFields } = await normalizeFields(flatten(value.properties, { safe: true }), relatedTemplate, true);
+
+                acc[key] = {
+                    ...value,
+                    properties: await EntityManager.fixReturnedEntityReferencesFields(props, template, workspaceId),
+                    coloredFields,
+                };
             }),
         );
 
@@ -1232,7 +1247,7 @@ class EntityManager extends DefaultManagerNeo4j {
     async getEntitiesByIds(ids: string[]) {
         return this.neo4jClient.readTransaction(
             `MATCH (e) WHERE e._id IN $ids RETURN e`,
-            normalizeReturnedEntity('multipleResponses', { type: 'function', metadata: this.workspaceId }),
+            normalizeReturnedEntity('multipleResponses', this.workspaceId),
             { ids },
         );
     }
@@ -1466,7 +1481,7 @@ class EntityManager extends DefaultManagerNeo4j {
              WHERE e._id IN $ids
             ${deleteAllRelationships ? 'DETACH' : ''}
             DELETE e`,
-            normalizeReturnedEntity('multipleResponses', { type: 'function', metadata: this.workspaceId }),
+            normalizeReturnedEntity('multipleResponses', this.workspaceId),
             { ids },
         );
     }
@@ -1493,7 +1508,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
         try {
             return await this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-                const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
+                const entityTemplate = await this.entityTemplateService.getEntityTemplateById(templateId);
                 const entitiesToDelete = await this.getSelectedEntities(deleteBody, entityTemplate);
                 const allowedEntitiesToDelete = await this.getEntitiesToDeleteWithoutRelationships(
                     entitiesToDelete,
@@ -1523,12 +1538,12 @@ class EntityManager extends DefaultManagerNeo4j {
         if (type === 'array') {
             node = await this.neo4jClient.readTransaction(
                 `MATCH (e: \`${id}\`) WHERE '${fieldValue}' IN e.${fieldName} RETURN e`,
-                normalizeReturnedEntity('singleResponse', { type: 'function', metadata: this.workspaceId }),
+                normalizeReturnedEntity('singleResponse', this.workspaceId),
             );
         } else {
             node = await this.neo4jClient.readTransaction(
                 `MATCH (e: \`${id}\`) WHERE e.${fieldName} = '${fieldValue}' RETURN e`,
-                normalizeReturnedEntity('singleResponse', { type: 'function', metadata: this.workspaceId }),
+                normalizeReturnedEntity('singleResponse', this.workspaceId),
             );
         }
         return node;
@@ -1537,7 +1552,7 @@ class EntityManager extends DefaultManagerNeo4j {
     async deleteByTemplateId(templateId: string) {
         return this.neo4jClient.writeTransaction(
             `MATCH (e: \`${templateId}\`) DETACH DELETE e`,
-            normalizeReturnedEntity('multipleResponses', { type: 'function', metadata: this.workspaceId }),
+            normalizeReturnedEntity('multipleResponses', this.workspaceId),
         );
     }
 
@@ -1546,14 +1561,14 @@ class EntityManager extends DefaultManagerNeo4j {
             const entity = await runInTransactionAndNormalize(
                 transaction,
                 `MATCH (e {_id: '${id}'}) RETURN e`,
-                normalizeReturnedEntity('singleResponse', { type: 'function', metadata: this.workspaceId }),
+                normalizeReturnedEntity('singleResponse', this.workspaceId),
             );
 
             if (!entity) {
                 throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
             }
 
-            const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entity.templateId);
+            const entityTemplate = await this.entityTemplateService.getEntityTemplateById(entity.templateId);
             const updatedProperties = this.getKeysOfUpdatedProperties(
                 entity.properties,
                 { ...entity.properties, disabled, updatedAt: new Date().toISOString() },
@@ -1565,7 +1580,7 @@ class EntityManager extends DefaultManagerNeo4j {
             const updatedEntity = await runInTransactionAndNormalize(
                 transaction,
                 `MATCH (e {_id: '${id}'}) SET e.disabled = $disabled RETURN e`,
-                normalizeReturnedEntity('singleResponseNotNullable', { type: 'function', metadata: this.workspaceId }),
+                normalizeReturnedEntity('singleResponseNotNullable', this.workspaceId),
                 { disabled },
             );
 
@@ -1596,7 +1611,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
         const relevantRulesOfEntity = filterDependentRulesOnEntity(rulesOfEntity, entity.templateId, updatedProperties);
 
-        const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entity.templateId);
+        const entityTemplate = await this.entityTemplateService.getEntityTemplateById(entity.templateId);
 
         return runRulesOnEntity(transaction, entity.properties._id, relevantRulesOfEntity, entityTemplate);
     };
@@ -1813,7 +1828,7 @@ class EntityManager extends DefaultManagerNeo4j {
                     WHERE e.\`_id\` IN $updateParams.ids
                     SET e += $updateParams.value
                     RETURN e`,
-                    normalizeReturnedEntity('multipleResponses', { type: 'function', metadata: this.workspaceId }),
+                    normalizeReturnedEntity('multipleResponses', this.workspaceId),
                     {
                         updateParams: {
                             ids: entityIdsToUpdate,
@@ -1866,13 +1881,13 @@ class EntityManager extends DefaultManagerNeo4j {
                  SET e.createdAt = createdAt
                  SET e.disabled = disabled
                  RETURN e`,
-            normalizeReturnedEntity('singleResponseNotNullable', { type: 'function', metadata: this.workspaceId }, isGetMode),
+            normalizeReturnedEntity('singleResponseNotNullable', this.workspaceId, undefined, isGetMode),
             {
                 props: {
                     ...(await addStringFieldsAndNormalizeSpecialStringValues(
                         fixedProperties,
                         entityTemplate,
-                        this.entityTemplateManagerService,
+                        this.entityTemplateService,
                         updatedColoredFields,
                     )),
                     updatedAt: getNeo4jDateTime(),
@@ -2048,7 +2063,7 @@ class EntityManager extends DefaultManagerNeo4j {
                 for (const relationship of existingRelationships) {
                     const entityId = addFieldToSrcEntity ? relationship.sourceEntityId : relationship.destinationEntityId;
                     const entityToUpdate: IEntity = await this.getEntityById(entityId);
-                    const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entityToUpdate.templateId);
+                    const entityTemplate = await this.entityTemplateService.getEntityTemplateById(entityToUpdate.templateId);
                     const entityProperties = mapValues(entityToUpdate.properties, (property, key) =>
                         entityTemplate.properties.properties[key]?.format === 'relationshipReference' ? property?.properties._id : property,
                     );
@@ -2102,7 +2117,7 @@ class EntityManager extends DefaultManagerNeo4j {
                 await runInTransactionAndNormalize(
                     transaction,
                     updateRelatedEntitiesQuery,
-                    normalizeReturnedEntity('multipleResponses', { type: 'function', metadata: this.workspaceId }),
+                    normalizeReturnedEntity('multipleResponses', this.workspaceId),
                     {
                         updateParams: { ids: entityIdsToUpdate },
                     },
@@ -2123,7 +2138,7 @@ class EntityManager extends DefaultManagerNeo4j {
                             WHERE '${oldValue}' IN e.${field.name}
                             SET e.${field.name} = [val IN e.${field.name} WHERE val <> '${oldValue}'] + ['${newValue}']
                             RETURN e`,
-                        normalizeReturnedEntity('multipleResponses', { type: 'function', metadata: this.workspaceId }),
+                        normalizeReturnedEntity('multipleResponses', this.workspaceId),
                     );
                 } else {
                     nodes = await runInTransactionAndNormalize(
@@ -2132,7 +2147,7 @@ class EntityManager extends DefaultManagerNeo4j {
                     WHERE e.${field.name} = '${oldValue}'
                     SET e.${field.name} = '${newValue}'
                     RETURN e`,
-                        normalizeReturnedEntity('multipleResponses', { type: 'function', metadata: this.workspaceId }),
+                        normalizeReturnedEntity('multipleResponses', this.workspaceId),
                     );
                 }
 
@@ -2147,13 +2162,13 @@ class EntityManager extends DefaultManagerNeo4j {
 
     async convertFieldsToPlural(templateId: string, propertiesKeysToPluralize: string[]) {
         try {
-            const entityTemplate: IMongoEntityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
+            const entityTemplate: IMongoEntityTemplate = await this.entityTemplateService.getEntityTemplateById(templateId);
 
             await this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
                 const allEntitiesOfTemplate = await runInTransactionAndNormalize(
                     transaction,
                     `MATCH (e: \`${templateId}\`) RETURN e`,
-                    normalizeReturnedEntity('multipleResponses', { type: 'function', metadata: this.workspaceId }),
+                    normalizeReturnedEntity('multipleResponses', this.workspaceId),
                 );
 
                 const updatePromises = allEntitiesOfTemplate.map(async (entity) => {
@@ -2415,7 +2430,7 @@ class EntityManager extends DefaultManagerNeo4j {
             WITH collect(e) AS nodes
             CALL apoc.create.removeProperties(nodes, $properties) YIELD node
             RETURN node`,
-            normalizeReturnedEntity('multipleResponses', { type: 'function', metadata: this.workspaceId }),
+            normalizeReturnedEntity('multipleResponses', this.workspaceId),
             {
                 properties,
             },
@@ -2476,7 +2491,7 @@ class EntityManager extends DefaultManagerNeo4j {
 
             relationshipTemplatesToRemove.push(propertyTemplate.relationshipReference?.relationshipTemplateId as string);
 
-            const relatedEntityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(
+            const relatedEntityTemplate = await this.entityTemplateService.getEntityTemplateById(
                 propertyTemplate.relationshipReference?.relatedTemplateId as string,
             );
 
@@ -2496,7 +2511,7 @@ class EntityManager extends DefaultManagerNeo4j {
     }
 
     async getChartByTemplate(templateId: string, { chartsData, units }: { chartsData: IChartBody[]; units: IGetUnits }) {
-        const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
+        const entityTemplate = await this.entityTemplateService.getEntityTemplateById(templateId);
 
         const entityTemplatesMap = new Map([[entityTemplate._id, entityTemplate]]);
         const specialProperties = handleChartPropertiesTemplate(entityTemplate);
@@ -2595,7 +2610,7 @@ class EntityManager extends DefaultManagerNeo4j {
         });
         const rulesWithTodayFuncRecord = new Map(rulesWithTodayFunc.map((rule) => [rule._id, rule]));
 
-        const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({
+        const entityTemplates = await this.entityTemplateService.searchEntityTemplates({
             ids: rulesWithTodayFunc.map((rule) => rule.entityTemplateId),
         });
         const entityTemplatesRecord = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));

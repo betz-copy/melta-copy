@@ -157,27 +157,24 @@ type Response<ResType extends ResponseType, Data> = ResType extends 'singleRespo
         ? Data[]
         : never;
 
-export const nodeToEntity = async (node: Node, template: IMongoEntityTemplate, isGetMode?: boolean): Promise<IEntity> => {
+export const nodeToEntity = async (node: Node, template: IMongoEntityTemplate, workspaceId: string, isGetMode?: boolean): Promise<IEntity> => {
     const { properties, coloredFields } = await normalizeFields(node.properties, template, isGetMode);
+
     return {
         templateId: node.labels[0],
-        properties: await EntityManager.fixReturnedEntityReferencesFields(properties),
+        properties: await EntityManager.fixReturnedEntityReferencesFields(properties, template, workspaceId),
         coloredFields,
     };
 };
 
-type IFunctionTemplate = { type: 'function'; metadata: string }; // string metadata is workspace id
-type IPureTemplate = { type: 'pure'; metadata: IMongoEntityTemplate };
-type ITemplate = IFunctionTemplate | IPureTemplate;
-
 export const normalizeReturnedEntity =
-    <T extends ResponseType>(response: T, template: ITemplate, isGetMode: boolean = true) =>
+    <T extends ResponseType>(response: T, workspaceId: string, template?: IMongoEntityTemplate, isGetMode: boolean = true) =>
     async (result: QueryResult): Promise<Response<T, IEntity>> => {
-        const entityTemplateService = template.type === 'function' ? new EntityTemplateService(template.metadata) : null;
+        const entityTemplateService = template ? null : new EntityTemplateService(workspaceId);
         const templateCache = new Map<string, IMongoEntityTemplate>();
 
         const getOrCacheTemplate = async (templateId: string) => {
-            if (template.type === 'pure') return template.metadata;
+            if (template) return template;
 
             const cached = templateCache.get(templateId);
             if (cached) return cached;
@@ -196,7 +193,7 @@ export const normalizeReturnedEntity =
                 const templateId = record.get(0).labels[0];
                 const entityTemplate = await getOrCacheTemplate(templateId);
 
-                return nodeToEntity(record.get(0) as Node, entityTemplate, isGetMode);
+                return nodeToEntity(record.get(0) as Node, entityTemplate, workspaceId, isGetMode);
             }),
         );
 
@@ -218,7 +215,7 @@ export const normalizeSearchByLocationResponse = async (
             const template = await entityTemplateService.getEntityTemplateById(node.labels[0]);
 
             return {
-                node: await nodeToEntity(node, template),
+                node: await nodeToEntity(node, template, workspaceId),
                 matchingFields: record.get(1) as string[],
             };
         }),
@@ -321,19 +318,19 @@ export const normalizeReturnedRelAndEntities =
                 ]);
 
                 return {
-                    sourceEntity: await nodeToEntity(sourceNode, sourceTemplate, true),
+                    sourceEntity: await nodeToEntity(sourceNode, sourceTemplate, workspaceId, true),
                     relationship: {
                         templateId: relationship.type,
                         properties: (await normalizeFields(relationship.properties)).properties,
                     },
-                    destinationEntity: await nodeToEntity(destinationNode, destinationTemplate, true),
+                    destinationEntity: await nodeToEntity(destinationNode, destinationTemplate, workspaceId, true),
                 };
             }),
         );
         const template = await entityTemplateService.getEntityTemplateById(entity.labels[0]);
 
         return {
-            entity: await nodeToEntity(entity, template, true),
+            entity: await nodeToEntity(entity, template, workspaceId, true),
             connections,
         };
     };
@@ -372,12 +369,12 @@ export const normalizeSearchWithRelationships = async (result: QueryResult, work
             const normalizedRelationships = await Promise.all(
                 (relationships ?? []).map(async ({ relationship, otherEntity }) => ({
                     relationship: await formatUndirectedRelationship(relationship, node, otherEntity),
-                    otherEntity: await nodeToEntity(otherEntity, await getTemplateById(otherEntity.labels[0])),
+                    otherEntity: await nodeToEntity(otherEntity, await getTemplateById(otherEntity.labels[0]), workspaceId),
                 })),
             );
 
             return {
-                entity: await nodeToEntity(node, await getTemplateById(node.labels[0]), true),
+                entity: await nodeToEntity(node, await getTemplateById(node.labels[0]), workspaceId, true),
                 relationships: normalizedRelationships,
             };
         }),
@@ -394,7 +391,11 @@ export const normalizeNeighborsOfEntityForRule = async (result: QueryResult, wor
 
             return {
                 relationshipTemplate,
-                neighborOfEntity: await nodeToEntity(neighborOfEntity, await entityTemplateService.getEntityTemplateById(neighborOfEntity.labels[0])),
+                neighborOfEntity: await nodeToEntity(
+                    neighborOfEntity,
+                    await entityTemplateService.getEntityTemplateById(neighborOfEntity.labels[0]),
+                    workspaceId,
+                ),
             };
         }),
     );

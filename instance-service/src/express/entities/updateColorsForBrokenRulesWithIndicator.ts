@@ -53,7 +53,7 @@ export const updateColorsForIndicatorRulesWithTodayFunc = (
                     `MATCH (e {_id: '${entityId}'})
                          SET e += $props
                          RETURN e`,
-                    normalizeReturnedEntity('singleResponseNotNullable', { type: 'function', metadata: workspaceId }),
+                    normalizeReturnedEntity('singleResponseNotNullable', workspaceId),
                     {
                         props: {
                             ...updatedColoredFields,

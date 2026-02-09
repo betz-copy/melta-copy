@@ -8,12 +8,12 @@ type EdgeInfo = { toId: string; relationshipId: string; uniqueRelationShipId: st
 type AdjacencyList = Map<string, EdgeInfo[]>;
 type EntityCache = Map<string, IEntity>;
 
-const getOrCacheEntity = async (node: Node, cache: EntityCache, template: IMongoEntityTemplate): Promise<IEntity> => {
+const getOrCacheEntity = async (node: Node, cache: EntityCache, template: IMongoEntityTemplate, workspaceId: string): Promise<IEntity> => {
     const entityId = String(node.properties._id);
     const cached = cache.get(entityId);
     if (cached) return cached;
 
-    const entity = await nodeToEntity(node, template);
+    const entity = await nodeToEntity(node, template, workspaceId);
     cache.set(entityId, entity);
     return entity;
 };
@@ -114,8 +114,8 @@ export const buildEntityTree =
                 getOrCacheEntityTemplate(templateId2),
             ]);
 
-            const entity1 = await getOrCacheEntity(node1, entityCache, entityTemplate1);
-            const entity2 = await getOrCacheEntity(node2, entityCache, entityTemplate2);
+            const entity1 = await getOrCacheEntity(node1, entityCache, entityTemplate1, workspaceId);
+            const entity2 = await getOrCacheEntity(node2, entityCache, entityTemplate2, workspaceId);
 
             const entityId1 = String(entity1.properties._id);
             const entityId2 = String(entity2.properties._id);
