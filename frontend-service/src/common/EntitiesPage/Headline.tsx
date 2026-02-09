@@ -66,7 +66,7 @@ export const GlobalSearchBar: React.FC<{
     const [debouncedSearchValue, setDebouncedSearchValue] = useState<string>(inputValue ?? '');
 
     const [urlSearchParams, setUrlSearchParams] = useSearchParams();
-    const [semanticSearch, setSemanticSearch] = useLocalStorage<boolean>('semanticSearch', true);
+    const [semanticSearch, setSemanticSearch] = useLocalStorage<boolean>('semanticSearch', false);
     const urlSemanticSearch = urlSearchParams.get('semanticSearch');
     const boolUrl = convertToBool(urlSemanticSearch!);
     useEffect(() => {
