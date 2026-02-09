@@ -81,7 +81,12 @@ import { patchDocumentAsStream } from './documentExport';
 import { ExternalIdType, IExternalId } from './interface';
 import InstancesUtils from './utils';
 
-const { errorCodes, rabbit, ruleBreachService } = config;
+const {
+    errorCodes,
+    rabbit,
+    ruleBreachService,
+    service: { searchEntitiesChunkSize },
+} = config;
 
 class InstancesManager extends DefaultManagerProxy<InstancesService> {
     private entityTemplateService: EntityTemplateService;
@@ -258,8 +263,6 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async getAllTemplateEntities(templateId: string, userId: string, childTemplateId?: string) {
-        const { searchEntitiesChunkSize } = config.service;
-
         const filter = childTemplateId ? await this.instanceUtils.getChildFilters(childTemplateId, userId) : undefined;
 
         const { count } = await this.service.searchEntitiesOfTemplateRequest(templateId, {

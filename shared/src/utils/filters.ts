@@ -61,7 +61,6 @@ const matchValueAgainstFilter = async (
 
     const [field, condition] = Object.entries(filter)[0];
     const actual = entityTemplate.properties.properties[field].format === 'user' ? (await getUserById(data[field])).fullName : data[field];
-    console.log({ hi: data[field], actual });
 
     for (const [op, expected] of Object.entries(condition)) {
         if (!evaluateOperator(op, actual, expected)) return field;

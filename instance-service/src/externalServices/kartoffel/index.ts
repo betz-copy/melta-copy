@@ -12,7 +12,6 @@ class Kartoffel {
     });
 
     static searchUsers = async (queryString: string): Promise<IKartoffelUser[]> => {
-        console.log({ queryString });
 
         const { data } = await this.kartoffel.get<IKartoffelUser[]>(searchRoute, {
             params: {
@@ -20,7 +19,6 @@ class Kartoffel {
                 queryString,
             },
         });
-        console.log({ data });
 
         return data;
     };
