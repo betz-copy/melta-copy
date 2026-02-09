@@ -18,7 +18,6 @@ import { containsHTMLTags, getFirstLine, getNumLines, renderHTML } from '../util
 import { getFixedNumber, getTextDirection } from '../utils/stringValues';
 import BlueTitle from './MeltaDesigns/BlueTitle';
 import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
-import { console } from 'node:inspector';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
@@ -168,19 +167,16 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                 else titleContent = innerContent;
 
                 const overrideStyleInLongText =
-                containsHtmlTags &&
-                !viewFirstLineOfLongText &&
-                propertyValue &&
-                getNumLines(stringFormatValue) > 1 &&
-                stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
-                // console.log({format,a: environment.excludedFormats.includes(format!)})
-                const textDirection =
-                    format && !environment.excludedFormats.includes(format)
-                        ? getTextDirection(propertyValue, {
-                              type,
-                              serialCurrent,
-                          })
-                        : 'rtl';
+                    containsHtmlTags &&
+                    !viewFirstLineOfLongText &&
+                    propertyValue &&
+                    getNumLines(stringFormatValue) > 1 &&
+                    stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
+
+                const textDirection = getTextDirection(propertyValue, {
+                    type,
+                    serialCurrent,
+                });
 
                 const titleTypography = (
                     <Typography
