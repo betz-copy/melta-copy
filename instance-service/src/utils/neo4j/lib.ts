@@ -163,7 +163,7 @@ export const nodeToEntity = async (node: Node, template: IMongoEntityTemplate, w
     return {
         templateId: node.labels[0],
         properties: await EntityManager.fixReturnedEntityReferencesFields(properties, template, workspaceId),
-        coloredFields,
+        coloredFields: Object.keys(coloredFields).length ? coloredFields : undefined,
     };
 };
 
