@@ -762,7 +762,18 @@ class EntityManager extends DefaultManagerNeo4j {
 
         const [indicatorRules, rulesToThrowError] = partition(ruleFailures, (r) => r.rule.actionOnFail === ActionOnFail.INDICATOR);
 
-        throwIfActionCausedRuleFailures(ignoredRules, [], rulesToThrowError, [{ createdEntityId: createdEntity.properties._id }], []);
+        throwIfActionCausedRuleFailures(
+            ignoredRules,
+            [],
+            rulesToThrowError,
+            [{ createdEntityId: createdEntity.properties._id }],
+            [
+                {
+                    actionType: ActionTypes.CreateEntity,
+                    actionMetadata: { templateId: template._id, properties: createdEntity.properties } as ICreateEntityMetadata,
+                },
+            ],
+        );
 
         const { updatedEntity } = await this.updateEntityByIdInnerTransaction(
             createdEntity.properties._id,
@@ -776,7 +787,12 @@ class EntityManager extends DefaultManagerNeo4j {
         return {
             createdEntity: updatedEntity,
             emails: indicatorRules.flatMap((r) => (r.rule.mail?.display ? r.rule.mail : [])),
-            actions: [],
+            actions: [
+                {
+                    actionType: ActionTypes.CreateEntity,
+                    actionMetadata: { templateId: template._id, properties: createdEntity.properties } as ICreateEntityMetadata,
+                },
+            ],
             activityLogsToCreate,
         };
     }
