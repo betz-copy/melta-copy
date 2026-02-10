@@ -24,11 +24,11 @@
         "typescript": "^5.6.2"
     },
     "dependencies": {
+        "@packages/common": "workspace:*",
         "@packages/entity-template": "workspace:*",
         "@packages/relationship": "workspace:*",
         "@packages/relationship-template": "workspace:*",
-        "@packages/rule": "workspace:*",
-        "@packages/user": "workspace:*"
+        "@packages/rule": "workspace:*"
     },
     "files": [
         "dist"

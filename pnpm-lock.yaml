@@ -1211,6 +1211,9 @@ importers:
 
   packages/entity:
     dependencies:
+      '@packages/common':
+        specifier: workspace:*
+        version: link:../common
       '@packages/entity-template':
         specifier: workspace:*
         version: link:../entity-template

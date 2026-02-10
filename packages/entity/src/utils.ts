@@ -1,5 +1,5 @@
-import { IMongoEntityTemplate, IMongoEntityTemplatePopulated } from '@packages/entity-template';
-import { IKartoffelUser } from '@packages/user';
+import { IKartoffelUser } from '@packages/common';
+import { IMongoEntityTemplate, IMongoEntityTemplatePopulated, PropertyFormat } from '@packages/entity-template';
 import { FilterLogicalOperator, IEntity, IFilterGroup, IFilterOfField, IPropertyValue, ISearchEntitiesOfTemplateBody, ISearchFilter } from './types';
 
 const filterFieldToValue: Record<keyof IFilterOfField, string> = {
@@ -73,7 +73,8 @@ const matchValueAgainstFilter = async (
     }
 
     const [field, condition] = Object.entries(filter)[0];
-    const actual = entityTemplate.properties.properties[field].format === 'user' ? (await getUserById(data[field])).fullName : data[field];
+    const actual =
+        entityTemplate.properties.properties[field].format === PropertyFormat.user ? (await getUserById(data[field])).fullName : data[field];
 
     for (const [op, expected] of Object.entries(condition)) {
         if (!evaluateOperator(op, actual, expected)) return field;
