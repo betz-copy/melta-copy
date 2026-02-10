@@ -1,4 +1,4 @@
-import { ValidateRequest, wrapController } from '@microservices/shared';
+import { ValidateRequest, wrapController } from '@packages/utils';
 import { Router } from 'express';
 import multer from 'multer';
 import config from '../../config';

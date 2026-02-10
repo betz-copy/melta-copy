@@ -2,11 +2,10 @@ import { Autocomplete, TextField } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
-import { ICategoryMap } from '../../../interfaces/categories';
+import { EntityTemplateWizardValues, ICategoryMap } from '../../../interfaces/template';
 import { useUserStore } from '../../../stores/user';
 import { allowedCategories } from '../../../utils/permissions/templatePermissions';
 import { StepComponentProps } from '../index';
-import { EntityTemplateWizardValues } from './index';
 
 const ChooseCategory: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ values, touched, errors, setFieldValue }) => {
     const queryClient = useQueryClient();

@@ -1,4 +1,10 @@
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material';
+import { ICreateRelationshipMetadataPopulated } from '@packages/action';
+import { IEntity } from '@packages/entity';
+import { PermissionScope } from '@packages/permission';
+import { IMongoRelationship } from '@packages/relationship';
+import { IMongoRelationshipTemplatePopulated } from '@packages/relationship-template';
+import { IBrokenRule, IRuleBreachPopulated } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import { Form, Formik, FormikErrors, FormikProps, yupToFormErrors } from 'formik';
 import i18next from 'i18next';
@@ -7,13 +13,7 @@ import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
 import { environment } from '../../../globals';
-import { IEntity } from '../../../interfaces/entities';
 import { IErrorResponse } from '../../../interfaces/error';
-import { PermissionScope } from '../../../interfaces/permissions';
-import { IMongoRelationship } from '../../../interfaces/relationships';
-import { IMongoRelationshipTemplatePopulated } from '../../../interfaces/relationshipTemplates';
-import { ICreateRelationshipMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
-import { IBrokenRule, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { createRelationshipRequest } from '../../../services/relationshipsService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { tryCatch } from '../../../utils/tryCatch';
@@ -21,7 +21,7 @@ import { ErrorToast } from '../../ErrorToast';
 import RelationshipTemplateAutocomplete from '../../inputs/RelationshipTemplateAutocomplete';
 import TemplateTableSelect from '../../inputs/TemplateTableSelect';
 import CreateWithRuleBreachDialog from './CreateWithRuleBreachDialog';
-import StretchableArrowRight from './strechableArrowRight';
+import StretchableArrowRight from './stretchableArrowRight';
 
 const { errorCodes } = environment;
 

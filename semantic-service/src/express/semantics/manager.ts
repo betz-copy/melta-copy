@@ -1,5 +1,6 @@
-import { logger } from '@microservices/shared';
-import path from 'path';
+import path from 'node:path';
+import { logger } from '@packages/utils';
+import { File } from 'multer';
 import config from '../../config';
 import { extractTextFromDoc } from '../../utils/doc-extractor';
 import { NoFilesError } from '../../utils/errors';
@@ -9,7 +10,7 @@ import { extractTextFromPdf } from '../../utils/pdf-extractor';
 const { enableEvaluation, maxRefinementIterations } = config.summarization;
 
 export class SemanticManager {
-    static async readFilesAsText(files: Express.Multer.File[]): Promise<string> {
+    static async readFilesAsText(files: File[]): Promise<string> {
         if (!files?.length) throw new NoFilesError();
 
         let combinedText = '';
@@ -43,7 +44,7 @@ export class SemanticManager {
         return combinedText.trim();
     }
 
-    static async summarizeFiles(files: Express.Multer.File[], maxLength: number): Promise<string> {
+    static async summarizeFiles(files: File[], maxLength: number): Promise<string> {
         const validText = await SemanticManager.readFilesAsText(files);
 
         let summary = 'No text extracted from files.';

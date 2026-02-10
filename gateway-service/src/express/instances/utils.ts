@@ -1,4 +1,6 @@
-import { getDefaultFilterFromChildTemplate, IEntity, ISearchFilter, NotFoundError, ValidationError } from '@microservices/shared';
+import { getDefaultFilterFromChildTemplate } from '@packages/child-template';
+import { IEntity, ISearchFilter } from '@packages/entity';
+import { NotFoundError, ValidationError } from '@packages/utils';
 import InstancesService from '../../externalServices/instanceService';
 import Kartoffel from '../../externalServices/kartoffel';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
@@ -35,6 +37,16 @@ class InstancesUtils extends DefaultController {
 
                 switch (prop?.format) {
                     case 'unitField': {
+                        if (typeof value !== 'string') {
+                            throw new ValidationError('must be unit', {
+                                message: 'must be unit',
+                                path: key,
+                                schemaPath: `#/properties/${key}/type`,
+                                params: {
+                                    type: prop.type,
+                                },
+                            });
+                        }
                         const unit = await UserService.getUnitById(value).catch(() => undefined);
                         const noUnitPermission = childTemplateId && unit && userUnits && !userUnits?.includes(unit._id);
 
@@ -56,6 +68,16 @@ class InstancesUtils extends DefaultController {
 
                     case 'user': {
                         try {
+                            if (typeof value !== 'string') {
+                                throw new ValidationError('must be user', {
+                                    message: 'must be user',
+                                    path: key,
+                                    schemaPath: `#/properties/${key}/type`,
+                                    params: {
+                                        type: prop.type,
+                                    },
+                                });
+                            }
                             const userId: string = JSON.parse(value)._id;
                             await Kartoffel.getUserById(userId);
                         } catch {

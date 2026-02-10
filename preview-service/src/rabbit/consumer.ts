@@ -1,11 +1,9 @@
-import { ServiceError } from '@microservices/shared';
+import { ServiceError } from '@packages/utils';
 import { ConsumerMessage } from 'menashmq';
 import config from '../config';
 import FilesManager from '../express/files/manager';
 
-const {
-    service: { workspaceIdHeaderName },
-} = config;
+const { workspaceIdHeaderName } = config.service;
 
 class PreviewConsumer {
     static async createPreviewQueueReq(msg: ConsumerMessage) {

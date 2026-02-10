@@ -1,15 +1,8 @@
-import {
-    IChildTemplateProperty,
-    IEntitySingleProperty,
-    IKartoffelUser,
-    IMongoChildTemplatePopulated,
-    IMongoEntityTemplatePopulated,
-    IProperties,
-    IPropertyValue,
-    logger,
-    NotFoundError,
-    NotFoundErrorTypes,
-} from '@microservices/shared';
+import { IChildTemplateProperty, IMongoChildTemplatePopulated } from '@packages/child-template';
+import { IPropertyValue, NotFoundErrorTypes } from '@packages/entity';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IProperties } from '@packages/entity-template';
+import { IKartoffelUser } from '@packages/user';
+import { logger, NotFoundError } from '@packages/utils';
 import { UserNotFoundError } from '../../express/error';
 import UsersManager from '../../express/users/manager';
 

@@ -2,9 +2,9 @@ import { InfoOutlined } from '@mui/icons-material';
 import { Box, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
+import { EntityTemplateWizardValues } from '../../../interfaces/template';
 import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
 import { StepComponentProps } from '../index';
-import { EntityTemplateWizardValues } from '.';
 
 export const UploadExportFormats: React.FC<StepComponentProps<EntityTemplateWizardValues>> = ({ values, errors, ...props }) => (
     <Box sx={{ width: '100%' }}>

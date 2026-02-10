@@ -3,7 +3,7 @@ import { AccordionDetails, AccordionSummary, Grid, Typography } from '@mui/mater
 import { FormikErrors } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
-import { FieldBlockAccordion } from '../entityTemplate/fieldBlock/interfaces';
+import { FieldBlockAccordion } from '../entityTemplate/fieldBlock/styles';
 import { ProcessTemplateWizardValues } from '.';
 import { ChooseStepsIcon } from './ChooseStepIcon';
 import { StepsGenericBlockProps } from './StepsBlocksInterface';

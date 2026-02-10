@@ -1,9 +1,9 @@
 import { ScatterPlotOutlined as HiveIcon, NavigateBefore, NavigateNext } from '@mui/icons-material';
 import { Card, CardContent, CardHeader, Fab, Grid, useTheme } from '@mui/material';
+import { IMongoStepTemplatePopulated } from '@packages/process';
+import { IUser } from '@packages/user';
 import i18next from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
-import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
-import { IUser } from '../../../../interfaces/users';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import { getStepInstanceByStepTemplateId } from '../../../../utils/processWizard/steps';
 import { CustomIcon } from '../../../CustomIcon';

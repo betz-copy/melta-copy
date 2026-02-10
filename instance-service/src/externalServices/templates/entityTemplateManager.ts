@@ -1,12 +1,8 @@
-import { IMongoEntityTemplate, ISearchEntityTemplatesBody } from '@microservices/shared';
+import { IMongoEntityTemplate, ISearchEntityTemplatesBody } from '@packages/entity-template';
 import config from '../../config';
 import TemplatesManagerService from '.';
 
-const {
-    templateService: {
-        entities: { getByIdRoute, searchRoute, getRelatedByIdRoute },
-    },
-} = config;
+const { getByIdRoute, searchRoute, getRelatedByIdRoute } = config.templateService.entities;
 
 class EntityTemplateManagerService extends TemplatesManagerService {
     // entity templates

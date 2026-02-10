@@ -1,17 +1,14 @@
-import { IMongoPrintingTemplate, ISearchEntityTemplatesBody } from '@microservices/shared';
+import { ISearchEntityTemplatesBody } from '@packages/entity-template';
+import { IMongoPrintingTemplate } from '@packages/printing-template';
 import config from '../../config';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import TemplatesManagerService from '.';
 
-const {
-    templateService: {
-        printingTemplates: { basePrintingTemplatesRoute },
-    },
-} = config;
+const { basePrintingTemplatesRoute } = config.templateService.printingTemplates;
 
-export interface RequestWithSearchPrintingTemplateBody extends RequestWithPermissionsOfUserId {
+export type RequestWithSearchPrintingTemplateBody = RequestWithPermissionsOfUserId & {
     searchBody: ISearchEntityTemplatesBody;
-}
+};
 
 class PrintingTemplateService extends TemplatesManagerService {
     async getAllPrintingTemplates(): Promise<IMongoPrintingTemplate[]> {

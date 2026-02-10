@@ -1,13 +1,8 @@
-import {
-    ActionErrors,
-    IEntity,
-    IEntityExpanded,
-    IEntityWithDirectRelationships,
-    IPropertyValue,
-    IRelationship,
-    SplitBy,
-    ValidationError,
-} from '@microservices/shared';
+import { SplitBy } from '@packages/common';
+import { ActionErrors, IEntity, IEntityExpanded, IEntityWithDirectRelationships, IPropertyValue } from '@packages/entity';
+import { mapConfig } from '@packages/map';
+import { IRelationship } from '@packages/relationship';
+import { ValidationError } from '@packages/utils';
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
 import neo4j, { Node as Neo4jNode, Relationship as Neo4jRelationship, QueryResult, Transaction } from 'neo4j-driver';
 import { v4 as uuidv4 } from 'uuid';
@@ -16,10 +11,6 @@ import EntityManager from '../../express/entities/manager';
 import { IFormulaCauses } from '../../express/rules/interfaces/formulaWithCauses';
 
 const {
-    map: {
-        polygon: { polygonPrefix, polygonSuffix },
-        srid,
-    },
     timezone,
     neo4j: {
         stringPropertySuffix,
@@ -33,6 +24,11 @@ const {
         userOriginalAndSuffixFieldsMap,
     },
 } = config;
+
+const {
+    polygon: { polygonPrefix, polygonSuffix },
+    srid,
+} = mapConfig;
 
 export type Node = Neo4jNode<number>;
 type Relationship = Neo4jRelationship<number>;
@@ -160,7 +156,7 @@ export const nodeToEntity = (node: Node): IEntity => {
     return {
         templateId: node.labels[0],
         properties: EntityManager.fixReturnedEntityReferencesFields(properties),
-        coloredFields,
+        coloredFields: Object.keys(coloredFields).length ? coloredFields : undefined,
     };
 };
 

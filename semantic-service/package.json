@@ -4,7 +4,7 @@
     "main": "index.js",
     "scripts": {
         "start": "node --async-stack-traces ./dist/index.js",
-        "dev": "npm run build && npm start",
+        "dev": "pnpm build && pnpm start",
         "dev:nodemon": "nodemon --delay 3 --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
         "test": "jest --coverage",
         "build": "tsc",
@@ -13,11 +13,10 @@
     },
     "dependencies": {
         "@elastic/elasticsearch": "^8.15.1",
-        "@microservices/shared": "^1.0.0",
-        "env-var": "^7.5.0",
+        "@packages/common": "workspace:*",
+        "@packages/semantic-search": "workspace:*",
+        "@packages/utils": "workspace:*",
         "exceljs": "^4.4.0",
-        "http-status-codes": "^2.3.0",
-        "joi": "^18.0.1",
         "jszip": "^3.10.1",
         "llm-chunk": "^0.0.1",
         "mammoth": "^1.8.0",

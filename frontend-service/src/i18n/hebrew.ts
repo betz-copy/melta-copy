@@ -1,6 +1,6 @@
+import { ActionTypes } from '@packages/action';
+import { WorkspaceTypes } from '@packages/workspace';
 import { environment } from '../globals';
-import { ActionTypes } from '../interfaces/ruleBreaches/actionMetadata';
-import { WorkspaceTypes } from '../interfaces/workspaces';
 import { muiDatePickersLocaleText } from '../utils/datePickers';
 
 export default {
@@ -406,6 +406,7 @@ export default {
         cannotDeleteWithEntities: 'לא ניתן למחוק תבנית זאת, קיימות תחתיה ישויות',
         entityTemplateEditDisabled: 'אין הרשאות עריכה לתבנית',
         ruleTemplateEditDisabled: 'אין הרשאות עריכה לחוק',
+        entityInstanceReadDisabled: 'אין הרשאות לצפייה ביישות זו',
         cannotDeleteWithRelationship: 'לא ניתן למחוק קשר זה, קיימים תחתיו קשרים',
         cannotEditRelationship: 'לא ניתן לערוך קשר. מכיל ישות ללא הרשאות עריכה',
         cannotPerformActionEntityDisabled: 'לא ניתן לבצע פעולה זו, מכיל ישות מושבתת',
@@ -1463,6 +1464,9 @@ export default {
         approvedProcesses: 'תהליכים מאושרים',
         rejectedProcesses: 'תהליכים דחויים',
         archivedProcesses: 'תהליכים בארכיון',
+        createNewEntityRef: 'יצירת יישות חדשה',
+        chooseEntityRef: 'בחירת יישות',
+        entityToRef: 'שיוך יישות',
     },
     iFrames: {
         arrangementIFrames: 'סידור מופעים',
@@ -1836,6 +1840,8 @@ export default {
         empty: 'ריק',
         equals: 'שווה',
         notEqual: 'לא שווה',
+        blank: 'ריק',
+        notBlank: 'לא ריק',
         date: {
             equals: 'שווה',
             notEqual: 'לא שווה',
@@ -1849,6 +1855,8 @@ export default {
             thisYear: 'השנה',
             untilToday: 'עד היום',
             fromToday: 'מהיום',
+            blank: 'ריק',
+            notBlank: 'לא ריק',
         },
         text: {
             equals: 'שווה',
@@ -1857,6 +1865,8 @@ export default {
             endsWith: 'מסתיים ב',
             contains: 'מכיל',
             notContains: 'אינו מכיל',
+            blank: 'ריק',
+            notBlank: 'לא ריק',
         },
         number: {
             equals: 'שווה',
@@ -1865,6 +1875,9 @@ export default {
             lessThanOrEqual: 'קטן או שווה ל',
             greaterThanOrEqual: 'גדול או שווה ל',
             greaterThan: 'גדול מ',
+            inRange: 'בין',
+            blank: 'ריק',
+            notBlank: 'לא ריק',
         },
         field: { equals: 'שווה', notEqual: 'לא שווה' },
     },

@@ -1,4 +1,4 @@
-import { logger } from '@microservices/shared';
+import { logger } from '@packages/utils';
 import { StatusCodes } from 'http-status-codes';
 import morgan, { StreamOptions, TokenIndexer } from 'morgan';
 

@@ -1,9 +1,9 @@
 import { Typography } from '@mui/material';
+import { IMongoStepInstancePopulated } from '@packages/process';
 import i18next from 'i18next';
 import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';
-import { IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
-import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
+import { IProcessTemplateMap } from '../../../../interfaces/template';
 import { getStepName } from '../../../../utils/processes';
 import MeltaTooltip from '../../../MeltaDesigns/MeltaTooltip';
 

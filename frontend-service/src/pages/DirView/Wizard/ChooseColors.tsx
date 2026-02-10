@@ -1,10 +1,10 @@
 import { Box, Divider, Typography } from '@mui/material';
+import { Colors } from '@packages/workspace';
 import i18next from 'i18next';
 import React from 'react';
 import * as Yup from 'yup';
 import { ColorPicker } from '../../../common/inputs/ColorPicker';
 import { StepComponentProps } from '../../../common/wizards/index';
-import { Colors } from '../../../interfaces/workspaces';
 import { WorkspaceWizardValues } from './index';
 
 export const chooseColorsSchema = Yup.object().shape({

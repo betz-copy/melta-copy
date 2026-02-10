@@ -1,3 +1,4 @@
+import { IMongoUnit } from '@packages/unit';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React from 'react';
@@ -5,12 +6,11 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { ErrorToast } from '../../../../../common/ErrorToast';
 import { StepType, Wizard, WizardBaseType } from '../../../../../common/wizards';
-import { IMongoUnit } from '../../../../../interfaces/units';
 import { createUnit, updateUnit } from '../../../../../services/userService';
 import { useWorkspaceStore } from '../../../../../stores/workspace';
 import { CreateOrEditStep, createOrEditSchema } from './CreateOrEdit';
 
-export type UnitWizardValues = Omit<IMongoUnit, 'workspaceId'>;
+export type UnitWizardValues = Omit<IMongoUnit, 'workspaceId' | 'createdAt' | 'updatedAt'>;
 
 export const defaultInitialValues: UnitWizardValues = {
     _id: '',

@@ -1,4 +1,7 @@
-import { IEntityWithIgnoredRules, IKartoffelUser, IMongoChildTemplatePopulated, IMongoEntityTemplatePopulated } from 'shared/dist';
+import { IMongoChildTemplatePopulated } from '@packages/child-template';
+import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { IEntityWithIgnoredRules } from '@packages/rule-breach';
+import { IKartoffelUser } from '@packages/user';
 import UsersManager from '../express/users/manager';
 
 export const getUserFields = async (

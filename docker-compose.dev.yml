@@ -1,13 +1,19 @@
 version: '3.8'
 
+# Healthcheck for app services
+x-app-healthcheck: &app-healthcheck
+  test: ['CMD', 'node', '-e', "require('http').get('http://localhost:8000/isAlive', (r) => { r.resume(); process.exit(r.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1));"]
+  interval: 10s
+  timeout: 5s
+  retries: 15
+  start_period: 40s
+
 x-common: &common
   restart: always
-  networks: [network]
   profiles: ['common']
 
 x-analytics_common: &analytics_common
   restart: unless-stopped
-  networks: [network]
   profiles: ['analytics']
 
 services:
@@ -31,8 +37,6 @@ services:
       - ./scripts:/scripts
     restart: 'no'
     entrypoint: ['bash', '/scripts/setup_mongo.sh']
-    networks:
-      - network
 
   rabbit:
     image: rabbitmq:3.13-management-alpine
@@ -184,18 +188,32 @@ services:
 
   mock-service:
     depends_on:
-      - neo4j
-      - template-service
-      - storage-service
-      - instance-service
-      - user-service
-      - process-service
-      - gantt-service
-      - workspace-service
-      - dashboard-service
+      neo4j:
+        condition: service_started
+      template-service:
+        condition: service_healthy
+      storage-service:
+        condition: service_healthy
+      instance-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+      process-service:
+        condition: service_healthy
+      gantt-service:
+        condition: service_healthy
+      workspace-service:
+        condition: service_healthy
+      dashboard-service:
+        condition: service_healthy
+    restart: on-failure
     <<: *common
 
   template-service:
+    depends_on:
+      mongosetup:
+        condition: service_completed_successfully
+    healthcheck: *app-healthcheck
     ports:
       - 8002:8000
     <<: *common
@@ -210,6 +228,10 @@ services:
       - logs:/usr/src/app/logs
 
   user-service:
+    depends_on:
+      mongosetup:
+        condition: service_completed_successfully
+    healthcheck: *app-healthcheck
     ports:
       - 8005:8000
     <<: *common
@@ -217,6 +239,10 @@ services:
       - logs:/usr/src/app/logs
 
   storage-service:
+    depends_on:
+      mongosetup:
+        condition: service_completed_successfully
+    healthcheck: *app-healthcheck
     ports:
       - 8006:8000
     <<: *common
@@ -224,15 +250,17 @@ services:
       - logs:/usr/src/app/logs
 
   instance-service:
+    depends_on:
+      mongosetup:
+        condition: service_completed_successfully
+    healthcheck: *app-healthcheck
     ports:
       - 8007:8000
     <<: *common
     volumes:
       - logs:/usr/src/app/logs
 
-  # frontend-service:
-  #   networks:
-  #     - network
+  # frontend-service
 
   nginx:
     ports:
@@ -247,21 +275,34 @@ services:
       - logs:/usr/src/app/logs
 
   notification-service:
+    depends_on:
+      mongosetup:
+        condition: service_completed_successfully
     <<: *common
     volumes:
       - logs:/usr/src/app/logs
 
   activity-log-service:
+    depends_on:
+      mongosetup:
+        condition: service_completed_successfully
     <<: *common
     volumes:
       - logs:/usr/src/app/logs
 
   rule-breach-service:
+    depends_on:
+      mongosetup:
+        condition: service_completed_successfully
     <<: *common
     volumes:
       - logs:/usr/src/app/logs
 
   process-service:
+    depends_on:
+      mongosetup:
+        condition: service_completed_successfully
+    healthcheck: *app-healthcheck
     ports:
       - 8008:8000
     <<: *common
@@ -269,6 +310,10 @@ services:
       - logs:/usr/src/app/logs
 
   gantt-service:
+    depends_on:
+      mongosetup:
+        condition: service_completed_successfully
+    healthcheck: *app-healthcheck
     ports:
       - 8009:8000
     <<: *common
@@ -291,6 +336,10 @@ services:
       - logs:/usr/src/app/logs
 
   workspace-service:
+    depends_on:
+      mongosetup:
+        condition: service_completed_successfully
+    healthcheck: *app-healthcheck
     ports:
       - 8012:8000
     <<: *common
@@ -298,6 +347,10 @@ services:
       - logs:/usr/src/app/logs
 
   dashboard-service:
+    depends_on:
+      mongosetup:
+        condition: service_completed_successfully
+    healthcheck: *app-healthcheck
     ports:
       - 8017:8000
     <<: *common

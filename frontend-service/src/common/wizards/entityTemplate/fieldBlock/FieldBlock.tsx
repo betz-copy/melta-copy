@@ -1,5 +1,7 @@
 import { DragHandle as DragHandleIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import { AccordionDetails, AccordionSummary, Box, Button, Grid, Typography } from '@mui/material';
+import { IPropertyValue } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated, PropertyType } from '@packages/entity-template';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import { debounce } from 'lodash';
@@ -8,14 +10,14 @@ import { DndProvider, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useQueryClient } from 'react-query';
 import { v4 as uuid } from 'uuid';
-import { IPropertyValue } from '../../../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { ItemTypes } from '../../../../interfaces/inputs';
+import { IEntityTemplateMap, PropertiesTypes } from '../../../../interfaces/template';
 import { AreYouSureDialog } from '../../../dialogs/AreYouSureDialog';
-import { PropertiesTypes } from '../AddFields';
 import { CommonFormInputProperties, FieldProperty, GroupProperty, PropertyItem } from '../commonInterfaces';
 import { FieldEditCardProps } from '../FieldEditCard';
-import { FieldBlockAccordion, FieldBlockProps, ItemTypes } from './interfaces';
+import { FieldBlockProps } from './interfaces';
 import { Attachment, Field, Group, getFieldData } from './propertiesTypes';
+import { FieldBlockAccordion } from './styles';
 
 export const FieldBlockDND = <PropertiesType extends string, Values extends Record<PropertiesType, PropertyItem[]>>({
     propertiesType,
@@ -51,7 +53,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
     initialFieldCardDataOnAdd = {
         name: '',
         title: '',
-        type: '',
+        type: PropertyType.string,
         required: false,
         preview: false,
         hide: false,
@@ -115,7 +117,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
 
     useEffect(() => {
         if (!orderedItems?.length || !templates?.size) return;
-        const templateHasAccountBalance = (template: IMongoEntityTemplatePopulated) =>
+        const templateHasAccountBalance = (template: IMongoEntityTemplateWithConstraintsPopulated) =>
             Object.values(template?.properties?.properties ?? {}).some((property) => property.accountBalance);
 
         const hasRelatedAccountBalance = (relatedId?: string) => {
@@ -134,7 +136,6 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         );
     }, [orderedItems, templates, setIsTransferTemplate]);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const updateFormikDebounced = useCallback(
         debounce(() => {
             setFieldValue(propertiesType, [...orderedItemsRef.current], true);
@@ -364,7 +365,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
         const isGrouped = typeof groupIndex === 'number';
         const sourceField = getFieldData(displayValuesCopy, fieldIndex, groupIndex);
 
-        const newField = {
+        const newField: CommonFormInputProperties = {
             id: uuid(),
             ...initialFieldCardDataOnAdd,
             type: 'kartoffelUserField',
@@ -691,7 +692,7 @@ export const FieldBlockDND = <PropertiesType extends string, Values extends Reco
                                         ?.title
                                 }
                                 ${i18next.t('systemManagement.continueWarningOnDeleteField')} ${
-                                    (initialValues as unknown as IMongoEntityTemplatePopulated)?.displayName
+                                    (initialValues as unknown as IMongoEntityTemplateWithConstraintsPopulated)?.displayName
                                 }`}
                 onYes={() => (onDeleteSure ? onDeleteSure(setShowAreUSureDialogForRemoveProperty) : onSimpleDeleteSure())}
             />
@@ -733,7 +734,7 @@ export const FieldBlock = <PropertiesType extends string, Values extends Record<
     initialFieldCardDataOnAdd = {
         name: '',
         title: '',
-        type: '',
+        type: PropertyType.string,
         required: false,
         preview: false,
         hide: false,
@@ -795,7 +796,7 @@ export const FieldBlock = <PropertiesType extends string, Values extends Record<
                     initialFieldCardDataOnAdd ?? {
                         name: '',
                         title: '',
-                        type: '',
+                        type: PropertyType.string,
                         required: false,
                         preview: false,
                         hide: false,

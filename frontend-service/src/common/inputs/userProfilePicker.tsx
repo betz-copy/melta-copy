@@ -1,23 +1,22 @@
 import { Payment } from '@mui/icons-material';
 import { Avatar, Box, Grid, ToggleButton, ToggleButtonGroup, useTheme } from '@mui/material';
+import { FileDetails } from '@packages/common';
+import { IUser } from '@packages/user';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { environment } from '../../globals';
-import fileDetails from '../../interfaces/fileDetails';
-import { IUser } from '../../interfaces/users';
+import { InputPickerType } from '../../interfaces/inputs';
 import { getKartoffelUserProfileRequest } from '../../services/userService';
 import { allProfileAvatars } from '../../utils/icons';
 import { getNameInitials } from '../../utils/userProfile';
 import FileInput from './ImageFileInput';
 
-type InputSelectType = 'chooseFile' | 'chooseAvatar' | 'kartoffelProfile';
-
 export interface UserProfilePickerProps {
     user: IUser;
-    onPick: (profileImage?: fileDetails | string) => void;
+    onPick: (profileImage?: FileDetails | string) => void;
     onDelete: () => void;
     imageName?: string;
-    defaultInputType?: InputSelectType;
+    defaultInputType?: InputPickerType;
     setUserProfileImage: React.Dispatch<React.SetStateAction<string | undefined>>;
     setIsDefaultProfile: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -35,8 +34,8 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({
 }) => {
     const theme = useTheme();
 
-    const [inputType, setInputType] = useState(defaultInputType);
-    const [fileInputValue, setFileInputValue] = useState<fileDetails | undefined>(
+    const [inputType, setInputType] = useState<InputPickerType | undefined>(defaultInputType);
+    const [fileInputValue, setFileInputValue] = useState<FileDetails | undefined>(
         imageName ? { file: { name: imageName }, name: imageName } : undefined,
     );
     const [selectedIcon, setSelectedIcon] = useState<string | undefined>(user.preferences.profilePath ?? undefined);
@@ -44,12 +43,12 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({
 
     const allAvatarPaths = allProfileAvatars;
 
-    const handleToggleChange = (_event: React.MouseEvent<HTMLElement>, selected: InputSelectType | null) => {
+    const handleToggleChange = (_event: React.MouseEvent<HTMLElement>, selected: InputPickerType | null) => {
         if (!selected) return;
         setInputType(selected);
 
-        if (selected === kartoffelProfile) onPick(kartoffelProfile);
-        else onPick(selected === 'chooseFile' ? fileInputValue : selectedIcon);
+        if (selected === InputPickerType.KartoffelProfile) onPick(kartoffelProfile);
+        else onPick(selected === InputPickerType.ChooseFile ? fileInputValue : selectedIcon);
     };
 
     const handleIconClick = async (iconName?: string) => {
@@ -83,14 +82,14 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({
         <Grid container direction="column" alignItems="center" spacing={1}>
             <Grid margin={0}>
                 <ToggleButtonGroup value={inputType} exclusive onChange={handleToggleChange} sx={{ height: '2.5rem' }}>
-                    <ToggleButton value="chooseAvatar" sx={{ width: '10.5rem' }}>
+                    <ToggleButton value={InputPickerType.ChooseAvatar} sx={{ width: '10.5rem' }}>
                         {i18next.t('input.imagePicker.chooseAvatar')}
                     </ToggleButton>
-                    <ToggleButton value="chooseFile" sx={{ width: '10rem' }}>
+                    <ToggleButton value={InputPickerType.ChooseFile} sx={{ width: '10rem' }}>
                         {i18next.t('input.imagePicker.chooseFile')}
                     </ToggleButton>
                     <ToggleButton
-                        value="kartoffelProfile"
+                        value={InputPickerType.KartoffelProfile}
                         sx={{ width: '10rem', display: 'flex', justifyContent: 'space-evenly' }}
                         disabled={!kartoffelUserProfile}
                         onClick={() => {
@@ -103,7 +102,7 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({
                 </ToggleButtonGroup>
             </Grid>
 
-            {inputType === 'chooseAvatar' && (
+            {inputType === InputPickerType.ChooseAvatar && (
                 <Grid>
                     <Box style={{ border: '1px solid #ccc', borderRadius: '8px' }}>
                         <Grid container sx={{ display: 'flex', justifyContent: 'space-evenly' }}>
@@ -148,7 +147,7 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({
                     </Box>
                 </Grid>
             )}
-            {inputType === 'chooseFile' && (
+            {inputType === InputPickerType.ChooseFile && (
                 <Grid width="100%">
                     <FileInput
                         onDropFile={(acceptedFile) => {
@@ -159,7 +158,7 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({
                         }}
                         onDeleteFile={(event: React.MouseEvent<HTMLButtonElement>) => {
                             event.stopPropagation();
-                            setFileInputValue({} as fileDetails);
+                            setFileInputValue({} as FileDetails);
                             onDelete();
                         }}
                         file={fileInputValue?.file}

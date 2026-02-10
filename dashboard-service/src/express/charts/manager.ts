@@ -1,4 +1,5 @@
-import { DefaultManagerMongo, IChart, IMongoChart, NotFoundError, ServiceError } from '@microservices/shared';
+import { IChart, IMongoChart } from '@packages/chart';
+import { DefaultManagerMongo, NotFoundError, ServiceError } from '@packages/utils';
 import { StatusCodes } from 'http-status-codes';
 import { FilterQuery } from 'mongoose';
 import config from '../../config';

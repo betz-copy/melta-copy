@@ -1,4 +1,5 @@
-import { BadRequestError, IEntity } from '@microservices/shared';
+import { IEntity } from '@packages/entity';
+import { BadRequestError } from '@packages/utils';
 import { IEntityTreeNode } from 'instance-service/src/express/entities/interface';
 import { QueryResult } from 'neo4j-driver';
 import { Node, nodeToEntity } from '../neo4j/lib';

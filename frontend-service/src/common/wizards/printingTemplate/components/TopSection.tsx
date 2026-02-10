@@ -1,8 +1,8 @@
 import { FormControlLabel, Grid, TextField, Typography } from '@mui/material';
+import { IPropertyValue } from '@packages/entity';
+import { IMongoPrintingTemplate } from '@packages/printing-template';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
-import { IPropertyValue } from '../../../../interfaces/entities';
-import { IMongoPrintingTemplate } from '../../../../interfaces/printingTemplates';
 import MeltaCheckbox from '../../../MeltaDesigns/MeltaCheckbox';
 
 interface ITopSectionProps {

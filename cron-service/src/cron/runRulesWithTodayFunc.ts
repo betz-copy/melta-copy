@@ -1,4 +1,5 @@
-import { logger, WorkspaceTypes } from '@microservices/shared';
+import { logger } from '@packages/utils';
+import { WorkspaceTypes } from '@packages/workspace';
 import schedule from 'node-schedule';
 import config from '../config';
 import RabbitManager from '../utils/rabbit/rabbit';

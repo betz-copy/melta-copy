@@ -1,7 +1,5 @@
+import { IMongoStepInstancePopulated, IMongoStepTemplatePopulated, InstanceProperties, IReferencedEntityForProcess } from '@packages/process';
 import { pickBy } from 'lodash';
-import { InstanceProperties, IReferencedEntityForProcess } from '../../../../interfaces/processes/processInstance';
-import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
-import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { ProcessStepValues } from './index';
 
 const splitStepProperties = (stepInstance: IMongoStepInstancePopulated, stepTemplate: IMongoStepTemplatePopulated) => {

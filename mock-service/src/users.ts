@@ -1,4 +1,4 @@
-import { IUser } from '@microservices/shared';
+import { IUser } from '@packages/user';
 import axios from 'axios';
 import config from './config';
 import { tryCatch } from './utils';

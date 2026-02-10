@@ -1,41 +1,74 @@
 FROM node:22-alpine AS builder
 WORKDIR /usr/src/app
 
+# Enable pnpm
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+
 # Copy root files
 COPY package*.json ./
+COPY pnpm-lock.yaml ./
 COPY tsconfig.json ./
+COPY turbo.json ./
+COPY pnpm-workspace.yaml ./
 
-
-# Copy shared
-COPY shared/package*.json ./shared/
-COPY shared/ ./shared/
+# Copy packages (we'll extract package.json files first for dependency resolution)
+COPY packages ./packages
 
 # Use an ARG to decide which service to build
 ARG SERVICE_NAME
 COPY ${SERVICE_NAME}/package*.json ./${SERVICE_NAME}/
+
+# Copy service files (dist is excluded via .dockerignore, will be built fresh)
 COPY ${SERVICE_NAME}/ ./${SERVICE_NAME}/
 
-# Install dependencies & build 'shared'
-RUN npm ci --silent
-RUN npm run build -w @microservices/shared
-RUN npm run build -w ${SERVICE_NAME}
+# Install dependencies (pnpm will resolve workspace packages from package.json files in packages/)
+RUN pnpm install --frozen-lockfile --silent
+
+# Build using Turborepo (only builds service and its dependencies)
+# Use BuildKit cache mount to share Turborepo cache between builds
+RUN --mount=type=cache,target=/usr/src/app/.turbo \
+    pnpm turbo build --filter=${SERVICE_NAME}
 
 # ---------------------------
 # Production stage
 FROM node:22-alpine
 WORKDIR /usr/src/app
 
+# Enable pnpm
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+
 # Copy final output
 ARG SERVICE_NAME
 COPY --from=builder /usr/src/app/package*.json ./
-COPY --from=builder /usr/src/app/shared/package*.json ./shared/
+COPY --from=builder /usr/src/app/pnpm-lock.yaml ./
+COPY --from=builder /usr/src/app/pnpm-workspace.yaml ./
+# Copy service package.json (directory will be created by COPY)
 COPY --from=builder /usr/src/app/${SERVICE_NAME}/package*.json ./${SERVICE_NAME}/
 
-# Install only production dependencies
-RUN npm ci --omit=dev --silent
+# Copy packages structure temporarily to extract only built packages
+COPY --from=builder /usr/src/app/packages ./packages-temp
 
-COPY --from=builder /usr/src/app/shared/dist ./shared/dist
-COPY --from=builder /usr/src/app/${SERVICE_NAME}/dist ./${SERVICE_NAME}/dist
+# Copy extract packages script
+COPY scripts/docker/extract-packages.sh ./extract-packages.sh
+RUN chmod +x ./extract-packages.sh
+
+# Extract only package.json and dist from packages that were built (have dist folder)
+# Turborepo only builds dependencies, so only those will have dist folders
+RUN ./extract-packages.sh
+
+# Copy flatten script
+COPY scripts/docker/flatten-dist.sh ./flatten-dist.sh
+RUN chmod +x ./flatten-dist.sh
+
+# Copy service dist before install (needed for pnpm --filter to work correctly)
+COPY --from=builder /usr/src/app/${SERVICE_NAME}/dist ${SERVICE_NAME}/dist-temp
+
+# Handle nested dist structure: if dist contains service-name/src, flatten it
+RUN ./flatten-dist.sh ${SERVICE_NAME}
+
+# Install only production dependencies
+# pnpm will link workspace packages based on package.json files
+RUN pnpm install --frozen-lockfile --prod --silent
 
 EXPOSE 8000
 

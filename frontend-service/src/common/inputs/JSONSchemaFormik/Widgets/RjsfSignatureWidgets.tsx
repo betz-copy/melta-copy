@@ -7,10 +7,11 @@ import { environment } from '../../../../globals';
 import { getFilePreviewRequest } from '../../../../services/previewService';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import { darkTheme, lightTheme } from '../../../../theme';
+import { CleanViewLabel, isCleanView } from './CleanView';
 
 const { signaturePrefix } = environment;
 
-const RjsfSignatureWidgets = ({ id, required, readonly, disabled, label, value, onChange, onBlur }: WidgetProps) => {
+const RjsfSignatureWidgets = ({ id, required, readonly, disabled, label, value, onChange, onBlur, formContext }: WidgetProps) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const isDisabled = readonly || disabled;
     const globalTheme = useTheme();
@@ -53,20 +54,26 @@ const RjsfSignatureWidgets = ({ id, required, readonly, disabled, label, value, 
 
     if (required && (!signatureCanvas.current || signatureCanvas.current.isEmpty())) onBlur(id, value);
 
+    const cleanView = isCleanView(readonly, formContext);
+
     return (
         <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
             <Box display="flex" flexDirection="column">
                 <Box sx={{ position: 'relative' }}>
-                    <Typography
-                        sx={{
-                            fontSize: '14px',
-                            color: '#9398C2',
-                            padding: '0 5px',
-                            userSelect: 'none',
-                        }}
-                    >
-                        {label}
-                    </Typography>
+                    {cleanView ? (
+                        <CleanViewLabel label={label} />
+                    ) : (
+                        <Typography
+                            sx={{
+                                fontSize: '14px',
+                                color: '#9398C2',
+                                padding: '0 5px',
+                                userSelect: 'none',
+                            }}
+                        >
+                            {label}
+                        </Typography>
+                    )}
                     <SignatureCanvas
                         ref={signatureCanvas}
                         velocityFilterWeight={0.7}
@@ -81,6 +88,8 @@ const RjsfSignatureWidgets = ({ id, required, readonly, disabled, label, value, 
                                         : `1.5px solid ${darkMode ? 'white' : `${globalTheme.palette.primary.main}`}`,
                                 borderRadius: '8px',
                                 boxShadow: '0px 0px 2px rgba(0, 0, 0, 0.1)',
+                                transform: cleanView ? 'scale(0.5)' : undefined,
+                                transformOrigin: cleanView ? 'top right' : undefined,
                             },
                         }}
                         onBegin={() => setIsDrawing(true)}

@@ -1,4 +1,12 @@
 import { Grid } from '@mui/material';
+import {
+    BasicFilterOperationTypes,
+    FilterTypes,
+    isRelativeDateFilter,
+    NumberFilterOperationTypes,
+    RelativeDateFilters,
+    TextFilterOperationTypes,
+} from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import { isValid } from 'date-fns';
 import { FormikProps } from 'formik';
@@ -10,20 +18,19 @@ import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
 import { environment } from '../../../globals';
+import { ItemTypes } from '../../../interfaces/inputs';
+import { EntityTemplateWizardValues, PropertiesTypes } from '../../../interfaces/template';
 import { searchEntitiesOfTemplateRequest } from '../../../services/entitiesService';
-import { arrayTypes, basePropertyTypes, stringFormats } from '../../../services/templates/entityTemplatesService';
+import { arrayTypes, basePropertyTypes, PropertyWizardTypes, stringFormats } from '../../../services/templates/entityTemplatesService';
 import { entityTemplateUniqueProperties, regexSchema, variableNameValidation } from '../../../utils/validation';
 import { ErrorToast } from '../../ErrorToast';
 import { StepComponentHelpers, StepComponentProps } from '../index';
-import { CommonFormInputProperties, FieldProperty, FilterType, GroupProperty, IAGGridFilter, PropertyItem } from './commonInterfaces';
+import { CommonFormInputProperties, FieldProperty, FilterType, GroupProperty, IAgGridFilter, PropertyItem } from './commonInterfaces';
 import { FieldBlockDND } from './fieldBlock/FieldBlock';
-import { ItemTypes } from './fieldBlock/interfaces';
 import { getFieldData } from './fieldBlock/propertiesTypes';
-import { EntityTemplateWizardValues, hasAccountBalanceField } from './index';
+import { hasAccountBalanceField } from './index';
 
 const {
-    relativeDateFilters,
-    filterOptions,
     dateRegex,
     dateTimeRegex,
     map: { mapSearchPropertiesLimit },
@@ -59,15 +66,19 @@ export const attachmentPropertiesBaseSchema = Yup.object({
 });
 
 const agGridTextFilterSchema = Yup.object({
-    filterType: Yup.string().oneOf(['text']).required(i18next.t('validation.required')),
-    type: Yup.string().oneOf(filterOptions.text).required(i18next.t('validation.required')),
+    filterType: Yup.string().oneOf([FilterTypes.text]).required(i18next.t('validation.required')),
+    type: Yup.string()
+        .oneOf([...Object.values(BasicFilterOperationTypes), ...Object.values(TextFilterOperationTypes)])
+        .required(i18next.t('validation.required')),
     filter: Yup.mixed().required(i18next.t('validation.required')),
 });
 
 const agGridNumberFilterSchema = (parentFilterType: FilterType = FilterType.value) =>
     Yup.object({
-        filterType: Yup.string().oneOf(['number']).strict(true).required(i18next.t('validation.required')),
-        type: Yup.string().oneOf(filterOptions.number).required(i18next.t('validation.required')),
+        filterType: Yup.string().oneOf([FilterTypes.number]).strict(true).required(i18next.t('validation.required')),
+        type: Yup.string()
+            .oneOf([...Object.values(BasicFilterOperationTypes), ...Object.values(NumberFilterOperationTypes)])
+            .required(i18next.t('validation.required')),
         filter: Yup.mixed()
             .test('number-validation', i18next.t('validation.invalidNumberField'), (value) => {
                 if (value === undefined || value === null) return false;
@@ -86,7 +97,7 @@ const agGridNumberFilterSchema = (parentFilterType: FilterType = FilterType.valu
         filterTo: Yup.number()
             .typeError(i18next.t('validation.invalidNumberField'))
             .when('type', {
-                is: 'inRange',
+                is: NumberFilterOperationTypes.inRange,
                 then: (schema) => schema.required(i18next.t('validation.required')),
                 otherwise: (schema) => schema.notRequired(),
             }),
@@ -94,7 +105,7 @@ const agGridNumberFilterSchema = (parentFilterType: FilterType = FilterType.valu
 
 const validateRelativeDate = (value?: string) => {
     if (!value) return false;
-    return relativeDateFilters.includes(value);
+    return isRelativeDateFilter(value);
 };
 
 const validateExactDate = (value?: string) => {
@@ -104,44 +115,46 @@ const validateExactDate = (value?: string) => {
 
 const agGridDateFilterSchema = (parentFilterType: FilterType = FilterType.value) =>
     Yup.object({
-        filterType: Yup.string().oneOf(['date']).required(i18next.t('validation.required')),
-        type: Yup.string().oneOf(filterOptions.date).required(i18next.t('validation.required')),
+        filterType: Yup.string().oneOf([FilterTypes.date]).required(i18next.t('validation.required')),
+        type: Yup.string()
+            .oneOf([...Object.values(BasicFilterOperationTypes), ...Object.values(NumberFilterOperationTypes), ...Object.values(RelativeDateFilters)])
+            .required(i18next.t('validation.required')),
         dateFrom:
             parentFilterType === FilterType.field
                 ? Yup.string().required(i18next.t('validation.required'))
                 : Yup.string()
                       .when('type', {
-                          is: (type: string) => relativeDateFilters.includes(type),
+                          is: (type: string) => isRelativeDateFilter(type),
                           then: (schema) => schema.test('valid-relative-date', i18next.t('validation.invalidRelativeDate'), validateRelativeDate),
                           otherwise: (schema) =>
                               schema.test('valid-date-format', 'must be YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss.sssZ', validateExactDate),
                       })
                       .required(i18next.t('validation.required')),
         dateTo: Yup.string().when('type', {
-            is: 'inRange',
+            is: NumberFilterOperationTypes.inRange,
             then: (schema) => schema.required(i18next.t('validation.required')),
             otherwise: (schema) => schema.nullable().notRequired(),
         }),
     });
 
 const agGridSetFilterSchema = Yup.object({
-    filterType: Yup.string().oneOf(['set']).required(i18next.t('validation.required')),
+    filterType: Yup.string().oneOf([FilterTypes.set]).required(i18next.t('validation.required')),
     values: Yup.array().of(Yup.string().nullable()).min(1, i18next.t('validation.atLeastOne')).required(i18next.t('validation.required')),
 });
 
 // Dynamic filter field validation based on `filterType`
 export const filterFieldSchema = (isRequired: boolean = true) =>
-    Yup.lazy((value: IAGGridFilter, { parent }) => {
+    Yup.lazy((value: IAgGridFilter, { parent }) => {
         const makeOptional = (schema: Yup.AnySchema) => (isRequired ? schema : schema.notRequired().nullable());
 
         switch (value?.filterType) {
-            case 'text':
+            case FilterTypes.text:
                 return makeOptional(agGridTextFilterSchema);
-            case 'number':
+            case FilterTypes.number:
                 return makeOptional(agGridNumberFilterSchema(parent.filterType));
-            case 'date':
+            case FilterTypes.date:
                 return makeOptional(agGridDateFilterSchema(parent.filterType));
-            case 'set':
+            case FilterTypes.set:
                 return makeOptional(agGridSetFilterSchema);
             default:
                 return isRequired ? Yup.mixed().required(i18next.t('validation.required')) : Yup.mixed().notRequired().nullable();
@@ -163,11 +176,11 @@ const extendedPropertySchema = propertiesBaseSchema.shape({
     serialStarter: Yup.number()
         .typeError(i18next.t('validation.invalidNumberField'))
         .when('type', {
-            is: 'serialNumber',
+            is: PropertyWizardTypes.serialNumber,
             then: (schema) => schema.min(0, i18next.t('validation.invalidSerialStarter')).required(i18next.t('validation.required')),
         }),
     relationshipReference: Yup.object().when('type', {
-        is: 'relationshipReference',
+        is: PropertyWizardTypes.relationshipReference,
         then: () =>
             Yup.object({
                 relatedTemplateId: Yup.string().required(i18next.t('validation.required')),
@@ -177,7 +190,7 @@ const extendedPropertySchema = propertiesBaseSchema.shape({
             }),
     }),
     expandedUserField: Yup.object().when('type', {
-        is: 'kartoffelUserField',
+        is: PropertyWizardTypes.kartoffelUserField,
         then: () =>
             Yup.object({
                 relatedUserField: Yup.string().required(i18next.t('validation.required')),
@@ -186,7 +199,7 @@ const extendedPropertySchema = propertiesBaseSchema.shape({
     }),
     mapSearch: Yup.boolean(),
     comment: Yup.string().when('type', {
-        is: 'comment',
+        is: PropertyWizardTypes.comment,
         then: () => Yup.string().required(),
     }),
     isProfilePicture: Yup.boolean(),
@@ -281,13 +294,6 @@ type AddFieldsDNDProps = Pick<
     'values' | 'setValues' | 'touched' | 'errors' | 'setFieldValue' | 'initialValues'
 > &
     Pick<StepComponentHelpers, 'isEditMode' | 'setBlock'> & { isAccountTemplate?: boolean; setIsTransferTemplate?: (val: boolean) => void };
-
-export enum PropertiesTypes {
-    properties = 'properties',
-    archiveProperties = 'archiveProperties',
-    attachmentProperties = 'attachmentProperties',
-    detailsProperties = 'detailsProperties',
-}
 
 export const FieldBlockWrapper = ({
     itemId,

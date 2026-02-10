@@ -1,12 +1,14 @@
 import { Grid, Typography } from '@mui/material';
+import { IDateAboutToExpireMetadataPopulated, NotificationType } from '@packages/notification';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import { environment } from '../../../../globals';
-import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
-import { IDateAboutToExpireMetadataPopulated, NotificationType } from '../../../../interfaces/notifications';
+import { IEntityTemplateMap } from '../../../../interfaces/template';
 import { EntityLink } from '../../../EntityLink';
 import { NotificationColor } from '../../../notificationColor';
+
+const { notificationsMoreData } = environment.notifications;
 
 export const DateAboutToExpireNotification: React.FC<{ notificationMetadata: IDateAboutToExpireMetadataPopulated }> = ({
     notificationMetadata: { entity, propertyName, datePropertyValue },
@@ -14,7 +16,6 @@ export const DateAboutToExpireNotification: React.FC<{ notificationMetadata: IDa
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const entityTemplate = entity ? entityTemplates.get(entity.templateId) : null;
-    const { notificationsMoreData } = environment.notifications;
     const color = notificationsMoreData.general.find((notificationData) => notificationData.type === NotificationType.dateAboutToExpire)?.color;
     const today = new Date();
     today.setHours(0, 0, 0, 0);

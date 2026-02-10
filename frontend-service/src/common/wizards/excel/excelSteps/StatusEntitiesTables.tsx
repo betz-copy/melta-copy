@@ -1,10 +1,10 @@
 import { Check, Close, Gavel } from '@mui/icons-material';
 import { CircularProgress, Grid } from '@mui/material';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React from 'react';
 import { environment } from '../../../../globals';
-import { IEntity } from '../../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IStatusEntitiesTables } from '../../../../interfaces/excel';
 import { EntitiesTable } from './EntitiesTable';
 
@@ -12,7 +12,7 @@ const { warning, success, failed } = environment.color;
 
 export const StatusEntitiesTables: React.FC<{
     tablesData: IStatusEntitiesTables;
-    template: IMongoEntityTemplatePopulated;
+    template: IMongoEntityTemplateWithConstraintsPopulated;
     // biome-ignore lint/suspicious/noExplicitAny: lol
     onDownload?: (brokenRulesEntities?: boolean) => Promise<any>;
     isLoadingDownload?: boolean;

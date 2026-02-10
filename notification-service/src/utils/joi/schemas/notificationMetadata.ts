@@ -1,4 +1,5 @@
-import { INotification, NotificationType, Status } from '@microservices/shared';
+import { INotification, NotificationType } from '@packages/notification';
+import { Status } from '@packages/process';
 import * as joi from 'joi';
 import { mongoIdSchema } from '.';
 

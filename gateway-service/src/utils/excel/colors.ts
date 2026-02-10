@@ -1,4 +1,4 @@
-import { logger } from '@microservices/shared';
+import { logger } from '@packages/utils';
 
 const hexToARGB = (hex?: string): string => {
     if (!hex) return 'FF000000';

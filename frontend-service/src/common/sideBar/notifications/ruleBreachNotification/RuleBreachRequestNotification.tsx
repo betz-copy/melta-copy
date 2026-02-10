@@ -1,15 +1,16 @@
 import { Grid, Typography } from '@mui/material';
+import { IRuleBreachRequestNotificationMetadataPopulated, NotificationType } from '@packages/notification';
 import i18next from 'i18next';
 import React from 'react';
 import { environment } from '../../../../globals';
-import { IRuleBreachRequestNotificationMetadataPopulated, NotificationType } from '../../../../interfaces/notifications';
 import { NotificationColor } from '../../../notificationColor';
-import RuleBreachInfo from '../../../ruleBreanchInfo/RuleBreachInfo';
+import RuleBreachInfo from '../../../ruleBreachInfo/RuleBreachInfo';
+
+const { notificationsMoreData } = environment.notifications;
 
 export const RuleBreachRequestNotification: React.FC<{ notificationMetadata: IRuleBreachRequestNotificationMetadataPopulated }> = ({
     notificationMetadata: { request },
 }) => {
-    const { notificationsMoreData } = environment.notifications;
     const color = notificationsMoreData.requests.find((notificationData) => notificationData.type === NotificationType.ruleBreachRequest)?.color;
 
     return (

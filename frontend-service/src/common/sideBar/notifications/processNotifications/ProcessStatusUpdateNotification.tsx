@@ -1,17 +1,18 @@
 import { Grid, Typography } from '@mui/material';
+import { IProcessStatusUpdateNotificationMetadataPopulated, NotificationType } from '@packages/notification';
 import i18next from 'i18next';
 import React from 'react';
-import { IProcessStatusUpdateNotificationMetadataPopulated, NotificationType } from '../../../../interfaces/notifications';
 import { ProcessName } from './ProcessName';
 import { StepName } from './StepName';
 import '../../../../css/index.css';
 import { environment } from '../../../../globals';
 import { NotificationColor } from '../../../notificationColor';
 
+const { notificationsMoreData } = environment.notifications;
+
 export const ProcessStatusUpdateNotification: React.FC<{
     notificationMetadata: IProcessStatusUpdateNotificationMetadataPopulated;
 }> = ({ notificationMetadata: { process, step, status } }) => {
-    const { notificationsMoreData } = environment.notifications;
     const color = notificationsMoreData.general.find((notificationData) => notificationData.type === NotificationType.processStatusUpdate)?.color;
 
     return (

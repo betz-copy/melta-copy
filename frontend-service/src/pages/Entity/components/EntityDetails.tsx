@@ -9,6 +9,11 @@ import {
     Unarchive,
 } from '@mui/icons-material';
 import { Card, CardContent, Dialog, Grid, IconButton, Menu } from '@mui/material';
+import { isChildTemplate } from '@packages/child-template';
+import { IDeleteEntityBody, IEntity, IEntityExpanded } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { PermissionScope } from '@packages/permission';
+import { IRuleBreach, IRuleBreachPopulated } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
@@ -21,16 +26,12 @@ import { EntityProperties } from '../../../common/EntityProperties';
 import { ErrorToast } from '../../../common/ErrorToast';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { ImageWithDisable } from '../../../common/ImageWithDisable';
-import { IDeleteEntityBody, IEntity, IEntityExpanded } from '../../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IErrorResponse } from '../../../interfaces/error';
-import { PermissionScope } from '../../../interfaces/permissions';
-import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
+import { IEntityTemplateMap } from '../../../interfaces/template';
 import { deleteEntityRequest, updateEntityStatusRequest } from '../../../services/entitiesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';
 import { checkUserTemplatePermission, isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';
-import { isChildTemplate } from '../../../utils/templates';
 import LocationPreview from '../../Map/LocationPreview';
 import { EditEntityDetails } from './EditEntityDetails';
 import { EntityDates } from './EntityDates';
@@ -38,7 +39,7 @@ import { EntityDisableCheckbox } from './EntityDisableCheckbox';
 import TooltipMenuButton from './TooltipMenuButton';
 import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
 
-const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
+const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstraintsPopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
     expandedEntity,
 }) => {
@@ -211,7 +212,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                 >
                                     <IconButtonWithPopover
                                         popoverText={
-                                            // eslint-disable-next-line no-nested-ternary
                                             !canWriteInstance || currentEntityTemplate?.walletTransfer
                                                 ? i18next.t('permissions.dontHaveWritePermissionsToTemplate')
                                                 : isEntityDisabled
@@ -346,7 +346,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                             {entityTemplate.documentTemplatesIds?.length ? (
                                 <Grid>
                                     <ExportFormats
-                                        properties={expandedEntity.entity.properties}
+                                        properties={{ ...expandedEntity.entity.properties, disabled: isEntityDisabled }}
                                         documentTemplateIds={entityTemplate.documentTemplatesIds}
                                         disabled={isEntityDisabled}
                                         justifyContent="flex-end"

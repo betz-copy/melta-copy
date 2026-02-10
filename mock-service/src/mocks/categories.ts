@@ -1,4 +1,4 @@
-import { ICategory } from '@microservices/shared';
+import { ICategory } from '@packages/category';
 
 const categories: ICategory[] = [
     {

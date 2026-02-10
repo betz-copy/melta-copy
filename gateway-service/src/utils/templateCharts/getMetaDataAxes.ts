@@ -1,4 +1,4 @@
-import { IAxisField, IChartType, IChartTypeMetaData, IColumnOrLineMetaData, INUmberMetaData, IPieMetaData } from '@microservices/shared';
+import { IAxisField, IChartType, IChartTypeMetaData, IColumnOrLineMetaData, INumberMetaData, IPieMetaData } from '@packages/chart';
 
 export const getMetaDataAxes = (type: IChartType, metaData: IChartTypeMetaData, filter?: string) => {
     let xAxis: IAxisField;
@@ -19,7 +19,7 @@ export const getMetaDataAxes = (type: IChartType, metaData: IChartTypeMetaData, 
             break;
         }
         case IChartType.Number: {
-            const { accumulator } = metaData as INUmberMetaData;
+            const { accumulator } = metaData as INumberMetaData;
             xAxis = accumulator;
             break;
         }

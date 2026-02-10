@@ -21,7 +21,12 @@ import type {
 } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
 import { Box, CircularProgress, debounce } from '@mui/material';
-import type { AxiosError } from 'axios';
+import { ActionTypes } from '@packages/action';
+import { IConnection, IDeleteEntityBody, IEntity, IEntityExpanded, ISearchFilter, IUniqueConstraint } from '@packages/entity';
+import { EntityData, IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '@packages/rule-breach';
+import { ISemanticSearchResult } from '@packages/semantic-search';
+import { IGetUnits } from '@packages/unit';
+import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import { isEqual, pickBy, sortBy } from 'lodash';
 import type React from 'react';
@@ -31,16 +36,12 @@ import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import '../../css/resizeTable.css';
 import '../../css/table.css';
+import { IAction, IActionPopulated } from '@packages/action';
+import { IMongoChildTemplateWithConstraintsPopulated, isChildTemplate } from '@packages/child-template';
+import { IAgGridRequest } from '@packages/rule-breach';
 import { environment } from '../../globals';
-import type { IChildTemplateMap, IChildTemplatePopulated, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import type { EntityData, IDeleteEntityBody, IEntity, IEntityExpanded, ISearchFilter, IUniqueConstraint } from '../../interfaces/entities';
-import type { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import type { IErrorResponse } from '../../interfaces/error';
-import type { IRelationship } from '../../interfaces/relationships';
-import { ActionTypes, type IAction, type IActionPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
-import type { IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
-import type { ISemanticSearchResult } from '../../interfaces/semanticSearch';
-import type { IGetUnits } from '../../interfaces/units';
+import { IErrorResponse } from '../../interfaces/error';
+import { IChildTemplateMap, IEntityTemplateMap, ITemplate } from '../../interfaces/template';
 import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { searchEntitiesOfTemplateClientSideRequest } from '../../services/clientSideService';
 import {
@@ -56,10 +57,8 @@ import { useWorkspaceStore } from '../../stores/workspace';
 import { agGridLocaleText } from '../../utils/agGrid/agGridLocaleText';
 import { agGridToSearchEntitiesOfTemplateRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
-import type { IAGGridRequest } from '../../utils/agGrid/interfaces';
 import useDeepCompareMemo from '../../utils/hooks/useDeepCompareMemo';
 import { LocalStorage } from '../../utils/localStorage';
-import { isChildTemplate } from '../../utils/templates';
 import { tryCatch } from '../../utils/tryCatch';
 import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
 import type { EntityWizardValues } from '../dialogs/entity';
@@ -110,7 +109,7 @@ export enum TablePageType {
 }
 
 export const getDatasource = <Data extends EntityData>(
-    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+    template: ITemplate,
     // tableCount: number, // comment out  waiting for Itay
     quickFilterText?: string,
     onFail?: (err: unknown) => void,
@@ -145,10 +144,7 @@ export const getDatasource = <Data extends EntityData>(
                           parentTemplateId,
                           clientSideUserEntityId!,
                           agGridToSearchEntitiesOfTemplateRequest(
-                              {
-                                  ...agGridRequest,
-                                  quickFilter: quickFilterText,
-                              } as IAGGridRequest,
+                              { ...agGridRequest, quickFilter: quickFilterText } as IAgGridRequest,
                               template,
                               // tableCount, // comment out  waiting for Itay
                               defaultFilter,
@@ -156,10 +152,7 @@ export const getDatasource = <Data extends EntityData>(
                       )
                     : searchEntitiesOfTemplateRequest(parentTemplateId, {
                           ...agGridToSearchEntitiesOfTemplateRequest(
-                              {
-                                  ...agGridRequest,
-                                  quickFilter: quickFilterText,
-                              } as IAGGridRequest,
+                              { ...agGridRequest, quickFilter: quickFilterText } as IAgGridRequest,
                               template,
                               // tableCount, // comment out  waiting for Itay
                               defaultFilter,
@@ -183,15 +176,9 @@ export const getDatasource = <Data extends EntityData>(
     };
 };
 
-export type IConnection = {
-    relationship: Pick<IRelationship, 'properties' | 'templateId'>;
-    sourceEntity: IEntity;
-    destinationEntity: IEntity;
-};
-
 export const getRowModelProps = <Data extends EntityData>(
     rowModelType: 'serverSide' | 'clientSide' | 'infinite',
-    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+    template: ITemplate,
     rowData: Data[] | undefined,
     paginationPageSize: number,
     // tableCount: number,// comment out  waiting for Itay
@@ -237,7 +224,7 @@ export const getRowModelProps = <Data extends EntityData>(
 const LoadingCellRenderer = () => <CircularProgress size={20} sx={{ marginLeft: 1 }} />;
 
 export type EntitiesTableOfTemplateProps<Data> = {
-    template: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) & {
+    template: ITemplate & {
         entitiesWithFiles?: ISemanticSearchResult[string];
     };
     entities?: Data[];
@@ -282,7 +269,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     columnsToShow?: string[];
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
     actionsColumnWidth?: number;
-    childTemplatesOfParent?: IChildTemplatePopulated[];
+    childTemplatesOfParent?: IMongoChildTemplateWithConstraintsPopulated[];
     externalId?: IExternalId;
     scrollToId?: string;
     usePagination?: boolean;

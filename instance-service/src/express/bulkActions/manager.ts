@@ -1,23 +1,19 @@
 import {
-    ActionErrors,
-    ActionOnFail,
     ActionTypes,
-    BadRequestError,
     IAction,
-    IActivityLog,
-    IBrokenRule,
-    IBulkRuleMail,
     ICreateEntityMetadata,
     ICreateRelationshipMetadata,
     IDuplicateEntityMetadata,
-    IEntity,
-    IMongoEntityTemplate,
-    IMongoRelationshipTemplate,
-    IRelationship,
-    IRequiredConstraint,
-    IRuleMail,
     IUpdateEntityMetadata,
-} from '@microservices/shared';
+} from '@packages/action';
+import { IActivityLog } from '@packages/activity-log';
+import { ActionErrors, IBulkRuleMail, IEntity, IRequiredConstraint } from '@packages/entity';
+import { IMongoEntityTemplate } from '@packages/entity-template';
+import { IRelationship } from '@packages/relationship';
+import { IMongoRelationshipTemplate } from '@packages/relationship-template';
+import { ActionOnFail, IRuleMail } from '@packages/rule';
+import { IBrokenRule } from '@packages/rule-breach';
+import { BadRequestError } from '@packages/utils';
 import { groupBy, partition, pickBy } from 'lodash';
 import { Transaction } from 'neo4j-driver';
 import config from '../../config';

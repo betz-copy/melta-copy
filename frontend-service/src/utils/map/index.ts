@@ -1,20 +1,19 @@
 import { MatrixSetLink } from '@camptocamp/ogc-client/dist/wmts/model';
+import { SplitBy } from '@packages/common';
+import { IEntity, IFilterOfField } from '@packages/entity';
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { CoordinatesResult, MapItemType, mapConfig } from '@packages/map';
 import * as Cesium from 'cesium';
 import { Cartesian3 } from 'cesium';
 import { XMLParser } from 'fast-xml-parser';
 import { environment } from '../../globals';
-import { IEntity, IFilterOfField, SplitBy } from '../../interfaces/entities';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { CoordinatesResult, ICoordinateSearchResult, IPolygonSearchResult, MapItemType } from '../../interfaces/location';
+import { ICoordinateSearchResult, IPolygonSearchResult } from '../../interfaces/location';
 import { LayerProvider, LayerProviderType } from '../../pages/Map/BaseLayers';
 import { convertECEFToWGS84, convertWGS94ToECEF, isValidWGS84 } from './convert';
 
-const {
-    polygon: { polygonPrefix, polygonSuffix },
-    textValueOfLinkTag,
-    tileMatrixSetIdentifiers,
-    tilingSchemeId,
-} = environment.map;
+const { polygonPrefix, polygonSuffix } = mapConfig.polygon;
+
+const { textValueOfLinkTag, tileMatrixSetIdentifiers, tilingSchemeId } = environment.map;
 
 export const zoomNumber = 300000;
 
@@ -122,7 +121,7 @@ export const isValidPolygonPoint = (polygonPoints: Cartesian3[], newPoint: Carte
     return true;
 };
 
-export const getLocationProperties = (entity: IEntity, selectedTemplates: IMongoEntityTemplatePopulated[]) => {
+export const getLocationProperties = (entity: IEntity, selectedTemplates: IMongoEntityTemplateWithConstraintsPopulated[]) => {
     const template = selectedTemplates.find(({ _id }) => _id === entity.templateId);
 
     if (!template) return { template: undefined, locationTemplateProperties: undefined, locationProperties: undefined };

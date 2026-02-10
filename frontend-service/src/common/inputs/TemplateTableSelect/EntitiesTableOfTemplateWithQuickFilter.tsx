@@ -1,10 +1,11 @@
 import { Box, Grid } from '@mui/material';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { debounce } from 'lodash';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { IChildTemplateMap, IChildTemplatePopulated } from '../../../interfaces/childTemplates';
-import { IEntity } from '../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IChildTemplateMap } from '../../../interfaces/template';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import EntitiesTableOfTemplate, { TablePageType } from '../../EntitiesTableOfTemplate';
@@ -12,7 +13,7 @@ import SearchInput from '../SearchInput';
 import { getChildTemplatesFilter } from '../TemplateEntitiesAutocomplete';
 
 const EntitiesTableOfTemplateWithQuickFilter: React.FC<{
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
     onRowSelected: (entity: IEntity) => void;
     hideNonPreview?: boolean;
 }> = ({ entityTemplate, onRowSelected, hideNonPreview }) => {
@@ -25,7 +26,7 @@ const EntitiesTableOfTemplateWithQuickFilter: React.FC<{
     const [quickFilterText, setQuickFilterText] = useState('');
     const setQuickFilterTextDebounced = debounce(setQuickFilterText, 1000);
 
-    const childTemplatesOfParent: IChildTemplatePopulated[] = Array.from(childTemplates.values()).filter(
+    const childTemplatesOfParent: IMongoChildTemplateWithConstraintsPopulated[] = Array.from(childTemplates.values()).filter(
         ({ parentTemplate: { _id } }) => _id === entityTemplate._id,
     );
     const defaultFilter = getChildTemplatesFilter(childTemplatesOfParent, workspace, currentUser, true);

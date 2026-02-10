@@ -1,14 +1,16 @@
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
 import { Divider, IconButton, Typography } from '@mui/material';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IPrintSection } from '@packages/printing-template';
+import { IGetUnits } from '@packages/unit';
 import _ from 'lodash';
-import React, { CSSProperties, JSX, useState } from 'react';
+import type React from 'react';
+import { type CSSProperties, type JSX, useState } from 'react';
 import { pdfjs } from 'react-pdf';
 import { useQueryClient } from 'react-query';
 import { environment } from '../globals';
-import { IEntity } from '../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
-import { IPrintSection } from '../interfaces/printingTemplates';
-import { IGetUnits } from '../interfaces/units';
+import { IEntityTemplateMap } from '../interfaces/template';
 import { useDarkModeStore } from '../stores/darkMode';
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
 import { formatToString, getPropertyColor, getUserAvatar } from '../utils/entityProperties';
@@ -67,6 +69,7 @@ type PropertiesDetailsProps = {
     searchedText?: string;
     darkMode?: boolean;
     preview?: boolean;
+    innerFieldsDirection?: 'column' | 'row';
 };
 
 const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
@@ -86,6 +89,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
     innerStyle,
     textWrap,
     preview,
+    innerFieldsDirection,
 }) => {
     const queryClient = useQueryClient();
 
@@ -104,12 +108,12 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
     return (
         <>
             {propertiesOrderedToShow.map((propertyKey) => {
-                const propertySchema = entityTemplate.properties.properties[propertyKey];
+                const propertySchema = entityTemplate.properties.properties[propertyKey] || {};
                 const { format, type, serialCurrent, calculateTime, title, color, comment, relationshipReference } = propertySchema;
                 const propertyValue = comment ?? properties[propertyKey];
                 const hideField = entityTemplate.properties.hide.includes(propertyKey);
                 const containsHtmlTags = containsHTMLTags(propertyValue);
-                let relatedEntityAllowed: IMongoEntityTemplatePopulated | undefined;
+                let relatedEntityAllowed: IMongoEntityTemplateWithConstraintsPopulated | undefined;
                 if (format === 'relationshipReference') {
                     const relatedTemplateId = relationshipReference?.relatedTemplateId;
                     relatedEntityAllowed = entityTemplates?.get(relatedTemplateId ?? '');
@@ -170,13 +174,10 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                     getNumLines(stringFormatValue) > 1 &&
                     stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
 
-                const textDirection =
-                    format && !environment.excludedFormats.includes(format)
-                        ? getTextDirection(propertyValue, {
-                              type,
-                              serialCurrent,
-                          })
-                        : 'rtl';
+                const textDirection = getTextDirection(propertyValue, {
+                    type,
+                    serialCurrent,
+                });
 
                 const titleTypography = (
                     <Typography
@@ -240,6 +241,7 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                                 flexWrap: 'nowrap',
                                 alignItems: textWrap ? 'flex-start' : 'center',
                                 gap: '10px',
+                                flexDirection: innerFieldsDirection,
                             }}
                         >
                             {!comment && (
@@ -362,7 +364,12 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
 
     return (
         <div style={{ display: 'flex', flexDirection: 'row' }}>
-            {imageOfKartoffelKeys.map((key) => getUserAvatar(entityTemplate, key, properties, { size: 120, border: 4 }))}
+            {imageOfKartoffelKeys.map((key) =>
+                getUserAvatar(entityTemplate, key, properties, {
+                    size: 120,
+                    border: 4,
+                }),
+            )}
             {showDivider && <Divider title={dividerTitle} sx={{ marginY: '1rem' }} />}
             <div style={{ margin: '1rem 0' }}>{dividerTitle && <BlueTitle title={dividerTitle} component="p" variant="subtitle1" />}</div>
             <div

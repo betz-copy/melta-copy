@@ -1,4 +1,5 @@
 import { Grid } from '@mui/material';
+import { PropertyType } from '@packages/entity-template';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React from 'react';
@@ -41,7 +42,7 @@ const addDetailsFieldsSchema = Yup.object({
 export const useAreThereProcessInstancesByTemplateId = (templateId: string, enabled: boolean) => {
     const { data: areThereInstancesByTemplateIdResponse } = useQuery(
         ['areThereInstancesByTemplateId', templateId],
-        () => searchProcessesRequest({ templateIds: [templateId] }),
+        () => searchProcessesRequest({ templateIds: [templateId], limit: 1, skip: 0 }),
         {
             enabled,
             initialData: [],
@@ -58,7 +59,7 @@ export const useAreThereProcessInstancesByTemplateId = (templateId: string, enab
 export const initialFieldCardDataOnAdd = {
     name: '',
     title: '',
-    type: '',
+    type: PropertyType.string,
     options: [],
     pattern: '',
     patternCustomErrorMessage: '',
@@ -96,7 +97,7 @@ const AddDetailsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues,
                     errors={errors}
                     initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
                     supportSerialNumberType={false}
-                    supportEntityReferenceType={false} // TODO: for now unsupport user and relationship reference fields
+                    supportEntityReferenceType
                     supportChangeToRequiredWithInstances={false}
                     supportArrayFields={false}
                     supportDeleteForExistingInstances

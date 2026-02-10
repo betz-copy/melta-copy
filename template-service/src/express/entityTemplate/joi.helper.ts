@@ -1,4 +1,5 @@
-import { ColorSchema, IEntityTemplate, IEnumPropertiesColors, IProperties, searchFilterSchema, variableNameValidation } from '@microservices/shared';
+import { IEntityTemplate, IEnumPropertiesColors, IProperties } from '@packages/entity-template';
+import { ColorSchema, searchFilterSchema, variableNameValidation } from '@packages/utils';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import Joi from 'joi';
