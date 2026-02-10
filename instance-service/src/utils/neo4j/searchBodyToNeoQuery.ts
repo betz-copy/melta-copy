@@ -1,6 +1,6 @@
 import { FilterLogicalOperator, IFilterGroup, IFilterOfField, IFilterOfTemplate, ISearchBatchBody } from '@packages/entity';
 import { IEntitySingleProperty, IMongoEntityTemplate } from '@packages/entity-template';
-import { IKartoffelUser } from '@packages/user/dist';
+import { IKartoffelUser } from '@packages/user';
 import { fromZonedTime } from 'date-fns-tz';
 import { mapValues } from 'lodash';
 import { Date as Neo4jDate, DateTime as Neo4jDateTime } from 'neo4j-driver';

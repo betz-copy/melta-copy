@@ -3,7 +3,7 @@ import { ActionErrors, IEntity, IEntityExpanded, IEntityWithDirectRelationships,
 import { IMongoEntityTemplate, PropertyFormat } from '@packages/entity-template/dist';
 import { mapConfig } from '@packages/map';
 import { IRelationship } from '@packages/relationship';
-import { IKartoffelUser } from '@packages/user/dist';
+import { IKartoffelUser } from '@packages/user';
 import { ValidationError } from '@packages/utils';
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
 import neo4j, { Node as Neo4jNode, Relationship as Neo4jRelationship, QueryResult, Transaction } from 'neo4j-driver';

@@ -89,8 +89,6 @@ export interface IEntitySingleProperty {
     isProfileImage?: boolean;
     display?: boolean;
     accountBalance?: boolean;
-    isFilterByCurrentUser?: boolean;
-    isFilterByUserUnit?: boolean;
 }
 export interface IProperties {
     type: 'object';

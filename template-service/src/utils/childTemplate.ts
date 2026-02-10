@@ -7,7 +7,7 @@ import {
 import { IUserField } from '@packages/entity';
 import { IFullMongoEntityTemplate } from '@packages/entity-template';
 import { IEntitySingleProperty } from '@packages/entity-template/dist';
-import { IKartoffelUser } from '@packages/user/dist';
+import { IKartoffelUser } from '@packages/user';
 import Kartoffel from '../externalServices/kartoffel';
 
 const transformUser = (foundUser: IKartoffelUser): IUserField => ({

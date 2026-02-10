@@ -34,7 +34,7 @@ import { ActionOnFail, IMongoRule, IRuleMail } from '@packages/rule';
 import { IBrokenRule, ICausesOfInstance } from '@packages/rule-breach';
 import { ISemanticSearchResult } from '@packages/semantic-search';
 import { IGetUnits } from '@packages/unit';
-import { IKartoffelUser } from '@packages/user/dist';
+import { IKartoffelUser } from '@packages/user';
 import { BadRequestError, logger, NotFoundError, ServiceError, ValidationError } from '@packages/utils';
 import { booleanPointInPolygon, featureCollection, intersect, point as turfPoint, polygon as turfPolygon } from '@turf/turf';
 import { startOfToday, startOfYesterday } from 'date-fns';

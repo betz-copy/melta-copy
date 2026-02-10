@@ -1,5 +1,5 @@
 import { IMongoEntityTemplate, IMongoEntityTemplatePopulated } from '@packages/entity-template/dist';
-import { IKartoffelUser } from '@packages/user/dist';
+import { IKartoffelUser } from '@packages/user';
 import { FilterLogicalOperator, IEntity, IFilterGroup, IFilterOfField, IPropertyValue, ISearchEntitiesOfTemplateBody, ISearchFilter } from './types';
 
 const filterFieldToValue: Record<keyof IFilterOfField, string> = {
