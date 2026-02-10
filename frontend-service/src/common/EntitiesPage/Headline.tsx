@@ -88,11 +88,15 @@ export const GlobalSearchBar: React.FC<{
     useEffect(() => {
         // If a value exists in the url, override the value in the localStorage.
         // ⚠️ May cause back-button loop when syncing URL and localStorage (adds param on mount → triggers navigation).
-
+        if (!isActiveSemanticSearch) return;
         const realValue = urlSemanticSearch ? boolUrl : semanticSearch;
 
         if (realValue !== semanticSearch) setSemanticSearch(realValue);
-        if (realValue !== boolUrl) setUrlSearchParams({ ...Object.fromEntries(urlSearchParams.entries()), semanticSearch: realValue.toString() });
+        if (realValue !== boolUrl)
+            setUrlSearchParams({
+                ...Object.fromEntries(urlSearchParams.entries()),
+                semanticSearch: realValue.toString(),
+            });
     }, [boolUrl, semanticSearch, urlSemanticSearch, setSemanticSearch, setUrlSearchParams, urlSearchParams]);
 
     useEffect(() => {
@@ -266,7 +270,9 @@ const EntitiesPageHeadline = <T extends IMongoEntityTemplatePopulated | IMongoCh
                         title={pageTitle}
                         component="h4"
                         variant="h4"
-                        style={{ fontSize: workspace.metadata.mainFontSizes.headlineTitleFontSize }}
+                        style={{
+                            fontSize: workspace.metadata.mainFontSizes.headlineTitleFontSize,
+                        }}
                     />
                     <Grid paddingLeft="3rem" paddingTop="5px">
                         <Grid container wrap="nowrap" gap="15px">
@@ -325,7 +331,12 @@ const EntitiesPageHeadline = <T extends IMongoEntityTemplatePopulated | IMongoCh
                     {excelExportProps && (
                         <Grid>
                             <IconButton
-                                style={{ background: theme.palette.primary.main, borderRadius: '7px', width: '135px', height: '35px' }}
+                                style={{
+                                    background: theme.palette.primary.main,
+                                    borderRadius: '7px',
+                                    width: '135px',
+                                    height: '35px',
+                                }}
                                 onClick={() => {
                                     excelExportProps.onExcelExport();
                                     trackEvent({
@@ -340,7 +351,14 @@ const EntitiesPageHeadline = <T extends IMongoEntityTemplatePopulated | IMongoCh
                                 ) : (
                                     <DownloadIcon htmlColor="white" />
                                 )}
-                                <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>
+                                <Typography
+                                    fontSize={14}
+                                    style={{
+                                        fontWeight: '400',
+                                        padding: '0 5px',
+                                        color: 'white',
+                                    }}
+                                >
                                     {i18next.t('downloadMultipleTables')}
                                 </Typography>
                             </IconButton>
