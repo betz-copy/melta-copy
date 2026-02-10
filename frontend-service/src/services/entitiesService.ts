@@ -16,6 +16,7 @@ import {
     ISearchFilter,
     ISearchResult,
 } from '@packages/entity';
+import { PropertyFormat } from '@packages/entity-template';
 import { CoordinateSystem } from '@packages/map';
 import { IRelationShipSelectionTree } from '@packages/printing-template';
 import { IBrokenRule, IRuleBreach } from '@packages/rule-breach';
@@ -33,7 +34,6 @@ import { IEntityTreeNode } from '../pages/Entity/components/print/ComponentToPri
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
 import { combineFilters } from '../utils/filters';
 import { locationConverterToString } from '../utils/map/convert';
-import { PropertyFormat } from '@packages/entity-template';
 
 const { entities, relationships } = environment.api;
 const { uuidFormat } = environment;

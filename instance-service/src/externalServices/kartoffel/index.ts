@@ -1,4 +1,4 @@
-import { IKartoffelUser } from '@microservices/shared';
+import { IKartoffelUser } from '@packages/user';
 import axios from 'axios';
 import config from '../../config';
 
@@ -12,7 +12,6 @@ class Kartoffel {
     });
 
     static searchUsers = async (queryString: string): Promise<IKartoffelUser[]> => {
-
         const { data } = await this.kartoffel.get<IKartoffelUser[]>(searchRoute, {
             params: {
                 fields: fieldToSearch,
