@@ -20,6 +20,19 @@ const getOrCacheEntity = async (node: Node, cache: EntityCache, template: IMongo
     return entity;
 };
 
+const getOrCacheEntityTemplate = async (
+    templateId: string,
+    templateCache: Map<string, IMongoEntityTemplate>,
+    entityTemplateService: EntityTemplateService,
+) => {
+    const cached = templateCache.get(templateId);
+    if (cached) return cached;
+
+    const template = await entityTemplateService.getEntityTemplateById(templateId);
+    templateCache.set(templateId, template);
+    return template;
+};
+
 const addBidirectionalEdge = (
     fromId: string,
     toId: string,
@@ -89,15 +102,6 @@ export const buildEntityTree =
         const entityTemplateService = new EntityTemplateService(workspaceId);
         const templateCache = new Map<string, IMongoEntityTemplate>();
 
-        const getOrCacheEntityTemplate = async (templateId: string) => {
-            const cached = templateCache.get(templateId);
-            if (cached) return cached;
-
-            const template = await entityTemplateService.getEntityTemplateById(templateId);
-            templateCache.set(templateId, template);
-            return template;
-        };
-
         const entityCache: EntityCache = new Map();
         const adjacencyList: AdjacencyList = new Map();
         const processedEdges = new Set<string>();
@@ -112,8 +116,8 @@ export const buildEntityTree =
             const templateId2 = node2.labels[0];
 
             const [entityTemplate1, entityTemplate2] = await Promise.all([
-                getOrCacheEntityTemplate(templateId1),
-                getOrCacheEntityTemplate(templateId2),
+                getOrCacheEntityTemplate(templateId1, templateCache, entityTemplateService),
+                getOrCacheEntityTemplate(templateId2, templateCache, entityTemplateService),
             ]);
 
             const entity1 = await getOrCacheEntity(node1, entityCache, entityTemplate1, workspaceId);

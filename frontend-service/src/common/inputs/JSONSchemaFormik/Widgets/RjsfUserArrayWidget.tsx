@@ -1,15 +1,7 @@
-import { IUserField } from '@packages/entity';
+import { serializeUser } from '@packages/entity/src';
 import { WidgetProps } from '@rjsf/utils';
 import { useState } from 'react';
 import { UserArrayInput } from '../../UserArrayInput';
-
-export const serializeUser = (user): IUserField => ({
-    _id: user?._id ?? user?.id,
-    fullName: user?.fullName,
-    jobTitle: user?.jobTitle,
-    hierarchy: user?.hierarchy,
-    mail: user?.mail,
-});
 
 const RjsfUserArrayWidget = ({ label, value, onChange, rawErrors = [], onBlur, onFocus, options, required }: WidgetProps) => {
     const [inputValue, setInputValue] = useState('');

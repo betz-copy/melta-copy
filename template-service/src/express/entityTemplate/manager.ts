@@ -4,12 +4,12 @@ import { IRelationshipTemplate } from '@packages/relationship-template';
 import { DefaultManagerMongo, NotFoundError, ServiceError } from '@packages/utils';
 import { StatusCodes } from 'http-status-codes';
 import { ClientSession, FilterQuery, UpdateQuery } from 'mongoose';
+import GlobalSearchIndexCreator from 'template-service/src/externalServices/globalSearchIndexCreator';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
 import { withTransaction } from '../../utils/mongoose';
 import CategoryManager from '../category/manager';
 import ChildTemplateManager from '../childTemplate/manager';
-import GlobalSearchIndexCreator from '../externalServices/globalSearchIndexCreator';
 import RelationshipTemplateManager from '../relationshipTemplate/manager';
 import EntityTemplateSchema from './model';
 

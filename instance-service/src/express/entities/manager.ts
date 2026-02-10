@@ -367,7 +367,7 @@ class EntityManager extends DefaultManagerNeo4j {
         return { createdEntity, activityLogsToCreate: allActivityLogsToCreate };
     }
 
-    async getEntityByIdInTransaction(id: string, transaction: Transaction, isGetMode: boolean = true) {
+    async getEntityByIdInTransaction(id: string, transaction: Transaction, isGetMode?: boolean) {
         const entity = await runInTransactionAndNormalize(
             transaction,
             `MATCH (e {_id: '${id}'}) RETURN e`,

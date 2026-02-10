@@ -1,12 +1,12 @@
 import { FormControlLabel, Grid } from '@mui/material';
 import { ByCurrentDefaultValue } from '@packages/child-template';
+import { serializeUser } from '@packages/entity';
 import { BasicFilterOperationTypes, IAgGridDateFilter, IAgGridNumberFilter, IAgGridTextFilter } from '@packages/rule-breach';
 import { IKartoffelUserStringFields } from '@packages/user';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { IGraphFilterBody } from '../../../interfaces/graphFilter';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
-import { serializeUser } from '../JSONSchemaFormik/Widgets/RjsfUserArrayWidget';
 import { UserInput } from '../UserInput';
 
 interface UserFilterProps {

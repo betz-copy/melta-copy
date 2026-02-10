@@ -1,6 +1,6 @@
 import { IndexingAction, IUpdateIndexRequest } from '@packages/global-search';
-import config from '../../config';
-import DefaultExternalServiceRabbit from '../../utils/rabbit/manager';
+import config from '../config';
+import DefaultExternalServiceRabbit from '../utils/rabbit/manager';
 
 const { rabbit } = config;
 

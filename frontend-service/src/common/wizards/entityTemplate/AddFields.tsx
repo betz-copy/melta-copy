@@ -140,12 +140,7 @@ const agGridDateFilterSchema = (parentFilterType: FilterType = FilterType.value)
 const agGridSetFilterSchema = Yup.object({
     filterType: Yup.string().oneOf([FilterTypes.set]).required(i18next.t('validation.required')),
     values: Yup.array()
-        .of(
-            Yup.lazy((value) => {
-                if (typeof value === 'object' && value !== null) return Yup.object();
-                return Yup.string().nullable();
-            }),
-        )
+        .of(Yup.lazy((value) => (typeof value === 'object' && value !== null ? Yup.object() : Yup.string().nullable())))
         .min(1, i18next.t('validation.atLeastOne'))
         .required(i18next.t('validation.required')),
 });

@@ -1,6 +1,23 @@
 import { IKartoffelUser } from '@packages/common';
 import { IMongoEntityTemplate, IMongoEntityTemplatePopulated, PropertyFormat } from '@packages/entity-template';
-import { FilterLogicalOperator, IEntity, IFilterGroup, IFilterOfField, IPropertyValue, ISearchEntitiesOfTemplateBody, ISearchFilter } from './types';
+import {
+    FilterLogicalOperator,
+    IEntity,
+    IFilterGroup,
+    IFilterOfField,
+    IPropertyValue,
+    ISearchEntitiesOfTemplateBody,
+    ISearchFilter,
+    IUserField,
+} from './types';
+
+export const serializeUser = (user: IKartoffelUser): IUserField => ({
+    _id: user?._id ?? user?.id,
+    fullName: user?.fullName ?? '',
+    jobTitle: user?.jobTitle,
+    hierarchy: user?.hierarchy,
+    mail: user?.mail,
+});
 
 const filterFieldToValue: Record<keyof IFilterOfField, string> = {
     $eq: 'equals',

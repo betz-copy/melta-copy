@@ -1,5 +1,5 @@
 import { SplitBy } from '@packages/common';
-import { ActionErrors, IEntity, IEntityExpanded, IEntityWithDirectRelationships, IPropertyValue, IUserField } from '@packages/entity';
+import { ActionErrors, IEntity, IEntityExpanded, IEntityWithDirectRelationships, IPropertyValue, serializeUser } from '@packages/entity';
 import { IMongoEntityTemplate, PropertyFormat } from '@packages/entity-template';
 import { mapConfig } from '@packages/map';
 import { IRelationship } from '@packages/relationship';
@@ -26,15 +26,6 @@ const {
 
 export type Node = Neo4jNode<number>;
 type Relationship = Neo4jRelationship<number>;
-
-const transformUser = (foundUser: IKartoffelUser): IUserField => ({
-    _id: foundUser._id || foundUser.id!,
-    fullName: foundUser.fullName!,
-    jobTitle: foundUser.jobTitle,
-    hierarchy: foundUser.hierarchy,
-    mail: foundUser.mail,
-    userType: foundUser.entityType,
-});
 
 /**
  *
@@ -69,7 +60,7 @@ export const normalizeFields = async (
             // it's entity and not relationship
             if (template.properties.properties[key]?.format === PropertyFormat.user) userKeys.add(value);
 
-            if (template.properties.properties[key]?.items?.format === PropertyFormat.user && Array.isArray(value))
+            if (template.properties.properties[key]?.items?.format === PropertyFormat.user)
                 value.forEach((kartoffelId: string) => {
                     userKeys.add(kartoffelId);
                 });
@@ -117,7 +108,7 @@ export const normalizeFields = async (
                 const foundUser = usersById.get(value as string);
                 if (!foundUser) props[key] = undefined;
                 else {
-                    props[key] = transformUser(foundUser);
+                    props[key] = serializeUser(foundUser);
 
                     const kartoffelUserFieldObj = Object.entries(template.properties.properties).reduce(
                         (acc, [kartoffelKey, prop]) => {
@@ -135,7 +126,7 @@ export const normalizeFields = async (
                 }
             }
 
-            if (property?.items?.format === PropertyFormat.user) props[key] = users.filter(({ _id }) => value.includes(_id)).map(transformUser);
+            if (property?.items?.format === PropertyFormat.user) props[key] = users.filter(({ _id }) => value.includes(_id)).map(serializeUser);
         }
     }
 
@@ -164,28 +155,12 @@ export const nodeToEntity = async (node: Node, template: IMongoEntityTemplate, w
 export const normalizeReturnedEntity =
     <T extends ResponseType>(response: T, workspaceId: string, template?: IMongoEntityTemplate, isGetMode: boolean = true) =>
     async (result: QueryResult): Promise<Response<T, IEntity>> => {
-        const entityTemplateService = template ? null : new EntityTemplateService(workspaceId);
-        const templateCache = new Map<string, IMongoEntityTemplate>();
-
-        const getOrCacheTemplate = async (templateId: string) => {
-            if (template) return template;
-
-            const cached = templateCache.get(templateId);
-            if (cached) return cached;
-
-            if (!entityTemplateService) {
-                throw new Error('EntityTemplateService is not initialized for function template normalization.');
-            }
-
-            const fetched = await entityTemplateService.getEntityTemplateById(templateId);
-            templateCache.set(templateId, fetched);
-            return fetched;
-        };
+        const entityTemplateService = new EntityTemplateService(workspaceId);
 
         const entities = await Promise.all(
             result.records.map(async (record) => {
                 const templateId = record.get(0).labels[0];
-                const entityTemplate = await getOrCacheTemplate(templateId);
+                const entityTemplate = template ?? (await entityTemplateService.getEntityTemplateById(templateId));
 
                 return nodeToEntity(record.get(0) as Node, entityTemplate, workspaceId, isGetMode);
             }),
@@ -342,16 +317,6 @@ const formatUndirectedRelationship = async (relationship: Relationship, node1: N
 
 export const normalizeSearchWithRelationships = async (result: QueryResult, workspaceId: string): Promise<IEntityWithDirectRelationships[]> => {
     const entityTemplateService = new EntityTemplateService(workspaceId);
-    const templateCache = new Map<string, IMongoEntityTemplate>();
-
-    const getTemplateById = async (templateId: string) => {
-        const cached = templateCache.get(templateId);
-        if (cached) return cached;
-
-        const template = await entityTemplateService.getEntityTemplateById(templateId);
-        templateCache.set(templateId, template);
-        return template;
-    };
 
     return Promise.all(
         result.records.map(async (record): Promise<IEntityWithDirectRelationships> => {
@@ -363,12 +328,16 @@ export const normalizeSearchWithRelationships = async (result: QueryResult, work
             const normalizedRelationships = await Promise.all(
                 (relationships ?? []).map(async ({ relationship, otherEntity }) => ({
                     relationship: await formatUndirectedRelationship(relationship, node, otherEntity),
-                    otherEntity: await nodeToEntity(otherEntity, await getTemplateById(otherEntity.labels[0]), workspaceId),
+                    otherEntity: await nodeToEntity(
+                        otherEntity,
+                        await entityTemplateService.getEntityTemplateById(otherEntity.labels[0]),
+                        workspaceId,
+                    ),
                 })),
             );
 
             return {
-                entity: await nodeToEntity(node, await getTemplateById(node.labels[0]), workspaceId, true),
+                entity: await nodeToEntity(node, await entityTemplateService.getEntityTemplateById(node.labels[0]), workspaceId, true),
                 relationships: normalizedRelationships,
             };
         }),

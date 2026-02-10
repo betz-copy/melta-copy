@@ -4,19 +4,9 @@ import {
     IChildTemplateProperty,
     IMongoChildTemplatePopulated,
 } from '@packages/child-template';
-import { IUserField } from '@packages/entity';
+import { serializeUser } from '@packages/entity';
 import { IEntitySingleProperty, IFullMongoEntityTemplate } from '@packages/entity-template';
-import { IKartoffelUser } from '@packages/user';
 import Kartoffel from '../externalServices/kartoffel';
-
-const transformUser = (foundUser: IKartoffelUser): IUserField => ({
-    _id: foundUser._id || foundUser.id!,
-    fullName: foundUser.fullName!,
-    jobTitle: foundUser.jobTitle,
-    hierarchy: foundUser.hierarchy,
-    mail: foundUser.mail,
-    userType: foundUser.entityType,
-});
 
 const populateChildTemplateWithParent = async (childTemplate: IChildTemplatePopulatedFromDb): Promise<IMongoChildTemplatePopulated> => {
     const { parentTemplateId, ...child } = childTemplate;
@@ -29,7 +19,9 @@ const populateChildTemplateWithParent = async (childTemplate: IChildTemplatePopu
 
     for (const [key, parentProp] of Object.entries(properties.properties)) {
         if (!childPropertyKeys.includes(key)) continue;
+
         const { defaultValue, filters, isEditableByUser, display } = child.properties.properties[key];
+
         if (defaultValue && parentProp.format === 'user') userIdToKey[defaultValue as string] = key;
 
         filteredProps.push([
@@ -46,14 +38,8 @@ const populateChildTemplateWithParent = async (childTemplate: IChildTemplatePopu
         ]);
     }
 
-    const userIdToUser: Record<string, IUserField> = {};
-    if (Object.keys(userIdToKey).length) {
-        const userIds = Object.keys(userIdToKey);
-        const users = (await Kartoffel.getUsersByIds(userIds)).map(transformUser);
-        users.forEach((user, idx) => {
-            userIdToUser[userIds[idx]] = user;
-        });
-    }
+    const userIds = Object.keys(userIdToKey);
+    const users = (await Kartoffel.getUsersByIds(userIds)).map(serializeUser);
 
     const childProperties = getChildPropertiesFiltered(
         Object.fromEntries(
@@ -63,7 +49,7 @@ const populateChildTemplateWithParent = async (childTemplate: IChildTemplatePopu
                         key,
                         {
                             ...prop,
-                            defaultValue: userIdToUser[prop.defaultValue] || undefined,
+                            defaultValue: users.find((user) => user._id === prop.defaultValue),
                         },
                     ];
                 }
