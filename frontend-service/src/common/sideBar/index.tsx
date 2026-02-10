@@ -50,7 +50,7 @@ const {
     notifications,
     searchPath,
     dashboard: { dashboardPath },
-    searchParams: { viewModeKey, searchKey, semanticSearchKey, viewModeOptions },
+    searchParams: { viewModeKey, searchKey, viewModeOptions },
 } = environment;
 
 const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
@@ -295,7 +295,6 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                 <NavButton
                                     key={category._id}
                                     to={buildUrl(`/category/${category._id}`, {
-                                        [semanticSearchKey]: false,
                                         [searchKey]: '',
                                         [viewModeKey]: viewModeOptions.templatesTables,
                                     })}

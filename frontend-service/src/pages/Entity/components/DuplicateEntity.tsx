@@ -12,7 +12,7 @@ import { pickBy } from 'lodash';
 import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
-import { useLocation } from 'wouter';
+import { useLocation, useRoute } from 'wouter';
 import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { getInitialValuesWithDefaults } from '../../../common/dialogs/entity/CreateOrEditEntityDialog';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
@@ -32,6 +32,15 @@ const { errorCodes } = environment;
 const DuplicateEntity: React.FC = () => {
     const { state } = window.history;
 
+    const [_, navigate] = useLocation();
+    const [_match, params] = useRoute('/entity/:entityId/duplicate');
+
+    if (!state) {
+        console.error('No state found in history. Redirecting to entity page.');
+        const { entityId } = params!;
+        navigate(`/entity/${entityId}`);
+    }
+
     const {
         entityTemplate,
         expandedEntity: { entity },
@@ -39,11 +48,6 @@ const DuplicateEntity: React.FC = () => {
         entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
         expandedEntity: IEntityExpanded;
     };
-
-    const [_, navigate] = useLocation();
-    if (!state) {
-        navigate(`/entity/${entity?.properties._id}`);
-    }
 
     const [searchParams, _setSearchParams] = useSearchParams();
     const childTemplateId = searchParams.get('childTemplateId') ?? undefined;

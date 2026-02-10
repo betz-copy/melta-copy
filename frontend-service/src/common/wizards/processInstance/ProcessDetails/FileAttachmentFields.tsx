@@ -1,11 +1,11 @@
-import { Box, Grid, Typography } from '@mui/material';
-import { IProcessSingleProperty } from '@packages/process';
+import { Box, Grid } from '@mui/material';
 import { FormikErrors, FormikProps } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
 import OpenPreview from '../../../FilePreview/OpenPreview';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
+import { CleanViewRow } from '../../../inputs/JSONSchemaFormik/Widgets/CleanView';
 import BlueTitle from '../../../MeltaDesigns/BlueTitle';
 import { ProcessStepValues } from '../ProcessSteps';
 import { ProcessDetailsValues } from '.';
@@ -67,11 +67,7 @@ export const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFi
     return (
         <>
             {Object.entries(templateFileProperties).map(([fieldName, { title }]) => {
-                let attachments: React.JSX.Element | React.JSX.Element[] = (
-                    <Typography display="inline" variant="h6">
-                        -
-                    </Typography>
-                );
+                let attachments: React.JSX.Element | React.JSX.Element[] | undefined;
                 if (values.detailsAttachments[fieldName]) {
                     if (Array.isArray(values.detailsAttachments[fieldName])) {
                         attachments = values.detailsAttachments[fieldName].map((v) => <OpenPreview key={v} fileId={v.name} download={toPrint} />);
@@ -79,15 +75,19 @@ export const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFi
                         attachments = <OpenPreview fileId={values.detailsAttachments[fieldName].name} download={toPrint} />;
                     }
                 }
+
                 return (
-                    <Grid container spacing={1} display="flex" flexDirection="column" key={fieldName}>
-                        <Grid>
-                            <Typography display="inline" variant="body1">
-                                {title}:
-                            </Typography>
-                        </Grid>
-                        <Grid maxWidth="170px">{attachments}</Grid>
-                    </Grid>
+                    <CleanViewRow
+                        key={fieldName}
+                        label={title}
+                        value={
+                            attachments ? (
+                                <Box display="flex" flexWrap="wrap" gap={1}>
+                                    {attachments}
+                                </Box>
+                            ) : undefined
+                        }
+                    />
                 );
             })}
         </>

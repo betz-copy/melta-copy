@@ -19,7 +19,10 @@ import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
 import { InfiniteScroll } from '../InfiniteScroll';
 import { getDefaultFilterFromTemplate } from './TemplateTablesView';
 
-const { infiniteScrollPageCount } = environment.entitiesCardsView;
+const {
+    entitiesCardsView: { infiniteScrollPageCount },
+    features: { isActiveSemanticSearch },
+} = environment;
 
 export interface CardsViewRef {
     refetch: () => void;
@@ -36,7 +39,8 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
     const [openCardsMap, setOpenCardsMap] = useState<Map<string, boolean>>(new Map());
     const queryClient = useQueryClient();
     const [urlSearchParams, _setUrlSearchParams] = useSearchParams();
-    const urlSemanticSearch = urlSearchParams.get('semanticSearch');
+
+    const urlSemanticSearch: string | null = isActiveSemanticSearch ? urlSearchParams.get('semanticSearch') : 'false';
 
     const refetch = () => queryClient.invalidateQueries(['searchEntities', templateIds, searchInput, urlSemanticSearch], { exact: true });
     useImperativeHandle(ref, () => ({ refetch }));
@@ -61,14 +65,19 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
             <Grid>
                 <Grid container>
                     <InfiniteScroll<
-                        IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string]; childTemplateId?: string }
+                        IEntityWithDirectConnections & {
+                            minioFileIdsWithTexts?: ISemanticSearchResult[string][string];
+                            childTemplateId?: string;
+                        }
                     >
                         queryKey={['searchEntities', templateIds, searchInput, urlSemanticSearch]}
                         queryFunction={async ({ pageParam: startRow = 0 }) => {
                             const childTemplates = templates.filter(isChildTemplate);
                             const parentTemplates = templates.filter((template) => !isChildTemplate(template));
 
-                            const entities: (IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string] })[] = [];
+                            const entities: (IEntityWithDirectConnections & {
+                                minioFileIdsWithTexts?: ISemanticSearchResult[string][string];
+                            })[] = [];
                             let count = 0;
 
                             if (parentTemplates.length) {

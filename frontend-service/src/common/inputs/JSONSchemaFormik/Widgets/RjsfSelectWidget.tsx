@@ -3,6 +3,7 @@ import { PropertyType } from '@packages/entity-template';
 import { asNumber, getUiOptions, guessType, WidgetProps } from '@rjsf/utils';
 import React from 'react';
 import MultipleSelect from '../../MultipleSelect';
+import { CleanViewRow, isCleanView } from './CleanView';
 
 const nums = new Set(['number', 'integer']);
 
@@ -79,6 +80,19 @@ const RjsfSelectWidget = ({
     };
 
     const variant = readonly && !schema.readOnly ? 'standard' : 'outlined';
+
+    if (isCleanView(readonly, formContext)) {
+        const cleanValue = multiple
+            ? Array.isArray(selectedValue)
+                ? selectedValue
+                      .map((item) => item.label)
+                      .filter(Boolean)
+                      .join(', ')
+                : ''
+            : (selectedValue as (typeof items)[number] | null)?.label;
+
+        return <CleanViewRow label={label || schema.title} value={cleanValue} />;
+    }
 
     return (
         <MultipleSelect

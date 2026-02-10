@@ -182,7 +182,7 @@ const FieldBlockStepWarper = ({
                                     }
                                     initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
                                     supportSerialNumberType={false}
-                                    supportEntityReferenceType={false}
+                                    supportEntityReferenceType
                                     supportChangeToRequiredWithInstances={false}
                                     supportArrayFields={false}
                                     supportDeleteForExistingInstances
@@ -211,7 +211,7 @@ const FieldBlockStepWarper = ({
                                     }
                                     initialFieldCardDataOnAdd={initialFieldCardDataOnAdd}
                                     supportSerialNumberType={false}
-                                    supportEntityReferenceType={false}
+                                    supportEntityReferenceType
                                     supportChangeToRequiredWithInstances={false}
                                     supportArrayFields={false}
                                     supportUserType={false}

@@ -2,11 +2,12 @@
 import { ChevronLeft, ExpandLess } from '@mui/icons-material';
 import { Box, Divider, SxProps, Theme, ThemeProvider } from '@mui/material';
 import { RichTreeViewPro, RichTreeViewProProps, TreeItemProps, TreeViewBaseItem, UseTreeItemStatus, useTreeViewApiRef } from '@mui/x-tree-view-pro';
-import { TreeViewItemReorderPosition } from '@mui/x-tree-view-pro/internals/plugins/itemsReordering';
 import _ from 'lodash';
 import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { SelectAll } from './SelectAll';
 import TreeItem from './TreeItem';
+
+type TreeViewItemReorderPosition = { parentId: string | null; index: number };
 
 type IFlattenedTree<T extends {}, K extends boolean> = Omit<TreeViewBaseItem<T>, 'children'> & (K extends true ? { path: string } : object);
 

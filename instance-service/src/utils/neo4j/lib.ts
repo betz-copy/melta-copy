@@ -156,7 +156,7 @@ export const nodeToEntity = (node: Node): IEntity => {
     return {
         templateId: node.labels[0],
         properties: EntityManager.fixReturnedEntityReferencesFields(properties),
-        coloredFields,
+        coloredFields: Object.keys(coloredFields).length ? coloredFields : undefined,
     };
 };
 

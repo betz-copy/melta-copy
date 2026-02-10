@@ -5,7 +5,8 @@ import { IMongoEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopul
 import { IPrintSection } from '@packages/printing-template';
 import { IGetUnits } from '@packages/unit';
 import _ from 'lodash';
-import React, { CSSProperties, JSX, useState } from 'react';
+import type React from 'react';
+import { type CSSProperties, type JSX, useState } from 'react';
 import { pdfjs } from 'react-pdf';
 import { useQueryClient } from 'react-query';
 import { environment } from '../globals';
@@ -173,13 +174,10 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
                     getNumLines(stringFormatValue) > 1 &&
                     stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
 
-                const textDirection =
-                    format && !environment.excludedFormats.includes(format)
-                        ? getTextDirection(propertyValue, {
-                              type,
-                              serialCurrent,
-                          })
-                        : 'rtl';
+                const textDirection = getTextDirection(propertyValue, {
+                    type,
+                    serialCurrent,
+                });
 
                 const titleTypography = (
                     <Typography
@@ -366,7 +364,12 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
 
     return (
         <div style={{ display: 'flex', flexDirection: 'row' }}>
-            {imageOfKartoffelKeys.map((key) => getUserAvatar(entityTemplate, key, properties, { size: 120, border: 4 }))}
+            {imageOfKartoffelKeys.map((key) =>
+                getUserAvatar(entityTemplate, key, properties, {
+                    size: 120,
+                    border: 4,
+                }),
+            )}
             {showDivider && <Divider title={dividerTitle} sx={{ marginY: '1rem' }} />}
             <div style={{ margin: '1rem 0' }}>{dividerTitle && <BlueTitle title={dividerTitle} component="p" variant="subtitle1" />}</div>
             <div

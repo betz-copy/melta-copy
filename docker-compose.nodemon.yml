@@ -97,6 +97,8 @@ services:
       - ./global-search-service/src:/usr/src/app/global-search-service/src 
       - logs:/usr/src/app/logs
       - /usr/src/app/global-search-service/node_modules
+    environment:
+      - NEO4J_CONNECTION_RETRIES=10
 
   notification-service:
     build:

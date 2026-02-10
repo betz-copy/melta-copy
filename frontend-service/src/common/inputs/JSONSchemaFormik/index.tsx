@@ -292,6 +292,7 @@ interface JSONSchemaFormFormikProps {
     setFieldTouched: FormikHelpers<any>['setFieldTouched'];
     isEditMode?: boolean;
     readonly?: boolean;
+    viewMode?: 'clean';
     toPrint?: boolean;
     checkboxProps?: {
         isFieldChecked: (fieldName: string) => boolean;
@@ -301,6 +302,7 @@ interface JSONSchemaFormFormikProps {
 
 export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     readonly,
+    viewMode,
     schema,
     values,
     setValues,
@@ -388,6 +390,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             id="json-schema"
             schema={schema}
             uiSchema={uiSchemaUtils(schema, values, setValues, isEditMode, toPrint, theme.palette.primary.main)}
+            formContext={{ viewMode }}
             onChange={({ formData }) => {
                 Object.entries(formData as Record<string, IEntitySingleProperty>).forEach(([key, value]) => {
                     if (JSON.stringify(value) === JSON.stringify([undefined]) || JSON.stringify(value) === JSON.stringify([null]))
