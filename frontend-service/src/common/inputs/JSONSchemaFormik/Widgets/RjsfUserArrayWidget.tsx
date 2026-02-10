@@ -1,6 +1,6 @@
+import { IUserField } from '@packages/entity';
 import { WidgetProps } from '@rjsf/utils';
 import { useState } from 'react';
-import { IUserField } from '../../../../interfaces/entities';
 import { UserArrayInput } from '../../UserArrayInput';
 
 export const serializeUser = (user): IUserField => ({

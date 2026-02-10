@@ -1,5 +1,5 @@
 import { IEntity } from '@packages/entity';
-import { IMongoEntityTemplate } from '@packages/entity-template/dist';
+import { IMongoEntityTemplate } from '@packages/entity-template';
 import { BadRequestError } from '@packages/utils';
 import { QueryResult } from 'neo4j-driver';
 import { IEntityTreeNode } from '../../express/entities/interface';

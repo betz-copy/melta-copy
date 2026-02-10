@@ -5,8 +5,7 @@ import {
     IMongoChildTemplatePopulated,
 } from '@packages/child-template';
 import { IUserField } from '@packages/entity';
-import { IFullMongoEntityTemplate } from '@packages/entity-template';
-import { IEntitySingleProperty } from '@packages/entity-template/dist';
+import { IEntitySingleProperty, IFullMongoEntityTemplate } from '@packages/entity-template';
 import { IKartoffelUser } from '@packages/user';
 import Kartoffel from '../externalServices/kartoffel';
 

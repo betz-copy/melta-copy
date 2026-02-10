@@ -1,6 +1,6 @@
 import { SplitBy } from '@packages/common';
 import { ActionErrors, IEntity, IEntityExpanded, IEntityWithDirectRelationships, IPropertyValue, IUserField } from '@packages/entity';
-import { IMongoEntityTemplate, PropertyFormat } from '@packages/entity-template/dist';
+import { IMongoEntityTemplate, PropertyFormat } from '@packages/entity-template';
 import { mapConfig } from '@packages/map';
 import { IRelationship } from '@packages/relationship';
 import { IKartoffelUser } from '@packages/user';

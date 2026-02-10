@@ -1,4 +1,4 @@
-import { IMongoEntityTemplate, IMongoEntityTemplatePopulated } from '@packages/entity-template/dist';
+import { IMongoEntityTemplate, IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import { IKartoffelUser } from '@packages/user';
 import { FilterLogicalOperator, IEntity, IFilterGroup, IFilterOfField, IPropertyValue, ISearchEntitiesOfTemplateBody, ISearchFilter } from './types';
 

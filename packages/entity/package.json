@@ -27,7 +27,8 @@
         "@packages/entity-template": "workspace:*",
         "@packages/relationship": "workspace:*",
         "@packages/relationship-template": "workspace:*",
-        "@packages/rule": "workspace:*"
+        "@packages/rule": "workspace:*",
+        "@packages/user": "workspace:*"
     },
     "files": [
         "dist"

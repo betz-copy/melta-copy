@@ -1,4 +1,4 @@
-import { IKartoffelUser } from '@microservices/shared';
+import { IKartoffelUser } from '@packages/user';
 import axios from 'axios';
 import config from '../config';
 

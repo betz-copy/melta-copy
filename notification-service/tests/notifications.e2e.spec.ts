@@ -1,4 +1,5 @@
-import { INotification, NotificationType, Status } from '@microservices/shared';
+import { INotification, NotificationType } from '@packages/notification';
+import { Status } from '@packages/process';
 import { Express } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import mongoose from 'mongoose';
