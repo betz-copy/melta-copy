@@ -11,7 +11,7 @@ import {
     IUserField,
 } from './types';
 
-export const serializeUser = (user: IKartoffelUser): IUserField => ({
+export const serializeUser = (user): IUserField => ({
     _id: user?._id ?? user?.id,
     fullName: user?.fullName ?? '',
     jobTitle: user?.jobTitle,
