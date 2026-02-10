@@ -1,15 +1,13 @@
 import { Card, CardHeader } from '@mui/material';
+import { IMongoGantt } from '@packages/gantt';
 import React from 'react';
 import { useLocation } from 'wouter';
 import { environment } from '../../globals';
-import { IGantt } from '../../interfaces/gantts';
 
+const { heatmapModeKey } = environment.ganttSettings.searchParams;
 interface IGanttCardProps {
-    gantt: IGantt;
+    gantt: IMongoGantt;
 }
-const {
-    searchParams: { heatmapModeKey },
-} = environment.ganttSettings;
 
 export const GanttsCard: React.FC<IGanttCardProps> = ({ gantt }) => {
     const [_, navigate] = useLocation();

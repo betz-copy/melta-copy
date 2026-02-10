@@ -1,10 +1,10 @@
+import { IEntity, IEntityExpanded, IPropertyValue } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoRelationshipTemplate } from '@packages/relationship-template';
 import { uniqBy } from 'lodash';
 import { GraphData, LinkObject, NodeObject } from 'react-force-graph-2d';
 import { environment } from '../../globals';
-import { IChildTemplateMap } from '../../interfaces/childTemplates';
-import { IEntity, IEntityExpanded, IPropertyValue } from '../../interfaces/entities';
-import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplate, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
+import { IChildTemplateMap, IEntityTemplateMap, IRelationshipTemplateMap } from '../../interfaces/template';
 import { apiUrlToImageSource } from '../../services/storageService';
 import { drawText, getRectangleDimensionsByString, traceRectangle } from '../canvas';
 import { getEntityTemplateColor, getRelationshipTemplateColor } from '../colors';
@@ -74,7 +74,7 @@ export const getGraphDataWithNodeSizes = (graphData: GraphData) => {
 
 const iconLoadCache: Map<string, Promise<HTMLImageElement>> = new Map();
 
-export const entityToNode = async (entity: IEntity, entityTemplate: IEntityTemplatePopulated): Promise<NodeObject> => {
+export const entityToNode = async (entity: IEntity, entityTemplate: IMongoEntityTemplateWithConstraintsPopulated): Promise<NodeObject> => {
     let icon: HTMLImageElement | undefined;
 
     if (entityTemplate.iconFileId) {

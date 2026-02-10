@@ -1,6 +1,6 @@
+import { INotificationCountGroups, INotificationGroupCountDetails, INotificationPopulated, NotificationType } from '@packages/notification';
 import axios from '../axios';
 import { environment } from '../globals';
-import { INotificationCountGroups, INotificationGroupCountDetails, INotificationPopulated, NotificationType } from '../interfaces/notifications';
 
 const { notifications } = environment.api;
 

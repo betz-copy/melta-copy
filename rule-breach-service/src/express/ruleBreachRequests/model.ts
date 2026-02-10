@@ -1,3 +1,4 @@
+import { IRuleBreachRequest } from '@packages/rule-breach';
 import * as mongoose from 'mongoose';
 import { defaultSchemaOptions, ruleBreachSchemaDefinition } from '../../utils/mongo/schemas/ruleBreach';
 
@@ -14,7 +15,7 @@ const RuleBreachRequestsSchema = new mongoose.Schema(
             type: String,
         },
     },
-    defaultSchemaOptions,
+    defaultSchemaOptions as mongoose.SchemaOptions<IRuleBreachRequest>,
 );
 
 export default RuleBreachRequestsSchema;

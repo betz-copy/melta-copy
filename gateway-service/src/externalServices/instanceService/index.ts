@@ -1,45 +1,42 @@
+import { IAction } from '@packages/action';
+import { IChartBody } from '@packages/chart';
 import {
-    IAction,
-    IBrokenRule,
     IBulkOfActions,
-    IChartBody,
     IConstraintsOfTemplate,
     ICountSearchResult,
     IDeleteEntityBody,
     IEntity,
     IEntityExpanded,
-    IEntitySingleProperty,
     IEntityWithDirectRelationships,
-    IGetUnits,
-    IMongoRule,
     IMultipleSelect,
     IPropertyValue,
-    IRelationship,
-    IRuleMail,
     ISearchBatchBody,
     ISearchEntitiesByLocationBody,
     ISearchEntitiesOfTemplateBody,
     ISearchFilter,
     ISearchResult,
-    ISemanticSearchResult,
     ITemplateSearchBody,
     IUniqueConstraintOfTemplate,
-} from '@microservices/shared';
+} from '@packages/entity';
+import { IEntitySingleProperty } from '@packages/entity-template';
+import { IRelationship } from '@packages/relationship';
+import { IMongoRule, IRuleMail } from '@packages/rule';
+import { IBrokenRule } from '@packages/rule-breach';
+import { ISemanticSearchResult } from '@packages/semantic-search';
+import { IGetUnits } from '@packages/unit';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 
 const {
-    instanceService: {
-        url,
-        baseEntitiesRoute,
-        baseRelationshipsRoute,
-        baseBulkActionsRoute,
-        baseConstraintsRoute,
-        requestTimeout,
-        searchOfTemplateRoute,
-        searchEntitiesByLocationRoute,
-    },
-} = config;
+    url,
+    baseEntitiesRoute,
+    baseRelationshipsRoute,
+    baseBulkActionsRoute,
+    baseConstraintsRoute,
+    requestTimeout,
+    searchOfTemplateRoute,
+    searchEntitiesByLocationRoute,
+} = config.instanceService;
 
 class InstancesService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {
@@ -145,7 +142,6 @@ class InstancesService extends DefaultExternalServiceApi {
         const { data } = await this.api.post<IEntityWithDirectRelationships[]>(`${baseEntitiesRoute}/get/multiple-select`, {
             ...searchBody,
             templateId,
-            showRelationships: false,
         });
 
         return data;

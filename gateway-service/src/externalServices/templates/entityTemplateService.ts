@@ -1,20 +1,9 @@
-import {
-    ConfigTypes,
-    ICategory,
-    ICategoryOrderConfig,
-    IChildTemplate,
-    IChildTemplatePopulated,
-    IEntityTemplate,
-    IMongoBaseConfig,
-    IMongoCategory,
-    IMongoCategoryOrderConfig,
-    IMongoChildTemplatePopulated,
-    IMongoEntityTemplate,
-    IMongoEntityTemplatePopulated,
-    IMongoRelationshipTemplate,
-    ISearchEntityTemplatesBody,
-    ISubCompactPermissions,
-} from '@microservices/shared';
+import { ICategory, IMongoCategory } from '@packages/category';
+import { IChildTemplate, IChildTemplatePopulated, IMongoChildTemplatePopulated } from '@packages/child-template';
+import { IEntityTemplate, IMongoEntityTemplate, IMongoEntityTemplatePopulated, ISearchEntityTemplatesBody } from '@packages/entity-template';
+import { ISubCompactPermissions } from '@packages/permission';
+import { IMongoRelationshipTemplate } from '@packages/relationship-template';
+import { ConfigTypes, ICategoryOrderConfig, IMongoBaseConfig, IMongoCategoryOrderConfig } from '@packages/workspace';
 import config from '../../config';
 import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import TemplatesManagerService from '.';
@@ -27,9 +16,9 @@ const {
     },
 } = config;
 
-export interface RequestWithSearchEntityTemplateBody extends RequestWithPermissionsOfUserId {
+export type RequestWithSearchEntityTemplateBody = RequestWithPermissionsOfUserId & {
     searchQuery: ISearchEntityTemplatesBody;
-}
+};
 
 class EntityTemplateService extends TemplatesManagerService {
     // categories

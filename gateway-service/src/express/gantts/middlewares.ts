@@ -1,4 +1,5 @@
-import { ForbiddenError, IGantt } from '@microservices/shared';
+import { IGantt } from '@packages/gantt';
+import { ForbiddenError } from '@packages/utils';
 import { Request } from 'express';
 import GanttsService from '../../externalServices/ganttsService';
 import { Authorizer } from '../../utils/authorizer';

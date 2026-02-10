@@ -1,4 +1,4 @@
-import { IBrokenRule } from '@microservices/shared';
+import { IBrokenRule } from '@packages/rule-breach';
 import config from '../../config';
 import DefaultExternalServiceRabbit from '../../utils/rabbit/manager';
 

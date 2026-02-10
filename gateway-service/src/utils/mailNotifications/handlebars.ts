@@ -1,4 +1,6 @@
-import { IEntity, IMongoEntityTemplatePopulated, IPropertyValue, IRuleMail } from '@microservices/shared';
+import { IEntity, IPropertyValue } from '@packages/entity';
+import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { IRuleMail } from '@packages/rule';
 import Handlebars from 'handlebars';
 import formatEntityPropertiesToString from './formatEntityProperties';
 

@@ -1,4 +1,4 @@
-import { IUserSearchBody } from '@microservices/shared';
+import { IUserSearchBody } from '@packages/user';
 import UserService from '../services/user';
 
 class UsersManager {

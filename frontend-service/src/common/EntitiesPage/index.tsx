@@ -1,4 +1,8 @@
 import { Box, Grid } from '@mui/material';
+import { IMongoCategory } from '@packages/category';
+import { IMongoChildTemplatePopulated, isChildTemplate } from '@packages/child-template';
+import { IEntity, IExportEntitiesBody } from '@packages/entity';
+import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
 import { mapValues } from 'lodash';
@@ -6,16 +10,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
-import { IMongoCategory } from '../../interfaces/categories';
-import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { IEntity, IExportEntitiesBody } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IChildTemplateMap, ITemplate } from '../../interfaces/template';
 import { exportEntitiesRequest } from '../../services/entitiesService';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { convertToBool } from '../../utils/convertStringToBool';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { LocalStorage } from '../../utils/localStorage';
-import { isChildTemplate } from '../../utils/templates';
 import { TablePageType } from '../EntitiesTableOfTemplate';
 import CardsView, { CardsViewRef } from './CardsView';
 import { EntitiesPageHeadline } from './Headline';
@@ -35,7 +35,7 @@ type EntitiesPageProps<T extends IMongoEntityTemplatePopulated | IMongoChildTemp
     pageTitle: string;
 };
 
-const EntitiesPage = <T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated>({
+const EntitiesPage = <T extends ITemplate>({
     templates,
     setTemplates,
     categories,

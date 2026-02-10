@@ -1,9 +1,8 @@
-import axios from '../axios';
-import { environment } from '../globals';
-import { NotificationType } from '../interfaces/notifications';
-import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '../interfaces/permissions/permissions';
-import { IMongoRole, IRole } from '../interfaces/roles';
-import { IGetUnits, IMongoUnit, IUnit, IUnitHierarchy } from '../interfaces/units';
+import { RecursiveNullable } from '@packages/common';
+import { NotificationType } from '@packages/notification';
+import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '@packages/permission';
+import { IMongoRole, IRole } from '@packages/role';
+import { IGetUnits, IMongoUnit, IUnit, IUnitHierarchy } from '@packages/unit';
 import {
     IBaseUser,
     IExternalUser,
@@ -14,8 +13,9 @@ import {
     IUserPreferences,
     IUserSearchBody,
     RelatedPermission,
-} from '../interfaces/users';
-import { RecursiveNullable } from '../utils/types';
+} from '@packages/user';
+import axios from '../axios';
+import { environment } from '../globals';
 
 const {
     api: { users, roles, units },

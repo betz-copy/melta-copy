@@ -1,6 +1,6 @@
+import { RelatedPermission } from '@packages/user';
 import i18next from 'i18next';
 import React from 'react';
-import { RelatedPermission } from '../../../interfaces/users';
 import ManagePermissionTab from './ManagePermissionTab';
 
 const UsersRow: React.FC = () => {

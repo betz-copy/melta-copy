@@ -1,11 +1,11 @@
 import { Card, Grid, Typography, useTheme } from '@mui/material';
+import { IEntity } from '@packages/entity';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef, ExternalIdType } from '../../../../common/EntitiesTableOfTemplate';
 import { StepComponentProps } from '../../../../common/wizards';
 import { TableForm } from '../../../../interfaces/dashboard';
-import { IEntity } from '../../../../interfaces/entities';
-import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import { IEntityTemplateMap } from '../../../../interfaces/template';
 import { useWorkspaceStore } from '../../../../stores/workspace';
 import { useDebouncedFilter } from '../../../../utils/dashboard/useDebouncedFilter';
 import { getRelevantEntityTemplate } from '../Chart/BodyComponent';

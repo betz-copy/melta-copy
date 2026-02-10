@@ -20,6 +20,8 @@ if (import.meta.hot) {
     import.meta.hot.on('vite:beforeUpdate', () => console.clear());
 }
 
+const isDev = import.meta.env.DEV;
+
 const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
@@ -54,7 +56,7 @@ const Index: React.FC = () => {
                     newestOnTop
                 />
             </ThemeProvider>
-            {import.meta.env.DEV && <ReactQueryDevtools />}
+            {isDev && <ReactQueryDevtools />}
             <MuiXLicense />
         </QueryClientProvider>
     );

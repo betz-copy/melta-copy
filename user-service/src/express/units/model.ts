@@ -1,4 +1,4 @@
-import { IUnit } from '@microservices/shared';
+import { IUnit } from '@packages/unit';
 import * as mongoose from 'mongoose';
 import config from '../../config';
 

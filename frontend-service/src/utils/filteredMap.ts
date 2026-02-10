@@ -1,4 +1,4 @@
-import { IPropertyValue } from '../interfaces/entities';
+import { IPropertyValue } from '@packages/entity';
 
 export const filteredMap = <T, V>(
     arr: T[],

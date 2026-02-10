@@ -1,32 +1,32 @@
+import { IPropertyValue, UploadedFile } from '@packages/entity';
 import {
     IArchiveProcessNotificationMetadata,
     IArchiveProcessNotificationMetadataPopulated,
     IDeleteProcessNotificationMetadata,
     IDeleteProcessNotificationMetadataPopulated,
+    INewProcessNotificationMetadata,
+    INewProcessNotificationMetadataPopulated,
+    IProcessReviewerUpdateNotificationMetadata,
+    IProcessStatusUpdateNotificationMetadata,
+    IProcessStatusUpdateNotificationMetadataPopulated,
+    NotificationType,
+} from '@packages/notification';
+import { PermissionScope, PermissionType } from '@packages/permission';
+import {
     IGenericStepPopulated,
     IMongoProcessInstancePopulated,
     IMongoProcessInstanceReviewerPopulated,
     IMongoStepInstance,
     IMongoStepTemplate,
-    INewProcessNotificationMetadata,
-    INewProcessNotificationMetadataPopulated,
     InstanceProperties,
     IProcessDetails,
     IProcessInstance,
     IProcessInstanceSearchProperties,
-    IProcessReviewerUpdateNotificationMetadata,
-    IProcessStatusUpdateNotificationMetadata,
-    IProcessStatusUpdateNotificationMetadataPopulated,
-    IPropertyValue,
     IReferencedEntityForProcess,
-    NotificationType,
-    PermissionScope,
-    PermissionType,
     ProcessPropertyFormats,
-    ServiceError,
     Status,
-    UploadedFile,
-} from '@microservices/shared';
+} from '@packages/process';
+import { ServiceError } from '@packages/utils';
 import axios from 'axios';
 import { StatusCodes } from 'http-status-codes';
 import config from '../../../config';

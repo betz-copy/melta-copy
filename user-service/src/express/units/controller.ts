@@ -1,4 +1,4 @@
-import { IUnit } from '@microservices/shared';
+import { IUnit } from '@packages/unit';
 import { Request, Response } from 'express';
 import UnitsManager from './manager';
 

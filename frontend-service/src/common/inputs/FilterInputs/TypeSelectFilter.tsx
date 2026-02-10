@@ -1,32 +1,23 @@
 import { MenuItem } from '@mui/material';
+import { FilterTypes, IAgGridDateFilter, IAgGridNumberFilter, IAgGridTextFilter } from '@packages/rule-breach';
 import i18next from 'i18next';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
-import { environment } from '../../../globals';
-import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
+import { getFilterOptions } from '../../../utils/agGrid/filterOptions';
 import { StyledFilterInput } from './StyledFilterInput';
 
-const { filterOptions } = environment;
-
-type IAGGridFilter = IAGGridNumberFilter | IAGGridDateFilter | IAGGridTextFilter;
+type IAgGridFilter = IAgGridNumberFilter | IAgGridDateFilter | IAgGridTextFilter;
 
 interface TypeSelectFilterProps {
-    filterField: IAGGridFilter;
-    handleFilterTypeChange: (
-        newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGridNumberFilter['type'],
-        condition?: boolean,
-    ) => void;
+    filterField: IAgGridFilter;
+    handleFilterTypeChange: (newTypeFilter: IAgGridFilter['type'], condition?: boolean) => void;
     readOnly?: boolean;
     type: string;
     filterType?: boolean;
 }
 
 const TypeSelectFilter: React.FC<TypeSelectFilterProps> = ({ filterField, handleFilterTypeChange, readOnly, type, filterType }) => {
-    const options = !filterType
-        ? filterOptions[type]
-        : filterOptions[type].filter(
-              (option: string) => !['inRange', 'thisWeek', 'thisMonth', 'thisYear', 'untilToday', 'fromToday'].includes(option),
-          );
+    const options = useMemo(() => getFilterOptions(type, filterType), [type, filterType]);
 
     return (
         <StyledFilterInput
@@ -45,7 +36,7 @@ const TypeSelectFilter: React.FC<TypeSelectFilterProps> = ({ filterField, handle
             }}
             onChange={(e) =>
                 handleFilterTypeChange(
-                    e.target.value as IAGGridNumberFilter['type'] | IAGGridTextFilter['type'],
+                    e.target.value as IAgGridNumberFilter['type'] | IAgGridTextFilter['type'],
                     Boolean(filterField.filterType === 'date' ? filterField?.dateFrom : filterField?.filter),
                 )
             }
@@ -53,7 +44,7 @@ const TypeSelectFilter: React.FC<TypeSelectFilterProps> = ({ filterField, handle
         >
             {options.map((option: string) => (
                 <MenuItem key={option} value={option}>
-                    {i18next.t(`filters.${type === 'string' ? 'text' : type}.${option}`)}
+                    {i18next.t(`filters.${type === FilterTypes.string ? FilterTypes.text : type}.${option}`)}
                 </MenuItem>
             ))}
         </StyledFilterInput>

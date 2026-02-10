@@ -1,4 +1,7 @@
 import { Grid } from '@mui/material';
+import { IMongoCategory } from '@packages/category';
+import { IMongoChildTemplateWithConstraintsPopulated, TemplateItem } from '@packages/child-template';
+import { IEntityTemplate, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import { keyBy } from 'lodash';
@@ -14,10 +17,7 @@ import SearchInput from '../../../common/inputs/SearchInput';
 import { SelectCheckbox } from '../../../common/SelectCheckBox';
 import { EntityTemplateWizard } from '../../../common/wizards/entityTemplate';
 import { environment } from '../../../globals';
-import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
-import { IChildTemplateMap, IChildTemplatePopulated, IMongoChildTemplatePopulated, TemplateItem } from '../../../interfaces/childTemplates';
-import { IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
+import { emptyCategory, ICategoryMap, IChildTemplateMap, IEntityTemplateMap, IRelationshipTemplateMap } from '../../../interfaces/template';
 import { updateCategoryTemplatesOrderRequest } from '../../../services/templates/categoriesService';
 import { deleteChildTemplate, updateChildTemplateStatusRequest } from '../../../services/templates/childTemplatesService';
 import {
@@ -37,7 +37,7 @@ import CategoryEntitiesBox from './CategoryEntitiesBox';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
-export const defaultEntityTemplatePopulated: IMongoEntityTemplatePopulated = {
+export const defaultEntityTemplatePopulated: IMongoEntityTemplateWithConstraintsPopulated = {
     _id: '',
     propertiesOrder: [],
     propertiesTypeOrder: ['properties', 'attachmentProperties'],
@@ -45,23 +45,29 @@ export const defaultEntityTemplatePopulated: IMongoEntityTemplatePopulated = {
     uniqueConstraints: [],
     name: '',
     displayName: '',
-    category: { displayName: '', name: '', _id: '', color: '', templatesOrder: [] },
+    category: emptyCategory,
     disabled: false,
     properties: {
-        type: 'object',
         properties: {},
         required: [],
+        type: 'object',
         hide: [],
     },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    iconFileId: null,
 };
 
-const orderTemplatesInCategory = (templatesOrder: string[], templates: IMongoEntityTemplatePopulated[]): IMongoEntityTemplatePopulated[] => {
+const orderTemplatesInCategory = (
+    templatesOrder: string[],
+    templates: IMongoEntityTemplateWithConstraintsPopulated[],
+): IMongoEntityTemplateWithConstraintsPopulated[] => {
     if (templatesOrder) {
         const idToTemplateMap = keyBy(templates, (t) => t._id.toString());
 
         return templatesOrder
             .map((id) => idToTemplateMap[id])
-            .filter((template): template is IMongoEntityTemplatePopulated => template !== undefined);
+            .filter((template): template is IMongoEntityTemplateWithConstraintsPopulated => template !== undefined);
     }
 
     return templates;
@@ -97,7 +103,7 @@ const EntityTemplatesRow: React.FC = () => {
 
     const [entityTemplateWizardDialogState, setEntityTemplateWizardDialogState] = useState<{
         isWizardOpen: boolean;
-        entityTemplate: IMongoEntityTemplatePopulated | null;
+        entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | null;
     }>({
         isWizardOpen: false,
         entityTemplate: null,
@@ -113,7 +119,7 @@ const EntityTemplatesRow: React.FC = () => {
 
     const [addChildTemplateDialogState, setAddChildTemplateDialogState] = useState<{
         isWizardOpen: boolean;
-        entityTemplate: IMongoEntityTemplatePopulated | null;
+        entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | null;
         mutationProps?: IMutationWithPayload;
     }>({
         isWizardOpen: false,
@@ -123,10 +129,10 @@ const EntityTemplatesRow: React.FC = () => {
     const searchEntityTemplatesQueryKey = useMemo(() => ['searchEntityTemplates', searchText, categoriesToShow], [searchText, categoriesToShow]);
 
     const getEntityTemplatesToShowGroupedByCategories = (
-        entityTemplatesToShow: IMongoEntityTemplatePopulated[],
+        entityTemplatesToShow: IMongoEntityTemplateWithConstraintsPopulated[],
         searchText?: string,
-    ): { category: IMongoCategory; entityTemplates: IMongoEntityTemplatePopulated[] }[] => {
-        const categoriesToShowMapEntities: { category: IMongoCategory; entityTemplates: IMongoEntityTemplatePopulated[] }[] = [];
+    ): { category: IMongoCategory; entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[] }[] => {
+        const categoriesToShowMapEntities: { category: IMongoCategory; entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[] }[] = [];
         categoriesToShow.forEach((category) => {
             const relatedEntityTemplatesToShow = orderTemplatesInCategory(
                 category.templatesOrder,
@@ -149,14 +155,14 @@ const EntityTemplatesRow: React.FC = () => {
         {
             onSuccess: (data, { isChild, disabled }) => {
                 if (isChild) {
-                    const childTemplate = data as IChildTemplatePopulated;
+                    const childTemplate = data as IMongoChildTemplateWithConstraintsPopulated;
                     queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) =>
                         childTemplateMap!.set(childTemplate._id, childTemplate),
                     );
                 } else {
                     const { entityTemplate, childTemplates } = data as {
-                        entityTemplate: IMongoEntityTemplatePopulated;
-                        childTemplates: IMongoChildTemplatePopulated[];
+                        entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
+                        childTemplates: IMongoChildTemplateWithConstraintsPopulated[];
                     };
 
                     queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>
@@ -405,7 +411,7 @@ const EntityTemplatesRow: React.FC = () => {
                 <Grid container gap="30px" marginTop="30px">
                     <InfiniteScroll<{
                         category: IMongoCategory;
-                        entityTemplates: IMongoEntityTemplatePopulated[];
+                        entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[];
                     }>
                         queryKey={searchEntityTemplatesQueryKey}
                         queryFunction={({ pageParam }) => {

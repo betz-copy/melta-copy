@@ -1,5 +1,7 @@
 import { Check, Close, Edit } from '@mui/icons-material';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
+import { IMongoChart } from '@packages/chart';
+import { DashboardItemType } from '@packages/dashboard';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import { isEqual } from 'lodash';
@@ -7,8 +9,7 @@ import React, { useState } from 'react';
 import { useLocation } from 'wouter';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
-import { IMongoChart } from '../../../interfaces/charts';
-import { DashboardItemForm, DashboardItemType, ViewMode } from '../../../interfaces/dashboard';
+import { DashboardItemForm, ViewMode } from '../../../interfaces/dashboard';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';
 import { isWorkspaceAdmin } from '../../../utils/permissions/instancePermissions';

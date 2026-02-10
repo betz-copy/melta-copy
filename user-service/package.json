@@ -5,7 +5,7 @@
     "main": "",
     "scripts": {
         "start": "node --async-stack-traces ./dist/index.js",
-        "dev": "npm run build && npm start",
+        "dev": "pnpm build && pnpm start",
         "dev:nodemon": "nodemon --delay 3 --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
         "test": "jest",
         "coverage": "jest --coverage",
@@ -15,7 +15,13 @@
     "author": "Who",
     "license": "ISC",
     "dependencies": {
-        "@microservices/shared": "^1.0.0",
+        "@packages/common": "workspace:*",
+        "@packages/permission": "workspace:*",
+        "@packages/role": "workspace:*",
+        "@packages/rule-breach": "workspace:*",
+        "@packages/unit": "workspace:*",
+        "@packages/user": "workspace:*",
+        "@packages/utils": "workspace:*",
         "lodash": "^4.17.21"
     },
     "devDependencies": {

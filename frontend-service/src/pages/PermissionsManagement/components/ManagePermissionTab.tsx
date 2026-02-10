@@ -6,9 +6,11 @@ import { useQueryClient } from 'react-query';
 import SearchInput from '../../../common/inputs/SearchInput';
 import PermissionsDialog from '../../../common/PermissionsDialog';
 import '../../../css/pages.css';
-import { ICategoryMap } from '../../../interfaces/categories';
-import { IRole } from '../../../interfaces/roles';
-import { IUser, IUserPopulated, PermissionData, RelatedPermission } from '../../../interfaces/users';
+import { PermissionData } from '@packages/permission';
+import { IRole } from '@packages/role';
+import { IUser, IUserPopulated, RelatedPermission } from '@packages/user';
+import { PermissionDialogMode } from '../../../interfaces/inputs';
+import { ICategoryMap } from '../../../interfaces/template';
 import DeletePermissionsDialog from './deleteDialog';
 import PermissionsTable, { PermissionsTableRef } from './table';
 
@@ -103,14 +105,14 @@ const ManagePermissionTab: React.FC<{ permissionType: RelatedPermission; searchP
                 onSuccess={() => permissionsTableRef.current?.refreshServerSide()}
             />
             <PermissionsDialog
-                mode="create"
+                mode={PermissionDialogMode.Create}
                 permissionType={permissionType}
                 isOpen={isCreateDialogOpen}
                 handleClose={() => setIsCreateDialogOpen(false)}
                 onSuccess={() => permissionsTableRef.current?.refreshServerSide()}
             />
             <PermissionsDialog
-                mode="edit"
+                mode={PermissionDialogMode.Edit}
                 permissionType={permissionType}
                 isOpen={editDialogState.isDialogOpen}
                 handleClose={() => setEditDialogState({ isDialogOpen: false, user: null, role: null })}

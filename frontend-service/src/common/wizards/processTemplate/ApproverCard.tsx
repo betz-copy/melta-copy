@@ -1,6 +1,6 @@
 import { Chip, Grid } from '@mui/material';
+import { IUser } from '@packages/user';
 import React from 'react';
-import { IUser } from '../../../interfaces/users';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import UserAvatar from '../../UserAvatar';
 

@@ -1,13 +1,8 @@
-import {
-    IBaseUser,
-    IMongoUnit,
-    IRole,
-    ISubCompactPermissions,
-    IUser,
-    IUserAgGridRequest,
-    IUserPopulated,
-    RelatedPermission,
-} from '@microservices/shared';
+import { ISubCompactPermissions } from '@packages/permission';
+import { IRole } from '@packages/role';
+import { IUserAgGridRequest } from '@packages/rule-breach';
+import { IMongoUnit } from '@packages/unit';
+import { IBaseUser, IUser, IUserPopulated, RelatedPermission } from '@packages/user';
 import { FilterQuery, UpdateQuery } from 'mongoose';
 import { typedObjectEntries } from '../../utils';
 import { translateAgGridFilterModel, translateAgGridSortModel } from '../../utils/agGrid';
@@ -67,12 +62,14 @@ class UsersManager {
         if (permissions || workspaceIds) {
             const simplePermissions = await PermissionsManager.searchBySubCompactPermissions(permissions ?? {}, workspaceIds);
             const relatedIds = new Set<string>(simplePermissions.map(({ relatedId }) => relatedId));
-            const searchByRelatedIds = [{ _id: { $in: [...relatedIds] } }, { roleIds: { $in: [...relatedIds] } }];
+            if (relatedIds.size) {
+                const searchByRelatedIds = [{ _id: { $in: [...relatedIds] } }, { roleIds: { $in: [...relatedIds] } }];
 
-            if (query.$or) {
-                query.$and = [{ $or: query.$or }, { $or: searchByRelatedIds }];
-                delete query.$or;
-            } else query.$or = searchByRelatedIds;
+                if (query.$or) {
+                    query.$and = [{ $or: query.$or }, { $or: searchByRelatedIds }];
+                    delete query.$or;
+                } else query.$or = searchByRelatedIds;
+            }
         }
 
         if (ids?.length) {

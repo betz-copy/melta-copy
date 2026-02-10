@@ -1,22 +1,12 @@
-import { mapValues } from 'lodash';
-import axios from '../axios';
-import { EntityWizardValues } from '../common/dialogs/entity';
-import { IUpdateMultipleEntitiesResponse } from '../common/EntitiesPage/MultiSelectStatusBar';
-import { IExternalId } from '../common/EntitiesTableOfTemplate';
-import urlToFile from '../common/fileConversions';
-import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
-import { environment } from '../globals';
-import { IAxisField } from '../interfaces/charts';
-import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
+import { IAxisField } from '@packages/chart';
+import { isChildTemplate } from '@packages/child-template';
 import {
     ICountSearchResult,
     IDeleteEntityBody,
     IEntity,
     IEntityExpanded,
     IEntityWithDirectConnections,
-    IEntityWithIgnoredRules,
     IExportEntitiesBody,
-    IGraphFilterBodyBatch,
     IMultipleSelect,
     IPropertyValue,
     ISearchBatchBody,
@@ -25,16 +15,25 @@ import {
     ISearchEntitiesOfTemplateBody,
     ISearchFilter,
     ISearchResult,
-} from '../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+} from '@packages/entity';
+import { CoordinateSystem } from '@packages/map';
+import { IRelationShipSelectionTree } from '@packages/printing-template';
+import { IBrokenRule, IRuleBreach } from '@packages/rule-breach';
+import { mapValues } from 'lodash';
+import axios from '../axios';
+import { EntityWizardValues } from '../common/dialogs/entity';
+import { IUpdateMultipleEntitiesResponse } from '../common/EntitiesPage/MultiSelectStatusBar';
+import { IExternalId } from '../common/EntitiesTableOfTemplate';
+import urlToFile from '../common/fileConversions';
+import { environment } from '../globals';
+import { IEntityWithIgnoredRules } from '../interfaces/entity';
 import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
-import { IRelationShipSelectionTree } from '../interfaces/printingTemplates';
-import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
+import { IGraphFilterBodyBatch } from '../interfaces/graphFilter';
+import { ITemplate } from '../interfaces/template';
 import { IEntityTreeNode } from '../pages/Entity/components/print/ComponentToPrint';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
 import { combineFilters } from '../utils/filters';
 import { locationConverterToString } from '../utils/map/convert';
-import { isChildTemplate } from '../utils/templates';
 
 const { entities, relationships } = environment.api;
 const { uuidFormat } = environment;
@@ -45,7 +44,7 @@ export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
 };
 
 export const loadEntitiesRequest = async (
-    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+    template: ITemplate,
     files?: Record<string, File>,
     insertBrokenEntities?: IEntityWithIgnoredRules[],
 ): Promise<ITablesResults> => {
@@ -113,10 +112,7 @@ export const getChangedEntitiesFromExcelRequest = async (
     return data;
 };
 
-export const editManyEntitiesByExcelRequest = async (
-    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
-    entitiesToUpdate: IEntityWithIgnoredRules[],
-): Promise<ITablesResults> => {
+export const editManyEntitiesByExcelRequest = async (template: ITemplate, entitiesToUpdate: IEntityWithIgnoredRules[]): Promise<ITablesResults> => {
     const formData = new FormData();
     const isUUID = (str: string) => uuidFormat.test(str);
 

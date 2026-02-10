@@ -1,5 +1,5 @@
+import { NotificationType } from '@packages/notification';
 import i18next from 'i18next';
-import { NotificationType } from './interfaces/notifications';
 import { ILabelIcon } from './utils/graph/helperTypes';
 
 export const environment = {
@@ -307,27 +307,6 @@ export const environment = {
         },
         unitFieldSplitDepth: 2,
     },
-    filterOptions: {
-        string: ['contains', 'notContains', 'equals', 'notEqual', 'startsWith', 'endsWith'],
-        text: ['contains', 'notContains', 'equals', 'notEqual', 'startsWith', 'endsWith'],
-        number: ['equals', 'notEqual', 'greaterThan', 'greaterThanOrEqual', 'lessThan', 'lessThanOrEqual'],
-        date: [
-            'equals',
-            'notEqual',
-            'greaterThan',
-            'greaterThanOrEqual',
-            'lessThan',
-            'lessThanOrEqual',
-            'inRange',
-            'thisWeek',
-            'thisMonth',
-            'thisYear',
-            'untilToday',
-            'fromToday',
-        ],
-        field: ['equals', 'notEqual'],
-    },
-    relativeDateFilters: ['thisWeek', 'thisMonth', 'thisYear', 'untilToday', 'fromToday'] as readonly string[],
     accessTokenName: 'rabaz-access-token',
     brokenRulesFakeEntityIdPrefix: '$',
     minimumSupportedChromeVersion: 85,
@@ -351,22 +330,9 @@ export const environment = {
     map: {
         maxRadius: 30000,
         squareLength: 2500,
-        polygon: { polygonPrefix: 'POLYGON((', polygonSuffix: '))' },
         polygonDefaultColor: '#11695a',
         coordinateDefaultColor: '#FF006B',
         mapSearchPropertiesLimit: 2,
-        epsgCode: { epsg: 'EPSG', wgs84: 'EPSG:4326', southHemiUTM: '327', northHemiUTM: '326' },
-        utm: {
-            minZone: 1,
-            maxZone: 60,
-            minEasting: 160000,
-            maxEasting: 834000,
-            minNorthing: 0,
-            maxNorthing: 10000000,
-            utmRegex: /\b([1-9]|[1-5][0-9]|60)([C-HJ-NP-X])\s([0-9]+(?:\.[0-9]+)?)\s([0-9]+(?:\.[0-9]+)?)\b/,
-            utmPolygonRegex: /\b([1-9]|[1-5][0-9]|60)([C-HJ-NP-X])\s([0-9]+(?:\.[0-9]+)?)\s([0-9]+(?:\.[0-9]+)?)\b/g,
-        },
-        wgs84: { maxLongitude: 180, maxLatitude: 90 },
         minSearchLength: 2,
         maxNumberOfSearchResults: 1000,
         textValueOfLinkTag: '#text',

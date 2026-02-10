@@ -1,23 +1,55 @@
 import { ScatterPlotOutlined as HiveIcon } from '@mui/icons-material';
 import { Divider, Grid, Typography, useTheme } from '@mui/material';
+import { IMongoProcessTemplateReviewerPopulated, IMongoStepTemplatePopulated } from '@packages/process';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { CustomIcon } from '../../../../common/CustomIcon';
 import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
-import { defaultProcessTemplate, IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
-import { defaultStepTemplate } from '../../../../interfaces/processes/stepTemplate';
 import { useWorkspaceStore } from '../../../../stores/workspace';
 import { ViewingCard } from '../Card';
 import { CardMenu } from '../CardMenu';
 import { ProcessProperties } from './ProcessProperties';
 import { ProcessStep } from './ProcessStep';
 
+const defaultProcessTemplate: IMongoProcessTemplateReviewerPopulated = {
+    _id: '',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    details: {
+        properties: {
+            properties: {},
+            required: [],
+            type: 'object',
+        },
+        propertiesOrder: [],
+    },
+    displayName: '',
+    name: '',
+    steps: [],
+};
+
+const defaultStepTemplate: IMongoStepTemplatePopulated = {
+    _id: '',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    displayName: '',
+    iconFileId: '',
+    name: '',
+    properties: {
+        properties: {},
+        required: [],
+        type: 'object',
+    },
+    propertiesOrder: [],
+    reviewers: [],
+};
+
 interface ProcessTemplateCardProps {
-    processTemplate: IMongoProcessTemplatePopulated;
+    processTemplate: IMongoProcessTemplateReviewerPopulated;
     setProcessTemplateWizardDialogState: (
         value: React.SetStateAction<{
             isWizardOpen: boolean;
-            processTemplate: IMongoProcessTemplatePopulated | null;
+            processTemplate: IMongoProcessTemplateReviewerPopulated | null;
         }>,
     ) => void;
     setDeleteProcessTemplateDialogState: (
@@ -29,7 +61,7 @@ interface ProcessTemplateCardProps {
     setDuplicateProcessTemplateDialogState: (
         value: React.SetStateAction<{
             isWizardOpen: boolean;
-            processTemplate: IMongoProcessTemplatePopulated | null;
+            processTemplate: IMongoProcessTemplateReviewerPopulated | null;
         }>,
     ) => void;
 }

@@ -1,4 +1,4 @@
-import { INotificationMetadata, NotificationType } from '@microservices/shared';
+import { INotificationMetadata, NotificationType } from '@packages/notification';
 import { menash } from 'menashmq';
 import config from '../../config';
 

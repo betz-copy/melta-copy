@@ -1,4 +1,4 @@
-import { IGantt } from '@microservices/shared';
+import { IGantt } from '@packages/gantt';
 
 const getHardcodedRealGantts = (fliesOnId: string, flightId: string, tripId: string): IGantt[] => {
     return [

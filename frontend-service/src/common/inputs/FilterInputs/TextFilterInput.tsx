@@ -1,17 +1,24 @@
 import { Grid } from '@mui/material';
+import {
+    BasicFilterOperationTypes,
+    FilterTypes,
+    IAgGridDateFilter,
+    IAgGridNumberFilter,
+    IAgGridTextFilter,
+    isBlankOrNotBlankFilter,
+} from '@packages/rule-breach';
 import React, { useEffect } from 'react';
-import { IGraphFilterBody } from '../../../interfaces/entities';
-import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridTextFilter } from '../../../utils/agGrid/interfaces';
+import { IGraphFilterBody } from '../../../interfaces/graphFilter';
 import { StyledFilterInput } from './StyledFilterInput';
 import { TypeSelectFilter } from './TypeSelectFilter';
 
 interface TextFilterProps {
     entityFilter: boolean;
     readOnly: boolean;
-    filterField: IAGGridNumberFilter | IAGGridTextFilter | undefined;
+    filterField: IAgGridNumberFilter | IAgGridTextFilter | undefined;
     type: string;
     handleFilterTypeChange: (
-        newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGridNumberFilter['type'],
+        newTypeFilter: IAgGridDateFilter['type'] | IAgGridTextFilter['type'] | IAgGridNumberFilter['type'],
         condition?: boolean,
     ) => void;
     handleFilterFieldChange: (value: IGraphFilterBody['filterField'], condition?: boolean) => void;
@@ -33,9 +40,12 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
     hideFilterType = false,
     forceEqualsType = false,
 }) => {
+    const isBlankOrNotBlankType = isBlankOrNotBlankFilter(filterField?.type);
+
     // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
-        if (forceEqualsType && filterField && filterField.type !== 'equals') handleFilterTypeChange('equals');
+        if (forceEqualsType && filterField && filterField.type !== BasicFilterOperationTypes.equals)
+            handleFilterTypeChange(BasicFilterOperationTypes.equals);
     }, [forceEqualsType, filterField]);
 
     return (
@@ -49,7 +59,7 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
             {!hideFilterType && (
                 <Grid size={{ xs: entityFilter ? 5 : 12 }}>
                     <TypeSelectFilter
-                        filterField={filterField as IAGGridNumberFilter | IAGGridTextFilter}
+                        filterField={filterField as IAgGridNumberFilter | IAgGridTextFilter}
                         handleFilterTypeChange={handleFilterTypeChange}
                         readOnly={readOnly || forceEqualsType}
                         type={type}
@@ -58,34 +68,36 @@ const TextFilterInput: React.FC<TextFilterProps> = ({
             )}
 
             <Grid size={{ xs: hideFilterType ? 12 : entityFilter ? 7 : 12 }}>
-                <StyledFilterInput
-                    size="small"
-                    fullWidth
-                    type={type}
-                    value={filterField?.filter !== undefined ? String(filterField.filter) : ''}
-                    disabled={readOnly}
-                    error={error}
-                    helperText={helperText}
-                    onChange={(e) => {
-                        const { value } = e.target;
-                        const updatedFilter =
-                            type === 'number'
-                                ? ({
-                                      ...filterField,
-                                      filter: value ? Number(value) : undefined,
-                                      type: forceEqualsType ? 'equals' : filterField?.type,
-                                  } as IAGGridNumberFilter)
-                                : ({
-                                      ...filterField,
-                                      filter: value || undefined,
-                                      type: forceEqualsType ? 'equals' : filterField?.type,
-                                  } as IAGGridTextFilter);
+                {!isBlankOrNotBlankType && (
+                    <StyledFilterInput
+                        size="small"
+                        fullWidth
+                        type={type}
+                        value={filterField?.filter !== undefined ? String(filterField.filter) : ''}
+                        disabled={readOnly}
+                        error={error}
+                        helperText={helperText}
+                        onChange={(e) => {
+                            const { value } = e.target;
+                            const updatedFilter =
+                                type === FilterTypes.number
+                                    ? ({
+                                          ...filterField,
+                                          filter: value ? Number(value) : undefined,
+                                          type: forceEqualsType ? BasicFilterOperationTypes.equals : filterField?.type,
+                                      } as IAgGridNumberFilter)
+                                    : ({
+                                          ...filterField,
+                                          filter: value || undefined,
+                                          type: forceEqualsType ? BasicFilterOperationTypes.equals : filterField?.type,
+                                      } as IAgGridTextFilter);
 
-                        handleFilterFieldChange(updatedFilter);
-                    }}
-                    readOnly={readOnly}
-                    forceOutlined
-                />
+                            handleFilterFieldChange(updatedFilter);
+                        }}
+                        readOnly={readOnly}
+                        forceOutlined
+                    />
+                )}
             </Grid>
         </Grid>
     );

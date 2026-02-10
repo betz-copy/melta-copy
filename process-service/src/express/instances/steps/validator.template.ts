@@ -1,4 +1,5 @@
-import { DefaultController, IStepInstance, UpdateStepReqBody } from '@microservices/shared';
+import { IStepInstance, UpdateStepReqBody } from '@packages/process';
+import { DefaultController } from '@packages/utils';
 import { Request } from 'express';
 import ajv from '../../../utils/ajv';
 import { InstancePropertiesValidationError } from '../../error';

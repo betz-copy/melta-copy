@@ -1,5 +1,7 @@
 import { AddCircle as AddCircleIcon } from '@mui/icons-material';
 import { Box, Grid, IconButton } from '@mui/material';
+import { IMongoGantt } from '@packages/gantt';
+import { PermissionScope } from '@packages/permission';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
@@ -7,8 +9,6 @@ import { toast } from 'react-toastify';
 import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
 import { InfiniteScroll } from '../../common/InfiniteScroll';
 import { environment } from '../../globals';
-import { IGantt } from '../../interfaces/gantts';
-import { PermissionScope } from '../../interfaces/permissions';
 import { searchGantts } from '../../services/ganttsService';
 import { useUserStore } from '../../stores/user';
 import { ViewingBox } from '../SystemManagement/components/ViewingBox';
@@ -49,7 +49,7 @@ const GanttsPage: React.FC<IGanttsPageProps> = ({ setTitle }) => {
                 </Grid>
 
                 <ViewingBox minHeight="82vh">
-                    <InfiniteScroll<IGantt>
+                    <InfiniteScroll<IMongoGantt>
                         queryKey={queryKey}
                         queryFunction={async ({ pageParam }) => searchGantts({ limit: infiniteScrollPageCount, step: pageParam, search })}
                         onQueryError={(error) => {

@@ -1,15 +1,16 @@
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
 import { Divider, IconButton, Typography } from '@mui/material';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IPrintSection } from '@packages/printing-template';
+import { IGetUnits } from '@packages/unit';
 import _ from 'lodash';
 import type React from 'react';
 import { type CSSProperties, type JSX, useState } from 'react';
 import { pdfjs } from 'react-pdf';
 import { useQueryClient } from 'react-query';
 import { environment } from '../globals';
-import type { IEntity } from '../interfaces/entities';
-import type { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
-import type { IPrintSection } from '../interfaces/printingTemplates';
-import type { IGetUnits } from '../interfaces/units';
+import { IEntityTemplateMap } from '../interfaces/template';
 import { useDarkModeStore } from '../stores/darkMode';
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
 import { formatToString, getPropertyColor, getUserAvatar } from '../utils/entityProperties';
@@ -107,12 +108,12 @@ const PropertiesDetails: React.FC<PropertiesDetailsProps> = ({
     return (
         <>
             {propertiesOrderedToShow.map((propertyKey) => {
-                const propertySchema = entityTemplate.properties.properties[propertyKey];
+                const propertySchema = entityTemplate.properties.properties[propertyKey] || {};
                 const { format, type, serialCurrent, calculateTime, title, color, comment, relationshipReference } = propertySchema;
                 const propertyValue = comment ?? properties[propertyKey];
                 const hideField = entityTemplate.properties.hide.includes(propertyKey);
                 const containsHtmlTags = containsHTMLTags(propertyValue);
-                let relatedEntityAllowed: IMongoEntityTemplatePopulated | undefined;
+                let relatedEntityAllowed: IMongoEntityTemplateWithConstraintsPopulated | undefined;
                 if (format === 'relationshipReference') {
                     const relatedTemplateId = relationshipReference?.relatedTemplateId;
                     relatedEntityAllowed = entityTemplates?.get(relatedTemplateId ?? '');

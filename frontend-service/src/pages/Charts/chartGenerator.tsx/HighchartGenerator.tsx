@@ -1,17 +1,17 @@
 import { Box, useTheme } from '@mui/material';
+import { GeneratorChart, IAxis, IChart, IChartType } from '@packages/chart';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import i18next from 'i18next';
 import React, { useEffect, useRef } from 'react';
 import { environment } from '../../../globals';
-import { GeneratedChart, HighchartType, IAxis, IChart, IChartType } from '../../../interfaces/charts';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { getChartAxes } from '../../../utils/charts/getChartAxes';
 
 const { pieChartColors } = environment.charts;
 
 interface HighchartGeneratorProps {
-    generatedChart: GeneratedChart | undefined;
+    generatedChart: GeneratorChart | undefined;
     isLoading?: boolean;
     isQueryEnabled: boolean;
     chartDetails: Omit<IChart, 'filter'>;
@@ -158,7 +158,7 @@ const HighchartGenerator: React.FC<HighchartGeneratorProps> = ({
             {
                 data: type === IChartType.Pie ? seriesData : seriesData.map(({ y }) => y),
                 color: theme.palette.primary.main,
-                type: type as HighchartType,
+                type: type as Exclude<IChartType, IChartType.Number>,
             },
         ],
     };

@@ -1,11 +1,9 @@
-import { BadRequestError } from '@microservices/shared';
+import { BadRequestError } from '@packages/utils';
 import axios from 'axios';
 import config from '../../config';
 import { IKartoffelUser } from './interface';
 
-const {
-    kartoffel: { url, baseEntitiesRoute, searchRoute, fieldToSearch, getByIdRoute, requestTimeout, profilePath, maxPageSize },
-} = config;
+const { url, baseEntitiesRoute, searchRoute, fieldToSearch, getByIdRoute, requestTimeout, profilePath, maxPageSize } = config.kartoffel;
 
 class Kartoffel {
     private static kartoffel = axios.create({

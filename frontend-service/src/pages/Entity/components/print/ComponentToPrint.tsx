@@ -1,4 +1,7 @@
 import { Box, Grid, Typography, useTheme } from '@mui/material';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoPrintingTemplate } from '@packages/printing-template';
 import i18next from 'i18next';
 import React, { useMemo } from 'react';
 import { useQueryClient } from 'react-query';
@@ -7,11 +10,8 @@ import BlueTitle from '../../../../common/MeltaDesigns/BlueTitle';
 import { FileToPrint } from '../../../../common/print/FileToPrint';
 import { IPrintOptions } from '../../../../common/print/PrintOptionsDialog';
 import { environment } from '../../../../globals';
-import { IEntity } from '../../../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IFile } from '../../../../interfaces/preview';
-import { IMongoPrintingTemplate } from '../../../../interfaces/printingTemplates';
-import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
+import { IEntityTemplateMap, IRelationshipTemplateMap } from '../../../../interfaces/template';
 import { EntityComponentToPrint } from './EntityComponentToPrint';
 
 export type IEntityTreeNode = IEntity & { relationshipId: string; children: IEntityTreeNode[] };
@@ -19,7 +19,7 @@ export type IEntityTreeNode = IEntity & { relationshipId: string; children: IEnt
 const ComponentToPrint = React.forwardRef<
     HTMLDivElement,
     {
-        entityTemplate: IMongoEntityTemplatePopulated;
+        entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
         entity?: IEntityTreeNode;
         filesToPrint?: IFile[];
         setSelectedFiles?: React.Dispatch<React.SetStateAction<(IFile & { isLoading: boolean })[]>>;

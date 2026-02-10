@@ -1,4 +1,4 @@
-import { IChartPermission, IChartType } from '@microservices/shared';
+import { IChartPermission, IChartType } from '@packages/chart';
 import mongoose from 'mongoose';
 
 export const ChartSchema = new mongoose.Schema(

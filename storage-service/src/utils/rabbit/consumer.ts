@@ -1,4 +1,4 @@
-import { ServiceError } from '@microservices/shared';
+import { ServiceError } from '@packages/utils';
 import { ConsumerMessage } from 'menashmq';
 import FilesManager from '../../express/files/manager';
 

@@ -1,9 +1,3 @@
-import { isEqual } from 'lodash';
-import { environment } from '../../globals';
-import { IEntity } from '../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IRelationshipPopulated } from '../../interfaces/relationships';
-import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import {
     ActionTypes,
     IActionPopulated,
@@ -11,8 +5,14 @@ import {
     ICreateRelationshipMetadataPopulated,
     IDuplicateEntityMetadataPopulated,
     IUpdateEntityMetadataPopulated,
-} from '../../interfaces/ruleBreaches/actionMetadata';
-import { ICausesOfInstancePopulated, IEntityForBrokenRules, IRelationshipForBrokenRules } from '../../interfaces/ruleBreaches/ruleBreach';
+} from '@packages/action';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IRelationshipPopulated } from '@packages/relationship';
+import { ICausesOfInstancePopulated, IEntityForBrokenRules, IRelationshipForBrokenRules } from '@packages/rule-breach';
+import { isEqual } from 'lodash';
+import { environment } from '../../globals';
+import { emptyCategory, IEntityTemplateMap, IRelationshipTemplateMap } from '../../interfaces/template';
 
 export const getActionsByFailureOnEntity = (
     failure: { entity: IEntityForBrokenRules; causes: ICausesOfInstancePopulated[] },
@@ -162,7 +162,7 @@ export const getEntityForRelationshipInfo = (
     actions: IActionPopulated[],
     entityTemplates: IEntityTemplateMap,
     entityTemplateId: string = '',
-): IMongoEntityTemplatePopulated => {
+): IMongoEntityTemplateWithConstraintsPopulated => {
     if (!entity || (typeof entity === 'string' && !entity.startsWith(environment.brokenRulesFakeEntityIdPrefix))) {
         const entityTemplate = entityTemplates.get(entityTemplateId);
 
@@ -186,7 +186,7 @@ export const getEntityForRelationshipInfo = (
                 required: [],
                 type: 'object',
             },
-            category: { _id: 'empty', color: 'yellow', displayName: 'empty', name: 'empty', templatesOrder: [] },
+            category: emptyCategory,
             disabled: false,
             displayName: '---',
             name: '---',
@@ -194,6 +194,9 @@ export const getEntityForRelationshipInfo = (
             propertiesPreview: [],
             propertiesTypeOrder: [],
             uniqueConstraints: [],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            iconFileId: null,
         };
     }
     if (typeof entity === 'string' && entity.startsWith(environment.brokenRulesFakeEntityIdPrefix)) {
@@ -238,6 +241,9 @@ export const getEntityForRelationshipInfo = (
             propertiesPreview: [],
             propertiesTypeOrder: [],
             uniqueConstraints: [],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            iconFileId: null,
         };
     }
 
@@ -260,6 +266,9 @@ export const getEntityForRelationshipInfo = (
         propertiesPreview: [],
         propertiesTypeOrder: [],
         uniqueConstraints: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        iconFileId: null,
     };
 };
 
@@ -298,6 +307,7 @@ export const getRelationshipForRelationshipInfo = (
             displayName: relationshipTemplate.displayName,
             createdAt: relationshipTemplate.createdAt,
             updatedAt: relationshipTemplate.updatedAt,
+            isProperty: relationshipTemplate.isProperty,
         };
     }
 
@@ -319,7 +329,8 @@ export const getRelationshipForRelationshipInfo = (
         ),
         name: relationshipTemplate?.name || '',
         displayName: relationshipTemplate?.displayName || '',
-        createdAt: relationshipTemplate?.createdAt || '',
-        updatedAt: relationshipTemplate?.updatedAt || '',
+        createdAt: relationshipTemplate?.createdAt || new Date(),
+        updatedAt: relationshipTemplate?.updatedAt || new Date(),
+        isProperty: relationshipTemplate?.isProperty ?? false,
     };
 };

@@ -15,8 +15,8 @@ import {
     TreeViewCancellableEventHandler,
     useTreeItem,
 } from '@mui/x-tree-view-pro';
+import { IPropertyValue } from '@packages/entity';
 import React, { useMemo } from 'react';
-import { IPropertyValue } from '../../interfaces/entities';
 import { CustomIcon } from '../CustomIcon';
 import MeltaCheckbox from '../MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
@@ -184,7 +184,7 @@ const TreeItem = React.forwardRef(function CustomTreeItem<T extends Record<strin
                         <TreeItemDragAndDropOverlay {...getDragAndDropOverlayProps()} />
                     </div>
 
-                    {additionalOptions?.map((option) => option(node))}
+                    {additionalOptions && <>{additionalOptions.map((option) => option(node))}</>}
                 </TreeItemContent>
 
                 {children && <TreeItemGroupTransition {...getGroupTransitionProps()} sx={styles?.treeNodeGroupTransition} />}

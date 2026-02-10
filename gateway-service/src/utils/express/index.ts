@@ -1,5 +1,5 @@
-/** biome-ignore-all lint/suspicious/noExplicitAny: never doubt Noam */
-import { dataLogger, FunctionKey } from '@microservices/shared';
+import { FunctionKey } from '@packages/common';
+import { dataLogger } from '@packages/utils';
 import { NextFunction, Request, Response } from 'express';
 import { get } from 'lodash';
 import config from '../../config';
@@ -14,7 +14,7 @@ interface IWrapControllerOptions {
     toLog: boolean;
     logRequestFields: Array<{ key: string; path: string }>;
     indexName: string;
-    responseDataExtractor: ((body: any) => any) | undefined;
+    responseDataExtractor: ((body: unknown) => unknown) | undefined;
 }
 
 const defaultWrapControllerOptions: IWrapControllerOptions = {
@@ -24,7 +24,10 @@ const defaultWrapControllerOptions: IWrapControllerOptions = {
     responseDataExtractor: undefined,
 };
 
-export const wrapController = <ExtendedRequest extends Request<any, any, any, any> = Request, ExtendedResponse extends Response = Response>(
+export const wrapController = <
+    ExtendedRequest extends Request<unknown, unknown, unknown, unknown> = Request,
+    ExtendedResponse extends Response = Response,
+>(
     func: (req: ExtendedRequest, res: ExtendedResponse, next?: NextFunction) => Promise<void>,
     options: IWrapControllerOptions = defaultWrapControllerOptions,
 ) => {
@@ -36,7 +39,7 @@ export const wrapController = <ExtendedRequest extends Request<any, any, any, an
         }
 
         const originalJson = res.json.bind(res);
-        const loggedRequestData: Record<string, any> = {};
+        const loggedRequestData: Record<string, unknown> = {};
 
         logRequestFields.forEach(({ key, path }) => {
             loggedRequestData[key] = get(req, path);
@@ -68,8 +71,6 @@ export const wrapController = <ExtendedRequest extends Request<any, any, any, an
         });
     };
 };
-
-export type RequestWithQuery<Query> = Request<any, any, any, Query>;
 
 export const getWorkspaceId = async (req: Request) => {
     const workspaceId = req.headers[workspaceIdHeaderName];

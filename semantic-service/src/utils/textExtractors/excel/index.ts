@@ -1,5 +1,5 @@
 import { Stream } from 'node:stream';
-import { FileTypes } from '@microservices/shared';
+import { FileTypes } from '@packages/semantic-search';
 import Excel from 'exceljs';
 
 const readExcelData = async (fileStream: Stream, type: FileTypes.CSV | FileTypes.XLSX) => {

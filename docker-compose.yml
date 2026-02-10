@@ -13,7 +13,7 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'user-service'
-    command: ['npm', 'run', 'start', '-w', 'user-service']
+    command: ['pnpm', '--filter', 'user-service', 'start']
     environment:
       PORT: 8000
       MONGO_URL: ${USER_SERVICE_MONGO_URL}
@@ -29,7 +29,7 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'storage-service'
-    command: ['npm', 'run', 'start', '-w', 'storage-service']
+    command: ['pnpm', '--filter', 'storage-service', 'start']
     environment:
       MINIO_ENDPOINT: ${MINIO_ENDPOINT}
       MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
@@ -49,7 +49,7 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'template-service'
-    command: ['npm', 'run', 'start', '-w', 'template-service']
+    command: ['pnpm', '--filter', 'template-service', 'start']
     environment:
       PORT: 8000
       MONGO_URL: ${TEMPLATE_SERVICE_MONGO_URL}
@@ -72,7 +72,7 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'instance-service'
-    command: ['npm', 'run', 'start', '-w', 'instance-service']
+    command: ['pnpm', '--filter', 'instance-service', 'start']
     environment:
       PORT: 8000
       RABBIT_URL: ${RABBIT_URL}
@@ -92,7 +92,7 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'global-search-service'
-    command: ['npm', 'run', 'start', '-w', 'global-search-service']
+    command: ['pnpm', '--filter', 'global-search-service', 'start']
     environment:
       NEO4J_URL: ${NEO4J_URL}
       NEO4J_USERNAME: ${NEO4J_USERNAME}
@@ -111,7 +111,7 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'activity-log-service'
-    command: ['npm', 'run', 'start', '-w', 'activity-log-service']
+    command: ['pnpm', '--filter', 'activity-log-service', 'start']
     environment:
       PORT: 8000
       MONGO_URL: ${ACTIVITY_LOG_SERVICE_MONGO_URL}
@@ -127,7 +127,7 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'notification-service'
-    command: ['npm', 'run', 'start', '-w', 'notification-service']
+    command: ['pnpm', '--filter', 'notification-service', 'start']
     environment:
       PORT: 8000
       MONGO_URL: ${NOTIFICATION_SERVICE_MONGO_URL}
@@ -143,7 +143,7 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'rule-breach-service'
-    command: ['npm', 'run', 'start', '-w', 'rule-breach-service']
+    command: ['pnpm', '--filter', 'rule-breach-service', 'start']
     environment:
       PORT: 8000
       MONGO_URL: ${RULE_BREACH_SERVICE_MONGO_URL}
@@ -159,7 +159,7 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'process-service'
-    command: ['npm', 'run', 'start', '-w', 'process-service']
+    command: ['pnpm', '--filter', 'process-service', 'start']
     environment:
       PORT: 8000
       MONGO_URL: ${PROCESS_SERVICE_MONGO_URL}
@@ -181,7 +181,7 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'gantt-service'
-    command: ['npm', 'run', 'start', '-w', 'gantt-service']
+    command: ['pnpm', '--filter', 'gantt-service', 'start']
     environment:
       PORT: 8000
       MONGO_URL: ${GANTT_SERVICE_MONGO_URL}
@@ -197,7 +197,7 @@ services:
       dockerfile: ./preview-service/Dockerfile
       args:
         SERVICE_NAME: 'preview-service'
-    command: ['npm', 'run', 'start', '-w', 'preview-service']
+    command: ['pnpm', '--filter', 'preview-service', 'start']
     environment:
       PORT: 8000
       MINIO_ENDPOINT: ${MINIO_ENDPOINT}
@@ -216,7 +216,7 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'workspace-service'
-    command: ['npm', 'run', 'start', '-w', 'workspace-service']
+    command: ['pnpm', '--filter', 'workspace-service', 'start']
     environment:
       PORT: 8000
       MONGO_URL: ${WORKSPACE_SERVICE_MONGO_URL}
@@ -230,7 +230,7 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'dashboard-service'
-    command: ['npm', 'run', 'start', '-w', 'dashboard-service']
+    command: ['pnpm', '--filter', 'dashboard-service', 'start']
     environment:
       PORT: 8000
       MONGO_URL: ${DASHBOARD_SERVICE_MONGO_URL}
@@ -245,7 +245,7 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'mock-service'
-    command: ['npm', 'run', 'start', '-w', 'mock-service']
+    command: ['pnpm', '--filter', 'mock-service', 'start']
     environment:
       TEMPLATE_SERVICE_URL: ${TEMPLATE_SERVICE_URL}
       INSTANCE_SERVICE_URL: ${INSTANCE_SERVICE_URL}
@@ -329,7 +329,7 @@ services:
       dockerfile: Dockerfile.base
       args:
         SERVICE_NAME: 'cron-service'
-    command: ['npm', 'run', 'start', '-w', 'cron-service']
+    command: ['pnpm', '--filter', 'cron-service', 'start']
     environment:
       PORT: 8000
       NODE_TLS_REJECT_UNAUTHORIZED: 0
@@ -346,10 +346,10 @@ services:
   semantic-service:
     build:
       context: .
-      dockerfile: Dockerfile.base
+      dockerfile: semantic-service/Dockerfile
       args:
         SERVICE_NAME: 'semantic-service'
-    command: ['npm', 'run', 'start', '-w', 'semantic-service']
+    command: ['pnpm', '--filter', 'semantic-service', 'start']
     environment:
       PORT: 8000
       RABBIT_URL: ${RABBIT_URL}

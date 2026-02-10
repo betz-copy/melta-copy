@@ -1,10 +1,10 @@
+import { ISearchFilter } from '@packages/entity';
 import { debounce } from 'lodash';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { QueryClient } from 'react-query';
 import { isValidAGGridFilter } from '../../common/FilterComponent';
 import { IFilterTemplate } from '../../common/wizards/entityTemplate/commonInterfaces';
 import { filterTemplateToSearchFilter } from '../../common/wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
-import { ISearchFilter } from '../../interfaces/entities';
 
 type FilterProcessingInput = {
     filter?: IFilterTemplate[];

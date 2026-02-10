@@ -1,14 +1,8 @@
 import {
     ActionErrors,
-    addPropertyToRequest,
-    CoordinateSystem,
     FilterLogicalOperator,
-    IEntitySingleProperty,
-    IEntityTemplate,
     IFilterGroup,
     IFilterOfField,
-    IMongoEntityTemplate,
-    IMongoRelationshipTemplate,
     IPropertyValue,
     ISearchBatchBody,
     ISearchEntitiesByTemplatesBody,
@@ -16,8 +10,11 @@ import {
     ISearchFilter,
     IUniqueConstraintOfTemplate,
     matchValueAgainstFilter,
-    ValidationError,
-} from '@microservices/shared';
+} from '@packages/entity';
+import { IEntitySingleProperty, IEntityTemplate, IMongoEntityTemplate } from '@packages/entity-template';
+import { CoordinateSystem } from '@packages/map';
+import { IMongoRelationshipTemplate } from '@packages/relationship-template';
+import { addPropertyToRequest, ValidationError } from '@packages/utils';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import axios from 'axios';
@@ -370,12 +367,12 @@ export class EntityValidator extends DefaultController {
     }
 
     private validateShowRelationships(
-        showRelationships: boolean | string[],
+        showRelationships: boolean | string[] | undefined,
         entityTemplateId: string,
         relationshipTemplatesMap: Map<string, IMongoRelationshipTemplate>,
         pathOfShowRelationshipsField: string, // to show origin of error if throwing
     ) {
-        if (typeof showRelationships === 'boolean') return;
+        if (!showRelationships || typeof showRelationships === 'boolean') return;
 
         showRelationships.forEach((relationshipTemplateId, i) => {
             const relationshipTemplate = relationshipTemplatesMap.get(relationshipTemplateId);

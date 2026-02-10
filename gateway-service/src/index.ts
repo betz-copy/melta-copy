@@ -1,5 +1,5 @@
 import 'elastic-apm-node/start';
-import { logger } from '@microservices/shared';
+import { logger } from '@packages/utils';
 import axios from 'axios';
 import menash from 'menashmq';
 import config from './config';

@@ -1,5 +1,8 @@
 import { Brush, Email, WarningAmberRounded, WarningRounded } from '@mui/icons-material';
 import { FormControlLabel, Grid, Typography, useTheme } from '@mui/material';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { PermissionScope } from '@packages/permission';
+import { ActionOnFail, IMongoRule } from '@packages/rule';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
@@ -16,10 +19,7 @@ import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
 import { RuleWizard } from '../../../common/wizards/rule';
 import { environment } from '../../../globals';
-import { ICategoryMap } from '../../../interfaces/categories';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { PermissionScope } from '../../../interfaces/permissions';
-import { ActionOnFail, IMongoRule, IRuleMap } from '../../../interfaces/rules';
+import { ICategoryMap, IEntityTemplateMap, IRuleMap } from '../../../interfaces/template';
 import { deleteRuleRequest, ruleObjectToRuleForm, updateDisabledRuleRequest } from '../../../services/templates/rulesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';
@@ -133,7 +133,7 @@ const typeRuleCheckbox = (
 
 export const RuleCard: React.FC<{
     rule: IMongoRule;
-    entityTemplates: IMongoEntityTemplatePopulated[];
+    entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[];
     setRuleWizardDialogState: React.Dispatch<
         React.SetStateAction<{
             isWizardOpen: boolean;
@@ -283,7 +283,7 @@ const RulesRow: React.FC = () => {
 
     const [searchText, setSearchText] = useState<string>('');
     const [actionOnFailFilter, setActionOnFailFilter] = useState<ActionOnFail[]>(Object.values(ActionOnFail));
-    const [entityTemplateFilter, setEntityTemplateFilter] = useState<IMongoEntityTemplatePopulated[]>(allowedEntityTemplates);
+    const [entityTemplateFilter, setEntityTemplateFilter] = useState<IMongoEntityTemplateWithConstraintsPopulated[]>(allowedEntityTemplates);
 
     const [ruleWizardDialogState, setRuleWizardDialogState] = useState<{
         isWizardOpen: boolean;

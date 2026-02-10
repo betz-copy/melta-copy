@@ -22,6 +22,9 @@
         "isolatedModules": true,
         "moduleResolution": "node",
         "baseUrl": ".",
+        "paths": {
+            "@packages/*": ["packages/*/src", "packages/*"]
+        },
         "lib": ["ESNext"]
     },
     "exclude": ["node_modules", "dist", ".eslintrc.js"]

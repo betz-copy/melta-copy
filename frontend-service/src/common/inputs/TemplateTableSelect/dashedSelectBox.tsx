@@ -1,11 +1,11 @@
 import { Grid } from '@mui/material';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { PermissionScope } from '@packages/permission';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
-import { IChildTemplateMap } from '../../../interfaces/childTemplates';
-import { IEntity } from '../../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { PermissionScope } from '../../../interfaces/permissions';
+import { IChildTemplateMap, IEntityTemplateMap } from '../../../interfaces/template';
 import { useUserStore } from '../../../stores/user';
 import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
 import { AddIconWithText } from '../../AddIconWithText';
@@ -18,7 +18,7 @@ const DashedSelectBox: React.FC<{
     checkUsersPermissions: PermissionScope;
     onClick: React.MouseEventHandler<HTMLDivElement>;
     error?: boolean;
-    entityTemplate?: IMongoEntityTemplatePopulated;
+    entityTemplate?: IMongoEntityTemplateWithConstraintsPopulated;
     minHeight: React.CSSProperties['minHeight'];
     onSuccessCreate: (entity: IEntity) => void;
     addNewEntityLabel?: string;

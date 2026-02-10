@@ -20,7 +20,7 @@ import {
     IRuleBreachRequestNotificationMetadataPopulated,
     IRuleBreachResponseNotificationMetadata,
     IRuleBreachResponseNotificationMetadataPopulated,
-} from '@microservices/shared';
+} from '@packages/notification';
 import InstancesService from '../../externalServices/instanceService';
 import NotificationService from '../../externalServices/notificationService';
 import {

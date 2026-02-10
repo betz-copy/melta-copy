@@ -1,3 +1,4 @@
+import { PermissionScope } from '@packages/permission';
 import {
     IMongoProcessInstancePopulated,
     IMongoProcessTemplatePopulated,
@@ -7,17 +8,14 @@ import {
     IProcessInstanceSearchProperties,
     IProcessTemplatePopulated,
     ISearchProcessTemplatesBody,
-    PermissionScope,
     UpdateStepReqBody,
-} from '@microservices/shared';
+} from '@packages/process';
 import config from '../../config';
 import { NotFoundError } from '../../express/processes/error';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 
-const {
-    processService: { url, templatesBaseRoute, instancesBaseRoute, requestTimeout },
-} = config;
+const { url, templatesBaseRoute, instancesBaseRoute, requestTimeout } = config.processService;
 
 class ProcessService extends DefaultExternalServiceApi {
     constructor(private workspaceId: string) {

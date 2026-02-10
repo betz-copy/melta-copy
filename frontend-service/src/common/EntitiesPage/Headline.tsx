@@ -10,20 +10,19 @@ import {
     TableChartOutlined,
 } from '@mui/icons-material';
 import { BaseTextFieldProps, Box, CircularProgress, Grid, IconButton, ToggleButton, ToggleButtonGroup, Typography, useTheme } from '@mui/material';
+import { IMongoCategory } from '@packages/category';
+import { isChildTemplate } from '@packages/child-template';
+import { IEntity } from '@packages/entity';
 import i18next from 'i18next';
 import { debounce } from 'lodash';
 import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import { environment } from '../../globals';
-import { IMongoCategory } from '../../interfaces/categories';
-import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { IEntity } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { ITemplate } from '../../interfaces/template';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { convertToBool } from '../../utils/convertStringToBool';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
-import { isChildTemplate } from '../../utils/templates';
 import SearchInput from '../inputs/SearchInput';
 import BlueTitle from '../MeltaDesigns/BlueTitle';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
@@ -166,7 +165,7 @@ export const GlobalSearchBar: React.FC<{
     );
 };
 
-type EntitiesPageHeadlineProps<T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated> = {
+type EntitiesPageHeadlineProps<T extends ITemplate> = {
     searchInput?: string;
     setSearchInput?: (newSearchInput: string) => void;
     onSearch: (value: string) => void;
@@ -193,7 +192,7 @@ type EntitiesPageHeadlineProps<T extends IMongoEntityTemplatePopulated | IMongoC
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
-const EntitiesPageHeadline = <T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated>({
+const EntitiesPageHeadline = <T extends ITemplate>({
     searchInput,
     setSearchInput,
     onSearch,

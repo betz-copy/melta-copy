@@ -1,4 +1,5 @@
-import { IEntityWithDirectRelationships, IRerankResult, ISearchResult, ISemanticSearchResult } from '@microservices/shared';
+import { IEntityWithDirectRelationships, ISearchResult } from '@packages/entity';
+import { IRerankResult, ISemanticSearchResult } from '@packages/semantic-search';
 import excelConfig from './excel/excelConfig';
 
 const PROPS_TO_SKIP = ['_id', 'updatedAt', 'createdAt'];

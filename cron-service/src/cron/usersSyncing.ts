@@ -1,4 +1,7 @@
-import { IEntity, IEntitySingleProperty, IMongoEntityTemplatePopulated, logger, WorkspaceTypes } from '@microservices/shared';
+import { IEntity } from '@packages/entity';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { logger } from '@packages/utils';
+import { WorkspaceTypes } from '@packages/workspace';
 import { keyBy } from 'lodash';
 import schedule from 'node-schedule';
 import config from '../config';
@@ -47,7 +50,6 @@ const getAllEntitiesOfTemplates = async (templates: IMongoEntityTemplatePopulate
             const { count } = await instanceService.searchEntitiesOfTemplateRequest(template._id, {
                 limit: 1,
                 skip: 0,
-                showRelationships: false,
                 sort: [],
             });
 
@@ -56,7 +58,6 @@ const getAllEntitiesOfTemplates = async (templates: IMongoEntityTemplatePopulate
             const { entities: instances } = await instanceService.searchEntitiesOfTemplateRequest(template._id, {
                 limit: count,
                 skip: 0,
-                showRelationships: false,
                 sort: [],
             });
 

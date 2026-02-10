@@ -1,5 +1,8 @@
 import { CloseOutlined, ContentCopy, Done } from '@mui/icons-material';
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, Typography } from '@mui/material';
+import { IMongoCategory } from '@packages/category';
+import { EntityTemplateType, IMongoChildTemplateWithConstraintsPopulated, TemplateItem } from '@packages/child-template';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import { editor } from 'monaco-editor';
@@ -11,20 +14,14 @@ import { AreYouSureDialog } from '../../../../common/dialogs/AreYouSureDialog';
 import { ErrorToast } from '../../../../common/ErrorToast';
 import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
 import { environment } from '../../../../globals';
-import { IMongoCategory } from '../../../../interfaces/categories';
-import { EntityTemplateType, IChildTemplateMap, TemplateItem } from '../../../../interfaces/childTemplates';
-import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import { IChildTemplateMap, IEntityTemplateMap } from '../../../../interfaces/template';
 import { updateActionToEntity } from '../../../../services/templates/entityTemplatesService';
 import { getChildPropertiesFiltered } from '../../../../utils/childTemplates';
 import { generateBasicFunctions } from '../../../../utils/templateActions/generateFunctions';
 import { generateInterfaceWithRelationships } from '../../../../utils/templateActions/interfaceGenerator';
 import { ActionManagement } from './actionsManagement';
 
-const {
-    systemManagement: {
-        actions: { noTypeGivenErrorCodeTs, unusedPropertyErrorCodeTs },
-    },
-} = environment;
+const { noTypeGivenErrorCodeTs, unusedPropertyErrorCodeTs } = environment.systemManagement.actions;
 
 const CodeEditorDialog: React.FC<{
     open: boolean;
@@ -79,11 +76,11 @@ const CodeEditorDialog: React.FC<{
             const { actions } = data;
             if (type === EntityTemplateType.Parent)
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>
-                    entityTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions }),
+                    entityTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions } as IMongoEntityTemplateWithConstraintsPopulated),
                 );
             else
                 queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', (childTemplateMap) =>
-                    childTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions }),
+                    childTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions } as IMongoChildTemplateWithConstraintsPopulated),
                 );
 
             queryClient.invalidateQueries(['searchEntityTemplates', searchText, categoriesToShow]);

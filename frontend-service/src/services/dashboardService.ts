@@ -1,6 +1,7 @@
+import { DashboardItem, MongoDashboardItem, MongoDashboardItemPopulated, TableItem } from '@packages/dashboard';
 import axios from '../axios';
 import { environment } from '../globals';
-import { DashboardItem, MongoDashboardItem, MongoDashboardItemPopulated, TableItem, TableItemToBackend } from '../interfaces/dashboard';
+import { TableItemToBackend } from '../interfaces/dashboard';
 
 const { dashboard } = environment.api;
 
