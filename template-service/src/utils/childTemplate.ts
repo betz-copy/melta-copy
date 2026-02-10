@@ -2,12 +2,12 @@ import {
     getChildPropertiesFiltered,
     IChildTemplatePopulatedFromDb,
     IChildTemplateProperty,
-    IEntitySingleProperty,
-    IFullMongoEntityTemplate,
-    IKartoffelUser,
     IMongoChildTemplatePopulated,
-    IUserField,
-} from '@microservices/shared';
+} from '@packages/child-template';
+import { IUserField } from '@packages/entity';
+import { IFullMongoEntityTemplate } from '@packages/entity-template';
+import { IEntitySingleProperty } from '@packages/entity-template/dist';
+import { IKartoffelUser } from '@packages/user/dist';
 import Kartoffel from '../externalServices/kartoffel';
 
 const transformUser = (foundUser: IKartoffelUser): IUserField => ({
@@ -20,8 +20,8 @@ const transformUser = (foundUser: IKartoffelUser): IUserField => ({
 });
 
 const populateChildTemplateWithParent = async (childTemplate: IChildTemplatePopulatedFromDb): Promise<IMongoChildTemplatePopulated> => {
-    const { parentTemplateId: parentTemplate, ...child } = childTemplate;
-    const { properties, ...parent } = parentTemplate;
+    const { parentTemplateId, ...child } = childTemplate;
+    const { properties, ...parent } = parentTemplateId;
 
     const childPropertyKeys = Object.keys(child.properties.properties);
 
@@ -59,7 +59,7 @@ const populateChildTemplateWithParent = async (childTemplate: IChildTemplatePopu
     const childProperties = getChildPropertiesFiltered(
         Object.fromEntries(
             filteredProps.map(([key, prop]) => {
-                if (prop.defaultValue && parentTemplate.properties.properties[key].format === 'user') {
+                if (prop.defaultValue && parentTemplateId.properties.properties[key].format === 'user') {
                     return [
                         key,
                         {
@@ -89,7 +89,8 @@ const populateChildTemplateWithParent = async (childTemplate: IChildTemplatePopu
     return {
         ...parent,
         ...child,
-        parentTemplate,
+        parentTemplateId: parentTemplateId._id,
+        parentTemplate: parentTemplateId,
         actions: child.actions || undefined,
         properties: {
             ...properties,

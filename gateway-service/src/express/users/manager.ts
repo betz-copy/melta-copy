@@ -1,23 +1,18 @@
+import { DeepPartial, RecursiveNullable } from '@packages/common';
+import { UploadedFile } from '@packages/entity';
+import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '@packages/permission';
+import { IBaseRole, IRole } from '@packages/role';
 import {
-    BadRequestError,
-    DeepPartial,
-    IBaseRole,
     IBaseUser,
-    ICompactNullablePermissions,
-    ICompactPermissions,
     IExternalUser,
     IKartoffelUser,
     IKartoffelUserDigitalIdentity,
-    IPermission,
-    IRole,
-    ISubCompactPermissions,
     IUser,
     IUserPopulated,
     IUserSearchBody,
-    RecursiveNullable,
     RelatedPermission,
-    UploadedFile,
-} from '@microservices/shared';
+} from '@packages/user';
+import { BadRequestError } from '@packages/utils';
 import { menash } from 'menashmq';
 import config from '../../config';
 import Kartoffel from '../../externalServices/kartoffel';

@@ -5,17 +5,17 @@ import {
     CheckCircleOutline as CheckCircleOutlineIcon,
 } from '@mui/icons-material';
 import { Grid, IconButton, SvgIconProps, Typography } from '@mui/material';
-import { FormikProps } from 'formik';
-import i18next from 'i18next';
-import React from 'react';
 import {
-    IMongoProcessInstancePopulated,
+    IMongoProcessInstanceReviewerPopulated,
+    IMongoStepInstancePopulated,
     Status,
     StatusBackgroundColors,
     StatusColorsNames,
     StatusFontColors,
-} from '../../../../interfaces/processes/processInstance';
-import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
+} from '@packages/process';
+import { FormikProps } from 'formik';
+import i18next from 'i18next';
+import React from 'react';
 import { useUserStore } from '../../../../stores/user';
 import { getLongDate } from '../../../../utils/date';
 import BlueTitle from '../../../MeltaDesigns/BlueTitle';
@@ -106,10 +106,10 @@ export const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, text, font
     );
 };
 
-export const ReviewedAtProcessStatus: React.FC<{ isPrinting?: boolean; instance: IMongoProcessInstancePopulated | IMongoStepInstancePopulated }> = ({
-    isPrinting,
-    instance,
-}) => {
+export const ReviewedAtProcessStatus: React.FC<{
+    isPrinting?: boolean;
+    instance: IMongoProcessInstanceReviewerPopulated | IMongoStepInstancePopulated;
+}> = ({ isPrinting, instance }) => {
     const currentUser = useUserStore((state) => state.user);
 
     if (!instance.reviewedAt) return null;
@@ -139,7 +139,7 @@ export const ReviewedAtProcessStatus: React.FC<{ isPrinting?: boolean; instance:
 
 interface ProcessStatusProps {
     title?: string;
-    instance: IMongoProcessInstancePopulated | IMongoStepInstancePopulated;
+    instance: IMongoProcessInstanceReviewerPopulated | IMongoStepInstancePopulated;
     editStatus?: {
         setFieldValue: FormikProps<ProcessStepValues>['setFieldValue'];
         isEditMode: boolean;

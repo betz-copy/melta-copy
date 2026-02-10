@@ -1,4 +1,6 @@
-import { BadRequestError, IEntity, IMongoEntityTemplate } from '@microservices/shared';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplate } from '@packages/entity-template/dist';
+import { BadRequestError } from '@packages/utils';
 import { QueryResult } from 'neo4j-driver';
 import { IEntityTreeNode } from '../../express/entities/interface';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateManager';

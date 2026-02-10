@@ -1,12 +1,11 @@
-import { ActionOnFail, IBrokenRule, IMongoRule } from '@microservices/shared';
+import { ActionOnFail, IMongoRule } from '@packages/rule';
+import { IBrokenRule } from '@packages/rule-breach';
 import pLimit from 'p-limit';
 import config from '../../config';
 import Neo4jClient from '../../utils/neo4j';
 import { getNeo4jDateTime, normalizeReturnedEntity, runInTransactionAndNormalize } from '../../utils/neo4j/lib';
 
-const {
-    neo4j: { colorPropertySuffix, updateColorsForRulesWithTodayFuncParallelLimit },
-} = config;
+const { colorPropertySuffix, updateColorsForRulesWithTodayFuncParallelLimit } = config.neo4j;
 
 const getColoredFields = (indicatorRules: IMongoRule[]) => {
     return indicatorRules.reduce<Record<string, string>>((acc, rule) => {

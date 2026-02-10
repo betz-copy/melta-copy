@@ -1,6 +1,6 @@
+import { IEntity } from '@packages/entity';
+import { IKartoffelUser } from '@packages/user';
 import { create } from 'zustand';
-import { IEntity } from '../interfaces/entities';
-import { IKartoffelUser } from '../interfaces/users';
 
 export interface ClientSideUserState {
     clientSideUser: IKartoffelUser;

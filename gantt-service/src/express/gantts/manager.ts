@@ -1,4 +1,5 @@
-import { DefaultManagerMongo, IGantt, ISearchGanttsBody, NotFoundError } from '@microservices/shared';
+import { IGantt, ISearchGanttsBody } from '@packages/gantt';
+import { DefaultManagerMongo, NotFoundError } from '@packages/utils';
 import { FilterQuery } from 'mongoose';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';

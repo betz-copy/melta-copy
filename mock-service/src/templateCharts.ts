@@ -1,4 +1,5 @@
-import { IMongoChart, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
+import { IMongoChart } from '@packages/chart';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import config from './config';
 import { chartsCreator } from './mocks/templateCharts';
 import createAxiosInstance from './utils/axios';

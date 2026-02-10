@@ -1,4 +1,4 @@
-import { IPermission, PermissionTypeOptions } from '@microservices/shared';
+import { IPermission, PermissionTypeOptions } from '@packages/permission';
 import { model, Schema } from 'mongoose';
 import config from '../../config';
 

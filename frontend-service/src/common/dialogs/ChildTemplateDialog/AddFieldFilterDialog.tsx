@@ -1,5 +1,9 @@
 import { Close } from '@mui/icons-material';
 import { Autocomplete, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, TextField, Typography } from '@mui/material';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IAgGridDateFilter, IAgGridNumberFilter, IAgGridSetFilter, IAgGridTextFilter } from '@packages/rule-breach';
+import { IGetUnits } from '@packages/unit';
+import { IUser } from '@packages/user';
 import { format } from 'date-fns';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
@@ -7,12 +11,8 @@ import { isEqual } from 'lodash';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { environment } from '../../../globals';
-import { ChipType, IChildTemplateForm } from '../../../interfaces/childTemplates';
-import { IGraphFilterBody } from '../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IGetUnits } from '../../../interfaces/units';
-import { IUser } from '../../../interfaces/users';
-import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridSetFilter, IAGGridTextFilter, IFilterDateType } from '../../../utils/agGrid/interfaces';
+import { ChipType, IChildTemplateForm, IFilterDateType } from '../../../interfaces/childTemplateForms';
+import { IGraphFilterBody } from '../../../interfaces/graphFilter';
 import { initializedFilterField, isValidAGGridFilter } from '../../FilterComponent';
 import { DateFilterInput } from '../../inputs/FilterInputs/DateFilterInput';
 import { MultipleSelectFilterInput } from '../../inputs/FilterInputs/MultipleSelectFilterInput';
@@ -21,7 +21,7 @@ import { SelectFilterInput } from '../../inputs/FilterInputs/SelectFilterInput';
 import { TextFilterInput } from '../../inputs/FilterInputs/TextFilterInput';
 import { UserFilterInput } from '../../inputs/FilterInputs/UserFilterInput';
 import { ajvValidate } from '../../inputs/JSONSchemaFormik';
-import { IAGGridFilter } from '../../wizards/entityTemplate/commonInterfaces';
+import { IAgGridFilter } from '../../wizards/entityTemplate/commonInterfaces';
 
 const { loggingDate, loggingDateTime } = environment.formats;
 
@@ -30,9 +30,9 @@ export type IDefaultValue = string | number | boolean | string[] | Date | (strin
 interface IAddFilterFieldDialogProps {
     addFilterField: { dialogType: ChipType; fieldName: string };
     formikProps: FormikProps<IChildTemplateForm>;
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
     onClose: () => void;
-    onSubmit: (fieldValue: IAGGridFilter | IDefaultValue) => void;
+    onSubmit: (fieldValue: IAgGridFilter | IDefaultValue) => void;
 }
 
 const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
@@ -51,7 +51,7 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
         (property.type && initializedFilterField[property.type]);
 
     const [inputValue, setInputValue] = useState<string>('');
-    const [localFilterField, setLocalFilterField] = useState<IAGGridFilter | undefined>(initializedFilter);
+    const [localFilterField, setLocalFilterField] = useState<IAgGridFilter | undefined>(initializedFilter);
     const [currentFieldError, setCurrentFieldError] = useState<string | undefined>(undefined);
 
     const queryClient = useQueryClient();
@@ -65,9 +65,9 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
         onClose();
     };
 
-    const handleFilterTypeChange = (newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGridNumberFilter['type']) => {
+    const handleFilterTypeChange = (newTypeFilter: IAgGridDateFilter['type'] | IAgGridTextFilter['type'] | IAgGridNumberFilter['type']) => {
         setCurrentFieldError(undefined);
-        setLocalFilterField({ ...localFilterField, type: newTypeFilter } as IAGGridFilter);
+        setLocalFilterField({ ...localFilterField, type: newTypeFilter } as IAgGridFilter);
     };
 
     const handleFilterFieldChange = (value: IGraphFilterBody['filterField']) => {
@@ -87,20 +87,20 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
         setLocalFilterField({
             ...localFilterField,
             ...(isStartDate ? { dateFrom: dateString } : { dateTo: dateString }),
-        } as IAGGridDateFilter);
+        } as IAgGridDateFilter);
     };
 
     const handleCheckboxChange = (options: (string | IUser | null)[], checked: boolean) => {
         setCurrentFieldError(undefined);
 
-        const { values = [] } = (localFilterField || {}) as IAGGridSetFilter;
+        const { values = [] } = (localFilterField || {}) as IAgGridSetFilter;
 
         let updatedValues: (string | null | IUser)[];
 
         if (checked) updatedValues = Array.from(new Set([...values, ...options]));
         else updatedValues = values.filter((value) => !options.some((option) => isEqual(option, value)));
 
-        setLocalFilterField({ ...localFilterField, values: updatedValues } as IAGGridSetFilter);
+        setLocalFilterField({ ...localFilterField, values: updatedValues } as IAgGridSetFilter);
     };
 
     const handleSubmit = () => {
@@ -241,12 +241,12 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
         }
 
         if (format === 'unitField') {
-            const { filter } = (localFilterField ?? {}) as IAGGridTextFilter;
+            const { filter } = (localFilterField ?? {}) as IAgGridTextFilter;
 
             return (
                 <Autocomplete
                     options={units.filter((unit) => unit._id !== filter)}
-                    onChange={(_e, value) => handleFilterFieldChange({ ...localFilterField, filter: value?._id } as IAGGridTextFilter)}
+                    onChange={(_e, value) => handleFilterFieldChange({ ...localFilterField, filter: value?._id } as IAgGridTextFilter)}
                     value={units.find((unit) => unit._id === filter)}
                     getOptionLabel={(option) => option.name}
                     renderInput={(params) => (

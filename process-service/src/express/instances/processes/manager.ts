@@ -1,7 +1,6 @@
+import { ActionsLog } from '@packages/activity-log';
 import {
-    ActionsLog,
     CreateProcessReqBody,
-    DefaultManagerMongo,
     IMongoProcessInstance,
     IMongoProcessInstancePopulated,
     IMongoProcessTemplate,
@@ -13,11 +12,10 @@ import {
     IProcessInstance,
     IProcessInstanceSearchProperties,
     ProcessInstanceDocument,
-    ServiceError,
     Status,
     UpdateProcessReqBody,
-    ValidationError,
-} from '@microservices/shared';
+} from '@packages/process';
+import { DefaultManagerMongo, ServiceError, ValidationError } from '@packages/utils';
 import { Request } from 'express';
 import { ClientSession, FilterQuery, Types, UpdateWriteOpResult } from 'mongoose';
 import config from '../../../config';

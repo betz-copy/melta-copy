@@ -2,21 +2,21 @@ import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { RestartAltOutlined as ResetIcon } from '@mui/icons-material';
 import { Grid, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import { CopyUrlButton } from '../../common/CopyUrlButton';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
-import { IChildTemplateMap } from '../../interfaces/childTemplates';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IChildTemplateMap, IEntityTemplateMap } from '../../interfaces/template';
 import { useDarkModeStore } from '../../stores/darkMode';
 
 interface GraphTopBarProps {
     onReset: React.MouseEventHandler<HTMLButtonElement>;
     set3DView: (is3DView: boolean) => void;
     is3DView: boolean;
-    filteredEntityTemplates: IMongoEntityTemplatePopulated[];
-    setFilteredEntityTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
+    filteredEntityTemplates: IMongoEntityTemplateWithConstraintsPopulated[];
+    setFilteredEntityTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplateWithConstraintsPopulated[]>>;
     templateId?: string;
     childTemplateId?: string;
 }

@@ -1,8 +1,8 @@
 import { Close, ExpandMore } from '@mui/icons-material';
 import { Autocomplete, Grid, MenuItem, TextField, TextFieldProps } from '@mui/material';
+import { IPropertyValue } from '@packages/entity';
 import { RJSFSchema } from '@rjsf/utils';
 import React from 'react';
-import { IPropertyValue } from '../../interfaces/entities';
 import OverflowWrapper from '../../utils/agGrid/OverflowWrapper';
 import { ColoredEnumChip } from '../ColoredEnumChip';
 import MeltaCheckbox from '../MeltaDesigns/MeltaCheckbox';

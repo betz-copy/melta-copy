@@ -1,4 +1,6 @@
-import { CoordinateSystem, EntityTemplateType, getChildPropertiesFiltered, IEntitySingleProperty, TemplateItem } from '@microservices/shared';
+import { EntityTemplateType, getChildPropertiesFiltered, TemplateItem } from '@packages/child-template';
+import { IEntitySingleProperty } from '@packages/entity-template';
+import { CoordinateSystem } from '@packages/map';
 
 const generateFromString = (
     { format, relationshipReference, enum: typeEnum }: IEntitySingleProperty,

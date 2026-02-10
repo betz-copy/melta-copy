@@ -1,33 +1,19 @@
+import { CoordinateSystem, Hemisphere, mapConfig, UTM } from '@packages/map';
 import * as Cesium from 'cesium';
 import { Cartesian3 } from 'cesium';
 import proj4 from 'proj4';
-import { CoordinateSystem } from '../../common/inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
-import { environment } from '../../globals';
 import { stringToCoordinates } from '.';
 
 const {
     polygon: { polygonPrefix, polygonSuffix },
-    epsgCode: { wgs84, epsg, southHemiUTM, northHemiUTM },
+    epsgCode: { epsg, wgs84, southHemiUTM, northHemiUTM },
+    utm: { utmRegex, utmPolygonRegex, minZone, maxZone, minEasting, maxEasting, minNorthing, maxNorthing },
     wgs84: { maxLongitude, maxLatitude },
-} = environment.map;
-
-enum Hemisphere {
-    N = 'N',
-    S = 'S',
-}
-
-export type UTM = {
-    zone: number; // UTM Zone (1-60)
-    hemi: Hemisphere; // Hemisphere (North or South)
-    east: number; // Easting (6-digit)
-    north: number; // Northing (7-digit)
-};
+} = mapConfig;
 
 const utm = (zone: UTM['zone'], hemi: Hemisphere) => `${epsg}:${hemi === Hemisphere.N ? northHemiUTM : southHemiUTM}${zone}`;
 
 const validateUTM = ({ zone, hemi, east, north }: UTM): boolean => {
-    const { minZone, maxZone, minEasting, maxEasting, minNorthing, maxNorthing } = environment.map.utm;
-
     if (zone < minZone || zone > maxZone) return false;
     if (!Object.values(Hemisphere).includes(hemi as Hemisphere)) return false;
     if (east < minEasting || east > maxEasting) return false;
@@ -117,8 +103,6 @@ const extractUtmPoint = (utmMatchRegex: RegExpMatchArray | null): UTM | undefine
 };
 
 export const extractUtmLocation = (utmString: string): UTM | UTM[] | undefined => {
-    const { utmRegex, utmPolygonRegex } = environment.map.utm;
-
     if (utmString.startsWith(polygonPrefix)) {
         const polygonString = utmString.slice(9, -2);
         const matches = [...polygonString.matchAll(utmPolygonRegex)];

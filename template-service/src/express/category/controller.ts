@@ -1,4 +1,5 @@
-import { DefaultController, IMongoCategory } from '@microservices/shared';
+import { IMongoCategory } from '@packages/category';
+import { DefaultController } from '@packages/utils';
 import { Request, Response } from 'express';
 import CategoryManager from './manager';
 

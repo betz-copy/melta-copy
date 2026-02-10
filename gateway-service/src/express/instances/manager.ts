@@ -1,52 +1,39 @@
 import { promises as fsp } from 'node:fs';
+import { ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata, IUpdateEntityMetadata } from '@packages/action';
+import { IChartBody } from '@packages/chart';
+import { EntityTemplateType, IMongoChildTemplatePopulated, TemplateItem } from '@packages/child-template';
+import { getDashboardFilters } from '@packages/dashboard';
 import {
-    ActionTypes,
-    BadRequestError,
     combineFilters,
-    EntityTemplateType,
     FilterLogicalOperator,
-    getDashboardFilters,
     getFilterModal,
-    IAction,
-    IBrokenRule,
-    IBrokenRuleEntity,
     IBulkOfActions,
     IBulkRuleMail,
-    IChartBody,
     ICountSearchResult,
-    ICreateEntityMetadata,
-    ICreateRelationshipMetadata,
     IDeleteEntityBody,
     IEntity,
-    IEntitySingleProperty,
-    IEntityTemplatePopulated,
     IEntityWithDirectRelationships,
-    IEntityWithIgnoredRules,
     IExportEntitiesBody,
     IFailedEntity,
-    IFullMongoEntityTemplate,
-    IMongoChildTemplatePopulated,
-    IMongoEntityTemplatePopulated,
     IMultipleSelect,
     IPropertyValue,
-    IRelationship,
-    IRuleMail,
     ISearchBatchBody,
     ISearchEntitiesByLocationBody,
     ISearchEntitiesOfTemplateBody,
     ISearchFilter,
     ISearchResult,
     ISearchSort,
-    ISemanticSearchResult,
     ITemplateSearchBody,
-    IUpdateEntityMetadata,
-    logger,
     matchValueAgainstFilter,
-    NotFoundError,
     NotFoundErrorTypes,
-    TemplateItem,
     UploadedFile,
-} from '@microservices/shared';
+} from '@packages/entity';
+import { IEntitySingleProperty, IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { IRelationship } from '@packages/relationship';
+import { IRuleMail } from '@packages/rule';
+import { IBrokenRule, IBrokenRuleEntity, IEntityWithIgnoredRules } from '@packages/rule-breach';
+import { ISemanticSearchResult } from '@packages/semantic-search';
+import { BadRequestError, logger, NotFoundError } from '@packages/utils';
 import axios from 'axios';
 import { stream } from 'exceljs';
 import { keyBy, mapValues, omit } from 'lodash';
@@ -269,7 +256,6 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             skip: 0,
             limit: 1,
             filter,
-            showRelationships: false,
             sort: [],
         });
 
@@ -393,7 +379,6 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             limit: 1,
             textSearch,
             filter: filters,
-            showRelationships: false,
             sort: sort || [],
         });
 
@@ -404,7 +389,6 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 limit: searchEntitiesChunkSize,
                 textSearch,
                 filter: filters,
-                showRelationships: false,
                 sort: sort || [],
             });
 
@@ -423,7 +407,11 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         }
     }
 
-    updateTemplateCurrentNumbers = async (template: IFullMongoEntityTemplate, serialStarters: Record<string, number>, succeededIndex: number) => {
+    updateTemplateCurrentNumbers = async (
+        template: IMongoEntityTemplatePopulated,
+        serialStarters: Record<string, number>,
+        succeededIndex: number,
+    ) => {
         const serialProperties = Object.entries(template.properties.properties)
             .filter(([_key, value]) => value.type === 'number' && !!value.serialCurrent)
             .reduce((acc, [key, value]) => {
@@ -433,7 +421,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const { category, _id, createdAt: _createdAt, updatedAt: _updatedAt, disabled: _disabled, ...restOfEntityTemplate } = template;
         await this.entityTemplateService.updateEntityTemplate(template._id, {
             ...restOfEntityTemplate,
-            category,
+            category: category._id,
             properties: {
                 ...template.properties,
                 properties: { ...template.properties.properties, ...serialProperties },
@@ -490,7 +478,6 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 ...searchBody.templates,
                 [relatedTemplateId]: {
                     filter: templateFilter,
-                    showRelationships: false,
                 },
             };
         });
@@ -579,7 +566,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const brokenRulesEntities = await convertIdOfBrokenRules(allBrokenRulesEntities);
         if (serialStarters)
             await this.updateTemplateCurrentNumbers(
-                type === EntityTemplateType.Child ? template.parentTemplate : { ...template, category: template.category._id },
+                type === EntityTemplateType.Child ? template.parentTemplate : template,
                 serialStarters,
                 succeededEntities.length,
             );

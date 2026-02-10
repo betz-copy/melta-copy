@@ -1,27 +1,26 @@
 import {
     ActionTypes,
-    IArchiveProcessNotificationMetadataPopulated,
     ICreateOrDuplicateEntityMetadataPopulated,
     ICreateRelationshipMetadataPopulated,
-    IDateAboutToExpireMetadataPopulated,
-    IDeleteProcessNotificationMetadata,
     IDeleteRelationshipMetadataPopulated,
-    IEntity,
-    IMongoEntityTemplatePopulated,
-    IMongoStepTemplate,
-    INewProcessNotificationMetadataPopulated,
-    IRule,
-    IRuleBreachAlertNotificationMetadataPopulated,
-    IRuleBreachAlertPopulated,
-    IRuleBreachRequestNotificationMetadataPopulated,
-    IRuleBreachRequestPopulated,
-    IRuleBreachResponseNotificationMetadataPopulated,
-    IRuleMail,
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadataPopulated,
+} from '@packages/action';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import {
+    IArchiveProcessNotificationMetadataPopulated,
+    IDateAboutToExpireMetadataPopulated,
+    IDeleteProcessNotificationMetadata,
+    INewProcessNotificationMetadataPopulated,
+    IRuleBreachAlertNotificationMetadataPopulated,
+    IRuleBreachRequestNotificationMetadataPopulated,
+    IRuleBreachResponseNotificationMetadataPopulated,
     NotificationType,
-    RuleBreachRequestStatus,
-} from '@microservices/shared';
+} from '@packages/notification';
+import { IMongoStepTemplate } from '@packages/process';
+import { IRule, IRuleMail } from '@packages/rule';
+import { IRuleBreachAlertPopulated, IRuleBreachRequestPopulated, RuleBreachRequestStatus } from '@packages/rule-breach';
 import { renderToString } from 'react-dom/server';
 import config from '../../config';
 import WorkspaceManager from '../../express/workspaces/manager';

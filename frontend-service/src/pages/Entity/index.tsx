@@ -1,20 +1,20 @@
 import { AccountBalanceWallet } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, CircularProgress, Grid, Tab, useTheme } from '@mui/material';
+import { IFilter, IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { ISearchFilter } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { ISubCompactPermissions, PermissionScope } from '@packages/permission';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useParams, useSearchParams } from 'wouter';
 import { getChildTemplatesFilter } from '../../common/inputs/TemplateEntitiesAutocomplete';
+import { IRelationshipTemplateMap } from '../../interfaces/template';
 import '../../css/pages.css';
-import '../../css/pages.css';
-import { IChildTemplateMap, IChildTemplatePopulated, IFilter } from '../../interfaces/childTemplates';
-import { ISearchFilter } from '../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { PermissionScope } from '../../interfaces/permissions';
-import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
-import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
+import { isChildTemplate } from '@packages/child-template';
+import { IChildTemplateMap, IEntityTemplateMap } from '../../interfaces/template';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
@@ -29,8 +29,8 @@ import { WalletTransfers } from './walletTransfers';
 export const getButtonState = (
     isEntityDisabled: boolean,
     hasWritePermissionToCurrTemplate: boolean,
-    relatedTemplate: IMongoEntityTemplatePopulated,
-    groupChildTemplate: Record<string, IChildTemplatePopulated[]>,
+    relatedTemplate: IMongoEntityTemplateWithConstraintsPopulated,
+    groupChildTemplate: Record<string, IMongoChildTemplateWithConstraintsPopulated[]>,
     permissions?: ISubCompactPermissions,
 ) => {
     let isEditButtonsDisabled = false;
@@ -62,15 +62,6 @@ export const getButtonState = (
 
     return { isEditButtonsDisabled, disabledButtonText, hasPermissionToRelatedTemplate: Boolean(permissions?.admin || permissionToRelatedTemplate) };
 };
-
-export interface INestedRelationshipTemplates {
-    relationshipTemplate: IMongoRelationshipTemplatePopulated;
-    isExpandedEntityRelationshipSource: boolean; // for relationship that is of format currentEntityTemplate -> currentEntityTemplate, we want it twice, once with outgoing connections of expandedEntity, and once with incoming connections of expandedEntity
-    hasInstances?: boolean;
-    depth: number;
-    parentRelationship?: IMongoRelationshipTemplatePopulated;
-    children: INestedRelationshipTemplates[];
-}
 
 const Entity: React.FC = () => {
     const theme = useTheme();
@@ -126,16 +117,15 @@ const Entity: React.FC = () => {
     const connectionsTemplates = useMemo(() => {
         if (!currentEntityTemplate) return;
 
+        const templateForRelationships =
+            childTemplateId && isChildTemplate(currentEntityTemplate) ? currentEntityTemplate.parentTemplate : currentEntityTemplate;
+
+        if (!templateForRelationships) return;
+
         return getFullRelationshipTemplates(
             relationshipTemplates,
             entityTemplates,
-            {
-                ...currentEntityTemplate,
-                _id: childTemplateId ? (currentEntityTemplate as IChildTemplatePopulated).parentTemplate._id : currentEntityTemplate._id,
-                displayName: childTemplateId
-                    ? (currentEntityTemplate as IChildTemplatePopulated).parentTemplate.displayName
-                    : currentEntityTemplate.displayName,
-            },
+            templateForRelationships,
             1,
             undefined,
             expandedEntity,
@@ -157,7 +147,7 @@ const Entity: React.FC = () => {
         PermissionScope.write,
     );
 
-    const getButtonStateByRelatedTemplate = (relatedTemplate: IMongoEntityTemplatePopulated) => {
+    const getButtonStateByRelatedTemplate = (relatedTemplate: IMongoEntityTemplateWithConstraintsPopulated) => {
         const { isEditButtonsDisabled, disabledButtonText, hasPermissionToRelatedTemplate } = getButtonState(
             isEntityDisabled,
             hasWritePermissionToCurrTemplate,

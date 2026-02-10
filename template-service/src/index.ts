@@ -1,6 +1,6 @@
 import axios from 'axios';
 import 'elastic-apm-node/start';
-import { logger } from '@microservices/shared';
+import { logger } from '@packages/utils';
 import menash from 'menashmq';
 import mongoose from 'mongoose';
 import config from './config';

@@ -1,7 +1,7 @@
 import { Chip, Grid } from '@mui/material';
+import { IPropertyValue } from '@packages/entity';
+import { IUser } from '@packages/user';
 import React from 'react';
-import { IPropertyValue } from '../../../interfaces/entities';
-import { IUser } from '../../../interfaces/users';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import UserAvatar from '../../UserAvatar';
 

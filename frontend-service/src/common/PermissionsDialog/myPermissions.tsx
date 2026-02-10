@@ -1,4 +1,6 @@
 import { Box, Button, CircularProgress, DialogActions, DialogContent, DialogTitle, Grid } from '@mui/material';
+import { PermissionData } from '@packages/permission';
+import { IUser, RelatedPermission } from '@packages/user';
 import { Form, Formik, FormikProps } from 'formik';
 import i18next from 'i18next';
 import { cloneDeep, debounce, isEqual } from 'lodash';
@@ -6,9 +8,8 @@ import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
-import { IChildTemplateMap } from '../../interfaces/childTemplates';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import { IUser, PermissionData, RelatedPermission } from '../../interfaces/users';
+import { PermissionDialogMode } from '../../interfaces/inputs';
+import { IChildTemplateMap, IEntityTemplateMap } from '../../interfaces/template';
 import { deletePermissions } from '../../pages/PermissionsManagement/components/deleteDialog';
 import {
     createUserRequest,
@@ -65,7 +66,7 @@ export const getDefaultEmptyUser = (workspaceId: string) => ({
 
 const MyPermissions: React.FC<{
     handleClose: () => void;
-    mode: 'create' | 'edit' | 'view';
+    mode: PermissionDialogMode;
     existingUser?: IUser;
     onSuccess?: (user?: IUser) => void;
 }> = ({ handleClose, mode, existingUser, onSuccess }) => {
@@ -191,7 +192,7 @@ const MyPermissions: React.FC<{
                 fullName: Yup.string().nullable().required(i18next.t('validation.required')),
             }).unknown(true)}
             validate={(formUser: IUser) => {
-                if (mode === 'create' && allUsers?.some(({ _id }) => _id === formUser._id)) {
+                if (mode === PermissionDialogMode.Create && allUsers?.some(({ _id }) => _id === formUser._id)) {
                     return { fullName: i18next.t('permissions.permissionsOfUserDialog.userAlreadyExistOnCreateMessage') };
                 }
 
@@ -200,7 +201,7 @@ const MyPermissions: React.FC<{
             onSubmit={async (formUser) => {
                 const currentRole = workspaceRoles?.find((role) => formUser.roleIds?.includes(role._id));
 
-                if (mode === 'create') await createUser(formUser);
+                if (mode === PermissionDialogMode.Create) await createUser(formUser);
                 else {
                     if (!currentRole && !isEqual(existingUser?.permissions, formUser.permissions)) {
                         await syncUserPermissions(formUser); // update personal permissions (without roles)
@@ -220,7 +221,7 @@ const MyPermissions: React.FC<{
                 return (
                     <Form>
                         <DialogTitle>
-                            {mode !== 'view' && (
+                            {mode !== PermissionDialogMode.View && (
                                 <BlueTitle
                                     title={i18next.t(`permissions.permissionsOfUserDialog.${mode}Title`)}
                                     component="h6"
@@ -242,16 +243,16 @@ const MyPermissions: React.FC<{
                                         setValues(chosenUser ?? defaultEmptyUser);
                                     }}
                                     onBlur={handleBlur}
-                                    readOnly={mode === 'view'}
-                                    disabled={mode === 'edit'}
+                                    readOnly={mode === PermissionDialogMode.View}
+                                    disabled={mode === PermissionDialogMode.Edit}
                                     isError={Boolean(touched.fullName && errors.fullName)}
                                     helperText={touched.fullName ? errors.fullName : ''}
                                     isOptionDisabled={(option) => !option.fullName || !option.jobTitle || !option.hierarchy || !option.mail}
-                                    enableClear={mode === 'create'}
+                                    enableClear={mode === PermissionDialogMode.Create}
                                 />
                             </Box>
 
-                            {(mode !== 'view' || values.roleIds) && (
+                            {(mode !== PermissionDialogMode.View || values.roleIds) && (
                                 <Box sx={{ bgcolor: darkMode ? '#242424' : 'white', marginBottom: '15px', marginTop: '5px' }}>
                                     <RoleAutocomplete
                                         value={formikRole}
@@ -270,10 +271,10 @@ const MyPermissions: React.FC<{
                                             setFieldValue('permissions', chosenRole?.permissions ?? {});
                                         }}
                                         onBlur={handleBlur}
-                                        readOnly={mode === 'view'}
+                                        readOnly={mode === PermissionDialogMode.View}
                                         isError={Boolean(touched.roleIds && errors.roleIds)}
                                         helperText={touched.roleIds ? errors.roleIds : ''}
-                                        enableClear={mode !== 'view'}
+                                        enableClear={mode !== PermissionDialogMode.View}
                                         refetch={searchRolesOptionsDebounced}
                                         isLoading={isLoading}
                                     />
@@ -283,7 +284,7 @@ const MyPermissions: React.FC<{
                             <Box sx={{ bgcolor: darkMode ? '#242424' : 'white', marginBottom: '15px', marginTop: '5px' }}>
                                 <UnitSelect
                                     label={i18next.t('unitAutocomplete.label')}
-                                    disabled={mode === 'view'}
+                                    disabled={mode === PermissionDialogMode.View}
                                     value={values.units?.[workspace._id] ?? []}
                                     onChange={(chosenUnits) => {
                                         setFieldValue(`units.${workspace._id}`, !Array.isArray(chosenUnits) ? [chosenUnits] : chosenUnits);
@@ -306,7 +307,7 @@ const MyPermissions: React.FC<{
                         <DialogActions sx={{ direction: 'rtl', marginRight: '1rem', marginBottom: '0.5rem' }}>
                             <Grid container justifyContent="space-between" marginTop="15px" width="100%">
                                 <Grid>
-                                    {mode !== 'view' && (
+                                    {mode !== PermissionDialogMode.View && (
                                         <Button
                                             type="submit"
                                             disabled={
@@ -316,8 +317,8 @@ const MyPermissions: React.FC<{
                                             }
                                             variant="contained"
                                         >
-                                            {mode === 'create' && i18next.t('permissions.permissionsOfUserDialog.createBtn')}
-                                            {mode === 'edit' && i18next.t('permissions.permissionsOfUserDialog.saveBtn')}
+                                            {mode === PermissionDialogMode.Create && i18next.t('permissions.permissionsOfUserDialog.createBtn')}
+                                            {mode === PermissionDialogMode.Edit && i18next.t('permissions.permissionsOfUserDialog.saveBtn')}
                                             {isSubmitting && <CircularProgress size={20} />}
                                         </Button>
                                     )}

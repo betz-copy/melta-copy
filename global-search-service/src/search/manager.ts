@@ -1,4 +1,5 @@
-import { IEntityTemplate, IMongoEntityTemplate, logger } from '@microservices/shared';
+import { IEntityTemplate, IMongoEntityTemplate } from '@packages/entity-template';
+import { logger } from '@packages/utils';
 import { QueryResult, Transaction } from 'neo4j-driver';
 import config from '../config';
 import TemplateManagerService from '../externalServices/entityTemplateManager';

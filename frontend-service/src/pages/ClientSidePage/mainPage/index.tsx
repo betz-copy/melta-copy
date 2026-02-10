@@ -1,7 +1,7 @@
 import { Box, Grid } from '@mui/material';
 import React, { useRef } from 'react';
 import { useQueryClient } from 'react-query';
-import { IChildTemplateMapPopulated } from '../../../interfaces/childTemplates';
+import { IChildTemplateMap } from '../../../interfaces/template';
 import { useClientSideUserStore } from '../../../stores/clientSideUser';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { getFirstXPropsKeys } from '../../../utils/templates';
@@ -15,7 +15,7 @@ const ClientSideMainPage: React.FC = () => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { numOfPropsToShow, usersInfoChildTemplateId } = workspace.metadata.clientSide;
 
-    const childTemplates = queryClient.getQueryData<IChildTemplateMapPopulated>('getClientSideChildTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getClientSideChildTemplates')!;
     const usersInfoChildTemplate = childTemplates.get(usersInfoChildTemplateId)!;
 
     const userEntityTablesRef = useRef<UserEntityTablesRef>(null);

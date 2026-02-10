@@ -1,10 +1,10 @@
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
+import { emptyCategory, IRelationshipTemplateMap } from '../../../interfaces/template';
 import {
     createRelationshipTemplateRequest,
     relationshipTemplateFormToRelationshipTemplateObject,
@@ -20,8 +20,8 @@ export interface RelationshipTemplateWizardValues {
     updatedAt?: string;
     name: string;
     displayName: string;
-    sourceEntity: IMongoEntityTemplatePopulated;
-    destinationEntity: IMongoEntityTemplatePopulated;
+    sourceEntity: IMongoEntityTemplateWithConstraintsPopulated;
+    destinationEntity: IMongoEntityTemplateWithConstraintsPopulated;
 }
 
 export const defaultInitialValues: RelationshipTemplateWizardValues = {
@@ -37,24 +37,30 @@ export const defaultInitialValues: RelationshipTemplateWizardValues = {
             required: [],
             hide: [],
         },
-        category: { _id: '', displayName: '', name: '', color: '', templatesOrder: [] },
+        category: emptyCategory,
         propertiesOrder: [],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: [],
         uniqueConstraints: [],
         disabled: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        iconFileId: null,
     },
     destinationEntity: {
         _id: '',
         displayName: '',
         name: '',
         properties: { type: 'object', properties: {}, required: [], hide: [] },
-        category: { _id: '', displayName: '', name: '', color: '', templatesOrder: [] },
+        category: emptyCategory,
         propertiesOrder: [],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: [],
         uniqueConstraints: [],
         disabled: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        iconFileId: null,
     },
 };
 
@@ -79,10 +85,10 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
             const { _id, createdAt: _c, updatedAt: _u, ...restOfRelationshipTemplateForm } = relationshipTemplateForm;
             const relationshipTemplateBody = relationshipTemplateFormToRelationshipTemplateObject(restOfRelationshipTemplateForm);
             const { isProperty: _is, ...updatedRelationshipTemplate } = relationshipTemplateBody;
+
             if (isEditMode) {
                 return updateRelationshipTemplateRequest(_id!, updatedRelationshipTemplate);
-            }
-            return createRelationshipTemplateRequest(relationshipTemplateBody);
+            } else return createRelationshipTemplateRequest(relationshipTemplateBody);
         },
         {
             onSuccess: (data) => {

@@ -1,5 +1,5 @@
 import 'elastic-apm-node/start';
-import { logger } from '@microservices/shared';
+import { logger } from '@packages/utils';
 import menash from 'menashmq';
 import * as mongoose from 'mongoose';
 import config from './config';

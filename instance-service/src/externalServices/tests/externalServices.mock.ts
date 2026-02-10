@@ -1,11 +1,11 @@
-import { ActionOnFail } from '@microservices/shared';
+import { Conjunction } from '@packages/common';
+import { IMongoEntityTemplate, ISearchEntityTemplatesBody, PropertyFormat, PropertyType } from '@packages/entity-template';
+import { IMongoRelationshipTemplate, ISearchRelationshipTemplatesBody } from '@packages/relationship-template';
+import { ActionOnFail, IMongoRule } from '@packages/rule';
 import MockAdapter from 'axios-mock-adapter';
 import { StatusCodes } from 'http-status-codes';
 import { v4 as uuidv4 } from 'uuid';
 import config from '../../config';
-import { IMongoEntityTemplate, ISearchEntityTemplatesBody } from '../templates/interfaces/entityTemplates';
-import { IMongoRelationshipTemplate, ISearchRelationshipTemplatesBody } from '../templates/interfaces/relationshipTemplates';
-import { IMongoRule } from '../templates/interfaces/rules';
 
 const { url, relationships, entities } = config.templateService;
 const { OK: okStatus } = StatusCodes;
@@ -21,23 +21,23 @@ export const generateTemplates = () => {
             type: 'object',
             properties: {
                 firstName: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'First name',
                 },
                 lastName: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'Last name',
                 },
                 age: {
-                    type: 'number',
+                    type: PropertyType.number,
                     title: 'Age',
                 },
                 gender: {
-                    type: 'boolean',
+                    type: PropertyType.boolean,
                     title: 'Gender',
                 },
                 agentId: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'Agent id',
                 },
             },
@@ -47,8 +47,7 @@ export const generateTemplates = () => {
         propertiesOrder: ['firstName', 'lastName', 'age', 'gender', 'agentId'],
         propertiesPreview: ['firstName', 'lastName', 'age'],
         disabled: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        iconFileId: null,
     };
 
     const flightEntityTemplate: IMongoEntityTemplate = {
@@ -60,29 +59,29 @@ export const generateTemplates = () => {
             type: 'object',
             properties: {
                 flightNumber: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'Flight number',
                 },
                 departureDate: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'Departure date',
-                    format: 'date-time',
+                    format: PropertyFormat['date-time'],
                 },
                 landingDate: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'Landing date',
-                    format: 'date-time',
+                    format: PropertyFormat['date-time'],
                 },
                 from: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'Departure location',
                 },
                 to: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'Arrival location',
                 },
                 planeType: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'Plane type',
                 },
             },
@@ -92,8 +91,7 @@ export const generateTemplates = () => {
         propertiesOrder: ['flightNumber', 'departureDate', 'landingDate', 'from', 'to', 'planeType'],
         propertiesPreview: ['flightNumber', 'from', 'to'],
         disabled: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        iconFileId: null,
     };
 
     const tripEntityTemplate: IMongoEntityTemplate = {
@@ -105,30 +103,30 @@ export const generateTemplates = () => {
             type: 'object',
             properties: {
                 name: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'שם',
                 },
                 destination: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'יעד',
                 },
                 startDate: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'תאריך התחלה',
-                    format: 'date',
+                    format: PropertyFormat.date,
                 },
                 endDate: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'תאריך סיום',
-                    format: 'date',
+                    format: PropertyFormat.date,
                 },
                 firstFile: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'קובץ ראשון',
-                    format: 'fileId',
+                    format: PropertyFormat.fileId,
                 },
                 active: {
-                    type: 'boolean',
+                    type: PropertyType.boolean,
                     title: 'פעיל',
                 },
             },
@@ -138,8 +136,7 @@ export const generateTemplates = () => {
         propertiesOrder: ['name', 'destination', 'startDate', 'endDate', 'firstFile'],
         propertiesPreview: ['name', 'destination', 'startDate', 'endDate'],
         disabled: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        iconFileId: null,
     };
 
     const airportEntityTemplate: IMongoEntityTemplate = {
@@ -152,15 +149,15 @@ export const generateTemplates = () => {
             type: 'object',
             properties: {
                 airportName: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'שם',
                 },
                 airportId: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'מזהה',
                 },
                 country: {
-                    type: 'string',
+                    type: PropertyType.string,
                     title: 'מדינה',
                 },
             },
@@ -169,8 +166,7 @@ export const generateTemplates = () => {
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesOrder: ['airportName', 'airportId', 'country'],
         propertiesPreview: ['airportName', 'country'],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        iconFileId: null,
     };
 
     const allEntityTemplates = [travelAgentEntityTemplate, flightEntityTemplate, tripEntityTemplate, airportEntityTemplate];
@@ -182,8 +178,8 @@ export const generateTemplates = () => {
         displayName: 'flies on',
         sourceEntityId: travelAgentEntityTemplate._id,
         destinationEntityId: flightEntityTemplate._id,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
     };
 
     const tripConnectedToFlightRelationshipTemplate: IMongoRelationshipTemplate = {
@@ -192,8 +188,8 @@ export const generateTemplates = () => {
         displayName: 'טיסה משוייכת לטיול',
         sourceEntityId: flightEntityTemplate._id,
         destinationEntityId: tripEntityTemplate._id,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
     };
 
     const departureFromRelationshipTemplate: IMongoRelationshipTemplate = {
@@ -202,8 +198,8 @@ export const generateTemplates = () => {
         displayName: 'ממריא מ',
         sourceEntityId: flightEntityTemplate._id,
         destinationEntityId: airportEntityTemplate._id,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
     };
 
     const tripConnectedToAirportRelationshipTemplate: IMongoRelationshipTemplate = {
@@ -212,8 +208,8 @@ export const generateTemplates = () => {
         displayName: 'טיסה משוייכת לשדה תעופה',
         sourceEntityId: airportEntityTemplate._id,
         destinationEntityId: tripEntityTemplate._id,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
     };
 
     const allRelationshipTemplates = [
@@ -231,9 +227,10 @@ export const generateTemplates = () => {
         actionOnFail: ActionOnFail.WARNING,
         entityTemplateId: flightEntityTemplate._id,
         disabled: false,
+        doesFormulaHaveTodayFunc: false,
         formula: {
             isGroup: true,
-            ruleOfGroup: 'OR',
+            ruleOfGroup: Conjunction.OR,
             subFormulas: [
                 {
                     isEquation: true,
@@ -254,7 +251,7 @@ export const generateTemplates = () => {
                 {
                     isAggregationGroup: true,
                     aggregation: 'SOME',
-                    ruleOfGroup: 'AND',
+                    ruleOfGroup: Conjunction.AND,
                     variableOfAggregation: {
                         entityTemplateId: flightEntityTemplate._id,
                         aggregatedRelationship: {
@@ -297,9 +294,10 @@ export const generateTemplates = () => {
         actionOnFail: ActionOnFail.WARNING,
         entityTemplateId: tripEntityTemplate._id,
         disabled: false,
+        doesFormulaHaveTodayFunc: false,
         formula: {
             isGroup: true,
-            ruleOfGroup: 'AND',
+            ruleOfGroup: Conjunction.AND,
             subFormulas: [
                 {
                     isAggregationGroup: true,
@@ -311,7 +309,7 @@ export const generateTemplates = () => {
                             otherEntityTemplateId: flightEntityTemplate._id,
                         },
                     },
-                    ruleOfGroup: 'AND',
+                    ruleOfGroup: Conjunction.AND,
                     subFormulas: [
                         {
                             isAggregationGroup: true,
@@ -324,7 +322,7 @@ export const generateTemplates = () => {
                                     variableNameSuffix: '2',
                                 },
                             },
-                            ruleOfGroup: 'OR',
+                            ruleOfGroup: Conjunction.OR,
                             subFormulas: [
                                 {
                                     isEquation: true,
@@ -408,9 +406,10 @@ export const generateTemplates = () => {
         actionOnFail: ActionOnFail.WARNING,
         entityTemplateId: airportEntityTemplate._id,
         disabled: false,
+        doesFormulaHaveTodayFunc: false,
         formula: {
             isGroup: true,
-            ruleOfGroup: 'AND',
+            ruleOfGroup: Conjunction.AND,
             subFormulas: [
                 {
                     isAggregationGroup: true,
@@ -422,7 +421,7 @@ export const generateTemplates = () => {
                             otherEntityTemplateId: flightEntityTemplate._id,
                         },
                     },
-                    ruleOfGroup: 'AND',
+                    ruleOfGroup: Conjunction.AND,
                     subFormulas: [
                         {
                             isAggregationGroup: true,
@@ -434,7 +433,7 @@ export const generateTemplates = () => {
                                     otherEntityTemplateId: tripEntityTemplate._id,
                                 },
                             },
-                            ruleOfGroup: 'OR',
+                            ruleOfGroup: Conjunction.OR,
                             subFormulas: [
                                 {
                                     isEquation: true,
@@ -516,9 +515,10 @@ export const generateTemplates = () => {
         actionOnFail: ActionOnFail.WARNING,
         entityTemplateId: tripEntityTemplate._id,
         disabled: false,
+        doesFormulaHaveTodayFunc: false,
         formula: {
             isGroup: true,
-            ruleOfGroup: 'AND',
+            ruleOfGroup: Conjunction.AND,
             subFormulas: [
                 {
                     isEquation: true,

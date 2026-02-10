@@ -1,19 +1,19 @@
 import { Grid } from '@mui/material';
+import { IEntity, IPropertyValue } from '@packages/entity';
+import { IEntitySingleProperty } from '@packages/entity-template';
+import { CoordinateSystem, extractUtmLocation, locationConverterToString } from '@packages/map';
+import { IGetUnits } from '@packages/unit';
+import { IUser } from '@packages/user';
 import type { Property } from 'csstype';
 import i18next from 'i18next';
 import { ColoredEnumChip } from '../common/ColoredEnumChip';
 import { IEntityPropertiesProps } from '../common/EntityProperties';
 import OpenPreview from '../common/FilePreview/OpenPreview';
-import { CoordinateSystem, LocationData } from '../common/inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
 import RelationshipReferenceView from '../common/RelationshipReferenceView';
 import UserAvatar from '../common/UserAvatar';
 import { environment } from '../globals';
-import { IEntity, IPropertyValue } from '../interfaces/entities';
-import { IEntitySingleProperty } from '../interfaces/entityTemplates';
-import { IGetUnits } from '../interfaces/units';
-import { IUser } from '../interfaces/users';
+import { LocationData } from '../interfaces/location';
 import OverflowWrapper from './agGrid/OverflowWrapper';
-import { extractUtmLocation, locationConverterToString } from './map/convert';
 
 function formatDateToDDMMYYYY(dateString: string): string {
     if (!dateString) return '-';

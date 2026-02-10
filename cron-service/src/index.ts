@@ -1,5 +1,5 @@
-import { logger } from '@microservices/shared';
 import 'elastic-apm-node/start';
+import { logger } from '@packages/utils';
 import menash from 'menashmq';
 import config from './config';
 import checkForDateNotifications from './cron/dateNotificationsCheck';

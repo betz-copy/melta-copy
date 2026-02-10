@@ -1,5 +1,8 @@
 import { AppRegistration as AppRegistrationIcon, ArrowBackIosNew, InfoOutlined } from '@mui/icons-material';
 import { Grid, Typography, useTheme } from '@mui/material';
+import { EntityTemplateType, IMongoChildTemplateWithConstraintsPopulated, TemplateItem, ViewType } from '@packages/child-template';
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { PermissionScope } from '@packages/permission';
 import i18next from 'i18next';
 import React, { useMemo, useState } from 'react';
 import { UseMutateAsyncFunction, useQueryClient } from 'react-query';
@@ -9,17 +12,7 @@ import { ActionMode, IMutationWithPayload } from '../../../common/dialogs/ChildT
 import { emptyEntityTemplate } from '../../../common/dialogs/entity';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
-import { ICategoryMap } from '../../../interfaces/categories';
-import {
-    EntityTemplateType,
-    IChildTemplateMap,
-    IChildTemplatePopulated,
-    IMongoChildTemplatePopulated,
-    TemplateItem,
-    ViewType,
-} from '../../../interfaces/childTemplates';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { PermissionScope } from '../../../interfaces/permissions';
+import { ICategoryMap, IChildTemplateMap } from '../../../interfaces/template';
 import { getCountByTemplateIdsRequest } from '../../../services/entitiesService';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
@@ -30,7 +23,7 @@ import { ViewingCard } from '../components/Card';
 import { CardMenu } from '../components/CardMenu';
 import { defaultEntityTemplatePopulated } from '.';
 
-const getChildTemplateChips = (childTemplate: IChildTemplatePopulated) => {
+const getChildTemplateChips = (childTemplate: IMongoChildTemplateWithConstraintsPopulated) => {
     const chips: Array<{ color: string; label: string }> = [];
 
     if (childTemplate.isFilterByUserUnit) {
@@ -58,11 +51,11 @@ const getChildTemplateChips = (childTemplate: IChildTemplatePopulated) => {
 };
 
 interface EntityTemplateCardProps {
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
     setEntityTemplateWizardDialogState: React.Dispatch<
         React.SetStateAction<{
             isWizardOpen: boolean;
-            entityTemplate: IMongoEntityTemplatePopulated | null;
+            entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | null;
         }>
     >;
     setDeleteEntityTemplateDialogState: React.Dispatch<
@@ -80,15 +73,15 @@ interface EntityTemplateCardProps {
     setAddChildTemplateDialogState: React.Dispatch<
         React.SetStateAction<{
             isWizardOpen: boolean;
-            entityTemplate: IMongoEntityTemplatePopulated | null;
+            entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | null;
             mutationProps?: IMutationWithPayload;
         }>
     >;
     updateTemplateStatusAsync: UseMutateAsyncFunction<
-        | IMongoChildTemplatePopulated
+        | IMongoChildTemplateWithConstraintsPopulated
         | {
-              entityTemplate: IMongoEntityTemplatePopulated;
-              childTemplates: IMongoChildTemplatePopulated[];
+              entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
+              childTemplates: IMongoChildTemplateWithConstraintsPopulated[];
           },
         unknown,
         {
@@ -141,7 +134,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
         entityTemplate;
     const [isDeleteButtonDisabled, setIsDeleteButtonDisabled] = useState(false);
 
-    const checkEntityTemplateHasEntities = async (templates: IMongoEntityTemplatePopulated[]) => {
+    const checkEntityTemplateHasEntities = async (templates: IMongoEntityTemplateWithConstraintsPopulated[]) => {
         const templateIds = templates.map(({ _id }) => _id);
         const entitiesCountByTemplates = await getCountByTemplateIdsRequest(templateIds);
         const countByTemplateIdMap = new Map(entitiesCountByTemplates.map(({ templateId, count }) => [templateId, count]));
@@ -253,7 +246,11 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                               const childTemplate = childTemplates?.get(entityTemplate._id)!;
                                               setAddChildTemplateDialogState({
                                                   isWizardOpen: true,
-                                                  entityTemplate: childTemplate.parentTemplate,
+                                                  entityTemplate: {
+                                                      ...childTemplate.parentTemplate,
+                                                      properties: { ...childTemplate.parentTemplate.properties, required: [] },
+                                                      uniqueConstraints: [],
+                                                  },
                                                   mutationProps: {
                                                       actionType: ActionMode.Duplicate,
                                                       payload: {

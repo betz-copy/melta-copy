@@ -1,38 +1,25 @@
 import {
-    ActionErrors,
     ActionTypes,
-    BadRequestError,
+    IAction,
+    IActionPopulated,
+    ICreateEntityMetadata,
+    ICreateEntityMetadataPopulated,
+    IUpdateEntityMetadataPopulated,
+} from '@packages/action';
+import { IChildTemplatePopulated, IChildTemplateProperty, isChildTemplate } from '@packages/child-template';
+import { ActionErrors, IEntity, IEntityWithDirectRelationships, IFailedEntity, IPropertyValue, UploadedFile } from '@packages/entity';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated, PropertyFormat } from '@packages/entity-template';
+import {
     CoordinateSystem,
     extractUtmLocation,
     getCoordinateSystem,
-    IAction,
-    IActionPopulated,
-    IBrokenRule,
-    IBrokenRuleEntity,
-    IBrokenRulePopulated,
-    IChildTemplatePopulated,
-    IChildTemplateProperty,
-    ICreateEntityMetadata,
-    ICreateEntityMetadataPopulated,
-    IEntity,
-    IEntitySingleProperty,
-    IEntityWithDirectRelationships,
-    IEntityWithIgnoredRules,
-    IFailedEntity,
-    IMongoEntityTemplatePopulated,
-    IPropertyValue,
-    IUpdateEntityMetadataPopulated,
-    IValidationErrorData,
-    isChildTemplate,
     isValidUTM,
     isValidWGS84,
     locationConverterToString,
-    logger,
-    PropertyFormat,
-    ServiceError,
     stringToCoordinates,
-    UploadedFile,
-} from '@microservices/shared';
+} from '@packages/map';
+import { IBrokenRule, IBrokenRuleEntity, IBrokenRulePopulated, IEntityWithIgnoredRules, IValidationErrorData } from '@packages/rule-breach';
+import { BadRequestError, logger, ServiceError } from '@packages/utils';
 import { AxiosError } from 'axios';
 import Excel, { Cell, CellModel } from 'exceljs';
 import { StatusCodes } from 'http-status-codes';

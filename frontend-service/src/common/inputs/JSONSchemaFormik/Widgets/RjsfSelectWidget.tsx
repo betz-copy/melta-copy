@@ -1,7 +1,7 @@
+import { IPropertyValue } from '@packages/entity';
+import { PropertyType } from '@packages/entity-template';
 import { asNumber, getUiOptions, guessType, WidgetProps } from '@rjsf/utils';
 import React from 'react';
-import { IPropertyValue } from '../../../../interfaces/entities';
-import { PropertyType } from '../../../../interfaces/entityTemplates';
 import MultipleSelect from '../../MultipleSelect';
 import { CleanViewRow, isCleanView } from './CleanView';
 

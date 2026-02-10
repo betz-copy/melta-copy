@@ -1,4 +1,5 @@
-import { IMongoEntityTemplate, ISearchBatchBody } from '@microservices/shared';
+import { ISearchBatchBody } from '@packages/entity';
+import { IMongoEntityTemplate } from '@packages/entity-template';
 import { IGetExpandedEntityBody } from '../../express/entities/interface';
 import { templatesFilterToNeoQuery } from './searchBodyToNeoQuery';
 

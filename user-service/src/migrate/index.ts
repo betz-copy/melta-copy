@@ -1,4 +1,5 @@
-import { ICompactPermissions, ISubCompactPermissions, logger, PermissionScope } from '@microservices/shared';
+import { ICompactPermissions, ISubCompactPermissions, PermissionScope } from '@packages/permission';
+import { logger } from '@packages/utils';
 import { isAxiosError } from 'axios';
 import config from './config';
 import { IPermissionsOfUser } from './old_interfaces';

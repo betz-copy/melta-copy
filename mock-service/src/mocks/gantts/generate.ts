@@ -1,4 +1,6 @@
-import { IGantt, IGanttItem, IMongoEntityTemplateWithConstraintsPopulated, IMongoRelationshipTemplate } from '@microservices/shared';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IGantt, IGanttItem } from '@packages/gantt';
+import { IMongoRelationshipTemplate } from '@packages/relationship-template';
 import { pickOneIf, pickRandomSet, pickSetIf, popRandom } from '../../utils/mock';
 
 const generateGanttItemEntityTemplate = (

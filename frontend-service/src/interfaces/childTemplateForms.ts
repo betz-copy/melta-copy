@@ -1,0 +1,26 @@
+import type { ByCurrentDefaultValue, IChildTemplatePopulated, IChildTemplateProperty } from '@packages/child-template';
+import type { RelativeDateFilters } from '@packages/rule-breach';
+import type { IAgGridFilter } from '../common/wizards/entityTemplate/commonInterfaces';
+
+export enum ChipType {
+    Filter = 'filters',
+    Default = 'defaultValue',
+    EditByUser = 'isEditableByUser',
+}
+
+export type AllowedChipType = Exclude<ChipType, ChipType.EditByUser>;
+
+export interface IFieldChip {
+    fieldName: string;
+    chipType: AllowedChipType;
+    filterField?: IAgGridFilter;
+    defaultValue?: string | number | boolean | Date | string[];
+}
+
+export type IChildTemplateFormProperty = Omit<IChildTemplateProperty, 'filters'> & { filters?: IAgGridFilter[] };
+
+export interface IChildTemplateForm extends Omit<IChildTemplatePopulated, 'properties'> {
+    properties: { properties: Record<string, IChildTemplateFormProperty> };
+}
+
+export type IFilterDateType = Date | ByCurrentDefaultValue.byCurrentDate | RelativeDateFilters | null;

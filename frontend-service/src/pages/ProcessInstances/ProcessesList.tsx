@@ -1,4 +1,6 @@
 import { CircularProgress, Grid, Typography } from '@mui/material';
+import { PermissionScope } from '@packages/permission';
+import { IMongoProcessInstanceReviewerPopulated, IMongoProcessTemplateReviewerPopulated, Status } from '@packages/process';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
@@ -6,9 +8,6 @@ import { toast } from 'react-toastify';
 import { InfiniteScroll } from '../../common/InfiniteScroll';
 import BlueTitle from '../../common/MeltaDesigns/BlueTitle';
 import { environment } from '../../globals';
-import { PermissionScope } from '../../interfaces/permissions';
-import { IMongoProcessInstancePopulated, Status } from '../../interfaces/processes/processInstance';
-import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 import { searchProcessesRequest } from '../../services/processesService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
@@ -24,7 +23,7 @@ const ProcessesList: React.FC<{
     search: string;
     startDateInput: Date | null;
     endDateInput: Date | null;
-    templatesToShowCheckbox: IMongoProcessTemplatePopulated[]; // todo: support in backend
+    templatesToShowCheckbox: IMongoProcessTemplateReviewerPopulated[];
     statusFilter: 'all' | Status | 'archived';
     isWaitingForMeFilterOn: boolean;
 }> = ({ templatesToShowCheckbox, search, startDateInput, endDateInput, statusFilter, isWaitingForMeFilterOn }) => {
@@ -46,7 +45,7 @@ const ProcessesList: React.FC<{
 
     const [loadingProcesses, setLoadingProcesses] = useState<Record<string, boolean>>({});
     const [loadingWaitingForMeProcesses, setLoadingWaitingForMeProcesses] = useState<boolean>(false);
-    const [waitingForMeProcesses, setWaitingForMeProcesses] = useState<IMongoProcessInstancePopulated[]>([]);
+    const [waitingForMeProcesses, setWaitingForMeProcesses] = useState<IMongoProcessInstanceReviewerPopulated[]>([]);
 
     useEffect(() => {
         if (isWaitingForMeFilterOn) {
@@ -124,7 +123,7 @@ const ProcessesList: React.FC<{
             )}
             <Grid>
                 <ViewingBox minHeight="80vh">
-                    <InfiniteScroll<IMongoProcessInstancePopulated>
+                    <InfiniteScroll<IMongoProcessInstanceReviewerPopulated>
                         queryKey={[
                             'searchProcesses',
                             templatesToShowCheckbox,

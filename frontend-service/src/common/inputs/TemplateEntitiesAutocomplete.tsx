@@ -1,16 +1,18 @@
 import { Add, ExpandMore, InfoOutlined } from '@mui/icons-material';
 import { Autocomplete, AutocompleteInputChangeReason, AutocompleteProps, Box, TextField, Typography } from '@mui/material';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IEntity, IPropertyValue, ISearchEntitiesOfTemplateBody, ISearchFilter } from '@packages/entity';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { CoordinateSystem } from '@packages/map';
+import { IGetUnits } from '@packages/unit';
+import { IWorkspace } from '@packages/workspace';
 import i18next from 'i18next';
 import { debounce } from 'lodash';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useInfiniteQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
-import { IChildTemplateMap, IChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { AndFilter, IEntity, IPropertyValue, ISearchEntitiesOfTemplateBody, ISearchFilter } from '../../interfaces/entities';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IGetUnits } from '../../interfaces/units';
-import { IWorkspace } from '../../interfaces/workspaces';
+import { IChildTemplateMap, IEntityTemplateMap } from '../../interfaces/template';
 import { searchEntitiesOfTemplateClientSideRequest } from '../../services/clientSideService';
 import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
 import { useClientSideUserStore } from '../../stores/clientSideUser';
@@ -23,12 +25,11 @@ import { getDefaultFilterFromTemplate } from '../EntitiesPage/TemplateTablesView
 import { EntityPropertiesInternal } from '../EntityProperties';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import RelationshipReferenceView from '../RelationshipReferenceView';
-import { CoordinateSystem } from './JSONSchemaFormik/Widgets/RjsfLocationWidget';
 
 const { fieldFilterPrefix, twinWalletId } = environment;
 
 export const getChildTemplatesFilter = (
-    childTemplatesOfRelatedTemplate: IChildTemplatePopulated[],
+    childTemplatesOfRelatedTemplate: IMongoChildTemplateWithConstraintsPopulated[],
     workspace: IWorkspace,
     currentUser: UserState['user'],
     isChildTemplate?: boolean,
@@ -145,7 +146,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
                     newFilter[key] = newCondition;
                 }
             }
-            newFilters.push(newFilter as AndFilter);
+            newFilters.push(newFilter as ISearchFilter);
         }
         return { dependentFields, newFilters };
     };

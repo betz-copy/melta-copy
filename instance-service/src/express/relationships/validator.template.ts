@@ -1,4 +1,4 @@
-import { addPropertyToRequest, ValidationError } from '@microservices/shared';
+import { addPropertyToRequest, ValidationError } from '@packages/utils';
 import axios from 'axios';
 import { Request } from 'express';
 import { StatusCodes } from 'http-status-codes';

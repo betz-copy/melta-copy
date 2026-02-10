@@ -1,13 +1,12 @@
 import {
-    DefaultManagerMongo,
     IMongoProcessTemplate,
     IMongoProcessTemplatePopulated,
     IProcessSingleProperty,
     IProcessTemplate,
     IProcessTemplatePopulated,
     IProcessTemplateSearchProperties,
-    ServiceError,
-} from '@microservices/shared';
+} from '@packages/process';
+import { DefaultManagerMongo, ServiceError } from '@packages/utils';
 import { StatusCodes } from 'http-status-codes';
 import { ClientSession, FilterQuery, Types } from 'mongoose';
 import config from '../../../config';

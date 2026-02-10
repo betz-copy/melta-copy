@@ -1,20 +1,20 @@
 import { useMatomo } from '@datapunt/matomo-tracker-react';
 import { Box, debounce, Grid, useScrollTrigger } from '@mui/material';
+import { IKartoffelUser } from '@packages/user';
 import i18next from 'i18next';
 import React, { lazy, Suspense, useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { Route, Switch, useLocation, useRoute } from 'wouter';
 import { LoadingAnimation } from '../../common/LoadingAnimation';
 import { environment } from '../../globals';
-import { IChildTemplateMapPopulated } from '../../interfaces/childTemplates';
-import { IKartoffelUser } from '../../interfaces/users';
+import { IChildTemplateMap } from '../../interfaces/template';
 import { MainBox } from '../../Main.styled';
 import ScrollToTop from '../../ScrollToTop';
 import { AuthService } from '../../services/authService';
 import { getCurrentUserEntity } from '../../services/clientSideService';
 import { useClientSideUserStore } from '../../stores/clientSideUser';
 import { useWorkspaceStore } from '../../stores/workspace';
-import { Topbar } from './mainPage/Topbar';
+import { TopBar } from './mainPage/TopBar';
 
 const UserNotExistsPage = lazy(() => import('./userNotExistsPage'));
 const ClientSideMainPage = lazy(() => import('./mainPage'));
@@ -33,7 +33,7 @@ const ClientSidePageInner: React.FC = () => {
     const [location, navigate] = useLocation();
     const [entityMatch, entityParams] = useRoute('/entity/:entityId');
 
-    const childTemplates = queryClient.getQueryData<IChildTemplateMapPopulated>('getClientSideChildTemplates')!;
+    const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getClientSideChildTemplates')!;
     const usersInfoChildTemplate = childTemplates.get(usersInfoChildTemplateId);
 
     const {
@@ -137,7 +137,7 @@ const ClientSidePageInner: React.FC = () => {
         >
             <Box>
                 <Suspense fallback={<div />}>
-                    {!isError && <Topbar currentUser={currentUser} />}
+                    {!isError && <TopBar currentUser={currentUser} />}
                     <Switch>
                         <Route path="client-side/user-not-exists">
                             <UserNotExistsPage />

@@ -1,4 +1,4 @@
-import { createController, ValidateRequest } from '@microservices/shared';
+import { createController, ValidateRequest } from '@packages/utils';
 import { Router } from 'express';
 import IFrameController from './controller';
 import { createIFrameSchema, deleteIFrameSchema, getIFrameByIdSchema, searchIFramesSchema, updateIFrameSchema } from './validator.schema';

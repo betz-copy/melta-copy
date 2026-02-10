@@ -1,4 +1,4 @@
-import { ICauseInstance } from '@microservices/shared';
+import { ICauseInstance } from '@packages/rule-breach';
 import { Date as Neo4jDate, DateTime as Neo4jDateTime } from 'neo4j-driver';
 
 export interface ICause {

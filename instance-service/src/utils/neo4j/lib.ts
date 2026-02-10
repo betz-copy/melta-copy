@@ -1,17 +1,10 @@
-import {
-    ActionErrors,
-    IEntity,
-    IEntityExpanded,
-    IEntityWithDirectRelationships,
-    IKartoffelUser,
-    IMongoEntityTemplate,
-    IPropertyValue,
-    IRelationship,
-    IUserField,
-    PropertyFormat,
-    SplitBy,
-    ValidationError,
-} from '@microservices/shared';
+import { SplitBy } from '@packages/common';
+import { ActionErrors, IEntity, IEntityExpanded, IEntityWithDirectRelationships, IPropertyValue, IUserField } from '@packages/entity';
+import { IMongoEntityTemplate, PropertyFormat } from '@packages/entity-template/dist';
+import { mapConfig } from '@packages/map';
+import { IRelationship } from '@packages/relationship';
+import { IKartoffelUser } from '@packages/user/dist';
+import { ValidationError } from '@packages/utils';
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
 import neo4j, { Node as Neo4jNode, Relationship as Neo4jRelationship, QueryResult, Transaction } from 'neo4j-driver';
 import { v4 as uuidv4 } from 'uuid';
@@ -22,13 +15,14 @@ import Kartoffel from '../../externalServices/kartoffel';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateManager';
 
 const {
-    map: {
-        polygon: { polygonPrefix, polygonSuffix },
-        srid,
-    },
     timezone,
     neo4j: { stringPropertySuffix, colorPropertySuffix, booleanPropertySuffix, filePropertySuffix, locationCoordinateSystemSuffix },
 } = config;
+
+const {
+    polygon: { polygonPrefix, polygonSuffix },
+    srid,
+} = mapConfig;
 
 export type Node = Neo4jNode<number>;
 type Relationship = Neo4jRelationship<number>;

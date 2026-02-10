@@ -1,16 +1,3 @@
-import { AxiosError } from 'axios';
-import i18next from 'i18next';
-import { mapValues, pickBy } from 'lodash';
-import React from 'react';
-import { useMutation, useQueryClient } from 'react-query';
-import { toast } from 'react-toastify';
-import { EntityWizardValues } from '../../../common/dialogs/entity';
-import ExecWithRuleBreachDialog from '../../../common/dialogs/execWithRuleBreachDialog';
-import { ErrorToast } from '../../../common/ErrorToast';
-import { environment } from '../../../globals';
-import { IEntity } from '../../../interfaces/entities';
-import { IErrorResponse } from '../../../interfaces/error';
-import { IBrokenRuleEntity, ITablesResults } from '../../../interfaces/excel';
 import {
     ActionTypes,
     IAction,
@@ -23,10 +10,23 @@ import {
     IUpdateEntityMetadataPopulated,
     IUpdateMultipleEntitiesMetadata,
     IUpdateMultipleEntitiesMetadataPopulated,
-} from '../../../interfaces/ruleBreaches/actionMetadata';
-import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
-import { IRuleBreachRequestPopulated } from '../../../interfaces/ruleBreaches/ruleBreachRequest';
-import { ActionOnFail, IRuleMap } from '../../../interfaces/rules';
+} from '@packages/action';
+import { IEntity } from '@packages/entity';
+import { ActionOnFail } from '@packages/rule';
+import { IRuleBreach, IRuleBreachPopulated, IRuleBreachRequestPopulated } from '@packages/rule-breach';
+import { AxiosError } from 'axios';
+import i18next from 'i18next';
+import { mapValues, pickBy } from 'lodash';
+import React from 'react';
+import { useMutation, useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
+import { EntityWizardValues } from '../../../common/dialogs/entity';
+import ExecWithRuleBreachDialog from '../../../common/dialogs/execWithRuleBreachDialog';
+import { ErrorToast } from '../../../common/ErrorToast';
+import { environment } from '../../../globals';
+import { IErrorResponse } from '../../../interfaces/error';
+import { IBrokenRuleEntity, ITablesResults } from '../../../interfaces/excel';
+import { IRuleMap } from '../../../interfaces/template';
 import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesService';
 import { groupActionsByEntityId, groupBrokenRulesByEntity } from '../../../utils/loadEntities';
 

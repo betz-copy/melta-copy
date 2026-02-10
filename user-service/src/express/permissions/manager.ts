@@ -1,16 +1,14 @@
+import { RecursiveNullable } from '@packages/common';
 import {
     ICompactNullablePermissions,
     ICompactPermissions,
     IPermission,
     ISubCompactPermissions,
-    IUser,
-    IUserPopulated,
     PermissionScope,
     PermissionType,
-    RecursiveNullable,
-    RelatedPermission,
-    ValidationError,
-} from '@microservices/shared';
+} from '@packages/permission';
+import { IUser, IUserPopulated, RelatedPermission } from '@packages/user';
+import { ValidationError } from '@packages/utils';
 import { mapValues } from 'lodash';
 import { FilterQuery } from 'mongoose';
 import { flattenObject, typedObjectEntries } from '../../utils';

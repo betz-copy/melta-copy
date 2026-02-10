@@ -1,9 +1,9 @@
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated, IProperties } from '@packages/entity-template';
+import { IKartoffelUser } from '@packages/user';
 import { UiSchema } from '@rjsf/utils';
 import { flatten } from 'flat';
 import { FormikHelpers } from 'formik';
 import i18next from 'i18next';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IProperties } from '../../../interfaces/entityTemplates';
-import { IKartoffelUser } from '../../../interfaces/users';
 import { EntityWizardValues } from '../../dialogs/entity';
 import { kartoffelPersonalDataFields } from '../../wizards/entityTemplate/KartoffelUserField';
 
@@ -29,7 +29,7 @@ const changeRelatedUserFields = (properties: IProperties['properties'], changedU
 };
 
 const getFieldUiSchema = (
-    schema: IMongoEntityTemplatePopulated['properties'],
+    schema: IMongoEntityTemplateWithConstraintsPopulated['properties'],
     values: EntityWizardValues,
     setValues: FormikHelpers<EntityWizardValues>['setValues'],
     isEditMode: boolean,
@@ -159,7 +159,7 @@ const getFieldUiSchema = (
 };
 
 export const uiSchemaUtils = (
-    schema: IMongoEntityTemplatePopulated['properties'],
+    schema: IMongoEntityTemplateWithConstraintsPopulated['properties'],
     values: EntityWizardValues,
     setValues: FormikHelpers<EntityWizardValues>['setValues'],
     isEditMode: boolean,

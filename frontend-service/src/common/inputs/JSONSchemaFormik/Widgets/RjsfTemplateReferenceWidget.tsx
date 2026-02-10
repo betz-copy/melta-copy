@@ -1,11 +1,10 @@
+import { IEntity } from '@packages/entity';
 import { WidgetProps } from '@rjsf/utils';
 import { useFormikContext } from 'formik';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { IChildTemplateMap } from '../../../../interfaces/childTemplates';
-import { IEntity } from '../../../../interfaces/entities';
-import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import { IChildTemplateMap, IEntityTemplateMap } from '../../../../interfaces/template';
 import { useWorkspaceStore } from '../../../../stores/workspace';
 import { EntityWizardValues } from '../../../dialogs/entity';
 import TemplateEntitiesAutocomplete from '../../TemplateEntitiesAutocomplete';
@@ -87,7 +86,7 @@ const RjsfTemplateReferenceWidget = ({
     return (
         <TemplateEntitiesAutocomplete
             {...widgetProps}
-            template={childTemplatesOfRelatedTemplate.length ? childTemplatesOfRelatedTemplate[0].parentTemplate : relatedEntityTemplate!}
+            template={childTemplatesOfRelatedTemplate.length ? childTemplatesOfRelatedTemplate[0].parentTemplate : relatedEntityTemplate}
             showField={schema.relationshipReference.relatedTemplateField}
             value={value || null}
             label={label}

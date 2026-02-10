@@ -4,12 +4,14 @@ import i18next from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { getEmptyImage } from 'react-dnd-html5-backend';
+import { ItemTypes } from '../../../../interfaces/inputs';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import MeltaTooltip from '../../../MeltaDesigns/MeltaTooltip';
 import { MemoAttachmentEditCard } from '../AttachmentEditCard';
 import { CommonFormInputProperties, FieldProperty, GroupProperty, PropertyItem } from '../commonInterfaces';
 import { FieldEditCardProps, MemoFieldEditCard } from '../FieldEditCard';
-import { AttachmentsProps, FieldBlockAccordion, FieldProps, GroupProps, ItemTypes } from './interfaces';
+import { AttachmentsProps, FieldProps, GroupProps } from './interfaces';
+import { FieldBlockAccordion } from './styles';
 
 // biome-ignore lint/suspicious/noExplicitAny: too complicated
 export const getFieldData = (displayValuesCopy: any, fieldIndex: number, groupIndex?: number) => {

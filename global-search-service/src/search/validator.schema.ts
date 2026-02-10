@@ -1,4 +1,4 @@
-import { IndexingAction } from '@microservices/shared';
+import { IndexingAction } from '@packages/global-search';
 import Joi from 'joi';
 
 export const requestSchema = Joi.object({

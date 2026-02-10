@@ -1,4 +1,5 @@
-import { IMongoProcessTemplatePopulated, IPropertyValue } from '@microservices/shared';
+import { IPropertyValue } from '@packages/entity';
+import { IMongoProcessTemplatePopulated } from '@packages/process';
 import { Axios } from 'axios';
 import { JSONSchemaFaker } from 'json-schema-faker';
 import pLimit from 'p-limit';

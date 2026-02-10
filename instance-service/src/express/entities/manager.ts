@@ -1,52 +1,41 @@
+import { ActionTypes, IAction, ICreateEntityMetadata, IDuplicateEntityMetadata, IUpdateEntityMetadata } from '@packages/action';
+import { ActionsLog, IActivityLog, IUpdatedFields } from '@packages/activity-log';
+import { IChartBody } from '@packages/chart';
+import { IChildTemplatePopulated } from '@packages/child-template';
 import {
-    ActionOnFail,
-    ActionsLog,
-    ActionTypes,
-    BadRequestError,
-    IAction,
-    IActivityLog,
-    IBrokenRule,
-    ICausesOfInstance,
-    IChartBody,
-    IChildTemplatePopulated,
     IConstraint,
     IConstraintsOfTemplate,
-    ICreateEntityMetadata,
     IDeleteEntityBody,
-    IDeleteRelationshipReference,
-    IDuplicateEntityMetadata,
     IEntity,
-    IEntitySingleProperty,
-    IEntityTemplate,
     IEntityWithDirectRelationships,
-    IGetUnits,
-    IKartoffelUser,
-    IMongoEntityTemplate,
-    IMongoRelationshipTemplate,
-    IMongoRule,
     IMultipleSelect,
     IPropertyValue,
-    IRelationship,
-    IRelationshipReference,
     IRequiredConstraint,
-    IRuleMail,
     ISearchBatchBody,
     ISearchEntitiesByLocationBody,
     ISearchEntitiesByTemplatesBody,
     ISearchEntitiesOfTemplateBody,
-    ISemanticSearchResult,
     IUniqueConstraint,
     IUniqueConstraintOfTemplate,
-    IUpdatedFields,
-    IUpdateEntityMetadata,
-    logger,
-    NotFoundError,
     Polygon,
+} from '@packages/entity';
+import {
+    IEntitySingleProperty,
+    IEntityTemplate,
+    IMongoEntityTemplate,
+    IRelationshipReference,
     PropertyFormat,
     PropertyType,
-    ServiceError,
-    ValidationError,
-} from '@microservices/shared';
+} from '@packages/entity-template';
+import { mapConfig } from '@packages/map';
+import { IDeleteRelationshipReference, IRelationship } from '@packages/relationship';
+import { IMongoRelationshipTemplate } from '@packages/relationship-template';
+import { ActionOnFail, IMongoRule, IRuleMail } from '@packages/rule';
+import { IBrokenRule, ICausesOfInstance } from '@packages/rule-breach';
+import { ISemanticSearchResult } from '@packages/semantic-search';
+import { IGetUnits } from '@packages/unit';
+import { IKartoffelUser } from '@packages/user/dist';
+import { BadRequestError, logger, NotFoundError, ServiceError, ValidationError } from '@packages/utils';
 import { booleanPointInPolygon, featureCollection, intersect, point as turfPoint, polygon as turfPolygon } from '@turf/turf';
 import { startOfToday, startOfYesterday } from 'date-fns';
 import { flatten, unflatten } from 'flatley';
@@ -107,13 +96,9 @@ import {
 import { updateColorsForIndicatorRulesWithTodayFunc } from './updateColorsForBrokenRulesWithIndicator';
 import { addStringFieldsAndNormalizeSpecialStringValues } from './validator.template';
 
-const {
-    brokenRulesFakeEntityIdPrefix,
-    deleteEntitiesMaxLimit,
-    map: {
-        wgs84: { maxLatitude, maxLongitude, minLatitude, minLongitude },
-    },
-} = config;
+const { brokenRulesFakeEntityIdPrefix, deleteEntitiesMaxLimit } = config;
+
+const { maxLatitude, maxLongitude, minLatitude, minLongitude } = mapConfig.wgs84;
 
 const { BAD_REQUEST: badRequestStatus } = StatusCodes;
 
@@ -554,7 +539,12 @@ class EntityManager extends DefaultManagerNeo4j {
                 const actionHandlers: Record<
                     Exclude<
                         ActionTypes,
-                        ActionTypes.UpdateStatus | ActionTypes.CreateRelationship | ActionTypes.DeleteRelationship | ActionTypes.CronjobRun
+                        | ActionTypes.UpdateStatus
+                        | ActionTypes.CreateRelationship
+                        | ActionTypes.DeleteRelationship
+                        | ActionTypes.UpdateMultipleEntities
+                        | ActionTypes.CreateClientSideEntity
+                        | ActionTypes.CronjobRun
                     >,
                     () => Promise<IEntity | undefined>
                 > = {
@@ -2533,7 +2523,7 @@ class EntityManager extends DefaultManagerNeo4j {
         const specialProperties = handleChartPropertiesTemplate(entityTemplate);
 
         const chartPromises = chartsData.map(async ({ filter, xAxis, yAxis, _id }) => {
-            const templatesFilter = { [entityTemplate._id]: { filter, showRelationships: false } };
+            const templatesFilter = { [entityTemplate._id]: { filter } };
 
             const { cypherQuery: filterQuery, parameters } = await templatesFilterToNeoQuery(templatesFilter, entityTemplatesMap);
             const query = buildChartAggregationQuery(xAxis, yAxis, specialProperties, entityTemplate, filterQuery);

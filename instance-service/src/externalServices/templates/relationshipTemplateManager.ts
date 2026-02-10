@@ -1,12 +1,9 @@
-import { IMongoRelationshipTemplate, IMongoRule, ISearchRelationshipTemplatesBody, ISearchRulesBody } from '@microservices/shared';
+import { IMongoRelationshipTemplate, ISearchRelationshipTemplatesBody } from '@packages/relationship-template';
+import { IMongoRule, ISearchRulesBody } from '@packages/rule';
 import config from '../../config';
 import TemplatesService from '.';
 
-const {
-    templateService: {
-        relationships: { getRelationshipByIdRoute, searchTemplatesRoute, searchRulesRoute },
-    },
-} = config;
+const { getRelationshipByIdRoute, searchTemplatesRoute, searchRulesRoute } = config.templateService.relationships;
 
 class RelationshipsTemplateManagerService extends TemplatesService {
     async searchRelationshipTemplates(searchBody: ISearchRelationshipTemplatesBody = {}) {

@@ -1,4 +1,6 @@
-import { IEntity, IMongoEntityTemplate, IMongoRelationshipTemplate, ISearchFilter } from '@microservices/shared';
+import { IEntity, ISearchFilter } from '@packages/entity';
+import { IMongoEntityTemplate } from '@packages/entity-template';
+import { IMongoRelationshipTemplate } from '@packages/relationship-template';
 
 export interface IGetExpandedEntityBody {
     templateIds: string[];

@@ -1,7 +1,6 @@
 import {
     IAggregationGroup,
     IArgument,
-    ICausesOfInstance,
     IEquation,
     IFormula,
     IGroup,
@@ -15,7 +14,8 @@ import {
     isPropertyOfVariable,
     isRegularFunction,
     isSumAggFunction,
-} from '@microservices/shared';
+} from '@packages/rule';
+import { ICausesOfInstance } from '@packages/rule-breach';
 import { groupBy, isEqual } from 'lodash';
 import filteredMap from '../../utils/filteredMap';
 import { IRuleFailure } from './interfaces';

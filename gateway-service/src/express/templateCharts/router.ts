@@ -1,4 +1,4 @@
-import { ValidateRequest } from '@microservices/shared';
+import { ValidateRequest } from '@packages/utils';
 import { Router } from 'express';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 import { createWorkspacesController } from '../../utils/express';

@@ -1,13 +1,8 @@
-import {
-    CoordinateSystem,
-    IAggregation,
-    IAggregationType,
-    IAxisField,
-    IGetUnits,
-    IMongoEntityTemplate,
-    IPropertyValue,
-    locationConverterToString,
-} from '@microservices/shared';
+import { IAggregation, IAggregationType, IAxisField } from '@packages/chart';
+import { IPropertyValue } from '@packages/entity';
+import { IMongoEntityTemplate } from '@packages/entity-template';
+import { CoordinateSystem, locationConverterToString, mapConfig } from '@packages/map';
+import { IGetUnits } from '@packages/unit';
 import { fromZonedTime } from 'date-fns-tz';
 import neo4j from 'neo4j-driver';
 import config from '../../config';
@@ -17,11 +12,10 @@ import { formatDate } from '../neo4j/lib';
 
 const {
     neo4j: { relationshipReferencePropertySuffix, locationCoordinateSystemSuffix },
-    map: {
-        polygon: { polygonPrefix, polygonSuffix },
-    },
     timezone,
 } = config;
+
+const { polygonPrefix, polygonSuffix } = mapConfig.polygon;
 
 export const handleChartPropertiesTemplate = (entityTemplate: IMongoEntityTemplate) => {
     const specialProperties: Record<string, string> = {};
