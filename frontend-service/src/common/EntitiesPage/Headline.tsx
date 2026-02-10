@@ -13,6 +13,7 @@ import { BaseTextFieldProps, Box, CircularProgress, Grid, IconButton, ToggleButt
 import i18next from 'i18next';
 import { debounce } from 'lodash';
 import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
+import { environment } from '../../globals';
 import { IMongoCategory } from '../../interfaces/categories';
 import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
 import { IEntity } from '../../interfaces/entities';
@@ -28,6 +29,8 @@ import BlueTitle from '../MeltaDesigns/BlueTitle';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import TemplatesSelectCheckbox from '../templatesSelectCheckbox';
 import { AddEntityButton } from './Buttons/AddEntity';
+
+const { isActiveSemanticSearch } = environment.features;
 
 export const GlobalSearchBar: React.FC<{
     inputValue?: string;
@@ -60,8 +63,8 @@ export const GlobalSearchBar: React.FC<{
     const theme = useTheme();
     const { trackEvent } = useMatomo();
 
-    const [semanticSearch, setSemanticSearch] = useLocalStorage<boolean>('semanticSearch', true);
     const [urlSearchParams, setUrlSearchParams] = useSearchParams();
+    const [semanticSearch, setSemanticSearch] = useLocalStorage<boolean>('semanticSearch', false);
     const urlSemanticSearch = urlSearchParams.get('semanticSearch');
     const boolUrl = convertToBool(urlSemanticSearch!);
 
@@ -75,7 +78,7 @@ export const GlobalSearchBar: React.FC<{
                 if (gridApi) gridApi.setGridOption('quickFilterText', value);
                 trackEvent({
                     category: 'search',
-                    action: semanticSearch ? 'on' : 'off',
+                    action: isActiveSemanticSearch ? (semanticSearch! ? 'on' : 'off') : 'off',
                 });
             }
         }, 300),
@@ -84,6 +87,8 @@ export const GlobalSearchBar: React.FC<{
 
     useEffect(() => {
         // If a value exists in the url, override the value in the localStorage.
+        // ⚠️ May cause back-button loop when syncing URL and localStorage (adds param on mount → triggers navigation).
+
         const realValue = urlSemanticSearch ? boolUrl : semanticSearch;
 
         if (realValue !== semanticSearch) setSemanticSearch(realValue);
@@ -99,21 +104,26 @@ export const GlobalSearchBar: React.FC<{
     }, [debouncedSearchValue, autoSearch, debouncedSearch]);
 
     const aiToolTip = useCallback(
-        () => (
-            <MeltaTooltip title={boolUrl ? i18next.t('globalSearch.turnOffSemanticSearch') : i18next.t('globalSearch.turnOnSemanticSearch')} arrow>
-                <IconButton
-                    onClick={() =>
-                        setUrlSearchParams({
-                            ...Object.fromEntries(urlSearchParams.entries()),
-                            semanticSearch: (!convertToBool(urlSemanticSearch!)).toString(),
-                        })
-                    }
-                    sx={{ padding: 0, paddingLeft: 0.5 }}
+        () =>
+            isActiveSemanticSearch ? (
+                <MeltaTooltip
+                    title={boolUrl ? i18next.t('globalSearch.turnOffSemanticSearch') : i18next.t('globalSearch.turnOnSemanticSearch')}
+                    arrow
                 >
-                    {boolUrl ? <AutoAwesome color="primary" /> : <AutoAwesomeOutlined />}
-                </IconButton>
-            </MeltaTooltip>
-        ),
+                    <IconButton
+                        onClick={() =>
+                            // 💡 Consider `replace: true` to avoid multiple history entries on param changes (prevents back-button cycling).
+                            setUrlSearchParams({
+                                ...Object.fromEntries(urlSearchParams.entries()),
+                                semanticSearch: (!convertToBool(urlSemanticSearch!)).toString(),
+                            })
+                        }
+                        sx={{ padding: 0, paddingLeft: 0.5 }}
+                    >
+                        {boolUrl ? <AutoAwesome color="primary" /> : <AutoAwesomeOutlined />}
+                    </IconButton>
+                </MeltaTooltip>
+            ) : null,
         [boolUrl, setUrlSearchParams, urlSearchParams, urlSemanticSearch],
     );
 
@@ -139,7 +149,7 @@ export const GlobalSearchBar: React.FC<{
                     >
                         <Search sx={{ fontSize: '1.25rem' }} />
                     </IconButton>
-                    {showAiButton && aiToolTip()}
+                    {isActiveSemanticSearch && showAiButton && aiToolTip()}
                 </Box>
             }
             placeholder={placeholder}
