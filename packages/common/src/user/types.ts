@@ -71,4 +71,3 @@ export type IKartoffelUserStringFields = Omit<IKartoffelUser, 'mobilePhone' | 'p
     mobilePhone?: string;
     phone?: string;
 };
-
