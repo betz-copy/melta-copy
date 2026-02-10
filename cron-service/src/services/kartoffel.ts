@@ -1,6 +1,6 @@
-import { IKartoffelUser } from '@microservices/shared';
 import axios from 'axios';
 import config from '../config';
+import { IKartoffelUser } from '@packages/user';
 
 const { url, baseEntitiesRoute, requestTimeout, getByIdRoute } = config.kartoffel;
 
