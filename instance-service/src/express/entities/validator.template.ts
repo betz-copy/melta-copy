@@ -556,8 +556,12 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
                 return;
             }
 
-            const propertyValue = entityProperties[key];
+            let propertyValue = entityProperties[key];
             const { type, format, items } = value;
+
+            if (type === 'array' && Array.isArray(propertyValue)) {
+                propertyValue = propertyValue.filter((item) => item !== null && item !== undefined);
+            }
 
             // For Neo4j fulltext search (supports only string properties)
             if (type !== 'string') {
@@ -595,8 +599,8 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
                 return;
             }
 
-            if (items?.format === 'user' && typeof propertyValue === 'object') {
-                normalizedEntity[key] = propertyValue.map((user) => user._id);
+            if (items?.format === 'user' && Array.isArray(propertyValue)) {
+                normalizedEntity[key] = propertyValue.map((user) => (typeof user === 'string' ? user : user?._id));
                 return;
             }
 

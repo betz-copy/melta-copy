@@ -441,6 +441,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                     if (
                         value &&
                         typeof value === 'object' &&
+                        !Array.isArray(value) &&
                         !value.properties &&
                         schema.properties[key] &&
                         schema.properties[key]?.format !== 'location'
