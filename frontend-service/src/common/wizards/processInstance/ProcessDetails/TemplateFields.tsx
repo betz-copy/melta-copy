@@ -1,4 +1,5 @@
 import { Grid } from '@mui/material';
+import { IProcessSingleProperty } from '@packages/process';
 import { Field } from 'formik';
 import i18next from 'i18next';
 import { Dictionary } from 'lodash';

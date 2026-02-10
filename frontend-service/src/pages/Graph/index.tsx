@@ -85,7 +85,6 @@ const Graph: React.FC = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const templateOptions = [...entityTemplates.values(), ...childTemplates.values()];
-    // biome-ignore lint/correctness/useExhaustiveDependencies: dependencies
     useEffect(() => {
         const updateGraphSize = () => {
             const mainBox = ref.current?.parentElement;

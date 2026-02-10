@@ -1,4 +1,5 @@
 import { Box, Grid } from '@mui/material';
+import { IProcessSingleProperty } from '@packages/process';
 import { FormikErrors, FormikProps } from 'formik';
 import i18next from 'i18next';
 import React from 'react';

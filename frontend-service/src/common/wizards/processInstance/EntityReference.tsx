@@ -1,4 +1,6 @@
-import { CloseIcon } from '@mui/icons-material';
+import { AppRegistration } from '@mui/icons-material';
+import CloseIcon from '@mui/icons-material/Close';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { Grid, IconButton, Typography } from '@mui/material';
 import { PermissionScope } from '@packages/permission';
 import { IReferencedEntityForProcess } from '@packages/process';

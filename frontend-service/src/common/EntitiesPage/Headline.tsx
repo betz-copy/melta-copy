@@ -17,6 +17,7 @@ import i18next from 'i18next';
 import { debounce } from 'lodash';
 import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import { environment } from '../../globals';
+import { ITemplate } from '../../interfaces/template';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { convertToBool } from '../../utils/convertStringToBool';

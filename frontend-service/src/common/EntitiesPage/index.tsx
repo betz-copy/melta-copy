@@ -1,7 +1,8 @@
 import { Box, Grid } from '@mui/material';
 import { IMongoCategory } from '@packages/category';
-import { isChildTemplate } from '@packages/child-template';
+import { IMongoChildTemplatePopulated, isChildTemplate } from '@packages/child-template';
 import { IEntity, IExportEntitiesBody } from '@packages/entity';
+import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
 import { mapValues } from 'lodash';
