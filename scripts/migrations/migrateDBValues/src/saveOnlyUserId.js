@@ -52,11 +52,26 @@ export const getKartoffelPropsAggregation = [
                     in: '$$filteredProperty.k',
                 },
             },
+            relationshipRefsKeys: {
+                $map: {
+                    input: {
+                        $filter: {
+                            input: { $objectToArray: '$properties.properties' },
+                            as: 'property',
+                            cond: {
+                                $eq: ['$$property.v.items.format', 'relationshipReference'],
+                            },
+                        },
+                    },
+                    as: 'filteredProperty',
+                    in: '$$filteredProperty.k',
+                },
+            },
         },
     },
     {
         $match: {
-            $or: [{ kartoffelKeys: { $ne: [] } }, { userKeys: { $ne: [] } }, { usersKeys: { $ne: [] } }],
+            $or: [{ kartoffelKeys: { $ne: [] } }, { userKeys: { $ne: [] } }, { usersKeys: { $ne: [] } }, { relationshipRefsKeys: { $ne: [] } }],
         },
     },
     {
@@ -70,6 +85,7 @@ export const getKartoffelPropsAggregation = [
             kartoffelKeys: 1,
             usersKeys: 1,
             userKeys: 1,
+            relationshipRefsKeys: 1,
         },
     },
 ];
@@ -119,6 +135,11 @@ const transformNeoScript = async (mongoResult, session) => {
         for (const userKey of template.userKeys) {
             const constraintsToDelete = [];
             constraintResult.records.forEach((record) => {
+                const labelsOrTypes = record.get('labelsOrTypes');
+                const label = labelsOrTypes[0];
+
+                if (label !== template._id) return;
+
                 const constraintProperties = record.get('properties');
                 constraintProperties.forEach((property) => {
                     if (property === `${userKey}.id_userField`) {
@@ -143,6 +164,11 @@ const transformNeoScript = async (mongoResult, session) => {
         for (const usersKey of template.usersKeys) {
             const constraintsToDelete = [];
             constraintResult.records.forEach((record) => {
+                const labelsOrTypes = record.get('labelsOrTypes');
+                const label = labelsOrTypes[0];
+
+                if (label !== template._id) return;
+
                 const constraintProperties = record.get('properties');
                 constraintProperties.forEach((property) => {
                     if (property === `${usersKey}.ids_usersFields`) {
