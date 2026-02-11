@@ -334,7 +334,6 @@ class EntityManager extends DefaultManagerNeo4j {
                 },
             },
         );
-        console.log({ createdEntity });
 
         await Promise.all(
             Object.entries(entityTemplate.properties.properties).map(async ([name, property]) => {
@@ -1237,7 +1236,12 @@ class EntityManager extends DefaultManagerNeo4j {
                 const relatedTemplateId = template.properties.properties[key].relationshipReference?.relatedTemplateId;
                 if (!relatedTemplateId) return;
                 const relatedTemplate = await entityTemplateService.getEntityTemplateById(relatedTemplateId);
-                const { properties: props, coloredFields } = await normalizeFields(flatten(value.properties, { safe: true }), relatedTemplate, true);
+                const { properties: props, coloredFields } = await normalizeFields(
+                    flatten(value.properties, { safe: true }),
+                    relatedTemplate,
+                    true,
+                    true,
+                );
 
                 acc[key] = {
                     ...value,

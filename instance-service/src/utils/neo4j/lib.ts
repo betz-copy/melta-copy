@@ -43,11 +43,33 @@ export const normalizeFields = async (
     properties: Record<string, IPropertyValue>,
     template?: IMongoEntityTemplate,
     isGetMode?: boolean,
+    isRelationshipRef: boolean = false,
 ): Promise<{ properties: Record<string, IPropertyValue>; coloredFields: Record<string, string> }> => {
     const props = {};
     const coloredFields = {};
 
     const userKeys: Set<string> = new Set();
+
+    // TODO: REMOVE THIS IF AFTER RELATIONSHIP REF REFACTOR
+    const userFieldPropertySuffix = '_userField';
+    const usersFieldsPropertySuffix = '_usersFields';
+    const userOriginalAndSuffixFieldsMap = [
+        { originalFieldName: '_id', suffixFieldName: '.id' },
+        { originalFieldName: 'fullName', suffixFieldName: '.fullName' },
+        { originalFieldName: 'jobTitle', suffixFieldName: '.jobTitle' },
+        { originalFieldName: 'hierarchy', suffixFieldName: '.hierarchy' },
+        { originalFieldName: 'mail', suffixFieldName: '.mail' },
+        { originalFieldName: 'userType', suffixFieldName: '.userType' },
+    ];
+    const usersArrayOriginalAndSuffixFieldsMap = [
+        { originalFieldName: '_id', suffixFieldName: '.ids' },
+        { originalFieldName: 'fullName', suffixFieldName: '.fullNames' },
+        { originalFieldName: 'jobTitle', suffixFieldName: '.jobTitles' },
+        { originalFieldName: 'hierarchy', suffixFieldName: '.hierarchies' },
+        { originalFieldName: 'mail', suffixFieldName: '.mails' },
+    ];
+    const usersArrayKeys: Set<string> = new Set<string>();
+    const userKeysRelRef: Set<string> = new Set<string>();
 
     for (const [key, value] of Object.entries(properties)) {
         const suffixes = [stringPropertySuffix, booleanPropertySuffix, filePropertySuffix, locationCoordinateSystemSuffix];
@@ -55,6 +77,24 @@ export const normalizeFields = async (
         if (suffixes.some((suffix) => key.endsWith(suffix))) continue;
 
         if (key.endsWith(colorPropertySuffix) && properties[key] !== undefined) coloredFields[key.slice(0, -colorPropertySuffix.length)] = value;
+
+        // TODO: REMOVE THIS IF AFTER RELATIONSHIP REF REFACTOR
+        if (isRelationshipRef) {
+            if (key.includes('.') && key.endsWith(`${usersFieldsPropertySuffix}`)) {
+                // Find the user field of the key (everything before the suffix)
+                const currentUserField = usersArrayOriginalAndSuffixFieldsMap.find(({ suffixFieldName }) =>
+                    key.includes(suffixFieldName),
+                )!.suffixFieldName;
+                usersArrayKeys.add(key.split(currentUserField)[0]);
+                continue;
+            }
+
+            if (key.includes('.') && key.endsWith(`${userFieldPropertySuffix}`)) {
+                const currentUserField = userOriginalAndSuffixFieldsMap.find(({ suffixFieldName }) => key.includes(suffixFieldName))!.suffixFieldName;
+                userKeysRelRef.add(key.split(currentUserField)[0]);
+                continue;
+            }
+        }
 
         if (template && isGetMode) {
             // it's entity and not relationship
@@ -91,6 +131,38 @@ export const normalizeFields = async (
         }
 
         props[key] = value;
+    }
+
+    // TODO: REMOVE THIS IF AFTER RELATIONSHIP REF REFACTOR
+    if (isRelationshipRef) {
+        if (usersArrayKeys.size) {
+            for (const userKey of usersArrayKeys) {
+                props[userKey] = properties[`${userKey}${usersArrayOriginalAndSuffixFieldsMap[0].suffixFieldName}${usersFieldsPropertySuffix}`].map(
+                    (_id: string, index: string | number) => {
+                        const objToReturn: Record<string, unknown> = {};
+
+                        for (const userField of usersArrayOriginalAndSuffixFieldsMap) {
+                            objToReturn[userField.originalFieldName] =
+                                properties[`${userKey}${userField.suffixFieldName}${usersFieldsPropertySuffix}`][index];
+                        }
+
+                        return objToReturn;
+                    },
+                );
+            }
+        }
+
+        if (userKeysRelRef.size) {
+            for (const userKey of userKeysRelRef) {
+                const objToReturn: Record<string, unknown> = {};
+
+                for (const userField of userOriginalAndSuffixFieldsMap) {
+                    objToReturn[userField.originalFieldName] = properties[`${userKey}${userField.suffixFieldName}${userFieldPropertySuffix}`];
+                }
+
+                props[userKey] = objToReturn;
+            }
+        }
     }
 
     if (userKeys.size && template) {
