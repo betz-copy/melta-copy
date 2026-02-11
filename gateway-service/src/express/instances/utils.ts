@@ -68,18 +68,7 @@ class InstancesUtils extends DefaultController {
 
                     case 'user': {
                         try {
-                            if (typeof value !== 'string') {
-                                throw new ValidationError('must be user', {
-                                    message: 'must be user',
-                                    path: key,
-                                    schemaPath: `#/properties/${key}/type`,
-                                    params: {
-                                        type: prop.type,
-                                    },
-                                });
-                            }
-                            const userId: string = JSON.parse(value)._id;
-                            await Kartoffel.getUserById(userId);
+                            await Kartoffel.getUserById(value);
                         } catch {
                             throw new ValidationError('must be user', {
                                 message: 'must be user',
@@ -115,9 +104,8 @@ class InstancesUtils extends DefaultController {
                 }
 
                 if (prop?.items?.format === 'user') {
-                    const userIds: string[] = value.map((userString) => JSON.parse(userString)._id);
-                    const users = await Kartoffel.getUsersByIds(userIds);
-                    if (userIds.length !== users.length) {
+                    const users = await Kartoffel.getUsersByIds(value);
+                    if (value.length !== users.length) {
                         throw new ValidationError('must be users', {
                             message: 'must be users',
                             path: key,

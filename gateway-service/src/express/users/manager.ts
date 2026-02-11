@@ -2,12 +2,20 @@ import { DeepPartial, RecursiveNullable } from '@packages/common';
 import { UploadedFile } from '@packages/entity';
 import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '@packages/permission';
 import { IBaseRole, IRole } from '@packages/role';
-import { IBaseUser, IExternalUser, IUser, IUserPopulated, IUserSearchBody, RelatedPermission } from '@packages/user';
+import {
+    IBaseUser,
+    IExternalUser,
+    IKartoffelUser,
+    IKartoffelUserDigitalIdentity,
+    IUser,
+    IUserPopulated,
+    IUserSearchBody,
+    RelatedPermission,
+} from '@packages/user';
 import { BadRequestError } from '@packages/utils';
 import { menash } from 'menashmq';
 import config from '../../config';
 import Kartoffel from '../../externalServices/kartoffel';
-import { IKartoffelUser, IKartoffelUserDigitalIdentity } from '../../externalServices/kartoffel/interface';
 import StorageService from '../../externalServices/storageService';
 import UserService from '../../externalServices/userService';
 import { isProfileFileType, objectContains } from '../../utils';

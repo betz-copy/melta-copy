@@ -1,7 +1,7 @@
 import { IChildTemplateProperty, IMongoChildTemplatePopulated } from '@packages/child-template';
 import { IPropertyValue, NotFoundErrorTypes } from '@packages/entity';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IProperties } from '@packages/entity-template';
-import { IKartoffelUser } from '@packages/user';
+import { IExternalUser, IKartoffelUser } from '@packages/user';
 import { logger, NotFoundError } from '@packages/utils';
 import { UserNotFoundError } from '../../express/error';
 import UsersManager from '../../express/users/manager';
@@ -76,15 +76,15 @@ export const handleUserFields = async (
                 const user = normalizeUser(fieldValue, usersMap, key, [fieldValue]);
                 updateKartoffelFields(user, key, templateProperties, entityProperties);
 
-                entityProperties[key] = JSON.stringify(await UsersManager.kartoffelUserToUser(user));
+                entityProperties[key] = ((await UsersManager.kartoffelUserToUser(user)) as IExternalUser)._id;
                 continue;
             }
             if (field?.type === 'array' && field?.items?.format === 'user') {
                 const users: string[] = [];
                 for (const identityCard of fieldValue) {
                     const kartoffelUser = normalizeUser(identityCard, usersMap, key, fieldValue);
-                    const user = await UsersManager.kartoffelUserToUser(kartoffelUser);
-                    users.push(JSON.stringify(user));
+                    const userId = ((await UsersManager.kartoffelUserToUser(kartoffelUser)) as IExternalUser)._id;
+                    users.push(userId);
                 }
 
                 entityProperties[key] = users;

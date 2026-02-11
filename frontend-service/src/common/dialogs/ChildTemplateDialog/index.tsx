@@ -18,7 +18,7 @@ import {
     Typography,
 } from '@mui/material';
 import { IChildTemplate, IChildTemplateProperty, IMongoChildTemplateWithConstraintsPopulated, ViewType } from '@packages/child-template';
-import { FilterLogicalOperator } from '@packages/entity';
+import { FilterLogicalOperator, IUserField } from '@packages/entity';
 import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { AxiosError } from 'axios';
 import { Form, Formik } from 'formik';
@@ -197,10 +197,15 @@ const ChildTemplateDialog: React.FC<{
                     const { name, displayName, ...pickedValues } = pick(values, childTemplateKeys) as unknown as IChildTemplate;
 
                     const newProperties = Object.fromEntries(
-                        Object.entries(values.properties.properties).map(([key, { filters, ...rest }]) => [
+                        Object.entries(values.properties.properties).map(([key, { filters, defaultValue, ...rest }]) => [
                             key,
                             {
                                 ...rest,
+                                defaultValue: defaultValue
+                                    ? entityTemplate.properties.properties[key].format === 'user'
+                                        ? (defaultValue as unknown as IUserField)._id
+                                        : defaultValue
+                                    : undefined,
                                 filters: filters
                                     ? filterDocumentToFilterBackend(
                                           values.parentTemplate._id || entityTemplate._id,

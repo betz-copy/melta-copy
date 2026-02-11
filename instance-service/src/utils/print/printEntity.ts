@@ -1,21 +1,36 @@
 import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplate } from '@packages/entity-template';
 import { BadRequestError } from '@packages/utils';
-import { IEntityTreeNode } from 'instance-service/src/express/entities/interface';
 import { QueryResult } from 'neo4j-driver';
+import { IEntityTreeNode } from '../../express/entities/interface';
+import EntityTemplateService from '../../externalServices/templates/entityTemplateManager';
 import { Node, nodeToEntity } from '../neo4j/lib';
 
 type EdgeInfo = { toId: string; relationshipId: string; uniqueRelationShipId: string };
 type AdjacencyList = Map<string, EdgeInfo[]>;
 type EntityCache = Map<string, IEntity>;
 
-const getOrCacheEntity = (node: Node, cache: EntityCache): IEntity => {
+const getOrCacheEntity = async (node: Node, cache: EntityCache, template: IMongoEntityTemplate, workspaceId: string): Promise<IEntity> => {
     const entityId = String(node.properties._id);
     const cached = cache.get(entityId);
     if (cached) return cached;
 
-    const entity = nodeToEntity(node);
+    const entity = await nodeToEntity(node, template, workspaceId);
     cache.set(entityId, entity);
     return entity;
+};
+
+const getOrCacheEntityTemplate = async (
+    templateId: string,
+    templateCache: Map<string, IMongoEntityTemplate>,
+    entityTemplateService: EntityTemplateService,
+) => {
+    const cached = templateCache.get(templateId);
+    if (cached) return cached;
+
+    const template = await entityTemplateService.getEntityTemplateById(templateId);
+    templateCache.set(templateId, template);
+    return template;
 };
 
 const addBidirectionalEdge = (
@@ -79,10 +94,13 @@ const constructEntityTreeNode = (
  * @returns A function that takes a Neo4j QueryResult and returns the constructed IEntityTreeNode or null.
  */
 export const buildEntityTree =
-    (rootElementId: string) =>
-    (result: QueryResult): IEntityTreeNode | null => {
+    (rootElementId: string, workspaceId: string) =>
+    async (result: QueryResult): Promise<IEntityTreeNode | null> => {
         const { records } = result;
         if (!records?.length) return null;
+
+        const entityTemplateService = new EntityTemplateService(workspaceId);
+        const templateCache = new Map<string, IMongoEntityTemplate>();
 
         const entityCache: EntityCache = new Map();
         const adjacencyList: AdjacencyList = new Map();
@@ -94,8 +112,16 @@ export const buildEntityTree =
             const relationship = record.get('rel');
             if (!node1 || !node2 || !relationship) continue;
 
-            const entity1 = getOrCacheEntity(node1, entityCache);
-            const entity2 = getOrCacheEntity(node2, entityCache);
+            const templateId1 = node1.labels[0];
+            const templateId2 = node2.labels[0];
+
+            const [entityTemplate1, entityTemplate2] = await Promise.all([
+                getOrCacheEntityTemplate(templateId1, templateCache, entityTemplateService),
+                getOrCacheEntityTemplate(templateId2, templateCache, entityTemplateService),
+            ]);
+
+            const entity1 = await getOrCacheEntity(node1, entityCache, entityTemplate1, workspaceId);
+            const entity2 = await getOrCacheEntity(node2, entityCache, entityTemplate2, workspaceId);
 
             const entityId1 = String(entity1.properties._id);
             const entityId2 = String(entity2.properties._id);

@@ -32,7 +32,12 @@ const getColorRulesByEntityId = (rules: Map<string, IMongoRule>, brokenRules: IB
     }, {});
 };
 
-export const updateColorsForIndicatorRulesWithTodayFunc = (neo4jClient: Neo4jClient, rules: Map<string, IMongoRule>, brokenRules: IBrokenRule[]) => {
+export const updateColorsForIndicatorRulesWithTodayFunc = (
+    neo4jClient: Neo4jClient,
+    rules: Map<string, IMongoRule>,
+    brokenRules: IBrokenRule[],
+    workspaceId: string,
+) => {
     const parallelLimit = pLimit(updateColorsForRulesWithTodayFuncParallelLimit);
 
     const indicatorColorRulesByEntityId = getColorRulesByEntityId(rules, brokenRules);
@@ -47,7 +52,7 @@ export const updateColorsForIndicatorRulesWithTodayFunc = (neo4jClient: Neo4jCli
                     `MATCH (e {_id: '${entityId}'})
                          SET e += $props
                          RETURN e`,
-                    normalizeReturnedEntity('singleResponseNotNullable'),
+                    normalizeReturnedEntity('singleResponseNotNullable', workspaceId),
                     {
                         props: {
                             ...updatedColoredFields,

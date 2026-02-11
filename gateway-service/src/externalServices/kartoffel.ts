@@ -1,7 +1,7 @@
+import { IKartoffelUser } from '@packages/user';
 import { BadRequestError } from '@packages/utils';
 import axios from 'axios';
-import config from '../../config';
-import { IKartoffelUser } from './interface';
+import config from '../config';
 
 const { url, baseEntitiesRoute, searchRoute, fieldToSearch, getByIdRoute, requestTimeout, profilePath, maxPageSize } = config.kartoffel;
 

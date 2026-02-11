@@ -590,16 +590,14 @@ export const userColDef = <Data extends IUser>(
             const error = isPropertyInvalid(props, field, ignoreType);
             if (error) return errorColDef(props, error, { ...value, format: PropertyFormat.user });
             if (!props.value) return '';
-
             if (ignoreType && !stringifiedJSONtoObj(props.value))
                 return <Value hideValue={hideColumn} color={getColor(props, field)} value={props.value ?? ''} />;
 
-            const user = JSON.parse(props.value);
             return (
                 <Grid container gap={1}>
                     <UserAvatar
-                        user={user}
-                        tooltip={{ title: `${user.fullName} - ${user.hierarchy}` }}
+                        user={props.value ?? {}}
+                        tooltip={{ title: `${props.value?.fullName} - ${props.value?.hierarchy}` }}
                         chip={{
                             sx: {
                                 background: darkMode ? '#1E1F2B' : '#EBEFFA',
@@ -649,7 +647,6 @@ export const userArrayColDef = <Data extends IEntity>(
                 return errorColDef({ ...props, value: errorValue }, error, { ...value, format: PropertyWizardTypes.users as any });
             }
 
-            if (!props.value) return '';
             if (ignoreType) {
                 if (typeof props.value === 'string' || typeof props.value === 'number')
                     return <Value hideValue={hideColumn} color={getColor(props, field)} value={(props.value as string) ?? ''} />;
@@ -659,7 +656,7 @@ export const userArrayColDef = <Data extends IEntity>(
 
             return (
                 <OverflowWrapper
-                    items={props.value.map((val) => stringifiedJSONtoObj(val) ?? JSON.parse(JSON.stringify(val)))}
+                    items={props.value ?? []}
                     getItemKey={(item) => item._id}
                     renderItem={(item) => (
                         <UserAvatar

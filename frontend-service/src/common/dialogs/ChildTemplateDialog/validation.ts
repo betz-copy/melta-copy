@@ -55,7 +55,8 @@ const getFilterValue = (filterField: IFieldChip['filterField']) => {
 };
 
 const checkMatchValidation = (filterField: IFieldChip['filterField'], fieldName: string, value: IPropertyValue) => {
-    const data = { [fieldName]: value };
+    const defaultValue = value !== undefined ? (typeof value === 'object' && 'fullName' in value ? value.fullName : value) : undefined;
+    const data = { [fieldName]: defaultValue };
 
     const operator = getFilterOperator(filterField);
 

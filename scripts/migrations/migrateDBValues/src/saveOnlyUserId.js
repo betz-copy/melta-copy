@@ -52,11 +52,26 @@ export const getKartoffelPropsAggregation = [
                     in: '$$filteredProperty.k',
                 },
             },
+            relationshipRefsKeys: {
+                $map: {
+                    input: {
+                        $filter: {
+                            input: { $objectToArray: '$properties.properties' },
+                            as: 'property',
+                            cond: {
+                                $eq: ['$$property.v.items.format', 'relationshipReference'],
+                            },
+                        },
+                    },
+                    as: 'filteredProperty',
+                    in: '$$filteredProperty.k',
+                },
+            },
         },
     },
     {
         $match: {
-            $or: [{ kartoffelKeys: { $ne: [] } }, { userKeys: { $ne: [] } }, { usersKeys: { $ne: [] } }],
+            $or: [{ kartoffelKeys: { $ne: [] } }, { userKeys: { $ne: [] } }, { usersKeys: { $ne: [] } }, { relationshipRefsKeys: { $ne: [] } }],
         },
     },
     {
@@ -70,6 +85,7 @@ export const getKartoffelPropsAggregation = [
             kartoffelKeys: 1,
             usersKeys: 1,
             userKeys: 1,
+            relationshipRefsKeys: 1,
         },
     },
 ];

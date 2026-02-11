@@ -1,4 +1,23 @@
-import { FilterLogicalOperator, IEntity, IFilterGroup, IFilterOfField, IPropertyValue, ISearchEntitiesOfTemplateBody, ISearchFilter } from './types';
+import { IKartoffelUser } from '@packages/common';
+import { IMongoEntityTemplate, IMongoEntityTemplatePopulated, PropertyFormat } from '@packages/entity-template';
+import {
+    FilterLogicalOperator,
+    IEntity,
+    IFilterGroup,
+    IFilterOfField,
+    IPropertyValue,
+    ISearchEntitiesOfTemplateBody,
+    ISearchFilter,
+    IUserField,
+} from './types';
+
+export const serializeUser = (user): IUserField => ({
+    _id: user?._id ?? user?.id,
+    fullName: user?.fullName ?? '',
+    jobTitle: user?.jobTitle,
+    hierarchy: user?.hierarchy,
+    mail: user?.mail,
+});
 
 const filterFieldToValue: Record<keyof IFilterOfField, string> = {
     $eq: 'equals',
@@ -48,30 +67,34 @@ const evaluateOperator = (op: string, actual: IPropertyValue, expected: IPropert
     }
 };
 
-const matchValueAgainstFilter = (data: IEntity['properties'], filter?: ISearchFilter | IFilterGroup): string | undefined => {
+const matchValueAgainstFilter = async (
+    data: IEntity['properties'],
+    entityTemplate: IMongoEntityTemplate | IMongoEntityTemplatePopulated,
+    getUserById: (id: string) => Promise<IKartoffelUser>,
+    filter?: ISearchFilter | IFilterGroup,
+): Promise<string | undefined> => {
     if (!filter) return undefined;
 
     if ('$and' in filter && Array.isArray(filter.$and)) {
         for (const subFilter of filter.$and) {
-            const result = matchValueAgainstFilter(data, subFilter);
+            const result = await matchValueAgainstFilter(data, entityTemplate, getUserById, subFilter);
             if (result) return result;
         }
         return undefined;
     }
 
     if ('$or' in filter && Array.isArray(filter.$or)) {
-        const results = filter.$or.map((subFilter) => matchValueAgainstFilter(data, subFilter));
+        const results = await Promise.all(filter.$or.map((subFilter) => matchValueAgainstFilter(data, entityTemplate, getUserById, subFilter)));
         if (results.some((r) => !r)) return undefined;
         return results.find((r) => r);
     }
 
     const [field, condition] = Object.entries(filter)[0];
-    const actual = data[field];
+    const actual =
+        entityTemplate.properties.properties[field].format === PropertyFormat.user ? (await getUserById(data[field])).fullName : data[field];
 
     for (const [op, expected] of Object.entries(condition)) {
-        if (!evaluateOperator(op, actual, expected)) {
-            return field;
-        }
+        if (!evaluateOperator(op, actual, expected)) return field;
     }
 
     return undefined;

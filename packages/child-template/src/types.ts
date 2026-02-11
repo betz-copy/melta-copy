@@ -1,6 +1,7 @@
 import { IMongoCategory } from '@packages/category';
 import { IMongoProps } from '@packages/common';
 import { IUniqueConstraintOfTemplate } from '@packages/entity';
+import { IUserField } from '@packages/entity/src';
 import {
     IEntitySingleProperty,
     IMongoEntityTemplate,
@@ -24,7 +25,7 @@ export enum ByCurrentDefaultValue {
 export type IFilter = any;
 
 export interface IChildTemplateProperty {
-    defaultValue?: string | number | boolean | Date | string[] | ByCurrentDefaultValue;
+    defaultValue?: string | number | boolean | Date | string[] | ByCurrentDefaultValue | IUserField;
     filters?: Record<string, unknown>;
     isEditableByUser?: boolean;
     display?: boolean;

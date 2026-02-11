@@ -1,31 +1,60 @@
-import { getChildPropertiesFiltered, IChildTemplatePopulatedFromDb, IMongoChildTemplatePopulated } from '@packages/child-template';
-import { IFullMongoEntityTemplate } from '@packages/entity-template';
+import {
+    getChildPropertiesFiltered,
+    IChildTemplatePopulatedFromDb,
+    IChildTemplateProperty,
+    IMongoChildTemplatePopulated,
+} from '@packages/child-template';
+import { serializeUser } from '@packages/entity';
+import { IEntitySingleProperty, IFullMongoEntityTemplate } from '@packages/entity-template';
+import Kartoffel from '../externalServices/kartoffel';
 
-const populateChildTemplateWithParent = (childTemplate: IChildTemplatePopulatedFromDb): IMongoChildTemplatePopulated => {
+const populateChildTemplateWithParent = async (childTemplate: IChildTemplatePopulatedFromDb): Promise<IMongoChildTemplatePopulated> => {
     const { parentTemplateId, ...child } = childTemplate;
     const { properties, ...parent } = parentTemplateId;
 
     const childPropertyKeys = Object.keys(child.properties.properties);
 
+    const userIdToKey: Record<string, string> = {};
+    const filteredProps: Array<[string, IChildTemplateProperty & IEntitySingleProperty]> = [];
+
+    for (const [key, parentProp] of Object.entries(properties.properties)) {
+        if (!childPropertyKeys.includes(key)) continue;
+
+        const { defaultValue, filters, isEditableByUser, display } = child.properties.properties[key];
+
+        if (defaultValue && parentProp.format === 'user') userIdToKey[defaultValue as string] = key;
+
+        filteredProps.push([
+            key,
+            {
+                ...parentProp,
+                defaultValue,
+                filters,
+                isFilterByCurrentUser: child.filterByCurrentUserField === key,
+                isFilterByUserUnit: child.filterByUnitUserField === key,
+                isEditableByUser,
+                display,
+            },
+        ]);
+    }
+
+    const userIds = Object.keys(userIdToKey);
+    const users = (await Kartoffel.getUsersByIds(userIds)).map(serializeUser);
+
     const childProperties = getChildPropertiesFiltered(
         Object.fromEntries(
-            Object.entries(properties.properties)
-                .filter(([key]) => childPropertyKeys.includes(key))
-                .map(([key, parentProp]) => {
-                    const { defaultValue, filters, isEditableByUser, display } = child.properties.properties[key];
+            filteredProps.map(([key, prop]) => {
+                if (prop.defaultValue && parentTemplateId.properties.properties[key].format === 'user') {
                     return [
                         key,
                         {
-                            ...parentProp,
-                            defaultValue,
-                            filters,
-                            isFilterByCurrentUser: child.filterByCurrentUserField === key,
-                            isFilterByUserUnit: child.filterByUnitUserField === key,
-                            isEditableByUser,
-                            display,
+                            ...prop,
+                            defaultValue: users.find((user) => user._id === prop.defaultValue),
                         },
                     ];
-                }),
+                }
+                return [key, prop];
+            }),
         ),
     );
 

@@ -57,7 +57,7 @@ class ChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate> {
             .lean()
             .exec();
 
-        return populatedWithParent.map(populateChildTemplateWithParent);
+        return await Promise.all(populatedWithParent.map(populateChildTemplateWithParent));
     }
 
     async getAllChildTemplates(): Promise<IChildTemplatePopulated[]> {
@@ -71,7 +71,7 @@ class ChildTemplateManager extends DefaultManagerMongo<IMongoChildTemplate> {
             .lean()
             .exec();
 
-        return populatedWithParent.map(populateChildTemplateWithParent);
+        return await Promise.all(populatedWithParent.map(populateChildTemplateWithParent));
     }
 
     async getChildTemplateById(id: string): Promise<IChildTemplatePopulated> {

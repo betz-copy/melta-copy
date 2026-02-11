@@ -19,6 +19,7 @@
         "@packages/category": "workspace:*",
         "@packages/child-template": "workspace:*",
         "@packages/entity-template": "workspace:*",
+        "@packages/entity": "workspace:*",
         "@packages/global-search": "workspace:*",
         "@packages/printing-template": "workspace:*",
         "@packages/relationship-template": "workspace:*",

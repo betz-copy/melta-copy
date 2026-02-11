@@ -240,7 +240,7 @@ export const filterModelToFilterOfTemplatePerField = (
 
         case FilterTypes.set: {
             const filtersValues = Array.isArray(fieldFilter.values)
-                ? fieldFilter.values.map((item) => (typeof item === 'object' ? item?.fullName || null : item))
+                ? fieldFilter.values.map((item) => (typeof item === 'object' ? item?._id || null : item))
                 : fieldFilter.values;
 
             return setFilterToFilterOfTemplate(field, filtersValues, filterType);
