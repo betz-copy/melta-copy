@@ -363,6 +363,9 @@ const EntitiesTableOfTemplate = forwardRef(
         const gridRef = useRef<AgGridReact<Data>>(null);
         const tableRef = useRef<HTMLDivElement>(null);
 
+        const filterModelRef = useRef<FilterModel>({});
+        const gridApiRef = useRef<GridApi<Data> | null>(null);
+
         const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
         const minHeightTable = rowHeight * pageRowCount + rowHeight * 2;
@@ -407,6 +410,37 @@ const EntitiesTableOfTemplate = forwardRef(
                 rowNode.setSelected(true);
             }
         }, [scrollToId]);
+
+        const debouncedApplyFilter = useMemo(() => {
+            const fn = (api: GridApi) => {
+                api.refreshServerSide({
+                    purge: false,
+                    route: [],
+                });
+            };
+            return debounce(fn, 500);
+        }, []);
+
+        useEffect(() => {
+            const handleKeyDown = (e: KeyboardEvent) => {
+                if (e.key === 'Enter' && gridApiRef.current) {
+                    debouncedApplyFilter.clear(); 
+
+                    gridApiRef.current.refreshServerSide({
+                        purge: false,
+                        route: [],
+                    });
+                }
+            };
+
+            const gridElement = tableRef.current;
+            gridElement?.addEventListener('keydown', handleKeyDown);
+
+            return () => {
+                gridElement?.removeEventListener('keydown', handleKeyDown);
+                debouncedApplyFilter.clear();
+            };
+        }, [debouncedApplyFilter]);
 
         const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(
             (id: string) =>
@@ -586,6 +620,21 @@ const EntitiesTableOfTemplate = forwardRef(
                 const currentPage = params.api.paginationGetCurrentPage();
                 sessionStorage.setItem(`currentPage-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(currentPage));
             }
+        };
+
+        const handleFilterChanged = (event) => {
+            const newFilterModel = event.api.getFilterModel();
+            filterModelRef.current = newFilterModel;
+
+            if (saveStorageProps.shouldSaveFilter) {
+                if (isEqual(newFilterModel, defaultFilterModel)) {
+                    LocalStorage.remove(`tableFilter-${saveStorageProps.pageType}-${template._id}`);
+                } else {
+                    LocalStorage.set(`tableFilter-${saveStorageProps.pageType}-${template._id}`, newFilterModel);
+                }
+            }
+
+            debouncedApplyFilter(event.api);
         };
 
         const calculateRemainingWidth = (columnStates: ColumnState[], hasActions: boolean, isRemovedFields: boolean): number => {
@@ -888,6 +937,7 @@ const EntitiesTableOfTemplate = forwardRef(
                         maintainColumnOrder
                         rowSelection={rowSelection}
                         suppressAggFuncInHeader
+                        suppressScrollOnNewData={true} // Prevents scroll jumping
                         onRowSelected={
                             onRowSelected
                                 ? ({ data, node, event }) => {
@@ -903,15 +953,7 @@ const EntitiesTableOfTemplate = forwardRef(
                         }
                         rowStyle={onRowSelected ? { cursor: 'pointer' } : undefined}
                         suppressCellFocus
-                        onFilterChanged={(params) => {
-                            onFilter?.();
-                            if (saveStorageProps.shouldSaveFilter) {
-                                const filterModel = params.api.getFilterModel();
-                                if (isEqual(filterModel, defaultFilterModel))
-                                    LocalStorage.remove(`tableFilter-${saveStorageProps.pageType}-${template._id}`);
-                                else LocalStorage.set(`tableFilter-${saveStorageProps.pageType}-${template._id}`, filterModel);
-                            }
-                        }}
+                        onFilterChanged={handleFilterChanged}
                         animateRows
                         loadingCellRenderer={LoadingCellRenderer}
                         suppressCsvExport
@@ -925,7 +967,10 @@ const EntitiesTableOfTemplate = forwardRef(
                         defaultColDef={{
                             filterParams: {
                                 maxNumConditions: 1,
-                                buttons: ['reset', 'apply'],
+                                buttons: ['reset'],
+                                newRowsAction: 'keep',
+                                closeOnApply: false,
+                                applyMiniFilterWhileTyping: true,
                             },
                             sortable: true,
                             menuTabs: ['filterMenuTab'],
@@ -937,6 +982,7 @@ const EntitiesTableOfTemplate = forwardRef(
                             suppressHeaderFilterButton: disableFilter,
                         }}
                         onGridReady={(params) => {
+                            gridApiRef.current = params.api;
                             if (saveStorageProps.pageType === TablePageType.map) {
                                 gridRef.current?.api.autoSizeAllColumns();
                             } else if (saveStorageProps.pageType) {

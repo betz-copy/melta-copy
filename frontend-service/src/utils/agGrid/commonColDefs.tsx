@@ -455,7 +455,7 @@ export const enumColDef = <Data extends EntityData>(
 ): ColDef => {
     const filterParams: ISetFilterParams<Data, string | null> = {
         values: [...values, null],
-        suppressMiniFilter: false,
+        suppressMiniFilter: true,
         excelMode: 'windows',
         applyMiniFilterWhileTyping: false,
         ...({
@@ -463,7 +463,7 @@ export const enumColDef = <Data extends EntityData>(
             suppressSelectAll: false,
             refreshValuesOnOpen: false,
         } as Partial<ISetFilterParams<Data, string | null>>),
-        buttons: ['apply', 'reset'],
+        buttons: ['reset'],
         closeOnApply: false,
     };
 
@@ -520,6 +520,8 @@ export const enumArrayColDef = <Data extends EntityData | IRuleBreachPopulated>(
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
         values: [...values, undefined],
+        buttons: [],
+        closeOnApply: false,
     };
 
     return {
