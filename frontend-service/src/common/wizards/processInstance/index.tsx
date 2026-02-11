@@ -1,15 +1,14 @@
 import { Close, History } from '@mui/icons-material';
 import { Button, Dialog, DialogContent, Grid, IconButton } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { IMongoProcessInstanceReviewerPopulated, IMongoProcessTemplateReviewerPopulated, IMongoStepTemplatePopulated } from '@packages/process';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
-import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
-import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
-import { IMongoStepTemplatePopulated } from '../../../interfaces/processes/stepTemplate';
+import { IProcessTemplateMap } from '../../../interfaces/template';
 import { ActivitiesContent } from '../../../pages/Entity/components/activityLog/ActivitiesContent';
 import { deleteProcessRequest, getProcessByIdRequest } from '../../../services/processesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
@@ -26,13 +25,13 @@ import ProcessSummary from './ProcessSummaryStep/index';
 interface IProcessInstanceWizard {
     open: boolean;
     onClose: (wasProcessChanged: boolean) => void;
-    processInstance: IMongoProcessInstancePopulated;
+    processInstance: IMongoProcessInstanceReviewerPopulated;
     stepTemplate?: IMongoStepTemplatePopulated;
-    processTemplate: IMongoProcessTemplatePopulated;
-    currProcessInstance: IMongoProcessInstancePopulated;
-    setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstancePopulated>>;
+    processTemplate: IMongoProcessTemplateReviewerPopulated;
+    currProcessInstance: IMongoProcessInstanceReviewerPopulated;
+    setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstanceReviewerPopulated>>;
     isLoading: boolean;
-    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError, ProcessDetailsValues, unknown>;
+    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstanceReviewerPopulated, AxiosError, ProcessDetailsValues, unknown>;
     isProcessChanged: boolean;
     setIsProcessChanged: React.Dispatch<React.SetStateAction<boolean>>;
     isEditMode: boolean;
@@ -147,13 +146,14 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                         alignItems="center"
                         flexBasis="20%"
                         minWidth="280px"
-                        padding={3}
+                        padding={1}
                         style={{
                             backgroundColor: darkMode ? '#171717' : '#F0F2F7',
                             borderBottomLeftRadius: '20px',
                             borderTopLeftRadius: '20px',
                             boxShadow: '10px 10px 15px 10px #888888',
                         }}
+                        sx={{ '& .MuiGrid-root': { maxWidth: '100%', boxSizing: 'border-box' } }}
                     >
                         <Grid container flexDirection="column" width="100%" height="100%">
                             <Grid height="5%">

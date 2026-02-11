@@ -1,4 +1,4 @@
-import { BadRequestError, ForbiddenError } from '@microservices/shared';
+import { BadRequestError, ForbiddenError } from '@packages/utils';
 import { NextFunction, Request, Response } from 'express';
 import config from '../../config';
 import UserService from '../../externalServices/userService';

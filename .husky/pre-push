@@ -3,10 +3,10 @@
 # IMAGES=$(cat ./scripts/docker-compose.yml | grep "build:" | awk '{print $2}' | grep -v -F -f ./scripts/forbidden-images.txt | sed -e 's|^\./||' -e 's/^/melta-/' -e '/^melta_build:/d')
 # for image in $IMAGES; do
 #   cd "$image"
-#   npm run build && npm run lint
+#   pnpm run build && pnpm run lint
 #   cd ..
 # done
 # git commit --no-verify for override
 
 export NODE_OPTIONS=--max-old-space-size=8000
-# cd ./frontend-service/ && npm run lint && npm run build
+# cd ./frontend-service/ && pnpm run lint && pnpm run build

@@ -10,24 +10,26 @@ import {
     TableChartOutlined,
 } from '@mui/icons-material';
 import { BaseTextFieldProps, Box, CircularProgress, Grid, IconButton, ToggleButton, ToggleButtonGroup, Typography, useTheme } from '@mui/material';
+import { IMongoCategory } from '@packages/category';
+import { isChildTemplate } from '@packages/child-template';
+import { IEntity } from '@packages/entity';
 import i18next from 'i18next';
 import { debounce } from 'lodash';
 import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
-import { IMongoCategory } from '../../interfaces/categories';
-import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { IEntity } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { environment } from '../../globals';
+import { ITemplate } from '../../interfaces/template';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { convertToBool } from '../../utils/convertStringToBool';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
-import { isChildTemplate } from '../../utils/templates';
 import SearchInput from '../inputs/SearchInput';
 import BlueTitle from '../MeltaDesigns/BlueTitle';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 import TemplatesSelectCheckbox from '../templatesSelectCheckbox';
 import { AddEntityButton } from './Buttons/AddEntity';
+
+const { isActiveSemanticSearch } = environment.features;
 
 export const GlobalSearchBar: React.FC<{
     inputValue?: string;
@@ -60,8 +62,8 @@ export const GlobalSearchBar: React.FC<{
     const theme = useTheme();
     const { trackEvent } = useMatomo();
 
-    const [semanticSearch, setSemanticSearch] = useLocalStorage<boolean>('semanticSearch', true);
     const [urlSearchParams, setUrlSearchParams] = useSearchParams();
+    const [semanticSearch, setSemanticSearch] = useLocalStorage<boolean>('semanticSearch', false);
     const urlSemanticSearch = urlSearchParams.get('semanticSearch');
     const boolUrl = convertToBool(urlSemanticSearch!);
 
@@ -75,7 +77,7 @@ export const GlobalSearchBar: React.FC<{
                 if (gridApi) gridApi.setGridOption('quickFilterText', value);
                 trackEvent({
                     category: 'search',
-                    action: semanticSearch ? 'on' : 'off',
+                    action: isActiveSemanticSearch ? (semanticSearch! ? 'on' : 'off') : 'off',
                 });
             }
         }, 300),
@@ -84,10 +86,16 @@ export const GlobalSearchBar: React.FC<{
 
     useEffect(() => {
         // If a value exists in the url, override the value in the localStorage.
+        // ⚠️ May cause back-button loop when syncing URL and localStorage (adds param on mount → triggers navigation).
+        if (!isActiveSemanticSearch) return;
         const realValue = urlSemanticSearch ? boolUrl : semanticSearch;
 
         if (realValue !== semanticSearch) setSemanticSearch(realValue);
-        if (realValue !== boolUrl) setUrlSearchParams({ ...Object.fromEntries(urlSearchParams.entries()), semanticSearch: realValue.toString() });
+        if (realValue !== boolUrl)
+            setUrlSearchParams({
+                ...Object.fromEntries(urlSearchParams.entries()),
+                semanticSearch: realValue.toString(),
+            });
     }, [boolUrl, semanticSearch, urlSemanticSearch, setSemanticSearch, setUrlSearchParams, urlSearchParams]);
 
     useEffect(() => {
@@ -99,21 +107,26 @@ export const GlobalSearchBar: React.FC<{
     }, [debouncedSearchValue, autoSearch, debouncedSearch]);
 
     const aiToolTip = useCallback(
-        () => (
-            <MeltaTooltip title={boolUrl ? i18next.t('globalSearch.turnOffSemanticSearch') : i18next.t('globalSearch.turnOnSemanticSearch')} arrow>
-                <IconButton
-                    onClick={() =>
-                        setUrlSearchParams({
-                            ...Object.fromEntries(urlSearchParams.entries()),
-                            semanticSearch: (!convertToBool(urlSemanticSearch!)).toString(),
-                        })
-                    }
-                    sx={{ padding: 0, paddingLeft: 0.5 }}
+        () =>
+            isActiveSemanticSearch ? (
+                <MeltaTooltip
+                    title={boolUrl ? i18next.t('globalSearch.turnOffSemanticSearch') : i18next.t('globalSearch.turnOnSemanticSearch')}
+                    arrow
                 >
-                    {boolUrl ? <AutoAwesome color="primary" /> : <AutoAwesomeOutlined />}
-                </IconButton>
-            </MeltaTooltip>
-        ),
+                    <IconButton
+                        onClick={() =>
+                            // 💡 Consider `replace: true` to avoid multiple history entries on param changes (prevents back-button cycling).
+                            setUrlSearchParams({
+                                ...Object.fromEntries(urlSearchParams.entries()),
+                                semanticSearch: (!convertToBool(urlSemanticSearch!)).toString(),
+                            })
+                        }
+                        sx={{ padding: 0, paddingLeft: 0.5 }}
+                    >
+                        {boolUrl ? <AutoAwesome color="primary" /> : <AutoAwesomeOutlined />}
+                    </IconButton>
+                </MeltaTooltip>
+            ) : null,
         [boolUrl, setUrlSearchParams, urlSearchParams, urlSemanticSearch],
     );
 
@@ -139,7 +152,7 @@ export const GlobalSearchBar: React.FC<{
                     >
                         <Search sx={{ fontSize: '1.25rem' }} />
                     </IconButton>
-                    {showAiButton && aiToolTip()}
+                    {isActiveSemanticSearch && showAiButton && aiToolTip()}
                 </Box>
             }
             placeholder={placeholder}
@@ -152,7 +165,7 @@ export const GlobalSearchBar: React.FC<{
     );
 };
 
-type EntitiesPageHeadlineProps<T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated> = {
+type EntitiesPageHeadlineProps<T extends ITemplate> = {
     searchInput?: string;
     setSearchInput?: (newSearchInput: string) => void;
     onSearch: (value: string) => void;
@@ -179,7 +192,7 @@ type EntitiesPageHeadlineProps<T extends IMongoEntityTemplatePopulated | IMongoC
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
-const EntitiesPageHeadline = <T extends IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated>({
+const EntitiesPageHeadline = <T extends ITemplate>({
     searchInput,
     setSearchInput,
     onSearch,
@@ -256,7 +269,9 @@ const EntitiesPageHeadline = <T extends IMongoEntityTemplatePopulated | IMongoCh
                         title={pageTitle}
                         component="h4"
                         variant="h4"
-                        style={{ fontSize: workspace.metadata.mainFontSizes.headlineTitleFontSize }}
+                        style={{
+                            fontSize: workspace.metadata.mainFontSizes.headlineTitleFontSize,
+                        }}
                     />
                     <Grid paddingLeft="3rem" paddingTop="5px">
                         <Grid container wrap="nowrap" gap="15px">
@@ -315,7 +330,12 @@ const EntitiesPageHeadline = <T extends IMongoEntityTemplatePopulated | IMongoCh
                     {excelExportProps && (
                         <Grid>
                             <IconButton
-                                style={{ background: theme.palette.primary.main, borderRadius: '7px', width: '135px', height: '35px' }}
+                                style={{
+                                    background: theme.palette.primary.main,
+                                    borderRadius: '7px',
+                                    width: '135px',
+                                    height: '35px',
+                                }}
                                 onClick={() => {
                                     excelExportProps.onExcelExport();
                                     trackEvent({
@@ -330,7 +350,14 @@ const EntitiesPageHeadline = <T extends IMongoEntityTemplatePopulated | IMongoCh
                                 ) : (
                                     <DownloadIcon htmlColor="white" />
                                 )}
-                                <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>
+                                <Typography
+                                    fontSize={14}
+                                    style={{
+                                        fontWeight: '400',
+                                        padding: '0 5px',
+                                        color: 'white',
+                                    }}
+                                >
                                     {i18next.t('downloadMultipleTables')}
                                 </Typography>
                             </IconButton>

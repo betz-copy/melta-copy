@@ -12,8 +12,8 @@ import {
     isPropertyOfVariable,
     isRegularFunction,
     isSumAggFunction,
-    ServiceError,
-} from '@microservices/shared';
+} from '@packages/rule';
+import { ServiceError } from '@packages/utils';
 import { StatusCodes } from 'http-status-codes';
 import config from '../../../config';
 

@@ -14,19 +14,17 @@ import {
     Tab,
     Typography,
 } from '@mui/material';
+import { PermissionScope } from '@packages/permission';
+import { BreachType, IRuleBreachAlertPopulated, IRuleBreachRequestPopulated, RuleBreachRequestStatus } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
-import { ActionInfo } from '../../common/ruleBreanchInfo/ActionInfo';
-import { BrokenRulesInfo } from '../../common/ruleBreanchInfo/BrokenRulesInfo';
+import { ActionInfo } from '../../common/ruleBreachInfo/ActionInfo';
+import { BrokenRulesInfo } from '../../common/ruleBreachInfo/BrokenRulesInfo';
 import { environment } from '../../globals';
 import { IErrorResponse } from '../../interfaces/error';
-import { PermissionScope } from '../../interfaces/permissions';
-import { BreachType } from '../../interfaces/ruleBreaches/ruleBreach';
-import { IRuleBreachAlertPopulated } from '../../interfaces/ruleBreaches/ruleBreachAlert';
-import { IRuleBreachRequestPopulated, RuleBreachRequestStatus } from '../../interfaces/ruleBreaches/ruleBreachRequest';
 import { approveRuleBreachRequestRequest, cancelRuleBreachRequestRequest, denyRuleBreachRequestRequest } from '../../services/ruleBreachesService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';

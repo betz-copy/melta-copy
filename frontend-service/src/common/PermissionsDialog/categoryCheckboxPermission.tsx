@@ -1,9 +1,8 @@
 import { ArrowLeftRounded } from '@mui/icons-material';
 import { Collapse, Grid, IconButton, Typography, useTheme } from '@mui/material';
+import { PermissionData, PermissionScope } from '@packages/permission';
 import { FormikProps } from 'formik';
 import React, { useState } from 'react';
-import { PermissionScope } from '../../interfaces/permissions';
-import { PermissionData } from '../../interfaces/users';
 import { getChangedTemplatePermission } from '../../utils/permissions/instancePermissions';
 import { entityTemplatePermissionDialog } from '../../utils/permissions/permissionOfUserDialog';
 import EntityTemplateCheckboxPermission from './entityTemplateCheckboxPermission';

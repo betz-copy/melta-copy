@@ -1,4 +1,5 @@
-import { IMongoEntityTemplate, ISearchBatchBody } from '@microservices/shared';
+import { ISearchBatchBody } from '@packages/entity';
+import { IMongoEntityTemplate } from '@packages/entity-template';
 import { IGetExpandedEntityBody } from '../../express/entities/interface';
 import { templatesFilterToNeoQuery } from './searchBodyToNeoQuery';
 
@@ -57,7 +58,7 @@ const generateSpanningTreeConfig = (
  * @param mainId - The ID of the main entity (to ensure it's always included).
  * @returns An object containing the Cypher query string and its parameters.
  */
-export const expandEntityToNeoQuery = (
+export const expandEntityToNeoQuery = async (
     filters: IGetExpandedEntityBody['filters'],
     entityId: string,
     templateIds: IGetExpandedEntityBody['templateIds'],
@@ -67,7 +68,7 @@ export const expandEntityToNeoQuery = (
     mainId: string,
 ) => {
     const fullFilters = fixFilters(filters, templateIds);
-    const filterQuery = templatesFilterToNeoQuery(fullFilters, entityTemplatesMap);
+    const filterQuery = await templatesFilterToNeoQuery(fullFilters, entityTemplatesMap);
 
     const filterClause = generateFilterClause(filters, filterQuery, mainId);
     const spanningTreeConfig = generateSpanningTreeConfig(entityId, templateIds, relationshipIds, expandedParams);

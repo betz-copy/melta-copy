@@ -1,52 +1,39 @@
 import { promises as fsp } from 'node:fs';
+import { ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata, IUpdateEntityMetadata } from '@packages/action';
+import { IChartBody } from '@packages/chart';
+import { EntityTemplateType, IMongoChildTemplatePopulated, TemplateItem } from '@packages/child-template';
+import { getDashboardFilters } from '@packages/dashboard';
 import {
-    ActionTypes,
-    BadRequestError,
     combineFilters,
-    EntityTemplateType,
     FilterLogicalOperator,
-    getDashboardFilters,
     getFilterModal,
-    IAction,
-    IBrokenRule,
-    IBrokenRuleEntity,
     IBulkOfActions,
     IBulkRuleMail,
-    IChartBody,
     ICountSearchResult,
-    ICreateEntityMetadata,
-    ICreateRelationshipMetadata,
     IDeleteEntityBody,
     IEntity,
-    IEntitySingleProperty,
-    IEntityTemplatePopulated,
     IEntityWithDirectRelationships,
-    IEntityWithIgnoredRules,
     IExportEntitiesBody,
     IFailedEntity,
-    IFullMongoEntityTemplate,
-    IMongoChildTemplatePopulated,
-    IMongoEntityTemplatePopulated,
     IMultipleSelect,
     IPropertyValue,
-    IRelationship,
-    IRuleMail,
     ISearchBatchBody,
     ISearchEntitiesByLocationBody,
     ISearchEntitiesOfTemplateBody,
     ISearchFilter,
     ISearchResult,
     ISearchSort,
-    ISemanticSearchResult,
     ITemplateSearchBody,
-    IUpdateEntityMetadata,
-    logger,
     matchValueAgainstFilter,
-    NotFoundError,
     NotFoundErrorTypes,
-    TemplateItem,
     UploadedFile,
-} from '@microservices/shared';
+} from '@packages/entity';
+import { IEntitySingleProperty, IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { IRelationship } from '@packages/relationship';
+import { IRuleMail } from '@packages/rule';
+import { IBrokenRule, IBrokenRuleEntity, IEntityWithIgnoredRules } from '@packages/rule-breach';
+import { ISemanticSearchResult } from '@packages/semantic-search';
+import { BadRequestError, logger, NotFoundError } from '@packages/utils';
 import axios from 'axios';
 import { stream } from 'exceljs';
 import { keyBy, mapValues, omit } from 'lodash';
@@ -57,6 +44,7 @@ import FilterValidation from '../../error';
 import ChartService from '../../externalServices/dashboardService/chartService';
 import DashboardItemService from '../../externalServices/dashboardService/dashboardItemService';
 import InstancesService from '../../externalServices/instanceService';
+import Kartoffel from '../../externalServices/kartoffel';
 import { PreviewService } from '../../externalServices/previewService';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import StorageService from '../../externalServices/storageService';
@@ -80,7 +68,12 @@ import { patchDocumentAsStream } from './documentExport';
 import { ExternalIdType, IExternalId } from './interface';
 import InstancesUtils from './utils';
 
-const { errorCodes, rabbit, ruleBreachService } = config;
+const {
+    errorCodes,
+    rabbit,
+    ruleBreachService,
+    service: { searchEntitiesChunkSize },
+} = config;
 
 class InstancesManager extends DefaultManagerProxy<InstancesService> {
     private entityTemplateService: EntityTemplateService;
@@ -257,15 +250,12 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async getAllTemplateEntities(templateId: string, userId: string, childTemplateId?: string) {
-        const { searchEntitiesChunkSize } = config.service;
-
         const filter = childTemplateId ? await this.instanceUtils.getChildFilters(childTemplateId, userId) : undefined;
 
         const { count } = await this.service.searchEntitiesOfTemplateRequest(templateId, {
             skip: 0,
             limit: 1,
             filter,
-            showRelationships: false,
             sort: [],
         });
 
@@ -389,7 +379,6 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             limit: 1,
             textSearch,
             filter: filters,
-            showRelationships: false,
             sort: sort || [],
         });
 
@@ -400,7 +389,6 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 limit: searchEntitiesChunkSize,
                 textSearch,
                 filter: filters,
-                showRelationships: false,
                 sort: sort || [],
             });
 
@@ -419,7 +407,11 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         }
     }
 
-    updateTemplateCurrentNumbers = async (template: IFullMongoEntityTemplate, serialStarters: Record<string, number>, succeededIndex: number) => {
+    updateTemplateCurrentNumbers = async (
+        template: IMongoEntityTemplatePopulated,
+        serialStarters: Record<string, number>,
+        succeededIndex: number,
+    ) => {
         const serialProperties = Object.entries(template.properties.properties)
             .filter(([_key, value]) => value.type === 'number' && !!value.serialCurrent)
             .reduce((acc, [key, value]) => {
@@ -429,7 +421,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const { category, _id, createdAt: _createdAt, updatedAt: _updatedAt, disabled: _disabled, ...restOfEntityTemplate } = template;
         await this.entityTemplateService.updateEntityTemplate(template._id, {
             ...restOfEntityTemplate,
-            category,
+            category: category._id,
             properties: {
                 ...template.properties,
                 properties: { ...template.properties.properties, ...serialProperties },
@@ -486,7 +478,6 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 ...searchBody.templates,
                 [relatedTemplateId]: {
                     filter: templateFilter,
-                    showRelationships: false,
                 },
             };
         });
@@ -575,7 +566,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const brokenRulesEntities = await convertIdOfBrokenRules(allBrokenRulesEntities);
         if (serialStarters)
             await this.updateTemplateCurrentNumbers(
-                type === EntityTemplateType.Child ? template.parentTemplate : { ...template, category: template.category._id },
+                type === EntityTemplateType.Child ? template.parentTemplate : template,
                 serialStarters,
                 succeededEntities.length,
             );
@@ -1477,7 +1468,15 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
             if (disabledEntity) throw new BadRequestError('cannot delete, some entities are disabled');
             if (childTemplateId) {
                 const childFilters = await this.instanceUtils.getChildFilters(childTemplateId, userId);
-                const notFilterValid = entities.find((entity) => matchValueAgainstFilter(entity.properties, childFilters));
+                const notFilterValid = entities.find(
+                    async (entity) =>
+                        await matchValueAgainstFilter(
+                            entity.properties,
+                            template,
+                            async (id: string) => await Kartoffel.getUserById(id),
+                            childFilters,
+                        ),
+                );
 
                 if (notFilterValid)
                     throw new FilterValidation(`cannot delete, entity ${notFilterValid.properties._id} is not valid according to filters`);

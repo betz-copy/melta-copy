@@ -1,6 +1,6 @@
 import { Box, Grid } from '@mui/material';
+import { IUser } from '@packages/user';
 import React from 'react';
-import { IUser } from '../../interfaces/users';
 import CreateUserCard from '../wizards/processTemplate/ApproverCard';
 import UserAutocomplete, { IUserAutocomplete } from './UserAutocomplete';
 

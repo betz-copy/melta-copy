@@ -1,23 +1,23 @@
 import { PrintOutlined } from '@mui/icons-material';
 import { Backdrop, Button, CircularProgress, ThemeProvider } from '@mui/material';
+import { IEntityExpanded } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoPrintingTemplate } from '@packages/printing-template';
 import i18next from 'i18next';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from 'react-query';
 import { useReactToPrint } from 'react-to-print';
 import MeltaTooltip from '../../../../common/MeltaDesigns/MeltaTooltip';
 import PrintOptionsDialog, { IEntityPrint, IPrintOptions, PrintType } from '../../../../common/print/PrintOptionsDialog';
-import { IEntityExpanded } from '../../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IFile } from '../../../../interfaces/preview';
-import { IMongoPrintingTemplate } from '../../../../interfaces/printingTemplates';
+import { INestedRelationshipTemplates } from '../../../../interfaces/template';
 import { getEntitiesTreeForPrint } from '../../../../services/entitiesService';
 import { lightTheme } from '../../../../theme';
-import { INestedRelationshipTemplates } from '../..';
 import { ComponentToPrint } from './ComponentToPrint';
 import './print.css';
 
 const Print: React.FC<{
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
     expandedEntity: IEntityExpanded;
     connections: INestedRelationshipTemplates[];
 }> = ({ entityTemplate, expandedEntity }) => {

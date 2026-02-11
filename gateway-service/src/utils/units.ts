@@ -1,4 +1,4 @@
-import { IMongoUnit } from '@microservices/shared';
+import { IMongoUnit } from '@packages/unit';
 import UserService from '../externalServices/userService';
 
 export const unflattenUnitHierarchy = async (workspaceId: string, userId: string): Promise<IMongoUnit[]> => {

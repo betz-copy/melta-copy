@@ -1,4 +1,5 @@
-import { ActionTypes, RuleBreachRequestStatus } from '@microservices/shared';
+import { ActionTypes } from '@packages/action';
+import { RuleBreachRequestStatus } from '@packages/rule-breach';
 import * as joi from 'joi';
 import { mongoIdSchema } from '../../utils/joi/schemas';
 import { agGridRequestSchema } from '../../utils/joi/schemas/agGrid';

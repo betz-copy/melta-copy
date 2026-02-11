@@ -1,5 +1,7 @@
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
 import { Card, CardContent, Grid, useTheme } from '@mui/material';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IEntity } from '@packages/entity';
 import i18next from 'i18next';
 import React from 'react';
 import { Link } from 'wouter';
@@ -8,8 +10,6 @@ import { EntityProperties } from '../../../common/EntityProperties';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
-import { IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
-import { IEntity } from '../../../interfaces/entities';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { getEntityTemplateColor } from '../../../utils/colors';
@@ -17,7 +17,7 @@ import { EntityDates } from '../../Entity/components/EntityDates';
 
 interface IUserInfoCardProps {
     currentUserFromClientSide: IEntity;
-    usersInfoChildTemplate: IMongoChildTemplatePopulated;
+    usersInfoChildTemplate: IMongoChildTemplateWithConstraintsPopulated;
     overridePropertiesToShow?: string[];
     displayTitle?: boolean;
 }

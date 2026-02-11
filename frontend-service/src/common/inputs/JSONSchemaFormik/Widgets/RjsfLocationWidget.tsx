@@ -1,27 +1,26 @@
 import { Map as MapIcon } from '@mui/icons-material';
 import { Autocomplete, Box, Dialog, Grid, InputAdornment, TextField } from '@mui/material';
+import { SplitBy } from '@packages/common';
+import {
+    CoordinateSystem,
+    extractUtmLocation,
+    isValidUTM,
+    isValidWGS84,
+    locationConverterToString,
+    mapConfig,
+    stringToCoordinates,
+} from '@packages/map';
 import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import { Cartesian3 } from 'cesium';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
-import { environment } from '../../../../globals';
-import { SplitBy } from '../../../../interfaces/entities';
+import { LocationData } from '../../../../interfaces/location';
 import LocationField from '../../../../pages/Map/LocationField';
-import { stringToCoordinates } from '../../../../utils/map';
-import { extractUtmLocation, isValidUTM, isValidWGS84, locationConverterToString } from '../../../../utils/map/convert';
 import MeltaTooltip from '../../../MeltaDesigns/MeltaTooltip';
+import { CleanViewRow, isCleanView } from './CleanView';
 
-const { polygonPrefix, polygonSuffix } = environment.map.polygon;
-
-export enum CoordinateSystem {
-    UTM = 'UTM',
-    WGS84 = 'WGS84',
-}
-export interface LocationData {
-    location: string;
-    coordinateSystem: CoordinateSystem;
-}
+const { polygonPrefix, polygonSuffix } = mapConfig.polygon;
 
 const validatePoint = (point: LocationData, splitBy: SplitBy, schemaValidation?: boolean) => {
     if (!schemaValidation) return true;
@@ -135,6 +134,24 @@ const RjsfLocationWidget = ({
         setMapOpen(false);
     };
 
+    if (isCleanView(readonly, formContext)) {
+        let parsedValue: string | LocationData | undefined = value as string | LocationData | undefined;
+
+        if (typeof value === 'string' && value.includes('coordinateSystem')) {
+            try {
+                parsedValue = JSON.parse(value) as LocationData;
+            } catch {
+                parsedValue = value;
+            }
+        }
+
+        const locationValue = typeof parsedValue === 'string' ? parsedValue : parsedValue?.location;
+        const coordinateSystemValue = typeof parsedValue === 'string' ? undefined : parsedValue?.coordinateSystem;
+        const cleanValue = coordinateSystemValue ? `${locationValue} (${coordinateSystemValue})` : locationValue;
+
+        return <CleanViewRow label={label || schema.title} value={cleanValue} />;
+    }
+
     return (
         <Box width="100%">
             <Grid container justifyContent="space-between" alignContent="center" width="100%">
@@ -156,13 +173,14 @@ const RjsfLocationWidget = ({
                                     shrink: readonly || undefined,
                                 },
                                 input: {
-                                    startAdornment: (
+                                    disableUnderline: readonly,
+                                    startAdornment: readonly ? null : (
                                         <InputAdornment
                                             position="start"
                                             onClick={() => (error ? '' : setMapOpen(true))}
                                             style={{ cursor: 'pointer' }}
                                         >
-                                            <MapIcon color={readonly || error ? 'disabled' : 'action'} />
+                                            <MapIcon color={error ? 'disabled' : 'action'} />
                                         </InputAdornment>
                                     ),
                                 },

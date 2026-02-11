@@ -1,11 +1,10 @@
 import {
-    IMongoProcessInstancePopulated,
-    IMongoStepTemplate,
     INotificationMetadataPopulated,
     IProcessReviewerUpdateNotificationMetadataPopulated,
     IProcessStatusUpdateNotificationMetadataPopulated,
     NotificationType,
-} from '@microservices/shared';
+} from '@packages/notification';
+import { IMongoProcessInstancePopulated, IMongoStepTemplate } from '@packages/process';
 
 export interface IProcessReviewerUpdateMailNotificationMetadataPopulated {
     process: IMongoProcessInstancePopulated;

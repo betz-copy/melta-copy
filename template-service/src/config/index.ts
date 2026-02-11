@@ -62,6 +62,12 @@ const config = {
             dirname: env.get('ROTATE_FILE_LOG_DIRNAME').default('./logs').asString(),
         },
     },
+    kartoffel: {
+        url: env.get('KARTOFFEL_BASE_URL').required().asString(),
+        baseEntitiesRoute: env.get('KARTOFFEL_BASE_ENTITIES_ROUTE').default('/api/entities').asString(),
+        requestTimeout: env.get('KARTOFFEL_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        maxPageSize: env.get('KARTOFFEL_MAX_PAGE_SIZE').default(10000).asIntPositive(),
+    },
 };
 
 export default config;

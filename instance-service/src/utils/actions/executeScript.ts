@@ -1,5 +1,8 @@
 import * as vm from 'node:vm';
-import { BadRequestError, IChildTemplatePopulated, IEntity, IMongoEntityTemplate, ValidationError } from '@microservices/shared';
+import { IChildTemplatePopulated } from '@packages/child-template';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplate } from '@packages/entity-template';
+import { BadRequestError, ValidationError } from '@packages/utils';
 import { isDate } from 'date-fns';
 import { formatDate } from 'date-fns/format';
 import { Transaction } from 'neo4j-driver';

@@ -1,19 +1,19 @@
 import { AppRegistration } from '@mui/icons-material';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
+import { IEntityExpanded } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import React from 'react';
 import { Link } from 'wouter';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
-import { IEntityExpanded } from '../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { INestedRelationshipTemplates } from '../../../interfaces/template';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { getEntityTemplateColor } from '../../../utils/colors';
-import { INestedRelationshipTemplates } from '..';
 import { ActivityLog } from './activityLog';
 import { Print } from './print';
 
 const EntityTopBar: React.FC<{
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
     expandedEntity: IEntityExpanded;
     connectionsTemplates: INestedRelationshipTemplates[];
 }> = ({ entityTemplate, expandedEntity, connectionsTemplates }) => {

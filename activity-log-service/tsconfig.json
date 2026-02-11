@@ -2,10 +2,8 @@
     "extends": "../tsconfig.json",
     "compilerOptions": {
         "lib": ["ES2020.Promise", "ES6"],
-        "outDir": "./dist/",
-        "paths": {
-            "@microservices/shared/*": ["./*/src"]
-        }
+        "outDir": "./dist",
+        "skipLibCheck": true
     },
     "include": ["src/**/*"]
 }

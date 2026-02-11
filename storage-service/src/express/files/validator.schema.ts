@@ -1,4 +1,4 @@
-import { fileSchema, iconFileSchema } from '@microservices/shared';
+import { fileSchema, iconFileSchema } from '@packages/utils';
 import Joi from 'joi';
 
 export const defaultSchema = Joi.object({

@@ -1,25 +1,27 @@
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { ISearchFilter } from '@packages/entity';
+import {
+    FieldGroupData,
+    IEntitySingleProperty,
+    IEntityTemplate,
+    IEntityTemplateWithConstraints,
+    IMongoEntityTemplatePopulated,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    ISearchEntityTemplatesBody,
+    PropertyExternalWizardType,
+    PropertyFormat,
+    PropertyType,
+} from '@packages/entity-template';
 import { QueryClient } from 'react-query';
 import { v4 as uuid } from 'uuid';
 import axios from '../../axios';
-import { EntityTemplateFormInputProperties, EntityTemplateWizardValues, PropertyWizardType } from '../../common/wizards/entityTemplate';
-import { CommonFormInputProperties, FieldGroupData, GroupProperty, PropertyItem } from '../../common/wizards/entityTemplate/commonInterfaces';
+import { CommonFormInputProperties, GroupProperty, PropertyItem } from '../../common/wizards/entityTemplate/commonInterfaces';
 import {
     FilterModelToFilterRecord,
     filterTemplateToSearchFilter,
 } from '../../common/wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
 import { environment } from '../../globals';
-import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { ISearchFilter } from '../../interfaces/entities';
-import {
-    IEntitySingleProperty,
-    IEntityTemplate,
-    IEntityTemplateMap,
-    IMongoEntityTemplatePopulated,
-    ISearchEntityTemplateQuery,
-    PropertyExternalWizardType,
-    PropertyFormat,
-    PropertyType,
-} from '../../interfaces/entityTemplates';
+import { EntityTemplateFormInputProperties, EntityTemplateWizardValues, IEntityTemplateMap, PropertyWizardType } from '../../interfaces/template';
 import { getFileName } from '../../utils/getFileName';
 
 const { entityTemplates } = environment.api;
@@ -45,8 +47,10 @@ type AttachmentOrArchiveProperties = {
     data: EntityTemplateFormInputProperties;
 };
 
+export type PropertyItemsArray = Array<AttachmentOrArchiveProperties | GroupProperty>;
+
 export const entityTemplateObjectToEntityTemplateForm = (
-    entityTemplate: IMongoEntityTemplatePopulated | null,
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | null,
     queryClient: QueryClient,
 ): EntityTemplateWizardValues | undefined => {
     if (!entityTemplate) return undefined;
@@ -78,7 +82,7 @@ export const entityTemplateObjectToEntityTemplateForm = (
 
     const propertyData = (key: string, fieldGroup?: FieldGroupData) => {
         const value = properties.properties[key];
-        let type: PropertyWizardType = value.format || value.type;
+        let type: EntityTemplateFormInputProperties['type'] = value.format || value.type;
 
         if (value.serialStarter !== undefined) type = PropertyWizardTypes.serialNumber;
         else if (value.enum) type = PropertyWizardTypes.enum;
@@ -267,10 +271,7 @@ const updateFieldGroupsOrder = (updatedProperties: EntityTemplateFormInputProper
     return fieldGroups;
 };
 
-export const extractProperties = <T>(
-    items: Array<{ type: 'field'; data: CommonFormInputProperties } | { type: 'group'; fields: CommonFormInputProperties[] }>,
-    propertyPath?: string,
-): ExtractedProps<T> => {
+export const extractProperties = <T>(items: PropertyItemsArray, propertyPath?: string): ExtractedProps<T> => {
     const properties: T[] = [];
     const propertiesPath: Record<string, string> = {};
 
@@ -310,12 +311,12 @@ export const extractGroups = (
     };
 };
 
-export const getPropertyType = (type: string): IEntitySingleProperty['type'] => {
+export const getPropertyType = (type: PropertyWizardType): IEntitySingleProperty['type'] => {
     switch (type) {
         case PropertyType.string:
         case PropertyType.number:
         case PropertyType.boolean:
-            return type;
+            return type as IEntitySingleProperty['type'];
         case 'serialNumber':
             return PropertyType.number;
         case 'enumArray':
@@ -417,7 +418,7 @@ const collectEnumColors = (
     if (![PropertyExternalWizardType.enum, PropertyExternalWizardType.enumArray].includes(property.type as PropertyExternalWizardType))
         return enumPropertiesColors;
 
-    Object.entries(property.optionColors).forEach(([option, enumColor]) => {
+    Object.entries(property.optionColors ?? {}).forEach(([option, enumColor]) => {
         if (!enumColor) return;
 
         if (!enumPropertiesColors) enumPropertiesColors = {};
@@ -432,7 +433,7 @@ const collectEnumColors = (
 const processStandardProperty = (
     property: EntityTemplateFormInputProperties,
     extractData: EntityTemplateFormInputProperties[],
-    schema: IEntityTemplate['properties'],
+    schema: IEntityTemplateWithConstraints['properties'],
     state: {
         propertiesOrder: string[];
         propertiesPreview: string[];
@@ -461,7 +462,7 @@ const processStandardProperty = (
 const processAttachmentProperty = (
     { deleted, type, title, name, id, required }: EntityTemplateFormInputProperties,
     extractData: EntityTemplateFormInputProperties[],
-    schema: IEntityTemplate['properties'],
+    schema: IEntityTemplateWithConstraints['properties'],
     attachmentPropertiesOrder: string[],
     isEditMode: boolean,
 ) => {
@@ -484,7 +485,11 @@ const processAttachmentProperty = (
     if (required) schema.required.push(name);
 };
 
-export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode: boolean, queryClient: QueryClient): IEntityTemplate => {
+export const formToJSONSchema = (
+    values: EntityTemplateWizardValues,
+    isEditMode: boolean,
+    queryClient: QueryClient,
+): IEntityTemplateWithConstraints => {
     const {
         properties,
         attachmentProperties,
@@ -501,14 +506,14 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
     const propertiesPreview: string[] = [];
     const mapSearchProperties: string[] = [];
 
-    const schema: IEntityTemplate['properties'] = {
+    const schema: IEntityTemplateWithConstraints['properties'] = {
         type: 'object',
         properties: {},
         required: [],
         hide: [],
     };
 
-    let enumPropertiesColors: IEntityTemplate['enumPropertiesColors'];
+    let enumPropertiesColors: IEntityTemplateWithConstraints['enumPropertiesColors'];
 
     const extractProps = extractProperties<EntityTemplateFormInputProperties>(properties).properties;
     const extractArchiveProps = extractProperties<EntityTemplateFormInputProperties>(archiveProperties).properties;
@@ -540,6 +545,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         ...restOfProperties,
         properties: schema,
         category: values.category._id,
+        iconFileId: values.icon?.file?.name || null,
         propertiesOrder:
             propertiesTypeOrder[0] === 'properties'
                 ? [...propertiesOrder, ...attachmentPropertiesOrder]
@@ -557,11 +563,11 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                   description: walletTransfer.description,
                   amount: walletTransfer.amount,
               }
-            : null,
+            : undefined,
     };
 };
 
-export const searchEntityTemplates = async (searchQuery: ISearchEntityTemplateQuery) => {
+export const searchEntityTemplates = async (searchQuery: ISearchEntityTemplatesBody) => {
     const { data } = await axios.post<IEntityTemplateMap>(`${entityTemplates}/search`, searchQuery);
     return data;
 };
@@ -570,7 +576,7 @@ const isStringOrNamedObject = (item: File | string | { name: string }): item is 
     typeof item === 'string' || ('name' in item && !(item instanceof File));
 
 const appendEntityTemplateFormData = (
-    entityTemplate: IEntityTemplate,
+    entityTemplate: IEntityTemplateWithConstraints,
     formData: FormData,
     original: EntityTemplateWizardValues | undefined = undefined,
 ) => {
@@ -611,7 +617,7 @@ export const createEntityTemplateRequest = async (newEntityTemplate: EntityTempl
     const entityTemplate = formToJSONSchema(newEntityTemplate, false, queryClient);
     appendEntityTemplateFormData(entityTemplate, formData, newEntityTemplate);
 
-    const { data } = await axios.post<IMongoEntityTemplatePopulated>(entityTemplates, formData);
+    const { data } = await axios.post<IMongoEntityTemplateWithConstraintsPopulated>(entityTemplates, formData);
     return data;
 };
 
@@ -621,28 +627,32 @@ export const updateEntityTemplateRequest = async (
     queryClient: QueryClient,
 ) => {
     const formData = new FormData();
-    const entityTemplate: IEntityTemplate =
+    const entityTemplate: IEntityTemplateWithConstraints | IMongoEntityTemplateWithConstraintsPopulated =
         'attachmentProperties' in updatedEntityTemplate
             ? formToJSONSchema(updatedEntityTemplate as EntityTemplateWizardValues, true, queryClient)
-            : updatedEntityTemplate;
+            : ({
+                  ...updatedEntityTemplate,
+                  uniqueConstraints: 'uniqueConstraints' in updatedEntityTemplate ? updatedEntityTemplate.uniqueConstraints : [],
+              } as IEntityTemplateWithConstraints);
 
     const originalWizardValues = 'attachmentProperties' in updatedEntityTemplate ? (updatedEntityTemplate as EntityTemplateWizardValues) : undefined;
     appendEntityTemplateFormData(entityTemplate, formData, originalWizardValues);
 
-    const { data } = await axios.put<{ template: IMongoEntityTemplatePopulated; childTemplates: IMongoChildTemplatePopulated[] }>(
-        `${entityTemplates}/${entityTemplateId}`,
-        formData,
-    );
+    const { data } = await axios.put<{
+        template: IMongoEntityTemplateWithConstraintsPopulated;
+        childTemplates: IMongoChildTemplateWithConstraintsPopulated[];
+    }>(`${entityTemplates}/${entityTemplateId}`, formData);
+
     return data;
 };
 
 export const updateEntityTemplateStatusRequest = async (entityTemplateId: string, disabledStatus: boolean) => {
-    const { data } = await axios.patch<{ entityTemplate: IMongoEntityTemplatePopulated; childTemplates: IMongoChildTemplatePopulated[] }>(
-        `${entityTemplates}/${entityTemplateId}/status`,
-        {
-            disabled: disabledStatus,
-        },
-    );
+    const { data } = await axios.patch<{
+        entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
+        childTemplates: IMongoChildTemplateWithConstraintsPopulated[];
+    }>(`${entityTemplates}/${entityTemplateId}/status`, {
+        disabled: disabledStatus,
+    });
     return data;
 };
 
@@ -654,7 +664,7 @@ export const deleteEntityTemplateRequest = async (entityTemplateId: string) => {
 export const updateEnumFieldRequest = async (id: string, fieldValue: string, values: CommonFormInputProperties, field: string) => {
     const { name, type, options } = values;
     const partialInput = { name, type, options };
-    const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/update-enum-field/${id}`, {
+    const { data } = await axios.put<IMongoEntityTemplateWithConstraintsPopulated>(`${entityTemplates}/update-enum-field/${id}`, {
         fieldValue,
         partialInput,
         field,
@@ -665,7 +675,10 @@ export const updateEnumFieldRequest = async (id: string, fieldValue: string, val
 export const deleteEnumFieldRequest = async (id: string, fieldValue: string, field: CommonFormInputProperties) => {
     const { name, type, options } = field;
     const partialInput = { name, type, options };
-    const { data } = await axios.patch<IMongoEntityTemplatePopulated>(`${entityTemplates}/delete-enum-field/${id}`, { fieldValue, partialInput });
+    const { data } = await axios.patch<IMongoEntityTemplateWithConstraintsPopulated>(`${entityTemplates}/delete-enum-field/${id}`, {
+        fieldValue,
+        partialInput,
+    });
     return data;
 };
 

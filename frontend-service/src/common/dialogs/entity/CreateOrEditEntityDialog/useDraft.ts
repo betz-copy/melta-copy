@@ -1,15 +1,14 @@
+import { IEntity, IPropertyValue } from '@packages/entity';
 import { cloneDeep, debounce } from 'lodash';
 import { Dispatch, SetStateAction, useCallback, useMemo } from 'react';
 import { v4 as uuid } from 'uuid';
 import { environment } from '../../../../globals';
-import { IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
-import { IEntity, IPropertyValue } from '../../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { ITemplate } from '../../../../interfaces/template';
 import { useDraftIdStore, useDraftsStore } from '../../../../stores/drafts';
 import { EntityWizardValues } from '..';
 
 const useDraftEntityDialogHook = (
-    entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+    entityTemplate: ITemplate,
     setInitialValuePropsToFilter: Dispatch<SetStateAction<Record<string, IPropertyValue>>>,
     entityToUpdate: IEntity | undefined,
 ) => {

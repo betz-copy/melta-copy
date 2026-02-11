@@ -1,4 +1,4 @@
-import { Colors, IWorkspace } from '@microservices/shared';
+import { Colors, IWorkspace } from '@packages/workspace';
 import * as env from 'env-var';
 import './dotenv';
 

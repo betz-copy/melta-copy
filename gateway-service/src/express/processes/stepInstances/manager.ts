@@ -1,13 +1,13 @@
+import { UploadedFile } from '@packages/entity';
 import {
     IMongoProcessInstancePopulated,
     IMongoProcessInstanceReviewerPopulated,
     IMongoStepInstance,
     IMongoStepInstancePopulated,
     IStepInstance,
-    logger,
     UpdateStepReqBody,
-    UploadedFile,
-} from '@microservices/shared';
+} from '@packages/process';
+import { logger } from '@packages/utils';
 import ProcessService from '../../../externalServices/processService';
 import StorageService from '../../../externalServices/storageService';
 import DefaultManagerProxy from '../../../utils/express/manager';

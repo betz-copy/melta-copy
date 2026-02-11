@@ -1,15 +1,14 @@
 import { CircularProgress, Grid, Typography } from '@mui/material';
+import { isChildTemplate } from '@packages/child-template';
+import { IEntity, IFilterGroup, IFilterOfTemplate, ISearchFilter } from '@packages/entity';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
-import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { IEntity, IFilterGroup, IFilterOfTemplate, ISearchFilter } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { ITemplate } from '../../interfaces/template';
 import { getCountByTemplateIdsRequest } from '../../services/entitiesService';
-import { isChildTemplate } from '../../utils/templates';
 import { TablePageType } from '../EntitiesTableOfTemplate';
 import TemplateTable, { TemplateTableRef } from './TemplateTable';
 
@@ -20,7 +19,7 @@ export type TemplateTablesViewResultsRef = {
 };
 
 export const getDefaultFilterFromTemplate = (
-    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+    template: ITemplate,
     isChildTemplate: boolean,
     currentUserKartoffelId: string,
     units: string[],
@@ -47,7 +46,7 @@ export const getDefaultFilterFromTemplate = (
 const TemplateTablesViewResults = forwardRef<
     TemplateTablesViewResultsRef,
     {
-        templates: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[];
+        templates: ITemplate[];
         searchInput: string;
         pageSize?: number;
         pageType: TablePageType;
@@ -121,11 +120,7 @@ const TemplateTablesViewResults = forwardRef<
     );
 });
 
-const filterEmptyTemplateTablesOnGlobalSearchRequest = async (
-    templates: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[],
-    searchInput: string,
-    semanticSearch: boolean,
-) => {
+const filterEmptyTemplateTablesOnGlobalSearchRequest = async (templates: ITemplate[], searchInput: string, semanticSearch: boolean) => {
     const countRequestTemplateIds = new Set<string>();
     const countRequestChildTemplateIds = new Set<string>();
 
@@ -148,7 +143,7 @@ const filterEmptyTemplateTablesOnGlobalSearchRequest = async (
 };
 
 export interface TemplateTablesViewProps {
-    templates: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[];
+    templates: ITemplate[];
     searchInput: string;
     pageType: TablePageType;
     semanticSearch: boolean;

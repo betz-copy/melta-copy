@@ -1,22 +1,12 @@
-import { mapValues } from 'lodash';
-import axios from '../axios';
-import { EntityWizardValues } from '../common/dialogs/entity';
-import { IUpdateMultipleEntitiesResponse } from '../common/EntitiesPage/MultiSelectStatusBar';
-import { IExternalId } from '../common/EntitiesTableOfTemplate';
-import urlToFile from '../common/fileConversions';
-import { CoordinateSystem } from '../common/inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
-import { environment } from '../globals';
-import { IAxisField } from '../interfaces/charts';
-import { IMongoChildTemplatePopulated } from '../interfaces/childTemplates';
+import { IAxisField } from '@packages/chart';
+import { isChildTemplate } from '@packages/child-template';
 import {
     ICountSearchResult,
     IDeleteEntityBody,
     IEntity,
     IEntityExpanded,
     IEntityWithDirectConnections,
-    IEntityWithIgnoredRules,
     IExportEntitiesBody,
-    IGraphFilterBodyBatch,
     IMultipleSelect,
     IPropertyValue,
     ISearchBatchBody,
@@ -25,19 +15,116 @@ import {
     ISearchEntitiesOfTemplateBody,
     ISearchFilter,
     ISearchResult,
-} from '../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+} from '@packages/entity';
+import { PropertyFormat } from '@packages/entity-template';
+import { CoordinateSystem } from '@packages/map';
+import { IRelationShipSelectionTree } from '@packages/printing-template';
+import { IBrokenRule, IRuleBreach } from '@packages/rule-breach';
+import axios from '../axios';
+import { EntityWizardValues } from '../common/dialogs/entity';
+import { IUpdateMultipleEntitiesResponse } from '../common/EntitiesPage/MultiSelectStatusBar';
+import { IExternalId } from '../common/EntitiesTableOfTemplate';
+import urlToFile from '../common/fileConversions';
+import { environment } from '../globals';
+import { IEntityWithIgnoredRules } from '../interfaces/entity';
 import { IEditReadExcel, ITablesResults } from '../interfaces/excel';
-import { IRelationShipSelectionTree } from '../interfaces/printingTemplates';
-import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
+import { IGraphFilterBodyBatch } from '../interfaces/graphFilter';
+import { ITemplate } from '../interfaces/template';
 import { IEntityTreeNode } from '../pages/Entity/components/print/ComponentToPrint';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
 import { combineFilters } from '../utils/filters';
 import { locationConverterToString } from '../utils/map/convert';
-import { isChildTemplate } from '../utils/templates';
 
 const { entities, relationships } = environment.api;
 const { uuidFormat } = environment;
+
+const OMIT_PROPERTY = Symbol('omit-property');
+
+type TemplatePropertiesMap = Record<string, { format?: string; items?: { format?: string } } | undefined>;
+type TransformPropertyHandler = (property: IPropertyValue, key: string) => IPropertyValue | typeof OMIT_PROPERTY | undefined;
+
+const transformProperties = (
+    properties: Record<string, IPropertyValue>,
+    templateProperties: TemplatePropertiesMap,
+    handlers: Partial<Record<string, TransformPropertyHandler>>,
+) =>
+    Object.entries(properties).reduce<Record<string, IPropertyValue>>((acc, [key, property]) => {
+        const templateProperty = templateProperties[key];
+
+        if (templateProperty?.format === PropertyFormat.kartoffelUserField) return acc;
+
+        const handler = templateProperty?.format ? handlers[templateProperty.format] : undefined;
+        let value: IPropertyValue | typeof OMIT_PROPERTY | undefined;
+
+        if (handler) value = handler(property, key);
+        else if (templateProperty?.items?.format === PropertyFormat.user) value = property ? property.map(({ _id }) => _id) : undefined;
+        else value = property;
+
+        if (value !== OMIT_PROPERTY) acc[key] = value;
+
+        return acc;
+    }, {});
+
+const transformDate = (property: IPropertyValue) => (property ? new Date(property).toISOString().split('T')[0] : undefined);
+
+const transformDateTime = (property: IPropertyValue) => (property ? new Date(property).toISOString() : undefined);
+
+const transformUser = (property: IPropertyValue) => (property ? property._id : undefined);
+
+const transformRelationshipRef = (property: IPropertyValue) => property?.properties._id;
+
+const isUUID = (str: string) => uuidFormat.test(str);
+const transformSignature = (property: IPropertyValue) => (isUUID(property as string) ? property : undefined);
+
+const stringifyLocationWithUtm = (location: { coordinateSystem: CoordinateSystem; location: IPropertyValue }) => {
+    if (location.coordinateSystem === CoordinateSystem.UTM) {
+        return JSON.stringify({
+            location: locationConverterToString(location.location),
+            coordinateSystem: location.coordinateSystem,
+        });
+    }
+
+    return JSON.stringify(location);
+};
+
+const parseLocationFromString = (property: IPropertyValue) => {
+    if (!property) return undefined;
+    const location = JSON.parse(property as string);
+
+    return stringifyLocationWithUtm(location);
+};
+
+const parseLocationFromAny = (property: IPropertyValue) => {
+    if (!property) return undefined;
+    const location = typeof property === 'string' && property.includes('location') ? JSON.parse(property) : property;
+
+    return stringifyLocationWithUtm(location);
+};
+
+const stringifyLocation = (property: IPropertyValue) => {
+    if (!property) return undefined;
+    return JSON.stringify(property);
+};
+
+const collectFilesWithUnchanged = (attachmentsProperties: Record<string, IPropertyValue>, templateProperties: TemplatePropertiesMap) => {
+    const filesToUpload: IPropertyValue = [];
+    const unchangedFiles: IPropertyValue = [];
+
+    Object.entries(attachmentsProperties).forEach(([key, value]: [string, IPropertyValue]) => {
+        if (Array.isArray(value)) {
+            value.forEach((file, index) => {
+                if (file instanceof File && templateProperties[key]?.items) filesToUpload.push([`${key}.${index}`, file]);
+                else if (file instanceof File) filesToUpload.push([`${key}`, file]);
+                else unchangedFiles.push([`${key}`, file]);
+            });
+        } else if (value) {
+            if (value instanceof File) filesToUpload.push([`${key}`, value]);
+            else unchangedFiles.push([`${key}`, value]);
+        }
+    });
+
+    return { filesToUpload, unchangedFiles };
+};
 
 export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
     const { data } = await axios.post(`${entities}/export`, body, { responseType: 'blob' });
@@ -45,7 +132,7 @@ export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
 };
 
 export const loadEntitiesRequest = async (
-    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+    template: ITemplate,
     files?: Record<string, File>,
     insertBrokenEntities?: IEntityWithIgnoredRules[],
 ): Promise<ITablesResults> => {
@@ -62,24 +149,10 @@ export const loadEntitiesRequest = async (
     if (insertBrokenEntities) {
         const formattedInsertBrokenEntities = insertBrokenEntities.map((entity) => ({
             templateId: entity.templateId,
-            properties: mapValues(entity.properties, (property, key) => {
-                switch (template.properties.properties[key]?.format) {
-                    case 'location': {
-                        if (!property) return undefined;
-                        const location = JSON.parse(property);
-
-                        if (location.coordinateSystem === CoordinateSystem.UTM)
-                            return JSON.stringify({
-                                location: locationConverterToString(location.location),
-                                coordinateSystem: location.coordinateSystem,
-                            });
-                        return JSON.stringify(location);
-                    }
-                    case 'signature':
-                        return undefined;
-                    default:
-                        return property;
-                }
+            properties: transformProperties(entity.properties, template.properties.properties, {
+                location: parseLocationFromString,
+                signature: () => undefined,
+                user: transformUser,
             }),
             ignoredRules: entity.ignoredRules,
         }));
@@ -113,12 +186,8 @@ export const getChangedEntitiesFromExcelRequest = async (
     return data;
 };
 
-export const editManyEntitiesByExcelRequest = async (
-    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
-    entitiesToUpdate: IEntityWithIgnoredRules[],
-): Promise<ITablesResults> => {
+export const editManyEntitiesByExcelRequest = async (template: ITemplate, entitiesToUpdate: IEntityWithIgnoredRules[]): Promise<ITablesResults> => {
     const formData = new FormData();
-    const isUUID = (str: string) => uuidFormat.test(str);
 
     formData.append('templateId', isChildTemplate(template) ? template.parentTemplate?._id : template._id);
 
@@ -128,21 +197,11 @@ export const editManyEntitiesByExcelRequest = async (
 
     const entitiesArray = entitiesToUpdate.map((entity) => ({
         templateId: entity.templateId,
-        properties: mapValues(entity.properties, (property, key) => {
-            switch (template.properties.properties[key]?.format) {
-                case 'relationshipReference':
-                    return property?.properties._id;
-                case 'location': {
-                    if (!property) return undefined;
-                    return JSON.stringify(property);
-                }
-                case 'signature': {
-                    if (!isUUID(property)) return undefined;
-                    return property;
-                }
-                default:
-                    return property;
-            }
+        properties: transformProperties(entity.properties, template.properties.properties, {
+            relationshipReference: transformRelationshipRef,
+            location: stringifyLocation,
+            signature: transformSignature,
+            user: transformUser,
         }),
         ignoredRules: entity.ignoredRules,
     }));
@@ -239,34 +298,13 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
     formData.append(
         'properties',
         JSON.stringify(
-            mapValues(entity.properties, (property, key) => {
-                switch (entity.template.properties.properties[key]?.format) {
-                    case 'relationshipReference':
-                        return property?.properties._id;
-                    case 'location': {
-                        if (!property) return undefined;
-                        const location = JSON.parse(property);
-
-                        if (location.coordinateSystem === CoordinateSystem.UTM)
-                            return JSON.stringify({
-                                location: locationConverterToString(location.location),
-                                coordinateSystem: location.coordinateSystem,
-                            });
-                        return JSON.stringify(location);
-                    }
-                    case 'signature':
-                        return undefined;
-                    case 'date': {
-                        if (!property) return undefined;
-                        return new Date(property).toISOString().split('T')[0];
-                    }
-                    case 'date-time': {
-                        if (!property) return undefined;
-                        return new Date(property).toISOString();
-                    }
-                    default:
-                        return property;
-                }
+            transformProperties(entity.properties, entity.template.properties.properties, {
+                relationshipReference: transformRelationshipRef,
+                location: parseLocationFromString,
+                signature: () => undefined,
+                date: transformDate,
+                'date-time': transformDateTime,
+                user: transformUser,
             }),
         ),
     );
@@ -294,31 +332,9 @@ const getBodyForUpdateRequest = async (
     const { template, attachmentsProperties } = newEntityData;
     const formData = new FormData();
 
-    const filesToUpload: IPropertyValue = [];
-    const unchangedFiles: IPropertyValue = []; /// //send single file as array to the back
-
     const templateProperties = template.properties.properties;
     const fileUploadPromises: Promise<[string, File]>[] = [];
-
-    Object.entries(attachmentsProperties).forEach(([key, value]: [string, IPropertyValue]) => {
-        if (Array.isArray(value) && value) {
-            value.forEach((file, index) => {
-                if (file instanceof File && templateProperties[key].items) {
-                    filesToUpload.push([`${key}.${index}`, file]);
-                } else if (file instanceof File) {
-                    filesToUpload.push([`${key}`, file]);
-                } else {
-                    unchangedFiles.push([`${key}`, file]);
-                }
-            });
-        } else if (value) {
-            if (value instanceof File) {
-                filesToUpload.push([`${key}`, value]);
-            } else {
-                unchangedFiles.push([`${key}`, value]);
-            }
-        }
-    });
+    const { filesToUpload, unchangedFiles } = collectFilesWithUnchanged(attachmentsProperties, templateProperties);
 
     for (const [key, value] of Object.entries(newEntityData.properties)) {
         if (templateProperties[key]?.format === 'signature') {
@@ -354,35 +370,13 @@ const getBodyForUpdateRequest = async (
     formData.append(
         'properties',
         JSON.stringify(
-            mapValues(newEntityData.properties, (property, key) => {
-                switch (template.properties.properties[key]?.format) {
-                    case 'relationshipReference':
-                        return property?.properties._id;
-                    case 'location': {
-                        if (!property) return undefined;
-                        const location = typeof property === 'string' && property.includes('location') ? JSON.parse(property) : property;
-
-                        if (location.coordinateSystem === CoordinateSystem.UTM)
-                            return JSON.stringify({
-                                location: locationConverterToString(location.location),
-                                coordinateSystem: location.coordinateSystem,
-                            });
-                        return JSON.stringify(location);
-                    }
-                    case 'signature': {
-                        return isUUID(property) ? property : undefined;
-                    }
-                    case 'date': {
-                        if (!property) return undefined;
-                        return new Date(property).toISOString().split('T')[0];
-                    }
-                    case 'date-time': {
-                        if (!property) return undefined;
-                        return new Date(property).toISOString();
-                    }
-                    default:
-                        return property;
-                }
+            transformProperties(newEntityData.properties, template.properties.properties, {
+                relationshipReference: transformRelationshipRef,
+                location: parseLocationFromAny,
+                signature: transformSignature,
+                date: transformDate,
+                'date-time': transformDateTime,
+                user: transformUser,
             }),
         ),
     );
@@ -429,23 +423,8 @@ export const updateMultipleEntitiesRequest = async (
 
 export const duplicateEntityRequest = async (entityId: string, newEntityData: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
     const formData = new FormData();
-    const filesToUpload: IPropertyValue = [];
-    const unchangedFiles: IPropertyValue = [];
-
     const { template, properties, attachmentsProperties } = newEntityData;
-
-    Object.entries(attachmentsProperties).forEach(([key, value]: [string, IPropertyValue]) => {
-        if (Array.isArray(value) && value) {
-            value.forEach((file, index) => {
-                if (file instanceof File && template.properties.properties[key].items) filesToUpload.push([`${key}.${index}`, file]);
-                else if (file instanceof File) filesToUpload.push([`${key}`, file]);
-                else unchangedFiles.push([`${key}`, file]);
-            });
-        } else if (value) {
-            if (value instanceof File) filesToUpload.push([`${key}`, value]);
-            else unchangedFiles.push([`${key}`, value]);
-        }
-    });
+    const { filesToUpload, unchangedFiles } = collectFilesWithUnchanged(attachmentsProperties, template.properties.properties);
 
     filesToUpload.forEach(([key, value]) => {
         formData.append(key, value as Blob);
@@ -469,34 +448,13 @@ export const duplicateEntityRequest = async (entityId: string, newEntityData: En
     formData.append(
         'properties',
         JSON.stringify(
-            mapValues(properties, (property, key) => {
-                switch (template.properties.properties[key]?.format) {
-                    case 'relationshipReference':
-                        return property?.properties._id;
-                    case 'location': {
-                        if (!property) return undefined;
-                        const location = typeof property === 'string' && property.includes('location') ? JSON.parse(property) : property;
-
-                        if (location.coordinateSystem === CoordinateSystem.UTM)
-                            return JSON.stringify({
-                                location: locationConverterToString(location.location),
-                                coordinateSystem: location.coordinateSystem,
-                            });
-                        return JSON.stringify(location);
-                    }
-                    case 'signature':
-                        return undefined;
-                    case 'date': {
-                        if (!property) return undefined;
-                        return new Date(property).toISOString().split('T')[0];
-                    }
-                    case 'date-time': {
-                        if (!property) return undefined;
-                        return new Date(property).toISOString();
-                    }
-                    default:
-                        return property;
-                }
+            transformProperties(properties, template.properties.properties, {
+                relationshipReference: transformRelationshipRef,
+                location: parseLocationFromAny,
+                signature: transformSignature,
+                date: transformDate,
+                'date-time': transformDateTime,
+                user: transformUser,
             }),
         ),
     );

@@ -1,12 +1,29 @@
+import { Conjunction } from '@packages/common';
+import { IEntitySingleProperty } from '@packages/entity-template';
+import {
+    IAggregationGroup,
+    IArgument,
+    IConstant,
+    ICountAggFunction,
+    IEquation,
+    IFormula,
+    IGroup,
+    IOperatorBool,
+    IPropertyOfVariable,
+    IRegularFunction,
+    IVariable,
+    isAggregationGroup,
+    isConstant,
+    isCountAggFunction,
+    isEquation,
+    isGroup,
+    isPropertyOfVariable,
+    isRegularFunction,
+} from '@packages/rule';
 import { JsonGroup, JsonItem, JsonRule, JsonRuleGroupExt, RuleProperties } from '@react-awesome-query-builder/mui';
 import { v4 as uuid } from 'uuid';
 import { environment } from '../../globals';
-import { IEntitySingleProperty, IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import { IFormula } from '../../interfaces/rules/formula';
-import { IArgument, IConstant, IPropertyOfVariable, IVariable, isConstant, isPropertyOfVariable } from '../../interfaces/rules/formula/argument';
-import { IEquation, IOperatorBool, isEquation } from '../../interfaces/rules/formula/equation';
-import { ICountAggFunction, IRegularFunction, isCountAggFunction, isRegularFunction } from '../../interfaces/rules/formula/function';
-import { IAggregationGroup, IGroup, isAggregationGroup, isGroup } from '../../interfaces/rules/formula/group';
+import { IEntityTemplateMap } from '../../interfaces/template';
 import { FunctionObject, ValueType } from './interfaces';
 
 const { formulaGetTodayVarName } = environment;
@@ -74,7 +91,7 @@ export class RuleSerializer {
                 valueSrc: ['value'],
                 operator: RuleSerializer.operatorSerializer(eq.operatorBool),
                 mode: 'array',
-                conjunction: 'AND',
+                conjunction: Conjunction.AND,
                 not: false,
             },
             children1: [],

@@ -59,9 +59,11 @@
         "**/node_modules": true,
         "**/dist": true
     },
-    "typescript.tsserver.maxTsServerMemory": 1024,
+    "typescript.tsserver.maxTsServerMemory": 4096,
     "typescript.tsserver.useSyntaxServer": "never",
     "typescript.disableAutomaticTypeAcquisition": true,
+    "typescript.preferences.includePackageJsonAutoImports": "off",
+    "typescript.tsserver.experimental.enableProjectDiagnostics": false,
     "files.watcherExclude": {
         "**/dist/**": true,
         "**/coverage/**": true

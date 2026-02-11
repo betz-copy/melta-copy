@@ -1,16 +1,7 @@
-import {
-    CoordinateSystem,
-    EntityTemplateType,
-    IEntity,
-    IEntitySingleProperty,
-    IEnumPropertiesColors,
-    IMongoEntityTemplatePopulated,
-    IPropertyValue,
-    locationConverterToString,
-    PropertyFormat,
-    PropertyType,
-    TemplateItem,
-} from '@microservices/shared';
+import { EntityTemplateType, TemplateItem } from '@packages/child-template';
+import { IEntity, IPropertyValue } from '@packages/entity';
+import { IEntitySingleProperty, IEnumPropertiesColors, IMongoEntityTemplatePopulated, PropertyFormat, PropertyType } from '@packages/entity-template';
+import { CoordinateSystem, locationConverterToString } from '@packages/map';
 import Excel, { Cell } from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
 import config from '../../config/index';
@@ -273,7 +264,7 @@ const userArrayCell = (cell: Excel.Cell, row: Record<string, IPropertyValue>, ke
         ? Array.isArray(currentValue)
             ? currentValue.join(and)
             : currentValue
-        : currentValue.map((stringUser) => JSON.parse(stringUser).fullName).join(and);
+        : currentValue.map((user) => user?.fullName).join(and);
 };
 
 const filesCell = (cell: Excel.Cell, isFileArray: boolean, rowIndex: number, value: string, workspaceId: string) => {
@@ -358,7 +349,7 @@ const formatCellValue = (
 
     if (typeof rawValue === 'boolean') rawValue = rawValue ? excelConfig.TRUE_TO_HEBREW : excelConfig.FALSE_TO_HEBREW;
 
-    if (property.format === 'user') rawValue = insertEntities ? rawValue : JSON.parse(rawValue as string)?.fullName;
+    if (property.format === 'user') rawValue = insertEntities ? rawValue : rawValue?.fullName;
 
     if (property.format === 'location') {
         if (typeof rawValue === 'string' && rawValue.includes('{')) {

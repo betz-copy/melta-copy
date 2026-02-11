@@ -20,6 +20,15 @@
     max-width: 100%;
 }
 
+#json-schema input[readonly] {
+    cursor: default;
+}
+
+#json-schema .MuiInputBase-input {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
+
 .direction-rtl {
     direction: rtl;
 }
@@ -57,4 +66,15 @@
 
 #json-schema hr {
     display: none;
+}
+
+.process-instance-view .half-width-field,
+.process-instance-view .full-width-field {
+    width: 100%;
+    max-width: 100%;
+}
+
+.process-instance-view #json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root {
+    flex-direction: column;
+    flex-wrap: nowrap;
 }

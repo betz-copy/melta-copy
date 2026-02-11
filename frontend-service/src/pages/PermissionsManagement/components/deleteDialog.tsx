@@ -1,10 +1,10 @@
+import { ISubCompactPermissions, PermissionData } from '@packages/permission';
+import { IUserPopulated, RelatedPermission } from '@packages/user';
 import i18next from 'i18next';
 import React from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
-import { ISubCompactPermissions } from '../../../interfaces/permissions/permissions';
-import { IUserPopulated, PermissionData, RelatedPermission } from '../../../interfaces/users';
 import { syncPermissionsRequest, updateUserRoleIdsRequest } from '../../../services/userService';
 import { useWorkspaceStore } from '../../../stores/workspace';
 

@@ -25,8 +25,6 @@ const config = {
         booleanHeNoValue: env.get('BOOLEAN_HE_NO_VALUE').default('לא').asString(),
         filePropertySuffix: env.get('FILE_PROPERTY_SUFFIX').default('_tofilename').asString(),
         relationshipReferencePropertySuffix: env.get('RELATIONSHIP_REFERENCE_PROPERTY_SUFFIX').default('_reference').asString(),
-        usersFieldsPropertySuffix: env.get('USERS_FIELDS_PROPERTY_SUFFIX').default('_usersFields').asString(),
-        userFieldPropertySuffix: env.get('USER_FIELD_PROPERTY_SUFFIX').default('_userField').asString(),
         userOriginalAndSuffixFieldsMap: env
             .get('USER_ORIGINAL_AND_SUFFIX_FIELDS_MAP')
             .default([
@@ -72,6 +70,15 @@ const config = {
             .get('CREATE_ALERT_FOR_RULE_WITH_TODAY_FUNC_FAILURE_QUEUE_NAME')
             .default('create-alert-for-rule-with-today-func-failure-queue')
             .asString(),
+    },
+    kartoffel: {
+        url: env.get('KARTOFFEL_BASE_URL').required().asString(),
+        baseEntitiesRoute: env.get('KARTOFFEL_BASE_ENTITIES_ROUTE').default('/api/entities').asString(),
+        searchRoute: env.get('KARTOFFEL_SEARCH_ROUTE').default('/search').asString(),
+        getByIdRoute: env.get('KARTOFFEL_FIND_USER_BY_ID_ROUTE').default('').asString(),
+        fieldToSearch: env.get('KARTOFFEL_FIELDS_TO_SEARCH').default('fullName,uniqueId,personalNumber,identityCard').asString(),
+        requestTimeout: env.get('KARTOFFEL_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        maxPageSize: env.get('KARTOFFEL_MAX_PAGE_SIZE').default(10000).asIntPositive(),
     },
     templateService: {
         url: env.get('TEMPLATE_SERVICE_URL').required().asString(),
@@ -153,38 +160,6 @@ const config = {
             maxFiles: env.get('ROTATE_FILE_LOG_MAX_FILES').default('14d').asString(),
             dirname: env.get('ROTATE_FILE_LOG_DIRNAME').default('./logs').asString(),
         },
-    },
-    map: {
-        srid: env.get('SRID').default(4326).asInt(),
-        polygon: {
-            polygonPrefix: env.get('POLYGON_PREFIX').default('POLYGON((').asString(),
-            polygonSuffix: env.get('POLYGON_SUFFIX').default('))').asString(),
-        },
-        epsgCode: {
-            epsg: env.get('EPSG').default('EPSG').asString(),
-            wgs84: env.get('WGS84').default('EPSG:4326').asString(),
-            southHemiUTM: env.get('SOUTH_HEMI_UTM').default('327').asString(),
-            northHemiUTM: env.get('NORTH_HEMI_UTM').default('326').asString(),
-        },
-        utm: {
-            utmRegex: env
-                .get('UTM_REGEX')
-                .default('\\b([1-9]|[1-5][0-9]|60)([C-HJ-NP-X])\\s([0-9]+(?:\\.[0-9]+)?)\\s([0-9]+(?:\\.[0-9]+)?)\\b')
-                .asRegExp(),
-
-            utmPolygonRegex: env
-                .get('UTM_POLYGON_REGEX')
-                .default('\\b([1-9]|[1-5][0-9]|60)([C-HJ-NP-X])\\s([0-9]+(?:\\.[0-9]+)?)\\s([0-9]+(?:\\.[0-9]+)?)\\b')
-                .asRegExp('g'),
-
-            minZone: env.get('MIN_ZONE').default(1).asInt(),
-            maxZone: env.get('MAX_ZONE').default(60).asInt(),
-            minEasting: env.get('MIN_EASTING').default(160000).asInt(),
-            maxEasting: env.get('MAX_EASTING').default(834000).asInt(),
-            minNorthing: env.get('MIN_NORTHING').default(0).asInt(),
-            maxNorthing: env.get('MAX_NORTHING').default(10000000).asInt(),
-        },
-        wgs84: { maxLongitude: 180, maxLatitude: 90, minLongitude: -180, minLatitude: -90 },
     },
     timezone: 'Asia/Jerusalem',
 };

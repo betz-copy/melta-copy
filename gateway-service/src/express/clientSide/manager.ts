@@ -1,11 +1,7 @@
-import {
-    IBrokenRule,
-    IEntity,
-    IMongoEntityTemplatePopulated,
-    ISearchEntitiesOfTemplateBody,
-    NotFoundError,
-    UploadedFile,
-} from '@microservices/shared';
+import { IEntity, ISearchEntitiesOfTemplateBody, UploadedFile } from '@packages/entity';
+import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { IBrokenRule } from '@packages/rule-breach';
+import { NotFoundError } from '@packages/utils';
 import config from '../../config';
 import InstancesService from '../../externalServices/instanceService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
@@ -49,7 +45,7 @@ class ClientSideManager extends DefaultManagerProxy<null> {
         const categories = [...new Set(childTemplates.map((childTemplate) => childTemplate.category))];
         const entityTemplates = [...new Set(childTemplates.map((childTemplate) => childTemplate.parentTemplate))].map((entityTemplate) => ({
             ...entityTemplate,
-            category: categories.find((category) => category._id === entityTemplate.category) || entityTemplate.category,
+            category: categories.find((category) => category._id === entityTemplate.category._id) || entityTemplate.category,
         })) as IMongoEntityTemplatePopulated[];
 
         const populatedEntityTemplates = await this.templatesManager.getAndPopulateAllTemplatesConstraints(entityTemplates);

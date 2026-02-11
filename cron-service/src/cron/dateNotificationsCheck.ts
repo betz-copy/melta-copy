@@ -1,14 +1,9 @@
-import {
-    IDateAboutToExpireNotificationMetadata,
-    IEntityTemplatePopulated,
-    IFilterDatesRange,
-    InstancesSubclassesPermissions,
-    logger,
-    NotificationType,
-    PermissionScope,
-    PermissionType,
-    WorkspaceTypes,
-} from '@microservices/shared';
+import { IFilterDatesRange } from '@packages/entity';
+import { IEntityTemplatePopulated } from '@packages/entity-template';
+import { IDateAboutToExpireNotificationMetadata, NotificationType } from '@packages/notification';
+import { InstancesSubclassesPermissions, PermissionScope, PermissionType } from '@packages/permission';
+import { logger } from '@packages/utils';
+import { WorkspaceTypes } from '@packages/workspace';
 import schedule from 'node-schedule';
 import config from '../config';
 import EntityTemplateService from '../services/entityTemplate';
@@ -21,6 +16,7 @@ const { notifications } = config;
 
 const checkNotificationDateInCustomAlert = (datePropertyValue: Date, dateNotification: number) => {
     const today = new Date();
+
     today.setHours(0, 0, 0, 0);
 
     const dateNotificationOptions = notifications.dateAlertOptions;
@@ -42,7 +38,6 @@ const getFilteredInstances = async (
     const { count } = await instancesService.searchEntitiesOfTemplateRequest(entityTemplateId, {
         limit: 1,
         skip: 0,
-        showRelationships: false,
         sort: [],
     });
     const today = new Date();
@@ -69,7 +64,6 @@ const getFilteredInstances = async (
         limit: count,
         filter: { $or: dateNotificationFilterQuery },
         skip: 0,
-        showRelationships: false,
         sort: [],
     });
 

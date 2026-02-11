@@ -13,6 +13,11 @@ import {
     Upload,
 } from '@mui/icons-material';
 import { Box, CircularProgress, Dialog, Grid, useTheme } from '@mui/material';
+import { ActionTypes } from '@packages/action';
+import { isChildTemplate } from '@packages/child-template';
+import { IEntity } from '@packages/entity';
+import { PermissionScope } from '@packages/permission';
+import { IKartoffelUser } from '@packages/user';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
@@ -21,12 +26,7 @@ import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import { environment } from '../../globals';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../interfaces/CreateOrEditEntityDialog';
-import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { IEntity } from '../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { PermissionScope } from '../../interfaces/permissions';
-import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
-import { IKartoffelUser } from '../../interfaces/users';
+import { IEntityTemplateMap, ITemplate } from '../../interfaces/template';
 import { exportEntitiesRequest } from '../../services/entitiesService';
 import { useClientSideUserStore } from '../../stores/clientSideUser';
 import { useDraftIdStore, useDraftsStore } from '../../stores/drafts';
@@ -35,7 +35,6 @@ import { useWorkspaceStore } from '../../stores/workspace';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { getEntityTemplateColor } from '../../utils/colors';
 import { checkUserTemplatePermission } from '../../utils/permissions/instancePermissions';
-import { isChildTemplate } from '../../utils/templates';
 import { CustomIcon } from '../CustomIcon';
 import { EntityWizardValues } from '../dialogs/entity';
 import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
@@ -55,18 +54,14 @@ const {
 
 export type TemplateTableRef = EntitiesTableOfTemplateRef<IEntity>;
 
-export const isUserHasWritePermissions = (
-    currentClientSideUser: IKartoffelUser | IEntity,
-    currentUser: UserState['user'],
-    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
-) =>
+export const isUserHasWritePermissions = (currentClientSideUser: IKartoffelUser | IEntity, currentUser: UserState['user'], template: ITemplate) =>
     !!Object.keys(currentClientSideUser).length ||
     checkUserTemplatePermission(currentUser.currentWorkspacePermissions, template.category._id, template._id, PermissionScope.write);
 
 const TemplateTable = forwardRef<
     EntitiesTableOfTemplateRef<IEntity>,
     {
-        template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
+        template: ITemplate;
         quickFilterText: string;
         page: TablePageType;
         setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;

@@ -1,8 +1,8 @@
 import { Close, ExpandMore } from '@mui/icons-material';
 import { Autocomplete, Grid, MenuItem, TextField, TextFieldProps } from '@mui/material';
+import { IPropertyValue } from '@packages/entity';
 import { RJSFSchema } from '@rjsf/utils';
 import React from 'react';
-import { IPropertyValue } from '../../interfaces/entities';
 import OverflowWrapper from '../../utils/agGrid/OverflowWrapper';
 import { ColoredEnumChip } from '../ColoredEnumChip';
 import MeltaCheckbox from '../MeltaDesigns/MeltaCheckbox';
@@ -65,7 +65,7 @@ const MultipleSelect: React.FC<{
             getOptionLabel={(option) => option.label}
             isOptionEqualToValue={(option, val) => option?.value === val?.value}
             onChange={onChange}
-            popupIcon={<ExpandMore />}
+            popupIcon={readonly ? null : <ExpandMore />}
             renderOption={(props, option) => (
                 <MenuItem {...props} key={option.value} value={option.value} style={{ height: '40px' }}>
                     {!!value && multiple && <MeltaCheckbox checked={value?.includes(option.value)} />}
@@ -112,6 +112,7 @@ const MultipleSelect: React.FC<{
                         slotProps={{
                             input: {
                                 ...params.InputProps,
+                                disableUnderline: readonly,
                                 startAdornment: isMultiple ? (
                                     <ColoredEnumChip
                                         label={selectedValue.label}

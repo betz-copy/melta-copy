@@ -1,4 +1,5 @@
-import { IActivityLog, ServiceError } from '@microservices/shared';
+import { IActivityLog } from '@packages/activity-log';
+import { ServiceError } from '@packages/utils';
 import config from '../../config';
 import DefaultExternalServiceRabbit from '../../utils/rabbit/manager';
 

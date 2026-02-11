@@ -1,4 +1,4 @@
-import { DashboardItem, MongoDashboardItem, MongoDashboardItemPopulated } from '@microservices/shared';
+import { DashboardItem, MongoDashboardItem, MongoDashboardItemPopulated } from '@packages/dashboard';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 

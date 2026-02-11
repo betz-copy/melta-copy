@@ -1,22 +1,22 @@
-import { v4 as uuid } from 'uuid';
-import axios from '../../axios';
-import { ProcessTemplateFormInputProperties, ProcessTemplatePropertyByType, ProcessTemplateWizardValues } from '../../common/wizards/processTemplate';
-import { environment } from '../../globals';
-import { PropertyType } from '../../interfaces/entityTemplates';
-import fileDetails from '../../interfaces/fileDetails';
+import { FileDetails } from '@packages/common';
+import { PropertyType } from '@packages/entity-template';
 import {
     ICreateProcessTemplateBody,
-    IMongoProcessTemplatePopulated,
+    IMongoProcessTemplateReviewerPopulated,
     IProcessDetails,
     IProcessSingleProperty,
     ISearchProcessTemplatesBody,
     IUpdateProcessTemplateBody,
-} from '../../interfaces/processes/processTemplate';
-import { extractProperties } from './entityTemplatesService';
+    ProcessPropertyFormats,
+} from '@packages/process';
+import { v4 as uuid } from 'uuid';
+import axios from '../../axios';
+import { ProcessTemplateFormInputProperties, ProcessTemplatePropertyByType, ProcessTemplateWizardValues } from '../../common/wizards/processTemplate';
+import { environment } from '../../globals';
+import { PropertyWizardType } from '../../interfaces/template';
+import { extractProperties, PropertyWizardTypes } from './entityTemplatesService';
 
 const { processTemplates } = environment.api;
-export const basePropertyTypes = ['string', 'number', 'boolean', 'array'];
-export const stringFormats = ['date', 'date-time', 'email', 'entityReference', 'fileId', 'text-area', 'signature'];
 
 export type ExtractedProcessProps = {
     properties: ProcessTemplateFormInputProperties[];
@@ -24,7 +24,7 @@ export type ExtractedProcessProps = {
 };
 
 const processTemplateObjectToProcessTemplateForm = (
-    processTemplate: IMongoProcessTemplatePopulated | null,
+    processTemplate: IMongoProcessTemplateReviewerPopulated | null,
 ): ProcessTemplateWizardValues | undefined => {
     if (!processTemplate) return undefined;
     const { details, steps, ...restOfProcessTemplate } = processTemplate;
@@ -35,12 +35,12 @@ const processTemplateObjectToProcessTemplateForm = (
     details.propertiesOrder.forEach((key) => {
         const value = details.properties.properties[key];
 
-        let type: string = value.format || value.type;
+        let type: PropertyWizardType = (value.format as PropertyWizardType) || (value.type as PropertyWizardType);
         if (value.enum) {
-            type = 'enum';
+            type = PropertyWizardTypes.enum;
         }
         if (value.pattern) {
-            type = 'pattern';
+            type = PropertyWizardTypes.pattern;
         }
 
         const property: ProcessTemplateFormInputProperties = {
@@ -54,10 +54,10 @@ const processTemplateObjectToProcessTemplateForm = (
             patternCustomErrorMessage: value.patternCustomErrorMessage || '',
         };
 
-        if (value.format === 'fileId') {
+        if (value.format === ProcessPropertyFormats.FileId) {
             detailsAttachmentProperties.push({ type: 'field', data: property });
-        } else if (value.items?.format === 'fileId') {
-            property.type = 'multipleFiles';
+        } else if (value.items?.format === ProcessPropertyFormats.FileId) {
+            property.type = PropertyWizardTypes.multipleFiles;
 
             detailsAttachmentProperties.push({ type: 'field', data: property });
         } else {
@@ -70,12 +70,12 @@ const processTemplateObjectToProcessTemplateForm = (
         step.propertiesOrder.forEach((key) => {
             const value = step.properties.properties[key];
 
-            let type: string = value.format || value.type;
+            let type: PropertyWizardType = (value.format as PropertyWizardType) || (value.type as PropertyWizardType);
             if (value.enum) {
-                type = 'enum';
+                type = PropertyWizardTypes.enum;
             }
             if (value.pattern) {
-                type = 'pattern';
+                type = PropertyWizardTypes.pattern;
             }
 
             const property: ProcessTemplateFormInputProperties = {
@@ -89,10 +89,10 @@ const processTemplateObjectToProcessTemplateForm = (
                 patternCustomErrorMessage: value.patternCustomErrorMessage || '',
             };
 
-            if (value.format === 'fileId') {
+            if (value.format === ProcessPropertyFormats.FileId) {
                 stepsAttachmentProperties.push({ type: 'field', data: property });
-            } else if (value.items?.format === 'fileId') {
-                property.type = 'multipleFiles';
+            } else if (value.items?.format === ProcessPropertyFormats.FileId) {
+                property.type = PropertyWizardTypes.multipleFiles;
 
                 stepsAttachmentProperties.push({ type: 'field', data: property });
             } else {
@@ -109,7 +109,7 @@ const processTemplateObjectToProcessTemplateForm = (
             icon: {
                 file: { name: step.iconFileId },
                 name: step.iconFileId,
-            } as fileDetails,
+            } as FileDetails,
             reviewers: step.reviewers,
             disableAddingReviewers: step.disableAddingReviewers,
         };
@@ -129,20 +129,23 @@ const processTemplateObjectToProcessTemplateForm = (
     };
 };
 
-const createFileAttachmentProperty = (type: string, required: boolean): Omit<IProcessSingleProperty, 'title'> & { required?: boolean } => {
-    if (type === 'multipleFiles') {
+const createFileAttachmentProperty = (
+    type: PropertyWizardType,
+    required: boolean,
+): Omit<IProcessSingleProperty, 'title'> & { required?: boolean } => {
+    if (type === PropertyWizardTypes.multipleFiles) {
         return {
             type: PropertyType.array,
             items: {
                 type: PropertyType.string,
-                format: 'fileId',
+                format: ProcessPropertyFormats.FileId,
             },
             ...(required && { required: true }),
         };
     }
     return {
         type: PropertyType.string,
-        format: 'fileId',
+        format: ProcessPropertyFormats.FileId,
         ...(required && { required: true }),
     };
 };
@@ -189,8 +192,10 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
         if (!deleted) {
             detailsSchema.properties[name] = {
                 title,
-                type: basePropertyTypes.includes(type) ? (type as IProcessSingleProperty['type']) : PropertyType.string,
-                format: stringFormats.includes(type) ? (type as IProcessSingleProperty['format']) : undefined,
+                type: Object.values(PropertyType).includes(type as PropertyType) ? (type as IProcessSingleProperty['type']) : PropertyType.string,
+                format: Object.values(ProcessPropertyFormats).includes(type as ProcessPropertyFormats)
+                    ? (type as IProcessSingleProperty['format'])
+                    : undefined,
                 enum: type === 'enum' ? options : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
@@ -218,8 +223,10 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
             if (!deleted) {
                 stepSchema.properties[name] = {
                     title,
-                    type: basePropertyTypes.includes(type) ? (type as IProcessSingleProperty['type']) : PropertyType.string,
-                    format: stringFormats.includes(type) ? (type as IProcessSingleProperty['format']) : undefined,
+                    type: Object.values(PropertyType).includes(type as PropertyType) ? (type as IProcessSingleProperty['type']) : PropertyType.string,
+                    format: Object.values(ProcessPropertyFormats).includes(type as ProcessPropertyFormats)
+                        ? (type as IProcessSingleProperty['format'])
+                        : undefined,
                     enum: type === 'enum' ? options : undefined,
                     pattern: type === 'pattern' ? pattern : undefined,
                     patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
@@ -266,7 +273,7 @@ const createProcessTemplateRequest = async (newProcessTemplate: ProcessTemplateW
     formData.append('details', JSON.stringify(processTemplate.details));
     formData.append('steps', JSON.stringify(processTemplate.steps));
 
-    const { data } = await axios.post<IMongoProcessTemplatePopulated>(processTemplates, formData);
+    const { data } = await axios.post<IMongoProcessTemplateReviewerPopulated>(processTemplates, formData);
     return data;
 };
 
@@ -282,7 +289,7 @@ const updateProcessTemplateRequest = async (processTemplateId: string, updatedPr
     formData.append('displayName', processTemplate.displayName);
     formData.append('details', JSON.stringify(processTemplate.details));
     formData.append('steps', JSON.stringify(processTemplate.steps));
-    const { data } = await axios.put<IMongoProcessTemplatePopulated>(`${processTemplates}/${processTemplateId}`, formData);
+    const { data } = await axios.put<IMongoProcessTemplateReviewerPopulated>(`${processTemplates}/${processTemplateId}`, formData);
 
     return data;
 };
@@ -293,7 +300,7 @@ const deleteProcessTemplateRequest = async (processTemplateId: string) => {
 };
 
 const searchProcessTemplates = async (searchBody: ISearchProcessTemplatesBody) => {
-    const { data } = await axios.post<IMongoProcessTemplatePopulated[]>(`${processTemplates}/search`, searchBody);
+    const { data } = await axios.post<IMongoProcessTemplateReviewerPopulated[]>(`${processTemplates}/search`, searchBody);
     return data;
 };
 

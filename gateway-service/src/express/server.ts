@@ -1,10 +1,9 @@
 import { once } from 'node:events';
 import http from 'node:http';
-import { errorMiddleware } from '@microservices/shared';
+import { errorMiddleware } from '@packages/utils';
 import cookieParser from 'cookie-parser';
 import express from 'express';
 import helmet from 'helmet';
-
 import { StatusCodes } from 'http-status-codes';
 import passport from 'passport';
 import config from '../config';

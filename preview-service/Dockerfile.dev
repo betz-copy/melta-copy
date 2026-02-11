@@ -10,21 +10,29 @@ RUN apk add --no-cache \
     && fc-cache -f \
     && rm -rf /var/cache/apk/*
 
+# Enable pnpm
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+
 # Copy root files
-COPY ./package*.json ./
-COPY ./tsconfig.json ./
+COPY package*.json ./
+COPY pnpm-lock.yaml ./
+COPY tsconfig.json ./
+COPY turbo.json ./
+COPY pnpm-workspace.yaml ./
 
-# Copy shared
-COPY ../shared/package*.json ./shared/
-COPY ../shared/ ./shared/
+# Copy packages (contains package.json files needed for pnpm workspace resolution)
+COPY packages ./packages
 
-COPY ./preview-service/package*.json ./preview-service/
-COPY ./preview-service ./preview-service/
+# Copy service package.json and source
+COPY preview-service/package*.json ./preview-service/
+COPY preview-service ./preview-service/
 
-# Install dependencies & build 'shared'
-RUN npm ci --silent
-RUN npm run build -w @microservices/shared
-RUN npm run build -w preview-service
+# Install dependencies (pnpm will resolve workspace packages from package.json files in packages/)
+RUN pnpm install --frozen-lockfile --silent
+
+# Build using Turborepo (only builds preview-service and its dependencies)
+RUN --mount=type=cache,target=/usr/src/app/.turbo \
+    pnpm turbo build --filter=preview-service
 
 EXPOSE 8000
 

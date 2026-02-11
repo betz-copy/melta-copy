@@ -1,4 +1,5 @@
-import { ICompactPermissions, IMongoCategory, PermissionScope } from '@microservices/shared';
+import { IMongoCategory } from '@packages/category';
+import { ICompactPermissions, PermissionScope } from '@packages/permission';
 
 export interface SyncUserPermissions {
     relatedId: string;

@@ -1,4 +1,4 @@
-import { iconFileSchema, MongoIdSchema } from '@microservices/shared';
+import { iconFileSchema, MongoIdSchema } from '@packages/utils';
 import Joi from 'joi';
 import { ExtendedJoi } from '../../../utils/joi';
 

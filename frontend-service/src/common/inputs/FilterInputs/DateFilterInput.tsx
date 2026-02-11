@@ -1,21 +1,28 @@
 import { FormControlLabel, Grid } from '@mui/material';
+import { ByCurrentDefaultValue } from '@packages/child-template';
+import {
+    BasicFilterOperationTypes,
+    FilterTypes,
+    IAgGridDateFilter,
+    IAgGridNumberFilter,
+    IAgGridTextFilter,
+    isRelativeDateFilter,
+    NumberFilterOperationTypes,
+    RelativeDateFilters,
+} from '@packages/rule-breach';
 import i18next from 'i18next';
 import React, { useEffect } from 'react';
-import { environment } from '../../../globals';
-import { ByCurrentDefaultValue } from '../../../interfaces/childTemplates';
+import { IFilterDateType } from '../../../interfaces/childTemplateForms';
 import { useDarkModeStore } from '../../../stores/darkMode';
-import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridTextFilter, IFilterDateType, RelativeDateFilters } from '../../../utils/agGrid/interfaces';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import DatePickerWrapper from '../DatePickerWrapper';
 import DateRange from '../DateRange';
 import { TypeSelectFilter } from './TypeSelectFilter';
 
-const { relativeDateFilters } = environment;
-
 interface DateFilterInputProps {
-    filterField: IAGGridDateFilter | undefined;
+    filterField: IAgGridDateFilter | undefined;
     handleFilterTypeChange: (
-        newTypeFilter: IAGGridDateFilter['type'] | IAGGridTextFilter['type'] | IAGGridNumberFilter['type'],
+        newTypeFilter: IAgGridDateFilter['type'] | IAgGridTextFilter['type'] | IAgGridNumberFilter['type'],
         condition?: boolean,
     ) => void;
     handleDateChange: (newValue: IFilterDateType, isStartDate: boolean) => void;
@@ -37,12 +44,13 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
     currentDateCheckbox = false,
 }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
-    const isInRangeType = filterField?.type === 'inRange';
-    const isRelativeType = relativeDateFilters.includes(filterField?.type ?? '');
+    const isInRangeType = filterField?.type === NumberFilterOperationTypes.inRange;
+    const isRelativeType = isRelativeDateFilter(filterField?.type);
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: lol
     useEffect(() => {
-        if (forceEqualsType && filterField && filterField.type !== 'equals') handleFilterTypeChange('equals');
+        if (forceEqualsType && filterField && filterField.type !== BasicFilterOperationTypes.equals)
+            handleFilterTypeChange(BasicFilterOperationTypes.equals);
     }, [forceEqualsType, filterField]);
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: lol
@@ -55,13 +63,13 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
             return;
         }
 
-        if ((dateFrom && relativeDateFilters.includes(dateFrom)) || (dateTo && relativeDateFilters.includes(dateTo))) {
+        if ((dateFrom && isRelativeDateFilter(dateFrom)) || (dateTo && isRelativeDateFilter(dateTo))) {
             handleDateChange(null, true);
             handleDateChange(null, false);
             return;
         }
 
-        if (type !== 'inRange' && dateTo !== null) {
+        if (type !== NumberFilterOperationTypes.inRange && dateTo !== null) {
             handleDateChange(null, false);
             return;
         }
@@ -92,10 +100,10 @@ const DateFilterInput: React.FC<DateFilterInputProps> = ({
                 {!hideFilterType && (
                     <Grid size={{ xs: isInRangeType || isRelativeType ? 12 : 5 }}>
                         <TypeSelectFilter
-                            filterField={filterField as IAGGridDateFilter}
+                            filterField={filterField as IAgGridDateFilter}
                             handleFilterTypeChange={handleFilterTypeChange}
                             readOnly={readOnly || forceEqualsType}
-                            type="date"
+                            type={FilterTypes.date}
                         />
                     </Grid>
                 )}

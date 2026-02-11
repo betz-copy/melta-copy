@@ -1,6 +1,6 @@
+import { FilterLogicalOperator, IFilterOfField, ISearchFilter } from '@packages/entity';
 import { QueryClient } from 'react-query';
-import { FilterLogicalOperator, IFilterOfField, ISearchFilter } from '../../../../interfaces/entities';
-import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import { IEntityTemplateMap } from '../../../../interfaces/template';
 import { translateFieldFilter } from '../../../../pages/Graph/GraphFilterToBackend';
 import { filterModelToFilterOfTemplatePerField } from '../../../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { IFilterTemplate } from '../commonInterfaces';
@@ -11,7 +11,7 @@ export const filterTemplateToSearchFilter = (
     queryClient: QueryClient,
     andOr: FilterLogicalOperator = FilterLogicalOperator.AND,
 ): ISearchFilter | undefined => {
-    if (filterModel.length === 0) return undefined;
+    if (!filterModel.length) return undefined;
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const template = entityTemplates.get(templateId)!;

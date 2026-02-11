@@ -1,18 +1,13 @@
-import { IMongoChildTemplatePopulated, ViewType } from '../../../interfaces/childTemplates';
-import { IPropertyValue } from '../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IMongoChildTemplateWithConstraintsPopulated, ViewType } from '@packages/child-template';
+import { IPropertyValue } from '@packages/entity';
+import { IMongoEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { emptyCategory, ITemplate } from '../../../interfaces/template';
 
-export const emptyEntityTemplate: IMongoEntityTemplatePopulated = {
+export const emptyEntityTemplate: IMongoEntityTemplateWithConstraintsPopulated = {
     _id: '',
     displayName: '',
     name: '',
-    category: {
-        _id: '',
-        name: '',
-        displayName: '',
-        color: '',
-        templatesOrder: [],
-    },
+    category: emptyCategory,
     properties: {
         properties: {},
         required: [],
@@ -24,28 +19,38 @@ export const emptyEntityTemplate: IMongoEntityTemplatePopulated = {
     propertiesPreview: [],
     uniqueConstraints: [],
     disabled: false,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    iconFileId: null,
 };
 
-export const emptyChildTemplate: IMongoChildTemplatePopulated = {
+const emptyParentTemplateForChild: IMongoEntityTemplatePopulated = {
     ...emptyEntityTemplate,
+    category: emptyCategory,
+};
+
+export const emptyChildTemplate: IMongoChildTemplateWithConstraintsPopulated = {
+    ...emptyEntityTemplate,
+    parentTemplateId: '',
     description: '',
     isFilterByCurrentUser: false,
     isFilterByUserUnit: false,
     filterByCurrentUserField: undefined,
     filterByUnitUserField: undefined,
-    parentTemplate: emptyEntityTemplate,
+    parentTemplate: emptyParentTemplateForChild,
     viewType: ViewType.categoryPage,
-    createdAt: new Date().toString(),
-    updatedAt: new Date().toString(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
     properties: {
         properties: {},
         required: [],
         type: 'object',
         hide: [],
     },
+    uniqueConstraints: [],
 };
-export interface EntityWizardValues {
-    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
+export type EntityWizardValues = {
+    template: ITemplate;
     properties: Record<string, IPropertyValue> & { disabled: boolean };
     attachmentsProperties: Record<string, File[] | File | undefined>;
-}
+};

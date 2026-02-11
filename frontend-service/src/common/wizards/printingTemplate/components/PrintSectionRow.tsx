@@ -1,16 +1,16 @@
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Autocomplete, Chip, Grid, IconButton, TextField } from '@mui/material';
+import { IPropertyValue } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IPrintSection } from '@packages/printing-template';
 import { getIn } from 'formik';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
-import { ICategoryMap } from '../../../../interfaces/categories';
-import { IPropertyValue } from '../../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { IPrintSection } from '../../../../interfaces/printingTemplates';
+import { ICategoryMap } from '../../../../interfaces/template';
 
 type IPrintSectionRowProps = {
     section: IPrintSection;
-    entities: IMongoEntityTemplatePopulated[];
+    entities: IMongoEntityTemplateWithConstraintsPopulated[];
     columns: {
         id: string;
         name: string;

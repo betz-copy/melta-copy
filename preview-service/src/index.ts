@@ -1,4 +1,4 @@
-import { logger } from '@microservices/shared';
+import { logger } from '@packages/utils';
 import 'elastic-apm-node/start';
 import menash from 'menashmq';
 import config from './config';

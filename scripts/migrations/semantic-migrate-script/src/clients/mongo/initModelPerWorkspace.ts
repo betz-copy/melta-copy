@@ -1,4 +1,4 @@
-import { IMongoEntityTemplate } from '@microservices/shared';
+import { IMongoEntityTemplate } from '@packages/entity-template';
 import { connection } from 'mongoose';
 import config from '../../config';
 import { EntityTemplateSchema } from './model';

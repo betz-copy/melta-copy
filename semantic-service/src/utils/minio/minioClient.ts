@@ -1,5 +1,6 @@
-import http from 'node:http';
-import { FileTypes, logger } from '@microservices/shared';
+import * as http from 'node:http';
+import { FileTypes } from '@packages/semantic-search';
+import { logger } from '@packages/utils';
 import mammoth from 'mammoth';
 import { Client } from 'minio';
 import pdf from 'pdf-parse';

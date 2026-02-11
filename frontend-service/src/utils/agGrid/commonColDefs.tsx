@@ -1,4 +1,5 @@
 /** biome-ignore-all lint/suspicious/noExplicitAny: properties... */
+
 import {
     ColDef,
     ICellEditorParams,
@@ -11,6 +12,23 @@ import {
 } from '@ag-grid-community/core';
 import { PriorityHigh } from '@mui/icons-material';
 import { Box, Grid, Tooltip, tooltipClasses } from '@mui/material';
+import {
+    ActionErrors,
+    IEntity,
+    IExcelNotFoundError,
+    IRelationshipRefNotFoundError,
+    IRequiredConstraint,
+    ISearchFilter,
+    IUniqueConstraint,
+    IUsersNotFoundError,
+    NotFoundErrorTypes,
+} from '@packages/entity';
+import { IEntitySingleProperty, PropertyFormat } from '@packages/entity-template';
+import { PermissionData } from '@packages/permission';
+import { EntityData, IRuleBreachPopulated, IRuleBreachRequestPopulated } from '@packages/rule-breach';
+import { ISemanticSearchResult } from '@packages/semantic-search';
+import { IGetUnits, IMongoUnit } from '@packages/unit';
+import { IUser } from '@packages/user';
 import i18next from 'i18next';
 import { isEmpty } from 'lodash';
 import { EntityWizardValues } from '../../common/dialogs/entity';
@@ -18,26 +36,8 @@ import OpenPreview from '../../common/FilePreview/OpenPreview';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 import UserAvatar, { IUserAvatarProps } from '../../common/UserAvatar';
 import { environment } from '../../globals';
-import { IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import {
-    EntityData,
-    IEntity,
-    INotFoundError,
-    IRelationshipRefNotFoundError,
-    IRequiredConstraint,
-    ISearchFilter,
-    IUniqueConstraint,
-    IUsersNotFoundError,
-    NotFoundErrorTypes,
-} from '../../interfaces/entities';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated, PropertyFormat } from '../../interfaces/entityTemplates';
 import { IError, IFailedEntity, IValidationError } from '../../interfaces/excel';
-import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
-import { IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
-import { IRuleBreachRequestPopulated } from '../../interfaces/ruleBreaches/ruleBreachRequest';
-import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
-import { IGetUnits, IMongoUnit } from '../../interfaces/units';
-import { IUser, PermissionData } from '../../interfaces/users';
+import { IEntityTemplateMap, ITemplate } from '../../interfaces/template';
 import OpenMap from '../../pages/Map/OpenMap';
 import { PropertyWizardTypes } from '../../services/templates/entityTemplatesService';
 import { getDateWithoutTime, getLongDate } from '../date';
@@ -76,7 +76,7 @@ const isPropertyInvalid = <Data extends IColDefData>(props: ICellRendererParams<
             case ActionErrors.validation:
                 return (error.metadata as IValidationError)?.path.split('/').filter(Boolean)[0] === property;
             case ActionErrors.notFound: {
-                return (error.metadata as INotFoundError).property === property;
+                return (error.metadata as IExcelNotFoundError).property === property;
             }
             default:
                 break;
@@ -112,7 +112,7 @@ const errorColDef = <Data extends IColDefData>(
             break;
         }
         case ActionErrors.notFound: {
-            const errorMetadata: INotFoundError = error.metadata as INotFoundError;
+            const errorMetadata: IExcelNotFoundError = error.metadata as IExcelNotFoundError;
             if (errorMetadata.type === NotFoundErrorTypes.relationshipRefNotFound) {
                 const { relatedTemplateId, relatedIdentifier } = errorMetadata as IRelationshipRefNotFoundError;
                 message = i18next.t('wizard.entity.loadEntities.relatedEntityNotFound', {
@@ -307,7 +307,7 @@ export const locationColDef = <Data extends EntityData>(
     valueGetter: ValueGetterFunc<Data>,
     entityGetter: ValueGetterFunc<any, any>,
     value: Partial<IEntitySingleProperty>,
-    template: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+    template: ITemplate,
     hardcodedWidth: number | undefined,
     isLastColumn: boolean,
     hideColumn = false,
@@ -592,16 +592,14 @@ export const userColDef = <Data extends IUser>(
             const error = isPropertyInvalid(props, field, ignoreType);
             if (error) return errorColDef(props, error, { ...value, format: PropertyFormat.user });
             if (!props.value) return '';
-
             if (ignoreType && !stringifiedJSONtoObj(props.value))
                 return <Value hideValue={hideColumn} color={getColor(props, field)} value={props.value ?? ''} />;
 
-            const user = JSON.parse(props.value);
             return (
                 <Grid container gap={1}>
                     <UserAvatar
-                        user={user}
-                        tooltip={{ title: `${user.fullName} - ${user.hierarchy}` }}
+                        user={props.value ?? {}}
+                        tooltip={{ title: `${props.value?.fullName} - ${props.value?.hierarchy}` }}
                         chip={{
                             sx: {
                                 background: darkMode ? '#1E1F2B' : '#EBEFFA',
@@ -651,7 +649,6 @@ export const userArrayColDef = <Data extends IEntity>(
                 return errorColDef({ ...props, value: errorValue }, error, { ...value, format: PropertyWizardTypes.users as any });
             }
 
-            if (!props.value) return '';
             if (ignoreType) {
                 if (typeof props.value === 'string' || typeof props.value === 'number')
                     return <Value hideValue={hideColumn} color={getColor(props, field)} value={(props.value as string) ?? ''} />;
@@ -661,7 +658,7 @@ export const userArrayColDef = <Data extends IEntity>(
 
             return (
                 <OverflowWrapper
-                    items={props.value.map((val) => stringifiedJSONtoObj(val) ?? JSON.parse(JSON.stringify(val)))}
+                    items={props.value ?? []}
                     getItemKey={(item) => item._id}
                     renderItem={(item) => (
                         <UserAvatar

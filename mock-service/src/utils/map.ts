@@ -1,4 +1,4 @@
-import { CoordinateSystem } from '@microservices/shared';
+import { CoordinateSystem } from '@packages/map';
 
 const gazaBounds = [
     [31.596668, 34.480591],

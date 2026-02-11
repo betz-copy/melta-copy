@@ -68,10 +68,6 @@ const config = {
         dateAlertTime: env.get('DATE_ALERT_TIME').default('0 0 * * *').asString(),
         displayCronDates: env.get('DISPLAY_CRON_DATES').default('true').asString(),
     },
-    userFieldsSync: {
-        usersSyncTime: env.get('USERS_SYNC_TIME').default('0 */12 * * *').asString(),
-        isSyncingUsers: env.get('IS_SYNCING_USERS').default('true').asString(),
-    },
     rulesWithTodayFunc: {
         runOnStart: env.get('RULES_WITH_TODAY_FUNC_RUN_ON_START').default('false').asBool(), // for development
         cronTime: env.get('RULES_WITH_TODAY_FUNC_CRON_TIME').default('0 0 * * *').asString(),

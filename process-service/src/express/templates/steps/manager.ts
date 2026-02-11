@@ -1,4 +1,5 @@
-import { DefaultManagerMongo, IMongoStepTemplate, IStepTemplate, NotFoundError, ValidationError } from '@microservices/shared';
+import { IMongoStepTemplate, IStepTemplate } from '@packages/process';
+import { DefaultManagerMongo, NotFoundError, ValidationError } from '@packages/utils';
 import { ClientSession, Types } from 'mongoose';
 import config from '../../../config';
 import { NoMatchingStepsError, TemplateNotFoundError } from '../../error';

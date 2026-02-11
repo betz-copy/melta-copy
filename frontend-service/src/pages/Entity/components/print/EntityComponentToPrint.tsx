@@ -1,18 +1,17 @@
 // !This whole page is written without mui - in order to render a large scale tree fast
-
 import ShortcutIcon from '@mui/icons-material/Shortcut';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoPrintingTemplate } from '@packages/printing-template';
 import React from 'react';
 import { EntityPropertiesInternal } from '../../../../common/EntityProperties';
 import { IPrintOptions } from '../../../../common/print/PrintOptionsDialog';
-import { IEntity } from '../../../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { IMongoPrintingTemplate } from '../../../../interfaces/printingTemplates';
-import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
+import { IEntityTemplateMap, IRelationshipTemplateMap } from '../../../../interfaces/template';
 import { EntityDates } from '../EntityDates';
 import { IEntityTreeNode } from './ComponentToPrint';
 
 interface IEntityComponentToPrintProps {
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
     entity: IEntity;
     options: Pick<IPrintOptions, 'showEntitiesDates' | 'addEntityCheckbox' | 'showPreviewPropertiesOnly'>;
     hierarchicalChildren?: IEntityTreeNode[];

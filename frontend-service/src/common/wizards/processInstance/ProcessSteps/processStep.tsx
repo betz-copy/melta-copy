@@ -1,5 +1,7 @@
 import { Clear as ClearIcon, Done as DoneIcon, Edit as EditIcon } from '@mui/icons-material';
 import { Box, Button, CircularProgress, Grid, InputLabel, TextField, Typography } from '@mui/material';
+import { PermissionScope } from '@packages/permission';
+import { IMongoProcessInstanceReviewerPopulated, IMongoStepInstancePopulated, IMongoStepTemplatePopulated } from '@packages/process';
 import { AxiosError } from 'axios';
 import { Field, Form, Formik } from 'formik';
 import i18next from 'i18next';
@@ -7,10 +9,6 @@ import { pickBy } from 'lodash';
 import React, { FC, JSX, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { PermissionScope } from '../../../../interfaces/permissions';
-import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
-import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
-import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { updateStepRequest } from '../../../../services/processesService';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import { useUserStore } from '../../../../stores/user';
@@ -109,7 +107,7 @@ export const TextAreaProperty: FC<{
 interface ProcessStepProps {
     stepInstance: IMongoStepInstancePopulated;
     stepTemplate: IMongoStepTemplatePopulated;
-    processInstance: IMongoProcessInstancePopulated;
+    processInstance: IMongoProcessInstanceReviewerPopulated;
     isStepEditMode: boolean;
     setIsStepEditMode: React.Dispatch<React.SetStateAction<boolean>>;
     onStepUpdateSuccess: (stepInstance: IMongoStepInstancePopulated) => void;
@@ -211,7 +209,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                 return (
                     <Form style={{ height: '100%', paddingTop: '10px' }}>
                         <Grid container flexDirection="column" justifyContent="space-between" width="100%" height="100%" minHeight="320px">
-                            <Grid container width="100%" height="90%" justifyContent="space-between" flexWrap="nowrap">
+                            <Grid container width="100%" height="90%" justifyContent="flex-start" flexWrap="nowrap" columnGap="1px">
                                 <Grid
                                     size={{ xs: toPrint ? 0 : 8 }}
                                     maxHeight={toPrint ? undefined : 550}
@@ -227,20 +225,23 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                 component="h6"
                                                 variant="h6"
                                             />
-                                            <JSONSchemaFormik
-                                                schema={propertiesSchema}
-                                                values={{ ...values, properties: values.properties }}
-                                                setValues={(propertiesValues) => {
-                                                    return setFieldValue('properties', propertiesValues);
-                                                }}
-                                                errors={isSavePressed ? (errors.properties ?? {}) : {}}
-                                                touched={touched.properties ?? {}}
-                                                setFieldTouched={(field) => {
-                                                    return setFieldTouched(`properties.${field}`);
-                                                }}
-                                                readonly={!isStepEditMode}
-                                                toPrint={toPrint}
-                                            />
+                                            <Box sx={{ mt: 2 }}>
+                                                <JSONSchemaFormik
+                                                    schema={propertiesSchema}
+                                                    values={{ ...values, properties: values.properties }}
+                                                    setValues={(propertiesValues) => {
+                                                        return setFieldValue('properties', propertiesValues);
+                                                    }}
+                                                    errors={isSavePressed ? (errors.properties ?? {}) : {}}
+                                                    touched={touched.properties ?? {}}
+                                                    setFieldTouched={(field) => {
+                                                        return setFieldTouched(`properties.${field}`);
+                                                    }}
+                                                    readonly={!isStepEditMode}
+                                                    viewMode={!isStepEditMode ? 'clean' : undefined}
+                                                    toPrint={toPrint}
+                                                />
+                                            </Box>
                                             {toPrint &&
                                                 textAreaValues.length > 0 &&
                                                 textAreaValues.map((textArea) => <TextAreaProperty key={textArea.key} textArea={textArea} />)}
@@ -377,6 +378,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                             padding: '20px',
                                             width: '305px',
                                             height: '290px',
+                                            flexShrink: 0,
                                         }}
                                     >
                                         <Grid container flexDirection="column" gap="20px" width="100%">
@@ -481,8 +483,9 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                 ) : (
                                                     <Grid>
                                                         <Button
-                                                            variant="outlined"
+                                                            variant="contained"
                                                             startIcon={<EditIcon />}
+                                                            sx={{ borderRadius: (theme) => theme.shape.borderRadius }}
                                                             onClick={() => {
                                                                 setFieldValue(
                                                                     'properties',
@@ -491,7 +494,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                                 setIsStepEditMode(!isStepEditMode);
                                                             }}
                                                         >
-                                                            <Typography>{i18next.t('wizard.processInstance.step.editStepBth')}</Typography>
+                                                            {i18next.t('wizard.processInstance.step.editStepBth')}
                                                         </Button>
                                                     </Grid>
                                                 )}
