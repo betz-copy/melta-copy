@@ -76,7 +76,10 @@ export const getKartoffelPropsAggregation = [
 
 const transformNeoScript = async (mongoResult, session) => {
     await session.writeTransaction(async (tx) => {
+        const createConstraintsQueries = [];
         for (const template of mongoResult) {
+            const constraintResult = await tx.run('SHOW CONSTRAINTS');
+
             for (const kartoffelKey of template.kartoffelKeys) {
                 const removeKartoffelKeyQuery = `
                     MATCH (n:\`${template._id}\`)
@@ -89,52 +92,68 @@ const transformNeoScript = async (mongoResult, session) => {
             }
 
             for (const userKey of template.userKeys) {
-                const oldUserProperty = `${userKey}.id_userField`;
-                const findOldConstraintQuery = `
-                    SHOW CONSTRAINTS
-                    YIELD name, type, entityType, labelsOrTypes, properties
-                    WHERE type = 'NODE_PROPERTY_EXISTENCE'
-                      AND entityType = 'NODE'
-                      AND labelsOrTypes = [$label]
-                      AND properties = [$property]
-                    RETURN name
-                `;
-
-                const oldConstraintsResult = await tx.run(findOldConstraintQuery, {
-                    label: template._id,
-                    property: oldUserProperty,
+                const constraintsToDelete = [];
+                constraintResult.records.forEach((record) => {
+                    const constraintProperties = record.get('properties');
+                    constraintProperties.forEach((property) => {
+                        if (property === `${userKey}.id_userField`) {
+                            constraintsToDelete.push(record);
+                        }
+                    });
                 });
 
-                for (const record of oldConstraintsResult.records) {
-                    const constraintName = record.get('name');
-                    const dropConstraintQuery = `DROP CONSTRAINT \`${constraintName}\``;
-                    await tx.run(dropConstraintQuery);
-                    console.log(`dropped constraint ${constraintName} on ${oldUserProperty} in template ${template._id}`);
+                for (const constraint of constraintsToDelete) {
+                    const name = constraint.get('name');
+                    const type = constraint.get('type');
+                    const labelsOrTypes = constraint.get('labelsOrTypes');
+                    const entityType = constraint.get('entityType');
+                    const properties = constraint.get('properties');
+                    const newProperties = properties.map((prop) => {
+                        if (prop === `${userKey}.id_userField`) {
+                            return userKey;
+                        }
+                        return prop;
+                    });
+
+                    await tx.run(`DROP CONSTRAINT \`${name}\``);
+                    console.log(`Dropped constraint ${name}`);
+
+                    let createQuery;
+                    const label = labelsOrTypes[0];
+                    const nodeVar = entityType === 'NODE' ? 'n' : 'r';
+                    const forClause = entityType === 'NODE' ? `FOR (\`${nodeVar}\`:\`${label}\`)` : `FOR ()-[\`${nodeVar}\`:\`${label}\`]-()`;
+
+                    if (type === 'NODE_PROPERTY_EXISTENCE') {
+                        createQuery = `
+                        CREATE CONSTRAINT \`${name}\` IF NOT EXISTS
+                        ${forClause}
+                        REQUIRE ${nodeVar}.\`${newProperties[0]}\` IS NOT NULL
+                        `;
+                    } else if (type === 'NODE_KEY') {
+                        createQuery = `
+                        CREATE CONSTRAINT \`${name}\` IF NOT EXISTS
+                        ${forClause}
+                        REQUIRE (${nodeVar}.\`${newProperties}\`) IS NODE KEY
+                    `;
+                    }
+
+                    createConstraintsQueries.push(createQuery);
                 }
-
-                const createNewConstraintQuery = `
-                    CREATE CONSTRAINT IF NOT EXISTS
-                    FOR (n:\`${template._id}\`)
-                    REQUIRE n.\`${userKey}\` IS NOT NULL
-                `;
-
-                await tx.run(createNewConstraintQuery);
-                console.log(`ensured constraint on ${userKey} in template ${template._id}`);
 
                 const transformUserQuery = `
                     MATCH (n:\`${template._id}\`)
-                    WHERE n.\`${userKey}.id_userField\` IS NOT NULL 
+                    WHERE n.\`${userKey}.id_userField\` IS NOT NULL
                        OR n.\`${userKey}\` IS NOT NULL
-                    
+
                     WITH n, COALESCE(n.\`${userKey}.id_userField\`, n.\`${userKey}\`) AS extractedId
-                    
+
                     // Identify junk properties
-                    WITH n, extractedId, 
+                    WITH n, extractedId,
                          [prop IN keys(n) WHERE prop STARTS WITH $keyName + "." OR prop STARTS WITH $keyName + "_"] AS keysToRemove
-                    
+
                     // Use APOC to remove junk properties dynamically
                     CALL apoc.create.setProperties(n, keysToRemove, [k IN keysToRemove | null]) YIELD node
-                    
+
                     // Set the clean ID to the base property name
                     WITH node, extractedId
                     CALL apoc.create.setProperty(node, $keyName, extractedId) YIELD node as finalNode
@@ -146,18 +165,66 @@ const transformNeoScript = async (mongoResult, session) => {
             }
 
             for (const usersKey of template.usersKeys) {
+                const constraintsToDelete = [];
+                constraintResult.records.forEach((record) => {
+                    const constraintProperties = record.get('properties');
+                    constraintProperties.forEach((property) => {
+                        if (property === `${usersKey}.ids_usersFields`) {
+                            constraintsToDelete.push(record);
+                        }
+                    });
+                });
+
+                for (const constraint of constraintsToDelete) {
+                    const name = constraint.get('name');
+                    const type = constraint.get('type');
+                    const labelsOrTypes = constraint.get('labelsOrTypes');
+                    const entityType = constraint.get('entityType');
+                    const properties = constraint.get('properties');
+                    const newProperties = properties.map((prop) => {
+                        if (prop === `${usersKey}.ids_usersFields`) {
+                            return usersKey;
+                        }
+                        return prop;
+                    });
+
+                    await tx.run(`DROP CONSTRAINT \`${name}\``);
+                    console.log(`Dropped constraint ${name}`);
+
+                    let createQuery;
+                    const label = labelsOrTypes[0];
+                    const nodeVar = entityType === 'NODE' ? 'n' : 'r';
+                    const forClause = entityType === 'NODE' ? `FOR (\`${nodeVar}\`:\`${label}\`)` : `FOR ()-[\`${nodeVar}\`:\`${label}\`]-()`;
+
+                    if (type === 'NODE_PROPERTY_EXISTENCE') {
+                        createQuery = `
+                        CREATE CONSTRAINT \`${name}\` IF NOT EXISTS
+                        ${forClause}
+                        REQUIRE ${nodeVar}.\`${newProperties[0]}\` IS NOT NULL
+                        `;
+                    } else if (type === 'NODE_KEY') {
+                        createQuery = `
+                        CREATE CONSTRAINT \`${name}\` IF NOT EXISTS
+                        ${forClause}
+                        REQUIRE (${nodeVar}.\`${newProperties}\`) IS NODE KEY
+                    `;
+                    }
+
+                    createConstraintsQueries.push(createQuery);
+                }
+
                 const transformUsersQuery = `
                     MATCH (n:\`${template._id}\`)
                     WHERE n.\`${usersKey}.ids_usersFields\` IS NOT NULL
-                    
+
                     WITH n, n.\`${usersKey}.ids_usersFields\` AS extractedIds
-                    
-                    WITH n, extractedIds, 
+
+                    WITH n, extractedIds,
                          [p IN keys(n) WHERE p STARTS WITH $keyName + "." OR p STARTS WITH $keyName + "_"] AS keysToRemove
-                    
+
                     // Use APOC to remove junk arrays dynamically
                     CALL apoc.create.setProperties(n, keysToRemove, [k IN keysToRemove | null]) YIELD node
-                    
+
                     // Set the base key to the clean array of strings
                     WITH node, extractedIds
                     CALL apoc.create.setProperty(node, $keyName, extractedIds) YIELD node as finalNode
@@ -167,6 +234,11 @@ const transformNeoScript = async (mongoResult, session) => {
                 await tx.run(transformUsersQuery, { keyName: usersKey });
                 console.log(`transformed users field ${usersKey} in template ${template._id}`);
             }
+        }
+
+        for (const createConstraintQuery of createConstraintsQueries) {
+            await tx.run(createConstraintQuery);
+            console.log(`Recreated constraint with updated property names`);
         }
     });
 };
