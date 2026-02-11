@@ -1,4 +1,4 @@
-import { serializeUser } from '@packages/entity/src';
+import { serializeUser } from '@packages/entity';
 import { WidgetProps } from '@rjsf/utils';
 import { useState } from 'react';
 import { UserArrayInput } from '../../UserArrayInput';
