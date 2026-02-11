@@ -308,7 +308,6 @@ const EntitiesTableOfTemplate = forwardRef(
             fontSize,
             hideNonPreview,
             saveStorageProps,
-            onFilter,
             hasPermissionToTemplate,
             ignoreType,
             hasInstances,
@@ -411,7 +410,7 @@ const EntitiesTableOfTemplate = forwardRef(
         useEffect(() => {
             const handleKeyDown = (e: KeyboardEvent) => {
                 if (e.key === 'Enter' && gridApiRef.current) {
-                    debouncedApplyFilter.clear(); 
+                    debouncedApplyFilter.clear();
 
                     gridApiRef.current.refreshServerSide({
                         purge: false,
