@@ -75,11 +75,109 @@ export const getKartoffelPropsAggregation = [
 ];
 
 const transformNeoScript = async (mongoResult, session) => {
-    await session.writeTransaction(async (tx) => {
-        const createConstraintsQueries = [];
-        for (const template of mongoResult) {
-            const constraintResult = await tx.run('SHOW CONSTRAINTS');
+    const buildCreateConstraintQuery = (constraint, newProperties) => {
+        const name = constraint.get('name');
+        const type = constraint.get('type');
+        const labelsOrTypes = constraint.get('labelsOrTypes');
+        const entityType = constraint.get('entityType');
+        const label = labelsOrTypes[0];
+        const nodeVar = entityType === 'NODE' ? 'n' : 'r';
+        const forClause = entityType === 'NODE' ? `FOR (\`${nodeVar}\`:\`${label}\`)` : `FOR ()-[\`${nodeVar}\`:\`${label}\`]-()`;
 
+        if (type === 'NODE_PROPERTY_EXISTENCE') {
+            return {
+                name,
+                query: `
+                CREATE CONSTRAINT \`${name}\` IF NOT EXISTS
+                ${forClause}
+                REQUIRE ${nodeVar}.\`${newProperties[0]}\` IS NOT NULL
+                `,
+            };
+        }
+
+        if (type === 'NODE_KEY') {
+            return {
+                name,
+                query: `
+                CREATE CONSTRAINT \`${name}\` IF NOT EXISTS
+                ${forClause}
+                REQUIRE (${nodeVar}.\`${newProperties}\`) IS NODE KEY
+                `,
+            };
+        }
+
+        return null;
+    };
+
+    for (const template of mongoResult) {
+        const constraintResult = await session.run('SHOW CONSTRAINTS');
+        const constraintsToDrop = [];
+        const createConstraintsQueries = [];
+
+        for (const userKey of template.userKeys) {
+            const constraintsToDelete = [];
+            constraintResult.records.forEach((record) => {
+                const constraintProperties = record.get('properties');
+                constraintProperties.forEach((property) => {
+                    if (property === `${userKey}.id_userField`) {
+                        constraintsToDelete.push(record);
+                    }
+                });
+            });
+
+            for (const constraint of constraintsToDelete) {
+                const properties = constraint.get('properties');
+                const newProperties = properties.map((prop) => {
+                    if (prop === `${userKey}.id_userField`) {
+                        return userKey;
+                    }
+                    return prop;
+                });
+
+                const create = buildCreateConstraintQuery(constraint, newProperties);
+                if (create) createConstraintsQueries.push(create);
+
+                constraintsToDrop.push(constraint.get('name'));
+            }
+        }
+
+        for (const usersKey of template.usersKeys) {
+            const constraintsToDelete = [];
+            constraintResult.records.forEach((record) => {
+                const constraintProperties = record.get('properties');
+                constraintProperties.forEach((property) => {
+                    if (property === `${usersKey}.ids_usersFields`) {
+                        constraintsToDelete.push(record);
+                    }
+                });
+            });
+
+            for (const constraint of constraintsToDelete) {
+                const properties = constraint.get('properties');
+                const newProperties = properties.map((prop) => {
+                    if (prop === `${usersKey}.ids_usersFields`) {
+                        return usersKey;
+                    }
+                    return prop;
+                });
+
+                const create = buildCreateConstraintQuery(constraint, newProperties);
+                if (create) createConstraintsQueries.push(create);
+
+                constraintsToDrop.push(constraint.get('name'));
+            }
+        }
+
+        if (constraintsToDrop.length > 0) {
+            await session.writeTransaction(async (tx) => {
+                for (const name of constraintsToDrop) {
+                    await tx.run(`DROP CONSTRAINT \`${name}\``);
+                    console.log(`Dropped constraint ${name}`);
+                }
+            });
+        }
+
+        await session.writeTransaction(async (tx) => {
             for (const kartoffelKey of template.kartoffelKeys) {
                 const removeKartoffelKeyQuery = `
                     MATCH (n:\`${template._id}\`)
@@ -92,54 +190,6 @@ const transformNeoScript = async (mongoResult, session) => {
             }
 
             for (const userKey of template.userKeys) {
-                const constraintsToDelete = [];
-                constraintResult.records.forEach((record) => {
-                    const constraintProperties = record.get('properties');
-                    constraintProperties.forEach((property) => {
-                        if (property === `${userKey}.id_userField`) {
-                            constraintsToDelete.push(record);
-                        }
-                    });
-                });
-
-                for (const constraint of constraintsToDelete) {
-                    const name = constraint.get('name');
-                    const type = constraint.get('type');
-                    const labelsOrTypes = constraint.get('labelsOrTypes');
-                    const entityType = constraint.get('entityType');
-                    const properties = constraint.get('properties');
-                    const newProperties = properties.map((prop) => {
-                        if (prop === `${userKey}.id_userField`) {
-                            return userKey;
-                        }
-                        return prop;
-                    });
-
-                    await tx.run(`DROP CONSTRAINT \`${name}\``);
-                    console.log(`Dropped constraint ${name}`);
-
-                    let createQuery;
-                    const label = labelsOrTypes[0];
-                    const nodeVar = entityType === 'NODE' ? 'n' : 'r';
-                    const forClause = entityType === 'NODE' ? `FOR (\`${nodeVar}\`:\`${label}\`)` : `FOR ()-[\`${nodeVar}\`:\`${label}\`]-()`;
-
-                    if (type === 'NODE_PROPERTY_EXISTENCE') {
-                        createQuery = `
-                        CREATE CONSTRAINT \`${name}\` IF NOT EXISTS
-                        ${forClause}
-                        REQUIRE ${nodeVar}.\`${newProperties[0]}\` IS NOT NULL
-                        `;
-                    } else if (type === 'NODE_KEY') {
-                        createQuery = `
-                        CREATE CONSTRAINT \`${name}\` IF NOT EXISTS
-                        ${forClause}
-                        REQUIRE (${nodeVar}.\`${newProperties}\`) IS NODE KEY
-                    `;
-                    }
-
-                    createConstraintsQueries.push(createQuery);
-                }
-
                 const transformUserQuery = `
                     MATCH (n:\`${template._id}\`)
                     WHERE n.\`${userKey}.id_userField\` IS NOT NULL
@@ -165,54 +215,6 @@ const transformNeoScript = async (mongoResult, session) => {
             }
 
             for (const usersKey of template.usersKeys) {
-                const constraintsToDelete = [];
-                constraintResult.records.forEach((record) => {
-                    const constraintProperties = record.get('properties');
-                    constraintProperties.forEach((property) => {
-                        if (property === `${usersKey}.ids_usersFields`) {
-                            constraintsToDelete.push(record);
-                        }
-                    });
-                });
-
-                for (const constraint of constraintsToDelete) {
-                    const name = constraint.get('name');
-                    const type = constraint.get('type');
-                    const labelsOrTypes = constraint.get('labelsOrTypes');
-                    const entityType = constraint.get('entityType');
-                    const properties = constraint.get('properties');
-                    const newProperties = properties.map((prop) => {
-                        if (prop === `${usersKey}.ids_usersFields`) {
-                            return usersKey;
-                        }
-                        return prop;
-                    });
-
-                    await tx.run(`DROP CONSTRAINT \`${name}\``);
-                    console.log(`Dropped constraint ${name}`);
-
-                    let createQuery;
-                    const label = labelsOrTypes[0];
-                    const nodeVar = entityType === 'NODE' ? 'n' : 'r';
-                    const forClause = entityType === 'NODE' ? `FOR (\`${nodeVar}\`:\`${label}\`)` : `FOR ()-[\`${nodeVar}\`:\`${label}\`]-()`;
-
-                    if (type === 'NODE_PROPERTY_EXISTENCE') {
-                        createQuery = `
-                        CREATE CONSTRAINT \`${name}\` IF NOT EXISTS
-                        ${forClause}
-                        REQUIRE ${nodeVar}.\`${newProperties[0]}\` IS NOT NULL
-                        `;
-                    } else if (type === 'NODE_KEY') {
-                        createQuery = `
-                        CREATE CONSTRAINT \`${name}\` IF NOT EXISTS
-                        ${forClause}
-                        REQUIRE (${nodeVar}.\`${newProperties}\`) IS NODE KEY
-                    `;
-                    }
-
-                    createConstraintsQueries.push(createQuery);
-                }
-
                 const transformUsersQuery = `
                     MATCH (n:\`${template._id}\`)
                     WHERE n.\`${usersKey}.ids_usersFields\` IS NOT NULL
@@ -234,13 +236,17 @@ const transformNeoScript = async (mongoResult, session) => {
                 await tx.run(transformUsersQuery, { keyName: usersKey });
                 console.log(`transformed users field ${usersKey} in template ${template._id}`);
             }
-        }
+        });
 
-        for (const createConstraintQuery of createConstraintsQueries) {
-            await tx.run(createConstraintQuery);
-            console.log(`Recreated constraint with updated property names`);
+        if (createConstraintsQueries.length > 0) {
+            await session.writeTransaction(async (tx) => {
+                for (const { name, query } of createConstraintsQueries) {
+                    await tx.run(query);
+                    console.log(`Recreated constraint ${name} with updated property names`);
+                }
+            });
         }
-    });
+    }
 };
 
 const transformNeo = async (driver, data) => {
