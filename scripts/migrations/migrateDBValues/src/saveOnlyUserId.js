@@ -89,6 +89,38 @@ const transformNeoScript = async (mongoResult, session) => {
             }
 
             for (const userKey of template.userKeys) {
+                const oldUserProperty = `${userKey}.id_userField`;
+                const findOldConstraintQuery = `
+                    SHOW CONSTRAINTS
+                    YIELD name, type, entityType, labelsOrTypes, properties
+                    WHERE type = 'NODE_PROPERTY_EXISTENCE'
+                      AND entityType = 'NODE'
+                      AND labelsOrTypes = [$label]
+                      AND properties = [$property]
+                    RETURN name
+                `;
+
+                const oldConstraintsResult = await tx.run(findOldConstraintQuery, {
+                    label: template._id,
+                    property: oldUserProperty,
+                });
+
+                for (const record of oldConstraintsResult.records) {
+                    const constraintName = record.get('name');
+                    const dropConstraintQuery = `DROP CONSTRAINT \`${constraintName}\``;
+                    await tx.run(dropConstraintQuery);
+                    console.log(`dropped constraint ${constraintName} on ${oldUserProperty} in template ${template._id}`);
+                }
+
+                const createNewConstraintQuery = `
+                    CREATE CONSTRAINT IF NOT EXISTS
+                    FOR (n:\`${template._id}\`)
+                    REQUIRE n.\`${userKey}\` IS NOT NULL
+                `;
+
+                await tx.run(createNewConstraintQuery);
+                console.log(`ensured constraint on ${userKey} in template ${template._id}`);
+
                 const transformUserQuery = `
                     MATCH (n:\`${template._id}\`)
                     WHERE n.\`${userKey}.id_userField\` IS NOT NULL 
