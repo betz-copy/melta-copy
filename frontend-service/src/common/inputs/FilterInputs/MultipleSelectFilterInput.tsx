@@ -1,13 +1,13 @@
-import { Chip, Grid, ListItemText, MenuItem } from '@mui/material';
-import { IAgGridSetFilter } from '@packages/rule-breach';
+import { Box, Chip, Grid, ListItemText, MenuItem } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
+import { IAGGridSetFilter } from '../../../utils/agGrid/interfaces';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import { FieldOption } from '../../wizards/entityTemplate/RelationshipReference/filterEntitiesByCriteria';
 import { StyledFilterInput } from './StyledFilterInput';
 
 interface MultipleSelectFilterInputProps {
-    filterField: IAgGridSetFilter | undefined;
+    filterField: IAGGridSetFilter | undefined;
     readOnly: boolean;
     handleCheckboxChange: (option: (string | null)[], checked: boolean) => void;
     enumOptions: FieldOption[];
@@ -15,6 +15,16 @@ interface MultipleSelectFilterInputProps {
     helperText?: string;
     allowEmpty?: boolean;
 }
+
+const chipStyles = {
+    size: 'small' as const,
+    variant: 'filled' as const,
+    sx: {
+        backgroundColor: '#EBEFFA',
+        padding: '10px',
+        fontSize: '0.85rem',
+    },
+};
 
 const MultipleSelectFilterInput: React.FC<MultipleSelectFilterInputProps> = ({
     filterField,
@@ -25,6 +35,9 @@ const MultipleSelectFilterInput: React.FC<MultipleSelectFilterInputProps> = ({
     helperText,
     allowEmpty = true,
 }) => {
+    const currentValues: string[] =
+        filterField?.values.filter((v): v is string | null => v === null || typeof v === 'string').map((v) => (v === null ? 'EMPTY_VAL' : v)) ?? [];
+
     const expectedValues = [...enumOptions, ...(allowEmpty ? [null] : [])];
     const allSelected = !!expectedValues.length && expectedValues.every((val) => filterField?.values?.includes(val?.option ?? null));
     const someSelected = !!filterField?.values?.length && !allSelected;
@@ -36,7 +49,7 @@ const MultipleSelectFilterInput: React.FC<MultipleSelectFilterInputProps> = ({
                 rows={2}
                 size="small"
                 fullWidth
-                value={filterField?.values ?? []}
+                value={currentValues}
                 error={isError}
                 helperText={helperText}
                 slotProps={{
@@ -48,49 +61,50 @@ const MultipleSelectFilterInput: React.FC<MultipleSelectFilterInputProps> = ({
                     },
                     select: {
                         multiple: true,
-                        renderValue: (selected: unknown) => (
-                            <div>
+                        renderValue: (selected) => (
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                 {(selected as string[]).map((value) => (
-                                    <Chip key={value} label={value === null ? i18next.t('filters.empty') : value} style={{ marginRight: 5 }} />
+                                    <Chip key={value} label={value === 'EMPTY_VAL' ? i18next.t('filters.empty') : value} {...chipStyles} />
                                 ))}
-                            </div>
+                            </Box>
                         ),
                     },
                 }}
             >
-                <MenuItem>
-                    <MeltaCheckbox
-                        checked={allSelected}
-                        indeterminate={someSelected}
-                        onChange={(e) =>
-                            handleCheckboxChange(
-                                expectedValues.map((ev) => ev?.option ?? null),
-                                e.target.checked,
-                            )
-                        }
-                    />
+                <MenuItem
+                    value="SELECT_ALL"
+                    onClick={() =>
+                        handleCheckboxChange(
+                            expectedValues.map((ev) => ev?.option ?? null),
+                            !allSelected,
+                        )
+                    }
+                >
+                    <MeltaCheckbox checked={allSelected} indeterminate={someSelected} />
                     <ListItemText primary={i18next.t('selectChooseAll')} />
                 </MenuItem>
 
                 {allowEmpty && (
-                    <MenuItem>
-                        <MeltaCheckbox
-                            checked={filterField?.values?.includes(null)}
-                            onChange={(e) => handleCheckboxChange([null], e.target.checked)}
-                        />
+                    <MenuItem value="EMPTY_VAL" onClick={() => handleCheckboxChange([null], !filterField?.values?.includes(null))}>
+                        <MeltaCheckbox checked={filterField?.values?.includes(null)} />
                         <ListItemText primary={i18next.t('filters.empty')} />
                     </MenuItem>
                 )}
 
-                {enumOptions?.map((option, index) => (
-                    <MenuItem key={`${option.option}-${index}`} value={option.option}>
-                        <MeltaCheckbox
-                            checked={filterField?.values.includes(option.option)}
-                            onChange={(e) => handleCheckboxChange([option.option], e.target.checked)}
-                        />
-                        <ListItemText primary={option.label} />
-                    </MenuItem>
-                ))}
+                {enumOptions.map((option, index) => {
+                    const checked = filterField?.values.includes(option.option);
+
+                    return (
+                        <MenuItem
+                            key={`${option.option}-${index}`}
+                            value={option.option}
+                            onClick={() => handleCheckboxChange([option.option], !checked)}
+                        >
+                            <MeltaCheckbox checked={checked} />
+                            <ListItemText primary={option.label} />
+                        </MenuItem>
+                    );
+                })}
             </StyledFilterInput>
         </Grid>
     );
