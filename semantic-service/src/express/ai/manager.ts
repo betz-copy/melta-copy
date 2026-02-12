@@ -1,16 +1,15 @@
 import path from 'node:path';
+import { FileTypes } from '@packages/semantic-search';
 import { logger } from '@packages/utils';
-import { File } from 'multer';
 import config from '../../config';
-import { extractTextFromDoc } from '../../utils/doc-extractor';
 import { NoFilesError } from '../../utils/errors';
 import { evaluateSummary, generateSummary, refineSummary, validateLanguage } from '../../utils/openai-client';
-import { extractTextFromPdf } from '../../utils/pdf-extractor';
+import { extractTextFromFile } from '../../utils/textExtractors';
 
 const { enableEvaluation, maxRefinementIterations } = config.summarization;
 
 export class SemanticManager {
-    static async readFilesAsText(files: File[]): Promise<string> {
+    static async readFilesAsText(files: Express.Multer.File[]): Promise<string> {
         if (!files?.length) throw new NoFilesError();
 
         let combinedText = '';
@@ -19,17 +18,14 @@ export class SemanticManager {
             const buffer = file.buffer;
             const filename = file.originalname;
             const ext = path.extname(filename).toLowerCase();
+            const fileType = ext.slice(1) as FileTypes;
 
             logger.info(`Starting extraction for file: ${filename} (${ext})`);
 
             try {
-                let text = '';
+                const text = await extractTextFromFile(buffer, fileType);
 
-                if (ext === '.pdf') {
-                    text = await extractTextFromPdf(buffer);
-                } else if (ext === '.doc' || ext === '.docx') {
-                    text = await extractTextFromDoc(buffer);
-                } else {
+                if (!text) {
                     logger.warn(`Unsupported file type: ${ext}, skipping file: ${filename}`);
                     continue;
                 }
@@ -44,7 +40,7 @@ export class SemanticManager {
         return combinedText.trim();
     }
 
-    static async summarizeFiles(files: File[], maxLength: number): Promise<string> {
+    static async summarizeFiles(files: Express.Multer.File[], maxLength: number): Promise<string> {
         const validText = await SemanticManager.readFilesAsText(files);
 
         let summary = 'No text extracted from files.';

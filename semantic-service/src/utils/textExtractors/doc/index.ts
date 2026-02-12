@@ -1,9 +1,10 @@
+import { FileMimeType } from '@packages/semantic-search';
 import { logger } from '@packages/utils';
 import textract from 'textract';
 
-const extractTextFromDoc = async (buffer: Buffer, mimeType: string = 'application/msword'): Promise<string> => {
+const extractTextFromDoc = async (buffer: Buffer): Promise<string> => {
     return new Promise((resolve, reject) => {
-        textract.fromBufferWithMime(mimeType, buffer, (error, text) => {
+        textract.fromBufferWithMime(FileMimeType.DOC, buffer, (error, text) => {
             if (error) {
                 logger.error('Error extracting text from doc', { error });
 

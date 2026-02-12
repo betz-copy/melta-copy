@@ -5,7 +5,7 @@ import pdf from 'pdf-parse';
  * @param buffer - The PDF file as a Buffer
  * @returns The extracted text content
  */
-export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
+const extractTextFromPdf = async (buffer: Buffer): Promise<string> => {
     try {
         const data = await pdf(buffer);
 
@@ -16,4 +16,6 @@ export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
     } catch (error) {
         throw new Error(`Failed to extract text from PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-}
+};
+
+export default extractTextFromPdf;

@@ -1882,9 +1882,6 @@ export default {
         field: { equals: 'שווה', notEqual: 'לא שווה' },
     },
     DynamicsConfigs: {
-        aiSummary: {
-            enabled: 'אפשר סיכום AI',
-        },
         isDrawerOpen: 'תפריט צד פתוח',
         shouldNavigateToEntityPage: 'עבור לעמוד פרט בעת יצירת/עריכת ישות',
         flowCube: 'אפשר התממשקות קוביה ל-FLOW',
@@ -1929,6 +1926,7 @@ export default {
         numOfRelationshipFieldsToShow: 'מספר שדות לתצוגת שדה שיוך ליישות',
         numOfPreviewFieldsToShow: 'מספר שדות לתצוגה מקדימה',
         twinTemplates: 'תבניות זהות',
+        enableAiSummary: 'אפשר סיכום AI',
     },
     childTemplate: {
         createTitle: 'יצירת תבנית בן',

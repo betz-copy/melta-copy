@@ -61,7 +61,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = (props)
     const { deleteEntitiesLimit } = queryClient.getQueryData<BackendConfigState>('getBackendConfig')!;
     const workspace = useWorkspaceStore((state) => state.workspace);
 
-    const isAiSummaryEnabled = workspace.metadata.aiSummary?.enabled;
+    const isAiSummaryEnabled = workspace.metadata.enableAiSummary;
 
     const parentTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;
 

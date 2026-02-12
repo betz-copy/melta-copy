@@ -1,4 +1,4 @@
-import { logger } from '@microservices/shared';
+import { logger } from '@packages/utils';
 import http from 'http';
 import OpenAI from 'openai';
 import config from '../config';

@@ -32,14 +32,9 @@ apiRouter.use('/config', (_req, res) => {
         meltaUpdates: config.frontendConfig.meltaUpdates,
         isOutsideDevelopment: config.frontendConfig.isOutsideDevelopment,
         maxEntitiesToPrint: config.frontendConfig.maxEntitiesToPrint,
-        aiSummaryRequestTimeout: config.aiSummaryService.requestTimeout,
+        aiRequestTimeout: config.semanticSearchService.ai.requestTimeout,
     });
 });
-
-apiRouter.use('/templates', templatesRouter);
-apiRouter.use('/instances', instancesRouter);
-
-apiRouter.use('/flow-cube', flowCubeRouter);
 
 apiRouter.use(
     '/files',
@@ -63,6 +58,22 @@ apiRouter.use(
     }),
     AuthorizerControllerMiddleware.userHasSomePermissions,
 );
+
+apiRouter.use(
+    '/semantic',
+    createProxyMiddleware({
+        target: config.semanticSearchService.url,
+        changeOrigin: true,
+        on: { proxyReq: fixRequestBody },
+        proxyTimeout: config.semanticSearchService.requestTimeout,
+    }),
+);
+
+apiRouter.use('/templates', templatesRouter);
+
+apiRouter.use('/instances', instancesRouter);
+
+apiRouter.use('/flow-cube', flowCubeRouter);
 
 apiRouter.use('/processes', processesRouter);
 
@@ -89,16 +100,5 @@ apiRouter.use('/dashboard', dashboardItemsRouter);
 apiRouter.use('/workspaces', workspaceRouter);
 
 apiRouter.use('/client-side', ClientSideRouter);
-
-apiRouter.use(
-    '/ai-summary',
-    createProxyMiddleware({
-        target: config.aiSummaryService.url,
-        changeOrigin: true,
-        on: { proxyReq: fixRequestBody },
-        proxyTimeout: config.aiSummaryService.requestTimeout,
-        timeout: config.aiSummaryService.requestTimeout, // Socket timeout
-    }),
-);
 
 export default apiRouter;

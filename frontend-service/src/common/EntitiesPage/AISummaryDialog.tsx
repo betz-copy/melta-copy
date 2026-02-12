@@ -16,15 +16,17 @@ import {
     Typography,
     useTheme,
 } from '@mui/material';
+import { IChildTemplatePopulated } from '@packages/child-template';
+import { IMongoEntityTemplatePopulated, PropertyFormat } from '@packages/entity-template';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import axios from '../../axios';
+import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
 import { environment } from '../../globals';
-import { IChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IAISummaryResponse, summarizeFilesRequest } from '../../services/aiSummaryService';
+import { AISummaryResponse, FileOption, Step } from '../../interfaces/ai';
+import { summarizeFilesRequest } from '../../services/aiSummaryService';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { getFileName } from '../../utils/getFileName';
 
@@ -32,36 +34,33 @@ interface AISummaryDialogProps {
     open: boolean;
     handleClose: () => void;
     template: IMongoEntityTemplatePopulated | IChildTemplatePopulated;
+    // biome-ignore lint/suspicious/noExplicitAny: selectedRows is any[]
     selectedRows: any[];
 }
 
-type Step = 'columns' | 'files' | 'result';
-
-interface IFileOption {
-    id: string;
-    name: string;
-}
-
-import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
-
 export const AISummaryDialog: React.FC<AISummaryDialogProps> = ({ open, handleClose, template, selectedRows }) => {
     const theme = useTheme();
-    const [step, setStep] = useState<Step>('columns');
+    const [step, setStep] = useState<Step>(Step.Columns);
     const [summary, setSummary] = useState<string>('');
     const [fileColumns, setFileColumns] = useState<{ key: string; label: string }[]>([]);
     const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
-    const [availableFiles, setAvailableFiles] = useState<IFileOption[]>([]);
+    const [availableFiles, setAvailableFiles] = useState<FileOption[]>([]);
     const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
     const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
+
     const queryClient = useQueryClient();
+    const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
 
     useEffect(() => {
         if (open) {
-            setStep('columns');
+            setStep(Step.Columns);
             setSummary('');
-            const columns = Object.entries(template.properties.properties)
-                .filter(([_, prop]) => prop.format === 'fileId' || prop.items?.format === 'fileId')
-                .map(([key, prop]) => ({ key, label: prop.title }));
+            const columns = Object.entries(template.properties.properties).reduce<Array<{ key: string; label: string }>>((acc, [key, prop]) => {
+                if (prop.format === PropertyFormat.fileId || prop.items?.format === PropertyFormat.fileId) {
+                    acc.push({ key, label: prop.title });
+                }
+                return acc;
+            }, []);
             setFileColumns(columns);
             setSelectedColumns(columns.map((c) => c.key));
         }
@@ -85,81 +84,69 @@ export const AISummaryDialog: React.FC<AISummaryDialogProps> = ({ open, handleCl
     };
 
     const moveToFilesStep = () => {
-        const files: IFileOption[] = [];
-        selectedRows.forEach((row) => {
-            selectedColumns.forEach((colKey) => {
+        const files: FileOption[] = selectedRows.flatMap((row) =>
+            selectedColumns.flatMap((colKey) => {
                 const value = row.properties[colKey];
-                if (value) {
-                    if (Array.isArray(value)) {
-                        value.forEach((v: string) => {
-                            if (v) files.push({ id: v, name: getFileName(v) });
-                        });
-                    } else {
-                        files.push({ id: value, name: getFileName(value) });
-                    }
-                }
-            });
-        });
+                if (!value) return [];
 
-        if (files.length === 0) {
+                const values = Array.isArray(value) ? value : [value];
+
+                return values.filter((v): v is string => Boolean(v)).map((v) => ({ id: v, name: getFileName(v) }));
+            }),
+        );
+
+        if (!files.length) {
             toast.error(i18next.t('errors.noFilesFound'));
             return;
         }
 
         setAvailableFiles(files);
         setSelectedFiles(files.map((f) => f.id));
-        setStep('files');
+        setStep(Step.Files);
     };
 
     const { isLoading, mutate: generateSummary } = useMutation(
         async () => {
-            if (selectedFiles.length === 0) {
-                throw new Error(i18next.t('errors.noFilesSelected'));
-            }
+            if (!selectedFiles.length) throw new Error(i18next.t('errors.noFilesSelected'));
+
+            const results = await Promise.allSettled(
+                selectedFiles.map(async (fileId) => {
+                    const { data: blob } = await axios.get<Blob>(`${environment.api.storage}/${fileId}`, { responseType: 'blob' });
+                    return { fileId, blob };
+                }),
+            );
 
             const filesToProcess: File[] = [];
             let skippedFiles = 0;
 
-            for (const fileId of selectedFiles) {
-                try {
-                    const response = await axios.get(`${environment.api.storage}/${fileId}`, {
-                        responseType: 'blob',
-                    });
-                    const blob = response.data as Blob;
+            results.forEach((result, index) => {
+                if (result.status === 'fulfilled') {
+                    const { fileId, blob } = result.value;
                     if (blob.type === 'application/pdf') {
                         filesToProcess.push(new File([blob], `${fileId}.pdf`, { type: blob.type }));
-                    } else {
-                        skippedFiles++;
-                    }
-                } catch (err) {
-                    console.error(`Failed to download file ${fileId}`, err);
-                }
-            }
+                    } else skippedFiles++;
+                } else console.error(`Failed to download file ${selectedFiles[index]}`, result.reason);
+            });
 
-            if (skippedFiles > 0) {
-                toast.warning(i18next.t('actions.skippedNonPdfFiles', { count: skippedFiles }));
-            }
+            if (skippedFiles > 0) toast.warning(i18next.t('actions.skippedNonPdfFiles', { count: skippedFiles }));
 
-            if (filesToProcess.length === 0) {
-                throw new Error(i18next.t('errors.noPdfFilesFound'));
-            }
+            if (!filesToProcess.length) throw new Error(i18next.t('errors.noPdfFilesFound'));
 
-            const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
-            return summarizeFilesRequest(filesToProcess, config?.aiSummaryRequestTimeout);
+            return summarizeFilesRequest(filesToProcess, config?.aiRequestTimeout);
         },
         {
-            onSuccess: (data: IAISummaryResponse) => {
+            onSuccess: (data: AISummaryResponse) => {
                 setSummary(data.summary);
-                setStep('result');
+                setStep(Step.Result);
             },
-            onError: (error: any) => {
+            onError: (error: Error) => {
                 toast.error(error.message || i18next.t('errors.summaryFailed'));
             },
         },
     );
 
     const handleCloseRequest = () => {
-        if (step === 'result' && summary) {
+        if (step === Step.Result && summary) {
             setIsConfirmCloseOpen(true);
         } else {
             handleClose();
@@ -185,19 +172,19 @@ export const AISummaryDialog: React.FC<AISummaryDialogProps> = ({ open, handleCl
                     }}
                 >
                     <Box display="flex" alignItems="center">
-                        {step === 'files' && (
-                            <IconButton onClick={() => setStep('columns')} sx={{ mr: 1 }}>
+                        {step === Step.Files && (
+                            <IconButton onClick={() => setStep(Step.Columns)} sx={{ mr: 1 }}>
                                 <ArrowBack />
                             </IconButton>
                         )}
-                        {step === 'result' && (
-                            <IconButton onClick={() => setStep('files')} sx={{ mr: 1 }}>
+                        {step === Step.Result && (
+                            <IconButton onClick={() => setStep(Step.Files)} sx={{ mr: 1 }}>
                                 <ArrowBack />
                             </IconButton>
                         )}
                         {i18next.t('actions.aiSummary')}
                     </Box>
-                    {step === 'result' && summary && (
+                    {step === Step.Result && summary && (
                         <Tooltip title={i18next.t('actions.copyToClipboard')}>
                             <IconButton onClick={handleCopy} size="small">
                                 <ContentCopy />
@@ -210,7 +197,7 @@ export const AISummaryDialog: React.FC<AISummaryDialogProps> = ({ open, handleCl
                         <Box display="flex" justifyContent="center" alignItems="center" height="200px">
                             <CircularProgress />
                         </Box>
-                    ) : step === 'result' ? (
+                    ) : step === Step.Result ? (
                         <TextField
                             multiline
                             rows={12}
@@ -220,7 +207,7 @@ export const AISummaryDialog: React.FC<AISummaryDialogProps> = ({ open, handleCl
                             onChange={(e) => setSummary(e.target.value)}
                             sx={{ mt: 1 }}
                         />
-                    ) : step === 'columns' ? (
+                    ) : step === Step.Columns ? (
                         <Box sx={{ mt: 2 }}>
                             <Typography variant="subtitle1" gutterBottom>
                                 {i18next.t('actions.selectColumnsTitle')}
@@ -256,7 +243,7 @@ export const AISummaryDialog: React.FC<AISummaryDialogProps> = ({ open, handleCl
                     <Button variant="outlined" onClick={handleCloseRequest} sx={{ borderRadius: '7px' }}>
                         {i18next.t('actions.close')}
                     </Button>
-                    {!isLoading && step === 'columns' && (
+                    {!isLoading && step === Step.Columns && (
                         <Button
                             variant="contained"
                             onClick={moveToFilesStep}
@@ -266,7 +253,7 @@ export const AISummaryDialog: React.FC<AISummaryDialogProps> = ({ open, handleCl
                             {i18next.t('actions.next')}
                         </Button>
                     )}
-                    {!isLoading && step === 'files' && (
+                    {!isLoading && step === Step.Files && (
                         <Button
                             variant="contained"
                             onClick={() => generateSummary()}

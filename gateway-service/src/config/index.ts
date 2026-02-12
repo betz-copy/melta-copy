@@ -137,8 +137,15 @@ const config = {
         requestTimeout: env.get('SEMANTIC_SEARCH_SERVICE_REQUEST_TIMEOUT').default(20000).asIntPositive(),
         url: env.get('SEMANTIC_SEARCH_SERVICE').required().asString(),
         baseRoute: env.get('SEMANTIC_SEARCH_SERVICE_BASE_ROUTE').default('/api/semantic').asString(),
-        searchRoute: env.get('SEMANTIC_SEARCH_SERVICE_SEARCH_ROUTE').default('/search').asString(),
-        rerankRoute: env.get('SEMANTIC_SEARCH_SERVICE_RERANK_ROUTE').default('/rerank').asString(),
+        embedding: {
+            embeddingRoute: env.get('SEMANTIC_SEARCH_SERVICE_EMBEDDING_ROUTE').default('/embedding').asString(),
+            searchRoute: env.get('SEMANTIC_SEARCH_SERVICE_SEARCH_ROUTE').default('/search').asString(),
+            rerankRoute: env.get('SEMANTIC_SEARCH_SERVICE_RERANK_ROUTE').default('/rerank').asString(),
+        },
+        ai: {
+            aiRoute: env.get('SEMANTIC_SEARCH_SERVICE_AI_ROUTE').default('/ai').asString(),
+            requestTimeout: env.get('AI_SUMMARY_SERVICE_REQUEST_TIMEOUT').default(180000).asIntPositive(), // 3 minutes for LLM inference
+        },
     },
     instanceService: {
         url: env.get('INSTANCE_SERVICE_URL').required().asString(),
@@ -217,11 +224,6 @@ const config = {
         dashboard: {
             baseRoute: env.get('DASHBOARD_SERVICE_DASHBOARD_ROUTE').default('/items').asString(),
         },
-    },
-    aiSummaryService: {
-        url: env.get('AI_SUMMARY_SERVICE_URL').default('http://ai-summary-service:8000').asString(),
-        baseRoute: env.get('AI_SUMMARY_SERVICE_BASE_ROUTE').default('/api/ai-summary').asString(),
-        requestTimeout: env.get('AI_SUMMARY_SERVICE_REQUEST_TIMEOUT').default(180000).asIntPositive(), // 3 minutes for LLM inference
     },
     getUsersLimitForPermissionsOfUsers: env.get('GET_USERS_LIMIT_FOR_PERMISSIONS_OF_USERS').default(20).asIntPositive(),
     kartoffel: {

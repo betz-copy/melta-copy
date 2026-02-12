@@ -73,11 +73,15 @@ const TemplateTable = forwardRef<
     const [_, navigate] = useLocation();
     const workspace = useWorkspaceStore((state) => state.workspace);
 
+    const {
+        agGrid: { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight },
+        iconSize: { height, width },
+        enableAiSummary,
+        mainFontSizes: { entityTemplateTitleFontSize },
+    } = workspace.metadata;
+
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-
-    const { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight } = workspace.metadata.agGrid;
-    const { height, width } = workspace.metadata.iconSize;
 
     const currentUser = useUserStore((state) => state.user);
 
@@ -243,7 +247,7 @@ const TemplateTable = forwardRef<
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',
                                 fontWeight: '500',
-                                fontSize: workspace.metadata.mainFontSizes.entityTemplateTitleFontSize,
+                                fontSize: entityTemplateTitleFontSize,
                             }}
                             title={template.displayName}
                             component="h5"
@@ -312,7 +316,7 @@ const TemplateTable = forwardRef<
                                             setMultipleSelect(true);
                                         } else {
                                             setMultipleSelect(!multipleSelect);
-                                            if (!(isExpand && !multipleSelect)) setIsExpand(!isExpand);
+                                            if (multipleSelect || !isExpand) setIsExpand(!isExpand);
                                         }
                                     },
                                 },
@@ -329,7 +333,7 @@ const TemplateTable = forwardRef<
                             icon={<BarChart fontSize="small" />}
                             text={i18next.t('pages.charts')}
                         />
-                        {workspace.metadata.aiSummary?.enabled && (
+                        {enableAiSummary && (
                             <TableButton
                                 iconButtonWithPopoverProps={{
                                     popoverText: i18next.t('actions.aiSummary'),
