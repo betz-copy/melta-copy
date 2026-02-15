@@ -11,8 +11,6 @@ const extractTextFromDoc = async (buffer: Buffer): Promise<string> => {
                 return reject(error);
             }
 
-            logger.info('Extracted text from doc', { text });
-
             return resolve(text);
         });
     });

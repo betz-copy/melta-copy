@@ -1,5 +1,5 @@
+import * as env from 'env-var';
 import './dotenv';
-import env from 'env-var';
 
 type SplitOptions = {
     minLength?: number;
@@ -11,7 +11,7 @@ type SplitOptions = {
 
 const config = {
     service: {
-        port: env.get('PORT').default(3000).asPortNumber(),
+        port: env.get('PORT').required().asPortNumber(),
         workspaceIdHeaderName: env.get('WORKSPACE_ID_HEADER_NAME').default('workspace-id').asString(),
         maxRequestSize: env
             .get('MAX_REQUEST_BYTE_SIZE')
@@ -123,7 +123,7 @@ const config = {
         },
     },
     openai: {
-        apiKey: env.get('OPENAI_API_KEY').required().asString(),
+        apiKey: env.get('OPENAI_API_KEY').asString(),
         baseURL: env.get('OPENAI_BASE_URL').required().asString(),
         model: env.get('OPENAI_MODEL').default('aminadaven/dictalm2.0-instruct:q4_k_m').asString(),
         evaluatorModel: env

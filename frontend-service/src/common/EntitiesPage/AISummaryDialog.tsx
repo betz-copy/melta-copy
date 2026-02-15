@@ -52,18 +52,18 @@ export const AISummaryDialog: React.FC<AISummaryDialogProps> = ({ open, handleCl
     const config = queryClient.getQueryData<BackendConfigState>('getBackendConfig');
 
     useEffect(() => {
-        if (open) {
-            setStep(Step.Columns);
-            setSummary('');
-            const columns = Object.entries(template.properties.properties).reduce<Array<{ key: string; label: string }>>((acc, [key, prop]) => {
-                if (prop.format === PropertyFormat.fileId || prop.items?.format === PropertyFormat.fileId) {
-                    acc.push({ key, label: prop.title });
-                }
-                return acc;
-            }, []);
-            setFileColumns(columns);
-            setSelectedColumns(columns.map((c) => c.key));
-        }
+        if (!open) return;
+
+        setStep(Step.Columns);
+        setSummary('');
+        const columns = Object.entries(template.properties.properties).reduce<Array<{ key: string; label: string }>>((acc, [key, prop]) => {
+            if (prop.format === PropertyFormat.fileId || prop.items?.format === PropertyFormat.fileId) {
+                acc.push({ key, label: prop.title });
+            }
+            return acc;
+        }, []);
+        setFileColumns(columns);
+        setSelectedColumns(columns.map((c) => c.key));
     }, [open, template]);
 
     const handleCopy = async () => {
@@ -148,9 +148,7 @@ export const AISummaryDialog: React.FC<AISummaryDialogProps> = ({ open, handleCl
     const handleCloseRequest = () => {
         if (step === Step.Result && summary) {
             setIsConfirmCloseOpen(true);
-        } else {
-            handleClose();
-        }
+        } else handleClose();
     };
 
     const confirmClose = () => {

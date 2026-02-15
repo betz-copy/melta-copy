@@ -49,9 +49,7 @@ const MetadataSchema = new mongoose.Schema<IMetadata>(
         numOfRelationshipFieldsToShow: { type: Number },
         numOfPreviewFieldsToShow: { type: Number },
         twinTemplates: { type: [String] },
-        aiSummary: {
-            enabled: { type: Boolean },
-        },
+        enableAiSummary: { type: Boolean },
     },
     { _id: false },
 );

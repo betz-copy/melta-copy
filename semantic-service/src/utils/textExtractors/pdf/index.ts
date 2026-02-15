@@ -1,3 +1,5 @@
+import { ServiceError } from '@packages/utils';
+import { StatusCodes } from 'http-status-codes';
 import pdf from 'pdf-parse';
 
 /**
@@ -14,7 +16,7 @@ const extractTextFromPdf = async (buffer: Buffer): Promise<string> => {
 
         return cleanedText;
     } catch (error) {
-        throw new Error(`Failed to extract text from PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        throw new ServiceError(StatusCodes.BAD_REQUEST, `Failed to extract text from PDF: ${error}`);
     }
 };
 

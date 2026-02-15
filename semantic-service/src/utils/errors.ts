@@ -9,6 +9,6 @@ export class NoFilesError extends ServiceError {
 
 export class OpenAIError extends ServiceError {
     constructor(message: string) {
-        super(StatusCodes.INTERNAL_SERVER_ERROR, message);
+        super(StatusCodes.BAD_REQUEST, message);
     }
 }

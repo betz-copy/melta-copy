@@ -1,5 +1,4 @@
 import { logger } from '@packages/utils';
-import http from 'http';
 import OpenAI from 'openai';
 import config from '../config';
 import { OpenAIError } from './errors';
@@ -22,17 +21,10 @@ const {
     refinerTemperature,
 } = config.openai;
 
-// Custom HTTP agent with keep-alive disabled to avoid connection pooling issues
-const httpAgent = new http.Agent({
-    keepAlive: false,
-});
-
-// Initialize OpenAI client with custom configuration
 const openai = new OpenAI({
     apiKey,
     baseURL,
-    timeout, // client-level timeout for LLM inference
-    httpAgent,
+    timeout,
 });
 
 /**
@@ -42,7 +34,7 @@ const openai = new OpenAI({
  * @param maxLength - Optional target length instruction (not strict token limit)
  * @returns The generated summary
  */
-export async function generateSummary(text: string, maxLength: number = 500): Promise<string> {
+export const generateSummary = async (text: string, maxLength: number = 500): Promise<string> => {
     // Truncate text if it's extremely long to avoid context window issues
     const truncatedText = text.length > maxInputChars ? `${text.substring(0, maxInputChars)}...[truncated]` : text;
 
@@ -62,17 +54,14 @@ export async function generateSummary(text: string, maxLength: number = 500): Pr
         return response.choices[0]?.message?.content?.trim() || 'No summary generated.';
     } catch (error) {
         logger.error('[generateSummary] OpenAI request failed', error);
-        if (error instanceof Error) {
-            throw new OpenAIError(`OpenAI summarization failed: ${error.message}`);
-        }
-        throw new OpenAIError('OpenAI summarization failed: Unknown error');
+        throw new OpenAIError(`OpenAI summarization failed: ${error}`);
     }
-}
+};
 
 /**
  * Evaluates the summary for content accuracy against the original text.
  */
-export async function evaluateSummary(originalText: string, summary: string): Promise<IEvaluationResult> {
+export const evaluateSummary = async (originalText: string, summary: string): Promise<IEvaluationResult> => {
     try {
         const response = await openai.chat.completions.create({
             model: evaluatorModel,
@@ -95,21 +84,14 @@ export async function evaluateSummary(originalText: string, summary: string): Pr
 
         return JSON.parse(content) as IEvaluationResult;
     } catch (error) {
-        logger.error('[evaluateSummary] Evaluation failed', error);
-        // Fallback: Return low grades to force refinement if possible, or handle strictly
-        return {
-            grades: { accuracy: 0, completeness: 0, clarity: 0 },
-            critique: 'Error during evaluation',
-            hallucinations: [],
-            missingInfo: 'Error during evaluation',
-        };
+        throw new OpenAIError(`Evaluation failed: ${error}`);
     }
-}
+};
 
 /**
  * Validates that the summary follows strict language compliance rules.
  */
-export async function validateLanguage(summary: string): Promise<IValidationResult> {
+export const validateLanguage = async (summary: string): Promise<IValidationResult> => {
     try {
         const response = await openai.chat.completions.create({
             model: validatorModel,
@@ -148,25 +130,23 @@ export async function validateLanguage(summary: string): Promise<IValidationResu
         logger.error('[validateLanguage] Validation failed', error);
         return { isValid: true, detectedIssues: 'Error during validation' };
     }
-}
+};
 
 /**
  * Refines the summary based on the evaluation and validation feedback.
  */
-export async function refineSummary(
+export const refineSummary = async (
     originalText: string,
     currentSummary: string,
     evaluation: IEvaluationResult,
     validation: IValidationResult,
-): Promise<string> {
+): Promise<string> => {
     try {
         // Use the critique directly as the primary feedback
         let feedbackText = evaluation.critique;
 
         // Append language validation issues if any
-        if (!validation.isValid) {
-            feedbackText += `\nLanguage Issues: ${validation.detectedIssues}`;
-        }
+        if (!validation.isValid) feedbackText += `\nLanguage Issues: ${validation.detectedIssues}`;
 
         const response = await openai.chat.completions.create({
             model: refinerModel,
@@ -189,6 +169,6 @@ export async function refineSummary(
         return response.choices[0]?.message?.content?.trim() || currentSummary;
     } catch (error) {
         logger.error('[refineSummary] Refinement failed', error);
-        return currentSummary; // Fallback to original
+        throw new OpenAIError(`Refinement failed: ${error}`);
     }
-}
+};

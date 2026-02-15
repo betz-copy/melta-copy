@@ -6,9 +6,9 @@ import config from '../config';
 
 const { maxRequestSize } = config.service;
 
-export const ALLOWED_MIMETYPES = Object.values(FILE_EXTENSION_TO_MIME_TYPE);
+const ALLOWED_MIMETYPES = Object.values(FILE_EXTENSION_TO_MIME_TYPE);
 
-export const createFileUploadMiddleware = () =>
+export const fileUploadMiddleware = (): multer.Multer =>
     multer({
         storage: multer.memoryStorage(),
         limits: {

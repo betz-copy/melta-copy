@@ -1659,6 +1659,9 @@ importers:
       mammoth:
         specifier: ^1.8.0
         version: 1.11.0
+      menashmq:
+        specifier: ^0.1.6
+        version: 0.1.6
       minio:
         specifier: ^8.0.1
         version: 8.0.1
@@ -1714,9 +1717,6 @@ importers:
       glob:
         specifier: ^11.0.0
         version: 11.1.0
-      joi:
-        specifier: ^18.0.1
-        version: 18.0.2
       jszip:
         specifier: ^3.10.1
         version: 3.10.1
@@ -1729,9 +1729,6 @@ importers:
       readable-stream-clone:
         specifier: ^1.0.0
         version: 1.0.0
-      uuid:
-        specifier: ^10.0.0
-        version: 10.0.0
     devDependencies:
       '@types/amqplib':
         specifier: ^0.10.5
@@ -1739,9 +1736,6 @@ importers:
       '@types/busboy':
         specifier: ^1.5.4
         version: 1.5.4
-      '@types/uuid':
-        specifier: ^10.0.0
-        version: 10.0.0
 
   template-service:
     dependencies:
@@ -9731,10 +9725,6 @@ packages:
 
   utrie@1.0.2:
     resolution: {integrity: sha512-1MLa5ouZiOmQzUbjbu9VmjLzn1QLXBhwpUa7kdLUQK+KQ5KA9I1vk5U4YHe/X2Ch7PYnJfWuWT+VbuxbGwljhw==}
-
-  uuid@10.0.0:
-    resolution: {integrity: sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ==}
-    hasBin: true
 
   uuid@11.1.0:
     resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
@@ -19644,8 +19634,6 @@ snapshots:
     dependencies:
       base64-arraybuffer: 1.0.2
     optional: true
-
-  uuid@10.0.0: {}
 
   uuid@11.1.0: {}
 
