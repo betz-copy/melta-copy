@@ -11,7 +11,7 @@ import { getFileName, getFilesName } from '../../express/entities/validator.temp
 import { formatDate } from '../neo4j/lib';
 
 const {
-    neo4j: { userFieldPropertySuffix, usersFieldsPropertySuffix, relationshipReferencePropertySuffix, locationCoordinateSystemSuffix },
+    neo4j: { relationshipReferencePropertySuffix, locationCoordinateSystemSuffix },
     timezone,
 } = config;
 
@@ -20,10 +20,6 @@ const { polygonPrefix, polygonSuffix } = mapConfig.polygon;
 export const handleChartPropertiesTemplate = (entityTemplate: IMongoEntityTemplate) => {
     const specialProperties: Record<string, string> = {};
     Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
-        if (value.format === 'user') specialProperties[key] = `${key}.fullName${userFieldPropertySuffix}`;
-
-        if (value.items?.format === 'user') specialProperties[key] = `${key}.fullNames${usersFieldsPropertySuffix}`;
-
         if (value.format === 'relationshipReference') specialProperties[key] = `${key}.properties._id${relationshipReferencePropertySuffix}`;
     });
 

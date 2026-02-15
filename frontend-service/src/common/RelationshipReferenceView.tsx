@@ -105,11 +105,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
 
         if (relatedTemplate?.properties.properties[relatedTemplateField].format === 'user') {
             const userProperty = entity.properties[relatedTemplateField];
-            try {
-                return JSON.parse(userProperty).fullName;
-            } catch {
-                return userProperty.fullName;
-            }
+            return userProperty.fullName;
         }
 
         if (
@@ -118,7 +114,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
         ) {
             const usersProperty = entity.properties[relatedTemplateField];
             if (Array.isArray(usersProperty)) {
-                return entity.properties[relatedTemplateField].map((user) => JSON.parse(user).fullName).join(', ');
+                return entity.properties[relatedTemplateField].map((user) => user.fullName).join(', ');
             }
 
             return usersProperty.fullNames.join(', ');

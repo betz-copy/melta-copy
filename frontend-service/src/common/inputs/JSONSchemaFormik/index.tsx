@@ -9,12 +9,12 @@ import Ajv, { ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
 import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import i18next from 'i18next';
-import { pickBy } from 'lodash';
 import React, { memo, useEffect, useState } from 'react';
 import { environment } from '../../../globals';
 import { matchValueAgainstFilter } from '../../../utils/filters';
 import { uiSchemaUtils } from './ utils';
 import './form.css';
+import { pickBy } from 'lodash';
 import { ITemplate } from '../../../interfaces/template';
 import InputAccordion from './InputAccordion';
 import RjsfCheckboxWidget from './Widgets/RjsfCheckboxWidget';
@@ -28,7 +28,7 @@ import RjsfTemplateReferenceWidget from './Widgets/RjsfTemplateReferenceWidget';
 import RjsfTextAreaWidget from './Widgets/RjsfTextAreaWidget';
 import RjsfUnitSelectWidget from './Widgets/RjsfUnitSelectWidget';
 import RjsfUserArrayWidget from './Widgets/RjsfUserArrayWidget';
-import RjsfUserAvatarWidget from './Widgets/RjsfUserAvarWidget';
+import RjsfUserAvatarWidget from './Widgets/RjsfUserAvatarWidget';
 import RjsfUserWidget from './Widgets/RjsfUserWidget';
 
 const { dateRegex } = environment;
@@ -91,19 +91,17 @@ export const ajvValidate = (
     ajv.addFormat('signature', /.*/);
     ajv.addFormat('kartoffelUserField', /.*/);
     ajv.addFormat('unitField', /.*/);
-    ajv.addFormat('user', {
-        type: 'string',
-        validate: (user) => {
-            if (user === ByCurrentDefaultValue.byCurrentUser) return true;
 
-            try {
-                const userObj = JSON.parse(user);
-                return userObj._id && userObj.fullName && userObj.jobTitle && userObj.hierarchy && userObj.mail;
-            } catch {
-                return false;
-            }
+    ajv.addKeyword({
+        keyword: 'validateUser',
+        type: 'object',
+        validate: (_schema, user) => {
+            if (!user) return true;
+            if (user === ByCurrentDefaultValue.byCurrentUser) return true;
+            return !!(user._id && user.fullName && user.mail && user.jobTitle && user.hierarchy);
         },
     });
+
     ajv.addFormat('text-area', /.*/);
     ajv.addFormat('location', (value: string) => validateLocation(JSON.parse(value), true) === false);
     ajv.addFormat('comment', /.*/);
@@ -143,11 +141,36 @@ export const ajvValidate = (
         validate: (v) => v !== undefined,
         errors: false,
     });
+    const formatsToExclude = ['location', 'relationshipReference'];
 
-    const formats = ['location', 'relationshipReference'];
     const schemaToValidate = {
         ...schema,
-        properties: pickBy(schema.properties, (value) => !formats.includes(value.format ?? '')),
+        properties: Object.entries(pickBy(schema.properties, (value) => !formatsToExclude.includes(value.format ?? ''))).reduce(
+            (acc, [key, prop]) => {
+                if (prop.format === 'user') {
+                    acc[key] = {
+                        ...prop,
+                        type: 'object',
+                        validateUser: true,
+                        format: undefined,
+                    };
+                } else if (prop.type === 'array' && prop.items && prop.items.format === 'user') {
+                    acc[key] = {
+                        ...prop,
+                        items: {
+                            ...prop.items,
+                            type: 'object',
+                            validateUser: true,
+                            format: undefined,
+                        },
+                    };
+                } else {
+                    acc[key] = prop;
+                }
+                return acc;
+            },
+            {},
+        ),
     };
 
     const validateFunction = ajv.compile(schemaToValidate);
@@ -164,7 +187,13 @@ export const ajvValidate = (
         const parsedFilter = typeof propertyFilter === 'string' ? JSON.parse(propertyFilter) : propertyFilter;
         if (typeof parsedFilter !== 'object' || parsedFilter === null) return;
 
-        const value = data[field];
+        const value =
+            data[field] !== undefined
+                ? typeof data[field] === 'object' && 'fullName' in data[field]
+                    ? data[field].fullName
+                    : data[field]
+                : undefined;
+
         if (!matchValueAgainstFilter({ [field]: value }, parsedFilter))
             childTemplateFilterErrors[field] = i18next.t('validation.fieldFilterCondition');
     });
@@ -401,6 +430,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                     if (
                         value &&
                         typeof value === 'object' &&
+                        !Array.isArray(value) &&
                         !value.properties &&
                         schema.properties[key] &&
                         schema.properties[key]?.format !== 'location'

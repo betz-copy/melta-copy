@@ -1,5 +1,6 @@
 import { FormControlLabel, Grid } from '@mui/material';
 import { ByCurrentDefaultValue } from '@packages/child-template';
+import { serializeUser } from '@packages/entity';
 import { BasicFilterOperationTypes, IAgGridDateFilter, IAgGridNumberFilter, IAgGridTextFilter } from '@packages/rule-breach';
 import { IKartoffelUserStringFields } from '@packages/user';
 import i18next from 'i18next';
@@ -47,15 +48,7 @@ const UserFilterInput: React.FC<UserFilterProps> = ({ filterField, handleFilterT
                     handleOnChange={(user: IKartoffelUserStringFields | null, _values?: { _id: string; displayName: string }) =>
                         handleFilterFieldChange({
                             ...filterField,
-                            filter: user
-                                ? JSON.stringify({
-                                      _id: user._id || user.id,
-                                      fullName: user.fullName,
-                                      jobTitle: user.jobTitle,
-                                      hierarchy: user.hierarchy,
-                                      mail: user.mail,
-                                  })
-                                : undefined,
+                            filter: user ? serializeUser(user) : undefined,
                         } as IAgGridTextFilter)
                     }
                     isError={false}

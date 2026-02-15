@@ -1,11 +1,11 @@
 import { IMongoRelationshipTemplate, ISearchRelationshipTemplatesBody } from '@packages/relationship-template';
 import { IMongoRule, ISearchRulesBody } from '@packages/rule';
 import config from '../../config';
-import TemplatesManagerService from '.';
+import TemplatesService from '.';
 
 const { getRelationshipByIdRoute, searchTemplatesRoute, searchRulesRoute } = config.templateService.relationships;
 
-class RelationshipsTemplateManagerService extends TemplatesManagerService {
+class RelationshipsTemplateManagerService extends TemplatesService {
     async searchRelationshipTemplates(searchBody: ISearchRelationshipTemplatesBody = {}) {
         const { data } = await this.api.post<IMongoRelationshipTemplate[]>(searchTemplatesRoute, searchBody);
 

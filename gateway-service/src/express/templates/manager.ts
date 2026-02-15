@@ -1059,9 +1059,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         entities.forEach((entity) => {
             newExpandedUserFields.forEach((expandedUserFieldKey) => {
                 const userKey = updatedTemplateData.properties.properties[expandedUserFieldKey].expandedUserField?.relatedUserField;
-                if (userKey && entity.entity.properties[userKey] && JSON.parse(entity.entity.properties[userKey])._id) {
-                    usersIds.add(JSON.parse(entity.entity.properties[userKey])._id);
-                }
+                if (userKey && entity.entity.properties[userKey] && entity.entity.properties[userKey]._id)
+                    usersIds.add(entity.entity.properties[userKey]._id);
             });
         });
 
@@ -1076,7 +1075,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                 const expandedUserFieldValue = updatedTemplateData.properties.properties[expandedUserFieldKey];
                 const userKey = expandedUserFieldValue.expandedUserField?.relatedUserField;
                 const userFieldValue = userKey ? entity.entity.properties[userKey] : undefined;
-                const userId = userFieldValue ? JSON.parse(userFieldValue)._id : undefined;
+                const userId = userFieldValue ? userFieldValue._id : undefined;
 
                 if (userId && userKey) {
                     const kartoffelUser = kartoffelUsersMapById[userId] ? kartoffelUsersMapById[userId][0] : undefined;

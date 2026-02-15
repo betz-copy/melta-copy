@@ -1,10 +1,8 @@
+import { IKartoffelUser } from '@packages/user';
 import axios from 'axios';
-import config from '../../config';
-import { IKartoffelUser } from './interface';
+import config from '../config';
 
-const {
-    kartoffel: { url, baseEntitiesRoute, requestTimeout, getByIdRoute },
-} = config;
+const { url, baseEntitiesRoute, requestTimeout, getByIdRoute } = config.kartoffel;
 
 class Kartoffel {
     private static kartoffel = axios.create({

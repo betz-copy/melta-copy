@@ -1,4 +1,4 @@
-import { IPropertyValue } from '@microservices/shared';
+import { IPropertyValue } from '@packages/entity';
 import config from '../../../config';
 import { IMongoEntityTemplate } from '../../../externalServices/templates/interfaces/entityTemplates';
 import { getMockAdapterTemplateManager } from '../../../externalServices/tests/axios.mock';

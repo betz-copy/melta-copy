@@ -232,7 +232,6 @@ const AddFilterFieldDialog: React.FC<IAddFilterFieldDialogProps> = ({
                     setInputValue={setInputValue}
                     handleCheckboxChange={handleCheckboxChange}
                     readOnly={readOnly}
-                    isUsersArray
                     isError={isError}
                     helperText={currentFieldError}
                     {...defaultFilterProps}

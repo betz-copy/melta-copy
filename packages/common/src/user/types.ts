@@ -21,7 +21,7 @@ export interface IKartoffelUserDigitalIdentity {
     role?: IKartoffelUserRole;
 }
 
-export interface IKartoffelUser {
+export type IKartoffelUser = {
     _id: string;
     id?: string;
     displayName?: string;
@@ -36,10 +36,10 @@ export interface IKartoffelUser {
     firstName?: string;
     lastName?: string;
     fullName?: string;
+    akaUnit?: string;
     birthDate?: Date;
     dischargeDay?: Date;
     enlistmentDay?: Date;
-    akaUnit?: string;
     rank?: string;
     mail?: string;
     jobTitle?: string;
@@ -65,4 +65,9 @@ export interface IKartoffelUser {
         };
     };
     digitalIdentities?: IKartoffelUserDigitalIdentity[];
-}
+};
+
+export type IKartoffelUserStringFields = Omit<IKartoffelUser, 'mobilePhone' | 'phone'> & {
+    mobilePhone?: string;
+    phone?: string;
+};

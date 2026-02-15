@@ -25,8 +25,6 @@ const config = {
         booleanHeNoValue: env.get('BOOLEAN_HE_NO_VALUE').default('לא').asString(),
         filePropertySuffix: env.get('FILE_PROPERTY_SUFFIX').default('_tofilename').asString(),
         relationshipReferencePropertySuffix: env.get('RELATIONSHIP_REFERENCE_PROPERTY_SUFFIX').default('_reference').asString(),
-        usersFieldsPropertySuffix: env.get('USERS_FIELDS_PROPERTY_SUFFIX').default('_usersFields').asString(),
-        userFieldPropertySuffix: env.get('USER_FIELD_PROPERTY_SUFFIX').default('_userField').asString(),
         userOriginalAndSuffixFieldsMap: env
             .get('USER_ORIGINAL_AND_SUFFIX_FIELDS_MAP')
             .default([
@@ -72,6 +70,15 @@ const config = {
             .get('CREATE_ALERT_FOR_RULE_WITH_TODAY_FUNC_FAILURE_QUEUE_NAME')
             .default('create-alert-for-rule-with-today-func-failure-queue')
             .asString(),
+    },
+    kartoffel: {
+        url: env.get('KARTOFFEL_BASE_URL').required().asString(),
+        baseEntitiesRoute: env.get('KARTOFFEL_BASE_ENTITIES_ROUTE').default('/api/entities').asString(),
+        searchRoute: env.get('KARTOFFEL_SEARCH_ROUTE').default('/search').asString(),
+        getByIdRoute: env.get('KARTOFFEL_FIND_USER_BY_ID_ROUTE').default('').asString(),
+        fieldToSearch: env.get('KARTOFFEL_FIELDS_TO_SEARCH').default('fullName,uniqueId,personalNumber,identityCard').asString(),
+        requestTimeout: env.get('KARTOFFEL_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        maxPageSize: env.get('KARTOFFEL_MAX_PAGE_SIZE').default(10000).asIntPositive(),
     },
     templateService: {
         url: env.get('TEMPLATE_SERVICE_URL').required().asString(),

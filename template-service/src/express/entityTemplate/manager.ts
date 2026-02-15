@@ -5,11 +5,11 @@ import { DefaultManagerMongo, NotFoundError, ServiceError } from '@packages/util
 import { StatusCodes } from 'http-status-codes';
 import { ClientSession, FilterQuery, UpdateQuery } from 'mongoose';
 import config from '../../config';
+import GlobalSearchIndexCreator from '../../externalServices/globalSearchIndexCreator';
 import { escapeRegExp } from '../../utils';
 import { withTransaction } from '../../utils/mongoose';
 import CategoryManager from '../category/manager';
 import ChildTemplateManager from '../childTemplate/manager';
-import GlobalSearchIndexCreator from '../externalServices/globalSearchIndexCreator';
 import RelationshipTemplateManager from '../relationshipTemplate/manager';
 import EntityTemplateSchema from './model';
 

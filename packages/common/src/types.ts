@@ -29,3 +29,5 @@ export interface IMongoProps {
     createdAt: Date;
     updatedAt: Date;
 }
+
+export * from './user/types';

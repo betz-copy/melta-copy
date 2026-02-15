@@ -1,10 +1,10 @@
 import { AddRounded } from '@mui/icons-material';
 import { Button, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
 import { ByCurrentDefaultValue, IChildTemplateProperty, ViewType } from '@packages/child-template';
+import { IUserField } from '@packages/entity';
 import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { IAgGridTextFilter } from '@packages/rule-breach';
 import { IGetUnits, IMongoUnit } from '@packages/unit';
-import { IUser } from '@packages/user';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useState } from 'react';
@@ -25,7 +25,7 @@ const getFormattedDefaultValue = (value: IChildTemplateProperty['defaultValue'],
         return value
             .map((item) => {
                 if (typeof item === 'string') return item;
-                if (typeof item === 'object') return (item as IUser).fullName;
+                if (typeof item === 'object') return (item as IUserField).fullName;
                 return String(item);
             })
             .join(', ');
@@ -40,19 +40,17 @@ const getFormattedDefaultValue = (value: IChildTemplateProperty['defaultValue'],
                     ? i18next.t('childTemplate.currentDate')
                     : new Date(value).toLocaleDateString('he-IL');
 
-            case 'user': {
-                if (value === ByCurrentDefaultValue.byCurrentUser) return i18next.t('childTemplate.byUser');
-
-                const userObj = JSON.parse(value);
-                if (userObj.fullName && userObj.hierarchy) {
-                    return `${userObj.fullName} - ${userObj.hierarchy}`;
-                }
-
-                return value;
-            }
             default:
                 return value;
         }
+    }
+
+    if (typeof value === 'object') {
+        if (fieldSchema.format === 'user') {
+            const user = value as unknown as IUserField;
+            return `${user.fullName} - ${user.hierarchy}`;
+        }
+        return JSON.stringify(value);
     }
 
     return String(value);
