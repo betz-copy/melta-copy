@@ -1,4 +1,5 @@
-import { MongoIdSchema, Status } from '@microservices/shared';
+import { Status } from '@packages/process';
+import { MongoIdSchema } from '@packages/utils';
 import * as Joi from 'joi';
 import { updateAndCreateStepsSchema } from '../../../utils/joi';
 

@@ -16,13 +16,13 @@ import {
 import i18next from 'i18next';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
+import { IRelationshipTemplateMap } from '../../../interfaces/template';
 import { getFieldsConfigOfRule } from '../../../utils/rules/fields';
 import { StepComponentProps, StepType } from '../index';
 import { RuleWizardValues } from '.';
 import '@react-awesome-query-builder/mui/css/styles.css';
 import { environment } from '../../../globals';
+import { IEntityTemplateMap } from '../../../interfaces/template';
 import { LTRProvider } from '../../../LTRProvider';
 import { useUserStore } from '../../../stores/user';
 import { lightTheme } from '../../../theme';

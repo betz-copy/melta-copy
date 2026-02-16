@@ -1,6 +1,6 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { BadRequestError } from '@microservices/shared';
+import { BadRequestError } from '@packages/utils';
 import * as ts from 'typescript-actions';
 
 const createCustomCompilerHost = (

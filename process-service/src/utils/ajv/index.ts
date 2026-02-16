@@ -1,4 +1,4 @@
-import { ProcessPropertyFormats } from '@microservices/shared';
+import { ProcessPropertyFormats } from '@packages/process';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 

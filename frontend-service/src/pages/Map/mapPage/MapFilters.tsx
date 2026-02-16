@@ -1,6 +1,8 @@
 /** biome-ignore-all lint/correctness/useExhaustiveDependencies: useEffect dependencies */
 import { FilterList, Search } from '@mui/icons-material';
 import { Autocomplete, Box, Button, Divider, Grid, InputAdornment, TextField, Typography, useTheme } from '@mui/material';
+import { FilterLogicalOperator, IEntity, IFilterOfField } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import { debounce } from 'lodash';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -10,9 +12,8 @@ import { toast } from 'react-toastify';
 import { ColoredEnumChip } from '../../../common/ColoredEnumChip';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { environment } from '../../../globals';
-import { FilterLogicalOperator, IEntity, IFilterOfField } from '../../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { CameraFocusType } from '../../../interfaces/location';
+import { IEntityTemplateMap } from '../../../interfaces/template';
 import { getEntitiesWithDirectConnections } from '../../../services/entitiesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 
@@ -27,7 +28,7 @@ type Props = {
         value: { autoSearch: string; listFields: Record<string, IFilterOfField['$in']> };
         set: React.Dispatch<React.SetStateAction<{ autoSearch: string; listFields: Record<string, IFilterOfField['$in']> }>>;
     };
-    sourceTemplate?: IMongoEntityTemplatePopulated;
+    sourceTemplate?: IMongoEntityTemplateWithConstraintsPopulated;
     isSearchShape?: boolean;
     applyFilterWithShapeSearch: (autoSearch: string, listFields: Record<string, IFilterOfField['$in']>) => void;
     setCameraFocus: (value: React.SetStateAction<CameraFocusType | null>) => void;

@@ -1,4 +1,4 @@
-import { NotificationType } from '@microservices/shared';
+import { NotificationType } from '@packages/notification';
 import * as joi from 'joi';
 import { clientSideIdSchema, mongoIdSchema } from '.';
 import { validateNotificationMetadataSchema } from './notificationMetadata';

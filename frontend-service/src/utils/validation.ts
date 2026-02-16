@@ -1,8 +1,8 @@
 import i18next from 'i18next';
 import * as Yup from 'yup';
-import { EntityTemplateFormInputProperties } from '../common/wizards/entityTemplate';
 import { GroupProperty } from '../common/wizards/entityTemplate/commonInterfaces';
 import { ProcessTemplateFormInputProperties } from '../common/wizards/processTemplate';
+import { EntityTemplateFormInputProperties } from '../interfaces/template';
 import { extractGroups, extractProperties } from '../services/templates/entityTemplatesService';
 
 export const regexSchema = Yup.string()

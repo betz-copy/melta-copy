@@ -1,17 +1,15 @@
-/** biome-ignore-all lint/suspicious/noThenProperty: Joi... */
 /** biome-ignore-all lint/suspicious/noExplicitAny: lol */
-
+/** biome-ignore-all lint/suspicious/noThenProperty: Joi... */
 import assert from 'node:assert';
+import { Conjunction } from '@packages/common';
+import { IEntitySingleProperty, IEntityTemplatePopulated, PropertyFormat, PropertyType } from '@packages/entity-template';
+import { IMongoRelationshipTemplate } from '@packages/relationship-template';
+
 import {
-    DefaultController,
-    defaultValidationOptions,
     IAggregationGroup,
     IConstant,
     ICountAggFunction,
-    IEntitySingleProperty,
-    IEntityTemplatePopulated,
     IFormula,
-    IMongoRelationshipTemplate,
     IPropertyOfVariable,
     IRegularFunction,
     IRelevantTemplates,
@@ -19,9 +17,9 @@ import {
     ISumAggFunction,
     IVariable,
     isConstant,
-    PropertyFormat,
-    PropertyType,
-} from '@microservices/shared';
+} from '@packages/rule';
+import { DefaultController, defaultValidationOptions } from '@packages/utils';
+
 import { isValid as isValidDate, parse } from 'date-fns';
 import { Request } from 'express';
 import { flatten } from 'flat';
@@ -120,7 +118,7 @@ const equationSchema = Joi.object({
 
 const groupSchema = Joi.object({
     isGroup: Joi.boolean().valid(true).required(),
-    ruleOfGroup: Joi.string().valid('AND', 'OR').required(),
+    ruleOfGroup: Joi.string().valid(Conjunction.AND, Conjunction.OR).required(),
     subFormulas: Joi.array().required(),
 });
 
@@ -128,7 +126,7 @@ const aggregationGroupSchema = Joi.object({
     isAggregationGroup: Joi.boolean().valid(true).required(),
     aggregation: Joi.string().valid('EVERY', 'SOME').required(),
     variableOfAggregation: variableSchema.presence('required').required(),
-    ruleOfGroup: Joi.string().valid('AND', 'OR').required(),
+    ruleOfGroup: Joi.string().valid(Conjunction.AND, Conjunction.OR).required(),
     subFormulas: Joi.array().required(),
 });
 

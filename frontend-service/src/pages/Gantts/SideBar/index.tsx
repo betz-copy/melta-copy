@@ -1,20 +1,20 @@
 import { Add as AddIcon } from '@mui/icons-material';
 import { Box, Button, Grid } from '@mui/material';
+import { IGantt, IGanttItem } from '@packages/gantt';
 import { FieldArray, FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
 import { CompactDrawer } from '../../../common/CompactDrawer';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { Swap } from '../../../common/Swap';
-import { IBasicGantt, IGanttItem } from '../../../interfaces/gantts';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { GanttItemsDisplay } from './GanttItemsDisplay';
 
 interface IGanttSideBarProps {
-    gantt: IBasicGantt;
+    gantt: IGantt;
     open: boolean;
     toggle: () => void;
-    formik: FormikProps<IBasicGantt>;
+    formik: FormikProps<IGantt>;
     edit: boolean;
     isLoading: boolean;
 }

@@ -1,4 +1,5 @@
-import { IRerankRequest, logger } from '@microservices/shared';
+import { IRerankRequest } from '@packages/semantic-search';
+import { logger } from '@packages/utils';
 import config from '../../config';
 import ModelEmbeddingApiService from '../../externalServices/model/embedding';
 import ModelRerankingApiService from '../../externalServices/model/reranking';

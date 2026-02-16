@@ -5,7 +5,7 @@
     "main": "",
     "scripts": {
         "start": "node --async-stack-traces ./dist/index.js",
-        "dev": "npm run build && npm start",
+        "dev": "pnpm build && pnpm start",
         "dev:nodemon": "nodemon --delay 3 --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
         "build": "tsc",
         "build:watch": "tsc --watch",
@@ -14,7 +14,10 @@
     "author": "Alexander Gurevich",
     "license": "ISC",
     "dependencies": {
-        "@microservices/shared": "^1.0.0",
+        "@packages/chart": "workspace:*",
+        "@packages/dashboard": "workspace:*",
+        "@packages/iframe": "workspace:*",
+        "@packages/utils": "workspace:*",
         "glob": "^11.0.0",
         "typescript-actions": "npm:typescript@^5.5.4",
         "lodash": "^4.17.21"

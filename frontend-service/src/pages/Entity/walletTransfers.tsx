@@ -8,6 +8,9 @@ import {
     Close as CloseIcon,
 } from '@mui/icons-material';
 import { Autocomplete, Avatar, Box, Card, CardContent, Dialog, Grid, IconButton, TextField, Typography, useTheme } from '@mui/material';
+import { ActionTypes } from '@packages/action';
+import { isChildTemplate } from '@packages/child-template';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React, { memo, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from 'react-query';
@@ -19,41 +22,12 @@ import BlueTitle from '../../common/MeltaDesigns/BlueTitle';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 import { environment } from '../../globals';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../interfaces/CreateOrEditEntityDialog';
-import { IEntity, IEntityExpanded } from '../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
+import { Direction, IEntityTemplateMap, ITemplate, IWalletTransfers, WalletTransferData } from '../../interfaces/template';
 import { useUserStore } from '../../stores/user';
 import { Value } from '../../utils/agGrid/Value';
-import { isChildTemplate } from '../../utils/templates';
 import { defaultColDef } from '../PermissionsManagement/components/table';
-import { INestedRelationshipTemplates } from '.';
 
 const { infiniteScrollPageCount } = environment.permission;
-
-enum Direction {
-    to = 'to',
-    from = 'from',
-    initial = 'initial',
-}
-
-export interface WalletTransferData {
-    template: IMongoEntityTemplatePopulated;
-    entity: IEntity;
-    direction: Direction;
-    balanceAtThatTime?: number;
-    hasPermissionToRelatedTemplate?: boolean;
-}
-
-interface IWalletTransfers {
-    templateId: string;
-    expandedEntity: IEntityExpanded;
-    connectionsTemplates?: INestedRelationshipTemplates[];
-    getButtonStateByRelatedTemplate: (relatedTemplate: IMongoEntityTemplatePopulated) => {
-        isEditButtonsDisabled: boolean;
-        disabledButtonText: string;
-        hasPermissionToRelatedTemplate: boolean;
-    };
-}
 
 export type WalletTransferTableRef<TData = WalletTransferData> = {
     refreshServerSide: () => void;
@@ -70,7 +44,9 @@ export const WalletTransfers = ({ templateId, connectionsTemplates, expandedEnti
     const isAdmin = Boolean(currentUser.currentWorkspacePermissions?.admin) || false;
 
     const currentTemplate = entityTemplates.get(expandedEntity.entity.templateId)!;
-    const amountPropertyKey = Object.entries(currentTemplate.properties.properties).find(([_key, property]) => !!property.accountBalance)?.[0];
+    const amountPropertyKey = Object.entries(currentTemplate.properties.properties).find(
+        ([_key, property]) => !!(property as IEntitySingleProperty).accountBalance,
+    )?.[0];
     const currentEntityBalance = expandedEntity.entity.properties[amountPropertyKey!] || 0;
 
     const allTransfersConnectionsTemplates = connectionsTemplates
@@ -97,7 +73,7 @@ export const WalletTransfers = ({ templateId, connectionsTemplates, expandedEnti
     }, [entityTemplates, templateId]);
 
     const [isSelectDialogOpen, setIsSelectDialogOpen] = useState(false);
-    const [selectedTransferTemplate, setSelectedTransferTemplate] = useState<IMongoEntityTemplatePopulated | null>(null);
+    const [selectedTransferTemplate, setSelectedTransferTemplate] = useState<ITemplate | null>(null);
     const [externalErrors, setExternalErrors] = useState({ files: false, unique: {}, action: '' });
     const [createOrUpdateWithRuleBreachDialogState, setCreateOrUpdateWithRuleBreachDialogState] = useState<ICreateOrUpdateWithRuleBreachDialogState>({
         isOpen: false,
@@ -173,7 +149,7 @@ export const WalletTransfers = ({ templateId, connectionsTemplates, expandedEnti
         });
 
         const initialRow: WalletTransferData = {
-            template: {} as IMongoEntityTemplatePopulated,
+            template: {} as IMongoEntityTemplateWithConstraintsPopulated,
             entity: expandedEntity.entity,
             direction: Direction.initial,
             balanceAtThatTime: balance,

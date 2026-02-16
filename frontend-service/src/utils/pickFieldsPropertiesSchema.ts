@@ -1,11 +1,11 @@
+import { IMongoEntityTemplateWithConstraintsPopulated, IProperties, PropertyFormat } from '@packages/entity-template';
+import { IProcessDetails } from '@packages/process';
 import { pickBy } from 'lodash';
-import { IMongoEntityTemplatePopulated, IProperties, PropertyFormat } from '../interfaces/entityTemplates';
-import { IProcessDetails } from '../interfaces/processes/processTemplate';
 
 export const filterFieldsFromPropertiesSchema = (
-    schema: IMongoEntityTemplatePopulated['properties'] | undefined = {} as IMongoEntityTemplatePopulated['properties'],
+    schema: IMongoEntityTemplateWithConstraintsPopulated['properties'] | undefined = {} as IMongoEntityTemplateWithConstraintsPopulated['properties'],
     fieldsToFilter: Record<string, boolean> | undefined = undefined,
-): IMongoEntityTemplatePopulated['properties'] => {
+): IMongoEntityTemplateWithConstraintsPopulated['properties'] => {
     const getProperty = (key: string) => schema.properties[key];
     const formats = ['fileId', 'entityReference'];
     return {
@@ -16,7 +16,7 @@ export const filterFieldsFromPropertiesSchema = (
                 !formats.includes(value.format ?? '') && value.items?.format !== PropertyFormat.fileId && !value.archive && value.display !== false,
         ),
         required:
-            schema?.required?.filter(
+            schema.required.filter(
                 (requiredKey) =>
                     !formats.includes(getProperty(requiredKey)?.format ?? '') &&
                     getProperty(requiredKey)?.items?.format !== PropertyFormat.fileId &&
@@ -26,10 +26,11 @@ export const filterFieldsFromPropertiesSchema = (
     };
 };
 
-export const pickProcessFieldsPropertiesSchema = (schema: IProcessDetails): IMongoEntityTemplatePopulated['properties'] => {
+export const pickProcessFieldsPropertiesSchema = (schema: IProcessDetails): IMongoEntityTemplateWithConstraintsPopulated['properties'] => {
     const filteredProperties = filterFieldsFromPropertiesSchema({
-        ...schema.properties,
+        type: 'object',
         hide: [],
+        properties: schema.properties.properties,
         required: schema.properties.required,
     } as IProperties & { required: string[] });
 
@@ -39,7 +40,7 @@ export const pickProcessFieldsPropertiesSchema = (schema: IProcessDetails): IMon
 };
 
 export const pickOnlyGivenFields = (
-    schema: IMongoEntityTemplatePopulated['properties'],
+    schema: IMongoEntityTemplateWithConstraintsPopulated['properties'],
     fieldsToPick: Record<string, boolean> | undefined = undefined,
 ) => {
     return Object.fromEntries(Object.entries(schema.properties).filter(([key, _value]) => !fieldsToPick || !!fieldsToPick?.[key]));

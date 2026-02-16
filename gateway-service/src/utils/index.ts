@@ -1,6 +1,6 @@
 import { pipeline } from 'node:stream';
 import { promisify } from 'node:util';
-import { Awaited } from '@microservices/shared';
+import { Awaited } from '@packages/common';
 import { isEqual } from 'lodash';
 
 export const promisePipe = promisify(pipeline);

@@ -10,7 +10,7 @@ import {
     isGroup,
     isPropertyOfVariable,
     isRegularFunction,
-} from '@microservices/shared';
+} from '@packages/rule';
 
 interface IParameterOfFormula {
     variable: IVariable;

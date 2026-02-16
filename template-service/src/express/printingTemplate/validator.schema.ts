@@ -1,4 +1,4 @@
-import { MongoIdSchema } from '@microservices/shared';
+import { MongoIdSchema } from '@packages/utils';
 import Joi from 'joi';
 
 const printingTemplateBodySchema = Joi.object({

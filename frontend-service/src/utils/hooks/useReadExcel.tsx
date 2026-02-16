@@ -1,13 +1,17 @@
+import { IPropertyValue } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import * as XLSX from 'xlsx';
-import { IPropertyValue } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { ExcelStepStatus, IExcelSteps } from '../../interfaces/excel';
 import { useWorkspaceStore } from '../../stores/workspace';
 
-const convertFileDataToRowData = (gridData: (string | number | null)[][], headers: string[], template: IMongoEntityTemplatePopulated) => {
+const convertFileDataToRowData = (
+    gridData: (string | number | null)[][],
+    headers: string[],
+    template: IMongoEntityTemplateWithConstraintsPopulated,
+) => {
     return gridData
         .map((row) => {
             const rowObject: Record<string, IPropertyValue> = {};
@@ -27,7 +31,7 @@ const convertFileDataToRowData = (gridData: (string | number | null)[][], header
 
 const importDataToGrid = (
     fileData: (string | number | null)[][],
-    template: IMongoEntityTemplatePopulated,
+    template: IMongoEntityTemplateWithConstraintsPopulated,
 ): { properties: Record<string, IPropertyValue> }[] | [] => {
     if (!fileData.length) return [];
 
@@ -59,7 +63,7 @@ export const useReadExcel = () => {
 
     const readFile = async (
         files: File[],
-        template: IMongoEntityTemplatePopulated,
+        template: IMongoEntityTemplateWithConstraintsPopulated,
         setStepsData: React.Dispatch<React.SetStateAction<IExcelSteps>>,
     ): Promise<void> => {
         const fileObject = createFileObject(filesLimit, files);

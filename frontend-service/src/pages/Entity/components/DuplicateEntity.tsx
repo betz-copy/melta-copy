@@ -1,5 +1,9 @@
 import { Clear as ClearIcon, Done as DoneIcon } from '@mui/icons-material';
 import { Box, Button, Card, CardContent, CircularProgress, Divider, Grid, Typography } from '@mui/material';
+import { ActionTypes, IAction, IActionPopulated } from '@packages/action';
+import { IEntity, IEntityExpanded, IUniqueConstraint } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IRuleBreach, IRuleBreachPopulated } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import { Form, Formik } from 'formik';
 import { StatusCodes } from 'http-status-codes';
@@ -8,7 +12,7 @@ import { pickBy } from 'lodash';
 import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
-import { useLocation } from 'wouter';
+import { useLocation, useRoute } from 'wouter';
 import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { getInitialValuesWithDefaults } from '../../../common/dialogs/entity/CreateOrEditEntityDialog';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
@@ -16,11 +20,7 @@ import { InstanceSingleFileInput } from '../../../common/inputs/InstanceFilesInp
 import { ajvValidate, JSONSchemaFormik } from '../../../common/inputs/JSONSchemaFormik';
 import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
 import { environment } from '../../../globals';
-import { IEntity, IEntityExpanded, IUniqueConstraint } from '../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IErrorResponse } from '../../../interfaces/error';
-import { ActionTypes, IAction, IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
-import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { duplicateEntityRequest } from '../../../services/entitiesService';
 import { useSearchParams } from '../../../utils/hooks/useSearchParams';
 import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
@@ -32,18 +32,22 @@ const { errorCodes } = environment;
 const DuplicateEntity: React.FC = () => {
     const { state } = window.history;
 
+    const [_, navigate] = useLocation();
+    const [_match, params] = useRoute('/entity/:entityId/duplicate');
+
+    if (!state) {
+        console.error('No state found in history. Redirecting to entity page.');
+        const { entityId } = params!;
+        navigate(`/entity/${entityId}`);
+    }
+
     const {
         entityTemplate,
         expandedEntity: { entity },
     } = state as {
-        entityTemplate: IMongoEntityTemplatePopulated;
+        entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
         expandedEntity: IEntityExpanded;
     };
-
-    const [_, navigate] = useLocation();
-    if (!state) {
-        navigate(`/entity/${entity?.properties._id}`);
-    }
 
     const [searchParams, _setSearchParams] = useSearchParams();
     const childTemplateId = searchParams.get('childTemplateId') ?? undefined;
@@ -132,7 +136,7 @@ const DuplicateEntity: React.FC = () => {
     return (
         <Formik
             initialValues={getInitialValuesWithDefaults({
-                properties: fieldProperties,
+                properties: { ...fieldProperties, disabled: false },
                 attachmentsProperties: fileProperties,
                 template: entityTemplate,
             })}

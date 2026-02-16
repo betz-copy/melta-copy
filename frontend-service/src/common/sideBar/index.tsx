@@ -11,15 +11,16 @@ import {
     Widgets as WidgetsIcon,
 } from '@mui/icons-material';
 import { Box, Button, Grid, IconButton, Slide, Typography, useTheme } from '@mui/material';
+import { INotificationCountGroups } from '@packages/notification';
+import { PermissionScope } from '@packages/permission';
+import { RelatedPermission } from '@packages/user';
 import i18next from 'i18next';
 import React, { useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
 import { environment } from '../../globals';
-import { ICategoryMap } from '../../interfaces/categories';
-import { INotificationCountGroups } from '../../interfaces/notifications';
-import { PermissionScope } from '../../interfaces/permissions';
-import { RelatedPermission } from '../../interfaces/users';
+import { PermissionDialogMode } from '../../interfaces/inputs';
+import { ICategoryMap } from '../../interfaces/template';
 import { searchIFrames } from '../../services/iFramesService';
 import { getMyNotificationGroupCountRequest, getMyNotificationsRequest, manyNotificationSeenRequest } from '../../services/notificationService';
 import { useDarkModeStore } from '../../stores/darkMode';
@@ -49,7 +50,7 @@ const {
     notifications,
     searchPath,
     dashboard: { dashboardPath },
-    searchParams: { viewModeKey, searchKey, semanticSearchKey, viewModeOptions },
+    searchParams: { viewModeKey, searchKey, viewModeOptions },
 } = environment;
 
 const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
@@ -294,7 +295,6 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                 <NavButton
                                     key={category._id}
                                     to={buildUrl(`/category/${category._id}`, {
-                                        [semanticSearchKey]: false,
                                         [searchKey]: '',
                                         [viewModeKey]: viewModeOptions.templatesTables,
                                     })}
@@ -578,7 +578,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
             <PermissionsDialog
                 permissionType={RelatedPermission.User}
                 isOpen={isMyPermissionsDialogOpen}
-                mode="view"
+                mode={PermissionDialogMode.View}
                 handleClose={() => setIsMyPermissionsDialogOpen(false)}
                 roleOrUser={currentUser}
             />

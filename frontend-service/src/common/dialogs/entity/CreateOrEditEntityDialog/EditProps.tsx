@@ -1,13 +1,12 @@
 import { Close as CloseIcon } from '@mui/icons-material';
 import { Box, Divider, Grid, IconButton, Typography, useTheme } from '@mui/material';
+import { IPropertyValue } from '@packages/entity';
 import { FormikComputedProps, FormikHelpers, FormikState } from 'formik';
 import i18next from 'i18next';
 import { DebouncedFunc, isEqual } from 'lodash';
 import React, { Dispatch, SetStateAction, useEffect, useMemo } from 'react';
 import { IExternalErrors } from '../../../../interfaces/CreateOrEditEntityDialog';
-import { IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
-import { IPropertyValue } from '../../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { ITemplate } from '../../../../interfaces/template';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import { filterFieldsFromPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
@@ -29,7 +28,7 @@ const EditProps: React.FC<{
     initialValuePropsToFilter: Record<string, IPropertyValue>;
     setInitialValuePropsToFilter: Dispatch<SetStateAction<Record<string, IPropertyValue>>>;
     isMultipleSelection: boolean;
-    entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
+    entityTemplate: ITemplate;
     wasDirty: boolean;
     setWasDirty: Dispatch<React.SetStateAction<boolean>>;
     externalErrors: IExternalErrors;
@@ -48,7 +47,7 @@ const EditProps: React.FC<{
     showTitle?: boolean;
     chooseMode?: IChooseTemplateMode;
     parentId?: string;
-    getInitialProperties?: (newTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => Record<string, IPropertyValue>;
+    getInitialProperties?: (newTemplate: ITemplate) => Record<string, IPropertyValue>;
 }> = ({
     setFieldValue,
     values,
@@ -82,6 +81,7 @@ const EditProps: React.FC<{
 
     const { templateFilesProperties, templateFileKeys, requiredFilesNames } = getEntityTemplateFilesFieldsInfo(values.template || entityTemplate);
     const isPropertiesFirst = (values.template?.propertiesTypeOrder ?? [])[0] === 'properties';
+
     const schema = filterFieldsFromPropertiesSchema(values.template?.properties, multipleSelectionProps?.selectedFields);
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: lol
@@ -110,11 +110,11 @@ const EditProps: React.FC<{
         const isSignatureField = (key: string) => values.template?.properties.properties[key]?.format === 'signature';
         const valuePropsToFilter = { ...values.properties };
         Object.keys(valuePropsToFilter).forEach((key) => {
-            valuePropsToFilter[key] === undefined || isSignatureField(key) ? delete valuePropsToFilter[key] : {};
+            if (valuePropsToFilter[key] === undefined || isSignatureField(key)) delete valuePropsToFilter[key];
         });
 
         Object.keys(initialValuePropsToFilter).forEach((key) => {
-            initialValuePropsToFilter[key] === undefined || isSignatureField(key) ? delete initialValuePropsToFilter[key] : {};
+            if (initialValuePropsToFilter[key] === undefined || isSignatureField(key)) delete initialValuePropsToFilter[key];
         });
 
         return !isEqual(valuePropsToFilter, initialValuePropsToFilter);

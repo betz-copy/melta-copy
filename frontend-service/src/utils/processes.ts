@@ -1,4 +1,4 @@
-import { IProcessTemplateMap } from '../interfaces/processes/processTemplate';
+import { IProcessTemplateMap } from '../interfaces/template';
 
 export const getStepName = (stepTemplateId: string, processTemplatesMap: IProcessTemplateMap) => {
     for (const processTemplate of processTemplatesMap.values()) {

@@ -1,18 +1,22 @@
 import { ArrowBackIos, ArrowForwardIos, History, Toc } from '@mui/icons-material';
 import { Box, Button, Divider, Grid, Step, StepConnector, Stepper, stepConnectorClasses, styled, Typography, useTheme } from '@mui/material';
+import {
+    IMongoProcessInstanceReviewerPopulated,
+    IMongoProcessTemplateReviewerPopulated,
+    IMongoStepInstancePopulated,
+    IMongoStepTemplatePopulated,
+    IReferencedEntityForProcess,
+    Status,
+} from '@packages/process';
 import i18next from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
-import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, Status } from '../../../../interfaces/processes/processInstance';
-import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
-import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
-import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { ActivitiesContent } from '../../../../pages/Entity/components/activityLog/ActivitiesContent';
 import { StepIcon } from '../../../../pages/ProcessInstances/ProcessCard';
 import BlueTitle from '../../../MeltaDesigns/BlueTitle';
 import MeltaTooltip from '../../../MeltaDesigns/MeltaTooltip';
 import { ProcessStep } from './processStep';
 import './processStep.css';
-import { IPropertyValue } from '../../../../interfaces/entities';
+import { IPropertyValue } from '@packages/entity';
 
 export interface ProcessStepValues {
     properties: Record<string, IPropertyValue>;
@@ -23,8 +27,8 @@ export interface ProcessStepValues {
 }
 
 export interface IStepsProp {
-    processTemplate: IMongoProcessTemplatePopulated;
-    processInstance: IMongoProcessInstancePopulated;
+    processTemplate: IMongoProcessTemplateReviewerPopulated;
+    processInstance: IMongoProcessInstanceReviewerPopulated;
     isStepEditMode: boolean;
     setIsStepEditMode: React.Dispatch<React.SetStateAction<boolean>>;
     onStepUpdateSuccess: (stepInstance: IMongoStepInstancePopulated) => void;
@@ -34,7 +38,7 @@ export interface IStepsProp {
 
 const getStepTemplateByStepInstance = (
     stepInstance: IMongoStepInstancePopulated,
-    processTemplate: IMongoProcessTemplatePopulated,
+    processTemplate: IMongoProcessTemplateReviewerPopulated,
 ): IMongoStepTemplatePopulated => {
     return processTemplate.steps.find((step) => stepInstance.templateId === step._id)!;
 };

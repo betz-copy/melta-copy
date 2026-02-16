@@ -1,4 +1,4 @@
-import { ViewType } from '@microservices/shared';
+import { ViewType } from '@packages/child-template';
 import mongoose from 'mongoose';
 import config from '../../config';
 import { transformResultDocsObjectIdKeysToString } from '../../utils/mongoose';

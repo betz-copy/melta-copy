@@ -1,4 +1,6 @@
-import { DashboardItemType, IFrame, IframeItem, IMongoIframe, ISearchIFramesBody, UploadedFile } from '@microservices/shared';
+import { DashboardItemType, IframeItem } from '@packages/dashboard';
+import { UploadedFile } from '@packages/entity';
+import { IFrame, IMongoIframe, ISearchIFramesBody } from '@packages/iframe';
 import DashboardItemService from '../../externalServices/dashboardService/dashboardItemService';
 import IFramesService from '../../externalServices/dashboardService/iframesService';
 import StorageService from '../../externalServices/storageService';

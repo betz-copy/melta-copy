@@ -1,4 +1,4 @@
-import { basicValidateRequest, logger } from '@microservices/shared';
+import { basicValidateRequest, logger } from '@packages/utils';
 import { ConsumerMessage } from 'menashmq';
 import config from '../config';
 import NotificationsManager from '../express/notifications/manager';

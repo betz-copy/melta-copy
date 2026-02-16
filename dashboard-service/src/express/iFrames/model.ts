@@ -1,4 +1,4 @@
-import { IMongoIframe } from '@microservices/shared';
+import { IMongoIframe } from '@packages/iframe';
 import * as mongoose from 'mongoose';
 
 const IFrameSchema = new mongoose.Schema<IMongoIframe>(

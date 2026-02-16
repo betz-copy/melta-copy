@@ -1,10 +1,11 @@
+import { FileDetails } from '@packages/common';
+import { IPropertyValue } from '@packages/entity';
 import React from 'react';
-import { IPropertyValue } from '../../../interfaces/entities';
-import fileDetails from '../../../interfaces/fileDetails';
+import { InputPickerType } from '../../../interfaces/inputs';
 import { ImagePicker } from '../../inputs/ImagePicker';
 
 export const ChooseStepsIcon: React.FC<{
-    icon: fileDetails | undefined;
+    icon: FileDetails | undefined;
     index: number;
     setFieldValue: (field: string, value: IPropertyValue, shouldValidate?: boolean) => void;
 }> = ({ icon, index, setFieldValue }) => (
@@ -12,6 +13,6 @@ export const ChooseStepsIcon: React.FC<{
         image={icon}
         onPick={(image) => setFieldValue(`steps[${index}].icon`, image)}
         onDelete={() => setFieldValue(`steps[${index}].icon`, undefined)}
-        defaultInputType={icon?.file ? 'chooseFile' : 'chooseFromOptions'}
+        defaultInputType={icon?.file ? InputPickerType.ChooseFile : InputPickerType.ChooseFromOptions}
     />
 );

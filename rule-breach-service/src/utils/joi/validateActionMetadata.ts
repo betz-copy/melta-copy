@@ -1,4 +1,4 @@
-import { ActionTypes, IAction } from '@microservices/shared';
+import { ActionTypes, IAction } from '@packages/action';
 import * as joi from 'joi';
 import {
     createEntityMetadataSchema,

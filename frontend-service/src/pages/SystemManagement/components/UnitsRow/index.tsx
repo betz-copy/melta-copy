@@ -1,12 +1,12 @@
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { FormControlLabel, Grid, Typography } from '@mui/material';
+import { IMongoUnit, IUnitHierarchy } from '@packages/unit';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
 import { AreYouSureDialog } from '../../../../common/dialogs/AreYouSureDialog';
 import MeltaCheckbox from '../../../../common/MeltaDesigns/MeltaCheckbox';
 import Tree from '../../../../common/Tree';
-import { IMongoUnit, IUnitHierarchy } from '../../../../interfaces/units';
 import { getUnitHierarchy } from '../../../../services/userService';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import { useUnitStore } from '../../../../stores/unit';

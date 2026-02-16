@@ -1,14 +1,16 @@
 import { Add, Clear } from '@mui/icons-material';
 import { Autocomplete, Button, Grid, IconButton, TextField, Typography } from '@mui/material';
+import { IPropertyValue } from '@packages/entity';
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { FilterTypes } from '@packages/rule-breach';
 import { FormikErrors, FormikTouched, getIn } from 'formik';
 import i18next from 'i18next';
 import { isEqual } from 'lodash';
 import React, { useMemo, useState } from 'react';
-import { IPropertyValue } from '../../../../interfaces/entities';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { PropertyWizardType } from '../../../../interfaces/template';
 import { getPropertyType } from '../../../../services/templates/entityTemplatesService';
 import { handleRemoveFilter, initializedFilterField, renderFilterInput } from '../../../FilterComponent';
-import { CommonFormInputProperties, FilterType, IAGGridFilter, IFilterTemplate, PropertyItem } from '../commonInterfaces';
+import { CommonFormInputProperties, FilterType, IAgGridFilter, IFilterTemplate, PropertyItem } from '../commonInterfaces';
 
 export interface FieldOption {
     option: string;
@@ -20,7 +22,7 @@ interface FilterEntitiesByCriteriaProps {
     value: CommonFormInputProperties;
     values: Record<string, PropertyItem[]>;
     setFieldValue: (field: keyof CommonFormInputProperties, value: IPropertyValue) => void;
-    selectedEntityTemplate: IMongoEntityTemplatePopulated | undefined;
+    selectedEntityTemplate: IMongoEntityTemplateWithConstraintsPopulated | undefined;
     initialValue: CommonFormInputProperties | undefined;
     touched?: FormikTouched<CommonFormInputProperties>;
     errors?: FormikErrors<CommonFormInputProperties>;
@@ -56,7 +58,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
 
     const filterInitialValues: IFilterTemplate = {
         filterProperty: '',
-        filterField: {} as IAGGridFilter,
+        filterField: {} as IAgGridFilter,
     };
 
     const handleAddFilter = () => {
@@ -115,7 +117,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                                 const type = item.type === 'field' ? item.data.type : item.type;
 
                                 return (
-                                    getFilterDateType(getPropertyType(type), type) ===
+                                    getFilterDateType(getPropertyType(type as PropertyWizardType), type) ===
                                         getFilterDateType(selectedProperty.type, selectedProperty.format) && !notIncludedFormats.includes(type)
                                 );
                             })
@@ -130,16 +132,16 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
                                 }));
                             });
 
-                        const getFilterType = (): IAGGridFilter['filterType'] => {
+                        const getFilterType = (): IAgGridFilter['filterType'] => {
                             switch (selectedProperty.type) {
                                 case 'string':
                                 case 'boolean':
-                                    if (['date-time', 'date'].includes(selectedProperty.format ?? '')) return 'date';
-                                    return 'text';
+                                    if (['date-time', 'date'].includes(selectedProperty.format ?? '')) return FilterTypes.date;
+                                    return FilterTypes.text;
                                 case 'array':
-                                    return 'set';
+                                    return FilterTypes.set;
                                 default:
-                                    return selectedProperty.type as IAGGridFilter['filterType'];
+                                    return selectedProperty.type as unknown as IAgGridFilter['filterType'];
                             }
                         };
 

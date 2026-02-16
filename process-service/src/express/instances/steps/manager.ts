@@ -1,15 +1,6 @@
-import {
-    ActionsLog,
-    DefaultManagerMongo,
-    IMongoStepInstance,
-    IMongoStepTemplate,
-    IStepInstance,
-    IUpdateProcessStepMetadata,
-    NotFoundError,
-    ServiceError,
-    UpdateStepReqBody,
-    ValidationError,
-} from '@microservices/shared';
+import { ActionsLog, IUpdateProcessStepMetadata } from '@packages/activity-log';
+import { IMongoStepInstance, IMongoStepTemplate, IStepInstance, UpdateStepReqBody } from '@packages/process';
+import { DefaultManagerMongo, NotFoundError, ServiceError, ValidationError } from '@packages/utils';
 import { ClientSession, Types, UpdateQuery, UpdateWithAggregationPipeline } from 'mongoose';
 import config from '../../../config';
 import { ActivityLogProducer } from '../../../externalServices/activityLog/producer';

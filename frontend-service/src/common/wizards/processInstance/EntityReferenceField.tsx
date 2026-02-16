@@ -16,14 +16,15 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
+import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { PermissionScope } from '@packages/permission';
+import { IReferencedEntityForProcess } from '@packages/process';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import { useMemo, useRef, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { environment } from '../../../globals';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { PermissionScope } from '../../../interfaces/permissions';
-import { IReferencedEntityForProcess } from '../../../interfaces/processes/processInstance';
+import { IEntityTemplateMap } from '../../../interfaces/template';
 import { useUserStore } from '../../../stores/user';
 import { getEntityTemplateColor, hexToRgba } from '../../../utils/colors';
 import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';

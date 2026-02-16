@@ -1,16 +1,14 @@
 import { Grid } from '@mui/material';
+import { isRelativeDateFilter } from '@packages/rule-breach';
 import i18next from 'i18next';
 import React from 'react';
-import { environment } from '../../../globals';
-import { IGraphFilterBody } from '../../../interfaces/entities';
+import { IGraphFilterBody } from '../../../interfaces/graphFilter';
 import { ViewModeTextField } from '../ViewModeTextField';
-
-const { relativeDateFilters } = environment;
 
 export const getFilterFieldReadonly = (filter: IGraphFilterBody['filterField'], fieldTemplateType: string) => {
     switch (filter?.filterType) {
         case 'date':
-            if (relativeDateFilters.includes(filter.type)) return `${i18next.t(`filters.date.${filter.type}`)}`;
+            if (isRelativeDateFilter(filter.type)) return `${i18next.t(`filters.date.${filter.type}`)}`;
 
             return `${i18next.t(`filters.${filter.filterType}.${filter.type}`)} ${
                 filter.dateFrom ? new Date(filter.dateFrom).toLocaleDateString('he-IL') : ''

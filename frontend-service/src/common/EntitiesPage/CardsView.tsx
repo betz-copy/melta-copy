@@ -1,13 +1,14 @@
 import { Grid } from '@mui/material';
+import { isChildTemplate } from '@packages/child-template';
+import { IEntityWithDirectConnections } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { ISemanticSearchResult } from '@packages/semantic-search';
 import i18next from 'i18next';
 import { forwardRef, useImperativeHandle, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
-import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { IEntityWithDirectConnections } from '../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
+import { IChildTemplateMap, IEntityTemplateMap, ITemplate } from '../../interfaces/template';
 import EntityCard from '../../pages/GlobalSearch/components/entityCard';
 import { getEntitiesWithDirectConnections } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
@@ -15,11 +16,13 @@ import { useWorkspaceStore } from '../../stores/workspace';
 import { convertToBool } from '../../utils/convertStringToBool';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
-import { isChildTemplate } from '../../utils/templates';
 import { InfiniteScroll } from '../InfiniteScroll';
 import { getDefaultFilterFromTemplate } from './TemplateTablesView';
 
-const { infiniteScrollPageCount } = environment.entitiesCardsView;
+const {
+    entitiesCardsView: { infiniteScrollPageCount },
+    features: { isActiveSemanticSearch },
+} = environment;
 
 export interface CardsViewRef {
     refetch: () => void;
@@ -28,7 +31,7 @@ export interface CardsViewRef {
 export interface CardsViewProps {
     templateIds: string[];
     searchInput: string;
-    templates: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[];
+    templates: ITemplate[];
 }
 
 const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searchInput, templates }, ref) => {
@@ -36,7 +39,8 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
     const [openCardsMap, setOpenCardsMap] = useState<Map<string, boolean>>(new Map());
     const queryClient = useQueryClient();
     const [urlSearchParams, _setUrlSearchParams] = useSearchParams();
-    const urlSemanticSearch = urlSearchParams.get('semanticSearch');
+
+    const urlSemanticSearch: string | null = isActiveSemanticSearch ? urlSearchParams.get('semanticSearch') : 'false';
 
     const refetch = () => queryClient.invalidateQueries(['searchEntities', templateIds, searchInput, urlSemanticSearch], { exact: true });
     useImperativeHandle(ref, () => ({ refetch }));
@@ -61,14 +65,19 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
             <Grid>
                 <Grid container>
                     <InfiniteScroll<
-                        IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string]; childTemplateId?: string }
+                        IEntityWithDirectConnections & {
+                            minioFileIdsWithTexts?: ISemanticSearchResult[string][string];
+                            childTemplateId?: string;
+                        }
                     >
                         queryKey={['searchEntities', templateIds, searchInput, urlSemanticSearch]}
                         queryFunction={async ({ pageParam: startRow = 0 }) => {
                             const childTemplates = templates.filter(isChildTemplate);
                             const parentTemplates = templates.filter((template) => !isChildTemplate(template));
 
-                            const entities: (IEntityWithDirectConnections & { minioFileIdsWithTexts?: ISemanticSearchResult[string][string] })[] = [];
+                            const entities: (IEntityWithDirectConnections & {
+                                minioFileIdsWithTexts?: ISemanticSearchResult[string][string];
+                            })[] = [];
                             let count = 0;
 
                             if (parentTemplates.length) {
@@ -76,7 +85,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                                     skip: startRow,
                                     limit: infiniteScrollPageCount,
                                     textSearch: searchInput,
-                                    templates: Object.fromEntries(parentTemplates.map((t) => [t._id, { showRelationships: false }])),
+                                    templates: Object.fromEntries(parentTemplates.map((t) => [t._id, {}])),
                                     shouldSemanticSearch: convertToBool(urlSemanticSearch!),
                                 });
 
@@ -99,7 +108,6 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                                     textSearch: searchInput,
                                     templates: {
                                         [template.parentTemplate._id!]: {
-                                            showRelationships: false,
                                             filter,
                                             childTemplateId: template._id,
                                         },
@@ -138,10 +146,9 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                             const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
                             const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
 
-                            // biome-ignore lint/suspicious/noNonNullAssertedOptionalChain: lol
-                            const entityTemplate = entityTemplates?.get(entity.templateId)!;
-                            const childEntityTemplate = childTemplateId ? childTemplates?.get(childTemplateId) : undefined;
-                            const template = childEntityTemplate ?? entityTemplate;
+                            const entityTemplate = entityTemplates?.get(entity.templateId);
+                            const childEntityTemplate = childTemplates?.get(childTemplateId ?? '');
+                            const template = childEntityTemplate ?? (entityTemplate as IMongoEntityTemplateWithConstraintsPopulated);
 
                             return (
                                 <EntityCard

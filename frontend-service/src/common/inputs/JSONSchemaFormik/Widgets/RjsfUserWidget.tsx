@@ -21,7 +21,7 @@ const RjsfUserWidget = ({
     required,
     ...textFieldProps
 }: WidgetProps) => {
-    const [currentUser, setCurrentUser] = useState(value ? JSON.parse(value) : undefined);
+    const [currentUser, setCurrentUser] = useState(value ?? undefined);
 
     const handleOnChange = options.updateExpandedUserFields;
 
@@ -34,7 +34,6 @@ const RjsfUserWidget = ({
             value={
                 currentUser
                     ? {
-                          _id: currentUser._id,
                           displayName: `${currentUser.fullName} - ${currentUser.hierarchy}`,
                           userType: currentUser.entityType,
                           ...currentUser,

@@ -1,18 +1,6 @@
-import {
-    filterOfFieldSchema as filterOfFieldSchemaShared,
-    IAggregationType,
-    IChartPermission,
-    IChartType,
-    MongoIdSchema,
-} from '@microservices/shared';
+import { IAggregationType, IChartPermission, IChartType } from '@packages/chart';
+import { MongoIdSchema, searchFilterSchema } from '@packages/utils';
 import Joi from 'joi';
-
-const filterOfFieldSchema = filterOfFieldSchemaShared.min(1).id('filterOfField');
-const filterOfTemplateSchema = Joi.object().pattern(Joi.string(), filterOfFieldSchema).min(1);
-const searchFilterSchema = Joi.object({
-    $and: Joi.alternatives(filterOfTemplateSchema, Joi.array().items(filterOfTemplateSchema).min(1)),
-    $or: Joi.array().items(filterOfTemplateSchema).min(1),
-}).min(1);
 
 const aggregationSchema = Joi.object({
     type: Joi.string()

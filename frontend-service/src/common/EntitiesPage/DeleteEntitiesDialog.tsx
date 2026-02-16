@@ -1,7 +1,7 @@
 import { Grid, TextField, Typography } from '@mui/material';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import React from 'react';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
 
 interface DeleteEntitiesDialogProps {
@@ -9,7 +9,7 @@ interface DeleteEntitiesDialogProps {
     handleClose: () => void;
     onYes: () => void;
     isLoading: boolean;
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
     value: string;
     setValue: (value: string) => void;
 }

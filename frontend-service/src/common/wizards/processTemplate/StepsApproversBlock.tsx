@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import UserAutocomplete from '../../inputs/UserAutocomplete';
 import MeltaSwitch from '../../MeltaDesigns/MeltaSwitch';
-import { FieldBlockAccordion } from '../entityTemplate/fieldBlock/interfaces';
+import { FieldBlockAccordion } from '../entityTemplate/fieldBlock/styles';
 import { ProcessTemplateWizardValues } from '.';
 import CreateUserCard from './ApproverCard';
 import { StepsGenericBlockProps } from './StepsBlocksInterface';

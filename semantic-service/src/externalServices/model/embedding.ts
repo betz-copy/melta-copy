@@ -1,12 +1,8 @@
-import { logger } from '@microservices/shared';
+import { logger } from '@packages/utils';
 import axios from 'axios';
 import config from '../../config';
 
-const {
-    modelApi: {
-        embedding: { baseUrl, embeddingRoute, requestTimeout },
-    },
-} = config;
+const { baseUrl, embeddingRoute, requestTimeout } = config.modelApi.embedding;
 
 class ModelEmbeddingApiService {
     static api = axios.create({ baseURL: baseUrl, timeout: requestTimeout });

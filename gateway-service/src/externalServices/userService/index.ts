@@ -1,22 +1,8 @@
-import {
-    DeepPartial,
-    IBaseRole,
-    IBaseUser,
-    ICompactNullablePermissions,
-    ICompactPermissions,
-    IGetUnits,
-    IMongoUnit,
-    IPermission,
-    IRole,
-    ISubCompactPermissions,
-    IUnit,
-    IUnitHierarchy,
-    IUser,
-    IUserPopulated,
-    IUserSearchBody,
-    RecursiveNullable,
-    RelatedPermission,
-} from '@microservices/shared';
+import { DeepPartial, RecursiveNullable } from '@packages/common';
+import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '@packages/permission';
+import { IBaseRole, IRole } from '@packages/role';
+import { IGetUnits, IMongoUnit, IUnit, IUnitHierarchy } from '@packages/unit';
+import { IBaseUser, IUser, IUserPopulated, IUserSearchBody, RelatedPermission } from '@packages/user';
 import axios from 'axios';
 import config from '../../config';
 

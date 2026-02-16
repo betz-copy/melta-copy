@@ -9,6 +9,8 @@ import {
     Check as SaveIcon,
 } from '@mui/icons-material';
 import { Box, Button, CircularProgress, Grid, IconButton, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { IGantt } from '@packages/gantt';
+import { PermissionScope } from '@packages/permission';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { Fragment, useState } from 'react';
@@ -19,8 +21,6 @@ import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
 import { Swap } from '../../common/Swap';
 import { TopBarGrid } from '../../common/TopBar';
 import { environment } from '../../globals';
-import { IBasicGantt } from '../../interfaces/gantts';
-import { PermissionScope } from '../../interfaces/permissions';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
@@ -32,7 +32,7 @@ const {
 
 interface IGanttTopBar {
     title: string;
-    formik: FormikProps<IBasicGantt>;
+    formik: FormikProps<IGantt>;
     onEdit: () => void;
     onDelete: () => void;
     onAddGroupBy: () => void;

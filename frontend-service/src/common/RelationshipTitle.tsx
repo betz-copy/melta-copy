@@ -1,8 +1,8 @@
 import { Grid, Typography, useTheme } from '@mui/material';
 import React, { CSSProperties } from 'react';
-import '../css/realtionshipTitle.css';
-import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
-import { IMongoRelationshipTemplatePopulated } from '../interfaces/relationshipTemplates';
+import '../css/relationshipTitle.css';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoRelationshipTemplatePopulated } from '@packages/relationship-template';
 import { useDarkModeStore } from '../stores/darkMode';
 import { useWorkspaceStore } from '../stores/workspace';
 import { getEntityTemplateColor } from '../utils/colors';
@@ -72,7 +72,7 @@ const TextComponent: React.FC<{ title: string; style?: CSSProperties }> = ({ tit
     );
 };
 
-export const EntityTemplateTextComponent: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; style?: React.CSSProperties }> = ({
+export const EntityTemplateTextComponent: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstraintsPopulated; style?: React.CSSProperties }> = ({
     entityTemplate,
     style,
 }) => {
@@ -90,7 +90,10 @@ export const EntityTemplateTextComponent: React.FC<{ entityTemplate: IMongoEntit
 
 const RelationshipTitle: React.FC<{
     relationshipTemplate: IMongoRelationshipTemplatePopulated;
-    renderEntityTemplateText?: React.JSXElementConstructor<{ entityTemplate: IMongoEntityTemplatePopulated; isRelationshipSource: boolean }>;
+    renderEntityTemplateText?: React.JSXElementConstructor<{
+        entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
+        isRelationshipSource: boolean;
+    }>;
     style?: CSSProperties;
 }> = ({ relationshipTemplate, renderEntityTemplateText: EntityTemplateTextComponentOverride, style }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);

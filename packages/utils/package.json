@@ -1,0 +1,44 @@
+{
+    "name": "@packages/utils",
+    "version": "1.0.0",
+    "description": "utils package",
+    "type": "commonjs",
+    "main": "dist/index.js",
+    "module": "dist/index.mjs",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.mjs",
+            "require": "./dist/index.js"
+        }
+    },
+    "scripts": {
+        "build": "tsup",
+        "clean": "rimraf dist"
+    },
+    "dependencies": {
+        "@packages/common": "workspace:*",
+        "@packages/entity": "workspace:*",
+        "@packages/rule-breach": "workspace:*",
+        "axios": "^1.11.0",
+        "dotenv": "^17.2.1",
+        "env-var": "^7.5.0",
+        "express": "^4.21.2",
+        "http-status-codes": "^2.3.0",
+        "joi": "^18.0.1",
+        "mongoose": "^8.17.2",
+        "neo4j-driver": "^5.23.0",
+        "proj4": "^2.15.0",
+        "winston": "^3.17.0",
+        "winston-daily-rotate-file": "^5.0.0"
+    },
+    "devDependencies": {
+        "tsup": "^8.5.1",
+        "typescript": "^5.6.2",
+        "@types/express": "^5.0.0",
+        "@types/mongoose": "^5.11.97",
+        "@types/node": "^22.10.2",
+        "cesium": "^1.132.0"
+    }
+}

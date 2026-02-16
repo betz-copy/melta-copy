@@ -1,13 +1,13 @@
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
 import { Grid, Typography, tooltipClasses, useTheme } from '@mui/material';
+import { IEntity } from '@packages/entity';
+import { CoordinateSystem } from '@packages/map';
+import { IGetUnits } from '@packages/unit';
 import i18next from 'i18next';
 import React, { CSSProperties } from 'react';
 import { useQueryClient } from 'react-query';
 import { Link } from 'wouter';
-import { IChildTemplateMap } from '../interfaces/childTemplates';
-import { IEntity } from '../interfaces/entities';
-import { IEntityTemplateMap } from '../interfaces/entityTemplates';
-import { IGetUnits } from '../interfaces/units';
+import { IChildTemplateMap, IEntityTemplateMap } from '../interfaces/template';
 import { useUserStore } from '../stores/user';
 import { useWorkspaceStore } from '../stores/workspace';
 import { isEntityFitsToChildTemplate } from '../utils/childTemplates';
@@ -18,7 +18,6 @@ import { getFirstXFilledPropsKeys } from '../utils/templates';
 import { ColoredEnumChip } from './ColoredEnumChip';
 import { CustomIcon } from './CustomIcon';
 import { EntityPropertiesInternal } from './EntityProperties';
-import { CoordinateSystem } from './inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
 import MeltaTooltip from './MeltaDesigns/MeltaTooltip';
 
 interface RelationshipReferenceViewProps {
@@ -106,11 +105,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
 
         if (relatedTemplate?.properties.properties[relatedTemplateField].format === 'user') {
             const userProperty = entity.properties[relatedTemplateField];
-            try {
-                return JSON.parse(userProperty).fullName;
-            } catch {
-                return userProperty.fullName;
-            }
+            return userProperty.fullName;
         }
 
         if (
@@ -119,7 +114,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({
         ) {
             const usersProperty = entity.properties[relatedTemplateField];
             if (Array.isArray(usersProperty)) {
-                return entity.properties[relatedTemplateField].map((user) => JSON.parse(user).fullName).join(', ');
+                return entity.properties[relatedTemplateField].map((user) => user.fullName).join(', ');
             }
 
             return usersProperty.fullNames.join(', ');

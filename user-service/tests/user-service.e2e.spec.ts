@@ -1,4 +1,4 @@
-import { IUser } from '@microservices/shared';
+import { IUser } from '@packages/user';
 import { Express } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import * as mongoose from 'mongoose';

@@ -1,17 +1,9 @@
-import {
-    BadRequestError,
-    childTemplateKeys,
-    dePopulateChildProperties,
-    IChildTemplatePopulated,
-    IConstraintsOfTemplate,
-    IEntitySingleProperty,
-    IMongoEntityTemplatePopulated,
-    IMongoRule,
-    IRelationship,
-    PropertyFormat,
-    PropertyType,
-    ServiceError,
-} from '@microservices/shared';
+import { childTemplateKeys, dePopulateChildProperties, IChildTemplatePopulated } from '@packages/child-template';
+import { IConstraintsOfTemplate } from '@packages/entity';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated, PropertyFormat, PropertyType } from '@packages/entity-template';
+import { IRelationship } from '@packages/relationship';
+import { IMongoRule } from '@packages/rule';
+import { BadRequestError, ServiceError } from '@packages/utils';
 import { StatusCodes } from 'http-status-codes';
 import _, { cloneDeep } from 'lodash';
 import config from '../../config';
@@ -112,7 +104,6 @@ const updateChildTemplatesOnParentUpdate = async (
 
                 const { filterByCurrentUserField, filterByUnitUserField, ...newChildTemplate } = _.pick(
                     {
-                        parentTemplateId: parentTemplate._id,
                         category: category._id,
                         properties: {
                             properties: cloneDeep({

@@ -6,7 +6,7 @@ import {
     IStepInstance,
     ProcessInstanceDocument,
     Status,
-} from '@microservices/shared';
+} from '@packages/process';
 import { ClientSession, connection, FilterQuery, Model, PipelineStage, Types } from 'mongoose';
 import config from '../../config';
 

@@ -1,4 +1,4 @@
-import { ActionsLog } from '@microservices/shared';
+import { ActionsLog } from '@packages/activity-log';
 import * as mongoose from 'mongoose';
 
 const ActivityLogSchema = new mongoose.Schema({

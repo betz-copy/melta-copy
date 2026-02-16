@@ -1,9 +1,9 @@
 import { AutoAwesome } from '@mui/icons-material';
 import { Grid, IconButton, Link, Typography } from '@mui/material';
+import { ISemanticSearchResult } from '@packages/semantic-search';
 import i18next from 'i18next';
 import React, { ReactNode, useMemo, useState } from 'react';
 import { environment } from '../../globals';
-import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { getFileName } from '../../utils/getFileName';
 import { getFileExtension, getFileNameWithoutExtension, getPreviewContentType } from '../../utils/getFileType';

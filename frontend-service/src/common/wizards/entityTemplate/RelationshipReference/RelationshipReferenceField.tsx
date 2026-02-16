@@ -1,11 +1,12 @@
 import { Autocomplete, Grid, MenuItem, TextField, Typography } from '@mui/material';
+import { IPropertyValue } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated, IRelationshipReference } from '@packages/entity-template';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
-import { IPropertyValue } from '../../../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { CommonFormInputProperties, ConvertToRelationshipFieldFormInputProperties, IRelationshipReference } from '../commonInterfaces';
+import { IEntityTemplateMap } from '../../../../interfaces/template';
+import { CommonFormInputProperties, ConvertToRelationshipFieldFormInputProperties } from '../commonInterfaces';
 
 export interface FieldEditCardProps {
     value: CommonFormInputProperties | ConvertToRelationshipFieldFormInputProperties;
@@ -15,7 +16,7 @@ export interface FieldEditCardProps {
     setFieldValue: (field: keyof CommonFormInputProperties, value: IPropertyValue) => void;
     isDisabled?: boolean;
     convertToRelationshipField?: {
-        options: IMongoEntityTemplatePopulated[];
+        options: IMongoEntityTemplateWithConstraintsPopulated[];
         originSourceEntityId: string;
         setRelatedTemplateId: (id: string) => void;
     };

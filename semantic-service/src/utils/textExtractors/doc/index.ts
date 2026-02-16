@@ -1,4 +1,4 @@
-import { logger } from '@microservices/shared';
+import { logger } from '@packages/utils';
 import textract from 'textract';
 
 const extractTextFromDoc = async (buffer: Buffer, mimeType: string = 'application/msword'): Promise<string> => {

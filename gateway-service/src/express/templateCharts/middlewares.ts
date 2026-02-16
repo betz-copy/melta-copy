@@ -1,4 +1,7 @@
-import { ForbiddenError, IChartPermission, IChildTemplatePopulated, IMongoChart, IMongoEntityTemplatePopulated } from '@microservices/shared';
+import { IChartPermission, IMongoChart } from '@packages/chart';
+import { IChildTemplatePopulated } from '@packages/child-template';
+import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { ForbiddenError } from '@packages/utils';
 import { Request } from 'express';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
 import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';

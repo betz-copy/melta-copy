@@ -1,46 +1,10 @@
+import { ActionsLog, IMongoActivityLog } from '@packages/activity-log';
+import { IEntitySingleProperty } from '@packages/entity-template';
+import { IProcessSingleProperty } from '@packages/process';
 import axios from '../axios';
 import { environment } from '../globals';
-import { IPropertyValue } from '../interfaces/entities';
-import { IEntitySingleProperty } from '../interfaces/entityTemplates';
-import { Status } from '../interfaces/processes/processInstance';
-import { IProcessSingleProperty } from '../interfaces/processes/processTemplate';
 
 const { activityLog } = environment.api;
-
-interface IBaseActivityLog {
-    _id: string;
-    timestamp: Date;
-    entityId: string;
-    userId: string;
-}
-
-interface IEmptyMetadata extends IBaseActivityLog {
-    action: 'CREATE_ENTITY' | 'DISABLE_ENTITY' | 'ACTIVATE_ENTITY' | 'VIEW_ENTITY' | 'CREATE_PROCESS';
-    // biome-ignore lint/complexity/noBannedTypes: old code
-    metadata: {};
-}
-
-interface IRelationshipMetadata extends IBaseActivityLog {
-    action: 'DELETE_RELATIONSHIP' | 'CREATE_RELATIONSHIP';
-    metadata: { relationshipId: string; relationshipTemplateId: string; entityId: string };
-}
-
-interface IDuplicateEntityMetadata extends IBaseActivityLog {
-    action: 'DUPLICATE_ENTITY';
-    metadata: { entityIdDuplicatedFrom: string };
-}
-
-interface IUpdateEntityMetadata extends IBaseActivityLog {
-    action: 'UPDATE_ENTITY' | 'UPDATE_PROCESS';
-    metadata: { updatedFields: [{ fieldName: string; oldValue: IPropertyValue; newValue: IPropertyValue }] };
-}
-
-export interface IUpdateProcessStepMetadata extends IBaseActivityLog {
-    action: 'UPDATE_PROCESS_STEP';
-    metadata: { updatedFields?: [{ fieldName: string; oldValue: IPropertyValue; newValue: IPropertyValue }]; comments?: string; status?: Status };
-}
-
-export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IDuplicateEntityMetadata | IUpdateEntityMetadata | IUpdateProcessStepMetadata;
 
 const getActivityLogRequest = async (
     entityId: string,
@@ -53,9 +17,9 @@ const getActivityLogRequest = async (
     endDateRange?: Date,
 ) => {
     let actionsToFilter = actions;
-    if (actions?.includes('UPDATE_FIELDS')) {
-        actionsToFilter = actions.filter((action) => action !== 'UPDATE_FIELDS');
-        actionsToFilter.push(...['UPDATE_ENTITY', 'UPDATE_PROCESS', 'UPDATE_PROCESS_STEP']);
+    if (actions?.includes(ActionsLog.UPDATE_FIELDS)) {
+        actionsToFilter = actions.filter((action) => action !== ActionsLog.UPDATE_FIELDS);
+        actionsToFilter.push(...[ActionsLog.UPDATE_ENTITY, ActionsLog.UPDATE_PROCESS, ActionsLog.UPDATE_PROCESS_STEP]);
     }
 
     const params: Partial<{
@@ -86,7 +50,7 @@ const getActivityLogRequest = async (
         params.fieldsSearch = fieldsKeysToSearch;
     }
 
-    const { data } = await axios.get<IActivityLog[]>(`${activityLog}/${entityId}`, { params });
+    const { data } = await axios.get<IMongoActivityLog[]>(`${activityLog}/${entityId}`, { params });
     return data;
 };
 

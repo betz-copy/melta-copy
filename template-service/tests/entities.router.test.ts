@@ -1,4 +1,6 @@
-import { ICategory, IEntityTemplate } from '@microservices/shared';
+/** biome-ignore-all lint/suspicious/noExplicitAny: tests */
+import { ICategory } from '@packages/category';
+import { IEntityTemplate } from '@packages/entity-template';
 import { Express } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import mongoose from 'mongoose';
@@ -7,41 +9,65 @@ import CategoryManager from '../src/express/category/manager';
 import categoryModel from '../src/express/category/model';
 import EntityTemplateManager from '../src/express/entityTemplate/manager';
 import EntityTemplateModel from '../src/express/entityTemplate/model';
-import RelationshipTemplateManager from '../src/express/relationshipTemplate/manager';
 import Server from '../src/express/server';
 
-jest.mock('../src/relationshipTemplateManager');
-const relationshipTemplateManagerMocked = jest.mocked(RelationshipTemplateManager, { shallow: true });
+jest.mock('../src/express/relationshipTemplate/manager', () => {
+    return {
+        RelationshipTemplateManager: jest.fn().mockImplementation(() => {
+            return {
+                searchTemplates: jest.fn().mockResolvedValue([]),
+            };
+        }),
+    };
+});
 
 const { OK: okStatus, BAD_REQUEST: badRequest, NOT_FOUND: notFoundStatus, FORBIDDEN: forbiddenStatus } = StatusCodes;
 
 const testUrl = 'mongodb://localhost:27017/test';
 
 const deleteAllCollections = async () => {
-    await categoryModel.deleteMany({});
-    await EntityTemplateModel.deleteMany({});
+    const CategoryModel = categoryModel as any;
+    const EntityModel = EntityTemplateModel as any;
+    await CategoryModel.deleteMany({});
+    await EntityModel.deleteMany({});
 };
 const mongoId = '61e0106831e8332468e7190b';
-const entityTemplateDefaultData: Omit<IEntityTemplate, 'category' | 'iconFileId'> = {
+const workspaceId = 'test-workspace';
+const entityTemplateDefaultData: Omit<IEntityTemplate, 'category'> = {
     name: 'test',
     displayName: 'בדיקה',
     disabled: false,
+    iconFileId: null,
     properties: {
         type: 'object',
         properties: {
-            a: { type: 'number', title: 'א' },
+            a: { type: 'number' as any, title: 'א' },
         },
+        hide: [],
     },
+    propertiesOrder: [],
+    propertiesTypeOrder: [],
+    propertiesPreview: [],
 };
 
-const categoryDefaultData: Omit<ICategory, 'iconFileId'> = { name: 'category', displayName: 'שם', color: '#FFFFFF' };
+const categoryDefaultData: ICategory = {
+    name: 'category',
+    displayName: 'שם',
+    color: '#FFFFFF',
+    templatesOrder: [],
+    iconFileId: null,
+};
 
 describe('Router Tests', () => {
     let app: Express;
+    let categoryManager: CategoryManager;
+    let entityTemplateManager: EntityTemplateManager;
 
     beforeAll(async () => {
         await mongoose.connect(testUrl);
         await deleteAllCollections();
+        categoryManager = new CategoryManager(workspaceId);
+        entityTemplateManager = new EntityTemplateManager(workspaceId);
     });
 
     afterAll(async () => {
@@ -106,7 +132,7 @@ describe('Router Tests', () => {
             });
 
             it('should create entity template', async () => {
-                const category = await CategoryManager.createCategory(categoryDefaultData);
+                const category = await categoryManager.createCategory(categoryDefaultData);
                 const entityTemplateData = {
                     name: 'test',
                     displayName: 'בדיקה',
@@ -132,8 +158,8 @@ describe('Router Tests', () => {
             });
 
             it('should return entity template with status code 200', async () => {
-                const category = await CategoryManager.createCategory(categoryDefaultData);
-                await EntityTemplateManager.createTemplate({ ...entityTemplateDefaultData, category: category._id });
+                const category = await categoryManager.createCategory(categoryDefaultData);
+                await entityTemplateManager.createTemplate({ ...entityTemplateDefaultData, category: category._id });
                 const response = await request(app).get(`/api/entities/templates`).query({ search: entityTemplateDefaultData.name });
                 expect(response.status).toBe(okStatus);
             });
@@ -147,8 +173,8 @@ describe('Router Tests', () => {
             });
 
             it('should find entity template with status code 200', async () => {
-                const category = await CategoryManager.createCategory(categoryDefaultData);
-                const entityTemplate = await EntityTemplateManager.createTemplate({ ...entityTemplateDefaultData, category: category._id });
+                const category = await categoryManager.createCategory(categoryDefaultData);
+                const entityTemplate = await entityTemplateManager.createTemplate({ ...entityTemplateDefaultData, category: category._id });
                 const response = await request(app).get(`/api/entities/templates/${entityTemplate._id}`);
                 expect(response.status).toBe(okStatus);
             });
@@ -156,20 +182,14 @@ describe('Router Tests', () => {
 
         describe('DELETE /:templateId', () => {
             it('should fail with error 404 - entity template not found', async () => {
-                relationshipTemplateManagerMocked.getRelationshipTemplates.mockResolvedValueOnce([]);
-                relationshipTemplateManagerMocked.getRelationshipTemplates.mockResolvedValueOnce([]);
-
                 const response = await request(app).delete(`/api/entities/templates/${mongoId}`);
                 expect(response.status).toBe(notFoundStatus);
                 expect(JSON.parse(response.text).message).toBe('Entity Template not found');
             });
 
             it('should delete entity template with status code 200', async () => {
-                const category = await CategoryManager.createCategory(categoryDefaultData);
-                const entityTemplate = await EntityTemplateManager.createTemplate({ ...entityTemplateDefaultData, category: category._id });
-
-                relationshipTemplateManagerMocked.getRelationshipTemplates.mockResolvedValueOnce([]);
-                relationshipTemplateManagerMocked.getRelationshipTemplates.mockResolvedValueOnce([]);
+                const category = await categoryManager.createCategory(categoryDefaultData);
+                const entityTemplate = await entityTemplateManager.createTemplate({ ...entityTemplateDefaultData, category: category._id });
 
                 const response = await request(app).delete(`/api/entities/templates/${entityTemplate._id}`);
                 expect(response.status).toBe(okStatus);
@@ -184,8 +204,8 @@ describe('Router Tests', () => {
             });
 
             it('should update entity template with status code 200', async () => {
-                const category = await CategoryManager.createCategory(categoryDefaultData);
-                const entityTemplate = await EntityTemplateManager.createTemplate({ ...entityTemplateDefaultData, category: category._id });
+                const category = await categoryManager.createCategory(categoryDefaultData);
+                const entityTemplate = await entityTemplateManager.createTemplate({ ...entityTemplateDefaultData, category: category._id });
                 const response = await request(app)
                     .put(`/api/entities/templates/${entityTemplate._id}`)
                     .send({
@@ -224,16 +244,16 @@ describe('Router Tests', () => {
             });
 
             it('should find category with status code 200', async () => {
-                const newCategory = await CategoryManager.createCategory(categoryDefaultData);
+                const newCategory = await categoryManager.createCategory(categoryDefaultData);
                 const response = await request(app).get(`/api/categories/${newCategory._id}`);
                 expect(response.status).toBe(okStatus);
             });
 
             it('should find all categories with status code 200', async () => {
-                const categoryData1: Omit<ICategory, 'iconFileId'> = { ...categoryDefaultData, name: 'test', displayName: 'בדיקה' };
-                const categoryData2: Omit<ICategory, 'iconFileId'> = { ...categoryDefaultData, name: 'test2', displayName: '2בדיקה' };
-                await CategoryManager.createCategory(categoryData1);
-                await CategoryManager.createCategory(categoryData2);
+                const categoryData1: ICategory = { ...categoryDefaultData, name: 'test', displayName: 'בדיקה' };
+                const categoryData2: ICategory = { ...categoryDefaultData, name: 'test2', displayName: '2בדיקה' };
+                await categoryManager.createCategory(categoryData1);
+                await categoryManager.createCategory(categoryData2);
 
                 const response = await request(app).get(`/api/categories`);
                 expect(response.body).toHaveLength(2);
@@ -249,8 +269,8 @@ describe('Router Tests', () => {
             });
 
             it('should fail with status code 403 - category still has entity templates', async () => {
-                const newCategory = await CategoryManager.createCategory(categoryDefaultData);
-                await EntityTemplateManager.createTemplate({ ...entityTemplateDefaultData, category: newCategory._id });
+                const newCategory = await categoryManager.createCategory(categoryDefaultData);
+                await entityTemplateManager.createTemplate({ ...entityTemplateDefaultData, category: newCategory._id });
 
                 const response = await request(app).delete(`/api/categories/${newCategory._id}`);
                 expect(response.status).toBe(forbiddenStatus);
@@ -258,7 +278,7 @@ describe('Router Tests', () => {
             });
 
             it('should delete category with status code 200', async () => {
-                const newCategory = await CategoryManager.createCategory(categoryDefaultData);
+                const newCategory = await categoryManager.createCategory(categoryDefaultData);
                 const response = await request(app).delete(`/api/categories/${newCategory._id}`);
                 expect(response.status).toBe(okStatus);
             });
@@ -272,7 +292,7 @@ describe('Router Tests', () => {
             });
 
             it('should update category with status code 200', async () => {
-                const newCategory = await CategoryManager.createCategory(categoryDefaultData);
+                const newCategory = await categoryManager.createCategory(categoryDefaultData);
                 const response = await request(app).put(`/api/categories/${newCategory._id}`).send({ name: 'newName' });
                 expect(response.status).toBe(okStatus);
                 expect(response.body.name).toBe('newName');
