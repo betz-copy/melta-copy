@@ -2006,7 +2006,6 @@ export default {
         noColumnsSelected: 'לא נבחרו עמודות',
         noFilesSelected: 'לא נבחרו קבצים',
         noFilesFound: 'לא נמצאו קבצים',
-        noPdfFilesFound: 'לא נמצאו קבצי PDF',
         summaryFailed: 'יצירת סיכום נכשלה',
         copyFailed: 'העתקה נכשלה',
     },

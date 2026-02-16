@@ -62,7 +62,7 @@ apiRouter.use(
 apiRouter.use(
     '/semantic',
     createProxyMiddleware({
-        target: config.semanticSearchService.url,
+        target: `${config.semanticSearchService.url}${config.semanticSearchService.baseRoute}`,
         changeOrigin: true,
         on: { proxyReq: fixRequestBody },
         proxyTimeout: config.semanticSearchService.requestTimeout,

@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import { IChildTemplatePopulated } from '@packages/child-template';
 import { IMongoEntityTemplatePopulated, PropertyFormat } from '@packages/entity-template';
+import { FILE_EXTENSION_TO_MIME_TYPE, FileMimeType } from '@packages/semantic-search';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
@@ -29,6 +30,13 @@ import { AISummaryResponse, FileOption, Step } from '../../interfaces/ai';
 import { summarizeFilesRequest } from '../../services/aiSummaryService';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { getFileName } from '../../utils/getFileName';
+
+const allowedMimeTypes = Object.values(FILE_EXTENSION_TO_MIME_TYPE);
+
+const getFileExtensionFromMimeType = (mimeType: string): string => {
+    const fileTypeEntry = Object.entries(FILE_EXTENSION_TO_MIME_TYPE).find(([, mime]) => mime === mimeType);
+    return fileTypeEntry ? `.${fileTypeEntry[0]}` : '';
+};
 
 interface AISummaryDialogProps {
     open: boolean;
@@ -122,15 +130,16 @@ export const AISummaryDialog: React.FC<AISummaryDialogProps> = ({ open, handleCl
             results.forEach((result, index) => {
                 if (result.status === 'fulfilled') {
                     const { fileId, blob } = result.value;
-                    if (blob.type === 'application/pdf') {
-                        filesToProcess.push(new File([blob], `${fileId}.pdf`, { type: blob.type }));
+                    if (allowedMimeTypes.includes(blob.type as FileMimeType)) {
+                        const extension = getFileExtensionFromMimeType(blob.type);
+                        filesToProcess.push(new File([blob], `${fileId}${extension}`, { type: blob.type }));
                     } else skippedFiles++;
                 } else console.error(`Failed to download file ${selectedFiles[index]}`, result.reason);
             });
 
             if (skippedFiles > 0) toast.warning(i18next.t('actions.skippedNonPdfFiles', { count: skippedFiles }));
 
-            if (!filesToProcess.length) throw new Error(i18next.t('errors.noPdfFilesFound'));
+            if (!filesToProcess.length) throw new Error(i18next.t('errors.noFilesFound'));
 
             return summarizeFilesRequest(filesToProcess, config?.aiRequestTimeout);
         },
