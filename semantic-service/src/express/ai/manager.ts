@@ -45,45 +45,49 @@ export class SemanticManager {
 
         let summary = 'No text extracted from files.';
 
-        if (validText.length) {
-            summary = await generateSummary(validText, maxLength);
+        if (!validText.length) {
+            logger.warn('No valid text to summarize.');
+            return summary;
+        }
 
-            if (enableEvaluation) {
-                let iteration = 0;
-                let needsRefinement = true;
+        summary = await generateSummary(validText, maxLength);
+        logger.info(`Summary generated: ${summary}`);
 
-                while (iteration < maxRefinementIterations && needsRefinement) {
-                    iteration++;
-                    logger.info(`Evaluation/Refinement Iteration ${iteration}/${maxRefinementIterations}`);
+        if (enableEvaluation) {
+            let iteration = 0;
+            let needsRefinement = true;
 
-                    const [evaluation, validation] = await Promise.all([evaluateSummary(validText, summary), validateLanguage(summary)]);
+            while (iteration < maxRefinementIterations && needsRefinement) {
+                iteration++;
+                logger.info(`Evaluation/Refinement Iteration ${iteration}/${maxRefinementIterations}`);
 
-                    const grades = evaluation.grades;
-                    const averageGrade = (grades.accuracy + grades.completeness + grades.clarity) / 3;
-                    const hasLowGrades = grades.accuracy < 3 || grades.completeness < 3 || grades.clarity < 3;
-                    const hasHallucinations = evaluation.hallucinations.length > 0;
+                const [evaluation, validation] = await Promise.all([evaluateSummary(validText, summary), validateLanguage(summary)]);
 
-                    logger.info(
-                        `Iteration ${iteration} - Grades: Accuracy=${grades.accuracy}, Completeness=${grades.completeness}, Clarity=${grades.clarity}. Avg=${averageGrade.toFixed(1)}`,
-                    );
-                    logger.info(`Iteration ${iteration} - Hallucinations: ${evaluation.hallucinations.length}`);
-                    logger.info(`Iteration ${iteration} - Validation: Valid: ${validation.isValid}`);
+                const grades = evaluation.grades;
+                const averageGrade = (grades.accuracy + grades.completeness + grades.clarity) / 3;
+                const hasLowGrades = grades.accuracy < 3 || grades.completeness < 3 || grades.clarity < 3;
+                const hasHallucinations = evaluation.hallucinations.length > 0;
 
-                    if (averageGrade < 4 || hasLowGrades || hasHallucinations || !validation.isValid) {
-                        logger.info(`Iteration ${iteration} - Refining summary based on feedback...`);
-                        summary = await refineSummary(validText, summary, evaluation, validation);
-                        logger.info(`Iteration ${iteration} - Refinement completed.`);
-                        needsRefinement = true;
-                    } else {
-                        logger.info(`Iteration ${iteration} - Summary passed evaluation and validation.`);
-                        needsRefinement = false;
-                    }
+                logger.info(
+                    `Iteration ${iteration} - Grades: Accuracy=${grades.accuracy}, Completeness=${grades.completeness}, Clarity=${grades.clarity}. Avg=${averageGrade.toFixed(1)}`,
+                );
+                logger.info(`Iteration ${iteration} - Hallucinations: ${evaluation.hallucinations.length}`);
+                logger.info(`Iteration ${iteration} - Validation: Valid: ${validation.isValid}`);
 
-                    if (iteration >= maxRefinementIterations && needsRefinement)
-                        logger.warn(`Max iterations (${maxRefinementIterations}) reached. Stopping refinement despite remaining issues.`);
+                if (averageGrade < 4 || hasLowGrades || hasHallucinations || !validation.isValid) {
+                    logger.info(`Iteration ${iteration} - Refining summary based on feedback...`);
+                    summary = await refineSummary(validText, summary, evaluation, validation);
+                    logger.info(`Iteration ${iteration} - Refinement completed.`);
+                    needsRefinement = true;
+                } else {
+                    logger.info(`Iteration ${iteration} - Summary passed evaluation and validation.`);
+                    needsRefinement = false;
                 }
+
+                if (iteration >= maxRefinementIterations && needsRefinement)
+                    logger.warn(`Max iterations (${maxRefinementIterations}) reached. Stopping refinement despite remaining issues.`);
             }
-        } else logger.warn('No valid text to summarize.');
+        }
 
         return summary;
     }

@@ -65,7 +65,7 @@ apiRouter.use(
         target: `${config.semanticSearchService.url}${config.semanticSearchService.baseRoute}`,
         changeOrigin: true,
         on: { proxyReq: fixRequestBody },
-        proxyTimeout: config.semanticSearchService.requestTimeout,
+        proxyTimeout: config.semanticSearchService.ai.requestTimeout,
     }),
 );
 
