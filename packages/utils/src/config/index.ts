@@ -48,6 +48,10 @@ const config = {
             dirname: env.get('ROTATE_FILE_LOG_DIRNAME').default('./logs').asString(),
         },
     },
+    workspaceIdHeader: env.get('WORKSPACE_ID_HEADER_NAME').default('workspace-id').asString(),
+    rabbit: {
+        url: env.get('RABBIT_URL').required().asString(),
+    },
 };
 
 export default config;
