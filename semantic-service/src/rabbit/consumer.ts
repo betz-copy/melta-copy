@@ -1,9 +1,9 @@
 import { basicValidateRequest, logger } from '@packages/utils';
 import { ConsumerMessage } from 'menashmq';
 import config from '../config';
-import { IIndexFilesRequest } from '../utils/types';
 import { EmbeddingManager } from '../express/embedding/manager';
 import { semanticDeleteFilesSchema, semanticIndexFilesSchema } from '../utils/joi/schemas/semantic';
+import { IIndexFilesRequest } from '../utils/types';
 
 const { workspaceIdHeaderName } = config.service;
 
