@@ -1,10 +1,10 @@
 import { Grid, Typography } from '@mui/material';
+import { IPropertyValue } from '@packages/entity';
+import { IMetadata } from '@packages/workspace';
 import i18next from 'i18next';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import SearchInput from '../../../common/inputs/SearchInput';
-import { IPropertyValue } from '@packages/entity';
-import { IMetadata } from '@packages/workspace';
 import { BackendConfigState } from '../../../services/backendConfigService';
 import { updateMetadata } from '../../../services/workspacesService';
 import { defaultMetadata, useWorkspaceStore } from '../../../stores/workspace';
