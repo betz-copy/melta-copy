@@ -1,4 +1,4 @@
-import { IEntitySingleProperty } from '@microservices/shared';
+import { IEntitySingleProperty } from '@packages/entity-template';
 import Excel from 'exceljs';
 import config from '../../config';
 import { indexToExcelColumn } from './createFunctions';

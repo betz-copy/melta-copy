@@ -1,0 +1,133 @@
+import { Typography } from '@mui/material';
+import { IUpdateEntityMetadataPopulated } from '@packages/action';
+import { IPropertyValue } from '@packages/entity';
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IGetUnits } from '@packages/unit';
+import i18next from 'i18next';
+import { pickBy } from 'lodash';
+import React from 'react';
+import ReactDiffViewer from 'react-diff-viewer';
+import { useQueryClient } from 'react-query';
+import { IEntityTemplateMap } from '../../interfaces/template';
+import { useDarkModeStore } from '../../stores/darkMode';
+import { formatToString } from '../../utils/entityProperties';
+import { getFileName } from '../../utils/getFileName';
+import { containsHTMLTags } from '../../utils/HtmlTagsStringValue';
+
+const getEntityPropertyString = (
+    value: IPropertyValue,
+    propertyTemplate: IEntitySingleProperty,
+    oldValue: IPropertyValue,
+    entityTemplates: IEntityTemplateMap,
+    units: IGetUnits,
+    darkMode: boolean,
+    items?: IEntitySingleProperty['items'],
+) => {
+    const { format } = propertyTemplate;
+
+    if (value === null || value === undefined) return '-';
+
+    if (containsHTMLTags(value)) return new DOMParser().parseFromString(value, 'text/html').body.innerText;
+
+    if (format === 'relationshipReference') {
+        const isRelatedEntityAllowed = entityTemplates.get(propertyTemplate.relationshipReference!.relatedTemplateId);
+        if (!isRelatedEntityAllowed) return '-';
+        const isDiff = oldValue?.properties._id !== value.properties._id;
+        const displayValue = value.properties[propertyTemplate.relationshipReference!.relatedTemplateField];
+        const oldDisplayValue = oldValue?.properties[propertyTemplate.relationshipReference!.relatedTemplateField];
+
+        if (isDiff && displayValue === oldDisplayValue)
+            return `${displayValue} (${i18next.t('ruleBreachInfo.updateEntityActionInfo.contentUpdated')})`;
+
+        return displayValue;
+    }
+
+    if (format !== 'fileId' && !items) return formatToString({ value, property: propertyTemplate, units, darkMode });
+
+    // single
+    if (format === 'fileId') {
+        const oldFileName = oldValue ? getFileName(oldValue) : undefined;
+        const fileName = value instanceof File ? value.name : getFileName(value);
+        const fileContentChanged = value instanceof File || value !== oldValue;
+        if (oldFileName === fileName && fileContentChanged) {
+            return `${fileName} (${i18next.t('ruleBreachInfo.updateEntityActionInfo.fileContentUpdated')})`;
+        }
+        return fileName;
+    }
+
+    // multiple
+    const updatedFiles = value.map((file, index: number) => {
+        const oldFile = oldValue ? oldValue[index] : undefined;
+        const oldFileName = oldFile ? getFileName(oldFile) : undefined;
+        const fileName = file instanceof File ? file.name : getFileName(file);
+        const fileContentChanged = file instanceof File || !oldValue || !oldValue.includes(file);
+        if (oldFileName === fileName && fileContentChanged) {
+            return `${fileName} (${i18next.t('ruleBreachInfo.updateEntityActionInfo.fileContentUpdated')})`;
+        }
+        return fileName;
+    });
+
+    return updatedFiles.join('\n');
+};
+
+const getEntityPropertiesString = (
+    entityProperties: Record<string, IPropertyValue>,
+    entityTemplates: IEntityTemplateMap,
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated,
+    units: IGetUnits,
+    darkMode: boolean,
+    oldEntityProperties?: Record<string, IPropertyValue>,
+) => {
+    const fieldPropertiesStrings = Object.entries(entityTemplate?.properties?.properties || []).map(([propertyKey, propertyTemplate]) => {
+        const oldValue = oldEntityProperties?.[propertyKey];
+        const value = entityProperties[propertyKey];
+        const valueFormatted = getEntityPropertyString(value, propertyTemplate, oldValue, entityTemplates, units, darkMode, propertyTemplate.items);
+        return `${propertyTemplate.title}: ${valueFormatted}`;
+    });
+    return fieldPropertiesStrings.join('\n');
+};
+
+export const UpdatedFieldsDiff: React.FC<{
+    actionMetadata: IUpdateEntityMetadataPopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | null;
+}> = ({ actionMetadata, entityTemplate }) => {
+    const queryClient = useQueryClient();
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const units = queryClient.getQueryData<IGetUnits>('getUnits')!;
+
+    const { entity, before, updatedFields } = actionMetadata;
+    const oldProperties = before ?? entity?.properties;
+
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
+    const newPropertiesWithNulls = { ...oldProperties, ...updatedFields };
+    // updatedFields specifies fields to remove w/ nulls. but shouldn't be in the IEntity properties
+    const newProperties = pickBy(newPropertiesWithNulls, (property) => property !== null);
+    return (
+        <ReactDiffViewer
+            oldValue={
+                oldProperties
+                    ? getEntityPropertiesString(oldProperties, entityTemplates, entityTemplate!, units, darkMode)
+                    : i18next.t('ruleBreachInfo.updateEntityActionInfo.entityBeforeUnknown')
+            }
+            newValue={
+                entityTemplate
+                    ? getEntityPropertiesString(newProperties, entityTemplates, entityTemplate, units, darkMode, oldProperties)
+                    : i18next.t('ruleBreachInfo.updateEntityActionInfo.entityAfterUnknown')
+            }
+            hideLineNumbers
+            leftTitle={
+                <Typography variant="body1" fontWeight="bold">
+                    {i18next.t('ruleBreachInfo.updateEntityActionInfo.entityBefore')}
+                </Typography>
+            }
+            rightTitle={
+                <Typography variant="body1" fontWeight="bold">
+                    {i18next.t('ruleBreachInfo.updateEntityActionInfo.entityAfter')}
+                </Typography>
+            }
+            useDarkTheme={darkMode}
+            disableWordDiff
+        />
+    );
+};

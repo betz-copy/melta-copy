@@ -1,4 +1,5 @@
-import { ForbiddenError, IFrame } from '@microservices/shared';
+import { IFrame } from '@packages/iframe';
+import { ForbiddenError } from '@packages/utils';
 import { Request } from 'express';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultController from '../../utils/express/controller';

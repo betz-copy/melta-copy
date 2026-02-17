@@ -1,10 +1,9 @@
-import { IChart, IMongoChart, ISearchFilter } from '@microservices/shared';
+import { IChart, IMongoChart } from '@packages/chart';
+import { ISearchFilter } from '@packages/entity';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 
-const {
-    dashboardService: { url, baseRoute, requestTimeout, charts },
-} = config;
+const { url, baseRoute, requestTimeout, charts } = config.dashboardService;
 
 class ChartService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {

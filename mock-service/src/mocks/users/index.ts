@@ -1,4 +1,5 @@
-import { IMongoCategory, IUser } from '@microservices/shared';
+import { IMongoCategory } from '@packages/category';
+import { IUser } from '@packages/user';
 import config from '../../config/index';
 import { getPermissionsToCreate } from './permissions';
 

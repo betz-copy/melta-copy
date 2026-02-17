@@ -1,19 +1,20 @@
 import { ColDef, ValueGetterFunc } from '@ag-grid-community/core';
 import { Add as AddIcon } from '@mui/icons-material';
 import { Grid, Typography } from '@mui/material';
+import { isChildTemplate } from '@packages/child-template';
+import { IEntity, IPropertyValue } from '@packages/entity';
+import { PropertyFormat } from '@packages/entity-template';
+import { EntityData, IRuleBreach } from '@packages/rule-breach';
+import { ISemanticSearchResult } from '@packages/semantic-search';
+import { IGetUnits } from '@packages/unit';
+import { IWorkspace } from '@packages/workspace';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { memo } from 'react';
 import { UseMutateAsyncFunction } from 'react-query';
 import { Link } from 'wouter';
 import { environment } from '../../globals';
-import { IChildTemplateMap, IChildTemplatePopulated, IMongoChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { EntityData, IEntity, IPropertyValue } from '../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated, PropertyFormat } from '../../interfaces/entityTemplates';
-import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
-import { ISemanticSearchResult } from '../../interfaces/semanticSearch';
-import { IGetUnits } from '../../interfaces/units';
-import { IWorkspace } from '../../interfaces/workspaces';
+import { IChildTemplateMap, IEntityTemplateMap, ITemplate } from '../../interfaces/template';
 import { CardMenu } from '../../pages/SystemManagement/components/CardMenu';
 import { UserState } from '../../stores/user';
 import {
@@ -34,7 +35,6 @@ import {
 } from '../../utils/agGrid/commonColDefs';
 import { getChildrenWithWritePermission, isEntityFitsToChildTemplate } from '../../utils/childTemplates';
 import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
-import { isChildTemplate } from '../../utils/templates';
 import { emptyEntityTemplate } from '../dialogs/entity';
 import { IChooseTemplateMode } from '../dialogs/entity/ChooseTemplate';
 import { AddEntityButton } from '../EntitiesPage/Buttons/AddEntity';
@@ -44,7 +44,9 @@ import { ImageWithDisable } from '../ImageWithDisable';
 import { IButtonPopoverProps } from '.';
 
 export interface IGetColumnDefsOptions<Data> {
-    template: (IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) & { entitiesWithFiles?: ISemanticSearchResult[string] };
+    template: ITemplate & {
+        entitiesWithFiles?: ISemanticSearchResult[string];
+    };
     getRowId: (data: Data) => string;
     getEntityPropertiesData: (data: Data) => Partial<IEntity['properties']>;
     onNavigateToRow?: (entity: Data) => void;
@@ -80,7 +82,7 @@ export interface IGetColumnDefsOptions<Data> {
     actionsColumnWidth?: number;
     darkMode: boolean;
     workspace: IWorkspace;
-    childTemplatesOfParent?: IChildTemplatePopulated[];
+    childTemplatesOfParent?: ITemplate[];
     units: IGetUnits;
 }
 
@@ -458,9 +460,7 @@ export const getColumnDefs = <Data = EntityData>({
                       entityTemplateMap?.get(addRelationshipReferenceButtonProps))
                     : undefined;
 
-                const getInitialProperties = (
-                    relatedTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
-                ): Record<string, IPropertyValue> => {
+                const getInitialProperties = (relatedTemplate: ITemplate): Record<string, IPropertyValue> => {
                     const relatedProperties = relatedTemplate.properties.properties ?? {};
 
                     return Object.entries(relatedProperties).reduce(

@@ -1,4 +1,7 @@
-import { ICompactPermissions, IEntitySingleProperty, IMongoCategory, ISubCompactPermissions, IWorkspace } from '@microservices/shared';
+import { IMongoCategory } from '@packages/category';
+import { IEntitySingleProperty } from '@packages/entity-template';
+import { ICompactPermissions, ISubCompactPermissions } from '@packages/permission';
+import { IWorkspace } from '@packages/workspace';
 import WorkspaceService from '../../workspaces/service';
 
 export const filterWorkspacesByPermissions = async (workspaces: IWorkspace[], usersPermissions: ICompactPermissions): Promise<IWorkspace[]> => {

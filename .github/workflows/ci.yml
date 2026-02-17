@@ -8,16 +8,23 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: --max-old-space-size=8000
 
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
+          cache: 'pnpm'
+          cache-dependency-path: 'pnpm-lock.yaml'
 
-      - name: Configure npm for GitLab registry
+      - name: Configure pnpm for GitLab registry
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
@@ -28,15 +35,17 @@ jobs:
           EOF
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       
       - name: Run Biome
-        run: npm run biome
+        run: pnpm run biome
 
       # - name: Run tests
-      #   run: npm test
+      #   run: pnpm test
 
       - name: Build
-        run: npm run build -w shared && npm run build --if-present
+        run: pnpm run build
+        env:
+          NODE_OPTIONS: --max-old-space-size=8000

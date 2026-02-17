@@ -1,10 +1,8 @@
 import { IServerSideGetRowsRequest } from '@ag-grid-community/core';
+import { IPropertyValue } from '@packages/entity';
+import { IRuleBreach, IRuleBreachAlertPopulated, IRuleBreachRequestPopulated } from '@packages/rule-breach';
 import axios from '../axios';
 import { environment } from '../globals';
-import { IPropertyValue } from '../interfaces/entities';
-import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
-import { IRuleBreachAlertPopulated } from '../interfaces/ruleBreaches/ruleBreachAlert';
-import { IRuleBreachRequestPopulated } from '../interfaces/ruleBreaches/ruleBreachRequest';
 
 const { ruleBreachesRequests, ruleBreachesAlerts } = environment.api;
 

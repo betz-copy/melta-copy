@@ -1,4 +1,4 @@
-import { IUserSearchBody } from '@microservices/shared';
+import { IUserSearchBody } from '@packages/user';
 import axios from 'axios';
 import config from '../config';
 

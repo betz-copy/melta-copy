@@ -1,12 +1,13 @@
 import { Box, FormControlLabel } from '@mui/material';
+import { ISearchFilter, IUniqueConstraintOfTemplate } from '@packages/entity';
+import { IRelationshipReference, PropertyFormat, PropertyType } from '@packages/entity-template';
 import i18next from 'i18next';
 import React, { SetStateAction } from 'react';
 import { useQueryClient } from 'react-query';
-import { ISearchFilter, IUniqueConstraintOfTemplate } from '../../../../interfaces/entities';
-import { IEntityTemplateMap, PropertyFormat, PropertyType } from '../../../../interfaces/entityTemplates';
+import { IEntityTemplateMap } from '../../../../interfaces/template';
 import { MinimizedColorPicker } from '../../../inputs/MinimizedColorPicker';
 import MeltaSwitch from '../../../MeltaDesigns/MeltaSwitch';
-import { CommonFormInputProperties, IRelationshipReference } from '../commonInterfaces';
+import { CommonFormInputProperties } from '../commonInterfaces';
 
 export interface SwitchesProps {
     value: CommonFormInputProperties;

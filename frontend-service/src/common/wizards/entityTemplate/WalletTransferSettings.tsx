@@ -1,20 +1,20 @@
 import { InfoOutlined } from '@mui/icons-material';
 import { Box, Grid, Typography } from '@mui/material';
+import { PropertyFormat } from '@packages/entity-template';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useEffect, useRef } from 'react';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import * as Yup from 'yup';
-import { IWalletTransferPopulated } from '../../../interfaces/entityTemplates';
+import { EntityTemplateWizardValues } from '../../../interfaces/template';
 import { searchEntitiesOfTemplateRequest } from '../../../services/entitiesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { ErrorToast } from '../../ErrorToast';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
 import MeltaTooltip, { TooltipVariant } from '../../MeltaDesigns/MeltaTooltip';
 import { StepComponentProps } from '../index';
-import { EntityTemplateWizardValues } from '.';
-import { CommonFormInputProperties } from './commonInterfaces';
+import { CommonFormInputProperties, IWalletTransferPopulated } from './commonInterfaces';
 import { WalletTransferAutocomplete } from './WalletTransferAutoComplete';
 
 export const walletTransferSettingsSchema = () => {
@@ -32,7 +32,7 @@ export const walletTransferSettingsSchema = () => {
 
                 if (!from || !to || typeof from === 'string' || typeof to === 'string') return true;
 
-                if (from.type !== 'relationshipReference' && to.type !== 'relationshipReference') {
+                if (from.type !== PropertyFormat.relationshipReference && to.type !== PropertyFormat.relationshipReference) {
                     const errorMessage = i18next.t('validation.atLeastOneWallet');
                     const errors = [
                         this.createError({ path: `${this.path}.from`, message: errorMessage }),

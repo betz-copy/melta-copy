@@ -1,4 +1,6 @@
-import { BadRequestError, IAction, IBrokenRule, ICausesOfInstance } from '@microservices/shared';
+import { IAction } from '@packages/action';
+import { IBrokenRule, ICausesOfInstance } from '@packages/rule-breach';
+import { BadRequestError } from '@packages/utils';
 import { groupBy, sortBy } from 'lodash';
 import config from '../../config';
 import filteredMap from '../../utils/filteredMap';

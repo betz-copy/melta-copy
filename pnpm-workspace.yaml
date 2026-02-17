@@ -1,0 +1,25 @@
+packages:
+  # Services
+  - 'activity-log-service'
+  - 'cron-service'
+  - 'dashboard-service'
+  - 'frontend-service'
+  - 'gantt-service'
+  - 'gateway-service'
+  - 'global-search-service'
+  - 'instance-service'
+  - 'notification-service'
+  - 'preview-service'
+  - 'process-service'
+  - 'rule-breach-service'
+  - 'semantic-service'
+  - 'storage-service'
+  - 'template-service'
+  - 'user-service'
+  - 'workspace-service'
+  - 'mock-service'
+  
+  # Packages
+  - 'packages/*'
+
+

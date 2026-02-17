@@ -1,5 +1,6 @@
 import { Stream } from 'node:stream';
-import { ServiceError, UploadedFile } from '@microservices/shared';
+import { UploadedFile } from '@packages/entity';
+import { ServiceError } from '@packages/utils';
 import { menash } from 'menashmq';
 import config from '../../config';
 import { getFileExtension, isFileDocument } from '../../utils/fileHelper';

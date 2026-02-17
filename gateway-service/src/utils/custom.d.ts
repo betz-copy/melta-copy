@@ -1,4 +1,4 @@
-import { UploadedFile, IEntityWithDirectRelationships } from '@microservices/shared';
+import { IEntityWithDirectRelationships, UploadedFile } from '@packages/entity';
 
 declare global {
     namespace Express {

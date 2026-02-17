@@ -1,4 +1,5 @@
-import { IEntityTemplate, IMongoCategory, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
+import { IMongoCategory } from '@packages/category';
+import { IEntityTemplate, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import config from '../config';
 import createAxiosInstance from '../utils/axios';
 

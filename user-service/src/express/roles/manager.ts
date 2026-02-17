@@ -1,12 +1,8 @@
-import {
-    IBaseRole,
-    IRole,
-    ISubCompactPermissions,
-    IUserAgGridRequest,
-    NotFoundError,
-    RelatedPermission,
-    ValidationError,
-} from '@microservices/shared';
+import { ISubCompactPermissions } from '@packages/permission';
+import { IBaseRole, IRole } from '@packages/role';
+import { IUserAgGridRequest } from '@packages/rule-breach';
+import { RelatedPermission } from '@packages/user';
+import { NotFoundError, ValidationError } from '@packages/utils';
 import { FilterQuery } from 'mongoose';
 import { typedObjectEntries } from '../../utils';
 import { translateAgGridFilterModel, translateAgGridSortModel } from '../../utils/agGrid';

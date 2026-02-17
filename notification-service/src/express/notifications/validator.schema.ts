@@ -1,7 +1,7 @@
-import { NotificationType } from '@microservices/shared';
+import { NotificationType } from '@packages/notification';
+import { MongoIdSchema } from '@packages/utils';
 import * as joi from 'joi';
 import config from '../../config';
-import { mongoIdSchema } from '../../utils/joi/schemas';
 import { basicNotificationSearchSchema, notificationSchema } from '../../utils/joi/schemas/notification';
 
 const { maxFindLimit } = config.mongo;
@@ -49,7 +49,7 @@ export const getNotificationByIdRequestSchema = joi.object({
     query: {},
     body: {},
     params: {
-        notificationId: mongoIdSchema.required(),
+        notificationId: MongoIdSchema.required(),
     },
 });
 
@@ -64,10 +64,10 @@ export const createNotificationRequestSchema = joi.object({
 export const notificationSeenRequestSchema = joi.object({
     query: {},
     body: {
-        viewerId: mongoIdSchema.required(),
+        viewerId: MongoIdSchema.required(),
     },
     params: {
-        notificationId: mongoIdSchema.required(),
+        notificationId: MongoIdSchema.required(),
     },
 });
 
@@ -75,7 +75,7 @@ export const notificationSeenRequestSchema = joi.object({
 export const manyNotificationSeenRequestSchema = joi.object({
     query: {},
     body: basicNotificationSearchSchema.keys({
-        viewerId: mongoIdSchema.required(),
+        viewerId: MongoIdSchema.required(),
     }),
     params: {},
 });

@@ -1,15 +1,13 @@
-import { IEntityTemplate, IMongoEntityTemplate, ISearchEntityTemplatesBody } from '@microservices/shared';
+import { IEntityTemplate, IMongoEntityTemplate, ISearchEntityTemplatesBody } from '@packages/entity-template';
 import axios from 'axios';
 import config from '../../config';
 import DefaultExternalService from '../../utils/externalService';
 
 const {
-    templateService: {
-        url,
-        entities: { baseRoute, searchTemplatesRoute },
-        timeout,
-    },
-} = config;
+    url,
+    entities: { baseRoute, searchTemplatesRoute },
+    timeout,
+} = config.templateService;
 
 class TemplateManagerService extends DefaultExternalService {
     constructor(workspaceId: string) {

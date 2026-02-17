@@ -1,12 +1,9 @@
-import { IRerankRequest, IRerankResult, logger } from '@microservices/shared';
+import { IRerankRequest, IRerankResult } from '@packages/semantic-search';
+import { logger } from '@packages/utils';
 import axios from 'axios';
 import config from '../../config';
 
-const {
-    modelApi: {
-        rerank: { baseUrl, rerankRoute, requestTimeout },
-    },
-} = config;
+const { baseUrl, rerankRoute, requestTimeout } = config.modelApi.rerank;
 
 class ModelRerankingApiService {
     static api = axios.create({ baseURL: baseUrl, timeout: requestTimeout });

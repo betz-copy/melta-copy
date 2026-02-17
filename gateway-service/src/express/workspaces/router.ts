@@ -1,4 +1,4 @@
-import { createController, ValidateRequest, wrapController } from '@microservices/shared';
+import { createController, ValidateRequest, wrapController } from '@packages/utils';
 import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import config from '../../config';

@@ -2,6 +2,12 @@ import { ColDef, ICellRendererParams, IServerSideDatasource, IServerSideGetRowsP
 import { AgGridReact } from '@ag-grid-community/react';
 import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 import { Chip, Grid, IconButton } from '@mui/material';
+import { IMongoCategory } from '@packages/category';
+import { ICompact, IInstancesPermission, PermissionData, PermissionScope } from '@packages/permission';
+import { IRole } from '@packages/role';
+import { IGetUnits } from '@packages/unit';
+import { IUser, RelatedPermission } from '@packages/user';
+import { IWorkspace } from '@packages/workspace';
 import i18next from 'i18next';
 import React, { ForwardedRef, forwardRef, useMemo } from 'react';
 import ScrollContainer from 'react-indiana-drag-scroll';
@@ -10,18 +16,11 @@ import { toast } from 'react-toastify';
 import AgGridTable from '../../../common/agGridTable';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { environment } from '../../../globals';
-import { IMongoCategory } from '../../../interfaces/categories';
-import { PermissionScope } from '../../../interfaces/permissions';
-import { ICompact, IInstancesPermission } from '../../../interfaces/permissions/permissions';
-import { IRole } from '../../../interfaces/roles';
-import { IGetUnits } from '../../../interfaces/units';
-import { IUser, PermissionData, RelatedPermission } from '../../../interfaces/users';
-import { IWorkspace } from '../../../interfaces/workspaces';
+import { WalletTransferData } from '../../../interfaces/template';
 import { searchRolesRequest, searchUsersRequest } from '../../../services/userService';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { translatedEnumColDef } from '../../../utils/agGrid/commonColDefs';
 import { tryCatch } from '../../../utils/tryCatch';
-import { WalletTransferData } from '../../Entity/walletTransfers';
 
 const { infiniteScrollPageCount } = environment.permission;
 
@@ -130,7 +129,7 @@ const columnDefs = (
     {
         field: 'categoriesPermissions',
         headerName: i18next.t('permissions.permissionsOfUserDialog.instancesPermissions'),
-        valueGetter: (params) => params.data?.permissions[workspaceId].instances?.categories,
+        valueGetter: (params) => params.data?.permissions?.[workspaceId]?.instances?.categories,
         filter: false, // todo: do set filter with `.includes` logic
         // filter: 'agSetColumnFilter',
         // filterParams: {
@@ -215,7 +214,7 @@ const getDatasource = <Data extends PermissionData>(
                         step: startRow! / infiniteScrollPageCount,
                         limit: endRow! - startRow!,
                         search: quickFilter || undefined,
-                        filterModel,
+                        filterModel: filterModel as Record<string, object>,
                         sortModel,
                     }),
                 );
@@ -228,7 +227,7 @@ const getDatasource = <Data extends PermissionData>(
                         step: startRow! / infiniteScrollPageCount,
                         limit: endRow! - startRow!,
                         search: quickFilter || undefined,
-                        filterModel,
+                        filterModel: filterModel as Record<string, object>,
                         sortModel,
                     }),
                 );

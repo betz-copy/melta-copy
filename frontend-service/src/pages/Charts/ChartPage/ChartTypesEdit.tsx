@@ -1,11 +1,11 @@
 import { BarChart as BarChartIcon, Money as NumberChartIcon, PieChart as PieChartIcon, ShowChart as ShowChartIcon } from '@mui/icons-material';
 import { Grid, Typography } from '@mui/material';
+import { IChartType } from '@packages/chart';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React, { useMemo } from 'react';
-import { IChartType } from '../../../interfaces/charts';
 import { ChartForm } from '../../../interfaces/dashboard';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { initializeChartMetaData } from '../../../utils/charts/getChartAxes';
 import { ColumnOrLineChart } from '../chartsType/ColumnOrLineChart';
 import { NumberChart } from '../chartsType/NumberChart';
@@ -14,7 +14,7 @@ import { ChartTypeButton } from './ChartTypeButton';
 
 interface ChartProps {
     formik: FormikProps<ChartForm>;
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
     disabled: boolean;
 }
 

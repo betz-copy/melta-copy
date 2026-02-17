@@ -8,7 +8,7 @@ import {
     isGroup,
     isPropertyOfVariable,
     isRegularFunction,
-} from '@microservices/shared';
+} from '@packages/rule';
 
 export const getParametersOfArgument = (argument: IArgument): Array<{ variable: IVariable; property?: string }> => {
     if (isPropertyOfVariable(argument)) {

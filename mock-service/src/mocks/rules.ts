@@ -1,4 +1,5 @@
-import { ActionOnFail, IRule } from '@microservices/shared';
+import { Conjunction } from '@packages/common';
+import { ActionOnFail, IRule } from '@packages/rule';
 
 const rulesCreator = (
     fliesOnId: string,
@@ -18,7 +19,7 @@ const rulesCreator = (
         entityTemplateId: flightId,
         formula: {
             isGroup: true,
-            ruleOfGroup: 'AND',
+            ruleOfGroup: Conjunction.AND,
             subFormulas: [
                 {
                     isEquation: true,
@@ -46,7 +47,7 @@ const rulesCreator = (
         entityTemplateId: tripId,
         formula: {
             isGroup: true,
-            ruleOfGroup: 'AND',
+            ruleOfGroup: Conjunction.AND,
             subFormulas: [
                 {
                     isAggregationGroup: true,
@@ -58,7 +59,7 @@ const rulesCreator = (
                             otherEntityTemplateId: flightId,
                         },
                     },
-                    ruleOfGroup: 'AND',
+                    ruleOfGroup: Conjunction.AND,
                     subFormulas: [
                         {
                             isAggregationGroup: true,
@@ -71,7 +72,7 @@ const rulesCreator = (
                                     variableNameSuffix: '2',
                                 },
                             },
-                            ruleOfGroup: 'OR',
+                            ruleOfGroup: Conjunction.OR,
                             subFormulas: [
                                 {
                                     isEquation: true,
@@ -154,7 +155,7 @@ const rulesCreator = (
         entityTemplateId: airportId,
         formula: {
             isGroup: true,
-            ruleOfGroup: 'AND',
+            ruleOfGroup: Conjunction.AND,
             subFormulas: [
                 {
                     isAggregationGroup: true,
@@ -166,7 +167,7 @@ const rulesCreator = (
                             otherEntityTemplateId: flightId,
                         },
                     },
-                    ruleOfGroup: 'AND',
+                    ruleOfGroup: Conjunction.AND,
                     subFormulas: [
                         {
                             isAggregationGroup: true,
@@ -178,7 +179,7 @@ const rulesCreator = (
                                     otherEntityTemplateId: tripId,
                                 },
                             },
-                            ruleOfGroup: 'OR',
+                            ruleOfGroup: Conjunction.OR,
                             subFormulas: [
                                 {
                                     isEquation: true,

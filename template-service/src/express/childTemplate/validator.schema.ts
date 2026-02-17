@@ -1,4 +1,5 @@
-import { MongoIdSchema, searchFilterSchema, ViewType, variableNameValidation } from '@microservices/shared';
+import { ViewType } from '@packages/child-template';
+import { MongoIdSchema, searchFilterSchema, variableNameValidation } from '@packages/utils';
 import Joi from 'joi';
 
 const childTemplatePropertySchema = Joi.object({

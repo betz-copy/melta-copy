@@ -1,18 +1,16 @@
+import { IAction } from '@packages/action';
 import {
-    IAction,
-    IBrokenRule,
     IEntity,
     IEntityWithDirectRelationships,
     ISearchEntitiesByTemplatesBody,
     ISearchEntitiesOfTemplateBody,
     ISearchResult,
-} from '@microservices/shared';
+} from '@packages/entity';
+import { IBrokenRule } from '@packages/rule-breach';
 import config from '../config';
 import DefaultExternalServiceApi from '../utils/express/externalService';
 
-const {
-    instanceService: { url, baseEntitiesRoute, requestTimeout, searchOfTemplateRoute },
-} = config;
+const { url, baseEntitiesRoute, requestTimeout, searchOfTemplateRoute } = config.instanceService;
 
 class InstancesService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {

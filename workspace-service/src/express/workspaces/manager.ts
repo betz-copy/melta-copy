@@ -1,5 +1,5 @@
 import { parse as parsePath } from 'node:path/posix';
-import { IMetadata, IWorkspace, WorkspaceTypes } from '@microservices/shared';
+import { IMetadata, IWorkspace, WorkspaceTypes } from '@packages/workspace';
 import { FilterQuery } from 'mongoose';
 import { transaction } from '../../utils/mongoose';
 import { escapeRegExp } from '../../utils/regex';

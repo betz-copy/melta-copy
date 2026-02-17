@@ -1,5 +1,6 @@
 import { Close, DeleteTwoTone, PentagonTwoTone, PlaceTwoTone } from '@mui/icons-material';
 import { ToggleButton, ToggleButtonGroup, useTheme } from '@mui/material';
+import { MapItemType } from '@packages/map';
 import * as Cesium from 'cesium';
 import { Cartesian3 } from 'cesium';
 import i18next from 'i18next';
@@ -8,7 +9,6 @@ import { useQueryClient } from 'react-query';
 import { CesiumComponentRef, CesiumMovementEvent, Viewer } from 'resium';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
-import { MapItemType } from '../../interfaces/location';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import {
@@ -48,7 +48,9 @@ const LocationField = ({ defaultLocation, field, updateValue, handleCloseDialog 
 
         if (initialCoordinates?.type === MapItemType.Coordinate) {
             const { value } = initialCoordinates;
-            setMarkerPosition(isValidWGS84(value as Cartesian3) ? (convertWGS94ToECEF(value) as Cartesian3) : ({ ...value } as Cartesian3));
+            setMarkerPosition(
+                isValidWGS84(value as Cartesian3) ? (convertWGS94ToECEF(value as Cartesian3) as Cartesian3) : ({ ...value } as Cartesian3),
+            );
         }
 
         if (initialCoordinates?.type === MapItemType.Polygon) {

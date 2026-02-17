@@ -1,13 +1,9 @@
+import { IEntityExpanded } from '@packages/entity';
 import { environment } from '../globals';
-import { IEntityExpanded } from '../interfaces/entities';
-import { IEntityTemplateMap } from '../interfaces/entityTemplates';
-import { IRelationshipTemplateMap } from '../interfaces/relationshipTemplates';
-import { INestedRelationshipTemplates } from '../pages/Entity';
+import { IEntityTemplateMap, INestedRelationshipTemplates, IRelationshipTemplateMap } from '../interfaces/template';
 import { getFullRelationshipTemplates } from './templates';
 
-const {
-    print: { maxPrintLevel },
-} = environment;
+const { maxPrintLevel } = environment.print;
 
 export const sortTemplatesChildrenToParents = (
     depth: number,

@@ -1,24 +1,21 @@
+import { IMongoCategory } from '@packages/category';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IConstraint } from '@packages/entity';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
-import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
-import { IChildTemplateMap, IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
-import { IConstraint, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
-import {
-    IEntityTemplateMap,
-    IEntityTemplatePopulated,
-    IWalletTransfer,
-    IWalletTransferPopulated,
-    PropertyExternalWizardType,
-    PropertyFormat,
-    PropertyType,
-} from '../../../interfaces/entityTemplates';
 import { IErrorResponse } from '../../../interfaces/error';
-import fileDetails from '../../../interfaces/fileDetails';
-import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
+import {
+    EntityTemplateWizardValues,
+    emptyCategory,
+    ICategoryMap,
+    IChildTemplateMap,
+    IEntityTemplateMap,
+    IRelationshipTemplateMap,
+} from '../../../interfaces/template';
 import { getAllChildTemplates } from '../../../services/templates/childTemplatesService';
 import { createEntityTemplateRequest, formToJSONSchema, updateEntityTemplateRequest } from '../../../services/templates/entityTemplatesService';
 import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
@@ -32,108 +29,34 @@ import { AddFields, addFieldsSchema } from './AddFields';
 import { ChooseIcon } from './ChooseIcon';
 import { useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
 import { CreateTemplateSettings } from './CreateTemplateSettings';
-import { FieldGroupData, IFilterTemplate, PropertyItem } from './commonInterfaces';
+import { PropertyItem } from './commonInterfaces';
 import { UploadExportFormats } from './UploadExportFormats';
 import { WalletTransferSettings, walletTransferSettingsSchema } from './WalletTransferSettings';
 
 const { errorCodes } = environment;
 
-export type PropertyWizardType = keyof typeof PropertyType | keyof typeof PropertyFormat | keyof typeof PropertyExternalWizardType;
-
-export interface EntityTemplateFormInputProperties {
-    name: string;
-    title: string;
-    type: PropertyWizardType;
-    id: string;
-    options: string[];
-    pattern: string;
-    patternCustomErrorMessage: string;
-    required: boolean;
-    preview: boolean;
-    hide: boolean;
-    readOnly?: true;
-    identifier?: true;
-    uniqueCheckbox?: boolean;
-    groupName?: string;
-    optionColors: Record<string, string>;
-    dateNotification: number | null | undefined;
-    isDailyAlert: boolean | null | undefined;
-    isDatePastAlert: boolean | null | undefined;
-    calculateTime: boolean | null | undefined;
-    serialStarter: number | undefined;
-    deleted?: boolean | undefined;
-    relationshipReference?: {
-        relationshipTemplateId?: string;
-        relationshipTemplateDirection: 'outgoing' | 'incoming';
-        relatedTemplateId: string;
-        relatedTemplateField: string;
-        filters?: IFilterTemplate[];
-    };
-    expandedUserField?: {
-        relatedUserField: string;
-        kartoffelField: string;
-    };
-    archive?: boolean;
-    mapSearch?: boolean;
-    fieldGroup?: FieldGroupData;
-    hideFromDetailsPage?: boolean;
-    comment?: string;
-    color?: string;
-    accountBalance?: boolean;
-    isProfileImage?: boolean;
-}
-
-type EntityTemplatePropertyByType = { type: 'field'; data: EntityTemplateFormInputProperties };
-
-export interface EntityTemplateWizardValues
-    extends Omit<
-        IEntityTemplatePopulated,
-        | 'properties'
-        | 'iconFileId'
-        | 'propertiesOrder'
-        | 'propertiesPreview'
-        | 'enumPropertiesColors'
-        | 'uniqueConstraints'
-        | 'documentTemplatesIds'
-        | 'walletTransfer'
-    > {
-    properties: PropertyItem[];
-    attachmentProperties: EntityTemplatePropertyByType[];
-    archiveProperties: EntityTemplatePropertyByType[];
-    uniqueConstraints?: IUniqueConstraintOfTemplate[];
-    documentTemplatesIds?: File[];
-    enumPropertiesColors?: string[];
-    icon?: fileDetails;
-    walletTransfer?: IWalletTransferPopulated | IWalletTransfer | null;
-    _id?: string;
-}
-
-export const hasAccountBalanceField = (properties) =>
+export const hasAccountBalanceField = (properties: PropertyItem[]) =>
     properties.some((property) => (property.type === 'field' ? !!property.data?.accountBalance : property.fields?.some((f) => !!f.accountBalance)));
+
+const defaultInitialValues: EntityTemplateWizardValues = {
+    _id: '',
+    name: '',
+    displayName: '',
+    icon: undefined,
+    category: emptyCategory,
+    disabled: false,
+    properties: [],
+    archiveProperties: [],
+    attachmentProperties: [],
+    propertiesTypeOrder: ['properties', 'attachmentProperties'],
+    uniqueConstraints: [],
+    documentTemplatesIds: [],
+    mapSearchProperties: [],
+};
 
 const EntityTemplateWizard: React.FC<
     WizardBaseType<EntityTemplateWizardValues> & { searchEntityTemplatesQueryKey: (string | IMongoCategory[])[] }
-> = ({
-    open,
-    handleClose,
-    searchEntityTemplatesQueryKey,
-    initialStep = 0,
-    initialValues = {
-        name: '',
-        displayName: '',
-        icon: undefined,
-        category: { displayName: '', name: '', _id: '', color: '', templatesOrder: [] },
-        disabled: false,
-        properties: [],
-        archiveProperties: [],
-        attachmentProperties: [],
-        propertiesTypeOrder: ['properties', 'attachmentProperties'],
-        uniqueConstraints: [],
-        documentTemplatesIds: [],
-        mapSearchProperties: [],
-    },
-    isEditMode = false,
-}) => {
+> = ({ open, handleClose, searchEntityTemplatesQueryKey, initialStep = 0, initialValues = defaultInitialValues, isEditMode = false }) => {
     const queryClient = useQueryClient();
     const currentUser = useUserStore((state) => state.user);
     const setUser = useUserStore((state) => state.setUser);
@@ -155,7 +78,7 @@ const EntityTemplateWizard: React.FC<
         setIsTransferTemplate(!!initialValues.walletTransfer || false);
     }, [open]);
 
-    const currentTemplateId = isEditMode ? (initialValues as EntityTemplateWizardValues & { _id: string })._id : undefined;
+    const currentTemplateId = isEditMode ? initialValues._id : undefined;
     const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const createTemplateSettingsSchema = useCreateOrEditTemplateNameSchema(templates, currentTemplateId);
@@ -165,11 +88,7 @@ const EntityTemplateWizard: React.FC<
     const { isLoading, mutateAsync } = useMutation(
         async (entityTemplate: EntityTemplateWizardValues) => {
             if (isEditMode) {
-                return await updateEntityTemplateRequest(
-                    (initialValues as EntityTemplateWizardValues & { _id: string })._id,
-                    entityTemplate,
-                    queryClient,
-                );
+                return await updateEntityTemplateRequest(initialValues._id ?? '', entityTemplate, queryClient);
             }
             const createdTemplate = await createEntityTemplateRequest(entityTemplate, queryClient);
             return { template: createdTemplate, childTemplates: [] };
@@ -190,7 +109,7 @@ const EntityTemplateWizard: React.FC<
                     toast.success(i18next.t('wizard.entityTemplate.editedSuccessfully'));
 
                     try {
-                        const childTemplates: IMongoChildTemplatePopulated[] = await getAllChildTemplates();
+                        const childTemplates: IMongoChildTemplateWithConstraintsPopulated[] = await getAllChildTemplates();
                         queryClient.setQueryData<IChildTemplateMap>('getChildTemplates', mapTemplates(childTemplates, 'name'));
                     } catch (error) {
                         console.error(error);

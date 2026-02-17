@@ -1,4 +1,5 @@
 import { CircularProgress, Grid } from '@mui/material';
+import { IGantt } from '@packages/gantt';
 import { AxiosError } from 'axios';
 import { Form, Formik } from 'formik';
 import i18next from 'i18next';
@@ -8,7 +9,6 @@ import { toast } from 'react-toastify';
 import { useLocation, useParams } from 'wouter';
 import { ErrorToast } from '../../common/ErrorToast';
 import { environment } from '../../globals';
-import { IBasicGantt } from '../../interfaces/gantts';
 import { deleteGantt, getGanttById, updateGantt } from '../../services/ganttsService';
 import { formikInitialGanttData, ganttValidationSchema } from '../../utils/gantts';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
@@ -57,7 +57,7 @@ const GanttPage: React.FC = () => {
     if (!gantt) return <CircularProgress />;
 
     return (
-        <Formik<IBasicGantt>
+        <Formik<IGantt>
             initialValues={formikInitialGanttData(gantt)}
             onSubmit={async (updatedGantt, formikHelpers) => {
                 updateGanttMutateAsync([gantt._id, updatedGantt]);

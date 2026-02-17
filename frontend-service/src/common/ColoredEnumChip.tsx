@@ -32,10 +32,10 @@ export const ColoredEnumChip: React.FC<ColoredEnumChipProps> = ({ label, enumCol
     return (
         <Chip
             icon={icon}
+            deleteIcon={deleteIcon}
             label={label}
             variant="outlined"
             onDelete={onDelete}
-            deleteIcon={deleteIcon}
             sx={{
                 height: '25px',
                 borderRadius: '5px',

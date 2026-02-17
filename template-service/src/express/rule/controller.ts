@@ -1,4 +1,5 @@
-import { DefaultController, IMongoRule } from '@microservices/shared';
+import { IMongoRule } from '@packages/rule';
+import { DefaultController } from '@packages/utils';
 import { Request, Response } from 'express';
 import RuleManager from './manager';
 

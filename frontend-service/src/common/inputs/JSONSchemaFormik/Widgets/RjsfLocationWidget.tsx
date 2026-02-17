@@ -1,28 +1,26 @@
 import { Map as MapIcon } from '@mui/icons-material';
-import { Autocomplete, Box, Dialog, Grid, InputAdornment, TextField } from '@mui/material';
+import { Autocomplete, Box, Dialog, InputAdornment, TextField } from '@mui/material';
+import { SplitBy } from '@packages/common';
+import {
+    CoordinateSystem,
+    extractUtmLocation,
+    isValidUTM,
+    isValidWGS84,
+    locationConverterToString,
+    mapConfig,
+    stringToCoordinates,
+} from '@packages/map';
 import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import { Cartesian3 } from 'cesium';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
-import { environment } from '../../../../globals';
-import { SplitBy } from '../../../../interfaces/entities';
+import { LocationData } from '../../../../interfaces/location';
 import LocationField from '../../../../pages/Map/LocationField';
-import { stringToCoordinates } from '../../../../utils/map';
-import { extractUtmLocation, isValidUTM, isValidWGS84, locationConverterToString } from '../../../../utils/map/convert';
 import MeltaTooltip from '../../../MeltaDesigns/MeltaTooltip';
 import { CleanViewRow, isCleanView } from './CleanView';
 
-const { polygonPrefix, polygonSuffix } = environment.map.polygon;
-
-export enum CoordinateSystem {
-    UTM = 'UTM',
-    WGS84 = 'WGS84',
-}
-export interface LocationData {
-    location: string;
-    coordinateSystem: CoordinateSystem;
-}
+const { polygonPrefix, polygonSuffix } = mapConfig.polygon;
 
 const validatePoint = (point: LocationData, splitBy: SplitBy, schemaValidation?: boolean) => {
     if (!schemaValidation) return true;
@@ -156,8 +154,8 @@ const RjsfLocationWidget = ({
 
     return (
         <Box width="100%">
-            <Grid container justifyContent="space-between" alignContent="center" width="100%">
-                <Grid size={{ xs: 8.25 }}>
+            <Box width="100%" display="flex" gap={1}>
+                <Box width="70%">
                     <MeltaTooltip title={newLocationValue}>
                         <TextField
                             {...textFieldProps}
@@ -199,8 +197,8 @@ const RjsfLocationWidget = ({
                             dir="ltr"
                         />
                     </MeltaTooltip>
-                </Grid>
-                <Grid size={{ xs: 3.5 }}>
+                </Box>
+                <Box width="30%">
                     <Autocomplete
                         value={coordinateSystem}
                         onChange={(_, newValue: CoordinateSystem) => {
@@ -226,8 +224,8 @@ const RjsfLocationWidget = ({
                         disableClearable
                         sx={{ borderRadius: '10px', borderColor: '#787C9E', height: '40px' }}
                     />
-                </Grid>
-            </Grid>
+                </Box>
+            </Box>
             <Dialog open={mapOpen} onClose={handleCloseDialog}>
                 <LocationField
                     defaultLocation={

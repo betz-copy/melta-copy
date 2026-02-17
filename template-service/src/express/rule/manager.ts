@@ -1,4 +1,6 @@
-import { DefaultManagerMongo, IMongoRule, IPropertyValue, IRule, NotFoundError } from '@microservices/shared';
+import { IPropertyValue } from '@packages/entity';
+import { IMongoRule, IRule } from '@packages/rule';
+import { DefaultManagerMongo, NotFoundError } from '@packages/utils';
 import { FilterQuery } from 'mongoose';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';

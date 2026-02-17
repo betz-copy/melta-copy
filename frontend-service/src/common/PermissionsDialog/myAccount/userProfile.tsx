@@ -1,8 +1,8 @@
 import { Grid, IconButton } from '@mui/material';
+import { FileDetails } from '@packages/common';
+import { IUser } from '@packages/user';
 import i18next from 'i18next';
 import React, { useState } from 'react';
-import fileDetails from '../../../interfaces/fileDetails';
-import { IUser } from '../../../interfaces/users';
 import { defaultInputType, isProfileFile } from '../../../utils/userProfile';
 import { UserProfilePicker } from '../../inputs/userProfilePicker';
 import UserAvatar from '../../UserAvatar';
@@ -12,8 +12,8 @@ const UserProfile: React.FC<{
     darkMode: boolean;
     editProfile: boolean;
     setEditProfile: (editProfile: boolean) => void;
-    profilePreference: { profilePath?: string; icon?: fileDetails | string };
-    setProfilePreference: (profilePreference: { profilePath?: string; icon?: fileDetails | string }) => void;
+    profilePreference: { profilePath?: string; icon?: FileDetails | string };
+    setProfilePreference: (profilePreference: { profilePath?: string; icon?: FileDetails | string }) => void;
 }> = ({ existingUser, editProfile, setProfilePreference, setEditProfile }) => {
     const [userProfileImage, setUserProfileImage] = useState<string>();
     const [isDefaultProfile, setIsDefaultProfile] = useState<boolean>(!existingUser.preferences.profilePath);

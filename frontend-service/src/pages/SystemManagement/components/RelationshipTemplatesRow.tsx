@@ -1,5 +1,8 @@
 import { AppRegistration as AppRegistrationIcon, ArrowBack } from '@mui/icons-material';
 import { Grid, IconButton, Typography, useTheme } from '@mui/material';
+import { IRelationshipReference } from '@packages/entity-template';
+import { PermissionScope } from '@packages/permission';
+import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '@packages/relationship-template';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useMemo, useState } from 'react';
@@ -12,15 +15,10 @@ import { InfiniteScroll } from '../../../common/InfiniteScroll';
 import SearchInput from '../../../common/inputs/SearchInput';
 import { RelationshipTitle } from '../../../common/RelationshipTitle';
 import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
-import { IRelationshipReference } from '../../../common/wizards/entityTemplate/commonInterfaces';
 import { RelationshipTemplateWizard } from '../../../common/wizards/relationshipTemplate';
 import { ConvertToRelationship } from '../../../common/wizards/relationshipTemplate/convertRelationshipToRelationshipField';
 import { environment } from '../../../globals';
-import { ICategoryMap } from '../../../interfaces/categories';
-import { IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { PermissionScope } from '../../../interfaces/permissions';
-import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
+import { ICategoryMap, IEntityTemplateMap, IRelationshipTemplateMap, ITemplate } from '../../../interfaces/template';
 import { getRelationshipInstancesCountByTemplateIdRequest } from '../../../services/entitiesService';
 import {
     convertToRelationshipFieldRequest,
@@ -174,12 +172,13 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
 
 const defaultRelationshipTemplate: IMongoRelationshipTemplate = {
     _id: '',
-    createdAt: '',
+    createdAt: new Date(),
     destinationEntityId: '',
     displayName: '',
     name: '',
     sourceEntityId: '',
-    updatedAt: '',
+    updatedAt: new Date(),
+    isProperty: false,
 };
 
 const RelationshipTemplatesRow: React.FC = () => {
@@ -199,10 +198,8 @@ const RelationshipTemplatesRow: React.FC = () => {
     const allowedEntityTemplatesIds = allowedEntityTemplates.map((entity) => entity._id);
     const allowedRelationships = getAllAllowedRelationships(Array.from(relationshipTemplates.values()), allowedEntityTemplatesIds);
 
-    const [sourceEntityTemplatesToShow, setSourceEntityTemplatesToShow] =
-        useState<(IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[]>(allowedEntityTemplates);
-    const [destinationEntityTemplatesToShow, setDestinationEntityTemplatesToShow] =
-        useState<(IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated)[]>(allowedEntityTemplates);
+    const [sourceEntityTemplatesToShow, setSourceEntityTemplatesToShow] = useState<ITemplate[]>(allowedEntityTemplates);
+    const [destinationEntityTemplatesToShow, setDestinationEntityTemplatesToShow] = useState<ITemplate[]>(allowedEntityTemplates);
 
     const [searchText, setSearchText] = useState('');
 
@@ -280,7 +277,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                 );
 
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>
-                    entityTemplateMap!.set(updatedEntityTemplate._id, updatedEntityTemplate),
+                    entityTemplateMap!.set(updatedEntityTemplate._id, updatedEntityTemplate as ITemplate),
                 );
 
                 toast.success(i18next.t('wizard.relationshipTemplate.convertToRelationshipFieldSuccessfully'));
@@ -298,11 +295,14 @@ const RelationshipTemplatesRow: React.FC = () => {
 
     const getRelationshipGroupedByEntitiesTemplate = (
         relationships: IMongoRelationshipTemplatePopulated[],
-    ): { entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated; relationships: IMongoRelationshipTemplatePopulated[] }[] => {
+    ): {
+        entityTemplate: ITemplate;
+        relationships: IMongoRelationshipTemplatePopulated[];
+    }[] => {
         const entitiesToGroupBy = isSrcRelationChecked ? sourceEntityTemplatesToShow : destinationEntityTemplatesToShow;
 
         const relationsGroupedByEntities: {
-            entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
+            entityTemplate: ITemplate;
             relationships: IMongoRelationshipTemplatePopulated[];
         }[] = [];
         entitiesToGroupBy.forEach((entityTemplate) => {
@@ -398,7 +398,7 @@ const RelationshipTemplatesRow: React.FC = () => {
 
             <Grid container gap="30px" marginTop="30px">
                 <InfiniteScroll<{
-                    entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
+                    entityTemplate: ITemplate;
                     relationships: IMongoRelationshipTemplatePopulated[];
                 }>
                     queryKey={[

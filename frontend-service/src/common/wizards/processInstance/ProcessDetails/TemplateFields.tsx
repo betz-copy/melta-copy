@@ -1,8 +1,8 @@
 import { Grid } from '@mui/material';
+import { IProcessSingleProperty } from '@packages/process';
 import { Field } from 'formik';
 import i18next from 'i18next';
 import { Dictionary } from 'lodash';
-import { IProcessSingleProperty } from '../../../../interfaces/processes/processTemplate';
 import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import BlueTitle from '../../../MeltaDesigns/BlueTitle';
 import { EntityReferenceField } from '../EntityReferenceField';
@@ -24,12 +24,7 @@ export const TemplateFields = ({
     return (
         values.template && (
             <Grid container flexDirection="column" width="100%" height="100%" justifyContent="space-between" paddingLeft={!viewMode ? '20px' : 0}>
-                <Grid
-                    sx={{
-                        overflowY: 'auto',
-                        width: '100%',
-                    }}
-                >
+                <Grid sx={{ overflowY: 'auto', width: '100%' }}>
                     {Object.keys(pickProcessFieldsPropertiesSchema(values.template?.details)?.properties).length !== 0 && (
                         <SchemaForm {...{ viewMode, values, errors, touched, setFieldValue, setFieldTouched, toPrint }} />
                     )}

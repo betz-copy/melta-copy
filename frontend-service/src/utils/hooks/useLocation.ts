@@ -1,11 +1,11 @@
+import { IEntity } from '@packages/entity';
 import * as Cesium from 'cesium';
 import { Cartesian3, Math as CesiumMath } from 'cesium';
 import { useEffect, useMemo } from 'react';
 import { useCesium } from 'resium';
 import { environment } from '../../globals';
-import { IEntity } from '../../interfaces/entities';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { ICoordinateSearchResult, IPolygonSearchResult } from '../../interfaces/location';
+import { IEntityTemplateMap } from '../../interfaces/template';
 import { parsePolygon, stringToCoordinates } from '../map';
 
 const { squareLength } = environment.map;

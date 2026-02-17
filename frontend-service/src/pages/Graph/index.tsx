@@ -1,4 +1,7 @@
 import { Backdrop, Box, Button, CircularProgress } from '@mui/material';
+import { IMongoCategory } from '@packages/category';
+import { IEntityExpanded } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { forceManyBody } from 'd3-force';
 import i18next from 'i18next';
 import { uniqBy, uniqWith } from 'lodash';
@@ -12,11 +15,8 @@ import { toast } from 'react-toastify';
 import { useParams } from 'wouter';
 import { ILinkObject, INodeObject } from '../../customTypes';
 import { environment } from '../../globals';
-import { ICategoryMap, IMongoCategory } from '../../interfaces/categories';
-import { IChildTemplateMap } from '../../interfaces/childTemplates';
-import { IEntityExpanded, IGraphFilterBody, IGraphFilterBodyBatch } from '../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
+import { IGraphFilterBody, IGraphFilterBodyBatch } from '../../interfaces/graphFilter';
+import { ICategoryMap, IChildTemplateMap, IEntityTemplateMap, IRelationshipTemplateMap } from '../../interfaces/template';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { expandedEntityToGraphData, fixHighlighted, getFixedGraphLinks, getGraphDataWithNodeSizes, updateNodeLabelIcons } from '../../utils/graph';
@@ -72,7 +72,7 @@ const Graph: React.FC = () => {
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const childTemplates = queryClient.getQueryData<IChildTemplateMap>('getChildTemplates')!;
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
-    const [filteredEntityTemplates, setFilteredEntityTemplates] = useState<IMongoEntityTemplatePopulated[]>([
+    const [filteredEntityTemplates, setFilteredEntityTemplates] = useState<IMongoEntityTemplateWithConstraintsPopulated[]>([
         ...entityTemplates.values(),
         ...childTemplates.values(),
     ]);
@@ -85,7 +85,6 @@ const Graph: React.FC = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const templateOptions = [...entityTemplates.values(), ...childTemplates.values()];
-    // biome-ignore lint/correctness/useExhaustiveDependencies: dependencies
     useEffect(() => {
         const updateGraphSize = () => {
             const mainBox = ref.current?.parentElement;
@@ -418,7 +417,9 @@ const Graph: React.FC = () => {
                         templates={[...entityTemplates.values(), ...childTemplates.values()]}
                         selectedTemplates={filteredEntityTemplates}
                         setSelectedTemplates={
-                            setFilteredEntityTemplates as React.Dispatch<React.SetStateAction<(IMongoEntityTemplatePopulated | IMongoCategory)[]>>
+                            setFilteredEntityTemplates as React.Dispatch<
+                                React.SetStateAction<(IMongoEntityTemplateWithConstraintsPopulated | IMongoCategory)[]>
+                            >
                         }
                         categories={Array.from(categories.values())}
                         setOpenFilter={setOpenFilter}

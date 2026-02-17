@@ -1,4 +1,4 @@
-import { IRole } from '@microservices/shared';
+import { IRole } from '@packages/role';
 import { model, Schema } from 'mongoose';
 import config from '../../config';
 

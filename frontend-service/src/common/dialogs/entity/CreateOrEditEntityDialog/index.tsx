@@ -1,5 +1,8 @@
 import { Clear as ClearIcon, Done as DoneIcon } from '@mui/icons-material';
 import { Button, Card, CardContent, CircularProgress, Divider, Grid } from '@mui/material';
+import { ActionTypes } from '@packages/action';
+import { ByCurrentDefaultValue } from '@packages/child-template';
+import { IEntity, IPropertyValue } from '@packages/entity';
 import { format } from 'date-fns';
 import { Form, Formik } from 'formik';
 import i18next from 'i18next';
@@ -7,10 +10,7 @@ import { pickBy } from 'lodash';
 import React, { useEffect, useMemo, useState } from 'react';
 import { environment } from '../../../../globals';
 import { ICreateOrUpdateWithRuleBreachDialogState, IExternalErrors, IMutationProps } from '../../../../interfaces/CreateOrEditEntityDialog';
-import { ByCurrentDefaultValue, IMongoChildTemplatePopulated } from '../../../../interfaces/childTemplates';
-import { IEntity, IPropertyValue } from '../../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { ActionTypes } from '../../../../interfaces/ruleBreaches/actionMetadata';
+import { ITemplate } from '../../../../interfaces/template';
 import ActionOnEntityWithRuleBreachDialog from '../../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { useClientSideUserStore } from '../../../../stores/clientSideUser';
 import { UserState, useUserStore } from '../../../../stores/user';
@@ -25,7 +25,7 @@ import EditProps from './EditProps';
 import useDraftEntityDialogHook from './useDraft';
 import useMutationHandler from './useMutationHandler';
 
-export const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => {
+export const getEntityTemplateFilesFieldsInfo = (entityTemplate: ITemplate) => {
     const templateFilesProperties = pickBy(
         entityTemplate.properties.properties,
         (value) => ((value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId') && value.display !== false,
@@ -38,7 +38,7 @@ export const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTem
 
 const convertIEntityToEntityWizardValues = (
     entityToUpdate: IEntity,
-    entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated,
+    entityTemplate: ITemplate,
     initialTemplateFileKeys: string[],
 ): EntityWizardValues => {
     const { _id, createdAt: _create, updatedAt: _update, disabled: _disabled, ...entityToUpdateData } = entityToUpdate.properties;
@@ -75,7 +75,7 @@ export const getInitialValuesWithDefaults = (initialCurrValues: EntityWizardValu
                         ('filterByCurrentUserField' in template && template.filterByCurrentUserField === key)
                     )
                         // When preselecting a user - its _id shouldn't be the melta user id, but the kartoffelId should
-                        properties[key] = JSON.stringify({ ...currentUser, _id: currentUser?.kartoffelId });
+                        properties[key] = { ...currentUser, _id: currentUser?.kartoffelId };
 
                     if ((formatProperty === 'date' || formatProperty === 'date-time') && defaultValue === ByCurrentDefaultValue.byCurrentDate) {
                         const currentDate = new Date();
@@ -98,7 +98,7 @@ export const getInitialValuesWithDefaults = (initialCurrValues: EntityWizardValu
 
 const CreateOrEditEntityDetails: React.FC<{
     mutationProps: IMutationProps;
-    entityTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated;
+    entityTemplate: ITemplate;
     initialCurrValues?: EntityWizardValues;
     handleClose: () => void;
     externalErrors: IExternalErrors;
@@ -108,7 +108,7 @@ const CreateOrEditEntityDetails: React.FC<{
     showActionButtons?: boolean;
     chooseMode?: IChooseTemplateMode;
     parentId?: string;
-    getInitialProperties?: (newTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => Record<string, IPropertyValue>;
+    getInitialProperties?: (newTemplate: ITemplate) => Record<string, IPropertyValue>;
 }> = ({
     mutationProps,
     entityTemplate,

@@ -1,14 +1,14 @@
 import { Close, NavigateBefore } from '@mui/icons-material';
 import { Box, Dialog, Divider, Fab, Grid, IconButton, Step, StepLabel, Stepper } from '@mui/material';
+import { IPropertyValue } from '@packages/entity';
+import { IMongoProcessInstanceReviewerPopulated } from '@packages/process';
 import { AxiosError } from 'axios';
 import { FormikProvider } from 'formik';
 import i18next from 'i18next';
 import { pickBy } from 'lodash';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { UseMutateAsyncFunction, useQueryClient } from 'react-query';
-import { IPropertyValue } from '../../../interfaces/entities';
-import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
-import { IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
+import { IProcessTemplateMap } from '../../../interfaces/template';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { getAllFieldsTouched } from '../../../utils/processWizard/formik';
 import { setInitialStepsObject } from '../../../utils/processWizard/steps';
@@ -22,10 +22,10 @@ import { TemplateFields } from './ProcessDetails/TemplateFields';
 interface ISimpleDialogProps {
     open: boolean;
     onClose: () => void;
-    processInstance?: IMongoProcessInstancePopulated;
+    processInstance?: IMongoProcessInstanceReviewerPopulated;
     viewMode?: boolean;
     isEditMode?: boolean;
-    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError, ProcessDetailsValues, unknown>;
+    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstanceReviewerPopulated, AxiosError, ProcessDetailsValues, unknown>;
 }
 
 const steps = [

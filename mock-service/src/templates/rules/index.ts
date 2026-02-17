@@ -1,4 +1,6 @@
-import { IMongoEntityTemplateWithConstraintsPopulated, IMongoRelationshipTemplate, IMongoRule } from '@microservices/shared';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoRelationshipTemplate } from '@packages/relationship-template';
+import { IMongoRule } from '@packages/rule';
 import config from '../../config';
 import rulesCreator from '../../mocks/rules';
 import createAxiosInstance from '../../utils/axios';

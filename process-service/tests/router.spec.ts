@@ -1,15 +1,15 @@
+import { IPropertyValue } from '@packages/entity';
 import {
     CreateProcessReqBody,
     IMongoProcessInstancePopulated,
     IMongoProcessTemplatePopulated,
     IMongoStepInstance,
     IProcessInstance,
-    IPropertyValue,
-    ServiceError,
     Status,
     UpdateProcessReqBody,
     UpdateStepReqBody,
-} from '@microservices/shared';
+} from '@packages/process';
+import { ServiceError } from '@packages/utils';
 import { Express } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import mongoose from 'mongoose';

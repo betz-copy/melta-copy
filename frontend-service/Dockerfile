@@ -2,16 +2,34 @@
 FROM node:22-alpine AS build
 WORKDIR /usr/src/app
 
-COPY . .
+# Enable pnpm
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 
-RUN npm ci --silent
+# Copy root workspace files
+COPY package*.json ./
+COPY pnpm-lock.yaml ./
+COPY tsconfig.json ./
+COPY turbo.json ./
+COPY pnpm-workspace.yaml ./
 
-RUN NODE_OPTIONS=--max-old-space-size=8000 npm run build --prod
+# Copy packages (contains package.json files needed for pnpm workspace resolution)
+COPY packages ./packages
+
+# Copy frontend files
+COPY frontend-service/package*.json ./frontend-service/
+COPY frontend-service ./frontend-service/
+
+# Install dependencies (pnpm will resolve workspace packages from package.json files in packages/)
+RUN pnpm install --frozen-lockfile --silent
+
+# Build using Turborepo (only builds frontend-service and its dependencies)
+RUN --mount=type=cache,target=/usr/src/app/.turbo \
+    NODE_OPTIONS=--max-old-space-size=8000 pnpm turbo build --filter=frontend-service
 
 
 FROM nginx:alpine
 
-COPY --from=build /usr/src/app/dist /usr/share/nginx/html
-COPY ./nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /usr/src/app/frontend-service/dist /usr/share/nginx/html
+COPY frontend-service/nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 8000

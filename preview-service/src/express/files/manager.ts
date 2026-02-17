@@ -1,6 +1,6 @@
 import { Readable } from 'node:stream';
 import { promisify } from 'node:util';
-import { NotFoundError } from '@microservices/shared';
+import { NotFoundError } from '@packages/utils';
 import * as libreoffice from 'libreoffice-convert';
 import { menash } from 'menashmq';
 import config from '../../config';

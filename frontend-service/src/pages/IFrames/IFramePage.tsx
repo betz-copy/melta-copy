@@ -1,14 +1,14 @@
 import { CircularProgress, Grid } from '@mui/material';
+import { IMongoIframe } from '@packages/iframe';
 import React from 'react';
 import Iframe from 'react-iframe';
 import { useQuery } from 'react-query';
 import { useLocation, useParams } from 'wouter';
-import { IMongoIFrame } from '../../interfaces/iFrames';
 import { getIFrameById } from '../../services/iFramesService';
 import IFrameHeadline from './Headline';
 
 interface IFramePageProps {
-    iFrame?: IMongoIFrame;
+    iFrame?: IMongoIframe;
     setIFramesOrder?: (value: string[]) => void;
     isIFramePage?: boolean;
     setIFrameDeleted?: React.Dispatch<React.SetStateAction<boolean>>;

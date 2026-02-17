@@ -1,14 +1,15 @@
 import { Edit, SubdirectoryArrowLeft } from '@mui/icons-material';
 import { Grid, IconButton, Skeleton, useTheme } from '@mui/material';
+import { IMongoCategory } from '@packages/category';
+import { IMongoChildTemplateWithConstraintsPopulated, TemplateItem } from '@packages/child-template';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { PermissionScope } from '@packages/permission';
 import i18next from 'i18next';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Draggable, Droppable } from 'react-beautiful-dnd';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { IMutationWithPayload } from '../../../common/dialogs/ChildTemplateDialog';
-import { IMongoCategory } from '../../../interfaces/categories';
-import { IChildTemplateMap, IMongoChildTemplatePopulated, TemplateItem } from '../../../interfaces/childTemplates';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { PermissionScope } from '../../../interfaces/permissions';
+import { IChildTemplateMap, IEntityTemplateMap } from '../../../interfaces/template';
 import { updateCategoryRequest } from '../../../services/templates/categoriesService';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
@@ -21,12 +22,12 @@ import EntityTemplateCard from './Card';
 interface CategoryEntitiesBoxProps {
     entityTemplatesWithCategory: {
         category: IMongoCategory;
-        entityTemplates: IMongoEntityTemplatePopulated[];
+        entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[];
     };
     setEntityTemplateWizardDialogState: React.Dispatch<
         React.SetStateAction<{
             isWizardOpen: boolean;
-            entityTemplate: IMongoEntityTemplatePopulated | null;
+            entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | null;
         }>
     >;
     setDeleteEntityTemplateDialogState: React.Dispatch<
@@ -44,15 +45,15 @@ interface CategoryEntitiesBoxProps {
     setAddChildTemplateDialogState: React.Dispatch<
         React.SetStateAction<{
             isWizardOpen: boolean;
-            entityTemplate: IMongoEntityTemplatePopulated | null;
+            entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | null;
             mutationProps?: IMutationWithPayload;
         }>
     >;
     updateTemplateStatusAsync: UseMutateAsyncFunction<
-        | IMongoChildTemplatePopulated
+        | IMongoChildTemplateWithConstraintsPopulated
         | {
-              entityTemplate: IMongoEntityTemplatePopulated;
-              childTemplates: IMongoChildTemplatePopulated[];
+              entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
+              childTemplates: IMongoChildTemplateWithConstraintsPopulated[];
           },
         unknown,
         {
@@ -115,11 +116,13 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
     const disabledParentTemplates = useMemo(() => {
         if (!childTemplates || !entityTemplates) return new Map();
 
-        const result = new Map<string, IMongoEntityTemplatePopulated>();
+        const result = new Map<string, IMongoEntityTemplateWithConstraintsPopulated>();
 
         categoryChildTemplates.forEach(({ parentTemplate }) => {
-            if (parentTemplate && !entityTemplatesWithCategory.entityTemplates.some((t) => t._id === parentTemplate._id)) {
-                result.set(parentTemplate._id, parentTemplate);
+            const populatedParentTemplate = entityTemplates?.get(parentTemplate._id);
+
+            if (populatedParentTemplate && !entityTemplatesWithCategory.entityTemplates.some((t) => t._id === populatedParentTemplate._id)) {
+                result.set(populatedParentTemplate._id, populatedParentTemplate);
             }
         });
 

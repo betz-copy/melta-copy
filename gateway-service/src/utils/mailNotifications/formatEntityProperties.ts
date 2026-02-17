@@ -1,17 +1,11 @@
-import {
-    CoordinateSystem,
-    IEntitySingleProperty,
-    IMongoEntityTemplatePopulated,
-    IPropertyValue,
-    locationConverterToString,
-} from '@microservices/shared';
+import { IPropertyValue } from '@packages/entity';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { CoordinateSystem, locationConverterToString } from '@packages/map';
 import Handlebars from 'handlebars';
 import { mapValues } from 'lodash';
 import config from '../../config';
 
-const {
-    service: { meltaBaseUrl },
-} = config;
+const { meltaBaseUrl } = config.service;
 
 const entityLink = (content: string, baseUrl: string, entityId: string): string => {
     return `<a href="${baseUrl}/entity/${entityId}" target="_blank" style="color:#225AA7;font-weight:bold">${Handlebars.escapeExpression(content)}</a>`;

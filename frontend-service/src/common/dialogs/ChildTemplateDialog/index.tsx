@@ -17,6 +17,9 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
+import { IChildTemplate, IChildTemplateProperty, IMongoChildTemplateWithConstraintsPopulated, ViewType } from '@packages/child-template';
+import { FilterLogicalOperator, IUserField } from '@packages/entity';
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import { AxiosError } from 'axios';
 import { Form, Formik } from 'formik';
 import i18next from 'i18next';
@@ -24,18 +27,8 @@ import { isEmpty, pick } from 'lodash';
 import React, { useMemo } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { ICategoryMap } from '../../../interfaces/categories';
-import {
-    IChildTemplate,
-    IChildTemplateForm,
-    IChildTemplateFormProperty,
-    IChildTemplateMap,
-    IChildTemplateProperty,
-    IMongoChildTemplatePopulated,
-    ViewType,
-} from '../../../interfaces/childTemplates';
-import { FilterLogicalOperator } from '../../../interfaces/entities';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IChildTemplateForm, IChildTemplateFormProperty } from '../../../interfaces/childTemplateForms';
+import { ICategoryMap, IChildTemplateMap } from '../../../interfaces/template';
 import { createChildTemplate, updateChildTemplate } from '../../../services/templates/childTemplatesService';
 import { parseFilters } from '../../../services/templates/entityTemplatesService';
 import { childTemplateKeys } from '../../../utils/childTemplates';
@@ -43,7 +36,7 @@ import { filterDocumentToFilterBackend } from '../../../utils/dashboard/formik';
 import { ColoredEnumChip } from '../../ColoredEnumChip';
 import { ErrorToast } from '../../ErrorToast';
 import MeltaCheckbox from '../../MeltaDesigns/MeltaCheckbox';
-import { IAGGridFilter } from '../../wizards/entityTemplate/commonInterfaces';
+import { IAgGridFilter } from '../../wizards/entityTemplate/commonInterfaces';
 import { FilterModelToFilterRecord } from '../../wizards/entityTemplate/RelationshipReference/TemplateFilterToBackend';
 import { emptyChildTemplate } from '../entity';
 import FieldsAndFiltersTable from './FieldsAndFiltersTable';
@@ -63,19 +56,19 @@ export enum FilterMode {
 
 export type IMutationWithPayload =
     | { actionType: ActionMode.Create; payload: undefined }
-    | { actionType: ActionMode.Duplicate; payload: IMongoChildTemplatePopulated }
-    | { actionType: ActionMode.Update; payload: IMongoChildTemplatePopulated };
+    | { actionType: ActionMode.Duplicate; payload: IMongoChildTemplateWithConstraintsPopulated }
+    | { actionType: ActionMode.Update; payload: IMongoChildTemplateWithConstraintsPopulated };
 
 export type IMutationProps = IMutationWithPayload & {
-    onSuccess?: (childTemplate: IMongoChildTemplatePopulated) => void;
-    onError?: (childTemplate: IMongoChildTemplatePopulated) => void;
+    onSuccess?: (childTemplate: IMongoChildTemplateWithConstraintsPopulated) => void;
+    onError?: (childTemplate: IMongoChildTemplateWithConstraintsPopulated) => void;
 };
 
 const ChildTemplateDialog: React.FC<{
     mutationProps: IMutationProps;
     open: boolean;
     handleClose: () => void;
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
 }> = ({ mutationProps, open, handleClose, entityTemplate }) => {
     const { actionType, payload: childTemplate } = mutationProps;
 
@@ -99,11 +92,17 @@ const ChildTemplateDialog: React.FC<{
         filters: filters
             ? FilterModelToFilterRecord(parseFilters(filters), parentId, queryClient, FilterLogicalOperator.OR)
                   .map(({ filterField }) => filterField)
-                  .filter((f): f is IAGGridFilter => f !== undefined)
+                  .filter((f): f is IAgGridFilter => f !== undefined)
             : undefined,
     });
 
-    const getInitialValues = ({ name, displayName, category, properties, ...rest }: IMongoChildTemplatePopulated): IChildTemplateForm => {
+    const getInitialValues = ({
+        name,
+        displayName,
+        category,
+        properties,
+        ...rest
+    }: IMongoChildTemplateWithConstraintsPopulated): IChildTemplateForm => {
         const newProperties: IChildTemplateForm['properties']['properties'] = Object.fromEntries([
             ...entityTemplate.properties.required.map((reqKey) => [reqKey, { display: true }]),
             ...Object.entries(properties.properties).map(([key, prop]) => [key, normalizeProperty(prop, rest?.parentTemplate._id)]),
@@ -198,10 +197,15 @@ const ChildTemplateDialog: React.FC<{
                     const { name, displayName, ...pickedValues } = pick(values, childTemplateKeys) as unknown as IChildTemplate;
 
                     const newProperties = Object.fromEntries(
-                        Object.entries(values.properties.properties).map(([key, { filters, ...rest }]) => [
+                        Object.entries(values.properties.properties).map(([key, { filters, defaultValue, ...rest }]) => [
                             key,
                             {
                                 ...rest,
+                                defaultValue: defaultValue
+                                    ? entityTemplate.properties.properties[key].format === 'user'
+                                        ? (defaultValue as unknown as IUserField)._id
+                                        : defaultValue
+                                    : undefined,
                                 filters: filters
                                     ? filterDocumentToFilterBackend(
                                           values.parentTemplate._id || entityTemplate._id,

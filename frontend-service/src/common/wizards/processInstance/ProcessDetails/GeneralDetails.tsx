@@ -1,12 +1,13 @@
 import { Groups2 } from '@mui/icons-material';
 import { Button, Card, CardContent, Divider, Grid, Typography } from '@mui/material';
+import { IMongoProcessTemplateReviewerPopulated } from '@packages/process';
 import { FormikProvider } from 'formik';
 import i18next from 'i18next';
 import { pickBy } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { environment } from '../../../../globals';
-import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
+import { IProcessTemplateMap } from '../../../../interfaces/template';
 import { setInitialStepsObject } from '../../../../utils/processWizard/steps';
 import { IDetailsStepProp } from '.';
 import { initDetailsValues } from './detailsFormik';
@@ -23,7 +24,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({
     const { values, touched, errors, setFieldValue, setFieldTouched, handleBlur, resetForm } = detailsFormikData;
     const queryClient = useQueryClient();
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
-    const [previousTemplate, setPreviousTemplate] = useState<IMongoProcessTemplatePopulated>();
+    const [previousTemplate, setPreviousTemplate] = useState<IMongoProcessTemplateReviewerPopulated>();
 
     const variant = processInstance ? 'standard' : 'outlined';
     const templateFileProperties = values.template

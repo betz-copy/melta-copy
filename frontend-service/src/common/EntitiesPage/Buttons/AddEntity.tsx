@@ -1,13 +1,12 @@
 import { Dialog, useTheme } from '@mui/material';
+import { ActionTypes } from '@packages/action';
+import { IEntity, IPropertyValue } from '@packages/entity';
 import i18next from 'i18next';
 import React, { CSSProperties, ReactNode, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
-import { IMongoChildTemplatePopulated } from '../../../interfaces/childTemplates';
-import { IEntity, IPropertyValue } from '../../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { IEntityTemplateMap, ITemplate } from '../../../interfaces/template';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useDraftIdStore } from '../../../stores/drafts';
 import { useWorkspaceStore } from '../../../stores/workspace';
@@ -16,7 +15,7 @@ import { IChooseTemplateMode } from '../../dialogs/entity/ChooseTemplate';
 import { CreateOrEditEntityDetails } from '../../dialogs/entity/CreateOrEditEntityDialog';
 import { TableButton } from '../../TableButton';
 
-const isTwinWalletsInTransferTemplate = (properties: IEntity['properties'], template: IMongoEntityTemplatePopulated, twinTemplates: string[]) => {
+const isTwinWalletsInTransferTemplate = (properties: IEntity['properties'], template: ITemplate, twinTemplates: string[]) => {
     if (!template.walletTransfer) return false;
     const sourceWalletTemplateId = properties[template.walletTransfer?.from].templateId;
     const destWalletTemplateId = properties[template.walletTransfer?.to].templateId;
@@ -36,7 +35,7 @@ const AddEntityButton: React.FC<{
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
     chooseMode?: IChooseTemplateMode;
     parentId?: string;
-    getInitialProperties?: (newTemplate: IMongoEntityTemplatePopulated | IMongoChildTemplatePopulated) => Record<string, IPropertyValue>;
+    getInitialProperties?: (newTemplate: ITemplate) => Record<string, IPropertyValue>;
     children?: ReactNode;
 }> = ({
     style,

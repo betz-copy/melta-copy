@@ -1,8 +1,8 @@
+import { IPropertyValue } from '@packages/entity';
+import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import * as Yup from 'yup';
-import { IChildTemplateFormProperty, IFieldChip } from '../../../interfaces/childTemplates';
-import { IPropertyValue } from '../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IChildTemplateFormProperty, IFieldChip } from '../../../interfaces/childTemplateForms';
 import { matchValueAgainstFilter } from '../../../utils/filters';
 import { variableNameValidation } from '../../../utils/validation';
 import { filterFieldSchema } from '../../wizards/entityTemplate/AddFields';
@@ -55,7 +55,8 @@ const getFilterValue = (filterField: IFieldChip['filterField']) => {
 };
 
 const checkMatchValidation = (filterField: IFieldChip['filterField'], fieldName: string, value: IPropertyValue) => {
-    const data = { [fieldName]: value };
+    const defaultValue = value !== undefined ? (typeof value === 'object' && 'fullName' in value ? value.fullName : value) : undefined;
+    const data = { [fieldName]: defaultValue };
 
     const operator = getFilterOperator(filterField);
 

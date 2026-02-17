@@ -1,5 +1,5 @@
 import { PassThrough } from 'node:stream';
-import { UploadedFile } from '@microservices/shared';
+import { UploadedFile } from '@packages/entity';
 import Busboy from 'busboy';
 import { NextFunction, Request, Response } from 'express';
 import ReadableStreamClone from 'readable-stream-clone';

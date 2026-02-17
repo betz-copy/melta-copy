@@ -1,15 +1,18 @@
-import CloseOutlined from '@mui/icons-material/CloseOutlined';
+import { CloseOutlined } from '@mui/icons-material';
 import { Box, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, Typography, useTheme } from '@mui/material';
+import { IEntity, IEntityExpanded } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { IMongoPrintingTemplate } from '@packages/printing-template';
+import {
+    IMongoProcessInstanceReviewerPopulated,
+    IMongoProcessTemplateReviewerPopulated,
+    IMongoStepTemplatePopulated,
+    InstanceProperties,
+} from '@packages/process';
 import i18next from 'i18next';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { IEntity, IEntityExpanded } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IFile } from '../../interfaces/preview';
-import { IMongoPrintingTemplate } from '../../interfaces/printingTemplates';
-import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
-import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
-import { IMongoStepTemplatePopulated } from '../../interfaces/processes/stepTemplate';
 import RelationshipSelection from '../../pages/Entity/components/print/RelationshipSelection';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { getFile } from '../../utils/getFileType';
@@ -37,15 +40,15 @@ export enum PrintType {
 }
 export interface IEntityPrint {
     type: PrintType.Entity;
-    template: IMongoEntityTemplatePopulated;
+    template: IMongoEntityTemplateWithConstraintsPopulated;
     instance: IEntityExpanded;
     options: { [K in keyof Pick<IPrintOptions, 'appendSignatureField' | 'isShowDisabled' | 'showPreviewPropertiesOnly'>]: IOption };
 }
 
 interface IProcessPrint {
     type: PrintType.Process;
-    template: IMongoProcessTemplatePopulated;
-    instance: IMongoProcessInstancePopulated;
+    template: IMongoProcessTemplateReviewerPopulated;
+    instance: IMongoProcessInstanceReviewerPopulated;
     options: { processSummary: IOption };
 }
 
@@ -53,7 +56,7 @@ export type PrintItem = IEntityPrint | IProcessPrint;
 
 const getFilesFromTemplate = (
     instanceProps: IEntity['properties'] | InstanceProperties,
-    templateProps: IMongoEntityTemplatePopulated | IMongoProcessTemplatePopulated['details'] | IMongoStepTemplatePopulated,
+    templateProps: IMongoEntityTemplateWithConstraintsPopulated | IMongoProcessTemplateReviewerPopulated['details'] | IMongoStepTemplatePopulated,
 ): IFile[] => {
     return Object.keys(templateProps.properties.properties).flatMap((propertyKey) => {
         const propertySchema = templateProps.properties.properties[propertyKey];
