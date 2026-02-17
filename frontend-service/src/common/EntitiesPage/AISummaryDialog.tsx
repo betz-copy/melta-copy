@@ -27,7 +27,7 @@ import axios from '../../axios';
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
 import { environment } from '../../globals';
 import { AISummaryResponse, FileOption, Step } from '../../interfaces/ai';
-import { summarizeFilesRequest } from '../../services/aiSummaryService';
+import { summarizeFilesRequest } from '../../services/semanticService';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { getFileName } from '../../utils/getFileName';
 

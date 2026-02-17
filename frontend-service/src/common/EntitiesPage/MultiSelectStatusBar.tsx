@@ -329,78 +329,81 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = (props)
     return (
         <Grid>
             <Grid container spacing={2} alignItems="center">
-                {!aiSummarySelectMode && (
-                    <Grid>
-                        <IconButton
-                            style={{
-                                background: theme.palette.primary.main,
-                                borderRadius: '7px',
-                                width: '135px',
-                                height: '35px',
-                                marginTop: '6px',
-                                opacity: selectedRowCount === 0 || selectedRowCount >= deleteEntitiesLimit ? 0.5 : 1,
-                            }}
-                            onClick={() => {
-                                setOpenEditDialog(true);
-                                setAiSummaryDialogOpen(false);
-                            }}
-                            disabled={selectedRowCount === 0 || selectedRowCount >= deleteEntitiesLimit}
-                        >
-                            {isDeleteLoading ? <CircularProgress size="24px" sx={{ color: 'white' }} /> : <Edit fontSize="small" htmlColor="white" />}
-                            <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>
-                                {i18next.t('actions.edit')}
-                            </Typography>
-                        </IconButton>
-                    </Grid>
-                )}
-
-                {!aiSummarySelectMode && (
-                    <Grid>
-                        <TableButton
-                            iconButtonWithPopoverProps={{
-                                popoverText: i18next.t(`entitiesTableOfTemplate.deleteWithRelationship${workspaceAdmin ? 'Reference' : ''}Warn`),
-                                iconButtonProps: {
-                                    onClick: () => {
-                                        setOpenDeleteDialog(true);
-                                        setAiSummaryDialogOpen(false);
+                {!aiSummarySelectMode ? (
+                    <>
+                        <Grid>
+                            <IconButton
+                                style={{
+                                    background: theme.palette.primary.main,
+                                    borderRadius: '7px',
+                                    width: '135px',
+                                    height: '35px',
+                                    marginTop: '6px',
+                                    opacity: selectedRowCount === 0 || selectedRowCount >= deleteEntitiesLimit ? 0.5 : 1,
+                                }}
+                                onClick={() => {
+                                    setOpenEditDialog(true);
+                                    setAiSummaryDialogOpen(false);
+                                }}
+                                disabled={selectedRowCount === 0 || selectedRowCount >= deleteEntitiesLimit}
+                            >
+                                {isDeleteLoading ? (
+                                    <CircularProgress size="24px" sx={{ color: 'white' }} />
+                                ) : (
+                                    <Edit fontSize="small" htmlColor="white" />
+                                )}
+                                <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>
+                                    {i18next.t('actions.edit')}
+                                </Typography>
+                            </IconButton>
+                        </Grid>
+                        <Grid>
+                            <TableButton
+                                iconButtonWithPopoverProps={{
+                                    popoverText: i18next.t(`entitiesTableOfTemplate.deleteWithRelationship${workspaceAdmin ? 'Reference' : ''}Warn`),
+                                    iconButtonProps: {
+                                        onClick: () => {
+                                            setOpenDeleteDialog(true);
+                                            setAiSummaryDialogOpen(false);
+                                        },
+                                        sx: {
+                                            fontSize: '15px',
+                                            marginTop: '6px',
+                                        },
                                     },
-                                    sx: {
-                                        fontSize: '15px',
-                                        marginTop: '6px',
-                                    },
-                                },
-                            }}
-                            icon={isDeleteLoading ? <CircularProgress /> : <Delete fontSize="small" />}
-                            text={i18next.t('actions.delete')}
-                            disableButton={selectedRowCount === 0 || selectedRowCount >= deleteEntitiesLimit}
-                        />
-                    </Grid>
-                )}
-
-                {aiSummarySelectMode && isAiSummaryEnabled && (
-                    <Grid>
-                        <IconButton
-                            style={{
-                                background: theme.palette.primary.main,
-                                borderRadius: '7px',
-                                width: '135px',
-                                height: '35px',
-                                marginTop: '6px',
-                                opacity: selectedRowCount === 0 ? 0.5 : 1,
-                            }}
-                            onClick={() => {
-                                setAiSummaryDialogOpen(true);
-                                setOpenEditDialog(false);
-                                setOpenDeleteDialog(false);
-                            }}
-                            disabled={selectedRowCount === 0}
-                        >
-                            <CheckCircle fontSize="small" htmlColor="white" />
-                            <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>
-                                {i18next.t('actions.summarize')}
-                            </Typography>
-                        </IconButton>
-                    </Grid>
+                                }}
+                                icon={isDeleteLoading ? <CircularProgress /> : <Delete fontSize="small" />}
+                                text={i18next.t('actions.delete')}
+                                disableButton={selectedRowCount === 0 || selectedRowCount >= deleteEntitiesLimit}
+                            />
+                        </Grid>
+                    </>
+                ) : (
+                    isAiSummaryEnabled && (
+                        <Grid>
+                            <IconButton
+                                style={{
+                                    background: theme.palette.primary.main,
+                                    borderRadius: '7px',
+                                    width: '135px',
+                                    height: '35px',
+                                    marginTop: '6px',
+                                    opacity: selectedRowCount === 0 ? 0.5 : 1,
+                                }}
+                                onClick={() => {
+                                    setAiSummaryDialogOpen(true);
+                                    setOpenEditDialog(false);
+                                    setOpenDeleteDialog(false);
+                                }}
+                                disabled={selectedRowCount === 0}
+                            >
+                                <CheckCircle fontSize="small" htmlColor="white" />
+                                <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>
+                                    {i18next.t('actions.summarize')}
+                                </Typography>
+                            </IconButton>
+                        </Grid>
+                    )
                 )}
 
                 {selectedRowCount >= deleteEntitiesLimit && (

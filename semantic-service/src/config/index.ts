@@ -211,9 +211,9 @@ Ensure the final result matches the language of the source text and is accurate.
     },
     summarization: {
         enableEvaluation: env.get('SUMMARY_ENABLE_EVALUATION').default('false').asBool(),
-        maxLengthMin: env.get('SUMMARY_MAX_LENGTH_MIN').default(1).asIntPositive(),
-        maxLengthMax: env.get('SUMMARY_MAX_LENGTH_MAX').default(10).asIntPositive(),
-        maxLengthDefault: env.get('SUMMARY_MAX_LENGTH_DEFAULT').default(1).asIntPositive(),
+        minLength: env.get('SUMMARY_MIN_LENGTH').default(1).asIntPositive(),
+        maxLength: env.get('SUMMARY_MAX_LENGTH').default(100).asIntPositive(),
+        defaultLength: env.get('SUMMARY_DEFAULT_LENGTH').default(50).asIntPositive(),
         maxRefinementIterations: env.get('SUMMARY_MAX_REFINEMENT_ITERATIONS').default(3).asIntPositive(),
         enforceHebrewOnly: env.get('ENFORCE_HEBREW_ONLY').default('true').asBool(),
     },
