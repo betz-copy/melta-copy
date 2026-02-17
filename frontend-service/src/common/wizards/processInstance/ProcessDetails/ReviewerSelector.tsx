@@ -1,7 +1,7 @@
 import { Chip, Grid } from '@mui/material';
+import { IUser } from '@packages/user';
 import i18next from 'i18next';
 import React, { useState } from 'react';
-import { IUser } from '../../../../interfaces/users';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 import UserAutocomplete from '../../../inputs/UserAutocomplete';
 

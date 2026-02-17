@@ -1,8 +1,8 @@
 import { Grid, Typography } from '@mui/material';
+import { IPropertyValue } from '@packages/entity';
 import i18next from 'i18next';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import SearchInput from '../../../common/inputs/SearchInput';
-import { IPropertyValue } from '../../../interfaces/entities';
 import { defaultMetadata, useWorkspaceStore } from '../../../stores/workspace';
 import { deepClone, getDefaultValue, getValueByPath, setNestedValue } from '../../../utils/configs/configsUtils';
 import { Field, IValue } from './Field';

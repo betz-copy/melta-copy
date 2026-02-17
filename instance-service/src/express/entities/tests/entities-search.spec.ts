@@ -233,7 +233,7 @@ describe('e2e search entities batch tests', () => {
                 .send({
                     skip: 0,
                     limit: 10,
-                    templates: { [flightEntityTemplate._id]: { showRelationships: false } },
+                    templates: { [flightEntityTemplate._id]: {} },
                     sort: [{ field: 'flightNumber', sort: 'asc' }],
                 });
 
@@ -375,7 +375,7 @@ describe('e2e search entities batch tests', () => {
                         [flightEntityTemplate._id]: {
                             showRelationships: [flightsOnRelationshipTemplate._id, tripConnectedToFlightRelationshipTemplate._id],
                         },
-                        [travelAgentEntityTemplate._id]: { showRelationships: false },
+                        [travelAgentEntityTemplate._id]: {},
                         [tripEntityTemplate._id]: { showRelationships: true },
                         [airportEntityTemplate._id]: { showRelationships: [departureFromRelationshipTemplate._id] },
                     },
@@ -479,7 +479,7 @@ describe('e2e search entities batch tests', () => {
                 const searchBody: ISearchBatchBody = {
                     skip: 0,
                     limit: 3,
-                    templates: { [defaultTemplateId]: { filter: { $and: { [field]: { $eq: value1 } } }, showRelationships: false } },
+                    templates: { [defaultTemplateId]: { filter: { $and: { [field]: { $eq: value1 } } } } },
                     sort: [],
                 };
                 const res = await request(app).post('/api/instances/entities/search/batch').send(searchBody);
@@ -500,7 +500,7 @@ describe('e2e search entities batch tests', () => {
                     skip: 0,
                     limit: 3,
                     templates: {
-                        [defaultTemplateId]: { filter: { $and: { [field]: { $ne: value1 } } }, showRelationships: false },
+                        [defaultTemplateId]: { filter: { $and: { [field]: { $ne: value1 } } } },
                     },
                     sort: [{ field, sort: 'asc' }],
                 };
@@ -526,7 +526,7 @@ describe('e2e search entities batch tests', () => {
                     skip: 0,
                     limit: 3,
                     templates: {
-                        [defaultTemplateId]: { filter: { $and: { [field]: { $gt: value1 } } }, showRelationships: false },
+                        [defaultTemplateId]: { filter: { $and: { [field]: { $gt: value1 } } } },
                     },
                     sort: [{ field, sort: 'asc' }],
                 };
@@ -552,7 +552,7 @@ describe('e2e search entities batch tests', () => {
                     skip: 0,
                     limit: 3,
                     templates: {
-                        [defaultTemplateId]: { filter: { $and: { [field]: { $gte: value2 } } }, showRelationships: false },
+                        [defaultTemplateId]: { filter: { $and: { [field]: { $gte: value2 } } } },
                     },
                     sort: [{ field, sort: 'asc' }],
                 };
@@ -578,7 +578,7 @@ describe('e2e search entities batch tests', () => {
                     skip: 0,
                     limit: 3,
                     templates: {
-                        [defaultTemplateId]: { filter: { $and: { [field]: { $lt: value3 } } }, showRelationships: false },
+                        [defaultTemplateId]: { filter: { $and: { [field]: { $lt: value3 } } } },
                     },
                     sort: [{ field, sort: 'asc' }],
                 };
@@ -604,7 +604,7 @@ describe('e2e search entities batch tests', () => {
                     skip: 0,
                     limit: 3,
                     templates: {
-                        [defaultTemplateId]: { filter: { $and: { [field]: { $lte: value2 } } }, showRelationships: false },
+                        [defaultTemplateId]: { filter: { $and: { [field]: { $lte: value2 } } } },
                     },
                     sort: [{ field, sort: 'asc' }],
                 };
@@ -632,7 +632,6 @@ describe('e2e search entities batch tests', () => {
                     templates: {
                         [defaultTemplateId]: {
                             filter: { $and: { [field]: { $in: [value1, value3] } } },
-                            showRelationships: false,
                         },
                     },
                     sort: [{ field, sort: 'asc' }],
@@ -659,7 +658,7 @@ describe('e2e search entities batch tests', () => {
                     skip: 0,
                     limit: 3,
                     templates: {
-                        [defaultTemplateId]: { filter: { $and: { [field]: { $not: { $eq: value1 } } } }, showRelationships: false },
+                        [defaultTemplateId]: { filter: { $and: { [field]: { $not: { $eq: value1 } } } } },
                     },
                     sort: [{ field, sort: 'asc' }],
                 };
@@ -700,7 +699,6 @@ describe('e2e search entities batch tests', () => {
                     templates: {
                         [defaultTemplateId]: {
                             filter: { $and: { name: { $eq: entityWithDangerousChars.properties.name } } },
-                            showRelationships: false,
                         },
                     },
                     sort: [],
@@ -723,7 +721,7 @@ describe('e2e search entities batch tests', () => {
                     skip: 0,
                     limit: 3,
                     templates: {
-                        [defaultTemplateId]: { filter: { $and: { name: { $eqi: 'AnOtHeRnaMe' } } }, showRelationships: false },
+                        [defaultTemplateId]: { filter: { $and: { name: { $eqi: 'AnOtHeRnaMe' } } } },
                     },
                     sort: [],
                 };
@@ -745,7 +743,7 @@ describe('e2e search entities batch tests', () => {
                     skip: 0,
                     limit: 3,
                     templates: {
-                        [defaultTemplateId]: { filter: { $and: { name: { $rgx: '(?i).*AnOtHeRn.*' } } }, showRelationships: false },
+                        [defaultTemplateId]: { filter: { $and: { name: { $rgx: '(?i).*AnOtHeRn.*' } } } },
                     },
                     sort: [],
                 };
@@ -775,7 +773,7 @@ describe('e2e search entities batch tests', () => {
             const searchBody: ISearchBatchBody = {
                 skip: 0,
                 limit: 4,
-                templates: { [defaultTemplateId]: { filter: { $or: [{ num: { $gt: 2 } }, { name: { $eq: '111' } }] }, showRelationships: false } },
+                templates: { [defaultTemplateId]: { filter: { $or: [{ num: { $gt: 2 } }, { name: { $eq: '111' } }] } } },
                 sort: [{ field: 'num', sort: 'asc' }],
             };
             const res = await request(app).post('/api/instances/entities/search/batch').send(searchBody);
@@ -831,7 +829,7 @@ describe('e2e search entities batch tests', () => {
                 .send({
                     skip: 0,
                     limit: 10,
-                    templates: { [defaultTemplateId]: { showRelationships: false } },
+                    templates: { [defaultTemplateId]: {} },
                     textSearch: 'Another',
                     sort: [],
                 });
@@ -853,7 +851,7 @@ describe('e2e search entities batch tests', () => {
                 .send({
                     skip: 0,
                     limit: 3,
-                    templates: { [defaultTemplateId]: { showRelationships: false } },
+                    templates: { [defaultTemplateId]: {} },
                     textSearch: 'Name',
                     sort: [{ field: 'age', sort: 'asc' }],
                 });
@@ -894,7 +892,6 @@ describe('e2e search entities batch tests', () => {
                 templates: {
                     [defaultTemplateId]: {
                         filter: { $and: { lastName: { $eq: 'lastName' } } },
-                        showRelationships: false,
                     },
                 },
                 sort: [{ field: 'age', sort: 'asc' }],
@@ -921,7 +918,7 @@ describe('e2e search entities batch tests', () => {
                 .send({
                     skip: 0,
                     limit: 10,
-                    templates: { [defaultTemplateId]: { showRelationships: false } },
+                    templates: { [defaultTemplateId]: {} },
                     textSearch: '(((',
                     sort: [],
                 });
@@ -943,7 +940,7 @@ describe('e2e search entities batch tests', () => {
                 .send({
                     skip: 0,
                     limit: 10,
-                    templates: { [defaultTemplateId]: { showRelationships: false } },
+                    templates: { [defaultTemplateId]: {} },
                     textSearch: 'with lucene-speci',
                     sort: [],
                 });
@@ -976,7 +973,7 @@ describe('e2e search entities batch tests', () => {
                 .send({
                     skip: 0,
                     limit: 2,
-                    templates: { [defaultTemplateId]: { showRelationships: false } },
+                    templates: { [defaultTemplateId]: {} },
                     sort: [{ field: 'num', sort: 'asc' }],
                 });
 
@@ -1000,7 +997,7 @@ describe('e2e search entities batch tests', () => {
                 .send({
                     skip: 2,
                     limit: 2,
-                    templates: { [defaultTemplateId]: { showRelationships: false } },
+                    templates: { [defaultTemplateId]: {} },
                     sort: [{ field: 'num', sort: 'asc' }],
                 });
 
@@ -1041,7 +1038,6 @@ describe('e2e search entities batch tests', () => {
                                     name: { [filterType]: 5 }, // in purpose filtering by number on string field
                                 },
                             },
-                            showRelationships: false,
                         },
                     },
                     sort: [],
@@ -1066,7 +1062,6 @@ describe('e2e search entities batch tests', () => {
                                     name: { $in: [5] }, // in purpose filtering by number on string field
                                 },
                             },
-                            showRelationships: false,
                         },
                     },
                     sort: [],
@@ -1089,7 +1084,6 @@ describe('e2e search entities batch tests', () => {
                                     bDate: { $eqi: '2002-05-03' }, // in purpose on bDate field which is date type
                                 },
                             },
-                            showRelationships: false,
                         },
                     },
                     sort: [],
@@ -1111,12 +1105,8 @@ describe('e2e search entities batch tests', () => {
                         skip: 0,
                         limit: 10,
                         templates: {
-                            [flightEntityTemplate._id]: {
-                                showRelationships: false,
-                            },
-                            [airportEntityTemplate._id]: {
-                                showRelationships: false,
-                            },
+                            [flightEntityTemplate._id]: {},
+                            [airportEntityTemplate._id]: {},
                         },
                         sort: [
                             { field: 'createdAt', sort: 'asc' },
@@ -1138,12 +1128,8 @@ describe('e2e search entities batch tests', () => {
                         skip: 0,
                         limit: 10,
                         templates: {
-                            [flightEntityTemplate._id]: {
-                                showRelationships: false,
-                            },
-                            [entityTemplate._id]: {
-                                showRelationships: false,
-                            },
+                            [flightEntityTemplate._id]: {},
+                            [entityTemplate._id]: {},
                         },
                         sort: [
                             { field: 'createdAt', sort: 'asc' },
@@ -1163,12 +1149,8 @@ describe('e2e search entities batch tests', () => {
                         skip: 0,
                         limit: 10,
                         templates: {
-                            [flightEntityTemplate._id]: {
-                                showRelationships: false,
-                            },
-                            [entityTemplate._id]: {
-                                showRelationships: false,
-                            },
+                            [flightEntityTemplate._id]: {},
+                            [entityTemplate._id]: {},
                         },
                         sort: [
                             { field: 'createdAt', sort: 'asc' },
@@ -1188,12 +1170,8 @@ describe('e2e search entities batch tests', () => {
                         skip: 0,
                         limit: 10,
                         templates: {
-                            [airportEntityTemplate._id]: {
-                                showRelationships: false,
-                            },
-                            [entityTemplate._id]: {
-                                showRelationships: false,
-                            },
+                            [airportEntityTemplate._id]: {},
+                            [entityTemplate._id]: {},
                         },
                         sort: [
                             { field: 'createdAt', sort: 'asc' },

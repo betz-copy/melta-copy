@@ -1,28 +1,24 @@
 import {
-    ActionErrors,
-    ActionOnFail,
     ActionTypes,
-    BadRequestError,
     IAction,
-    IActivityLog,
-    IBrokenRule,
-    IBulkRuleMail,
     ICreateEntityMetadata,
     ICreateRelationshipMetadata,
     IDuplicateEntityMetadata,
-    IEntity,
-    IMongoEntityTemplate,
-    IMongoRelationshipTemplate,
-    IRelationship,
-    IRequiredConstraint,
-    IRuleMail,
     IUpdateEntityMetadata,
-} from '@microservices/shared';
+} from '@packages/action';
+import { IActivityLog } from '@packages/activity-log';
+import { ActionErrors, IBulkRuleMail, IEntity, IRequiredConstraint } from '@packages/entity';
+import { IMongoEntityTemplate } from '@packages/entity-template';
+import { IRelationship } from '@packages/relationship';
+import { IMongoRelationshipTemplate } from '@packages/relationship-template';
+import { ActionOnFail, IRuleMail } from '@packages/rule';
+import { IBrokenRule } from '@packages/rule-breach';
+import { BadRequestError } from '@packages/utils';
 import { groupBy, partition, pickBy } from 'lodash';
 import { Transaction } from 'neo4j-driver';
 import config from '../../config';
 import ActivityLogProducer from '../../externalServices/activityLog/producer';
-import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
+import EntityTemplateService from '../../externalServices/templates/entityTemplateManager';
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { EntitiesIdsRulesReasonsMap, RunRuleReason } from '../entities/interface';
@@ -38,7 +34,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
 
     private relationshipsManager: RelationshipManager;
 
-    private entityTemplateService: EntityTemplateManagerService;
+    private entityTemplateService: EntityTemplateService;
 
     private relationshipsTemplateService: RelationshipsTemplateManagerService;
 
@@ -48,7 +44,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
         super(workspaceId);
         this.entityManager = new EntityManager(workspaceId);
         this.relationshipsManager = new RelationshipManager(workspaceId);
-        this.entityTemplateService = new EntityTemplateManagerService(workspaceId);
+        this.entityTemplateService = new EntityTemplateService(workspaceId);
         this.relationshipsTemplateService = new RelationshipsTemplateManagerService(workspaceId);
         this.activityLogProducer = new ActivityLogProducer(workspaceId);
     }

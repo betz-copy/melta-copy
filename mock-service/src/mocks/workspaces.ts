@@ -1,4 +1,4 @@
-import { IWorkspace, WorkspaceTypes } from '@microservices/shared';
+import { IWorkspace, WorkspaceTypes } from '@packages/workspace';
 
 const getWorkspacesToCreate = (): Omit<IWorkspace, '_id'>[] => {
     return [

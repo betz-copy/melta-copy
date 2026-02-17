@@ -11,11 +11,12 @@ type: always
 
 # Frontend Overview
 
-* **React 18 + TypeScript 5** scaffolded with `npm create vite@latest -- template react-ts`.  
+* **React 19 + TypeScript 5** scaffolded with `pnpm create vite@latest -- template react-ts`.  
 * Build & dev server powered by **Vite** (instant HMR, ESM).  
-* **MUI v6** component library for all UI primitives; themed via `ThemeProvider`.  
+* **MUI v7** component library for all UI primitives; themed via `ThemeProvider`.  
 * **AG-Grid Enterprise** for data-heavy tables; licensed keys stored in `.env`.  
 * **Axios** wraps all HTTP traffic to the backend gateway (`/api/**`).  
 * Testing stack: **Vitest** + **React Testing Library** + **jsdom`.  
-* Linting/prettier enforced via `eslint-plugin-react`, `@typescript-eslint`, and `prettier`.  
+* Linting and formatting enforced via **Biome** (fast, unified linter/formatter).  
+* Package management with **pnpm** (efficient, workspace-aware).  
 * Folder structure follows `feature-first` convention (see @vite-structure.mdc).  

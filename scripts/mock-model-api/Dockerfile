@@ -1,13 +1,16 @@
-FROM node:14
+FROM node:22-alpine
 
 WORKDIR /app
 
+# Enable pnpm
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+
 COPY package*.json ./
 
-RUN npm install
+RUN pnpm install --silent
 
 COPY . .
 
 EXPOSE 8000
 
-CMD ["npm", "run", "start"]
+CMD ["pnpm", "start"]

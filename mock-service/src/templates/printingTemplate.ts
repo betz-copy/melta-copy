@@ -1,4 +1,4 @@
-import { IMongoPrintingTemplate, IPrintingTemplate } from '@microservices/shared';
+import { IMongoPrintingTemplate, IPrintingTemplate } from '@packages/printing-template';
 import config from '../config';
 import createAxiosInstance from '../utils/axios';
 

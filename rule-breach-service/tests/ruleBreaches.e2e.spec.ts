@@ -1,4 +1,5 @@
-import { ActionTypes, RuleBreachRequestStatus } from '@microservices/shared';
+import { ActionTypes } from '@packages/action';
+import { RuleBreachRequestStatus } from '@packages/rule-breach';
 import { Express } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import mongoose from 'mongoose';

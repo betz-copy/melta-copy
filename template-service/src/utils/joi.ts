@@ -1,4 +1,4 @@
-import { defaultValidationOptions } from '@microservices/shared';
+import { defaultValidationOptions } from '@packages/utils';
 import Joi from 'joi';
 
 // biome-ignore lint/suspicious/noExplicitAny: lol

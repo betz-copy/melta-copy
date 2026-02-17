@@ -1,4 +1,4 @@
-import { INotification, NotificationType, Status } from '@microservices/shared';
+import { INotification, NotificationType, Status } from '@packages/notification';
 import { Express } from 'express';
 import request from 'supertest';
 import Server from '../src/express/server';

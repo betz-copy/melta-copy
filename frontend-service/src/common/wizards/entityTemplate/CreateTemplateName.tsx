@@ -2,8 +2,7 @@ import { Grid, TextField } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import * as Yup from 'yup';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
+import { IEntityTemplateMap, IProcessTemplateMap } from '../../../interfaces/template';
 import { variableNameValidation } from '../../../utils/validation';
 import { StepComponentProps } from '../index';
 

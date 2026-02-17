@@ -1,4 +1,5 @@
-import { DefaultController, fetchPropertyFromRequest, IMongoChildTemplate } from '@microservices/shared';
+import { IMongoChildTemplate } from '@packages/child-template';
+import { DefaultController, fetchPropertyFromRequest } from '@packages/utils';
 import { Request, Response } from 'express';
 import ChildTemplateManager from './manager';
 

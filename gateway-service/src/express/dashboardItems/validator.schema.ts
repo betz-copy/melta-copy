@@ -1,4 +1,5 @@
-import { DashboardItemType, searchFilterSchema } from '@microservices/shared';
+import { DashboardItemType } from '@packages/dashboard';
+import { searchFilterSchema } from '@packages/utils';
 import Joi from 'joi';
 
 const TableMetaDataSchema = Joi.object({

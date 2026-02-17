@@ -29,10 +29,10 @@ import timeZoneNames from '../../CLDR/hebrew/timeZoneNames.json';
 import darkTheme from '../../css/syncfusion/dark.css?inline';
 import lightTheme from '../../css/syncfusion/light.css?inline';
 import '../../css/syncfusion/schedule.css';
+import { IMongoGantt } from '@packages/gantt';
 import { environment } from '../../globals';
 import hebrew from '../../i18n/hebrew';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import { IGantt } from '../../interfaces/gantts';
+import { IEntityTemplateMap } from '../../interfaces/template';
 import { getEntitiesWithDirectConnections } from '../../services/entitiesService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import {
@@ -60,7 +60,7 @@ const {
 } = environment.ganttSettings;
 
 interface IGanttProps {
-    gantt: IGantt;
+    gantt: IMongoGantt;
 }
 
 export const Gantt: React.FC<IGanttProps> = ({ gantt }) => {

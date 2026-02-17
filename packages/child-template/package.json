@@ -1,0 +1,31 @@
+{
+    "name": "@packages/child-template",
+    "version": "1.0.0",
+    "description": "child-template package",
+    "type": "commonjs",
+    "main": "dist/index.js",
+    "module": "dist/index.mjs",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.mjs",
+            "require": "./dist/index.js"
+        }
+    },
+    "scripts": {
+        "build": "tsup",
+        "clean": "rimraf dist"
+    },
+    "devDependencies": {
+        "tsup": "^8.5.1",
+        "typescript": "^5.6.2"
+    },
+    "dependencies": {
+        "@packages/category": "workspace:*",
+        "@packages/entity": "workspace:*",
+        "@packages/entity-template": "workspace:*",
+        "@packages/user": "workspace:*",
+        "@packages/permission": "workspace:*"
+    }
+}

@@ -1,15 +1,15 @@
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
 import { Grid, Typography } from '@mui/material';
 import { CSSProperties } from '@mui/styles';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import React, { useMemo } from 'react';
 import { CustomIcon } from '../../../common/CustomIcon';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { FieldsDisplay } from './FieldsDisplay';
 
 interface IEntityTemplateDisplayProps {
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
     fieldsToShow: string[];
     color?: CSSProperties['color'];
     subTitle?: string;

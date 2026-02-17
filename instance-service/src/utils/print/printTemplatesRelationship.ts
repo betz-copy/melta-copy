@@ -1,11 +1,10 @@
-import { IMongoEntityTemplate, IMongoRelationshipTemplate } from '@microservices/shared';
+import { IMongoEntityTemplate } from '@packages/entity-template';
+import { IMongoRelationshipTemplate } from '@packages/relationship-template';
 import { QueryResult } from 'neo4j-driver';
 import config from '../../config';
 import { IRelationShipTreeNode, ITreeNodeMap } from '../../express/entities/interface';
 
-const {
-    neo4j: { relationshipPathSeparator },
-} = config;
+const { relationshipPathSeparator } = config.neo4j;
 
 type EntitiesCountMap = Map<string, number>;
 

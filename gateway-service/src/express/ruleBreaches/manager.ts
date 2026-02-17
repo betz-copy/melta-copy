@@ -1,15 +1,7 @@
 import {
     ActionTypes,
-    BadRequestError,
-    basicFilterOperationTypes,
-    ForbiddenError,
     IAction,
     IActionMetadataPopulated,
-    IAgGridRequest,
-    IBrokenRule,
-    IBrokenRulePopulated,
-    ICauseInstancePopulated,
-    ICausesOfInstancePopulated,
     ICreateEntityMetadata,
     ICreateEntityMetadataPopulated,
     ICreateRelationshipMetadata,
@@ -20,41 +12,47 @@ import {
     IDeleteRelationshipMetadataPopulated,
     IDuplicateEntityMetadata,
     IDuplicateEntityMetadataPopulated,
-    IEntity,
-    IEntityForBrokenRules,
-    IKartoffelUser,
-    IMongoEntityTemplatePopulated,
-    INotificationMetadata,
-    INotificationMetadataPopulated,
-    InstancesSubclassesPermissions,
-    IPropertyValue,
-    IRelationship,
-    IRelationshipForBrokenRules,
-    IRuleBreach,
-    IRuleBreachAlert,
-    IRuleBreachAlertNotificationMetadata,
-    IRuleBreachAlertNotificationMetadataPopulated,
-    IRuleBreachAlertPopulated,
-    IRuleBreachPopulated,
-    IRuleBreachRequest,
-    IRuleBreachRequestNotificationMetadata,
-    IRuleBreachRequestNotificationMetadataPopulated,
-    IRuleBreachRequestPopulated,
-    IRuleBreachResponseNotificationMetadata,
-    IRuleBreachResponseNotificationMetadataPopulated,
-    IRuleMail,
     IUpdateEntityMetadata,
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadata,
     IUpdateEntityStatusMetadataPopulated,
-    IUser,
-    logger,
+} from '@packages/action';
+import { IEntity, IPropertyValue, UploadedFile } from '@packages/entity';
+import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import {
+    INotificationMetadata,
+    INotificationMetadataPopulated,
+    IRuleBreachAlertNotificationMetadata,
+    IRuleBreachAlertNotificationMetadataPopulated,
+    IRuleBreachRequestNotificationMetadata,
+    IRuleBreachRequestNotificationMetadataPopulated,
+    IRuleBreachResponseNotificationMetadata,
+    IRuleBreachResponseNotificationMetadataPopulated,
     NotificationType,
-    PermissionScope,
-    PermissionType,
+} from '@packages/notification';
+import { InstancesSubclassesPermissions, PermissionScope, PermissionType } from '@packages/permission';
+import { IRelationship } from '@packages/relationship';
+import { IRuleMail } from '@packages/rule';
+import {
+    BasicFilterOperationTypes,
+    FilterTypes,
+    IAgGridRequest,
+    IBrokenRule,
+    IBrokenRulePopulated,
+    ICauseInstancePopulated,
+    ICausesOfInstancePopulated,
+    IEntityForBrokenRules,
+    IRelationshipForBrokenRules,
+    IRuleBreach,
+    IRuleBreachAlert,
+    IRuleBreachAlertPopulated,
+    IRuleBreachPopulated,
+    IRuleBreachRequest,
+    IRuleBreachRequestPopulated,
     RuleBreachRequestStatus,
-    UploadedFile,
-} from '@microservices/shared';
+} from '@packages/rule-breach';
+import { IKartoffelUser, IUser } from '@packages/user';
+import { BadRequestError, ForbiddenError, logger } from '@packages/utils';
 import { pickBy } from 'lodash';
 import config from '../../config';
 import InstancesService from '../../externalServices/instanceService';
@@ -313,7 +311,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
             }
 
             if (value.items?.format === 'user' && entity.properties[key]) {
-                const userArray = entity.properties[key].map((user) => JSON.parse(user));
+                const userArray = entity.properties[key].map((user) => user);
                 users.push(...userArray);
             }
         });
@@ -843,8 +841,8 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         const updatedAgGridRequest: IAgGridRequest = { ...agGridRequest };
 
         updatedAgGridRequest.filterModel.originUserId = {
-            filterType: 'text',
-            type: basicFilterOperationTypes.equals,
+            filterType: FilterTypes.text,
+            type: BasicFilterOperationTypes.equals,
             filter: user.id,
         };
 

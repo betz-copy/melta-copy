@@ -1,5 +1,10 @@
 import { AppRegistration as AppRegistrationIcon, AutoAwesome, KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import { Box, Card, CardContent, CardHeader, Dialog, Divider, Grid, IconButton, styled, Typography } from '@mui/material';
+import { ActionTypes } from '@packages/action';
+import { isChildTemplate } from '@packages/child-template';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import { PermissionScope } from '@packages/permission';
 import i18next from 'i18next';
 import React, { useMemo, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -15,11 +20,7 @@ import { ImageWithDisable } from '../../../common/ImageWithDisable';
 import BlueTitle from '../../../common/MeltaDesigns/BlueTitle';
 import MeltaTooltip from '../../../common/MeltaDesigns/MeltaTooltip';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../../interfaces/CreateOrEditEntityDialog';
-import { IEntity } from '../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { PermissionScope } from '../../../interfaces/permissions';
 import { FileExtensions, IFile } from '../../../interfaces/preview';
-import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { getEntityTemplateColor } from '../../../utils/colors';
@@ -27,7 +28,7 @@ import { getFileName } from '../../../utils/getFileName';
 import { getFileNameWithoutExtension, getPreviewContentType } from '../../../utils/getFileType';
 import { HighlightText } from '../../../utils/HighlightText';
 import { checkUserTemplatePermission } from '../../../utils/permissions/instancePermissions';
-import { getFirstXPropsKeys, isChildTemplate } from '../../../utils/templates';
+import { getFirstXPropsKeys } from '../../../utils/templates';
 import { EntityDates } from '../../Entity/components/EntityDates';
 import { EntityDisableCheckbox } from '../../Entity/components/EntityDisableCheckbox';
 import { NoFile } from './NoFile';
@@ -44,7 +45,7 @@ export const StyledCard = styled(Card)(({ theme }) => ({
 
 interface EntityCardProps {
     entity: IEntity;
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
     expandCard?: boolean;
     enableEdit?: boolean;
     customActionButton?: {

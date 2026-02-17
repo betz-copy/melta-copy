@@ -1,9 +1,9 @@
 import { Autocomplete, AutocompleteProps, TextField, TextFieldProps } from '@mui/material';
+import { IRole } from '@packages/role';
 import i18next from 'i18next';
 import { DebouncedFunc } from 'lodash';
 import React from 'react';
 import { QueryObserverResult, RefetchOptions, RefetchQueryFilters } from 'react-query';
-import { IRole } from '../../interfaces/roles';
 import MeltaTooltip from '../MeltaDesigns/MeltaTooltip';
 
 export interface IRoleAutocomplete {

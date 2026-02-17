@@ -1,10 +1,10 @@
 import { Autocomplete, InputAdornment, TextField } from '@mui/material';
+import { IMetadata, IWorkspace } from '@packages/workspace';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import MeltaSwitch from '../../../common/MeltaDesigns/MeltaSwitch';
 import { environment } from '../../../globals';
-import { IMetadata, IWorkspace } from '../../../interfaces/workspaces';
 import { BackendConfigState } from '../../../services/backendConfigService';
 import { updateMetadata } from '../../../services/workspacesService';
 import { deepClone, setNestedValue } from '../../../utils/configs/configsUtils';

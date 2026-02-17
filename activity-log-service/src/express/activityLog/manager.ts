@@ -1,4 +1,5 @@
-import { DefaultManagerMongo, IActivityLog } from '@microservices/shared';
+import { IActivityLog } from '@packages/activity-log';
+import { DefaultManagerMongo } from '@packages/utils';
 import { FilterQuery } from 'mongoose';
 import config from '../../config';
 import ActivityLogSchema from './model';

@@ -1,17 +1,18 @@
 import { IServerSideSelectionState, IStatusPanelParams } from '@ag-grid-community/core';
 import { Delete, Edit } from '@mui/icons-material';
 import { Box, CircularProgress, Grid, Typography } from '@mui/material';
+import { ActionTypes, ICreateEntityMetadata } from '@packages/action';
+import { isChildTemplate } from '@packages/child-template';
+import { IDeleteEntityBody, IMultipleSelect, IPropertyValue } from '@packages/entity';
+import { PropertyFormat } from '@packages/entity-template';
+import { IBrokenRule } from '@packages/rule-breach';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { IDeleteEntityBody, IMultipleSelect, IPropertyValue } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IBrokenRuleEntity, IFailedEntity } from '../../interfaces/excel';
-import { ActionTypes, ICreateEntityMetadata } from '../../interfaces/ruleBreaches/actionMetadata';
-import { IBrokenRule } from '../../interfaces/ruleBreaches/ruleBreach';
+import { ITemplate } from '../../interfaces/template';
 import ActionOnEntityWithRuleBreachDialog from '../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { BackendConfigState } from '../../services/backendConfigService';
 import { deleteEntityRequest, updateMultipleEntitiesRequest } from '../../services/entitiesService';
@@ -20,7 +21,6 @@ import { useUserStore } from '../../stores/user';
 import { filterModelToFilterOfTemplate } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
 import { filterFieldsFromPropertiesSchema, pickOnlyGivenFields } from '../../utils/pickFieldsPropertiesSchema';
-import { isChildTemplate } from '../../utils/templates';
 import { EntityWizardValues } from '../dialogs/entity';
 import { getInitialValuesWithDefaults } from '../dialogs/entity/CreateOrEditEntityDialog';
 import EditProps from '../dialogs/entity/CreateOrEditEntityDialog/EditProps';
@@ -33,7 +33,7 @@ import { StatusEntitiesTables } from '../wizards/excel/excelSteps/StatusEntities
 import { DeleteEntitiesDialog } from './DeleteEntitiesDialog';
 
 interface MultiSelectStatusBarProps extends IStatusPanelParams {
-    template: IMongoEntityTemplatePopulated | IChildTemplatePopulated;
+    template: ITemplate;
     quickFilterText: string;
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
 }
@@ -179,9 +179,13 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
         if (renderData) {
             api.refreshServerSide();
 
-            const relatedTemplateIds = Object.values(template.properties.properties)
-                .filter((value) => value?.format === 'relationshipReference')
-                .map((value) => value.relationshipReference?.relatedTemplateId ?? '');
+            const relatedTemplateIds = Object.values(template.properties.properties).reduce<string[]>((acc, value) => {
+                if (value?.format === PropertyFormat.relationshipReference) {
+                    const relatedId = value.relationshipReference?.relatedTemplateId;
+                    if (relatedId) acc.push(relatedId);
+                }
+                return acc;
+            }, []);
 
             setUpdatedTemplateIds?.(relatedTemplateIds);
         }

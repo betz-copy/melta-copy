@@ -1,7 +1,7 @@
+import { DashboardItemType } from '@packages/dashboard';
 import i18next from 'i18next';
 import React from 'react';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
-import { DashboardItemType } from '../../../interfaces/dashboard';
 
 const ConfirmDeleteDashboardItem: React.FC<{
     isDialogOpen: boolean;

@@ -1,11 +1,22 @@
+import { filterFieldToValue, IFilterOfField, IFilterOfTemplate, ISearchFilter } from '@packages/entity';
+import { IEntitySingleProperty, IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
+import {
+    FilterTypes,
+    IAgGridDateFilter,
+    IAgGridNumberFilter,
+    IAgGridSetFilter,
+    IAgGridTextFilter,
+    isRelativeDateFilter,
+    NumberFilterOperationTypes,
+    RelativeDateFilters,
+    TextFilterOperationTypes,
+} from '@packages/rule-breach';
 import { FilterType } from '../../common/wizards/entityTemplate/commonInterfaces';
 import { environment } from '../../globals';
-import { IFilterOfField, IFilterOfTemplate, IGraphFilterBody, IGraphFilterBodyBatch, ISearchFilter } from '../../interfaces/entities';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IGraphFilterBody, IGraphFilterBodyBatch } from '../../interfaces/graphFilter';
 import { filterModelToFilterOfTemplatePerField } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
-import { IAGGridDateFilter, IAGGridNumberFilter, IAGGridSetFilter, IAGGridTextFilter, RelativeDateFilters } from '../../utils/agGrid/interfaces';
 
-const { relativeDateFilters, fieldFilterPrefix } = environment;
+const { fieldFilterPrefix } = environment;
 
 export interface IGraphFilterToBackendBody {
     [templateId: string]: { filter: ISearchFilter };
@@ -32,43 +43,30 @@ export const filterModelToFilterOfGraph = (filterModel: IGraphFilterBodyBatch): 
     return Object.fromEntries(templateFilterRecord);
 };
 
-export const filterFieldToValue: Record<keyof IFilterOfField, string> = {
-    $eq: 'equals',
-    $ne: 'notEqual',
-    $gt: 'greaterThan',
-    $gte: 'greaterThanOrEqual',
-    $lt: 'lessThan',
-    $lte: 'lessThanOrEqual',
-    $in: 'inRange',
-    $not: 'not',
-    $rgx: 'contains',
-    $eqi: 'equals',
-};
-
-export const handleRegexFilter = (filterValue: string, not: boolean = false): IAGGridTextFilter | null => {
+export const handleRegexFilter = (filterValue: string, not: boolean = false): IAgGridTextFilter | null => {
     const startsWith = filterValue.startsWith('.*');
     const endsWith = filterValue.endsWith('.*');
 
     if (startsWith && endsWith)
         return {
-            filterType: 'text',
-            type: not ? 'notContains' : 'contains',
+            filterType: FilterTypes.text,
+            type: not ? TextFilterOperationTypes.notContains : TextFilterOperationTypes.contains,
             filter: filterValue.slice(2, -2),
-        } as IAGGridTextFilter;
+        } as IAgGridTextFilter;
 
     if (endsWith)
         return {
-            filterType: 'text',
-            type: 'startsWith',
+            filterType: FilterTypes.text,
+            type: TextFilterOperationTypes.startsWith,
             filter: filterValue.slice(0, -2),
-        } as IAGGridTextFilter;
+        } as IAgGridTextFilter;
 
     if (startsWith)
         return {
-            filterType: 'text',
-            type: 'endsWith',
+            filterType: FilterTypes.text,
+            type: TextFilterOperationTypes.endsWith,
             filter: filterValue.slice(2),
-        } as IAGGridTextFilter;
+        } as IAgGridTextFilter;
 
     return null;
 };
@@ -78,7 +76,7 @@ export const handleDateFilter = (
     fieldFilter: IFilterOfField,
     filterType: string,
     isFieldType: boolean,
-): IAGGridDateFilter => {
+): IAgGridDateFilter => {
     if (
         filterKeys.length === 2 ||
         Object.values(fieldFilter).some((value) => value === RelativeDateFilters.untilToday || value === RelativeDateFilters.fromToday)
@@ -86,31 +84,31 @@ export const handleDateFilter = (
         const [dateFromVal, dateTo] = filterKeys;
         const dateFrom = isFieldType ? dateFromVal.slice(fieldFilterPrefix.length) : dateFromVal;
 
-        if (relativeDateFilters.includes(fieldFilter[dateFrom] as string)) {
+        if (isRelativeDateFilter(fieldFilter[dateFrom])) {
             return {
-                filterType: 'date',
+                filterType: FilterTypes.date,
                 type: fieldFilter[dateFrom],
                 dateFrom: fieldFilter[dateFrom],
                 dateTo: fieldFilter[dateTo],
-            } as IAGGridDateFilter;
+            } as IAgGridDateFilter;
         }
 
         return {
-            filterType: 'date',
-            type: 'inRange',
+            filterType: FilterTypes.date,
+            type: NumberFilterOperationTypes.inRange,
             dateFrom: fieldFilter[dateFrom],
             dateTo: fieldFilter[dateTo],
-        } as IAGGridDateFilter;
+        } as IAgGridDateFilter;
     }
 
     const dateFromVal = fieldFilter[filterKeys[0]] as string;
 
     return {
-        filterType: 'date',
+        filterType: FilterTypes.date,
         type: filterType,
         dateFrom: isFieldType ? dateFromVal.slice(fieldFilterPrefix.length) : dateFromVal,
         dateTo: null,
-    } as IAGGridDateFilter;
+    } as IAgGridDateFilter;
 };
 
 export const translateFieldFilter = (
@@ -144,9 +142,9 @@ export const translateFieldFilter = (
                 return {
                     filterType,
                     filterField: {
-                        filterType: 'set',
+                        filterType: FilterTypes.set,
                         values: filterValue as (string | null)[],
-                    } as IAGGridSetFilter,
+                    } as IAgGridSetFilter,
                 };
 
             if (filterKey === '$rgx' && typeof filterValue === 'string') {
@@ -160,10 +158,10 @@ export const translateFieldFilter = (
                     return {
                         filterType,
                         filterField: {
-                            filterType: 'text',
-                            type: 'notContains',
+                            filterType: FilterTypes.text,
+                            type: TextFilterOperationTypes.notContains,
                             filter: handleRegexFilter(notFilter.$rgx as string, true)?.filter,
-                        } as IAGGridTextFilter,
+                        } as IAgGridTextFilter,
                     };
                 }
             }
@@ -171,29 +169,29 @@ export const translateFieldFilter = (
             return {
                 filterType,
                 filterField: {
-                    filterType: 'text',
+                    filterType: FilterTypes.text,
                     type: type,
                     filter: filterValue as string,
-                } as IAGGridTextFilter,
+                } as IAgGridTextFilter,
             };
         }
         case 'number':
             return {
                 filterType,
                 filterField: {
-                    filterType: 'number',
+                    filterType: FilterTypes.number,
                     type: type,
                     filter: filterValue as number,
-                } as IAGGridNumberFilter,
+                } as IAgGridNumberFilter,
             };
 
         case 'array':
             return {
                 filterType,
                 filterField: {
-                    filterType: 'set',
+                    filterType: FilterTypes.set,
                     values: filterValue as (string | null)[],
-                } as IAGGridSetFilter,
+                } as IAgGridSetFilter,
             };
 
         default:
@@ -203,7 +201,7 @@ export const translateFieldFilter = (
 
 export const FilterOfGraphToFilterRecord = (
     filterModel: ISearchFilter | undefined,
-    template: IMongoEntityTemplatePopulated,
+    template: IMongoEntityTemplateWithConstraintsPopulated,
 ): IGraphFilterBodyBatch => {
     const parsedFilters: IGraphFilterBodyBatch = {};
 

@@ -1,6 +1,6 @@
 import { Grid, IconButton } from '@mui/material';
+import { IUser } from '@packages/user';
 import React from 'react';
-import { IUser } from '../../interfaces/users';
 import UserAvatar from '../UserAvatar';
 
 interface ProfileButtonProps {

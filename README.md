@@ -12,8 +12,8 @@ A set of microservices and a frontend interface for the **Melta** application. T
 4. [Migrating from an Older Version](#migrating-from-an-older-version)
 5. [Running the Project Locally](#running-the-project-locally)
 6. [Building the Project](#building-the-project)
-7. [Installing Global npm Packages](#installing-global-npm-packages)
-8. [Using npm Workspaces](#using-npm-workspaces)
+7. [Installing Global pnpm Packages](#installing-global-pnpm-packages)
+8. [Using pnpm Workspaces](#using-pnpm-workspaces)
 9. [Saving Docker Images](#saving-docker-images)
 10. [Support](#support)
 
@@ -21,14 +21,14 @@ A set of microservices and a frontend interface for the **Melta** application. T
 
 ## Introduction
 
-The Melta project is organized into multiple microservices (run via Docker) and a frontend (which can be run locally or also via Docker scripts). This repository uses **npm workspaces** for managing and building the various services.
+The Melta project is organized into multiple microservices (run via Docker) and a frontend (which can be run locally or also via Docker scripts). This repository uses **pnpm workspaces** for managing and building the various services.
 
 ---
 
 ## Prerequisites
 
 - **Node.js** (v14 or higher)
-- **npm** (v6 or higher)
+- **pnpm** (v8 or higher)
 - **Docker** (for running microservices)
 - [**Docker Compose**](https://docs.docker.com/compose/) (if not included with your Docker installation)
 
@@ -69,16 +69,16 @@ The Melta project is organized into multiple microservices (run via Docker) and 
 If you are **upgrading** from an older version of Melta and have an existing local setup, run:
 
 ```bash
-npm run migrate
+pnpm run migrate
 ```
 
 This script will:
 
 1. Remove all `*-services` folders that are no longer used.
 2. Clean old `node_modules` directories.
-3. Install new shared packages.
+3. Install new packages.
 4. Build all Docker images.
-5. Build all shared code.
+5. Build all packages.
 6. Stop any existing frontend/UI instances.
 7. Start the UI.
 
@@ -104,15 +104,15 @@ This script will use **Docker Compose** to build and start the microservices def
 
 1. Install root-level dependencies (including workspaces):
     ```bash
-    npm install
+    pnpm install
     ```
-2. Build the shared service:
+2. Build the packages:
     ```bash
-    npm run build -w shared
+    pnpm run build:packages
     ```
 3. Start the frontend:
     ```bash
-    npm run start-ui
+    pnpm run start-ui
     ```
 
 You can now access the Melta application via `http://localhost` (or a different port if configured).
@@ -121,40 +121,40 @@ You can now access the Melta application via `http://localhost` (or a different 
 
 ## Building the Project
 
-To build **all** services (including shared services) in one go, run:
+To build **all** services (including packages) in one go, run:
 
 ```bash
-npm run build
+pnpm run build
 ```
 
 Under the hood, this will trigger each service’s build script (defined in its `package.json`).
 
 ---
 
-## Installing Global npm Packages
+## Installing Global pnpm Packages
 
-If you need a global npm package, run:
+If you need a global pnpm package, run:
 
 ```bash
-npm install -g <package-name>
+pnpm install -g <package-name>
 ```
 
-> **Note:** Installing packages globally can sometimes cause version conflicts. Use global installs sparingly and consider using local project dependencies or npx for one-off usage.
+> **Note:** Installing packages globally can sometimes cause version conflicts. Use global installs sparingly and consider using local project dependencies or pnpx for one-off usage.
 
 ---
 
-## Using npm Workspaces
+## Using pnpm Workspaces
 
-This repository uses [npm workspaces](https://docs.npmjs.com/cli/v7/using-npm/workspaces) to manage multiple services. You can run scripts in a specific workspace by using:
+This repository uses [pnpm workspaces](https://pnpm.io/workspaces) to manage multiple services. You can run scripts in a specific workspace by using:
 
 ```bash
-npm run <script-name> -w <workspace-name>
+pnpm run <script-name> -w <workspace-name>
 ```
 
 For example, to start the frontend service directly:
 
 ```bash
-npm run start -w frontend-service
+pnpm run start -w frontend-service
 ```
 
 ---

@@ -1,30 +1,28 @@
 import { Hive as HiveIcon } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Grid, Tab, Typography, useTheme } from '@mui/material';
+import { IMongoChildTemplateWithConstraintsPopulated } from '@packages/child-template';
+import { IEntityExpanded } from '@packages/entity';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@packages/entity-template';
 import i18next from 'i18next';
 import { useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { CustomIcon } from '../../common/CustomIcon';
-import { ICategoryMap } from '../../interfaces/categories';
-import { IChildTemplatePopulated } from '../../interfaces/childTemplates';
-import { IEntityExpanded } from '../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
-import { INestedRelationshipTemplates } from '.';
+import { ICategoryMap, IEntityTemplateMap, INestedRelationshipTemplates, IRelationshipTemplateMap } from '../../interfaces/template';
 import { ConnectionsTable } from './ConnectionsTable';
 import { RelationshipIcon } from './RelationshipIcon';
 
 interface EntityConnectionsProps {
-    currentEntityTemplate: IMongoEntityTemplatePopulated;
+    currentEntityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
     templateIds: string[];
     expandedEntity: IEntityExpanded;
-    getButtonStateByRelatedTemplate: (relatedTemplate: IMongoEntityTemplatePopulated) => {
+    getButtonStateByRelatedTemplate: (relatedTemplate: IMongoEntityTemplateWithConstraintsPopulated) => {
         isEditButtonsDisabled: boolean;
         disabledButtonText: string;
         hasPermissionToRelatedTemplate: boolean;
     };
     connectionsTemplates?: INestedRelationshipTemplates[];
-    groupChildTemplate: Record<string, IChildTemplatePopulated[]>;
+    groupChildTemplate: Record<string, IMongoChildTemplateWithConstraintsPopulated[]>;
 }
 
 export const EntityConnections: React.FC<EntityConnectionsProps> = ({

@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/correctness/useExhaustiveDependencies: useEffects dependencies */
+import { IEntity } from '@packages/entity';
 import * as Cesium from 'cesium';
 import i18next from 'i18next';
 import React, { useEffect, useRef } from 'react';
@@ -6,9 +6,8 @@ import { createRoot, Root } from 'react-dom/client';
 import { QueryClientProvider, useQueryClient } from 'react-query';
 import { CesiumComponentRef } from 'resium';
 import { EntityPropertiesInternal } from '../../../common/EntityProperties';
-import { IEntity } from '../../../interfaces/entities';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { IPolygonSearchResult } from '../../../interfaces/location';
+import { IEntityTemplateMap } from '../../../interfaces/template';
 
 interface EntityTooltipProps {
     entity: IEntity;
@@ -75,6 +74,7 @@ export const useCesiumTooltip = ({ viewerRef, darkMode, entityTemplateMap, searc
     const tooltipRef = useRef<HTMLDivElement | null>(null);
     const queryClient = useQueryClient();
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: dependencies
     useEffect(() => {
         const viewer = viewerRef.current?.cesiumElement;
         if (!viewer) return;

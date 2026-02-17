@@ -1,8 +1,8 @@
 import { FilterList, FilterListOff } from '@mui/icons-material';
 import { useTheme } from '@mui/material';
+import { IEntity } from '@packages/entity';
 import i18next from 'i18next';
 import React from 'react';
-import { IEntity } from '../../interfaces/entities';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
 import IconButtonWithPopover from '../IconButtonWithPopover';

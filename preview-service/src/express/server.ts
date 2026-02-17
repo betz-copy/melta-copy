@@ -1,6 +1,6 @@
 import { once } from 'node:events';
 import * as http from 'node:http';
-import { errorMiddleware } from '@microservices/shared';
+import { errorMiddleware } from '@packages/utils';
 import * as bodyParser from 'body-parser';
 import express from 'express';
 import helmet from 'helmet';

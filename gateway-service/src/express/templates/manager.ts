@@ -1,55 +1,29 @@
+import { ICategory, IMongoCategory } from '@packages/category';
+import { IAxisField, IChartType, IColumnOrLineMetaData, INumberMetaData, IPieMetaData } from '@packages/chart';
+import { IChildTemplate, IChildTemplatePopulated, IChildTemplateWithConstraintsPopulated, isChildTemplate } from '@packages/child-template';
+import { IMongoProps } from '@packages/common';
+import { DashboardItemType, TableItem } from '@packages/dashboard';
+import { IConstraintsOfTemplate, IEntity, IUniqueConstraintOfTemplate, UploadedFile } from '@packages/entity';
 import {
-    BadRequestError,
-    ConfigTypes,
-    DashboardItemType,
-    IAxisField,
-    ICategory,
-    ICategoryOrderConfig,
-    IChartType,
-    IChildTemplate,
-    IChildTemplatePopulated,
-    IChildTemplateWithConstraintsPopulated,
-    IColumnOrLineMetaData,
-    IConstraintsOfTemplate,
-    IEntity,
     IEntitySingleProperty,
     IEntityTemplate,
     IEntityTemplatePopulated,
     IEntityTemplateWithConstraints,
-    IFormula,
     IFullMongoEntityTemplate,
-    IMongoBaseConfig,
-    IMongoCategory,
-    IMongoCategoryOrderConfig,
     IMongoEntityTemplatePopulated,
     IMongoEntityTemplateWithConstraints,
     IMongoEntityTemplateWithConstraintsPopulated,
-    IMongoPrintingTemplate,
-    IMongoRelationshipTemplate,
-    IMongoRule,
-    INUmberMetaData,
-    IPieMetaData,
-    IPrintingTemplate,
-    IRelationship,
-    IRule,
     ISearchEntityTemplatesBody,
-    ISearchRelationshipTemplatesBody,
-    ISearchRulesBody,
-    ISubCompactPermissions,
-    IUniqueConstraintOfTemplate,
     IUpdateOrDeleteEnumFieldReqData,
-    isChildTemplate,
-    logger,
-    MongoBaseFields,
-    NotFoundError,
-    PermissionScope,
-    PermissionType,
-    RelatedPermission,
-    ServiceError,
-    TableItem,
-    UploadedFile,
-    ValidationError,
-} from '@microservices/shared';
+} from '@packages/entity-template';
+import { ISubCompactPermissions, PermissionScope, PermissionType } from '@packages/permission';
+import { IMongoPrintingTemplate, IPrintingTemplate } from '@packages/printing-template';
+import { IRelationship } from '@packages/relationship';
+import { IMongoRelationshipTemplate, ISearchRelationshipTemplatesBody } from '@packages/relationship-template';
+import { IFormula, IMongoRule, IRule, ISearchRulesBody } from '@packages/rule';
+import { RelatedPermission } from '@packages/user';
+import { BadRequestError, logger, NotFoundError, ServiceError, ValidationError } from '@packages/utils';
+import { ConfigTypes, ICategoryOrderConfig, IMongoBaseConfig, IMongoCategoryOrderConfig } from '@packages/workspace';
 import { AxiosError } from 'axios';
 import { StatusCodes } from 'http-status-codes';
 import _, { groupBy, isEqual, omit, uniqBy } from 'lodash';
@@ -712,7 +686,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     }
 
     async throwIfEntityTemplateHasInstances(id: string) {
-        const { count } = await this.instancesService.searchEntitiesOfTemplateRequest(id, { limit: 1, skip: 0, showRelationships: false, sort: [] });
+        const { count } = await this.instancesService.searchEntitiesOfTemplateRequest(id, { limit: 1, skip: 0, sort: [] });
         if (count > 0) {
             throw new BadRequestError('entity template still has instances', { errorCode: entityTemplateHasInstances });
         }
@@ -846,7 +820,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                 }
 
                 case IChartType.Number: {
-                    const { accumulator } = chart.metaData as INUmberMetaData;
+                    const { accumulator } = chart.metaData as INumberMetaData;
                     foundProperty = isPropertyUsed(accumulator);
                     break;
                 }
@@ -904,7 +878,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         const filteredTableItems = allDashboardItems.filter(
             ({ type, metaData }) => type === DashboardItemType.Table && metaData.templateId === templateId && metaData.filter,
-        ) as (TableItem & MongoBaseFields)[];
+        ) as (TableItem & IMongoProps)[];
 
         return processAndUpdateItems(
             filteredTableItems,
@@ -931,7 +905,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                     const { entities } = await this.instancesService.searchEntitiesOfTemplateRequest(templateId, {
                         limit: searchEntitiesChunkSize,
                         skip: fileIndex,
-                        showRelationships: false,
                         sort: [],
                     });
 
@@ -1086,9 +1059,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         entities.forEach((entity) => {
             newExpandedUserFields.forEach((expandedUserFieldKey) => {
                 const userKey = updatedTemplateData.properties.properties[expandedUserFieldKey].expandedUserField?.relatedUserField;
-                if (userKey && entity.entity.properties[userKey] && JSON.parse(entity.entity.properties[userKey])._id) {
-                    usersIds.add(JSON.parse(entity.entity.properties[userKey])._id);
-                }
+                if (userKey && entity.entity.properties[userKey] && entity.entity.properties[userKey]._id)
+                    usersIds.add(entity.entity.properties[userKey]._id);
             });
         });
 
@@ -1103,7 +1075,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                 const expandedUserFieldValue = updatedTemplateData.properties.properties[expandedUserFieldKey];
                 const userKey = expandedUserFieldValue.expandedUserField?.relatedUserField;
                 const userFieldValue = userKey ? entity.entity.properties[userKey] : undefined;
-                const userId = userFieldValue ? JSON.parse(userFieldValue)._id : undefined;
+                const userId = userFieldValue ? userFieldValue._id : undefined;
 
                 if (userId && userKey) {
                     const kartoffelUser = kartoffelUsersMapById[userId] ? kartoffelUsersMapById[userId][0] : undefined;
@@ -1132,7 +1104,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     ): Promise<{ template: IMongoEntityTemplateWithConstraintsPopulated; childTemplates?: IChildTemplateWithConstraintsPopulated[] }> {
         await this.entityTemplateService.getCategoryById(updatedTemplateData.category);
 
-        const { count } = await this.instancesService.searchEntitiesOfTemplateRequest(id, { limit: 1, skip: 0, showRelationships: false, sort: [] });
+        const { count } = await this.instancesService.searchEntitiesOfTemplateRequest(id, { limit: 1, skip: 0, sort: [] });
         const currTemplate = await this.entityTemplateService.getEntityTemplateById(id);
         const { uniqueConstraints: currUnique } = await this.instancesService.getConstraintsOfTemplate(id);
 
@@ -1282,7 +1254,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                 this.populateTemplateConstraints(
                     {
                         ...updatedChildTemplate,
-                        parentTemplate: { ...template, category: template.category._id },
+                        parentTemplate: template,
                     },
                     requiredConstraints,
                     uniqueConstraints,

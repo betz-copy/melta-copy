@@ -1,14 +1,11 @@
-import { IChildTemplatePopulated, ISearchEntityTemplatesBody } from '@microservices/shared';
+import { IChildTemplatePopulated } from '@packages/child-template';
+import { ISearchEntityTemplatesBody } from '@packages/entity-template';
 import config from '../../config';
-import TemplatesManagerService from '.';
+import TemplatesService from '.';
 
-const {
-    templateService: {
-        children: { getByIdRoute, searchRoute, getRelatedByIdRoute },
-    },
-} = config;
+const { getByIdRoute, searchRoute, getRelatedByIdRoute } = config.templateService.children;
 
-class ChildTemplateManagerService extends TemplatesManagerService {
+class ChildTemplateService extends TemplatesService {
     async getChildTemplateById(id: string) {
         const { data } = await this.api.get<IChildTemplatePopulated>(`${getByIdRoute}/${id}`);
 
@@ -28,4 +25,4 @@ class ChildTemplateManagerService extends TemplatesManagerService {
     }
 }
 
-export default ChildTemplateManagerService;
+export default ChildTemplateService;

@@ -1,4 +1,8 @@
-import { IMongoChart, ISearchFilter, logger, MongoBaseFields, MongoDashboardItem, TableItem } from '@microservices/shared';
+import { IMongoChart } from '@packages/chart';
+import { IMongoProps } from '@packages/common';
+import { MongoDashboardItem, TableItem } from '@packages/dashboard';
+import { ISearchFilter } from '@packages/entity';
+import { logger } from '@packages/utils';
 import { omit } from 'lodash';
 
 export const processFilteredItems = <T>(
@@ -76,7 +80,7 @@ export const prepareChartForUpdate = (chart: IMongoChart) => ({
     filter: parseString(chart.filter) ?? chart.filter,
 });
 
-export const prepareDashboardItemForUpdate = (item: TableItem & MongoBaseFields) => ({
+export const prepareDashboardItemForUpdate = (item: TableItem & IMongoProps) => ({
     ...item,
     metaData: {
         ...item.metaData,

@@ -1,4 +1,6 @@
-import { getDefaultFilterFromChildTemplate, IEntity, ISearchFilter, NotFoundError, ValidationError } from '@microservices/shared';
+import { getDefaultFilterFromChildTemplate } from '@packages/child-template';
+import { IEntity, ISearchFilter } from '@packages/entity';
+import { NotFoundError, ValidationError } from '@packages/utils';
 import InstancesService from '../../externalServices/instanceService';
 import Kartoffel from '../../externalServices/kartoffel';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
@@ -35,6 +37,16 @@ class InstancesUtils extends DefaultController {
 
                 switch (prop?.format) {
                     case 'unitField': {
+                        if (typeof value !== 'string') {
+                            throw new ValidationError('must be unit', {
+                                message: 'must be unit',
+                                path: key,
+                                schemaPath: `#/properties/${key}/type`,
+                                params: {
+                                    type: prop.type,
+                                },
+                            });
+                        }
                         const unit = await UserService.getUnitById(value).catch(() => undefined);
                         const noUnitPermission = childTemplateId && unit && userUnits && !userUnits?.includes(unit._id);
 
@@ -56,8 +68,7 @@ class InstancesUtils extends DefaultController {
 
                     case 'user': {
                         try {
-                            const userId: string = JSON.parse(value)._id;
-                            await Kartoffel.getUserById(userId);
+                            await Kartoffel.getUserById(value);
                         } catch {
                             throw new ValidationError('must be user', {
                                 message: 'must be user',
@@ -93,9 +104,8 @@ class InstancesUtils extends DefaultController {
                 }
 
                 if (prop?.items?.format === 'user') {
-                    const userIds: string[] = value.map((userString) => JSON.parse(userString)._id);
-                    const users = await Kartoffel.getUsersByIds(userIds);
-                    if (userIds.length !== users.length) {
+                    const users = await Kartoffel.getUsersByIds(value);
+                    if (value.length !== users.length) {
                         throw new ValidationError('must be users', {
                             message: 'must be users',
                             path: key,

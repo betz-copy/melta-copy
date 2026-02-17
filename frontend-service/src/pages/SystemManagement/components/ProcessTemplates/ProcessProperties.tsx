@@ -1,8 +1,8 @@
 import { ChevronLeft, ExpandMore } from '@mui/icons-material';
 import { Button, Grid, Typography } from '@mui/material';
+import { IProcessSingleProperty } from '@packages/process';
 import i18next from 'i18next';
 import React, { useState } from 'react';
-import { IProcessSingleProperty } from '../../../../interfaces/processes/processTemplate';
 import { useWorkspaceStore } from '../../../../stores/workspace';
 
 interface ProcessPropertiesProps {

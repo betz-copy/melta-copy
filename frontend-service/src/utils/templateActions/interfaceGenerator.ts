@@ -1,17 +1,23 @@
+import {
+    IEntitySingleProperty,
+    IMongoEntityTemplatePopulated,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    PropertyFormat,
+} from '@packages/entity-template';
+import { CoordinateSystem } from '@packages/map';
 import { QueryClient } from 'react-query';
-import { CoordinateSystem } from '../../common/inputs/JSONSchemaFormik/Widgets/RjsfLocationWidget';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntityTemplateMap } from '../../interfaces/template';
 
 const generateFromString = ({ format, relationshipReference, enum: typeEnum }: IEntitySingleProperty, queryClient: QueryClient) => {
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     if (typeEnum) return typeEnum?.map((option) => `\`${option}\``).join(' | ');
 
-    if (format === 'date' || format === 'date-time') return 'Date';
+    if (format === PropertyFormat.date || format === PropertyFormat['date-time']) return 'Date';
 
-    if (format === 'relationshipReference') return entityTemplates.get(relationshipReference?.relatedTemplateId ?? '')!.name;
+    if (format === PropertyFormat.relationshipReference) return entityTemplates.get(relationshipReference?.relatedTemplateId ?? '')?.name ?? '';
 
-    if (format === 'location')
+    if (format === PropertyFormat.location)
         return `{ location: \`Polygon((\${string}))\`, coordinateSystem: ${Object.values(CoordinateSystem)
             .map((coordinateSystem) => `'${coordinateSystem}'`)
             .join(' | ')} }`;
@@ -20,7 +26,7 @@ const generateFromString = ({ format, relationshipReference, enum: typeEnum }: I
 };
 
 const generateFromArray = ({ items }: IEntitySingleProperty) => {
-    if (items?.format === 'fileId' || items?.format === 'user') return 'string[]';
+    if (items?.format === PropertyFormat.fileId || items?.format === PropertyFormat.user) return 'string[]';
 
     const arrayOptions = items?.enum?.map((option) => `\`${option}\``).join(' | ');
 
@@ -37,7 +43,7 @@ const generateInterface = (template: Record<string, IEntitySingleProperty>, inte
 
     Object.entries(template).forEach(([propertyName, propertyValues]) => {
         const { type, serialCurrent } = propertyValues;
-        const isComment = propertyValues.format === 'comment';
+        const isComment = propertyValues.format === PropertyFormat.comment;
 
         switch (type) {
             case 'number':
@@ -72,11 +78,11 @@ const generateInterfacesForRelatedTemplates = (template: Record<string, IEntityS
         const currentTemplate = queue.shift()!;
 
         Object.values(currentTemplate).forEach((propertyValues) => {
-            if (propertyValues.format === 'relationshipReference') {
+            if (propertyValues.format === PropertyFormat.relationshipReference) {
                 const { relatedTemplateId = '' } = propertyValues.relationshipReference || {};
 
                 if (!relationshipReferenceIds.has(relatedTemplateId)) {
-                    const relatedTemplate: IMongoEntityTemplatePopulated = entityTemplates.get(relatedTemplateId)!;
+                    const relatedTemplate: IMongoEntityTemplateWithConstraintsPopulated = entityTemplates.get(relatedTemplateId)!;
 
                     relationshipReferenceIds.add(relatedTemplateId);
                     interfaces.push(generateInterface(relatedTemplate.properties.properties, relatedTemplate.name, queryClient));

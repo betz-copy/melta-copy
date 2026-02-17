@@ -1,5 +1,6 @@
 import 'elastic-apm-node/start';
-import { logger, WorkspaceTypes } from '@microservices/shared';
+import { logger } from '@packages/utils';
+import { WorkspaceTypes } from '@packages/workspace';
 import * as mongoose from 'mongoose';
 import config from './config';
 import Server from './express/server';

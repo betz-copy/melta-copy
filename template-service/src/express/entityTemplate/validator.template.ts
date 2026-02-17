@@ -1,13 +1,6 @@
-import {
-    addPropertyToRequest,
-    BadRequestError,
-    DefaultController,
-    EntityTemplateType,
-    IEntitySingleProperty,
-    IMongoEntityTemplate,
-    IMongoEntityTemplatePopulated,
-    TemplateItem,
-} from '@microservices/shared';
+import { EntityTemplateType, TemplateItem } from '@packages/child-template';
+import { IEntitySingleProperty, IMongoEntityTemplate, IMongoEntityTemplatePopulated } from '@packages/entity-template';
+import { addPropertyToRequest, BadRequestError, DefaultController } from '@packages/utils';
 import { Request } from 'express';
 import * as ts from 'typescript-actions';
 import { generateInterfaceWithRelationships } from '../../utils/entityTemplateActions/interfacesGenerator';

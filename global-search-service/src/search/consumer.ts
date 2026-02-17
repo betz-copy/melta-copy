@@ -1,4 +1,5 @@
-import { basicValidateRequest, IndexingAction, IUpdateIndexRequest, logger, ServiceError } from '@microservices/shared';
+import { IndexingAction, IUpdateIndexRequest } from '@packages/global-search';
+import { basicValidateRequest, logger, ServiceError } from '@packages/utils';
 import { StatusCodes } from 'http-status-codes';
 import { ConsumerMessage } from 'menashmq';
 import config from '../config';

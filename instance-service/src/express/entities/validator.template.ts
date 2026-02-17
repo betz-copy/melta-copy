@@ -1,14 +1,8 @@
 import {
     ActionErrors,
-    addPropertyToRequest,
-    CoordinateSystem,
     FilterLogicalOperator,
-    IEntitySingleProperty,
-    IEntityTemplate,
     IFilterGroup,
     IFilterOfField,
-    IMongoEntityTemplate,
-    IMongoRelationshipTemplate,
     IPropertyValue,
     ISearchBatchBody,
     ISearchEntitiesByTemplatesBody,
@@ -16,8 +10,11 @@ import {
     ISearchFilter,
     IUniqueConstraintOfTemplate,
     matchValueAgainstFilter,
-    ValidationError,
-} from '@microservices/shared';
+} from '@packages/entity';
+import { IEntitySingleProperty, IEntityTemplate, IMongoEntityTemplate } from '@packages/entity-template';
+import { CoordinateSystem } from '@packages/map';
+import { IMongoRelationshipTemplate } from '@packages/relationship-template';
+import { addPropertyToRequest, ValidationError } from '@packages/utils';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import axios from 'axios';
@@ -27,7 +24,8 @@ import { Request } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
 import FilterValidation from '../../error';
-import EntityTemplateManagerService from '../../externalServices/templates/entityTemplateManager';
+import Kartoffel from '../../externalServices/kartoffel';
+import EntityTemplateService from '../../externalServices/templates/entityTemplateManager';
 import RelationshipsTemplateManagerService from '../../externalServices/templates/relationshipTemplateManager';
 import addDefaultFieldsToTemplate from '../../utils/addDefaultsFieldsToEntityTemplate';
 import DefaultController from '../../utils/express/controller';
@@ -42,13 +40,7 @@ const ajv = new Ajv();
 ajv.addFormat('fileId', ajvCustomFormats.fileIdFieldRegex);
 ajv.addFormat('signature', ajvCustomFormats.signatureFieldRegex);
 ajv.addFormat('comment', ajvCustomFormats.commentFieldRegex);
-ajv.addFormat('user', {
-    type: 'string',
-    validate: (user) => {
-        const userObj = JSON.parse(user);
-        return userObj._id && userObj.fullName && userObj.jobTitle && userObj.hierarchy && userObj.mail;
-    },
-});
+ajv.addFormat('user', /^[0-9a-fA-F]{24}$/);
 ajv.addFormat('kartoffelUserField', /.*/);
 ajv.addFormat('unitField', ajvCustomFormats.unitFieldRegex);
 ajv.addFormat('text-area', ajvCustomFormats.textAreaFieldRegex);
@@ -98,20 +90,20 @@ ajv.addKeyword({
 ajv.addKeyword({ keyword: 'accountBalance', type: 'boolean' });
 
 export class EntityValidator extends DefaultController {
-    private entityTemplateManagerService: EntityTemplateManagerService;
+    private entityTemplateService: EntityTemplateService;
 
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
 
     constructor(workspaceId: string) {
         super(undefined);
 
-        this.entityTemplateManagerService = new EntityTemplateManagerService(workspaceId);
+        this.entityTemplateService = new EntityTemplateService(workspaceId);
         this.relationshipsTemplateManagerService = new RelationshipsTemplateManagerService(workspaceId);
     }
 
     private async getEntityTemplateByIdOrThrowValidationError(templateId: string) {
         const { result: entityTemplate, err: getEntityTemplateByIdErr } = await tryCatch(() =>
-            this.entityTemplateManagerService.getEntityTemplateById(templateId),
+            this.entityTemplateService.getEntityTemplateById(templateId),
         );
         if (getEntityTemplateByIdErr || !entityTemplate) {
             if (axios.isAxiosError(getEntityTemplateByIdErr) && getEntityTemplateByIdErr.response?.status === StatusCodes.NOT_FOUND)
@@ -145,8 +137,9 @@ export class EntityValidator extends DefaultController {
         }
     }
 
-    validatePropertiesMatchFilters(properties: Record<string, IPropertyValue>, filter?: ISearchFilter) {
-        const notValidKey = matchValueAgainstFilter(properties, filter);
+    async validatePropertiesMatchFilters(properties: Record<string, IPropertyValue>, entityTemplate: IMongoEntityTemplate, filter?: ISearchFilter) {
+        const notValidKey = await matchValueAgainstFilter(properties, entityTemplate, async (id: string) => await Kartoffel.getUserById(id), filter);
+
         if (notValidKey)
             throw new FilterValidation(`Property ${notValidKey} do not match the filter`, {
                 properties,
@@ -171,7 +164,7 @@ export class EntityValidator extends DefaultController {
 
         this.validateEntity(entityTemplate, properties);
 
-        if (childTemplate?.filter) this.validatePropertiesMatchFilters(req.body.properties, childTemplate.filter);
+        if (childTemplate?.filter) await this.validatePropertiesMatchFilters(properties, entityTemplate, childTemplate.filter);
 
         addPropertyToRequest(req, 'entityTemplate', entityTemplate);
     }
@@ -370,12 +363,12 @@ export class EntityValidator extends DefaultController {
     }
 
     private validateShowRelationships(
-        showRelationships: boolean | string[],
+        showRelationships: boolean | string[] | undefined,
         entityTemplateId: string,
         relationshipTemplatesMap: Map<string, IMongoRelationshipTemplate>,
         pathOfShowRelationshipsField: string, // to show origin of error if throwing
     ) {
-        if (typeof showRelationships === 'boolean') return;
+        if (!showRelationships || typeof showRelationships === 'boolean') return;
 
         showRelationships.forEach((relationshipTemplateId, i) => {
             const relationshipTemplate = relationshipTemplatesMap.get(relationshipTemplateId);
@@ -417,7 +410,7 @@ export class EntityValidator extends DefaultController {
     async validateSearchByTemplatesBody(req: Request) {
         const { searchConfigs }: ISearchEntitiesByTemplatesBody = req.body;
         const templateIds = Object.keys(searchConfigs);
-        const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({ ids: templateIds });
+        const entityTemplates = await this.entityTemplateService.searchEntityTemplates({ ids: templateIds });
         if (entityTemplates.length < templateIds.length) {
             throw new ValidationError(`some of the templates in search doesnt exist. found only [${entityTemplates.map(({ _id }) => _id)}]`);
         }
@@ -448,7 +441,7 @@ export class EntityValidator extends DefaultController {
     async validateSearchBatchBody(req: Request) {
         const searchBody: ISearchBatchBody = req.body;
         const templateIds = Object.keys(searchBody.templates);
-        const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({ ids: templateIds });
+        const entityTemplates = await this.entityTemplateService.searchEntityTemplates({ ids: templateIds });
         if (entityTemplates.length < templateIds.length) {
             throw new ValidationError(`some of the templates in search doesnt exist. found only [${entityTemplates.map(({ _id }) => _id)}]`);
         }
@@ -474,7 +467,7 @@ export class EntityValidator extends DefaultController {
     async validateFilterBatchBody(req: Request) {
         const searchBody: IGetExpandedEntityBody['filters'] = req.body.filters;
         const templateIds = Object.keys(searchBody);
-        const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({ ids: templateIds });
+        const entityTemplates = await this.entityTemplateService.searchEntityTemplates({ ids: templateIds });
         if (entityTemplates.length < templateIds.length)
             throw new ValidationError(`some of the templates in search doesn't exist. found only [${entityTemplates.map(({ _id }) => _id)}]`);
 
@@ -493,7 +486,7 @@ export class EntityValidator extends DefaultController {
 
     async validatePrintBody(req: Request) {
         const searchBody: IGetExpandedEntityBody['filters'] = req.body.filters;
-        const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({});
+        const entityTemplates = await this.entityTemplateService.searchEntityTemplates({});
         const relationShips = await this.relationshipsTemplateManagerService.searchRelationshipTemplates();
 
         const entityTemplatesMap = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
@@ -541,7 +534,7 @@ export const getFilesName = (files: string[]): string => {
 export const addStringFieldsAndNormalizeSpecialStringValues = async (
     entityProperties: Record<string, IPropertyValue>,
     entityTemplate: IMongoEntityTemplate | IEntityTemplate,
-    entityTemplateService: EntityTemplateManagerService,
+    entityTemplateService: EntityTemplateService,
     coloredFields?: Record<string, string>,
     recursiveRelationshipReference = false,
 ): Promise<Record<string, IPropertyValue>> => {
@@ -560,24 +553,11 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
                 return;
             }
 
-            const propertyValue = entityProperties[key];
+            let propertyValue = entityProperties[key];
             const { type, format, items } = value;
 
-            if (format === 'user') {
-                config.neo4j.userOriginalAndSuffixFieldsMap.forEach(({ suffixFieldName, originalFieldName }) => {
-                    normalizedEntity[`${key}${suffixFieldName}${config.neo4j.userFieldPropertySuffix}`] =
-                        JSON.parse(propertyValue)[originalFieldName];
-                });
-                return;
-            }
-
-            if (type === 'array' && items?.format === 'user') {
-                config.neo4j.usersArrayOriginalAndSuffixFieldsMap.forEach(({ suffixFieldName, originalFieldName }) => {
-                    normalizedEntity[`${key}${suffixFieldName}${config.neo4j.usersFieldsPropertySuffix}`] = propertyValue.map(
-                        (user: string) => JSON.parse(user)[originalFieldName],
-                    );
-                });
-                return;
+            if (type === 'array' && Array.isArray(propertyValue)) {
+                propertyValue = propertyValue.filter((item) => item !== null && item !== undefined);
             }
 
             // For Neo4j fulltext search (supports only string properties)
@@ -611,8 +591,18 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
                 return;
             }
 
+            if (format === 'user' && typeof propertyValue === 'object') {
+                normalizedEntity[key] = propertyValue._id;
+                return;
+            }
+
+            if (items?.format === 'user' && Array.isArray(propertyValue)) {
+                normalizedEntity[key] = propertyValue.map((user) => (typeof user === 'string' ? user : user?._id));
+                return;
+            }
+
             if (type === 'string' && format === 'relationshipReference' && typeof propertyValue === 'object') {
-                let relationShipPropValue: Record<string, IPropertyValue> = 'properties' in propertyValue ? propertyValue.properties : propertyValue;
+                let relationshipPropValue: Record<string, IPropertyValue> = 'properties' in propertyValue ? propertyValue.properties : propertyValue;
 
                 if (recursiveRelationshipReference) {
                     const relatedEntityTemplate = await entityTemplateService.getEntityTemplateById(propertyValue.templateId);
@@ -621,7 +611,7 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
                         ({ format: nestedFormat }) => nestedFormat === 'relationshipReference',
                     );
 
-                    relationShipPropValue = await addStringFieldsAndNormalizeSpecialStringValues(
+                    relationshipPropValue = await addStringFieldsAndNormalizeSpecialStringValues(
                         propertyValue.properties,
                         relatedEntityTemplate,
                         entityTemplateService,
@@ -631,7 +621,7 @@ export const addStringFieldsAndNormalizeSpecialStringValues = async (
                 }
 
                 normalizedEntity[`${key}.templateId${neo4j.relationshipReferencePropertySuffix}`] = value.relationshipReference!.relatedTemplateId;
-                Object.entries(relationShipPropValue).forEach(([innerKey, innerProperty]) => {
+                Object.entries(relationshipPropValue).forEach(([innerKey, innerProperty]) => {
                     if (innerKey !== 'coloredProperties')
                         normalizedEntity[`${key}.properties.${innerKey}${neo4j.relationshipReferencePropertySuffix}`] = innerProperty;
                 });

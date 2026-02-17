@@ -1,20 +1,15 @@
-import {
-    DefaultManagerMongo,
-    IEntitySingleProperty,
-    IEntityTemplate,
-    IEntityTemplatePopulated,
-    IMongoCategory,
-    IMongoEntityTemplate,
-    IRelationshipTemplate,
-    NotFoundError,
-} from '@microservices/shared';
+import { IMongoCategory } from '@packages/category';
+import { IEntitySingleProperty, IEntityTemplate, IEntityTemplatePopulated, IMongoEntityTemplate } from '@packages/entity-template';
+import { IRelationshipTemplate } from '@packages/relationship-template';
+import { DefaultManagerMongo, NotFoundError, ServiceError } from '@packages/utils';
+import { StatusCodes } from 'http-status-codes';
 import { ClientSession, FilterQuery, UpdateQuery } from 'mongoose';
 import config from '../../config';
+import GlobalSearchIndexCreator from '../../externalServices/globalSearchIndexCreator';
 import { escapeRegExp } from '../../utils';
 import { withTransaction } from '../../utils/mongoose';
 import CategoryManager from '../category/manager';
 import ChildTemplateManager from '../childTemplate/manager';
-import GlobalSearchIndexCreator from '../externalServices/globalSearchIndexCreator';
 import RelationshipTemplateManager from '../relationshipTemplate/manager';
 import EntityTemplateSchema from './model';
 
@@ -183,11 +178,13 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
             entityTemplate = await createdEntityTemplate.populate<Pick<IEntityTemplatePopulated, 'category'>>('category');
         }
 
+        if (!entityTemplate) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Failed to create entity template');
+
         const { templatesOrder } = entityTemplate.category;
         templatesOrder.push(entityTemplate._id.toString());
         await this.categoryManager.updateCategory(entityTemplate.category._id, { templatesOrder });
 
-        await this.globalSearchIndexCreator.sendUpdateIndexesOnUpdateTemplate(entityTemplate!._id);
+        await this.globalSearchIndexCreator.sendUpdateIndexesOnUpdateTemplate(entityTemplate._id);
 
         return entityTemplate;
     }
@@ -340,7 +337,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         });
 
         const isNewPropertyAdded =
-            Object.keys(currentEntityTemplate.properties.properties).length !== Object.keys(newEntityTemplate?.properties.properties).length;
+            Object.keys(currentEntityTemplate.properties.properties).length !== Object.keys(newEntityTemplate.properties.properties).length;
 
         if (isPropertyTypeChanged || isNewPropertyAdded) {
             await this.globalSearchIndexCreator.sendUpdateIndexesOnUpdateTemplate(id);

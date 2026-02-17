@@ -1,14 +1,18 @@
-import { ActionOnFail } from '@microservices/shared';
-import { ICategory, IEntityTemplatePopulated } from '../../src/express/externalServices/entityTemplateManager';
-import { IMongoRelationshipTemplate } from '../../src/express/relationshipTemplate/interface';
-import { IRule } from '../../src/express/rule/interfaces';
+import { IMongoCategory } from '@packages/category';
+import { Conjunction } from '@packages/common';
+import { IEntityTemplatePopulated, PropertyFormat, PropertyType } from '@packages/entity-template';
+import { IMongoRelationshipTemplate } from '@packages/relationship-template';
+import { ActionOnFail, IRule } from '@packages/rule';
 
-export const fakeStupidCategory: ICategory = {
+export const fakeStupidCategory: IMongoCategory = {
     _id: 'unnecessary-category',
     color: '000000',
     name: 'stupid category for mock',
     displayName: 'because typescript is smart',
     iconFileId: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    templatesOrder: [],
 };
 
 export const travelAgentEntityTemplate: IEntityTemplatePopulated = {
@@ -20,27 +24,27 @@ export const travelAgentEntityTemplate: IEntityTemplatePopulated = {
         type: 'object',
         properties: {
             firstName: {
-                type: 'string',
+                type: PropertyType.string,
                 title: 'שם פרטי',
             },
             lastName: {
-                type: 'string',
+                type: PropertyType.string,
                 title: 'שם משפחה',
             },
             age: {
-                type: 'number',
+                type: PropertyType.number,
                 title: 'גיל',
             },
             gender: {
-                type: 'boolean',
+                type: PropertyType.boolean,
                 title: 'זכר',
             },
             agentId: {
-                type: 'string',
+                type: PropertyType.string,
                 title: 'מזהה סוכן',
             },
         },
-        required: ['firstName', 'lastName', 'agentId'],
+        hide: [],
     },
     propertiesOrder: ['firstName', 'lastName', 'age', 'gender', 'agentId'],
     propertiesTypeOrder: ['properties', 'attachmentProperties'],
@@ -53,38 +57,47 @@ export const flightEntityTemplate: IEntityTemplatePopulated = {
     _id: '222',
     name: 'flight',
     displayName: 'טיסה',
-    category: fakeStupidCategory,
+    category: {
+        _id: '123',
+        color: '000000',
+        name: 'stupid category for mock',
+        displayName: 'because typescript is smart',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        iconFileId: null,
+        templatesOrder: [],
+    },
     properties: {
         type: 'object',
         properties: {
             flightNumber: {
-                type: 'string',
+                type: PropertyType.string,
                 title: 'מספר טיסה',
             },
             departureDate: {
-                type: 'string',
+                type: PropertyType.string,
                 title: 'תאריך המראה',
-                format: 'date-time',
+                format: PropertyFormat['date-time'],
             },
             landingDate: {
-                type: 'string',
+                type: PropertyType.string,
                 title: 'תאריך נחיתה',
-                format: 'date-time',
+                format: PropertyFormat['date-time'],
             },
             from: {
-                type: 'string',
+                type: PropertyType.string,
                 title: 'מקום המראה',
             },
             to: {
-                type: 'string',
+                type: PropertyType.string,
                 title: 'מקום הנחיתה',
             },
             planeType: {
-                type: 'string',
+                type: PropertyType.string,
                 title: 'סוג המטוס',
             },
         },
-        required: ['flightNumber', 'departureDate', 'landingDate'],
+        hide: [],
     },
     propertiesOrder: ['flightNumber', 'departureDate', 'landingDate', 'from', 'to', 'planeType'],
     propertiesTypeOrder: ['properties', 'attachmentProperties'],
@@ -99,8 +112,8 @@ export const flightsOnRelationshipTemplate: IMongoRelationshipTemplate = {
     displayName: 'טס על',
     sourceEntityId: travelAgentEntityTemplate._id,
     destinationEntityId: flightEntityTemplate._id,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
 };
 
 export const tripEntityTemplate: IEntityTemplatePopulated = {
@@ -112,30 +125,30 @@ export const tripEntityTemplate: IEntityTemplatePopulated = {
         type: 'object',
         properties: {
             name: {
-                type: 'string',
+                type: PropertyType.string,
                 title: 'שם',
             },
             destination: {
-                type: 'string',
+                type: PropertyType.string,
                 title: 'יעד',
             },
             startDate: {
-                type: 'string',
+                type: PropertyType.string,
                 title: 'תאריך התחלה',
-                format: 'date',
+                format: PropertyFormat.date,
             },
             endDate: {
-                type: 'string',
+                type: PropertyType.string,
                 title: 'תאריך סיום',
-                format: 'date',
+                format: PropertyFormat.date,
             },
             firstFile: {
-                type: 'string',
+                type: PropertyType.string,
                 title: 'קובץ ראשון',
-                format: 'fileId',
+                format: PropertyFormat.fileId,
             },
         },
-        required: ['name', 'destination'],
+        hide: [],
     },
     propertiesOrder: ['name', 'destination', 'startDate', 'endDate', 'firstFile'],
     propertiesTypeOrder: ['properties', 'attachmentProperties'],
@@ -150,8 +163,8 @@ export const tripConnectedToFlightRelationshipTemplate: IMongoRelationshipTempla
     displayName: 'טיסה משוייכת לטיול',
     sourceEntityId: flightEntityTemplate._id,
     destinationEntityId: tripEntityTemplate._id,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
 };
 
 // rule 1
@@ -162,7 +175,7 @@ export const oneTravelAgentPerFlight: IRule = {
     entityTemplateId: flightEntityTemplate._id,
     formula: {
         isGroup: true,
-        ruleOfGroup: 'AND',
+        ruleOfGroup: Conjunction.AND,
         subFormulas: [
             {
                 isEquation: true,
@@ -182,6 +195,7 @@ export const oneTravelAgentPerFlight: IRule = {
         ],
     },
     disabled: false,
+    doesFormulaHaveTodayFunc: false,
 };
 
 // rule 2
@@ -191,9 +205,10 @@ export const noOverlappingFlightsInTrip: IRule = {
     actionOnFail: ActionOnFail.WARNING,
     disabled: false,
     entityTemplateId: tripEntityTemplate._id,
+    doesFormulaHaveTodayFunc: false,
     formula: {
         isGroup: true,
-        ruleOfGroup: 'AND',
+        ruleOfGroup: Conjunction.AND,
         subFormulas: [
             {
                 isAggregationGroup: true,
@@ -205,7 +220,7 @@ export const noOverlappingFlightsInTrip: IRule = {
                         otherEntityTemplateId: flightEntityTemplate._id,
                     },
                 },
-                ruleOfGroup: 'AND',
+                ruleOfGroup: Conjunction.AND,
                 subFormulas: [
                     {
                         isAggregationGroup: true,
@@ -218,7 +233,7 @@ export const noOverlappingFlightsInTrip: IRule = {
                                 variableNameSuffix: '2',
                             },
                         },
-                        ruleOfGroup: 'OR',
+                        ruleOfGroup: Conjunction.OR,
                         subFormulas: [
                             {
                                 isEquation: true,
@@ -302,7 +317,7 @@ export const warnOnEveryFlightOnActiveZone: IRule = {
     entityTemplateId: tripEntityTemplate._id,
     formula: {
         isGroup: true,
-        ruleOfGroup: 'AND',
+        ruleOfGroup: Conjunction.AND,
         subFormulas: [
             {
                 isEquation: true,
@@ -313,4 +328,5 @@ export const warnOnEveryFlightOnActiveZone: IRule = {
         ],
     },
     disabled: false,
+    doesFormulaHaveTodayFunc: false,
 };

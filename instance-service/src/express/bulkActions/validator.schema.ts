@@ -1,4 +1,4 @@
-import { ActionTypes } from '@microservices/shared';
+import { ActionTypes } from '@packages/action';
 import Joi from 'joi';
 import { brokenRuleSchema } from '../rules/ignoredRuleSchema';
 

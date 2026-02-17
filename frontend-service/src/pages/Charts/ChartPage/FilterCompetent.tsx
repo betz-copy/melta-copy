@@ -1,6 +1,6 @@
 import { Close } from '@mui/icons-material';
-import { Autocomplete, Divider, Grid, IconButton, useTheme } from '@mui/material';
-import { Box } from '@mui/system';
+import { Autocomplete, Box, Divider, Grid, IconButton, useTheme } from '@mui/material';
+import { IEntitySingleProperty, PropertyFormat } from '@packages/entity-template';
 import { FormikErrors, FormikProps, FormikTouched, getIn } from 'formik';
 import i18next from 'i18next';
 import { useMemo, useState } from 'react';
@@ -10,7 +10,7 @@ import { handleRemoveFilter, initializedFilterField, renderFilterInput } from '.
 import { StyledFilterInput } from '../../../common/inputs/FilterInputs/StyledFilterInput';
 import { IFilterTemplate } from '../../../common/wizards/entityTemplate/commonInterfaces';
 import { ChartForm, TableForm, ViewMode } from '../../../interfaces/dashboard';
-import { IEntitySingleProperty, IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { IEntityTemplateMap } from '../../../interfaces/template';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { getRelevantEntityTemplate } from '../../Dashboard/DashboardItemDetails/Chart/BodyComponent';
 
@@ -103,9 +103,9 @@ const FilterCompetent = <T extends TableForm | ChartForm>({
                                             getOptionDisabled={(option) => {
                                                 const propertyTemplate = entityTemplate?.properties.properties[option];
 
-                                                if (propertyTemplate?.format === 'relationshipReference') {
-                                                    const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId;
-                                                    return !entityTemplates?.get(relatedTemplateId ?? '');
+                                                if (propertyTemplate?.format === PropertyFormat.relationshipReference) {
+                                                    const relatedTemplateId = propertyTemplate.relationshipReference?.relatedTemplateId ?? '';
+                                                    return !entityTemplates?.get(relatedTemplateId);
                                                 }
                                                 return false;
                                             }}

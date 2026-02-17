@@ -23,13 +23,13 @@ import {
     ToggleButtonGroup,
     Typography,
 } from '@mui/material';
+import { IPropertyValue } from '@packages/entity';
 import { FormikErrors, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import React, { SetStateAction, useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IPropertyValue } from '../../../../interfaces/entities';
-import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import { IEntityTemplateMap } from '../../../../interfaces/template';
 import { deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../../services/templates/entityTemplatesService';
 import { AreYouSureDialog } from '../../../dialogs/AreYouSureDialog';
 import { MinimizedColorPicker } from '../../../inputs/MinimizedColorPicker';

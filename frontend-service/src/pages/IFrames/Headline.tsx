@@ -1,5 +1,7 @@
 import { Delete, Edit, Favorite, FavoriteBorder, Hive as HiveIcon, OpenInFull } from '@mui/icons-material';
 import { Dialog, Grid, IconButton, Typography, useTheme } from '@mui/material';
+import { DashboardItemType } from '@packages/dashboard';
+import { IMongoIframe } from '@packages/iframe';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
@@ -10,15 +12,13 @@ import { CustomIcon } from '../../common/CustomIcon';
 import { ErrorToast } from '../../common/ErrorToast';
 import MeltaTooltip from '../../common/MeltaDesigns/MeltaTooltip';
 import { IFrameWizard } from '../../common/wizards/iFrame';
-import { DashboardItemType } from '../../interfaces/dashboard';
-import { IMongoIFrame } from '../../interfaces/iFrames';
 import { deleteIFrame, iFrameObjectToIFrameForm, updateIFrame } from '../../services/iFramesService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { ConfirmDeleteDashboardItem, ConfirmEditCommonItem } from '../Dashboard/Dialogs';
 
 const IFrameHeadline: React.FC<{
-    iFrame: IMongoIFrame;
+    iFrame: IMongoIframe;
     setIFramesOrder?: (value: string[]) => void;
     isIFramePage: boolean;
     setIFrameDeleted?: React.Dispatch<React.SetStateAction<boolean>>;
@@ -43,7 +43,7 @@ const IFrameHeadline: React.FC<{
 
     const [editIFrameDialogState, setEditIFrameDialogState] = useState<{
         isWizardOpen: boolean;
-        iFrame: IMongoIFrame | null;
+        iFrame: IMongoIframe | null;
     }>({
         isWizardOpen: false,
         iFrame: null,
@@ -51,7 +51,7 @@ const IFrameHeadline: React.FC<{
 
     const [iFrameWizardDialogState, setIFrameWizardDialogState] = useState<{
         isWizardOpen: boolean;
-        iFrame: IMongoIFrame | null;
+        iFrame: IMongoIframe | null;
     }>({
         isWizardOpen: false,
         iFrame: null,
@@ -66,7 +66,7 @@ const IFrameHeadline: React.FC<{
         ({ id, usedInDashboard }: { id: string; usedInDashboard?: boolean }) => deleteIFrame(id, usedInDashboard),
         {
             onSuccess: (data) => {
-                queryClient.setQueryData<IMongoIFrame[]>('allIFrames', (oldData) => {
+                queryClient.setQueryData<IMongoIframe[]>('allIFrames', (oldData) => {
                     if (!oldData) return [];
                     return oldData.filter((iframe) => iframe._id !== data._id);
                 });
@@ -166,7 +166,7 @@ const IFrameHeadline: React.FC<{
                                                                 ...iFrame,
                                                                 placeInSideBar: !placeInSideBar,
                                                             });
-                                                            queryClient.setQueryData<IMongoIFrame[]>('allIFrames', (oldData) => {
+                                                            queryClient.setQueryData<IMongoIframe[]>('allIFrames', (oldData) => {
                                                                 if (!oldData) {
                                                                     return [];
                                                                 }

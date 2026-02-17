@@ -1,4 +1,5 @@
-import { IEntity, IMongoEntityTemplatePopulated } from '@microservices/shared';
+import { IEntity } from '@packages/entity';
+import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import { load } from 'cheerio';
 import { ImageRun, IPatch, PatchType, patchDocument, TextRun } from 'docx';
 import { toHebrewJewishDate, toJewishDate } from 'jewish-date';

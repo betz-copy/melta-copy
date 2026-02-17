@@ -1,28 +1,24 @@
 import { CloseFullscreen, OpenInFull, Visibility, VisibilityOff } from '@mui/icons-material';
 import { Grid, IconButton, Tooltip } from '@mui/material';
+import { IMongoUnit, IUnitHierarchy } from '@packages/unit';
 import i18next from 'i18next';
 import React, { useMemo } from 'react';
 import SearchInput from '../../../../common/inputs/SearchInput';
 import { flattenTree } from '../../../../common/Tree';
-import { IMongoUnit, IUnitHierarchy } from '../../../../interfaces/units';
 import { CreateButton } from '../CreateButton';
 
 interface HeaderProps {
     expandedIds: string[];
     setExpandedIds: React.Dispatch<React.SetStateAction<string[]>>;
-
     hierarchy: IUnitHierarchy[];
-
     setWizardDialogState: React.Dispatch<
         React.SetStateAction<{
             isWizardOpen: boolean;
             unit: Partial<IMongoUnit> | IMongoUnit | null;
         }>
     >;
-
     isShowDisabled: boolean;
     setIsShowDisabled: React.Dispatch<React.SetStateAction<boolean>>;
-
     onSearch: (value: string) => void;
 }
 
