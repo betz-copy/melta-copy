@@ -1,7 +1,7 @@
 import { Grid, Typography } from '@mui/material';
 import { IPropertyValue } from '@packages/entity';
 import i18next from 'i18next';
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import SearchInput from '../../../common/inputs/SearchInput';
 import { defaultMetadata, useWorkspaceStore } from '../../../stores/workspace';
 import { deepClone, getDefaultValue, getValueByPath, setNestedValue } from '../../../utils/configs/configsUtils';
@@ -15,48 +15,48 @@ const ConfigurationManagement: React.FC = () => {
     const [updatedConfigs, setUpdatedConfigs] = useState<Record<string, IPropertyValue>>({});
     const [searchText, setSearchText] = useState<string>('');
 
-    useMemo(() => {
+    useEffect(() => {
         setUpdatedConfigs(deepClone(configs));
     }, [configs]);
 
-    const updateConfig = (path: string, newValue: IValue) => {
+    const updateConfig = useCallback((path: string, newValue: IValue) => {
         setUpdatedConfigs((prevConfigs) => {
             const updated = deepClone(prevConfigs);
             setNestedValue(updated, path, newValue);
             return updated;
         });
-    };
+    }, []);
 
-    const collectFilteredFields = (configs: Record<string, IPropertyValue>, parentKey = ''): React.ReactNode[] => {
-        let fields: React.ReactNode[] = [];
-        Object.entries(configs).forEach(([key, value]) => {
-            const fullKey = parentKey ? `${parentKey}.${key}` : key;
-            if (typeof value === 'object' && value !== null && !Array.isArray(value)) fields = fields.concat(collectFilteredFields(value, fullKey));
-            else {
-                const translateConfigProp = i18next.t(`DynamicsConfigs.${fullKey}`);
-                if (!searchText || translateConfigProp.toLowerCase().includes(searchText.toLowerCase())) {
-                    fields.push(
-                        <Field
-                            key={fullKey}
-                            keyPath={fullKey}
-                            value={getValueByPath(updatedConfigs, fullKey)}
-                            defaultValue={getDefaultValue(fullKey, defaultMetadata)}
-                            updateConfig={updateConfig}
-                            workspaceMetadata={workspace.metadata}
-                            updateWorkspaceMetadata={updateWorkspaceMetadata}
-                            workspaceId={workspace._id}
-                        />,
-                    );
-                }
-            }
-        });
-        return fields;
-    };
-
-    // biome-ignore lint/correctness/useExhaustiveDependencies: make it re-render
     const filteredFields = useMemo(() => {
+        const collectFilteredFields = (cfgs: Record<string, IPropertyValue>, parentKey = ''): React.ReactNode[] => {
+            let fields: React.ReactNode[] = [];
+            Object.entries(cfgs).forEach(([key, value]) => {
+                const fullKey = parentKey ? `${parentKey}.${key}` : key;
+                if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                    fields = fields.concat(collectFilteredFields(value, fullKey));
+                } else {
+                    const translateConfigProp = i18next.t(`DynamicsConfigs.${fullKey}`);
+                    if (!searchText || translateConfigProp.toLowerCase().includes(searchText.toLowerCase())) {
+                        fields.push(
+                            <Field
+                                key={fullKey}
+                                keyPath={fullKey}
+                                value={getValueByPath(updatedConfigs, fullKey)}
+                                defaultValue={getDefaultValue(fullKey, defaultMetadata)}
+                                updateConfig={updateConfig}
+                                workspaceMetadata={workspace.metadata}
+                                updateWorkspaceMetadata={updateWorkspaceMetadata}
+                                workspaceId={workspace._id}
+                            />,
+                        );
+                    }
+                }
+            });
+            return fields;
+        };
+
         return collectFilteredFields(configs);
-    }, [configs, updatedConfigs, searchText]);
+    }, [configs, updatedConfigs, searchText, workspace.metadata, workspace._id, updateWorkspaceMetadata, updateConfig]);
 
     return (
         <Grid container spacing={3}>
