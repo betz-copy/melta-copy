@@ -78,6 +78,7 @@
         "nestjs-cls": "^6.2.0",
         "nestjs-zod": "^5.1.1",
         "nodemon": "^3.1.0",
+        "rxjs": "^7.8.2",
         "uuid": "^11.1.0",
         "winston": "^3.17.0",
         "winston-daily-rotate-file": "^5.0.0",

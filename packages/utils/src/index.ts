@@ -1,4 +1,5 @@
 export * from './agGrid';
+export { default as AppClsModule } from './cls/cls.module';
 export * from './express';
 export { default as DefaultController } from './express/controller';
 export * from './express/error';

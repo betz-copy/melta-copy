@@ -17,7 +17,7 @@ abstract class DefaultMongoService<T> {
     ) {}
 
     protected get model(): Model<T> {
-        const workspaceId = this.cls.get<string>(config.workspaceIdHeader);
+        const workspaceId = this.cls.get<string>(config.requestHeaders.workspaceIdHeader);
 
         if (!workspaceId) throw new Error('Model is not initialized. Ensure workspaceId is set.');
 

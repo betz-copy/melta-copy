@@ -1,30 +1,30 @@
-import 'elastic-apm-node/start';
-import { logger } from '@packages/utils';
-import * as mongoose from 'mongoose';
-import config from './config';
-import Server from './express/server';
-import initializeRabbit from './utils/rabbit';
+// import 'elastic-apm-node/start';
+// import { logger } from '@packages/utils';
+// import * as mongoose from 'mongoose';
+// import config from './config';
+// import Server from './express/server';
+// import initializeRabbit from './utils/rabbit';
 
-const { mongo, service } = config;
+// const { mongo, service } = config;
 
-const initializeMongo = async () => {
-    logger.info('Connecting to Mongo...');
+// const initializeMongo = async () => {
+//     logger.info('Connecting to Mongo...');
 
-    await mongoose.connect(mongo.url, mongo.connectionOptions);
+//     await mongoose.connect(mongo.url, mongo.connectionOptions);
 
-    logger.info('Mongo connection established');
-};
+//     logger.info('Mongo connection established');
+// };
 
-const main = async () => {
-    await initializeMongo();
+// const main = async () => {
+//     await initializeMongo();
 
-    await initializeRabbit();
+//     await initializeRabbit();
 
-    const server = new Server(service.port);
+//     const server = new Server(service.port);
 
-    await server.start();
+//     await server.start();
 
-    logger.info(`Server started on port: ${service.port}`);
-};
+//     logger.info(`Server started on port: ${service.port}`);
+// };
 
-main().catch((error) => logger.error('Main error: ', { error }));
+// main().catch((error) => logger.error('Main error: ', { error }));
