@@ -4,7 +4,7 @@ import {
     IChildTemplateProperty,
     IMongoChildTemplatePopulated,
 } from '@packages/child-template';
-import { serializeUser } from '@packages/entity';
+import { IUserField, serializeUser } from '@packages/entity';
 import { IEntitySingleProperty, IFullMongoEntityTemplate } from '@packages/entity-template';
 import Kartoffel from '../externalServices/kartoffel';
 
@@ -39,7 +39,13 @@ const populateChildTemplateWithParent = async (childTemplate: IChildTemplatePopu
     }
 
     const userIds = Object.keys(userIdToKey);
-    const users = (await Kartoffel.getUsersByIds(userIds)).map(serializeUser);
+    const users: IUserField[] = [];
+
+    if (userIds.length) {
+        try {
+            users.push(...(await Kartoffel.getUsersByIds(userIds)).map(serializeUser));
+        } catch {}
+    }
 
     const childProperties = getChildPropertiesFiltered(
         Object.fromEntries(
