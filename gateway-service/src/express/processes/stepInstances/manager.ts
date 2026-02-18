@@ -7,6 +7,7 @@ import {
     IStepInstance,
     UpdateStepReqBody,
 } from '@packages/process';
+import { IReqUser } from '@packages/user';
 import { logger } from '@packages/utils';
 import ProcessService from '../../../externalServices/processService';
 import StorageService from '../../../externalServices/storageService';
@@ -41,13 +42,16 @@ class StepsInstancesManager extends DefaultManagerProxy<ProcessService> {
         ]);
     }
 
-    async getStepInstanceWithEntitiesAndReviewers(step: IMongoStepInstance, userId: string): Promise<IMongoStepInstancePopulated> {
+    async getStepInstanceWithEntitiesAndReviewers(step: IMongoStepInstance, user: IReqUser): Promise<IMongoStepInstancePopulated> {
         const processInstancesManager = new ProcessesInstancesManager(this.workspaceId);
         const stepTemplate = await this.service.getStepTemplateByStepInstanceId(step._id);
+
         const reviewerPromise = step.reviewerId ? UsersManager.getUserById(step.reviewerId) : Promise.resolve(undefined);
         const populatedReviewersPromise = Promise.all(step.reviewers.map((id) => UsersManager.getUserById(id)));
+
         const propertiesPromise =
-            step.properties && processInstancesManager.getPropertiesWithEntities(step.properties, stepTemplate.properties, userId);
+            step.properties && processInstancesManager.getPropertiesWithEntities(step.properties, stepTemplate.properties, user);
+
         return Promise.all([reviewerPromise, populatedReviewersPromise, propertiesPromise]).then(([reviewer, populatedReviewers, properties]) => {
             const { reviewerId: _reviewerId, ...populatedStep } = {
                 ...step,
@@ -64,25 +68,25 @@ class StepsInstancesManager extends DefaultManagerProxy<ProcessService> {
         stepId: string,
         updatedData: Partial<Pick<IStepInstance, 'properties' | 'status' | 'comments'>>,
         files: UploadedFile[],
-        userId: string,
+        user: IReqUser,
     ) {
         const processInstancesManager = new ProcessesInstancesManager(this.workspaceId);
         const { properties, status: updatedStepStatus, comments } = updatedData;
         const processServiceUpdateData: UpdateStepReqBody = updatedStepStatus
-            ? { properties, statusReview: { status: updatedStepStatus, reviewerId: userId }, comments, processId }
+            ? { properties, statusReview: { status: updatedStepStatus, reviewerId: user._id }, comments, processId }
             : { properties, comments, processId };
 
-        const process = await processInstancesManager.service.getProcessInstanceById(processId, userId);
+        const process = await processInstancesManager.service.getProcessInstanceById(processId, user);
         const stepTemplate = await processInstancesManager.service.getStepTemplateByStepInstanceId(stepId);
 
         if (properties) await processInstancesManager.checkEntityReferenceFields(properties, stepTemplate.properties);
 
         if (!files.length) {
             // add remove old files
-            const updatedStep = await this.service.updateStepInstance(stepId, processServiceUpdateData, userId);
-            const updatedProcess = await processInstancesManager.getProcessInstance(processId, userId);
+            const updatedStep = await this.service.updateStepInstance(stepId, processServiceUpdateData, user._id);
+            const updatedProcess = await processInstancesManager.getProcessInstance(processId, user);
             if (updatedStepStatus) this.handleNotificationsOnUpdateStepInstance(updatedProcess, process, updatedStep);
-            return this.getStepInstanceWithEntitiesAndReviewers(updatedStep, userId);
+            return this.getStepInstanceWithEntitiesAndReviewers(updatedStep, user);
         }
 
         const { props, files: filesToUpload } = await this.instancesManager.uploadInstanceFiles(files, processServiceUpdateData.properties);
@@ -95,7 +99,7 @@ class StepsInstancesManager extends DefaultManagerProxy<ProcessService> {
                     ...processServiceUpdateData,
                     properties: props,
                 },
-                userId,
+                user._id,
             )
             .catch(async (processServiceError) => {
                 await this.storageService.deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch((deleteFilesError) => {
@@ -109,11 +113,11 @@ class StepsInstancesManager extends DefaultManagerProxy<ProcessService> {
         if (oldProperties) await processInstancesManager.removeUnusedFileIds(stepTemplate.properties, oldProperties, { ...props });
 
         if (updatedData.status) {
-            const updatedProcess = await processInstancesManager.getProcessInstance(processId, userId);
+            const updatedProcess = await processInstancesManager.getProcessInstance(processId, user);
             this.handleNotificationsOnUpdateStepInstance(updatedProcess, process, updatedStep);
         }
 
-        return this.getStepInstanceWithEntitiesAndReviewers(updatedStep, userId);
+        return this.getStepInstanceWithEntitiesAndReviewers(updatedStep, user);
     }
 }
 

@@ -1,5 +1,5 @@
 import { ISubCompactPermissions, PermissionScope, PermissionType } from '@packages/permission';
-import { RelatedPermission } from '@packages/user';
+import { IReqUser, RelatedPermission } from '@packages/user';
 import { createController } from '@packages/utils';
 import { Request } from 'express';
 import { UserIncorrectScopeError, UserNotAuthorizedError } from '../express/error';
@@ -18,11 +18,16 @@ export class Authorizer extends DefaultController {
         super(null);
     }
 
-    async getWorkspacePermissions(userId: string) {
+    async getWorkspacePermissions(user: IReqUser | string): Promise<ISubCompactPermissions> {
         const workspaceHierarchyIds = await WorkspaceService.getWorkspaceHierarchyIds(this.workspaceId);
         workspaceHierarchyIds.push(this.workspaceId);
+        let userPermissions: ISubCompactPermissions = {};
 
-        const userPermissions = await UserService.getRelatedPermissions(userId, RelatedPermission.User, workspaceHierarchyIds);
+        userPermissions = await UserService.getRelatedPermissions(
+            typeof user === 'string' ? user : user._id,
+            RelatedPermission.User,
+            workspaceHierarchyIds,
+        );
 
         const hierarcyId = workspaceHierarchyIds.find((id) => Boolean(userPermissions[id]));
 
@@ -31,8 +36,8 @@ export class Authorizer extends DefaultController {
         return userPermissions[hierarcyId];
     }
 
-    private async authorizeUser(req: Request, userId: string, authPermissions: ISubCompactPermissions) {
-        const workspacePermissions = await this.getWorkspacePermissions(userId);
+    private async authorizeUser(req: Request, user: IReqUser, authPermissions: ISubCompactPermissions) {
+        const workspacePermissions = await this.getWorkspacePermissions(user);
 
         typedObjectEntries(authPermissions).forEach(([type, permission]) => {
             const currentPermissions = workspacePermissions?.[type] || workspacePermissions?.admin;
@@ -47,7 +52,7 @@ export class Authorizer extends DefaultController {
     }
 
     async userHasSomePermissions(req: Request) {
-        (req as RequestWithPermissionsOfUserId).permissionsOfUserId = await this.getWorkspacePermissions(req.user!.id);
+        (req as RequestWithPermissionsOfUserId).permissionsOfUserId = await this.getWorkspacePermissions(req.user!);
     }
 
     async userFromParamsHasSomePermissions(req: Request) {
@@ -55,7 +60,7 @@ export class Authorizer extends DefaultController {
     }
 
     private async wrapAuthMiddleware(req: Request, authPermissions: ISubCompactPermissions) {
-        return this.authorizeUser(req, req.user!.id, authPermissions);
+        return this.authorizeUser(req, req.user!, authPermissions);
     }
 
     async userCanWriteProcesses(req: Request) {
@@ -100,17 +105,16 @@ export class Authorizer extends DefaultController {
 
     async userIsRootAdmin(req: Request) {
         const rootWorkspace = await WorkspaceManager.getFile('/');
-        const userPermissions = await UserService.getRelatedPermissions(req.user!.id, RelatedPermission.User, [rootWorkspace._id]);
+        const userPermissions = await UserService.getRelatedPermissions(req.user!._id, RelatedPermission.User, [rootWorkspace._id]);
 
         const rootPermissions = userPermissions[rootWorkspace._id];
-
         if (!rootPermissions?.admin?.scope) throw new UserNotAuthorizedError();
 
         (req as RequestWithPermissionsOfUserId).permissionsOfUserId = rootPermissions;
     }
 
     async userCanWriteCategory(req: Request) {
-        const userPermissions = await this.getWorkspacePermissions(req.user!.id);
+        const userPermissions = await this.getWorkspacePermissions(req.user!);
         if (!userPermissions.admin && !userPermissions.instances?.categories[req.params.id as string])
             throw new UserIncorrectScopeError(PermissionScope.write, PermissionScope.read);
         (req as RequestWithPermissionsOfUserId).permissionsOfUserId = userPermissions;

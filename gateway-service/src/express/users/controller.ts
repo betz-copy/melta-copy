@@ -3,7 +3,7 @@ import UsersManager from './manager';
 
 class UsersController {
     static async getMyUser(req: Request, res: Response) {
-        res.json(await UsersManager.getUserById(req.user!.id));
+        res.json(await UsersManager.getUserById(req.user!._id));
     }
 
     static async getUserById(req: Request, res: Response) {

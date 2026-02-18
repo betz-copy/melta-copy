@@ -51,7 +51,7 @@ import {
     IRuleBreachRequestPopulated,
     RuleBreachRequestStatus,
 } from '@packages/rule-breach';
-import { IKartoffelUser, IUser } from '@packages/user';
+import { IKartoffelUser, IReqUser, IUser } from '@packages/user';
 import { BadRequestError, ForbiddenError, logger } from '@packages/utils';
 import { pickBy } from 'lodash';
 import config from '../../config';
@@ -94,7 +94,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
     async createRuleBreachRequest(
         ruleBreachRequestData: Omit<IRuleBreachRequest, '_id' | 'createdAt' | 'originUserId'>,
-        userId: string,
+        user: IReqUser,
         files: UploadedFile[] = [],
     ): Promise<IRuleBreachRequestPopulated> {
         await this.uploadRuleBreachFiles(ruleBreachRequestData, files);
@@ -102,7 +102,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         const { result, err } = await tryCatch(async () => {
             const ruleBreachRequest = await this.service.createRuleBreachRequest({
                 ...ruleBreachRequestData,
-                originUserId: userId,
+                originUserId: user._id,
             });
 
             const request = await this.getRuleBreachRequestById(ruleBreachRequest._id);
@@ -111,7 +111,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                 NotificationType.ruleBreachRequest,
                 { requestId: ruleBreachRequest._id },
                 { request },
-                [userId],
+                [user._id],
             ).catch((e) => {
                 logger.error('error sending rule breach request notification', e);
             });
@@ -204,7 +204,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
     async approveRuleBreachRequest(
         ruleBreachRequestId: string,
-        user: Express.User,
+        user: IReqUser,
         childTemplateId?: string,
     ): Promise<
         | IRuleBreachRequestPopulated
@@ -221,7 +221,12 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
             await this.service.updateRuleBreachRequestActionsMetadata(ruleBreachRequest._id, fixedActions);
 
-            actionsResults = await this.instancesService.runBulkOfActions([ruleBreachRequest.actions], false, user.id, ruleBreachRequest.brokenRules);
+            actionsResults = await this.instancesService.runBulkOfActions(
+                [ruleBreachRequest.actions],
+                false,
+                user._id,
+                ruleBreachRequest.brokenRules,
+            );
 
             await this.updateRuleBreachRequestData(ruleBreachRequest._id, ruleBreachRequest.actions, actionsResults[0].value.instances);
         } else
@@ -281,7 +286,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
         const updatedRuleBreachRequest = await this.service.updateRuleBreachRequestStatus(
             ruleBreachRequestId,
-            user.id,
+            user._id,
             RuleBreachRequestStatus.Approved,
         );
 
@@ -598,7 +603,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
     async discardRuleBreachRequest(
         ruleBreachRequest: IRuleBreachRequest,
-        user: Express.User,
+        user: IReqUser,
         type: RuleBreachRequestStatus,
     ): Promise<IRuleBreachRequestPopulated> {
         this.checkIfRuleBreachRequestIsReviewable(ruleBreachRequest);
@@ -609,7 +614,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         const fixedActions = await Promise.all(fixedActionsPromises);
 
         const [updatedRuleBreachRequest] = await Promise.all([
-            this.service.updateRuleBreachRequestStatus(ruleBreachRequest._id, user.id, type),
+            this.service.updateRuleBreachRequestStatus(ruleBreachRequest._id, user._id, type),
             this.service.updateRuleBreachRequestActionsMetadata(ruleBreachRequest._id, fixedActions),
         ]);
         const ruleBreachRequestPopulated = await this.populateRuleBreachRequest({
@@ -628,17 +633,15 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         return ruleBreachRequestPopulated;
     }
 
-    async denyRuleBreachRequest(ruleBreachRequestId: string, user: Express.User): Promise<IRuleBreachRequestPopulated> {
+    async denyRuleBreachRequest(ruleBreachRequestId: string, user: IReqUser): Promise<IRuleBreachRequestPopulated> {
         const ruleBreachRequest = await this.service.getRuleBreachRequestById(ruleBreachRequestId);
         return this.discardRuleBreachRequest(ruleBreachRequest, user, RuleBreachRequestStatus.Denied);
     }
 
-    async cancelRuleBreachRequest(ruleBreachRequestId: string, user: Express.User): Promise<IRuleBreachRequestPopulated> {
+    async cancelRuleBreachRequest(ruleBreachRequestId: string, user: IReqUser): Promise<IRuleBreachRequestPopulated> {
         const ruleBreachRequest = await this.service.getRuleBreachRequestById(ruleBreachRequestId);
 
-        if (ruleBreachRequest.originUserId !== user.id) {
-            throw new ForbiddenError('only the origin user can cancel rule breach request');
-        }
+        if (ruleBreachRequest.originUserId !== user._id) throw new ForbiddenError('only the origin user can cancel rule breach request');
 
         return this.discardRuleBreachRequest(ruleBreachRequest, user, RuleBreachRequestStatus.Canceled);
     }
@@ -733,11 +736,11 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         }
     }
 
-    async getAllowedRuleBreaches(result: IAgGridResult<IRuleBreachRequest | IRuleBreachAlert>, user: Express.User) {
-        const usersPermissions = await this.authorizer.getWorkspacePermissions(user.id);
+    async getAllowedRuleBreaches(result: IAgGridResult<IRuleBreachRequest | IRuleBreachAlert>, user: IReqUser) {
+        const usersPermissions = await this.authorizer.getWorkspacePermissions(user._id);
         const templateManager = new TemplatesManager(this.workspaceId);
 
-        const allowedEntityTemplateIds = await templateManager.getAllowedEntityTemplateIds(usersPermissions, user.id);
+        const allowedEntityTemplateIds = await templateManager.getAllowedEntityTemplateIds(usersPermissions, user);
 
         const allowedRelationshipTemplatesIds = await templateManager.getAllowedRelationshipTemplatesIds(allowedEntityTemplateIds);
 
@@ -780,7 +783,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         return result.rows.filter((_row, index) => res[index]);
     }
 
-    async searchRuleBreachRequests(agGridRequest: IAgGridRequest, user: Express.User): Promise<IAgGridResult<IRuleBreachRequestPopulated>> {
+    async searchRuleBreachRequests(agGridRequest: IAgGridRequest, user: IReqUser): Promise<IAgGridResult<IRuleBreachRequestPopulated>> {
         const updatedAgGridRequest = await this.agGridSearchRuleBreachesOfUser(agGridRequest, user);
 
         const result = await this.service.searchRuleBreachRequests(updatedAgGridRequest);
@@ -793,7 +796,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         };
     }
 
-    async searchRuleBreachAlerts(agGridRequest: IAgGridRequest, user: Express.User): Promise<IAgGridResult<IRuleBreachAlertPopulated>> {
+    async searchRuleBreachAlerts(agGridRequest: IAgGridRequest, user: IReqUser): Promise<IAgGridResult<IRuleBreachAlertPopulated>> {
         const updatedAgGridRequest = await this.agGridSearchRuleBreachesOfUser(agGridRequest, user);
 
         const result = await this.service.searchRuleBreachAlerts(updatedAgGridRequest);
@@ -810,11 +813,11 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         return this.service.updateManyRuleBreachRequestsStatusesByRelatedEntityId(entityId, status);
     }
 
-    async getRuleBreachRequestById(ruleBreachRequestId: string, user?: Express.User): Promise<IRuleBreachRequestPopulated> {
+    async getRuleBreachRequestById(ruleBreachRequestId: string, user?: IReqUser): Promise<IRuleBreachRequestPopulated> {
         const ruleBreachRequest = await this.service.getRuleBreachRequestById(ruleBreachRequestId);
 
-        if (user && ruleBreachRequest.originUserId !== user.id) {
-            const userPermissions = await this.authorizer.getWorkspacePermissions(user.id);
+        if (user && ruleBreachRequest.originUserId !== user._id) {
+            const userPermissions = await this.authorizer.getWorkspacePermissions(user._id);
             if (!userPermissions.admin?.scope && userPermissions.rules?.scope !== PermissionScope.write)
                 throw new ForbiddenError('user does not have permissions to this rule breach request');
         }
@@ -822,11 +825,11 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         return this.populateRuleBreachRequest(ruleBreachRequest);
     }
 
-    async getRuleBreachAlertsById(ruleBreachAlertId: string, user?: Express.User): Promise<IRuleBreachAlertPopulated> {
+    async getRuleBreachAlertsById(ruleBreachAlertId: string, user?: IReqUser): Promise<IRuleBreachAlertPopulated> {
         const ruleBreachAlert = await this.service.getRuleBreachAlertById(ruleBreachAlertId);
 
-        if (user && ruleBreachAlert.originUserId !== user.id) {
-            const userPermissions = await this.authorizer.getWorkspacePermissions(user.id);
+        if (user && ruleBreachAlert.originUserId !== user._id) {
+            const userPermissions = await this.authorizer.getWorkspacePermissions(user._id);
             if (!userPermissions.admin?.scope && userPermissions.rules?.scope !== PermissionScope.write)
                 throw new ForbiddenError('user does not have permissions to this rule breach alert');
         }
@@ -834,8 +837,8 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         return this.populateRuleBreachAlert(ruleBreachAlert);
     }
 
-    private async agGridSearchRuleBreachesOfUser(agGridRequest: IAgGridRequest, user: Express.User): Promise<IAgGridRequest> {
-        const userPermissions = await this.authorizer.getWorkspacePermissions(user.id);
+    private async agGridSearchRuleBreachesOfUser(agGridRequest: IAgGridRequest, user: IReqUser): Promise<IAgGridRequest> {
+        const userPermissions = await this.authorizer.getWorkspacePermissions(user._id);
         if (userPermissions.admin?.scope || userPermissions.rules?.scope === PermissionScope.write) return agGridRequest;
 
         const updatedAgGridRequest: IAgGridRequest = { ...agGridRequest };
@@ -843,7 +846,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         updatedAgGridRequest.filterModel.originUserId = {
             filterType: FilterTypes.text,
             type: BasicFilterOperationTypes.equals,
-            filter: user.id,
+            filter: user._id,
         };
 
         return updatedAgGridRequest;

@@ -82,8 +82,6 @@ const config = {
             useEnrichId: env.get('USE_ENRICH_ID').default('true').asBool(),
             accessTokenName: env.get('ACCESS_TOKEN_NAME').required().asString(),
             accessTokenExpirationTime: env.get('ACCESS_TOKEN_EXPIRATION_TIME').default('1d').asString(),
-            unauthorizedId: env.get('UNAUTHORIZED_ID').default('unauthorized').asString(),
-            clientSideId: env.get('CLIENT_SIDE_ID').default('client-side').asString(),
             clientSideURLPrefix: env.get('CLIENT_SIDE_URL_PREFIX').default('/client-side/').asString(),
         },
         basicAuthentication: {

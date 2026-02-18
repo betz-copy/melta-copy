@@ -9,8 +9,8 @@ class GanttController extends DefaultController<GanttManager> {
     }
 
     async searchGantts(req: Request, res: Response) {
-        const { body, permissionsOfUserId, user } = req as RequestWithPermissionsOfUserId;
-        res.json(await this.manager.searchGantts(body, permissionsOfUserId, user!.id));
+        const { body, permissionsOfUserId, user } = req as RequestWithPermissionsOfUserId; //TODO:CHECK IF REMOVE permissionsOfUserId
+        res.json(await this.manager.searchGantts(body, permissionsOfUserId, user!));
     }
 
     async getGanttById(req: Request, res: Response) {
@@ -20,11 +20,11 @@ class GanttController extends DefaultController<GanttManager> {
             user,
         } = req as RequestWithPermissionsOfUserId;
 
-        res.json(await this.manager.getGanttById(ganttId as string, permissionsOfUserId, user!.id));
+        res.json(await this.manager.getGanttById(ganttId as string, permissionsOfUserId, user!));
     }
 
     async createGantt(req: Request, res: Response) {
-        res.json(await this.manager.createGantt(req.body, req.user!.id));
+        res.json(await this.manager.createGantt(req.body, req.user!));
     }
 
     async deleteGantt(req: Request, res: Response) {
@@ -32,7 +32,7 @@ class GanttController extends DefaultController<GanttManager> {
     }
 
     async updateGantt(req: Request, res: Response) {
-        res.json(await this.manager.updateGantt(req.params.ganttId as string, req.body, req.user!.id));
+        res.json(await this.manager.updateGantt(req.params.ganttId as string, req.body, req.user!));
     }
 }
 

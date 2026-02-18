@@ -1,6 +1,7 @@
 import { IMongoProps } from '@packages/common';
 import { ChartItemPopulated, DashboardItemType, MongoDashboardItemPopulated } from '@packages/dashboard';
 import { ISubCompactPermissions } from '@packages/permission';
+import { IReqUser } from '@packages/user';
 import { flatten, groupBy, keyBy, map, partition, sortBy } from 'lodash';
 import DashboardItemService from '../../externalServices/dashboardService/dashboardItemService';
 import DefaultManagerProxy from '../../utils/express/manager';
@@ -19,7 +20,7 @@ class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
         dashboardItem: MongoDashboardItemPopulated,
         allowedTemplateIds: Set<string>,
         allowedCategoryIds: Set<string>,
-        userId: string,
+        user: IReqUser,
         permissionsOfUserId: ISubCompactPermissions,
         chartManager: ChartManager,
     ) {
@@ -27,7 +28,7 @@ class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
             case DashboardItemType.Chart:
                 return (
                     allowedTemplateIds.has(dashboardItem.metaData.childTemplateId || dashboardItem.metaData.templateId) &&
-                    chartManager.validateAllowedRelatedTemplate(userId, permissionsOfUserId, dashboardItem.metaData)
+                    chartManager.validateAllowedRelatedTemplate(user, permissionsOfUserId, dashboardItem.metaData)
                 );
             case DashboardItemType.Iframe:
                 return permissionsOfUserId.admin?.scope
@@ -40,7 +41,7 @@ class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
         }
     }
 
-    private async processChartItems(chartItems: (ChartItemPopulated & IMongoProps)[], chartManager: ChartManager, userId: string) {
+    private async processChartItems(chartItems: (ChartItemPopulated & IMongoProps)[], chartManager: ChartManager, user: IReqUser) {
         const chartMetaList = map(chartItems, 'metaData');
         const [childChartsItems, parentChartItems] = partition(chartMetaList, (item) => !!item.childTemplateId);
 
@@ -48,14 +49,14 @@ class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
         const chartsByChildTemplateId = groupBy(childChartsItems, 'childTemplateId');
 
         const generatedCharts = flatten(
-            await Promise.all(map(chartsByTemplateId, (charts, templateId) => chartManager.generateCharts(charts, templateId, userId))),
+            await Promise.all(map(chartsByTemplateId, (charts, templateId) => chartManager.generateCharts(charts, templateId, user))),
         );
 
         const generatedChildCharts = flatten(
             await Promise.all(
                 map(chartsByChildTemplateId, (charts, childTemplateId) => {
                     const templateId = charts[0]?.templateId;
-                    return chartManager.generateCharts(charts, templateId, userId, childTemplateId);
+                    return chartManager.generateCharts(charts, templateId, user, childTemplateId);
                 }),
             ),
         );
@@ -74,10 +75,10 @@ class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
         return sortBy(items, (item) => new Date(item.createdAt).getTime());
     }
 
-    async searchDashboardItems(userId: string, permissionsOfUserId: ISubCompactPermissions, textSearch?: string) {
+    async searchDashboardItems(user: IReqUser, permissionsOfUserId: ISubCompactPermissions, textSearch?: string) {
         const chartManager = new ChartManager(this.workspaceId);
         const allowedCategories = Object.keys(permissionsOfUserId.instances?.categories ?? {});
-        const allowedEntityTemplates = await this.templateManager.getAllAllowedEntityTemplates(permissionsOfUserId, userId);
+        const allowedEntityTemplates = await this.templateManager.getAllAllowedEntityTemplates(permissionsOfUserId, user);
         const allowedChildTemplates = await this.templateManager.getAllowedChildEntitiesTemplates(permissionsOfUserId);
         const allAllowedEntityTemplates = [...allowedEntityTemplates, ...allowedChildTemplates];
 
@@ -87,14 +88,14 @@ class DashboardManager extends DefaultManagerProxy<DashboardItemService> {
         const dashboardItems = await this.service.searchDashboardItems(textSearch);
 
         const allowedItems = dashboardItems.filter((item) =>
-            this.isItemAllowed(item, allowedTemplateIds, allowedCategoryIds, userId, permissionsOfUserId, chartManager),
+            this.isItemAllowed(item, allowedTemplateIds, allowedCategoryIds, user, permissionsOfUserId, chartManager),
         );
 
         const [chartItems, nonChartItems] = partition(allowedItems, (item) => item.type === DashboardItemType.Chart);
 
         if (!chartItems.length) return this.sortItemsByCreatedDate(nonChartItems);
 
-        const processedCharts = await this.processChartItems(chartItems, chartManager, userId);
+        const processedCharts = await this.processChartItems(chartItems, chartManager, user);
 
         const allItems = [...processedCharts, ...nonChartItems];
 

@@ -14,7 +14,7 @@ class StepInstanceController extends DefaultController<StepInstanceManager> {
                 req.params.stepId as string,
                 req.body,
                 req.files || (req.file ? [req.file] : []),
-                req.user!.id,
+                req.user!,
             ),
         );
     }

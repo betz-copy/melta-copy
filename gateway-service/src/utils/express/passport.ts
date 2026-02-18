@@ -1,3 +1,4 @@
+import { IReqUser } from '@packages/user';
 import { Strategy as ShragaStrategy } from '@yesodot/passport-shraga';
 import { Request } from 'express';
 import { StatusCodes } from 'http-status-codes';
@@ -32,14 +33,6 @@ export interface ShragaUser {
     jti: string;
 }
 
-export interface IConnectedUser {
-    id: string;
-    kartoffelId?: string;
-    clientSideWorkspaceId?: string;
-    usersInfoChildTemplateId?: string;
-    clientSideWorkspaceName?: string;
-}
-
 const verifyAllowedUserBasicStrategy: BasicVerifyFunctionWithRequest = (_req, userId, password, done) => {
     const allowedUser = users.find((currUser) => currUser.userId === userId && currUser.password === password);
 
@@ -48,7 +41,7 @@ const verifyAllowedUserBasicStrategy: BasicVerifyFunctionWithRequest = (_req, us
         return;
     }
 
-    done(null, { id: userId } as IConnectedUser);
+    done(null, { id: userId });
 };
 
 interface BasicStrategyWithChallenge extends BasicStrategy {
@@ -65,7 +58,7 @@ export const initPassport = () => {
                 },
                 secretOrKey: tokenSecret,
             },
-            (payload: IConnectedUser, next: VerifiedCallback) => {
+            (payload: IReqUser, next: VerifiedCallback) => {
                 if (payload) return next(null, payload);
 
                 return next(null, false);
@@ -91,6 +84,6 @@ declare global {
     // These declaration are merged into express's Request type
     // this extends @types/passport which extends @types/express
     namespace Express {
-        export interface User extends IConnectedUser {}
+        export interface User extends IReqUser {}
     }
 }
