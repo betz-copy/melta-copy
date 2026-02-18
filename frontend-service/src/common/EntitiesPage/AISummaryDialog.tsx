@@ -27,8 +27,8 @@ import axios from '../../axios';
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
 import { environment } from '../../globals';
 import { AISummaryResponse, FileOption, Step } from '../../interfaces/ai';
-import { summarizeFilesRequest } from '../../services/semanticService';
 import { BackendConfigState } from '../../services/backendConfigService';
+import { summarizeFilesRequest } from '../../services/semanticService';
 import { getFileName } from '../../utils/getFileName';
 
 const allowedMimeTypes = Object.values(FILE_EXTENSION_TO_MIME_TYPE);
