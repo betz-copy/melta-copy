@@ -1,5 +1,5 @@
 import { IServerSideSelectionState, IStatusPanelParams } from '@ag-grid-community/core';
-import { CheckCircle, Delete, Edit } from '@mui/icons-material';
+import { Delete, Edit } from '@mui/icons-material';
 import { Box, CircularProgress, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { ActionTypes, ICreateEntityMetadata } from '@packages/action';
 import { isChildTemplate } from '@packages/child-template';
@@ -397,7 +397,6 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = (props)
                                 }}
                                 disabled={selectedRowCount === 0}
                             >
-                                <CheckCircle fontSize="small" htmlColor="white" />
                                 <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>
                                     {i18next.t('actions.summarize')}
                                 </Typography>
