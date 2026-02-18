@@ -53,6 +53,7 @@ export interface IMetadata {
     numOfRelationshipFieldsToShow: number;
     numOfPreviewFieldsToShow: number;
     twinTemplates: string[];
+    enableAiSummary: boolean;
 }
 
 export interface IWorkspace {
