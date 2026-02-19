@@ -1,4 +1,4 @@
-import { childTemplateKeys, dePopulateChildProperties } from '@packages/child-template';
+import { childTemplateKeys, dePopulateChildProperties, IChildTemplatePopulated } from '@packages/child-template';
 import { IConstraintsOfTemplate } from '@packages/entity';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated, PropertyFormat, PropertyType } from '@packages/entity-template';
 import { IRelationship } from '@packages/relationship';
@@ -70,13 +70,11 @@ const getRelatedTemplateIds = (template: IMongoEntityTemplatePopulated) => {
 
 const updateChildTemplatesOnParentUpdate = async (
     entityTemplateService: EntityTemplateService,
-    parentId: string,
+    childTemplates: IChildTemplatePopulated[],
     removedProperties: string[],
     newRequired: string[],
     oldRequired: string[],
 ) => {
-    const childTemplates = await entityTemplateService.searchChildTemplates({ parentTemplatesIds: [parentId] });
-
     return Promise.all(
         childTemplates.flatMap((childTemplate) => {
             let hasChildChanged = false;
