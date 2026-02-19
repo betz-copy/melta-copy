@@ -1,5 +1,6 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiParam, getSchemaPath } from '@nestjs/swagger';
+import { ApiOkResponse, ApiOperation, ApiParam, ApiQuery, getSchemaPath } from '@nestjs/swagger';
+import { GetActivityQueryDto } from '../dto/activityLog.dto';
 import { ActivityLog } from '../schemas/activityLog.schema';
 
 export const ApiGetActivity = () =>
@@ -14,6 +15,7 @@ export const ApiGetActivity = () =>
             description: 'Entity identifier',
             example: 'entity-id',
         }),
+        ApiQuery({ type: GetActivityQueryDto }),
         ApiOkResponse({
             description: 'Paginated activity log response',
             schema: {

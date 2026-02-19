@@ -17,6 +17,8 @@ export class ActivityLogService extends DefaultMongoService<ActivityLog> {
 
     public async getActivity(entityId: string, queryDto: GetActivityQueryDto): Promise<IMongoActivityLog[]> {
         const { limit, skip, fieldsSearch, usersSearch, actions, searchText, startDateRange, endDateRange } = queryDto;
+        const startDate = startDateRange ? new Date(startDateRange) : undefined;
+        const endDate = endDateRange ? new Date(endDateRange) : undefined;
 
         const queryBuilder = new MongoQueryBuilder();
         queryBuilder
@@ -34,8 +36,8 @@ export class ActivityLogService extends DefaultMongoService<ActivityLog> {
                 Boolean(fieldsSearch?.length),
             )
             .orWhere([{ userId: { $in: usersSearch } }], Boolean(usersSearch?.length))
-            .whereGreaterThanOrEqual('timestamp', startDateRange, Boolean(startDateRange))
-            .whereLessThanOrEqual('timestamp', endDateRange, Boolean(endDateRange));
+            .whereGreaterThanOrEqual('timestamp', startDate, Boolean(startDateRange))
+            .whereLessThanOrEqual('timestamp', endDate, Boolean(endDateRange));
 
         const query = queryBuilder.build();
 

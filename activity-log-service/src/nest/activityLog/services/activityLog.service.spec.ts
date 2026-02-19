@@ -154,8 +154,8 @@ describe('ActivityLogService', () => {
         });
 
         it('should filter by date range', async () => {
-            const startDateRange = new Date('2023-01-01');
-            const endDateRange = new Date('2023-01-31');
+            const startDateRange = new Date('2023-01-01').toISOString();
+            const endDateRange = new Date('2023-01-31').toISOString();
             const dto: GetActivityQueryDto = { ...baseDto, startDateRange, endDateRange };
             modelMock.exec.mockResolvedValue([]);
 
@@ -168,7 +168,7 @@ describe('ActivityLogService', () => {
         });
 
         it('should filter by only startDateRange', async () => {
-            const startDateRange = new Date('2023-01-01');
+            const startDateRange = new Date('2023-01-01').toISOString();
             const dto: GetActivityQueryDto = { ...baseDto, startDateRange };
             modelMock.exec.mockResolvedValue([]);
 
@@ -181,7 +181,7 @@ describe('ActivityLogService', () => {
         });
 
         it('should filter by only endDateRange', async () => {
-            const endDateRange = new Date('2023-01-31');
+            const endDateRange = new Date('2023-01-31').toISOString();
             const dto: GetActivityQueryDto = { ...baseDto, endDateRange };
             modelMock.exec.mockResolvedValue([]);
 
@@ -236,7 +236,7 @@ describe('ActivityLogService', () => {
 
         it('should combine searchText with date range', async () => {
             const searchText = 'query';
-            const startDateRange = new Date('2023-06-01');
+            const startDateRange = new Date('2023-06-01').toISOString();
             const dto: GetActivityQueryDto = { ...baseDto, searchText, startDateRange };
             modelMock.exec.mockResolvedValue([]);
 
