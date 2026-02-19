@@ -1,33 +1,35 @@
+import { FilterList, FilterListOff } from '@mui/icons-material';
 import { useTheme } from '@mui/material';
 import { IEntity } from '@packages/entity';
 import i18next from 'i18next';
 import React from 'react';
+import { useDarkModeStore } from '../../stores/darkMode';
 import { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 
 const ResetFilterButton: React.FC<{
     entitiesTableRef: React.RefObject<EntitiesTableOfTemplateRef<IEntity> | null>;
-    // disableButton: boolean;
-}> = ({ entitiesTableRef }) => {
-    // const darkMode = useDarkModeStore((state) => state.darkMode);
+    disableButton?: boolean;
+}> = ({ entitiesTableRef, disableButton }) => {
+    const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
 
-    // const disabledColor = darkMode ? 'rgba(255, 255, 255, 0.26)' : 'rgba(0, 0, 0, 0.26)';
+    const disabledColor = darkMode ? 'rgba(255, 255, 255, 0.26)' : 'rgba(0, 0, 0, 0.26)';
 
     return (
         <IconButtonWithPopover
             iconButtonProps={{ onClick: () => entitiesTableRef.current?.resetFilter() }}
             popoverText={i18next.t('entitiesTableOfTemplate.resetFilters')}
-            // disabled={disableButton}
+            disabled={disableButton}
             style={{
                 display: 'flex',
                 gap: '0.25rem',
                 borderRadius: '5px',
                 fontSize: '0.75rem',
-                color: theme.palette.primary.main,
+                color: disableButton ? disabledColor : theme.palette.primary.main,
             }}
         >
-            {/* {disableButton ? <FilterList fontSize="small" /> : <FilterListOff fontSize="small" />} */}
+            {disableButton ? <FilterList fontSize="small" /> : <FilterListOff fontSize="small" />}
             {i18next.t('entitiesTableOfTemplate.resetFilters')}
         </IconButtonWithPopover>
     );
