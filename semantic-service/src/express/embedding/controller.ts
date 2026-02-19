@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import DefaultController from '../../utils/express/controller';
-import SemanticManager from './manager';
+import EmbeddingManager from './manager';
 
-class SemanticController extends DefaultController {
+class EmbeddingController extends DefaultController {
     constructor(workspaceId: string) {
-        super(new SemanticManager(workspaceId));
+        super(new EmbeddingManager(workspaceId));
     }
 
     async search(req: Request, res: Response) {
@@ -24,4 +24,4 @@ class SemanticController extends DefaultController {
     }
 }
 
-export default SemanticController;
+export default EmbeddingController;
