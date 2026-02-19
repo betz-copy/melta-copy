@@ -6,14 +6,14 @@ import ModelRerankingApiService from '../../externalServices/model/reranking';
 import ElasticClient from '../../utils/elastic';
 import { splitTextIntoChunks } from '../../utils/fs';
 import MinIOClient from '../../utils/minio/minioClient';
-import { IIndexFilesRequest, ISearchRequest } from './interface';
+import { IIndexFilesRequest, ISearchRequest } from '../../utils/types';
 
 const {
     consts: { fileIdLength },
     minio: { useDevBucket, devBucketPrefix },
 } = config;
 
-export class SemanticManager {
+export class EmbeddingManager {
     workspaceId: string;
 
     elasticClient: ElasticClient;
@@ -70,4 +70,4 @@ export class SemanticManager {
     }
 }
 
-export default SemanticManager;
+export default EmbeddingManager;

@@ -1,6 +1,13 @@
-import { IEntityWithDirectRelationships, ISearchResult } from '@packages/entity';
+import { IEntityWithDirectRelationships, ISearchBatchBody, ISearchResult, ISearchSort } from '@packages/entity';
 import { IRerankResult, ISemanticSearchResult } from '@packages/semantic-search';
 import excelConfig from './excel/excelConfig';
+
+export type ISemanticSearchBatchBody = Omit<ISearchBatchBody, 'templates' | 'sort' | 'skip' | 'limit'> & {
+    templates: string[];
+    sort?: ISearchSort;
+    skip?: number;
+    limit?: number;
+};
 
 const PROPS_TO_SKIP = ['_id', 'updatedAt', 'createdAt'];
 

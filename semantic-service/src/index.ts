@@ -6,7 +6,7 @@ import Server from './express/server';
 import SemanticConsumer from './rabbit/consumer';
 import ElasticClient from './utils/elastic';
 
-const { rabbit, service } = config;
+const { rabbit, service, openai } = config;
 
 const initializeElasticsearch = async () => {
     logger.info('Connecting to elastic...');
@@ -47,6 +47,9 @@ const main = async () => {
     await server.start();
 
     logger.info(`Server started on port: ${service.port}`);
+    logger.info(
+        `Using model: ${openai.model} | API Key: ${openai.apiKey ? 'configured' : 'NOT configured'} | Multi-file upload enabled (key: "files")`,
+    );
 };
 
 main().catch((error) => {

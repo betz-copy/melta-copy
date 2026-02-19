@@ -47,6 +47,7 @@ const metadataSchema = Joi.object({
     numOfRelationshipFieldsToShow: Joi.number(),
     numOfPreviewFieldsToShow: Joi.number(),
     twinTemplates: Joi.array().items(Joi.string().trim()).optional(),
+    enableAiSummary: Joi.boolean().optional(),
 }).optional();
 
 // Joi schema for Workspace

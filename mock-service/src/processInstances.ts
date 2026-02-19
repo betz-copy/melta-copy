@@ -52,6 +52,7 @@ const createProcessInstance = (
     const requestBody = {
         name: generateUniqueName(generatedNames),
         templateId: processTemplate._id,
+        userId: chance.pickone(userIds),
         details: JSONSchemaFaker.generate(processTemplate.details.properties) as Record<string, IPropertyValue>,
         startDate: randomStartDate,
         endDate: randomEndDate,
