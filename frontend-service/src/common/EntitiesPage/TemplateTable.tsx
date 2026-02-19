@@ -287,7 +287,7 @@ const TemplateTable = forwardRef<
                             text={i18next.t(`entitiesTableOfTemplate.expand${isExpand ? 'Less' : 'More'}Title`)}
                         />
 
-                        <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={!isFiltered} />
+                        <ResetFilterButton entitiesTableRef={entitiesTableRef} />
 
                         <TableButton
                             iconButtonWithPopoverProps={{
