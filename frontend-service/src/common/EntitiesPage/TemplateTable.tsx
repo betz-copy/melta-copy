@@ -97,8 +97,8 @@ const TemplateTable = forwardRef<
 
     const [isExpand, setIsExpand] = useState(() => sessionStorage.getItem(`isExpand-${template._id}`) === 'true');
     const [multipleSelect, setMultipleSelect] = useState(false);
+    const [_isFiltered, setIsFiltered] = useState(false);
     const [aiSummarySelectMode, setAiSummarySelectMode] = useState(false);
-    const [isFiltered, setIsFiltered] = useState(false);
     const initializedExternalErrors = { files: false, unique: {}, action: '' };
     const [externalErrors, setExternalErrors] = useState(initializedExternalErrors);
     const [createOrUpdateWithRuleBreachDialogState, setCreateOrUpdateWithRuleBreachDialogState] = useState<ICreateOrUpdateWithRuleBreachDialogState>({
@@ -293,7 +293,7 @@ const TemplateTable = forwardRef<
                             text={i18next.t(`entitiesTableOfTemplate.expand${isExpand ? 'Less' : 'More'}Title`)}
                         />
 
-                        <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={!isFiltered} />
+                        <ResetFilterButton entitiesTableRef={entitiesTableRef} />
 
                         <TableButton
                             iconButtonWithPopoverProps={{
