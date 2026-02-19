@@ -244,6 +244,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     pageRowCount?: number;
     fontSize: React.CSSProperties['fontSize'];
     multipleSelect?: boolean;
+    aiSummarySelectMode?: boolean;
     hideNonPreview?: boolean;
     saveStorageProps: {
         shouldSaveFilter: boolean;
@@ -312,6 +313,7 @@ const EntitiesTableOfTemplate = forwardRef(
             ignoreType,
             hasInstances,
             multipleSelect,
+            aiSummarySelectMode,
             paginationPageSizeSelector = environment.agGrid.paginationPageSizeSelector as unknown as number[],
             infiniteModeWithoutExpand,
             editable = true,
@@ -854,11 +856,12 @@ const EntitiesTableOfTemplate = forwardRef(
                         template,
                         quickFilterText,
                         setUpdatedTemplateIds,
+                        aiSummarySelectMode,
                     },
                 });
 
             return panels;
-        }, [multipleSelect, quickFilterText, setUpdatedTemplateIds, template]);
+        }, [multipleSelect, quickFilterText, setUpdatedTemplateIds, template, aiSummarySelectMode]);
 
         const rowSelection = useMemo<RowSelectionOptions | 'single' | 'multiple' | undefined>(() => {
             if (onRowSelected) return 'single';

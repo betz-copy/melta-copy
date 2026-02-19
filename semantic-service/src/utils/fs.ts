@@ -1,8 +1,8 @@
 import { Stream } from 'node:stream';
 import { chunk } from 'llm-chunk';
 import config from '../config';
-import { IElasticDoc } from '../express/semantics/interface';
 import ModelEmbeddingApiService from '../externalServices/model/embedding';
+import { IElasticDoc } from './types';
 
 const {
     model: { charsToRemove, sentenceSplitter, maxSentenceLength, llmChunkSplitterOptions },
@@ -20,6 +20,7 @@ export const streamToBuffer = (stream: Stream) => {
         stream.on('error', reject);
     });
 };
+
 const escapeRegExp = (string: string) => {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 };
