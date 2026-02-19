@@ -24,7 +24,22 @@ export class ActivityLogService extends DefaultMongoService<ActivityLog> {
         queryBuilder
             .where('entityId', entityId)
             .whereIn('action', actions, Boolean(actions?.length))
-            .searchText(searchText, undefined, Boolean(searchText))
+            .orWhere(
+                [
+                    {
+                        'metadata.updatedFields': {
+                            $elemMatch: {
+                                $or: [
+                                    { fieldName: { $regex: searchText, $options: 'i' } },
+                                    { oldValue: { $regex: searchText, $options: 'i' } },
+                                    { newValue: { $regex: searchText, $options: 'i' } },
+                                ],
+                            },
+                        },
+                    },
+                ],
+                Boolean(searchText && searchText !== ''),
+            )
             .orWhere(
                 [
                     {
