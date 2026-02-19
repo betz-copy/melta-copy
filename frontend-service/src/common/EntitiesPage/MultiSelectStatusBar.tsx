@@ -47,8 +47,13 @@ export interface IUpdateMultipleEntitiesResponse {
     brokenRulesEntities?: IBrokenRuleEntity[];
 }
 
-export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = (props) => {
-    const { api, template, quickFilterText, setUpdatedTemplateIds, aiSummarySelectMode } = props;
+export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({
+    api,
+    template,
+    quickFilterText,
+    setUpdatedTemplateIds,
+    aiSummarySelectMode,
+}) => {
     const initialValues: EntityWizardValues = getInitialValuesWithDefaults({
         template,
         attachmentsProperties: {},
