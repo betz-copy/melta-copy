@@ -41,7 +41,7 @@ const config = {
         },
     },
     mongo: {
-        url: env.get('MONGO_URL').required().asString(),
+        url: env.get('MONGO_URL').required().asUrlString(),
         activitiesCollectionName: env.get('MONGO_ACTIVITIES_COLLECTION_NAME').required().default('activities').asString(),
         mongoDuplicateKeyErrorCode: env.get('MONGO_DUPLICATE_KEY_ERROR_CODE').default(11000).asIntPositive(),
         mongoDuplicateErrorName: env.get('MONGO_DUPLICATE_ERROR_NAME').default('MongoServerError').asString(),
@@ -52,7 +52,7 @@ const config = {
         },
     },
     rabbit: {
-        url: env.get('RABBIT_URL').required().asString(),
+        url: env.get('RABBIT_URL').required().asUrlString(),
         queues: {
             activityLogQueue: env.get('ACTIVITY_LOG_QUEUE').default('activity-log-queue').asString(),
             activityLogDelayQueue: env.get('ACTIVITY_LOG_DELAY_QUEUE').default('activity-log-queue.delay').asString(),
@@ -74,6 +74,13 @@ const config = {
     memory: {
         heapLimit: env.get('MOMORY_HEAP_LIMIT').default(300).asIntPositive() * BYTE_TO_MB,
         rssLimit: env.get('MOMORY_RSS_LIMIT').default(500).asIntPositive() * BYTE_TO_MB,
+    },
+    swagger: {
+        enabled: env.get('SWAGGER_ENABLED').default('true').asBool(),
+        path: env.get('SWAGGER_PATH').default('docs').asString(),
+        title: env.get('SWAGGER_TITLE').default('Backend API').asString(),
+        description: env.get('SWAGGER_DESCRIPTION').default('API Documentation').asString(),
+        version: env.get('SWAGGER_VERSION').default('1.0').asString(),
     },
 } as const;
 
