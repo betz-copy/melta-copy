@@ -1,16 +1,22 @@
-import { Stream } from 'node:stream';
+import { Readable } from 'node:stream';
 import { FileTypes } from '@packages/semantic-search';
+import { ServiceError } from '@packages/utils';
 import Excel from 'exceljs';
+import { StatusCodes } from 'http-status-codes';
 
-const readExcelData = async (fileStream: Stream, type: FileTypes.CSV | FileTypes.XLSX) => {
+const readExcelData = async (buffer: Buffer, type: FileTypes.CSV | FileTypes.XLSX) => {
     const workbook = new Excel.Workbook();
+    const fileStream = Readable.from(buffer);
 
-    if (type === FileTypes.XLSX) {
-        await workbook.xlsx.read(fileStream);
-    } else if (type === FileTypes.CSV) {
-        await workbook.csv.read(fileStream);
-    } else {
-        throw new Error('Unsupported file type');
+    switch (type) {
+        case FileTypes.XLSX:
+            await workbook.xlsx.read(fileStream);
+            break;
+        case FileTypes.CSV:
+            await workbook.csv.read(fileStream);
+            break;
+        default:
+            throw new ServiceError(StatusCodes.BAD_REQUEST, 'Unsupported file type');
     }
 
     const worksheet = workbook.worksheets[0];

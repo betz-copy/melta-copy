@@ -35,6 +35,7 @@ export const environment = {
         ruleBreachesAlerts: '/rule-breaches/alerts',
         workspaces: '/workspaces',
         dashboard: '/dashboard',
+        ai: '/semantic/ai',
     },
     twinWalletId: '$twin',
     unauthorizedId: 'unauthorized',

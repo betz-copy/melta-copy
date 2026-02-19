@@ -51,6 +51,7 @@ export const defaultMetadata: IMetadata = {
     numOfRelationshipFieldsToShow: 2,
     numOfPreviewFieldsToShow: 5,
     twinTemplates: [] as string[],
+    enableAiSummary: false,
 } as const;
 
 export const useWorkspaceStore = create<WorkspaceState>((set) => ({
