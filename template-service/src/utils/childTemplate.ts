@@ -42,9 +42,7 @@ const populateChildTemplateWithParent = async (childTemplate: IChildTemplatePopu
     const users: IUserField[] = [];
 
     if (userIds.length) {
-        try {
-            users.push(...(await Kartoffel.getUsersByIds(userIds)).map(serializeUser));
-        } catch {}
+        users.push(...(await Kartoffel.getUsersByIds(userIds)).map(serializeUser));
     }
 
     const childProperties = getChildPropertiesFiltered(
