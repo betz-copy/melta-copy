@@ -1,10 +1,10 @@
-import { Inject, Injectable, Scope } from "@nestjs/common";
-import { WINSTON_MODULE_PROVIDER } from "nest-winston";
-import { Logger } from "winston";
+import { Inject, Injectable, Scope } from '@nestjs/common';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Injectable({ scope: Scope.TRANSIENT })
 export class AppLogger {
-    private context: string = "Application";
+    private context: string = 'Application';
 
     constructor(@Inject(WINSTON_MODULE_PROVIDER) private readonly winston: Logger) {}
 

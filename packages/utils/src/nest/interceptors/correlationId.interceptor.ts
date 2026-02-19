@@ -7,7 +7,7 @@ import config from '../../config';
 const { correlationIdHeader } = config.requestHeaders;
 
 @Injectable()
-export class CorrelationIdInterceptor implements NestInterceptor {
+class CorrelationIdInterceptor implements NestInterceptor {
     intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
         const ctx = context.switchToHttp();
         const request = ctx.getRequest<Request>();
@@ -19,3 +19,5 @@ export class CorrelationIdInterceptor implements NestInterceptor {
         return next.handle();
     }
 }
+
+export default CorrelationIdInterceptor;

@@ -63,11 +63,7 @@ const config = {
         workspaceIdHeader: env.get('WORKSPACE_ID_HEADER_NAME').default('workspace-id').asString(),
         contentLengthHeader: env.get('CONTENT_LENGTH_HEADER_NAME').default('content-length').asString(),
     },
-    rabbit: {
-        url: env.get('RABBIT_URL').required().asString(),
-    },
     mongo: {
-        url: env.get('MONGO_URL').required().asString(),
         mongoDuplicateKeyErrorCode: env.get('MONGO_DUPLICATE_KEY_ERROR_CODE').default(11000).asIntPositive(),
         mongoDuplicateErrorName: env.get('MONGO_DUPLICATE_ERROR_NAME').default('MongoServerError').asString(),
         connectionOptions: {

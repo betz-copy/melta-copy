@@ -7,7 +7,7 @@ import config from '../../config';
 const { workspaceIdHeader } = config.requestHeaders;
 
 @Injectable()
-export class WorkspaceInterceptor implements NestInterceptor {
+class WorkspaceInterceptor implements NestInterceptor {
     private readonly ignoredPaths: string[];
 
     constructor(
@@ -40,3 +40,5 @@ export class WorkspaceInterceptor implements NestInterceptor {
         cls.set(workspaceIdHeader, workspaceId);
     }
 }
+
+export default WorkspaceInterceptor;

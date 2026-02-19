@@ -2,7 +2,6 @@ import { DynamicModule, Module } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { ClientsModule, RmqOptions, Transport } from '@nestjs/microservices';
 import { Options } from 'amqplib';
-import config from '../config';
 import RabbitService from './rabbit.service';
 
 export type QueueOptions = Partial<RmqOptions['options']>;
@@ -11,27 +10,32 @@ const defaultQueueOptions: Options.AssertQueue = {
     durable: true,
 };
 
+type RabbitModuleOptions = {
+    url: string;
+    queues: Record<string, QueueOptions>;
+};
+
 @Module({})
 class RabbitModule {
-    static forQueues(queues: Record<string, QueueOptions>): DynamicModule {
-        const queueNames = Object.keys(queues);
+    static register(options: RabbitModuleOptions): DynamicModule {
+        const queueNames = Object.keys(options.queues);
 
         return {
             module: RabbitModule,
             imports: [
                 ClientsModule.registerAsync({
-                    clients: Object.entries(queues).map(([queueName, options]) => ({
+                    clients: Object.entries(options.queues).map(([queueName, queueOptions]) => ({
                         name: queueName,
                         useFactory: () =>
                             ({
                                 transport: Transport.RMQ,
                                 options: {
-                                    urls: [config.rabbit.url],
+                                    urls: [options.url],
                                     queue: queueName,
-                                    ...options,
+                                    ...queueOptions,
                                     queueOptions: {
                                         ...defaultQueueOptions,
-                                        ...options?.queueOptions,
+                                        ...queueOptions?.queueOptions,
                                     },
                                 },
                             }) as RmqOptions,

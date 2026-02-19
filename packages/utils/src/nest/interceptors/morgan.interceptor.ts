@@ -8,7 +8,7 @@ const {
 } = config;
 
 @Injectable()
-export class MorganInterceptor implements NestInterceptor {
+class MorganInterceptor implements NestInterceptor {
     private readonly logger = new Logger(MorganInterceptor.name);
 
     intercept(context: ExecutionContext, next: CallHandler): Observable<Response> {
@@ -42,3 +42,5 @@ export class MorganInterceptor implements NestInterceptor {
         );
     }
 }
+
+export default MorganInterceptor;

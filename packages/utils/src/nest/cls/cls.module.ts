@@ -2,7 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { Request } from 'express';
 import { ClsModule } from 'nestjs-cls';
 import { v4 as uuid } from 'uuid';
-import config from '../config';
+import config from '../../config';
 
 @Global()
 @Module({

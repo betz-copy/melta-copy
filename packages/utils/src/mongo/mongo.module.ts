@@ -1,47 +1,66 @@
-import { Logger, Module } from '@nestjs/common';
+import { DynamicModule, Logger, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import config from '../config';
 
-const { url, connectionOptions } = config.mongo;
+const { connectionOptions: defaultConnectionOptions } = config.mongo;
 
-@Module({
-    imports: [
-        MongooseModule.forRootAsync({
-            useFactory: () => {
-                const logger = new Logger('MongooseModule');
+type MongoModuleOptions = {
+    uri: string;
+    connectionOptions?: {
+        maxIdleTimeMS?: number;
+        socketTimeoutMS?: number;
+        serverSelectionTimeoutMS?: number;
+    };
+};
 
-                return {
-                    uri: url,
-                    maxIdleTimeMS: connectionOptions.maxIdleTimeMS,
-                    socketTimeoutMS: connectionOptions.socketTimeoutMS,
-                    serverSelectionTimeoutMS: connectionOptions.serverSelectionTimeoutMS,
-                    retryWrites: true,
-                    retryReads: true,
-                    connectionFactory: (connection) => {
-                        connection.on('connected', () => {
-                            logger.log('MongoDB connected successfully');
-                        });
+@Module({})
+class MongoModule {
+    static register(options: MongoModuleOptions): DynamicModule {
+        const mergedConnectionOptions = {
+            ...defaultConnectionOptions,
+            ...options.connectionOptions,
+        };
 
-                        connection.on('disconnected', () => {
-                            logger.warn('MongoDB disconnected');
-                        });
+        return {
+            module: MongoModule,
+            imports: [
+                MongooseModule.forRootAsync({
+                    useFactory: () => {
+                        const logger = new Logger('MongooseModule');
 
-                        connection.on('error', (error: Error) => {
-                            logger.error(`MongoDB connection error: ${error.message}`);
-                        });
+                        return {
+                            uri: options.uri,
+                            maxIdleTimeMS: mergedConnectionOptions.maxIdleTimeMS,
+                            socketTimeoutMS: mergedConnectionOptions.socketTimeoutMS,
+                            serverSelectionTimeoutMS: mergedConnectionOptions.serverSelectionTimeoutMS,
+                            retryWrites: true,
+                            retryReads: true,
+                            connectionFactory: (connection) => {
+                                connection.on('connected', () => {
+                                    logger.log('MongoDB connected successfully');
+                                });
 
-                        connection.on('reconnected', () => {
-                            logger.log('MongoDB reconnected');
-                        });
+                                connection.on('disconnected', () => {
+                                    logger.warn('MongoDB disconnected');
+                                });
 
-                        return connection;
+                                connection.on('error', (error: Error) => {
+                                    logger.error(`MongoDB connection error: ${error.message}`);
+                                });
+
+                                connection.on('reconnected', () => {
+                                    logger.log('MongoDB reconnected');
+                                });
+
+                                return connection;
+                            },
+                        };
                     },
-                };
-            },
-        }),
-    ],
-    exports: [MongooseModule],
-})
-class MongoModule {}
+                }),
+            ],
+            exports: [MongooseModule],
+        };
+    }
+}
 
 export default MongoModule;
