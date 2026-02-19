@@ -2,26 +2,9 @@ import { posix as path } from 'node:path';
 import JSZip from 'jszip';
 import { parseStringPromise } from 'xml2js';
 import config from '../../../config';
+import { RelsObject, XMLObject } from './types';
 
 const { diagramTypesToFilterBy } = config.minio.pptx;
-
-interface Relationship {
-    $: {
-        Id: string;
-        Type: string;
-        Target: string;
-    };
-}
-interface RelationshipsObject {
-    Relationship: Relationship[];
-}
-
-export interface RelsObject {
-    Relationships?: RelationshipsObject;
-}
-export interface XMLObject {
-    [key: string]: string;
-}
 
 /**
  * Recursively extracts text from a given XML object by the specified tag names.

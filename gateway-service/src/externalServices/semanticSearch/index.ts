@@ -1,21 +1,19 @@
-import { ISearchBatchBody, ISearchSort } from '@packages/entity';
 import { IRerankRequest, IRerankResult, ISemanticSearchResult } from '@packages/semantic-search';
 import { logger } from '@packages/utils';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
+import { ISemanticSearchBatchBody } from '../../utils/semantic';
 
-const { url, searchRoute, requestTimeout, baseRoute, rerankRoute } = config.semanticSearchService;
-
-export type ISemanticSearchBatchBody = Omit<ISearchBatchBody, 'templates' | 'sort' | 'skip' | 'limit'> & {
-    templates: string[];
-    sort?: ISearchSort;
-    skip?: number;
-    limit?: number;
-};
+const {
+    url,
+    requestTimeout,
+    baseRoute,
+    embedding: { embeddingRoute, searchRoute, rerankRoute },
+} = config.semanticSearchService;
 
 export class SemanticSearchService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {
-        super(workspaceId, { baseURL: `${url}${baseRoute}`, timeout: requestTimeout });
+        super(workspaceId, { baseURL: `${url}${baseRoute}${embeddingRoute}`, timeout: requestTimeout });
     }
 
     async search(searchBody: ISemanticSearchBatchBody) {

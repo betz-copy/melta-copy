@@ -34,6 +34,7 @@ export interface BackendConfigState {
     meltaUpdates: MeltaUpdatesConfig;
     isOutsideDevelopment: boolean;
     maxEntitiesToPrint: number;
+    aiRequestTimeout: number;
 }
 
 export const getBackendConfigRequest = async () => {
