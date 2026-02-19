@@ -23,6 +23,7 @@ export const DraftCard: React.FC<{ draft: Draft; openEditDialog: () => void }> =
 
     const { _createdAt, _disabled, _id, _updatedAt, ...displayProperties } = draft.properties;
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: old code
     const draftPropertiesToDisplayOnHover = useMemo(
         () =>
             Object.values(displayProperties ?? [])
@@ -30,7 +31,6 @@ export const DraftCard: React.FC<{ draft: Draft; openEditDialog: () => void }> =
                 .map((displayProperty) => displayProperty.toString().replace(replaceHtmlTagsRegex, '').substring(0, 50))
                 .join(' / ')
                 .substring(0, 750) || i18next.t('draftSaveDialog.emptyDraft'),
-        // biome-ignore lint/correctness/useExhaustiveDependencies: old code
         [displayProperties],
     );
 
