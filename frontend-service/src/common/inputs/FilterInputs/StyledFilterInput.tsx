@@ -6,6 +6,13 @@ export const StyledFilterInput = styled(ViewModeTextField)(({ theme }) => ({
         borderRadius: '7px',
         backgroundColor: theme.palette.mode === 'dark' ? undefined : 'white',
     },
+    '& .MuiSelect-select': {
+        display: 'flex',
+        alignItems: 'center',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+    },
     '& .MuiInputBase-input': {
         color: theme.palette.mode === 'dark' ? undefined : ' rgba(83, 86, 110, 1)',
         fontSize: '1rem',

@@ -1,6 +1,6 @@
 import * as joi from 'joi';
 
-// POST /api/semantic/search
+// POST /api/semantic/embedding/search
 export const search = joi.object({
     query: {},
     body: joi.object({
@@ -12,7 +12,7 @@ export const search = joi.object({
     params: {},
 });
 
-// POST /api/semantic/rerank
+// POST /api/semantic/embedding/rerank
 export const rerank = joi.object({
     query: {},
     body: joi.object({

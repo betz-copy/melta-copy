@@ -137,8 +137,15 @@ const config = {
         requestTimeout: env.get('SEMANTIC_SEARCH_SERVICE_REQUEST_TIMEOUT').default(20000).asIntPositive(),
         url: env.get('SEMANTIC_SEARCH_SERVICE').required().asString(),
         baseRoute: env.get('SEMANTIC_SEARCH_SERVICE_BASE_ROUTE').default('/api/semantic').asString(),
-        searchRoute: env.get('SEMANTIC_SEARCH_SERVICE_SEARCH_ROUTE').default('/search').asString(),
-        rerankRoute: env.get('SEMANTIC_SEARCH_SERVICE_RERANK_ROUTE').default('/rerank').asString(),
+        embedding: {
+            embeddingRoute: env.get('SEMANTIC_SEARCH_SERVICE_EMBEDDING_ROUTE').default('/embedding').asString(),
+            searchRoute: env.get('SEMANTIC_SEARCH_SERVICE_SEARCH_ROUTE').default('/search').asString(),
+            rerankRoute: env.get('SEMANTIC_SEARCH_SERVICE_RERANK_ROUTE').default('/rerank').asString(),
+        },
+        ai: {
+            aiRoute: env.get('SEMANTIC_SEARCH_SERVICE_AI_ROUTE').default('/ai').asString(),
+            requestTimeout: env.get('AI_SUMMARY_SERVICE_REQUEST_TIMEOUT').default(180000).asIntPositive(), // 3 minutes for LLM inference
+        },
     },
     instanceService: {
         url: env.get('INSTANCE_SERVICE_URL').required().asString(),
