@@ -733,63 +733,14 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         }
     }
 
-    async getAllowedRuleBreaches(result: IAgGridResult<IRuleBreachRequest | IRuleBreachAlert>, user: Express.User) {
-        const usersPermissions = await this.authorizer.getWorkspacePermissions(user.id);
-        const templateManager = new TemplatesManager(this.workspaceId);
-
-        const allowedEntityTemplateIds = await templateManager.getAllowedEntityTemplateIds(usersPermissions, user.id);
-
-        const allowedRelationshipTemplatesIds = await templateManager.getAllowedRelationshipTemplatesIds(allowedEntityTemplateIds);
-
-        const allowedTemplatesIdsSet = new Set([...allowedEntityTemplateIds, ...allowedRelationshipTemplatesIds]);
-
-        const res = await Promise.all(
-            result.rows.map(async (row) => {
-                const isRowAllowed = await Promise.all(
-                    row.actions.map(async (action) => {
-                        let entityTemplateId = '-';
-
-                        switch (action.actionType) {
-                            case ActionTypes.CreateEntity:
-                                entityTemplateId = (action.actionMetadata as ICreateEntityMetadataPopulated).templateId;
-                                break;
-                            case ActionTypes.DuplicateEntity:
-                                entityTemplateId = (action.actionMetadata as IDuplicateEntityMetadataPopulated).templateId;
-                                break;
-                            case ActionTypes.UpdateEntity: {
-                                const actionMetadata = action.actionMetadata as IUpdateEntityMetadata;
-                                const entity = await this.instancesService.getEntityInstanceById(actionMetadata.entityId);
-                                entityTemplateId = entity.templateId;
-                                break;
-                            }
-                            case ActionTypes.CreateRelationship:
-                                entityTemplateId = (action.actionMetadata as ICreateRelationshipMetadata).relationshipTemplateId;
-                                break;
-                            default:
-                                entityTemplateId = '-';
-                        }
-
-                        return allowedTemplatesIdsSet.has(entityTemplateId);
-                    }),
-                );
-
-                return isRowAllowed.every(Boolean);
-            }),
-        );
-
-        return result.rows.filter((_row, index) => res[index]);
-    }
-
     async searchRuleBreachRequests(agGridRequest: IAgGridRequest, user: Express.User): Promise<IAgGridResult<IRuleBreachRequestPopulated>> {
         const updatedAgGridRequest = await this.agGridSearchRuleBreachesOfUser(agGridRequest, user);
 
         const result = await this.service.searchRuleBreachRequests(updatedAgGridRequest);
 
-        const allowedRows = await this.getAllowedRuleBreaches(result, user);
-
         return {
-            rows: await this.populateRulesBreachRequests(allowedRows as IRuleBreachRequest[]),
-            lastRowIndex: allowedRows.length,
+            rows: await this.populateRulesBreachRequests(result.rows as IRuleBreachRequest[]),
+            lastRowIndex: result.rows.length,
         };
     }
 
@@ -798,11 +749,9 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
         const result = await this.service.searchRuleBreachAlerts(updatedAgGridRequest);
 
-        const allowedRows = await this.getAllowedRuleBreaches(result, user);
-
         return {
-            rows: await this.populateRulesBreachAlerts(allowedRows as IRuleBreachAlert[]),
-            lastRowIndex: allowedRows.length,
+            rows: await this.populateRulesBreachAlerts(result.rows as IRuleBreachAlert[]),
+            lastRowIndex: result.rows.length,
         };
     }
 
