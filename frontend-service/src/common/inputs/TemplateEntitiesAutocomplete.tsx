@@ -105,6 +105,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
     const { cacheBlockSize } = environment.agGrid;
 
     const [inputValue, setInputValue] = useState<string>(displayValue || '');
+    const [searchValue, setSearchValue] = useState<string>(displayValue || '');
     const [allEntities, setAllEntities] = useState<IEntity[]>([]);
     const queryClient = useQueryClient();
 
@@ -181,19 +182,19 @@ const TemplateEntitiesAutocomplete: React.FC<{
 
     const debouncedSearch = useCallback(
         debounce((value: string) => {
-            if (emptyDependentFields.length) setInputValue(value);
-        }, 1000),
+            setSearchValue(value);
+        }, 500),
         [],
     );
 
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery(
-        ['searchEntitiesOfTemplate', template?._id, inputValue],
+        ['searchEntitiesOfTemplate', template?._id, searchValue],
         ({ pageParam = 0 }) => {
             return searchFunction(template!._id, clientSideUserEntity?.properties?._id, {
                 skip: pageParam * cacheBlockSize,
                 limit: cacheBlockSize,
                 filter: parseAndAddDisabled(relationFilters),
-                textSearch: inputValue,
+                textSearch: searchValue,
             });
         },
         {
@@ -220,6 +221,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
         setInputValue(newValue);
         onDisplayValueChange?.(_e, newValue, reason);
         if (reason === 'input') debouncedSearch(newValue);
+        if (reason === 'clear') setSearchValue('');
     };
 
     const loadMore = useCallback(() => {
