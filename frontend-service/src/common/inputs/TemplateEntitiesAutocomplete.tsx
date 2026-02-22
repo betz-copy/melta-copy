@@ -187,6 +187,12 @@ const TemplateEntitiesAutocomplete: React.FC<{
         [],
     );
 
+    useEffect(() => {
+        return () => {
+            debouncedSearch.cancel();
+        };
+    }, [debouncedSearch]);
+
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery(
         ['searchEntitiesOfTemplate', template?._id, searchValue],
         ({ pageParam = 0 }) => {
