@@ -81,6 +81,10 @@ const RjsfSelectWidget = ({
 
     const variant = readonly && !schema.readOnly ? 'standard' : 'outlined';
 
+    const getLabel = () => {
+        return required ? `* ${label || schema.title}` : label || schema.title;
+    };
+
     if (isCleanView(readonly, formContext)) {
         const cleanValue = multiple
             ? Array.isArray(selectedValue)
@@ -121,7 +125,7 @@ const RjsfSelectWidget = ({
             onFocus={_onFocus}
             variant={variant}
             rawErrors={!hideError ? rawErrors : []}
-            label={!hideLabel ? label || schema.title : undefined}
+            label={!hideLabel ? getLabel() : undefined}
             color={color}
             value={value}
             placeholder={Array.isArray(defaultValue) ? defaultValue.join(', ') : (defaultValue as string | undefined)}

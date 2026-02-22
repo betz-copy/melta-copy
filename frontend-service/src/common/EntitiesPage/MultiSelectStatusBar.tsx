@@ -1,6 +1,6 @@
 import { IServerSideSelectionState, IStatusPanelParams } from '@ag-grid-community/core';
 import { Delete, Edit } from '@mui/icons-material';
-import { Box, CircularProgress, Grid, Typography } from '@mui/material';
+import { Box, CircularProgress, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { ActionTypes, ICreateEntityMetadata } from '@packages/action';
 import { isChildTemplate } from '@packages/child-template';
 import { IDeleteEntityBody, IMultipleSelect, IPropertyValue } from '@packages/entity';
@@ -18,6 +18,7 @@ import { BackendConfigState } from '../../services/backendConfigService';
 import { deleteEntityRequest, updateMultipleEntitiesRequest } from '../../services/entitiesService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { filterModelToFilterOfTemplate } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { isWorkspaceAdmin } from '../../utils/permissions/instancePermissions';
 import { filterFieldsFromPropertiesSchema, pickOnlyGivenFields } from '../../utils/pickFieldsPropertiesSchema';
@@ -30,12 +31,14 @@ import { ajvValidate } from '../inputs/JSONSchemaFormik';
 import { TableButton } from '../TableButton';
 import { StepType, Wizard } from '../wizards';
 import { StatusEntitiesTables } from '../wizards/excel/excelSteps/StatusEntitiesTables';
+import { AISummaryDialog } from './AISummaryDialog';
 import { DeleteEntitiesDialog } from './DeleteEntitiesDialog';
 
 interface MultiSelectStatusBarProps extends IStatusPanelParams {
     template: ITemplate;
     quickFilterText: string;
     setUpdatedTemplateIds?: React.Dispatch<React.SetStateAction<string[]>>;
+    aiSummarySelectMode?: boolean;
 }
 
 export interface IUpdateMultipleEntitiesResponse {
@@ -44,7 +47,13 @@ export interface IUpdateMultipleEntitiesResponse {
     brokenRulesEntities?: IBrokenRuleEntity[];
 }
 
-export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api, template, quickFilterText, setUpdatedTemplateIds }) => {
+export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({
+    api,
+    template,
+    quickFilterText,
+    setUpdatedTemplateIds,
+    aiSummarySelectMode,
+}) => {
     const initialValues: EntityWizardValues = getInitialValuesWithDefaults({
         template,
         attachmentsProperties: {},
@@ -52,8 +61,12 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
     });
 
     const queryClient = useQueryClient();
+    const theme = useTheme();
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const { deleteEntitiesLimit } = queryClient.getQueryData<BackendConfigState>('getBackendConfig')!;
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
+    const isAiSummaryEnabled = workspace.metadata.enableAiSummary;
 
     const parentTemplateId = isChildTemplate(template) ? template.parentTemplate._id : template._id;
 
@@ -74,6 +87,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
     const [wasDirty, setWasDirty] = useState(false);
     const [initialValuePropsToFilter, setInitialValuePropsToFilter] = useState<Record<string, IPropertyValue>>(initialValues);
     const [entityData, setEntityData] = useState<{ propertiesToChange: EntityWizardValues; propertiesToRemove: string[] } | undefined>(undefined);
+    const [aiSummaryDialogOpen, setAiSummaryDialogOpen] = useState(false);
 
     const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(
         (deleteBody: IDeleteEntityBody) => deleteEntityRequest(deleteBody),
@@ -320,41 +334,81 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
     return (
         <Grid>
             <Grid container spacing={2} alignItems="center">
-                <Grid>
-                    <TableButton
-                        iconButtonWithPopoverProps={{
-                            popoverText: i18next.t(`entitiesTableOfTemplate.deleteWithRelationship${workspaceAdmin ? 'Reference' : ''}Warn`),
-                            iconButtonProps: {
-                                onClick: () => setOpenDeleteDialog(true),
-                                sx: {
-                                    fontSize: '15px',
+                {!aiSummarySelectMode ? (
+                    <>
+                        <Grid>
+                            <IconButton
+                                style={{
+                                    background: theme.palette.primary.main,
+                                    borderRadius: '7px',
+                                    width: '135px',
+                                    height: '35px',
                                     marginTop: '6px',
-                                },
-                            },
-                        }}
-                        icon={isDeleteLoading ? <CircularProgress /> : <Delete fontSize="small" />}
-                        text={i18next.t('actions.delete')}
-                        disableButton={selectedRowCount === 0 || selectedRowCount >= deleteEntitiesLimit}
-                    />
-                </Grid>
-
-                <Grid>
-                    <TableButton
-                        iconButtonWithPopoverProps={{
-                            popoverText: i18next.t('actions.edit'),
-                            iconButtonProps: {
-                                onClick: () => setOpenEditDialog(true),
-                                sx: {
-                                    fontSize: '15px',
+                                    opacity: selectedRowCount === 0 || selectedRowCount >= deleteEntitiesLimit ? 0.5 : 1,
+                                }}
+                                onClick={() => {
+                                    setOpenEditDialog(true);
+                                    setAiSummaryDialogOpen(false);
+                                }}
+                                disabled={selectedRowCount === 0 || selectedRowCount >= deleteEntitiesLimit}
+                            >
+                                {isDeleteLoading ? (
+                                    <CircularProgress size="24px" sx={{ color: 'white' }} />
+                                ) : (
+                                    <Edit fontSize="small" htmlColor="white" />
+                                )}
+                                <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>
+                                    {i18next.t('actions.edit')}
+                                </Typography>
+                            </IconButton>
+                        </Grid>
+                        <Grid>
+                            <TableButton
+                                iconButtonWithPopoverProps={{
+                                    popoverText: i18next.t(`entitiesTableOfTemplate.deleteWithRelationship${workspaceAdmin ? 'Reference' : ''}Warn`),
+                                    iconButtonProps: {
+                                        onClick: () => {
+                                            setOpenDeleteDialog(true);
+                                            setAiSummaryDialogOpen(false);
+                                        },
+                                        sx: {
+                                            fontSize: '15px',
+                                            marginTop: '6px',
+                                        },
+                                    },
+                                }}
+                                icon={isDeleteLoading ? <CircularProgress /> : <Delete fontSize="small" />}
+                                text={i18next.t('actions.delete')}
+                                disableButton={selectedRowCount === 0 || selectedRowCount >= deleteEntitiesLimit}
+                            />
+                        </Grid>
+                    </>
+                ) : (
+                    isAiSummaryEnabled && (
+                        <Grid>
+                            <IconButton
+                                style={{
+                                    background: theme.palette.primary.main,
+                                    borderRadius: '7px',
+                                    width: '135px',
+                                    height: '35px',
                                     marginTop: '6px',
-                                },
-                            },
-                        }}
-                        icon={isDeleteLoading ? <CircularProgress /> : <Edit fontSize="small" />}
-                        text={i18next.t('actions.edit')}
-                        disableButton={selectedRowCount === 0 || selectedRowCount >= deleteEntitiesLimit}
-                    />
-                </Grid>
+                                    opacity: selectedRowCount === 0 ? 0.5 : 1,
+                                }}
+                                onClick={() => {
+                                    setAiSummaryDialogOpen(true);
+                                    setOpenEditDialog(false);
+                                    setOpenDeleteDialog(false);
+                                }}
+                                disabled={selectedRowCount === 0}
+                            >
+                                <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>
+                                    {i18next.t('actions.summarize')}
+                                </Typography>
+                            </IconButton>
+                        </Grid>
+                    )
+                )}
 
                 {selectedRowCount >= deleteEntitiesLimit && (
                     <Grid>
@@ -430,6 +484,12 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                     onCreateRuleBreachRequest={() => handleClose(true)}
                 />
             )}
+            <AISummaryDialog
+                open={aiSummaryDialogOpen}
+                handleClose={() => setAiSummaryDialogOpen(false)}
+                template={template}
+                selectedRows={api.getSelectedRows()}
+            />
         </Grid>
     );
 };

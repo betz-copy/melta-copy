@@ -28,6 +28,8 @@ interface FilterEntitiesByCriteriaProps {
     errors?: FormikErrors<CommonFormInputProperties>;
 }
 
+const notIncludedFormats = ['signature', 'comment'];
+
 export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> = ({
     name,
     value,
@@ -42,9 +44,6 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
     const initialFilters = initialValue?.relationshipReference?.filters;
     const [inputValue, setInputValue] = useState<string>('');
 
-    const notIncludedFormats = ['signature', 'comment'];
-
-    // biome-ignore lint/correctness/useExhaustiveDependencies: :)
     const selectedEntityTemplatePropOptions = useMemo(() => {
         if (!selectedEntityTemplate?.properties) return [];
         const { required, properties } = selectedEntityTemplate.properties;

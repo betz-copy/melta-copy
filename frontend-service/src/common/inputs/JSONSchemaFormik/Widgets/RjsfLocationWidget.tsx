@@ -1,5 +1,5 @@
 import { Map as MapIcon } from '@mui/icons-material';
-import { Autocomplete, Box, Dialog, Grid, InputAdornment, TextField } from '@mui/material';
+import { Autocomplete, Box, Dialog, InputAdornment, TextField } from '@mui/material';
 import { SplitBy } from '@packages/common';
 import {
     CoordinateSystem,
@@ -154,8 +154,8 @@ const RjsfLocationWidget = ({
 
     return (
         <Box width="100%">
-            <Grid container justifyContent="space-between" alignContent="center" width="100%">
-                <Grid size={{ xs: 8.25 }}>
+            <Box width="100%" display="flex" gap={1}>
+                <Box width="70%">
                     <MeltaTooltip title={newLocationValue}>
                         <TextField
                             {...textFieldProps}
@@ -197,8 +197,8 @@ const RjsfLocationWidget = ({
                             dir="ltr"
                         />
                     </MeltaTooltip>
-                </Grid>
-                <Grid size={{ xs: 3.5 }}>
+                </Box>
+                <Box width="30%">
                     <Autocomplete
                         value={coordinateSystem}
                         onChange={(_, newValue: CoordinateSystem) => {
@@ -224,8 +224,8 @@ const RjsfLocationWidget = ({
                         disableClearable
                         sx={{ borderRadius: '10px', borderColor: '#787C9E', height: '40px' }}
                     />
-                </Grid>
-            </Grid>
+                </Box>
+            </Box>
             <Dialog open={mapOpen} onClose={handleCloseDialog}>
                 <LocationField
                     defaultLocation={

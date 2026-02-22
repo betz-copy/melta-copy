@@ -678,7 +678,7 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const succeededEntities: IEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
         const results: IEntity[] = [];
-        let filter: ISearchEntitiesOfTemplateBody['filter'];
+        let filter: ISearchEntitiesOfTemplateBody['filter'] = (entitiesToUpdate as IMultipleSelect<true>).filter;
 
         if (entitiesToUpdate.selectAll && childTemplateId && (entitiesToUpdate as IMultipleSelect<true>).filter) {
             const childFilters = await this.instanceUtils.getChildFilters(childTemplateId, user);

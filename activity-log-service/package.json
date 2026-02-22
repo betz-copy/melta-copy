@@ -8,6 +8,10 @@
         "dev": "pnpm build && pnpm start",
         "dev:nodemon": "nodemon --delay 3 --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
         "test": "jest --coverage",
+        "test:watch": "jest --watch",
+        "test:cov": "jest --coverage",
+        "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+        "test:e2e": "jest --config ./test/jest-e2e.json",
         "build": "tsc",
         "build:watch": "tsc --watch",
         "clean": "rimraf dist"
@@ -16,9 +20,6 @@
     "dependencies": {
         "@packages/activity-log": "workspace:*",
         "@packages/common": "workspace:*",
-        "@packages/utils": "workspace:*",
-        "glob": "^11.0.3",
-        "menashmq": "^0.1.6"
-    },
-    "devDependencies": {}
+        "@packages/utils": "workspace:*"
+    }
 }

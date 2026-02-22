@@ -32,13 +32,9 @@ apiRouter.use('/config', (_req, res) => {
         meltaUpdates: config.frontendConfig.meltaUpdates,
         isOutsideDevelopment: config.frontendConfig.isOutsideDevelopment,
         maxEntitiesToPrint: config.frontendConfig.maxEntitiesToPrint,
+        aiRequestTimeout: config.semanticSearchService.ai.requestTimeout,
     });
 });
-
-apiRouter.use('/templates', templatesRouter);
-apiRouter.use('/instances', instancesRouter);
-
-apiRouter.use('/flow-cube', flowCubeRouter);
 
 apiRouter.use(
     '/files',
@@ -62,6 +58,22 @@ apiRouter.use(
     }),
     AuthorizerControllerMiddleware.userHasSomePermissions,
 );
+
+apiRouter.use(
+    '/semantic',
+    createProxyMiddleware({
+        target: `${config.semanticSearchService.url}${config.semanticSearchService.baseRoute}`,
+        changeOrigin: true,
+        on: { proxyReq: fixRequestBody },
+        proxyTimeout: config.semanticSearchService.ai.requestTimeout,
+    }),
+);
+
+apiRouter.use('/templates', templatesRouter);
+
+apiRouter.use('/instances', instancesRouter);
+
+apiRouter.use('/flow-cube', flowCubeRouter);
 
 apiRouter.use('/processes', processesRouter);
 

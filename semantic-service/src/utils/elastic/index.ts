@@ -2,7 +2,7 @@ import { Client, estypes } from '@elastic/elasticsearch';
 import { ISemanticSearchResult } from '@packages/semantic-search';
 import { logger } from '@packages/utils';
 import config from '../../config';
-import { IElasticDoc } from '../../express/semantics/interface';
+import { IElasticDoc } from '../types';
 
 const {
     elastic: {

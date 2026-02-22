@@ -2,6 +2,7 @@ import { FilterModel } from '@ag-grid-community/core';
 import { useMatomo } from '@datapunt/matomo-tracker-react';
 import {
     AddCircle,
+    AutoAwesome,
     BarChart,
     CloseFullscreenRounded,
     AppRegistration as DefaultEntityTemplateIcon,
@@ -72,11 +73,15 @@ const TemplateTable = forwardRef<
     const [_, navigate] = useLocation();
     const workspace = useWorkspaceStore((state) => state.workspace);
 
+    const {
+        agGrid: { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight },
+        iconSize: { height, width },
+        enableAiSummary,
+        mainFontSizes: { entityTemplateTitleFontSize },
+    } = workspace.metadata;
+
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-
-    const { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight } = workspace.metadata.agGrid;
-    const { height, width } = workspace.metadata.iconSize;
 
     const currentUser = useUserStore((state) => state.user);
 
@@ -92,7 +97,8 @@ const TemplateTable = forwardRef<
 
     const [isExpand, setIsExpand] = useState(() => sessionStorage.getItem(`isExpand-${template._id}`) === 'true');
     const [multipleSelect, setMultipleSelect] = useState(false);
-    const [isFiltered, setIsFiltered] = useState(false);
+    const [_isFiltered, setIsFiltered] = useState(false);
+    const [aiSummarySelectMode, setAiSummarySelectMode] = useState(false);
     const initializedExternalErrors = { files: false, unique: {}, action: '' };
     const [externalErrors, setExternalErrors] = useState(initializedExternalErrors);
     const [createOrUpdateWithRuleBreachDialogState, setCreateOrUpdateWithRuleBreachDialogState] = useState<ICreateOrUpdateWithRuleBreachDialogState>({
@@ -241,7 +247,7 @@ const TemplateTable = forwardRef<
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',
                                 fontWeight: '500',
-                                fontSize: workspace.metadata.mainFontSizes.entityTemplateTitleFontSize,
+                                fontSize: entityTemplateTitleFontSize,
                             }}
                             title={template.displayName}
                             component="h5"
@@ -287,7 +293,7 @@ const TemplateTable = forwardRef<
                             text={i18next.t(`entitiesTableOfTemplate.expand${isExpand ? 'Less' : 'More'}Title`)}
                         />
 
-                        <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={!isFiltered} />
+                        <ResetFilterButton entitiesTableRef={entitiesTableRef} />
 
                         <TableButton
                             iconButtonWithPopoverProps={{
@@ -305,8 +311,13 @@ const TemplateTable = forwardRef<
                                 popoverText: i18next.t('entitiesTableOfTemplate.multipleSelect'),
                                 iconButtonProps: {
                                     onClick: () => {
-                                        setMultipleSelect(!multipleSelect);
-                                        if (!(isExpand && !multipleSelect)) setIsExpand(!isExpand);
+                                        if (aiSummarySelectMode) {
+                                            setAiSummarySelectMode(false);
+                                            setMultipleSelect(true);
+                                        } else {
+                                            setMultipleSelect(!multipleSelect);
+                                            if (multipleSelect || !isExpand) setIsExpand(!isExpand);
+                                        }
                                     },
                                 },
                             }}
@@ -322,6 +333,22 @@ const TemplateTable = forwardRef<
                             icon={<BarChart fontSize="small" />}
                             text={i18next.t('pages.charts')}
                         />
+                        {enableAiSummary && (
+                            <TableButton
+                                iconButtonWithPopoverProps={{
+                                    popoverText: i18next.t('actions.aiSummary'),
+                                    iconButtonProps: {
+                                        onClick: () => {
+                                            setAiSummarySelectMode(!aiSummarySelectMode);
+                                            setMultipleSelect(!aiSummarySelectMode);
+                                            if (!isExpand && !aiSummarySelectMode) setIsExpand(true);
+                                        },
+                                    },
+                                }}
+                                icon={<AutoAwesome fontSize="small" />}
+                                text={i18next.t('actions.aiSummary')}
+                            />
+                        )}
                     </Grid>
 
                     <Grid container>
@@ -436,6 +463,7 @@ const TemplateTable = forwardRef<
                     rowHeight={defaultRowHeight}
                     fontSize={`${defaultFontSize}px`}
                     multipleSelect={multipleSelect}
+                    aiSummarySelectMode={aiSummarySelectMode}
                     defaultFilter={defaultFilter}
                     saveStorageProps={{
                         shouldSaveFilter: true,

@@ -1,4 +1,5 @@
 // original code taken from https://github.com/PavelDoGreat/WebGL-Fluid-Simulation
+/** biome-ignore-all lint/correctness/useHookAtTopLevel: old code */
 
 export const webGLFluidSimulation = (canvas) => {
     resizeCanvas();

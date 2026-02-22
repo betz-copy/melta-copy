@@ -347,10 +347,7 @@ const ChildTemplateDialog: React.FC<{
                                         </Grid>
                                         <Grid container direction="row" justifyContent="space-between">
                                             {checkboxesFields.map(({ mode, fields, checked, value }) => {
-                                                if (fields.length === 0) return null;
-
-                                                const isOtherChecked =
-                                                    mode === FilterMode.User ? values.isFilterByUserUnit : values.isFilterByCurrentUser;
+                                                if (!fields.length) return null;
 
                                                 return (
                                                     <React.Fragment key={fields.toString()}>
@@ -362,7 +359,6 @@ const ChildTemplateDialog: React.FC<{
                                                                         onChange={(e) =>
                                                                             updateFilterBy(!!e.target.checked, mode, undefined, e.target.checked)
                                                                         }
-                                                                        disabled={isOtherChecked}
                                                                     />
                                                                 }
                                                                 label={i18next.t(`childTemplate.filterBy.${mode}`)}
