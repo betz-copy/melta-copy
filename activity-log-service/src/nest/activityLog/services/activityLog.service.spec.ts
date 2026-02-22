@@ -117,7 +117,19 @@ describe('ActivityLogService', () => {
 
             expect(modelMock.find).toHaveBeenCalledWith({
                 entityId: { $eq: entityId },
-                $text: { $search: searchText },
+                $or: [
+                    {
+                        'metadata.updatedFields': {
+                            $elemMatch: {
+                                $or: [
+                                    { fieldName: { $regex: searchText, $options: 'i' } },
+                                    { oldValue: { $regex: searchText, $options: 'i' } },
+                                    { newValue: { $regex: searchText, $options: 'i' } },
+                                ],
+                            },
+                        },
+                    },
+                ],
             });
         });
 
@@ -163,7 +175,7 @@ describe('ActivityLogService', () => {
 
             expect(modelMock.find).toHaveBeenCalledWith({
                 entityId: { $eq: entityId },
-                timestamp: { $gte: startDateRange, $lte: endDateRange },
+                timestamp: { $gte: new Date(startDateRange), $lte: new Date(endDateRange) },
             });
         });
 
@@ -176,7 +188,7 @@ describe('ActivityLogService', () => {
 
             expect(modelMock.find).toHaveBeenCalledWith({
                 entityId: { $eq: entityId },
-                timestamp: { $gte: startDateRange },
+                timestamp: { $gte: new Date(startDateRange) },
             });
         });
 
@@ -189,7 +201,7 @@ describe('ActivityLogService', () => {
 
             expect(modelMock.find).toHaveBeenCalledWith({
                 entityId: { $eq: entityId },
-                timestamp: { $lte: endDateRange },
+                timestamp: { $lte: new Date(endDateRange) },
             });
         });
 
@@ -244,8 +256,20 @@ describe('ActivityLogService', () => {
 
             expect(modelMock.find).toHaveBeenCalledWith({
                 entityId: { $eq: entityId },
-                $text: { $search: searchText },
-                timestamp: { $gte: startDateRange },
+                $or: [
+                    {
+                        'metadata.updatedFields': {
+                            $elemMatch: {
+                                $or: [
+                                    { fieldName: { $regex: searchText, $options: 'i' } },
+                                    { oldValue: { $regex: searchText, $options: 'i' } },
+                                    { newValue: { $regex: searchText, $options: 'i' } },
+                                ],
+                            },
+                        },
+                    },
+                ],
+                timestamp: { $gte: new Date(startDateRange) },
             });
         });
     });

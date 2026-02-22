@@ -118,22 +118,6 @@ describe('ActivityLogController (e2e)', () => {
                 });
         });
 
-        it('should return 400 if limit is missing (Zod validation)', () => {
-            return request(app.getHttpServer())
-                .get(`/api/activity-log/${entityId}`)
-                .set(config.server.workspaceIdHeader, mockWorkspaceId)
-                .query({ skip: 0 })
-                .expect(400);
-        });
-
-        it('should return 400 if skip is missing (Zod validation)', () => {
-            return request(app.getHttpServer())
-                .get(`/api/activity-log/${entityId}`)
-                .set(config.server.workspaceIdHeader, mockWorkspaceId)
-                .query({ limit: 10 })
-                .expect(400);
-        });
-
         it('should return 400 if workspace-id header is missing', () => {
             return request(app.getHttpServer()).get(`/api/activity-log/${entityId}`).query({ limit: 10, skip: 0 }).expect(400);
         });

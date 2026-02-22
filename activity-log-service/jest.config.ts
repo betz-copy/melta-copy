@@ -8,7 +8,7 @@ const config = {
     transformIgnorePatterns: ['/node_modules/(?!(.pnpm|uuid)/)'],
     collectCoverageFrom: [
         '**/*.(t|j)s',
-        '!main.ts',
+        '!index.ts',
         '!utils/logger/**',
         '!**/**.schema.ts',
         '!common/**',
@@ -31,6 +31,7 @@ const config = {
     moduleNameMapper: {
         '^src/(.*)$': '<rootDir>/$1',
     },
+    setupFilesAfterEnv: ['<rootDir>/../test/jest.setup.js'],
 };
 
 export default config;
