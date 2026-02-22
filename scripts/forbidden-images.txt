@@ -10,3 +10,4 @@ elastic
 apm-server
 filebeat
 mock-model-api
+mock-service
