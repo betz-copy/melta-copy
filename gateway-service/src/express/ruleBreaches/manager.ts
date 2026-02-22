@@ -479,11 +479,13 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         const { templateId, properties } = action.actionMetadata;
         const instancesManager = new InstancesManager(this.workspaceId);
 
+        const originUser = await UsersManager.getUserById(originUserId);
+
         const entity = await instancesManager.createEntityInstance(
             { templateId, properties },
             [],
             brokenRules,
-            originUserId,
+            originUser,
             childTemplateId,
             undefined,
             false,
@@ -512,13 +514,14 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     ) {
         const { templateId, properties, entityIdToDuplicate } = action.actionMetadata;
         const instancesManager = new InstancesManager(this.workspaceId);
+        const originUser = await UsersManager.getUserById(originUserId);
 
         const entity = await instancesManager.duplicateEntityInstance(
             entityIdToDuplicate,
             { templateId, properties },
             [],
             brokenRules,
-            originUserId,
+            originUser,
             childTemplateId,
             false,
             false,
@@ -550,6 +553,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
         const entity = await this.instancesService.getEntityInstanceById(entityId);
         const newEntityProperties = { ...entity.properties, ...updatedFields };
+        const originUser = await UsersManager.getUserById(originUserId);
 
         // updatedFields specifies fields to remove w/ nulls. but shouldn't be in the IEntity properties
         const newEntityPropertiesWithoutNulls = pickBy(newEntityProperties, (property) => property !== null) as IEntity['properties'];
@@ -559,7 +563,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
             { ...entity, properties: newEntityPropertiesWithoutNulls },
             [],
             brokenRules,
-            originUserId,
+            originUser,
             childTemplateId,
             false,
         );
@@ -737,7 +741,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     }
 
     async getAllowedRuleBreaches(result: IAgGridResult<IRuleBreachRequest | IRuleBreachAlert>, user: IReqUser) {
-        const usersPermissions = await this.authorizer.getWorkspacePermissions(user._id);
+        const usersPermissions = await this.authorizer.getWorkspacePermissions(user);
         const templateManager = new TemplatesManager(this.workspaceId);
 
         const allowedEntityTemplateIds = await templateManager.getAllowedEntityTemplateIds(usersPermissions, user);
@@ -817,7 +821,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         const ruleBreachRequest = await this.service.getRuleBreachRequestById(ruleBreachRequestId);
 
         if (user && ruleBreachRequest.originUserId !== user._id) {
-            const userPermissions = await this.authorizer.getWorkspacePermissions(user._id);
+            const userPermissions = await this.authorizer.getWorkspacePermissions(user);
             if (!userPermissions.admin?.scope && userPermissions.rules?.scope !== PermissionScope.write)
                 throw new ForbiddenError('user does not have permissions to this rule breach request');
         }
@@ -829,7 +833,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         const ruleBreachAlert = await this.service.getRuleBreachAlertById(ruleBreachAlertId);
 
         if (user && ruleBreachAlert.originUserId !== user._id) {
-            const userPermissions = await this.authorizer.getWorkspacePermissions(user._id);
+            const userPermissions = await this.authorizer.getWorkspacePermissions(user);
             if (!userPermissions.admin?.scope && userPermissions.rules?.scope !== PermissionScope.write)
                 throw new ForbiddenError('user does not have permissions to this rule breach alert');
         }
@@ -838,7 +842,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     }
 
     private async agGridSearchRuleBreachesOfUser(agGridRequest: IAgGridRequest, user: IReqUser): Promise<IAgGridRequest> {
-        const userPermissions = await this.authorizer.getWorkspacePermissions(user._id);
+        const userPermissions = await this.authorizer.getWorkspacePermissions(user);
         if (userPermissions.admin?.scope || userPermissions.rules?.scope === PermissionScope.write) return agGridRequest;
 
         const updatedAgGridRequest: IAgGridRequest = { ...agGridRequest };

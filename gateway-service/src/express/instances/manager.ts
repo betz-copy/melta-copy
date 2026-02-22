@@ -1011,19 +1011,18 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         instanceData: IEntity,
         files: UploadedFile[],
         ignoredRules: IBrokenRule[],
-        currentUser: IReqUser | string,
+        user: IReqUser,
         childTemplateId?: string,
         serialNumbers?: Record<string, number>,
         createAlert: boolean = true,
     ) {
-        const user = typeof currentUser === 'string' ? await UserService.getUserById(currentUser) : currentUser;
         const { templateId, properties, files: upserstedFiles } = await this.handlePreparationsBeforeCreateEntity(instanceData, files, serialNumbers);
 
         await this.instanceUtils.validateEntityProperties(properties, templateId, user, childTemplateId);
 
         const childFilters = childTemplateId ? await this.instanceUtils.getChildFilters(childTemplateId, user) : undefined;
 
-        logger.info('createEntityInstance', { instanceData, files, ignoredRules, user, serialNumbers, createAlert });
+        logger.info('createEntityInstance', { instanceData, files, ignoredRules, userId: user._id, serialNumbers, createAlert });
 
         const template = await this.entityTemplateService.getEntityTemplateById(instanceData.templateId);
 
@@ -1245,12 +1244,11 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         instanceData: IEntity,
         files: UploadedFile[],
         ignoredRules: IBrokenRule[],
-        currentUser: IReqUser | string,
+        user: IReqUser,
         childTemplateId?: string,
         duplicateFileProperties = true,
         createAlert: boolean = true,
     ) {
-        const user = typeof currentUser === 'string' ? await UserService.getUserById(currentUser) : currentUser;
         const currentEntity = await this.service.getEntityInstanceById(id);
         const currentEntityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
 
@@ -1353,12 +1351,11 @@ class InstancesManager extends DefaultManagerProxy<InstancesService> {
         updatedInstanceData: IEntity,
         files: UploadedFile[],
         ignoredRules: IBrokenRule[],
-        currentUser: IReqUser | IUser | string,
+        user: IReqUser | IUser,
         childTemplateId?: string,
         createAlert: boolean = true,
         isEditExcel: boolean = false,
     ) {
-        const user = typeof currentUser === 'string' ? await UserService.getUserById(currentUser) : currentUser;
         const { props: uploadedFilesAndProperties, files: updatedFiles } = await this.uploadInstanceFiles(files, updatedInstanceData.properties);
 
         await this.instanceUtils.validateEntityProperties(updatedInstanceData.properties, updatedInstanceData.templateId, user, childTemplateId);

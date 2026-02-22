@@ -12,14 +12,20 @@ class Kartoffel {
     });
 
     static getUsersByIds = async (ids: string[]) => {
-        const { data } = await this.kartoffel.get<IKartoffelUser[]>(``, {
-            params: {
-                ids: ids,
-                page: 1,
-                pageSize: maxPageSize,
-            },
-        });
-        return data;
+        if (!ids.length) return [];
+
+        try {
+            const { data } = await this.kartoffel.get<IKartoffelUser[]>(``, {
+                params: {
+                    ids: ids,
+                    page: 1,
+                    pageSize: maxPageSize,
+                },
+            });
+            return data;
+        } catch {
+            return [];
+        }
     };
 }
 

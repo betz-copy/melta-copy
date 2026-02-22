@@ -44,6 +44,7 @@ export const FilterEntitiesByCriteria: React.FC<FilterEntitiesByCriteriaProps> =
 
     const notIncludedFormats = ['signature', 'comment'];
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: :)
     const selectedEntityTemplatePropOptions = useMemo(() => {
         if (!selectedEntityTemplate?.properties) return [];
         const { required, properties } = selectedEntityTemplate.properties;

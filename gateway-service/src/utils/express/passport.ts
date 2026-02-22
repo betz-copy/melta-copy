@@ -41,7 +41,7 @@ const verifyAllowedUserBasicStrategy: BasicVerifyFunctionWithRequest = (_req, us
         return;
     }
 
-    done(null, { id: userId });
+    done(null, { _id: userId, kartoffelId: userId });
 };
 
 interface BasicStrategyWithChallenge extends BasicStrategy {

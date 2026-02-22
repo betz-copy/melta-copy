@@ -92,7 +92,7 @@ class ChartsValidator extends DefaultController {
         ]);
     }
 
-    async validateUserCanDeleteRerencedDahboardItem(req: Request) {
+    async validateUserCanDeleteReferencedDashboardItem(req: Request) {
         const { deleteReferenceDashboardItems } = req.query as { deleteReferenceDashboardItems?: boolean };
         const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!);
 
@@ -111,14 +111,14 @@ class ChartsValidator extends DefaultController {
     }
 
     async validateUserCanUpdateChart(req: Request) {
-        await this.validateUserCanDeleteRerencedDahboardItem(req);
+        await this.validateUserCanDeleteReferencedDashboardItem(req);
         return this.validateUserHasPermissionToChart(req);
     }
 
     async validateUserCanDeleteChart(req: Request) {
         const { chartId } = req.params;
 
-        await this.validateUserCanDeleteRerencedDahboardItem(req);
+        await this.validateUserCanDeleteReferencedDashboardItem(req);
 
         const chart = await this.chartManager.getChartById(chartId as string);
 

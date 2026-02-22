@@ -9,7 +9,7 @@ class GanttController extends DefaultController<GanttManager> {
     }
 
     async searchGantts(req: Request, res: Response) {
-        const { body, permissionsOfUserId, user } = req as RequestWithPermissionsOfUserId; //TODO:CHECK IF REMOVE permissionsOfUserId
+        const { body, permissionsOfUserId, user } = req as RequestWithPermissionsOfUserId;
         res.json(await this.manager.searchGantts(body, permissionsOfUserId, user!));
     }
 

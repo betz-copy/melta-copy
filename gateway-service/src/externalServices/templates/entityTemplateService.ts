@@ -79,7 +79,7 @@ class EntityTemplateService extends TemplatesManagerService {
     // entity templates
     async searchEntityTemplates(user: IReqUser | IUser, body: ISearchEntityTemplatesBody = {}) {
         const workspaceId = this.api.defaults.headers[workspaceIdHeaderName]!.toString();
-        const usersPermissions = await new Authorizer(workspaceId).getWorkspacePermissions(user._id);
+        const usersPermissions = await new Authorizer(workspaceId).getWorkspacePermissions(user);
 
         const { data: entityTemplates } = await this.api.post<IMongoEntityTemplatePopulated[]>(`${baseEntitiesRoute}/search`, body);
         return usersPermissions.admin

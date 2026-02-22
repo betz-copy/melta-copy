@@ -165,6 +165,7 @@ export const webGLFluidSimulation = (canvas) => {
         }
 
         bind() {
+            // biome-ignore lint/correctness/useHookAtTopLevel: never doubt Yahalom
             gl.useProgram(this.activeProgram);
         }
     }
@@ -177,6 +178,7 @@ export const webGLFluidSimulation = (canvas) => {
         }
 
         bind() {
+            // biome-ignore lint/correctness/useHookAtTopLevel: never doubt Yahalom
             gl.useProgram(this.program);
         }
     }
