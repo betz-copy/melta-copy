@@ -38,17 +38,14 @@ jobs:
         run: pnpm install --frozen-lockfile
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      
-      - name: Build workspace packages
-        run: pnpm run build:packages
 
       - name: Run Biome
         run: pnpm run biome
-
-      - name: Run tests
-        run: pnpm test
 
       - name: Build
         run: pnpm run build
         env:
           NODE_OPTIONS: --max-old-space-size=8000
+      
+      - name: Run tests
+        run: pnpm test
