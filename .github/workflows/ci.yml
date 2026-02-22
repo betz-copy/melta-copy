@@ -39,6 +39,9 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       
+      - name: Build workspace packages
+        run: pnpm run build:packages
+
       - name: Run Biome
         run: pnpm run biome
 
