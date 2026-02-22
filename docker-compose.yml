@@ -307,8 +307,8 @@ services:
 
   # frontend-service:
   #   build:
-  #     context: ./frontend-service
-  #     dockerfile: Dockerfile
+  #     context: .
+  #     dockerfile: frontend-service/Dockerfile
   #     args:
   #       SERVICE_NAME: 'frontend-service'
 
