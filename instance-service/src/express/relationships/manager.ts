@@ -1,4 +1,4 @@
-import { ActionsLog, IActivityLog } from '@packages/activity-log';
+import { ActionsLog, IMongoActivityLog } from '@packages/activity-log';
 import { IRelationship } from '@packages/relationship';
 import { IMongoRelationshipTemplate } from '@packages/relationship-template';
 import { IBrokenRule } from '@packages/rule-breach';
@@ -163,7 +163,7 @@ class RelationshipManager extends DefaultManagerNeo4j {
     createRelationshipInTransaction = async (transaction: Transaction, relationship: IRelationship, userId?: string) => {
         const { templateId, properties, sourceEntityId, destinationEntityId } = relationship;
 
-        const activityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
+        const activityLogsToCreate: Omit<IMongoActivityLog, '_id'>[] = [];
 
         const createdRelationship = await runInTransactionAndNormalize(
             transaction,
@@ -177,7 +177,7 @@ class RelationshipManager extends DefaultManagerNeo4j {
 
         if (userId) {
             const updatedFields = {
-                action: ActionsLog.CREATE_RELATIONSHIP,
+                action: ActionsLog.CREATE_RELATIONSHIP as const,
                 timestamp: new Date(),
                 userId,
                 metadata: {
@@ -278,7 +278,7 @@ class RelationshipManager extends DefaultManagerNeo4j {
         });
 
         const updatedFields = {
-            action: ActionsLog.DELETE_RELATIONSHIP,
+            action: ActionsLog.DELETE_RELATIONSHIP as const,
             timestamp: new Date(),
             userId,
             metadata: {

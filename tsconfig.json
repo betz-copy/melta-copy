@@ -22,6 +22,8 @@
         "isolatedModules": true,
         "moduleResolution": "node",
         "baseUrl": ".",
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
         "paths": {
             "@packages/*": ["packages/*/src", "packages/*"]
         },
