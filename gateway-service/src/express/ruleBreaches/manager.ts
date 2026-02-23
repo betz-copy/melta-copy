@@ -66,7 +66,6 @@ import DefaultManagerProxy from '../../utils/express/manager';
 import { injectValuesToEmails } from '../../utils/mailNotifications/handlebars';
 import RabbitManager from '../../utils/rabbit';
 import InstancesManager from '../instances/manager';
-import TemplatesManager from '../templates/manager';
 import UsersManager from '../users/manager';
 import WorkspaceManager from '../workspaces/manager';
 
@@ -740,7 +739,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
         return {
             rows: await this.populateRulesBreachRequests(result.rows as IRuleBreachRequest[]),
-            lastRowIndex: result.rows.length,
+            lastRowIndex: result.lastRowIndex,
         };
     }
 
@@ -751,7 +750,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
         return {
             rows: await this.populateRulesBreachAlerts(result.rows as IRuleBreachAlert[]),
-            lastRowIndex: result.rows.length,
+            lastRowIndex: result.lastRowIndex,
         };
     }
 
