@@ -101,10 +101,10 @@ const getColumnDefs = (
             sortable: false,
         },
         enumArrayColDef<IRuleBreachPopulated>(
-            'actionType',
+            'actions.actionType',
             ({ data }) => data?.actions.map((action) => actionTypeTranslations[action.actionType]),
             { title: i18next.t('ruleManagement.actionType') },
-            Object.values(actionTypeTranslations),
+            actionTypeTranslations,
             400,
             defaultRowHeight,
             false,

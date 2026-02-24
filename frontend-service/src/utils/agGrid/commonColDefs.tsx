@@ -506,7 +506,7 @@ export const enumArrayColDef = <Data extends EntityData | IRuleBreachPopulated>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
-    values: Array<string>,
+    values: Array<string> | Record<string, string>,
     hardcodedWidth: number | undefined,
     rowHeight: number,
     isLastColumn: boolean,
@@ -517,9 +517,18 @@ export const enumArrayColDef = <Data extends EntityData | IRuleBreachPopulated>(
     searchValue: string | undefined = undefined,
     editable: (data: any) => boolean = () => false,
 ): ColDef => {
+    const formatValue = (propertyValue: string | null | undefined) => (propertyValue ? values[propertyValue] : '');
+
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
-        values: [...values, undefined],
+        valueFormatter: (params: ValueFormatterParams<Date, string | undefined>) => {
+            if (params?.value === null) return agGridLocaleText.blanks;
+            if (Array.isArray(params))
+                return params;
+
+            return formatValue(params.value);
+        },
+        values: [...(Array.isArray(values) ? values : Object.keys(values)), undefined],
         buttons: [],
         closeOnApply: false,
     };
@@ -567,6 +576,55 @@ export const enumArrayColDef = <Data extends EntityData | IRuleBreachPopulated>(
     };
 };
 
+interface TranslatedEnumColDefOptions<Data> {
+    field: string;
+    valueGetter: (params: ValueGetterParams<Data>) => string | undefined;
+    title: string;
+    valuesMap: Record<string, string>;
+    hardcodedWidth?: number;
+    hideColumn?: boolean;
+    hideValue?: boolean;
+    searchValue?: string;
+    isLastColumn?: boolean;
+}
+
+export const translatedEnumColDef = <Data extends EntityData | PermissionData | IRuleBreachRequestPopulated>({
+    field,
+    valueGetter,
+    title,
+    valuesMap,
+    hardcodedWidth,
+    hideColumn = false,
+    hideValue = false,
+    searchValue = undefined,
+    isLastColumn = false,
+}: TranslatedEnumColDefOptions<Data>): ColDef => {
+    const formatValue = (propertyValue: string | null | undefined) => (propertyValue ? valuesMap[propertyValue] : '');
+
+    const filterParams: ISetFilterParams<Data, string | undefined> = {
+        suppressMiniFilter: true,
+        valueFormatter: (params: ValueFormatterParams<Date, string | undefined>) => {
+            if (params.value === null) return agGridLocaleText.blanks;
+
+            return formatValue(params.value);
+        },
+        values: [...Object.keys(valuesMap), undefined],
+    };
+
+    return {
+        field,
+        headerName: title,
+        valueGetter,
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
+            return <Value hideValue={hideValue} value={formatValue(props.value)} searchValue={searchValue} color={getColor(props, field)} />;
+        },
+        filter: 'agSetColumnFilter',
+        filterParams,
+        width: hardcodedWidth,
+        flex: isLastColumn ? 1 : 0,
+        hide: hideColumn,
+    };
+};
 export const userColDef = <Data extends IUser>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
@@ -807,55 +865,7 @@ export const dateColDef = <Data extends EntityData | IRuleBreachPopulated>(
     };
 };
 
-interface TranslatedEnumColDefOptions<Data> {
-    field: string;
-    valueGetter: (params: ValueGetterParams<Data>) => string | undefined;
-    title: string;
-    valuesMap: Record<string, string>;
-    hardcodedWidth?: number;
-    hideColumn?: boolean;
-    hideValue?: boolean;
-    searchValue?: string;
-    isLastColumn?: boolean;
-}
 
-export const translatedEnumColDef = <Data extends EntityData | PermissionData | IRuleBreachRequestPopulated>({
-    field,
-    valueGetter,
-    title,
-    valuesMap,
-    hardcodedWidth,
-    hideColumn = false,
-    hideValue = false,
-    searchValue = undefined,
-    isLastColumn = false,
-}: TranslatedEnumColDefOptions<Data>): ColDef => {
-    const formatValue = (propertyValue: string | null | undefined) => (propertyValue ? valuesMap[propertyValue] : '');
-
-    const filterParams: ISetFilterParams<Data, string | undefined> = {
-        suppressMiniFilter: true,
-        valueFormatter: (params: ValueFormatterParams<Date, string | undefined>) => {
-            if (params.value === null) return agGridLocaleText.blanks;
-
-            return formatValue(params.value);
-        },
-        values: [...Object.keys(valuesMap), undefined],
-    };
-
-    return {
-        field,
-        headerName: title,
-        valueGetter,
-        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
-            return <Value hideValue={hideValue} value={formatValue(props.value)} searchValue={searchValue} color={getColor(props, field)} />;
-        },
-        filter: 'agSetColumnFilter',
-        filterParams,
-        width: hardcodedWidth,
-        flex: isLastColumn ? 1 : 0,
-        hide: hideColumn,
-    };
-};
 
 const getUnitField = (units: IGetUnits, unitId: string, property: keyof IGetUnits[number]) =>
     (units.find(({ _id }) => _id === unitId)?.[property] as string) ?? '';
