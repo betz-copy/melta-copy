@@ -34,15 +34,12 @@ class AuthenticationController {
     }
 
     static async createUserToken(userId: string) {
-        const user = await UserService.getUserByExternalId(userId).catch(() => undefined);
+        const user = await UserService.getUserByExternalId(userId).catch(() => {});
 
         if (user) {
             await UsersManager.syncUser(user._id);
 
-            return AuthenticationManager.createAccessToken({
-                _id: user._id,
-                kartoffelId: user.kartoffelId,
-            });
+            return AuthenticationManager.createAccessToken(user);
         }
 
         return AuthenticationManager.createAccessToken({

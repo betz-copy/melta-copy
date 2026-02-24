@@ -26,6 +26,7 @@
         "@packages/entity-template": "workspace:*",
         "@packages/gantt": "workspace:*",
         "@packages/iframe": "workspace:*",
+        "@packages/map": "workspace:*",
         "@packages/notification": "workspace:*",
         "@packages/permission": "workspace:*",
         "@packages/printing-template": "workspace:*",
@@ -39,7 +40,6 @@
         "@packages/unit": "workspace:*",
         "@packages/user": "workspace:*",
         "@packages/utils": "workspace:*",
-        "@packages/map": "workspace:*",
         "@packages/workspace": "workspace:*",
         "@yesodot/passport-shraga": "^1.5.2",
         "busboy": "^1.6.0",
@@ -67,6 +67,7 @@
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
         "readable-stream-clone": "^1.0.0",
+        "redis": "^5.11.0",
         "supertest": "^7.0.0"
     },
     "devDependencies": {

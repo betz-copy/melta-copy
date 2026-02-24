@@ -8,6 +8,7 @@ import WorkspaceService from '../express/workspaces/service';
 import UserService from '../externalServices/userService';
 import { typedObjectEntries } from '.';
 import DefaultController from './express/controller';
+import { redis } from './redis';
 
 export type RequestWithPermissionsOfUserId = Request & {
     permissionsOfUserId: ISubCompactPermissions;
@@ -19,14 +20,14 @@ export class Authorizer extends DefaultController {
     }
 
     async getWorkspacePermissions(user: IReqUser): Promise<ISubCompactPermissions> {
+        const cachedWorkspaceIds = JSON.parse((await redis.get(user._id)) ?? '[]') as string[];
+        if (cachedWorkspaceIds.includes(this.workspaceId)) return user.permissions![this.workspaceId];
+
         const workspaceHierarchyIds = await WorkspaceService.getWorkspaceHierarchyIds(this.workspaceId);
         workspaceHierarchyIds.push(this.workspaceId);
 
-        const hierarchyId = workspaceHierarchyIds.find((id) => Boolean(user.permissions?.[id]));
-
-        if (!hierarchyId || !user.permissions?.[hierarchyId]) throw new UserNotAuthorizedError();
-
-        return user.permissions[hierarchyId];
+        redis.set(user._id, JSON.stringify([...cachedWorkspaceIds, ...workspaceHierarchyIds]));
+        return user.permissions![this.workspaceId];
     }
 
     private async authorizeUser(req: Request, user: IReqUser, authPermissions: ISubCompactPermissions) {

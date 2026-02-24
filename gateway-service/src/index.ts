@@ -1,10 +1,11 @@
-import 'elastic-apm-node/start';
 import { logger } from '@packages/utils';
 import axios from 'axios';
+import 'elastic-apm-node/start';
 import menash from 'menashmq';
 import config from './config';
 import Server from './express/server';
 import { createRuleBreachAlertQueue, runRulesWithTodayFunc } from './express/templates/rules/runRulesWithTodayFuncConsumer';
+import { redis } from './utils/redis';
 
 const { service, rabbit } = config;
 
@@ -36,6 +37,8 @@ const initializeRabbit = async () => {
 
 const main = async () => {
     await initializeRabbit();
+
+    await redis.connect();
 
     axios.defaults.maxBodyLength = service.maxRequestSize;
     axios.defaults.maxContentLength = service.maxRequestSize;
