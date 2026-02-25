@@ -64,18 +64,20 @@ RUN chmod +x ./extract-packages.sh
 # Turborepo only builds dependencies, so only those will have dist folders
 RUN ./extract-packages.sh
 
-# Install only production dependencies
-# pnpm will link workspace packages based on package.json files
+# Install only production dependencies (install deps, then add the built app)
 RUN pnpm install --frozen-lockfile --prod --silent
 
-# Copy flatten script
+# Copy flatten script and service dist, then flatten
 COPY scripts/docker/flatten-dist.sh ./flatten-dist.sh
 RUN chmod +x ./flatten-dist.sh
-
-# Copy service dist and handle nested structure if needed
 COPY --from=builder /usr/src/app/preview-service/dist ./preview-service/dist-temp
-
 RUN ./flatten-dist.sh preview-service
+
+# Entrypoint: always run with node
+COPY scripts/docker/run-service.sh ./scripts/docker/run-service.sh
+RUN chmod +x ./scripts/docker/run-service.sh
+ENV SERVICE_NAME=preview-service
+ENTRYPOINT ["./scripts/docker/run-service.sh"]
 
 EXPOSE 8000
 

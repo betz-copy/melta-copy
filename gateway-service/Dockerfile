@@ -37,7 +37,6 @@ RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 
 COPY package*.json ./
 COPY pnpm-lock.yaml ./
-COPY tsconfig.json ./
 COPY pnpm-workspace.yaml ./
 COPY gateway-service/package*.json ./gateway-service/
 COPY gateway-service/.npmrc ./gateway-service/.npmrc
@@ -53,23 +52,24 @@ RUN chmod +x ./extract-packages.sh
 # Extract only package.json and dist from packages that were built (have dist folder)
 RUN ./extract-packages.sh
 
+# Install only production dependencies (install deps, then add the built app)
 RUN --mount=type=secret,id=npm_token \
     NPM_TOKEN=$(cat /run/secrets/npm_token) \
     pnpm install --frozen-lockfile --prod --silent
-
 RUN rm -f .npmrc
 
-# Copy flatten script
+# Copy flatten script and service dist, then flatten
 COPY scripts/docker/flatten-dist.sh ./flatten-dist.sh
 RUN chmod +x ./flatten-dist.sh
-
-# Copy service dist and handle nested structure if needed
 COPY --from=builder /usr/src/app/gateway-service/dist ./gateway-service/dist-temp
-
 RUN ./flatten-dist.sh gateway-service
 
-EXPOSE 8000
+# Entrypoint: always run with node
+COPY scripts/docker/run-service.sh ./scripts/docker/run-service.sh
+RUN chmod +x ./scripts/docker/run-service.sh
+ENV SERVICE_NAME=gateway-service
+ENTRYPOINT ["./scripts/docker/run-service.sh"]
 
-CMD ["pnpm", "--filter", "gateway-service", "start"]
+EXPOSE 8000
 
 RUN echo "Finish building: gateway-service image"
