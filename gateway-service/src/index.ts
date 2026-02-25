@@ -37,7 +37,7 @@ const initializeRabbit = async () => {
 
 const initializeRedis = async () => {
     await redis.connect();
-    console.log('Redis initialized successfully');
+    logger.info('Redis initialized successfully');
 };
 
 const main = async () => {
