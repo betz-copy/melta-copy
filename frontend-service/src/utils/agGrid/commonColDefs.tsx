@@ -523,8 +523,7 @@ export const enumArrayColDef = <Data extends EntityData | IRuleBreachPopulated>(
         suppressMiniFilter: true,
         valueFormatter: (params: ValueFormatterParams<Date, string | undefined>) => {
             if (params?.value === null) return agGridLocaleText.blanks;
-            if (Array.isArray(params))
-                return params;
+            if (Array.isArray(params)) return params;
 
             return formatValue(params.value);
         },
@@ -864,8 +863,6 @@ export const dateColDef = <Data extends EntityData | IRuleBreachPopulated>(
         cellEditorParams: { dateOrDateTime: format === 'date-time' ? 'dateTime' : 'date' },
     };
 };
-
-
 
 const getUnitField = (units: IGetUnits, unitId: string, property: keyof IGetUnits[number]) =>
     (units.find(({ _id }) => _id === unitId)?.[property] as string) ?? '';
