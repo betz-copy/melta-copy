@@ -33,12 +33,9 @@ class GanttsValidator extends DefaultController {
     }
 
     async validateUserHasPermissionsToGantt(req: Request, newGantt: IGantt | undefined, existingGanttId: string | undefined) {
-        const [userPermissions] = await Promise.all([
-            this.authorizer.getWorkspacePermissions(req.user!.id),
-            this.authorizer.userCanWriteTemplates(req),
-        ]);
+        const [userPermissions] = await Promise.all([this.authorizer.getWorkspacePermissions(req.user!), this.authorizer.userCanWriteTemplates(req)]);
 
-        const allowedEntityTemplates = await this.instancesValidator.getAllowedEntityTemplatesForInstances(userPermissions, req.user!.id);
+        const allowedEntityTemplates = await this.instancesValidator.getAllowedEntityTemplatesForInstances(userPermissions, req.user!);
         const allowedEntityTemplateIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
 
         if (newGantt) {

@@ -14,6 +14,7 @@ import { ChartItem, DashboardItemType } from '@packages/dashboard';
 import { getFilterModal, IPropertyValue, ISearchFilter } from '@packages/entity';
 import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import { ISubCompactPermissions } from '@packages/permission';
+import { IReqUser } from '@packages/user';
 import ChartService from '../../externalServices/dashboardService/chartService';
 import DashboardItemService from '../../externalServices/dashboardService/dashboardItemService';
 import InstancesService from '../../externalServices/instanceService';
@@ -68,11 +69,11 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
     }
 
     async validateAllowedRelatedTemplate(
-        userId: string,
+        user: IReqUser,
         permissionsOfUserId: ISubCompactPermissions,
         { type, metaData, templateId, childTemplateId }: IChart,
     ) {
-        const allowedEntityTemplates = await this.templateManager.getAllAllowedEntityTemplates(permissionsOfUserId, userId);
+        const allowedEntityTemplates = await this.templateManager.getAllAllowedEntityTemplates(permissionsOfUserId, user);
         const allowedChildTemplates = await this.templateManager.getAllowedChildEntitiesTemplates(permissionsOfUserId);
 
         const chartEntityTemplate = allowedEntityTemplates.find((template) => template._id === templateId);
@@ -108,9 +109,7 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
         }
     }
 
-    async getFullChartFilters(chart: IMongoChart, userId: string): Promise<IMongoChart> {
-        const currentUser = await UserService.getUserById(userId);
-
+    async getFullChartFilters(chart: IMongoChart, user: IReqUser): Promise<IMongoChart> {
         let childFilters: ISearchFilter | undefined;
         if (chart.childTemplateId) {
             const [childTemplate, workspaceHierarchyIds] = await Promise.all([
@@ -118,7 +117,7 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
                 WorkspaceService.getWorkspaceHierarchyIds(this.workspaceId),
             ]);
 
-            childFilters = getDefaultFilterFromChildTemplate(childTemplate, currentUser, {
+            childFilters = getDefaultFilterFromChildTemplate(childTemplate, user, {
                 id: this.workspaceId,
                 hierarchyIds: workspaceHierarchyIds,
             });
@@ -129,15 +128,15 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
         return { ...chart, filter };
     }
 
-    async getChartsWithPermissions(charts: IMongoChart[], userId: string, permissionsOfUserId: ISubCompactPermissions) {
+    async getChartsWithPermissions(charts: IMongoChart[], user: IReqUser, permissionsOfUserId: ISubCompactPermissions) {
         const chartPermissionChecks = await Promise.all(
             charts.map(async (chart) => {
                 const hasPermission =
-                    chart.permission === IChartPermission.Protected || (chart.permission === IChartPermission.Private && userId === chart.createdBy);
+                    chart.permission === IChartPermission.Protected ||
+                    (chart.permission === IChartPermission.Private && user._id === chart.createdBy);
+                const isAllowedRelatedTemplate = await this.validateAllowedRelatedTemplate(user, permissionsOfUserId, chart);
 
-                const isAllowedRelatedTemplate = await this.validateAllowedRelatedTemplate(userId, permissionsOfUserId, chart);
-
-                return hasPermission && isAllowedRelatedTemplate ? await this.getFullChartFilters(chart, userId) : null;
+                return hasPermission && isAllowedRelatedTemplate ? await this.getFullChartFilters(chart, user) : null;
             }),
         );
 
@@ -148,10 +147,10 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
         return this.service.getChartsByTemplateId(templateId, textSearch, childTemplateId);
     }
 
-    async generateCharts(allowedCharts: IMongoChart[], templateId: string, userId: string, childTemplateId?: string) {
+    async generateCharts(allowedCharts: IMongoChart[], templateId: string, user: IReqUser, childTemplateId?: string) {
         const chartsData: IChartBody[] = await Promise.all(
             allowedCharts.map(async (chart) => {
-                const { _id, type, metaData, filter } = await this.getFullChartFilters(chart, userId);
+                const { _id, type, metaData, filter } = await this.getFullChartFilters(chart, user);
 
                 return {
                     _id,
@@ -183,15 +182,15 @@ class ChartManager extends DefaultManagerProxy<ChartService> {
 
     async getChartsOfTemplateId(
         templateId: string,
-        userId: string,
+        user: IReqUser,
         permissionsOfUserId: ISubCompactPermissions,
         { textSearch, childTemplateId }: { textSearch?: string; childTemplateId?: string },
     ): Promise<ChartsAndGenerator[]> {
         const charts = await this.getChartsByTemplateId(templateId, textSearch, childTemplateId);
 
-        const allowedCharts = await this.getChartsWithPermissions(charts, userId, permissionsOfUserId);
+        const allowedCharts = await this.getChartsWithPermissions(charts, user, permissionsOfUserId);
 
-        const generatedAndDataCharts = await this.generateCharts(allowedCharts, templateId, userId, childTemplateId);
+        const generatedAndDataCharts = await this.generateCharts(allowedCharts, templateId, user, childTemplateId);
 
         return generatedAndDataCharts.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     }

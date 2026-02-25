@@ -5,6 +5,7 @@ import menash from 'menashmq';
 import config from './config';
 import Server from './express/server';
 import { createRuleBreachAlertQueue, runRulesWithTodayFunc } from './express/templates/rules/runRulesWithTodayFuncConsumer';
+import { redis } from './utils/redis';
 
 const { service, rabbit } = config;
 
@@ -34,8 +35,15 @@ const initializeRabbit = async () => {
     logger.info('Rabbit initialized');
 };
 
+const initializeRedis = async () => {
+    await redis.connect();
+    logger.info('Redis initialized successfully');
+};
+
 const main = async () => {
     await initializeRabbit();
+
+    await initializeRedis();
 
     axios.defaults.maxBodyLength = service.maxRequestSize;
     axios.defaults.maxContentLength = service.maxRequestSize;

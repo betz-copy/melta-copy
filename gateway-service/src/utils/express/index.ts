@@ -55,7 +55,7 @@ export const wrapController = <
             }
 
             dataLogger.info(indexName, {
-                userId: req.user?.id,
+                userId: req.user!._id,
                 path: req.path,
                 method: req.method,
                 status: res.status,

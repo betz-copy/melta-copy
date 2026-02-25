@@ -3,7 +3,7 @@ import { UnitsManager } from './manager';
 
 class UsersController {
     static async getHierarchyByWorkspace(req: Request, res: Response) {
-        res.json(await UnitsManager.getHierarchyByWorkspace(req.user!.id, req.params.workspaceId as string));
+        res.json(await UnitsManager.getHierarchyByWorkspace(req.user!._id, req.params.workspaceId as string));
     }
 }
 

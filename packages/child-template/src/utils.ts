@@ -1,7 +1,7 @@
 import { IFilterGroup, IFilterOfTemplate, ISearchFilter } from '@packages/entity';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import { isAdmin } from '@packages/permission';
-import { IUser } from '@packages/user';
+import { IReqUser, IUser } from '@packages/user';
 import { IChildTemplate, IChildTemplatePopulated, IChildTemplateProperty, IFilter, IMongoChildTemplateWithConstraintsPopulated } from './types';
 
 const isChildTemplate = (
@@ -80,11 +80,12 @@ const childTemplateKeys: (keyof IChildTemplate)[] = [
 
 const getDefaultFilterFromChildTemplate = (
     template: IChildTemplatePopulated,
-    currentUser: IUser,
+    currentUser: IReqUser | IUser,
     workspace: { id: string; hierarchyIds: string[] },
 ): ISearchFilter | undefined => {
     const filterClauses: (IFilterOfTemplate | IFilterGroup)[] = [];
-    const isUserAdmin = isAdmin(currentUser?.permissions, workspace.hierarchyIds);
+    // biome-ignore lint/suspicious/noNonNullAssertedOptionalChain: :)
+    const isUserAdmin = isAdmin(currentUser?.permissions!, workspace.hierarchyIds);
 
     Object.entries(template.properties.properties).forEach(([key, prop]) => {
         if (template.isFilterByCurrentUser && template.filterByCurrentUserField === key)
@@ -103,4 +104,4 @@ const getDefaultFilterFromChildTemplate = (
     return filterClauses.length ? { $and: filterClauses } : undefined;
 };
 
-export { dePopulateChildProperties, getChildPropertiesFiltered, childTemplateKeys, isChildTemplate, getDefaultFilterFromChildTemplate };
+export { childTemplateKeys, dePopulateChildProperties, getChildPropertiesFiltered, getDefaultFilterFromChildTemplate, isChildTemplate };

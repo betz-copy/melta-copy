@@ -66,7 +66,10 @@ const main = async () => {
         workspaceIds.map(async (workspaceId) => {
             const entityTemplateService = new EntityTemplateService(workspaceId);
 
-            const allEntityTemplates = await entityTemplateService.searchEntityTemplates('');
+            const allEntityTemplates = await entityTemplateService.searchEntityTemplates({
+                _id: '',
+                kartoffelId: '',
+            });
             await Promise.all(allEntityTemplates.map((entityTemplate) => updatePastAlertDateNotification(entityTemplateService, entityTemplate)));
         }),
     );

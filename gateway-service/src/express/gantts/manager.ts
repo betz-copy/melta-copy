@@ -1,6 +1,7 @@
 import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import { IGantt, IGanttItem, IMongoGantt, ISearchGanttsBody } from '@packages/gantt';
 import { IRelationshipTemplate } from '@packages/relationship-template';
+import { IReqUser } from '@packages/user';
 import { BadRequestError } from '@packages/utils';
 import { isEqual } from 'lodash';
 import GanttsService from '../../externalServices/ganttsService';
@@ -39,15 +40,15 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
         };
     }
 
-    async searchGantts(searchBody: ISearchGanttsBody, permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'], userId: string) {
-        const allowedEntityTemplates = await this.instancesValidator.getAllowedEntityTemplatesForInstances(permissionsOfUserId, userId);
+    async searchGantts(searchBody: ISearchGanttsBody, permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'], user: IReqUser) {
+        const allowedEntityTemplates = await this.instancesValidator.getAllowedEntityTemplatesForInstances(permissionsOfUserId, user);
 
         const gantts = await this.service.searchGantts(searchBody);
         return gantts.map((gantt) => this.filterGanttWithPermissions(gantt, allowedEntityTemplates));
     }
 
-    async getGanttById(ganttId: string, permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'], userId: string) {
-        const allowedEntityTemplates = await this.instancesValidator.getAllowedEntityTemplatesForInstances(permissionsOfUserId, userId);
+    async getGanttById(ganttId: string, permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'], user: IReqUser) {
+        const allowedEntityTemplates = await this.instancesValidator.getAllowedEntityTemplatesForInstances(permissionsOfUserId, user);
 
         const gantt = await this.service.getGanttById(ganttId);
 
@@ -162,12 +163,12 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
         });
     }
 
-    private async validateTemplatesDataOfGantt(gantt: IGantt, userId: string) {
+    private async validateTemplatesDataOfGantt(gantt: IGantt, user: IReqUser) {
         const entityTemplateIdsOfItems = gantt.items.map(({ entityTemplate: { id } }) => id);
         if (gantt.groupBy) entityTemplateIdsOfItems.push(gantt.groupBy.entityTemplateId);
 
         const entityTemplateIds = [...new Set(entityTemplateIdsOfItems)];
-        const entityTemplates = await this.entityTemplateService.searchEntityTemplates(userId, { ids: entityTemplateIds });
+        const entityTemplates = await this.entityTemplateService.searchEntityTemplates(user, { ids: entityTemplateIds });
         const entityTemplatesMap = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
 
         gantt.items.forEach((ganttItem) => {
@@ -216,7 +217,7 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
         });
         const additionalEntityTemplateIds = [...new Set(additionalEntityTemplateIdsFromRelationshipsOfItems)];
 
-        const additionalEntityTemplates = await this.entityTemplateService.searchEntityTemplates(userId, {
+        const additionalEntityTemplates = await this.entityTemplateService.searchEntityTemplates(user, {
             ids: additionalEntityTemplateIds,
         });
         const additionalEntityTemplatesEntries: Array<[string, IMongoEntityTemplatePopulated]> = additionalEntityTemplates.map((entityTemplate) => [
@@ -231,8 +232,8 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
         });
     }
 
-    async createGantt(gantt: IGantt, userId: string) {
-        await this.validateTemplatesDataOfGantt(gantt, userId);
+    async createGantt(gantt: IGantt, user: IReqUser) {
+        await this.validateTemplatesDataOfGantt(gantt, user);
         return this.service.createGantt(gantt);
     }
 
@@ -240,8 +241,8 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
         return this.service.deleteGantt(ganttId);
     }
 
-    async updateGantt(ganttId: string, gantt: IGantt, userId: string) {
-        await this.validateTemplatesDataOfGantt(gantt, userId);
+    async updateGantt(ganttId: string, gantt: IGantt, user: IReqUser) {
+        await this.validateTemplatesDataOfGantt(gantt, user);
         return this.service.updateGantt(ganttId, gantt);
     }
 }
