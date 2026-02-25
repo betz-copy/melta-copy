@@ -1,6 +1,6 @@
+import 'elastic-apm-node/start';
 import { logger } from '@packages/utils';
 import axios from 'axios';
-import 'elastic-apm-node/start';
 import menash from 'menashmq';
 import config from './config';
 import Server from './express/server';
@@ -35,10 +35,15 @@ const initializeRabbit = async () => {
     logger.info('Rabbit initialized');
 };
 
+const initializeRedis = async () => {
+    await redis.connect();
+    console.log('Redis initialized successfully');
+};
+
 const main = async () => {
     await initializeRabbit();
 
-    await redis.connect();
+    await initializeRedis();
 
     axios.defaults.maxBodyLength = service.maxRequestSize;
     axios.defaults.maxContentLength = service.maxRequestSize;

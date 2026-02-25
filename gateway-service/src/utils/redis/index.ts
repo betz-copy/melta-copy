@@ -1,14 +1,14 @@
 import { createClient, RedisClientType } from 'redis';
 import config from '../../config';
 
-const { host } = config.redis;
+const { url } = config.redis;
 
 class RedisService {
     private client: RedisClientType;
     private isConnected = false;
 
     constructor() {
-        this.client = createClient({ url: host });
+        this.client = createClient({ url, database: 1 });
 
         this.client.on('error', (err) => console.error('Redis Client Error:', err));
         this.client.on('connect', () => console.log('Redis connected successfully'));
@@ -35,7 +35,7 @@ class RedisService {
         return client.set(key, value);
     }
 
-    async del(key: string) {
+    async delete(key: string) {
         const client = await this.connect();
         return client.del(key);
     }

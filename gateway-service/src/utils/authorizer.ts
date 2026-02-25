@@ -20,14 +20,22 @@ export class Authorizer extends DefaultController {
     }
 
     async getWorkspacePermissions(user: IReqUser): Promise<ISubCompactPermissions> {
-        const cachedWorkspaceIds = JSON.parse((await redis.get(user._id)) ?? '[]') as string[];
-        if (cachedWorkspaceIds.includes(this.workspaceId)) return user.permissions![this.workspaceId];
+        const rawCache = await redis.get(`${user._id}-${this.workspaceId}`);
+        const parsedCache = rawCache ? JSON.parse(rawCache) : [];
+        const cachedWorkspaceIds = new Set(Array.isArray(parsedCache) ? parsedCache : []);
+
+        const hierarchyId = Array.from(cachedWorkspaceIds).find((id) => Boolean(user.permissions![id]));
+
+        if (cachedWorkspaceIds.has(this.workspaceId)) return user.permissions![hierarchyId];
 
         const workspaceHierarchyIds = await WorkspaceService.getWorkspaceHierarchyIds(this.workspaceId);
         workspaceHierarchyIds.push(this.workspaceId);
 
-        redis.set(user._id, JSON.stringify([...cachedWorkspaceIds, ...workspaceHierarchyIds]));
-        return user.permissions![this.workspaceId];
+        const mergedWorkspaceIds = new Set([...cachedWorkspaceIds, ...workspaceHierarchyIds]);
+        await redis.set(`${user._id}-${this.workspaceId}`, JSON.stringify(Array.from(mergedWorkspaceIds)));
+        const mergedHierarchyId = Array.from(mergedWorkspaceIds).find((id) => Boolean(user.permissions![id]));
+
+        return user.permissions![mergedHierarchyId];
     }
 
     private async authorizeUser(req: Request, user: IReqUser, authPermissions: ISubCompactPermissions) {
