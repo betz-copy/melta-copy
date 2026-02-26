@@ -10,6 +10,7 @@ import {
     ISearchProcessTemplatesBody,
     UpdateStepReqBody,
 } from '@packages/process';
+import { IReqUser } from '@packages/user';
 import config from '../../config';
 import { NotFoundError } from '../../express/processes/error';
 import { Authorizer } from '../../utils/authorizer';
@@ -29,14 +30,13 @@ class ProcessService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async getProcessTemplateById(id: string, userId?: string): Promise<IMongoProcessTemplatePopulated> {
+    async getProcessTemplateById(id: string, user?: IReqUser): Promise<IMongoProcessTemplatePopulated> {
         const query: ISearchProcessTemplatesBody = { limit: 1, skip: 0, ids: [id] };
 
-        if (userId) {
-            const userPermissions = await new Authorizer(this.workspaceId).getWorkspacePermissions(userId);
-
+        if (user) {
+            const userPermissions = await new Authorizer(this.workspaceId).getWorkspacePermissions(user);
             if (!userPermissions.admin?.scope && userPermissions.processes?.scope !== PermissionScope.write) {
-                query.reviewerId = userId;
+                query.reviewerId = user._id;
             }
         }
 
@@ -68,14 +68,13 @@ class ProcessService extends DefaultExternalServiceApi {
     }
 
     // Process Instance
-    async getProcessInstanceById(id: string, userId?: string): Promise<IMongoProcessInstancePopulated> {
+    async getProcessInstanceById(id: string, user?: IReqUser): Promise<IMongoProcessInstancePopulated> {
         const query: IProcessInstanceSearchProperties = { limit: 1, skip: 0, ids: [id] };
 
-        if (userId) {
-            const userPermissions = await new Authorizer(this.workspaceId).getWorkspacePermissions(userId);
-
+        if (user) {
+            const userPermissions = await new Authorizer(this.workspaceId).getWorkspacePermissions(user);
             if (!userPermissions.admin?.scope && userPermissions.processes?.scope !== PermissionScope.write) {
-                query.reviewerId = userId;
+                query.reviewerId = user._id;
             }
         }
 

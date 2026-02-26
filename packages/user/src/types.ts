@@ -25,6 +25,12 @@ export interface IUser extends IBaseUser {
     displayName: string; // custom displayName, not of kartoffel: `${fullName} - ${hierarchy}/${jobTitle}`
 }
 
+export interface IReqUser extends Partial<IUser> {
+    _id: string;
+    kartoffelId: string;
+    clientSide?: { workspaceId: string; usersInfoChildTemplateId: string; workspaceName: string };
+}
+
 export interface IUserPopulated extends Omit<IUser, 'roleIds'> {
     roles?: IRole[];
 }

@@ -18,7 +18,6 @@
         "@packages/dashboard": "workspace:*",
         "@packages/iframe": "workspace:*",
         "@packages/utils": "workspace:*",
-        "glob": "^11.0.0",
         "typescript-actions": "npm:typescript@^5.5.4",
         "lodash": "^4.17.21"
     },

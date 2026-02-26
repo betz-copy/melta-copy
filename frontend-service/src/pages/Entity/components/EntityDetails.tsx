@@ -100,6 +100,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
         entityTemplate._id,
         PermissionScope.write,
     );
+    const entityHasArchiveFields = Object.values(entityTemplate.properties.properties).some((property) => property.archive);
     const isEntityDisabled = expandedEntity.entity.properties.disabled || entityTemplate.disabled;
     const includeLocationProperty = Object.entries(entityTemplate.properties.properties).some(
         ([field, property]) => property.format === 'location' && entity.properties[field] !== undefined,
@@ -287,13 +288,19 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstrai
                                         icon={isEntityDisabled ? DoNotDisturbOffOutlinedIcon : DoNotDisturbOnOutlinedIcon}
                                         text={isEntityDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
                                     />
-                                    <TooltipMenuButton
-                                        tooltipTitle={i18next.t('permissions.dontHaveWritePermissionsToTemplate')}
-                                        onClick={() => setDisplayArchiveProperties(!displayArchiveProperties)}
-                                        disabled={!canWriteInstance}
-                                        icon={displayArchiveProperties ? Archive : Unarchive}
-                                        text={displayArchiveProperties ? i18next.t('entityPage.hideArchive') : i18next.t('entityPage.displayArchive')}
-                                    />
+                                    {entityHasArchiveFields && (
+                                        <TooltipMenuButton
+                                            tooltipTitle={i18next.t('permissions.dontHaveWritePermissionsToTemplate')}
+                                            onClick={() => setDisplayArchiveProperties(!displayArchiveProperties)}
+                                            disabled={!canWriteInstance}
+                                            icon={displayArchiveProperties ? Archive : Unarchive}
+                                            text={
+                                                displayArchiveProperties
+                                                    ? i18next.t('entityPage.hideArchive')
+                                                    : i18next.t('entityPage.displayArchive')
+                                            }
+                                        />
+                                    )}
                                 </Menu>
                             </Grid>
                         </Grid>

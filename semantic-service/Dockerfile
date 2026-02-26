@@ -44,19 +44,21 @@ RUN chmod +x ./extract-packages.sh
 # Extract only package.json and dist from packages that were built (have dist folder)
 RUN ./extract-packages.sh
 
+# Install only production dependencies (install deps, then add the built app)
 RUN pnpm install --frozen-lockfile --prod --silent
 
-# Copy flatten script
+# Copy flatten script and service dist, then flatten
 COPY scripts/docker/flatten-dist.sh ./flatten-dist.sh
 RUN chmod +x ./flatten-dist.sh
-
-# Copy service dist and handle nested structure if needed
 COPY --from=builder /usr/src/app/semantic-service/dist ./semantic-service/dist-temp
-
 RUN ./flatten-dist.sh semantic-service
 
-EXPOSE 8000
+# Entrypoint: always run with node (ignores K8s command override with pnpm)
+COPY scripts/docker/run-service.sh ./scripts/docker/run-service.sh
+RUN chmod +x ./scripts/docker/run-service.sh
+ENV SERVICE_NAME=semantic-service
+ENTRYPOINT ["./scripts/docker/run-service.sh"]
 
-CMD ["pnpm", "--filter", "semantic-service", "start"]
+EXPOSE 8000
 
 RUN echo "Finish building: semantic-service image"

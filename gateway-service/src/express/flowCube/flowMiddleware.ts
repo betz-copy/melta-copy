@@ -35,7 +35,7 @@ const validateFlowHeaders = async (req: Request, res: Response, next: NextFuncti
             return;
         }
 
-        req.user = { id: targetUser.users[0]._id };
+        req.user = targetUser.users[0];
 
         next();
     } catch (error) {

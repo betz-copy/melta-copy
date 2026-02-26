@@ -11,7 +11,7 @@ class DashboardController extends DefaultController<DashboardManager> {
     async searchDashboardItems(req: Request, res: Response) {
         const { body, permissionsOfUserId, user } = req as RequestWithPermissionsOfUserId;
 
-        res.json(await this.manager.searchDashboardItems(user!.id, permissionsOfUserId, body.textSearch));
+        res.json(await this.manager.searchDashboardItems(user!, permissionsOfUserId, body.textSearch));
     }
 }
 

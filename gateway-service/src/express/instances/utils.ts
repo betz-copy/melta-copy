@@ -1,5 +1,6 @@
 import { getDefaultFilterFromChildTemplate } from '@packages/child-template';
 import { IEntity, ISearchFilter } from '@packages/entity';
+import { IReqUser, IUser } from '@packages/user';
 import { NotFoundError, ValidationError } from '@packages/utils';
 import InstancesService from '../../externalServices/instanceService';
 import Kartoffel from '../../externalServices/kartoffel';
@@ -23,12 +24,12 @@ class InstancesUtils extends DefaultController {
         this.instancesService = new InstancesService(workspaceId);
     }
 
-    async validateEntityProperties(properties: IEntity['properties'], templateId: string, userId: string, childTemplateId?: string) {
+    async validateEntityProperties(properties: IEntity['properties'], templateId: string, user: IReqUser | IUser, childTemplateId?: string) {
         const template = childTemplateId
             ? await this.entityTemplateService.getChildTemplateById(childTemplateId)
             : await this.entityTemplateService.getEntityTemplateById(templateId);
 
-        const userUnits = (await unflattenUnitHierarchy(this.workspaceId, userId)).map((unit) => unit._id);
+        const userUnits = (await unflattenUnitHierarchy(this.workspaceId, user._id!)).map((unit) => unit._id);
 
         await Promise.all(
             Object.entries(properties).map(async ([key, value]) => {
@@ -120,13 +121,12 @@ class InstancesUtils extends DefaultController {
         );
     }
 
-    async getChildFilters(childTemplateId: string, userId: string): Promise<ISearchFilter | undefined> {
-        const [currentUser, workspaceHierarchyIds, childTemplate] = await Promise.all([
-            UserService.getUserById(userId),
+    async getChildFilters(childTemplateId: string, user: IReqUser | IUser): Promise<ISearchFilter | undefined> {
+        const [workspaceHierarchyIds, childTemplate] = await Promise.all([
             WorkspaceService.getWorkspaceHierarchyIds(this.workspaceId),
             this.entityTemplateService.getChildTemplateById(childTemplateId),
         ]);
-        return getDefaultFilterFromChildTemplate(childTemplate, currentUser, { id: this.workspaceId, hierarchyIds: workspaceHierarchyIds });
+        return getDefaultFilterFromChildTemplate(childTemplate, user!, { id: this.workspaceId, hierarchyIds: workspaceHierarchyIds });
     }
 }
 

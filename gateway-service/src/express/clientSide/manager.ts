@@ -1,6 +1,7 @@
 import { IEntity, ISearchEntitiesOfTemplateBody, UploadedFile } from '@packages/entity';
 import { IMongoEntityTemplatePopulated } from '@packages/entity-template';
 import { IBrokenRule } from '@packages/rule-breach';
+import { IReqUser } from '@packages/user';
 import { NotFoundError } from '@packages/utils';
 import config from '../../config';
 import InstancesService from '../../externalServices/instanceService';
@@ -96,8 +97,8 @@ class ClientSideManager extends DefaultManagerProxy<null> {
         return entities;
     }
 
-    async createEntity(entity: IEntity, files: UploadedFile[], ignoredRules: IBrokenRule[], userId: string) {
-        const createdEntity = await this.instanceManager.createEntityInstance(entity, files, ignoredRules, userId);
+    async createEntity(entity: IEntity, files: UploadedFile[], ignoredRules: IBrokenRule[], user: IReqUser) {
+        const createdEntity = await this.instanceManager.createEntityInstance(entity, files, ignoredRules, user);
         return createdEntity;
     }
 

@@ -17,14 +17,14 @@ class InstancesController extends DefaultController<InstancesManager> {
                 instanceData,
                 req.files || (req.file ? [req.file] : []),
                 ignoredRules,
-                req.user!.id,
+                req.user!,
                 childTemplateId,
             ),
         );
     }
 
     async exportEntities(req: Request, res: Response) {
-        const filePath = await this.manager.exportEntities(req.body, req.user!.id);
+        const filePath = await this.manager.exportEntities(req.body, req.user!);
         try {
             await promisify(res.sendFile.bind(res))(filePath);
         } finally {
@@ -36,26 +36,20 @@ class InstancesController extends DefaultController<InstancesManager> {
         const { templateId, insertBrokenEntities, childTemplateId } = req.body;
 
         res.json(
-            await this.manager.loadEntities(
-                templateId,
-                req.user!.id,
-                childTemplateId,
-                req.files || (req.file ? [req.file] : []),
-                insertBrokenEntities,
-            ),
+            await this.manager.loadEntities(templateId, req.user!, childTemplateId, req.files || (req.file ? [req.file] : []), insertBrokenEntities),
         );
     }
 
     async getChangedEntitiesFromExcel(req: Request, res: Response) {
         const { templateId, childTemplateId } = req.body;
 
-        res.json(await this.manager.getChangedEntitiesFromExcel(templateId, req.files?.[0] || req.file!, req.user!.id, childTemplateId));
+        res.json(await this.manager.getChangedEntitiesFromExcel(templateId, req.files?.[0] || req.file!, req.user!, childTemplateId));
     }
 
     async editManyEntitiesByExcel(req: Request, res: Response) {
         const { entities, childTemplateId } = req.body;
 
-        res.json(await this.manager.editManyEntitiesByExcel(entities, req.user!.id, childTemplateId));
+        res.json(await this.manager.editManyEntitiesByExcel(entities, req.user!, childTemplateId));
     }
 
     async updateMultipleEntities(req: Request, res: Response) {
@@ -67,7 +61,7 @@ class InstancesController extends DefaultController<InstancesManager> {
                 entitiesToUpdate,
                 req.files || (req.file ? [req.file] : []),
                 ignoredRules,
-                req.user!.id,
+                req.user!,
                 childTemplateId,
             ),
         );
@@ -82,14 +76,14 @@ class InstancesController extends DefaultController<InstancesManager> {
                 instanceData,
                 req.files || (req.file ? [req.file] : []),
                 ignoredRules,
-                req.user!.id,
+                req.user!,
                 childTemplateId,
             ),
         );
     }
 
     async searchEntitiesByLocation(req: Request, res: Response) {
-        res.json(await this.manager.searchEntitiesByLocation(req.body as ISearchEntitiesByLocationBody, req.user!.id));
+        res.json(await this.manager.searchEntitiesByLocation(req.body as ISearchEntitiesByLocationBody, req.user!));
     }
 
     async searchEntitiesBatch(req: Request, res: Response) {
@@ -99,7 +93,7 @@ class InstancesController extends DefaultController<InstancesManager> {
 
     async searchEntitiesOfTemplate(req: Request, res: Response) {
         const { childTemplateIds, externalId, ...restBody } = req.body;
-        res.json(await this.manager.searchEntitiesOfTemplate(req.params.templateId as string, restBody, req.user!.id, childTemplateIds, externalId));
+        res.json(await this.manager.searchEntitiesOfTemplate(req.params.templateId as string, restBody, req.user!, childTemplateIds, externalId));
     }
 
     async getEntitiesCountByTemplates(req: Request, res: Response) {
@@ -115,7 +109,7 @@ class InstancesController extends DefaultController<InstancesManager> {
                 instanceData,
                 req.files || (req.file ? [req.file] : []),
                 ignoredRules,
-                req.user!.id,
+                req.user!,
                 childTemplateId,
             ),
         );
@@ -124,24 +118,24 @@ class InstancesController extends DefaultController<InstancesManager> {
     async deleteEntityInstances(req: Request, res: Response) {
         const body = req.body as IDeleteEntityBody;
 
-        res.json(await this.manager.deleteEntityInstances(body, req.user!.id));
+        res.json(await this.manager.deleteEntityInstances(body, req.user!));
     }
 
     async createRelationshipInstance(req: Request, res: Response) {
         const { relationshipInstance, ignoredRules } = req.body;
 
-        res.json(await this.manager.createRelationshipInstance(relationshipInstance, ignoredRules, req.user!.id));
+        res.json(await this.manager.createRelationshipInstance(relationshipInstance, ignoredRules, req.user!._id));
     }
 
     async deleteRelationshipInstance(req: Request, res: Response) {
         const { ignoredRules } = req.body;
 
-        res.json(await this.manager.deleteRelationshipInstance(req.params.id as string, ignoredRules, req.user!.id));
+        res.json(await this.manager.deleteRelationshipInstance(req.params.id as string, ignoredRules, req.user!._id));
     }
 
     async updateEntityStatus(req: Request, res: Response) {
         const { disabled, ignoredRules } = req.body;
-        res.json(await this.manager.updateEntityStatus(req.params.id as string, disabled, ignoredRules, req.user!.id));
+        res.json(await this.manager.updateEntityStatus(req.params.id as string, disabled, ignoredRules, req.user!._id));
     }
 
     async exportEntityToDocumentTemplate(req: Request, res: Response) {
@@ -160,11 +154,11 @@ class InstancesController extends DefaultController<InstancesManager> {
     async runBulkOfActions(req: Request, res: Response) {
         const { actionsGroups, ignoredRules } = req.body;
 
-        res.json(await this.manager.runBulkOfActions(actionsGroups, req.query.dryRun as unknown as boolean, req.user!.id, ignoredRules));
+        res.json(await this.manager.runBulkOfActions(actionsGroups, req.query.dryRun as unknown as boolean, req.user!, ignoredRules));
     }
 
     async getChartOfTemplate(req: Request, res: Response) {
-        res.json(await this.manager.getChartOfTemplate(req.params.templateId as string, req.body, req.user!.id));
+        res.json(await this.manager.getChartOfTemplate(req.params.templateId as string, req.body, req.user!));
     }
 }
 

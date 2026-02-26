@@ -15,13 +15,13 @@ class ChartController extends DefaultController<ChartManager> {
     async getChartsByTemplateId(req: Request, res: Response) {
         const { body, params, permissionsOfUserId, user } = req as RequestWithPermissionsOfUserId;
 
-        res.json(await this.manager.getChartsOfTemplateId(params.templateId as string, user!.id, permissionsOfUserId, body));
+        res.json(await this.manager.getChartsOfTemplateId(params.templateId as string, user!, permissionsOfUserId, body));
     }
 
     async searchChartByUserId(req: Request, res: Response) {
         const { body, params, user } = req as RequestWithPermissionsOfUserId;
 
-        res.json(await this.manager.searchChartByUserId(params.templateId as string, user!.id, body));
+        res.json(await this.manager.searchChartByUserId(params.templateId as string, user!._id, body));
     }
 
     async createChart(req: Request, res: Response) {

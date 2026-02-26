@@ -56,19 +56,22 @@ RUN chmod +x ./extract-packages.sh
 # Turborepo only builds dependencies, so only those will have dist folders
 RUN ./extract-packages.sh
 
-# Copy flatten script
+# Install only production dependencies (install deps, then add the built app)
+RUN pnpm install --frozen-lockfile --prod --silent
+
+# Copy flatten script and service dist, then flatten
 COPY scripts/docker/flatten-dist.sh ./flatten-dist.sh
 RUN chmod +x ./flatten-dist.sh
-
-# Copy service dist before install (needed for pnpm --filter to work correctly)
 COPY --from=builder /usr/src/app/${SERVICE_NAME}/dist ${SERVICE_NAME}/dist-temp
-
-# Handle nested dist structure: if dist contains service-name/src, flatten it
 RUN ./flatten-dist.sh ${SERVICE_NAME}
 
-# Install only production dependencies
-# pnpm will link workspace packages based on package.json files
-RUN pnpm install --frozen-lockfile --prod --silent
+# Entrypoint: always run with node (ignores K8s command override with pnpm)
+COPY scripts/docker/run-service.sh ./scripts/docker/run-service.sh
+RUN chmod +x ./scripts/docker/run-service.sh
+
+# Bake service name into image so it runs in K8s without setting env (ARG is build-time only)
+ENV SERVICE_NAME=${SERVICE_NAME}
+ENTRYPOINT ["./scripts/docker/run-service.sh"]
 
 EXPOSE 8000
 
