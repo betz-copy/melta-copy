@@ -551,7 +551,7 @@ const MapPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
                     </Viewer>
                 </Grid>
 
-                {sourceSearchResults.length && sourceTemplate && (
+                {!!sourceSearchResults.length && sourceTemplate && (
                     <Grid width="98%">
                         <EntitiesTable
                             rowData={sourceSearchResults}
