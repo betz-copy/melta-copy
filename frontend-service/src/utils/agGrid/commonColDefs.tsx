@@ -523,7 +523,7 @@ export const enumArrayColDef = <Data extends EntityData | IRuleBreachPopulated>(
         suppressMiniFilter: true,
         valueFormatter: (params: ValueFormatterParams<Date, string | undefined>) => {
             if (params?.value === null) return agGridLocaleText.blanks;
-            if (Array.isArray(params)) return params;
+            if (Array.isArray(values)) return params.value;
 
             return formatValue(params.value);
         },
