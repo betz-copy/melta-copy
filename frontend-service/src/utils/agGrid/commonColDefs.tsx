@@ -506,7 +506,7 @@ export const enumArrayColDef = <Data extends EntityData | IRuleBreachPopulated>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
     value: Partial<IEntitySingleProperty>,
-    values: Array<string>,
+    values: Array<string> | Record<string, string>,
     hardcodedWidth: number | undefined,
     rowHeight: number,
     isLastColumn: boolean,
@@ -517,9 +517,17 @@ export const enumArrayColDef = <Data extends EntityData | IRuleBreachPopulated>(
     searchValue: string | undefined = undefined,
     editable: (data: any) => boolean = () => false,
 ): ColDef => {
+    const formatValue = (propertyValue: string | null | undefined) => (propertyValue ? values[propertyValue] : '');
+
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
-        values: [...values, undefined],
+        valueFormatter: (params: ValueFormatterParams<Date, string | undefined>) => {
+            if (params?.value === null) return agGridLocaleText.blanks;
+            if (Array.isArray(values)) return params.value;
+
+            return formatValue(params.value);
+        },
+        values: [...(Array.isArray(values) ? values : Object.keys(values)), undefined],
         buttons: [],
         closeOnApply: false,
     };

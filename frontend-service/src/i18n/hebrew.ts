@@ -1404,8 +1404,8 @@ export default {
         'duplicate-entity': 'שכפול ישות',
         'update-entity': 'עריכת ישות',
         'update-status': 'עריכת סטטוס',
-        // 'update-multiple-entities', // todo
-        // 'create-client-side-entity', // todo
+        'update-multiple-entities': 'עריכת מספר ישויות',
+        'create-client-side-entity': 'יצירת ישות צד לקוח',
         'cronjob-run': 'בדיקת חוק יומית (פעם ביום)',
         approveRequest: 'אשר בקשה',
         denyRequest: 'דחה בקשה',
