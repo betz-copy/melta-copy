@@ -12,6 +12,8 @@ class Kartoffel {
     });
 
     static getUsersByIds = async (ids: string[]) => {
+        if (!ids.length) return [];
+
         const { data } = await this.kartoffel.get<IKartoffelUser[]>(``, {
             params: {
                 ids: ids,

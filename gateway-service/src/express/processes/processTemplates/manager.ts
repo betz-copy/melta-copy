@@ -11,6 +11,7 @@ import {
     IStepTemplate,
     Status,
 } from '@packages/process';
+import { IReqUser } from '@packages/user';
 import { ServiceError } from '@packages/utils';
 import { logger } from 'elastic-apm-node';
 import config from '../../../config';
@@ -57,8 +58,8 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
         return { ...step, reviewers: populatedReviewers };
     }
 
-    async getProcessTemplate(id: string, userId: string) {
-        const processTemplate = await this.service.getProcessTemplateById(id, userId);
+    async getProcessTemplate(id: string, user: IReqUser) {
+        const processTemplate = await this.service.getProcessTemplateById(id, user);
         return this.getTemplateWithPopulatedStepReviewers(processTemplate);
     }
 
@@ -174,8 +175,8 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
         return [];
     }
 
-    async updateProcessTemplate(templateId: string, templateData: IProcessTemplatePopulated, icons: UploadedFile[], userId: string) {
-        const currProcessTemplate = await this.getProcessTemplate(templateId, userId);
+    async updateProcessTemplate(templateId: string, templateData: IProcessTemplatePopulated, icons: UploadedFile[], user: IReqUser) {
+        const currProcessTemplate = await this.getProcessTemplate(templateId, user);
 
         const updatedSteps = await this.handleIcons(icons, templateData.steps);
         await this.removeUnusedIconFileIds(
@@ -214,13 +215,13 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
         return this.getTemplateWithPopulatedStepReviewers(deletedTemplate);
     }
 
-    async searchProcessTemplates(searchBody: ISearchProcessTemplatesBody, userId: string) {
+    async searchProcessTemplates(searchBody: ISearchProcessTemplatesBody, user: IReqUser) {
         const query: ISearchProcessTemplatesBody = { ...searchBody };
 
-        const userPermissions = await new Authorizer(this.workspaceId).getWorkspacePermissions(userId);
+        const userPermissions = await new Authorizer(this.workspaceId).getWorkspacePermissions(user);
 
         if (!userPermissions.admin?.scope && userPermissions.processes?.scope !== PermissionScope.write) {
-            query.reviewerId = userId;
+            query.reviewerId = user._id;
         }
 
         const processes = await this.service.searchProcessTemplates(query);

@@ -21,18 +21,17 @@ export const DraftCard: React.FC<{ draft: Draft; openEditDialog: () => void }> =
         setAnchorEl(event.currentTarget);
     };
 
-    const { _createdAt, _disabled, _id, _updatedAt, ...displayProperties } = draft.properties;
+    const draftPropertiesToDisplayOnHover = useMemo(() => {
+        const { _createdAt, _disabled, _id, _updatedAt, ...displayProperties } = draft.properties;
 
-    // biome-ignore lint/correctness/useExhaustiveDependencies: old code
-    const draftPropertiesToDisplayOnHover = useMemo(
-        () =>
+        return (
             Object.values(displayProperties ?? [])
                 .filter(Boolean)
                 .map((displayProperty) => displayProperty.toString().replace(replaceHtmlTagsRegex, '').substring(0, 50))
                 .join(' / ')
-                .substring(0, 750) || i18next.t('draftSaveDialog.emptyDraft'),
-        [displayProperties],
-    );
+                .substring(0, 750) || i18next.t('draftSaveDialog.emptyDraft')
+        );
+    }, [draft.properties]);
 
     const deleteDraft = useDraftsStore((state) => state.deleteDraft);
 

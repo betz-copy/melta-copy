@@ -12,7 +12,7 @@ class DashboardValidator extends DefaultController {
     }
 
     private async validateUserCanManipulateDashboard(req: Request) {
-        const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
+        const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!);
 
         if (!userPermissions.admin?.scope)
             throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on dashboard` });

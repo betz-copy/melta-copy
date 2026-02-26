@@ -1,10 +1,10 @@
 import { UploadedFile } from '@packages/entity';
+import { IReqUser } from '@packages/user';
 import { IWorkspace } from '@packages/workspace';
 import config from '../../config';
 import StorageService from '../../externalServices/storageService';
 import DefaultManagerProxy from '../../utils/express/manager';
 import { UserNotAuthorizedError } from '../error';
-import UsersManager from '../users/manager';
 import WorkspaceService from './service';
 
 const { meltaBaseUrl } = config.service;
@@ -25,21 +25,16 @@ class WorkspaceManager extends DefaultManagerProxy {
         return WorkspaceService.getWorkspaceHierarchyIds(id);
     }
 
-    static async getDir(path: IWorkspace['path'], userId: string) {
-        const [workspace, workspaces, { permissions }] = await Promise.all([
-            WorkspaceManager.getFile(path),
-            WorkspaceService.getDir(path),
-            UsersManager.getUserById(userId),
-        ]);
-
+    static async getDir(path: IWorkspace['path'], user: IReqUser) {
+        const [workspace, workspaces] = await Promise.all([WorkspaceManager.getFile(path), WorkspaceService.getDir(path)]);
         const hierarchy = [...(await WorkspaceManager.getWorkspaceHierarchyIds(workspace._id)), workspace._id];
-        if (hierarchy.some((id) => permissions[id])) return workspaces;
+        if (hierarchy.some((id) => user.permissions?.[id])) return workspaces;
 
         const allPermissionsHierarchies = new Set(
-            (await Promise.all(Object.keys(permissions).map((id) => WorkspaceManager.getWorkspaceHierarchyIds(id)))).flat(),
+            (await Promise.all(Object.keys(user.permissions || {}).map((id) => WorkspaceManager.getWorkspaceHierarchyIds(id)))).flat(),
         );
 
-        const allowedWorkspaces = workspaces.filter(({ _id }) => permissions[_id] || allPermissionsHierarchies.has(_id));
+        const allowedWorkspaces = workspaces.filter(({ _id }) => user.permissions?.[_id] || allPermissionsHierarchies.has(_id));
 
         if (!allowedWorkspaces.length) throw new UserNotAuthorizedError();
 

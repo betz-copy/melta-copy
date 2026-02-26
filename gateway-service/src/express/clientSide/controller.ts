@@ -24,13 +24,14 @@ class ClientSideController extends DefaultController<ClientSideManager> {
     }
 
     async getExpandedEntityById(req: Request, res: Response) {
-        const userId = req.user?.kartoffelId;
-        res.json(await this.manager.getExpandedEntityById(req.params.entityId as string, req.body.expandedParams, req.body.options, userId));
+        res.json(
+            await this.manager.getExpandedEntityById(req.params.entityId as string, req.body.expandedParams, req.body.options, req.user!.kartoffelId),
+        );
     }
 
     async createEntity(req: Request, res: Response) {
         const { ignoredRules, ...entityData } = req.body;
-        res.json(await this.manager.createEntity(entityData, req.files || (req.file ? [req.file] : []), ignoredRules, req.user!.kartoffelId!));
+        res.json(await this.manager.createEntity(entityData, req.files || (req.file ? [req.file] : []), ignoredRules, req.user!));
     }
 
     async getMyNotifications(req: Request, res: Response) {

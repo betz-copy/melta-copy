@@ -28,7 +28,7 @@ class IFramesValidator extends DefaultController {
 
     async validateUserHasPermissionsToIFrame(req: Request, newIFrame: IFrame | undefined, existingIFrameId: string | undefined, adminAction = false) {
         const [userPermissions] = await Promise.all([
-            this.authorizer.getWorkspacePermissions(req.user!.id),
+            this.authorizer.getWorkspacePermissions(req.user!),
             adminAction && this.authorizer.userCanWriteTemplates(req),
         ]);
 
@@ -51,7 +51,7 @@ class IFramesValidator extends DefaultController {
 
     async validateUserCanCreateIFrame(req: Request) {
         const { toDashboard } = req.query as { toDashboard?: boolean };
-        const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
+        const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!);
 
         if (toDashboard && !userPermissions.admin?.scope)
             throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on dashboard` });
@@ -65,7 +65,7 @@ class IFramesValidator extends DefaultController {
 
     async validateUserCanDeleteIFrame(req: Request) {
         const { deleteReferenceDashboardItems } = req.query as { deleteReferenceDashboardItems?: boolean };
-        const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
+        const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!);
 
         if (deleteReferenceDashboardItems && !userPermissions.admin?.scope)
             throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on dashboard` });

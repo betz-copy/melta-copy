@@ -71,7 +71,7 @@ const config = {
         maxEntitiesToPrint: env.get('FRONT_END_MAX_ENTITIES_TO_PRINT').default(2700).asIntPositive(),
         clientSideWorkspaceId: env.get('CLIENT_SIDE_WORKSPACE_ID').default('68347c4b1652e05582afa8b8').asString(),
     },
-
+    redis: { url: env.get('REDIS_URL').default('redis://redis:6379').asString() },
     authentication: {
         isRequired: env.get('IS_AUTHENTICATION_REQUIRED').default('true').asBool(),
         mockAuthenticatedUserId: env.get('MOCK_AUTHENTICATED_USER_ID').default('5e5688324203fc40043591aa').asString(), // niky adidas
@@ -82,8 +82,6 @@ const config = {
             useEnrichId: env.get('USE_ENRICH_ID').default('true').asBool(),
             accessTokenName: env.get('ACCESS_TOKEN_NAME').required().asString(),
             accessTokenExpirationTime: env.get('ACCESS_TOKEN_EXPIRATION_TIME').default('1d').asString(),
-            unauthorizedId: env.get('UNAUTHORIZED_ID').default('unauthorized').asString(),
-            clientSideId: env.get('CLIENT_SIDE_ID').default('client-side').asString(),
             clientSideURLPrefix: env.get('CLIENT_SIDE_URL_PREFIX').default('/client-side/').asString(),
         },
         basicAuthentication: {

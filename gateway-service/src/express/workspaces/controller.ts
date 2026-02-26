@@ -16,7 +16,7 @@ class WorkspaceController extends DefaultController<WorkspaceManager> {
     }
 
     static async getDir(req: Request, res: Response) {
-        res.json(await WorkspaceManager.getDir(req.body.path, req.user!.id));
+        res.json(await WorkspaceManager.getDir(req.body.path, req.user!));
     }
 
     static async getFile(req: Request, res: Response) {

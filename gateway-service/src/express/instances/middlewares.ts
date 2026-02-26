@@ -6,6 +6,7 @@ import { PermissionScope } from '@packages/permission';
 import { IRelationship } from '@packages/relationship';
 import { ActionOnFail, IRule } from '@packages/rule';
 import { IBrokenRule } from '@packages/rule-breach';
+import { IReqUser } from '@packages/user';
 import { ForbiddenError, ServiceError } from '@packages/utils';
 import { Request } from 'express';
 import { keyBy, uniqBy } from 'lodash';
@@ -46,8 +47,8 @@ class InstancesValidator extends DefaultController {
         return template.category._id;
     }
 
-    private async getCategoryIdsFromTemplateIds(templateIds: string[], userId: string) {
-        const templates = await this.entityTemplateService.searchEntityTemplates(userId, { ids: templateIds });
+    private async getCategoryIdsFromTemplateIds(templateIds: string[], user: IReqUser) {
+        const templates = await this.entityTemplateService.searchEntityTemplates(user, { ids: templateIds });
         return templates.map((template) => template.category._id);
     }
 
@@ -58,18 +59,18 @@ class InstancesValidator extends DefaultController {
 
     async getAllowedEntityTemplatesForInstances(
         userPermissions: RequestWithPermissionsOfUserId['permissionsOfUserId'],
-        userId: string,
+        user: IReqUser,
     ): Promise<IMongoEntityTemplatePopulated[]> {
         if (!userPermissions.admin && !userPermissions.instances) return [];
         const allowedCategories = Object.keys(userPermissions.instances?.categories ?? {});
-        return this.entityTemplateService.searchEntityTemplates(userId, userPermissions.admin ? {} : { categoryIds: allowedCategories });
+        return this.entityTemplateService.searchEntityTemplates(user, userPermissions.admin ? {} : { categoryIds: allowedCategories });
     }
 
-    async validateHasPermissionsToEntitiesInTemplates(user: Express.User, templateIds: string[]) {
-        const permissions = await this.authorizer.getWorkspacePermissions(user.id);
+    async validateHasPermissionsToEntitiesInTemplates(user: IReqUser, templateIds: string[]) {
+        const permissions = await this.authorizer.getWorkspacePermissions(user);
 
         const [allowedEntityTemplates, allowedChildTemplates] = await Promise.all([
-            this.getAllowedEntityTemplatesForInstances(permissions, user.id),
+            this.getAllowedEntityTemplatesForInstances(permissions, user),
             this.getAllowedChildTemplatesForInstances(permissions),
         ]);
 
@@ -155,7 +156,7 @@ class InstancesValidator extends DefaultController {
         childTemplateId?: string,
     ) {
         const categoryId = givenCategoryId ?? (await this.getCategoryIdFromTemplateId(childTemplateId || templateId, !!childTemplateId));
-        const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
+        const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!);
 
         const childTemplates = await this.getAllowedChildTemplatesForInstances(userPermissions);
         const childTemplate = childTemplates.find(({ _id }) => _id === childTemplateId);
@@ -192,7 +193,7 @@ class InstancesValidator extends DefaultController {
         await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write, undefined, childTemplateId);
     }
 
-    private async getCategoriesIdsByEntitiesAndTemplatesIds(entitiesIds: string[], templateIdsFromReq: string[], userId: string) {
+    private async getCategoriesIdsByEntitiesAndTemplatesIds(entitiesIds: string[], templateIdsFromReq: string[], user: IReqUser) {
         const templateIds = new Set<string>([...templateIdsFromReq]);
 
         const entities = await this.instancesService.getEntityInstancesByIds(entitiesIds);
@@ -200,7 +201,7 @@ class InstancesValidator extends DefaultController {
             templateIds.add(entity.templateId);
         });
 
-        const categoriesIds = await this.getCategoryIdsFromTemplateIds([...templateIds], userId);
+        const categoriesIds = await this.getCategoryIdsFromTemplateIds([...templateIds], user);
 
         return categoriesIds;
     }
@@ -211,8 +212,8 @@ class InstancesValidator extends DefaultController {
         const { templateIds, entitiesIds } = this.instancesManager.extractEntitiesAndTemplatesIds(actionsGroups as IAction[][]);
 
         const [categoriesIds, userPermissions] = await Promise.all([
-            this.getCategoriesIdsByEntitiesAndTemplatesIds(entitiesIds, templateIds, req.user!.id),
-            this.authorizer.getWorkspacePermissions(req.user!.id),
+            this.getCategoriesIdsByEntitiesAndTemplatesIds(entitiesIds, templateIds, req.user!),
+            this.authorizer.getWorkspacePermissions(req.user!),
         ]);
 
         if (
@@ -245,12 +246,12 @@ class InstancesValidator extends DefaultController {
             body: { templateIds },
             permissionsOfUserId,
         } = req as RequestWithPermissionsOfUserId;
-        req.body.userId = req.user!.id;
+        req.body.userId = req.user!._id;
 
         const templatesManager = new TemplatesManager(await getWorkspaceId(req));
 
         const [allowedEntityTemplates, allowedChildTemplates] = await Promise.all([
-            templatesManager.getAllAllowedEntityTemplates(permissionsOfUserId, req.user!.id),
+            templatesManager.getAllAllowedEntityTemplates(permissionsOfUserId, req.user!),
             this.getAllowedChildTemplatesForInstances(permissionsOfUserId),
         ]);
 
@@ -311,19 +312,19 @@ class InstancesValidator extends DefaultController {
     async validateUserCanIgnoreRules(req: Request) {
         const { ignoredRules } = req.body;
         const { user } = req;
-        await this.validateEnforcementRules(user, ignoredRules);
+        await this.validateEnforcementRules(user!, ignoredRules);
     }
 
     async validateUserCanIgnoreRulesMultipleUpdate(req: Request) {
         const { ignoredRules } = req.body;
         const { user } = req;
-        await this.validateEnforcementRules(user, Object.values(ignoredRules).flat() as IBrokenRule[]);
+        await this.validateEnforcementRules(user!, Object.values(ignoredRules).flat() as IBrokenRule[]);
     }
 
-    private async validateEnforcementRules(user: Express.User | undefined, ignoredRules: IBrokenRule[]) {
+    private async validateEnforcementRules(user: IReqUser, ignoredRules: IBrokenRule[]) {
         if (!user) throw new ServiceError(undefined, 'req.user is undefined');
 
-        const userPermissions = await this.authorizer.getWorkspacePermissions(user.id);
+        const userPermissions = await this.authorizer.getWorkspacePermissions(user);
 
         if (!userPermissions.admin?.scope && userPermissions.rules?.scope !== PermissionScope.write) return;
 

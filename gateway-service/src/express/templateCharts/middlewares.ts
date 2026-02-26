@@ -40,7 +40,7 @@ class ChartsValidator extends DefaultController {
     private async validateUserIsCreatorOfChart(req: Request, chart: IMongoChart) {
         const { permission, createdBy, _id } = chart;
 
-        if (permission === IChartPermission.Private && req.user?.id !== createdBy)
+        if (permission === IChartPermission.Private && req.user!._id !== createdBy)
             /// until now only the creator can update if its private but if protected evey user canupdate
             throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on chart ${_id}` });
     }
@@ -48,7 +48,7 @@ class ChartsValidator extends DefaultController {
     private async validateUserHasPermissionToTemplate(req: Request, templateId: string, childTemplateId?: string) {
         const [{ categoryId }, userPermissions] = await Promise.all([
             this.getCategoryIdFromTemplateId(templateId, childTemplateId),
-            this.authorizer.getWorkspacePermissions(req.user!.id),
+            this.authorizer.getWorkspacePermissions(req.user!),
         ]);
         if (
             !userPermissions.admin?.scope &&
@@ -92,9 +92,9 @@ class ChartsValidator extends DefaultController {
         ]);
     }
 
-    async validateUserCanDeleteRerencedDahboardItem(req: Request) {
+    async validateUserCanDeleteReferencedDashboardItem(req: Request) {
         const { deleteReferenceDashboardItems } = req.query as { deleteReferenceDashboardItems?: boolean };
-        const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
+        const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!);
 
         if (deleteReferenceDashboardItems && !userPermissions.admin?.scope)
             throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on dashboard` });
@@ -102,7 +102,7 @@ class ChartsValidator extends DefaultController {
 
     async validateUserCanCreateChart(req: Request) {
         const { toDashboard } = req.query as { toDashboard?: boolean };
-        const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
+        const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!);
 
         if (toDashboard && !userPermissions.admin?.scope)
             throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on dashboard` });
@@ -111,14 +111,14 @@ class ChartsValidator extends DefaultController {
     }
 
     async validateUserCanUpdateChart(req: Request) {
-        await this.validateUserCanDeleteRerencedDahboardItem(req);
+        await this.validateUserCanDeleteReferencedDashboardItem(req);
         return this.validateUserHasPermissionToChart(req);
     }
 
     async validateUserCanDeleteChart(req: Request) {
         const { chartId } = req.params;
 
-        await this.validateUserCanDeleteRerencedDahboardItem(req);
+        await this.validateUserCanDeleteReferencedDashboardItem(req);
 
         const chart = await this.chartManager.getChartById(chartId as string);
 
@@ -131,15 +131,15 @@ class ChartsValidator extends DefaultController {
     async validateUserCanCreateChartWithRelatedTemplate(req: Request) {
         const { body, permissionsOfUserId, user } = req as RequestWithPermissionsOfUserId;
 
-        const hasPermissionToRelatedTemplate = await this.chartManager.validateAllowedRelatedTemplate(user!.id, permissionsOfUserId, body);
+        const hasPermissionToRelatedTemplate = await this.chartManager.validateAllowedRelatedTemplate(user!, permissionsOfUserId, body);
         if (!hasPermissionToRelatedTemplate) throw new ForbiddenError(`doesn't have permission to related Template`);
     }
 
     async validateUserCanUpdateChartWithRelatedTemplate(req: Request) {
         const { body, permissionsOfUserId, user } = req as RequestWithPermissionsOfUserId;
 
-        if (user?.id && permissionsOfUserId) {
-            const hasPermissionToRelatedTemplate = await this.chartManager.validateAllowedRelatedTemplate(user!.id, permissionsOfUserId, body);
+        if (user?._id && permissionsOfUserId) {
+            const hasPermissionToRelatedTemplate = await this.chartManager.validateAllowedRelatedTemplate(user, permissionsOfUserId, body);
             if (!hasPermissionToRelatedTemplate) throw new ForbiddenError(`doesn't have permission to related Template`);
         }
     }

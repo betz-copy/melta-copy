@@ -1,6 +1,6 @@
 import { IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '@packages/entity';
 import { ISearchEntityTemplatesBody } from '@packages/entity-template';
-import { RelatedPermission } from '@packages/user';
+import { IReqUser, RelatedPermission } from '@packages/user';
 import config from '../../config';
 import InstancesService from '../../externalServices/instanceService';
 import EntityTemplateService from '../../externalServices/templates/entityTemplateService';
@@ -97,14 +97,14 @@ class FlowCubeManager extends DefaultManagerProxy<null> {
         return convertToFlow;
     }
 
-    static async searchWorkspace(body: { Value: string; Parameters?: { Value: string } }, userId: string | undefined) {
-        if (!userId) return [];
+    static async searchWorkspace(body: { Value: string; Parameters?: { Value: string } }, user: IReqUser) {
+        if (!user) return [];
 
         const searchBody = {} as { search: string };
 
         if (body?.Parameters?.Value || body?.Value) searchBody.search = body?.Parameters?.Value || body?.Value;
 
-        const usersPermissions = await UserService.getRelatedPermissions(userId, RelatedPermission.User);
+        const usersPermissions = await UserService.getRelatedPermissions(user._id, RelatedPermission.User);
         const workspaces = await WorkspaceService.getWorkspaces(searchBody);
         const filteredWorkspaces = await filterWorkspacesByPermissions(workspaces, usersPermissions);
 
@@ -115,41 +115,37 @@ class FlowCubeManager extends DefaultManagerProxy<null> {
             });
     }
 
-    async searchCategory(body: { Value?: string }, userId: string | undefined): Promise<IFlowAutoComplete[]> {
-        if (!userId) return [];
+    async searchCategory(body: { Value?: string }, user: IReqUser): Promise<IFlowAutoComplete[]> {
+        if (!user) return [];
 
         let searchInput = '';
 
         if (body?.Value) searchInput = body?.Value;
 
-        const usersPermissions = await this.authorizer.getWorkspacePermissions(userId);
+        const usersPermissions = await this.authorizer.getWorkspacePermissions(user);
         const categories = await this.entityTemplateService.searchCategories(usersPermissions, searchInput);
         const filteredCategories = usersPermissions.admin ? categories : filterCategoriesByPermissions(categories, usersPermissions);
 
         return filteredCategories.map(({ _id, displayName }) => ({ Value: _id, Name: displayName }));
     }
 
-    async searchEntityTemplate(body: { Value?: string; CategoryType?: string }, userId: string | undefined): Promise<IFlowAutoComplete[]> {
-        if (!userId) return [];
+    async searchEntityTemplate(body: { Value?: string; CategoryType?: string }, user: IReqUser): Promise<IFlowAutoComplete[]> {
+        if (!user) return [];
 
         const searchEntityTemplatesBody: ISearchEntityTemplatesBody = {};
 
-        if (body?.Value) {
-            searchEntityTemplatesBody.search = body.Value;
-        }
+        if (body?.Value) searchEntityTemplatesBody.search = body.Value;
 
-        if (body?.CategoryType) {
-            searchEntityTemplatesBody.categoryIds = [body.CategoryType];
-        }
+        if (body?.CategoryType) searchEntityTemplatesBody.categoryIds = [body.CategoryType];
 
-        const usersPermissions = await this.authorizer.getWorkspacePermissions(userId);
-        const entityTemplates = await this.templatesManager.searchEntityTemplates(usersPermissions, searchEntityTemplatesBody, userId);
+        const usersPermissions = await this.authorizer.getWorkspacePermissions(user);
+        const entityTemplates = await this.templatesManager.searchEntityTemplates(usersPermissions, searchEntityTemplatesBody, user);
         const userPermissionsByCategory = getEntityTemplatesPermissionsByCategory(usersPermissions);
         const allowedEntityTemplates = usersPermissions.admin
             ? entityTemplates
             : entityTemplates.filter(
                   (entityTemplate) =>
-                      userPermissionsByCategory[entityTemplate.category._id].length === 0 ||
+                      !userPermissionsByCategory[entityTemplate.category._id].length ||
                       userPermissionsByCategory[entityTemplate.category._id].includes(entityTemplate._id),
               );
         const filteredEntityTemplates = body.CategoryType

@@ -26,6 +26,7 @@ import {
     ProcessPropertyFormats,
     Status,
 } from '@packages/process';
+import { IReqUser } from '@packages/user';
 import { ServiceError } from '@packages/utils';
 import axios from 'axios';
 import { StatusCodes } from 'http-status-codes';
@@ -69,7 +70,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         this.rabbitManager = new RabbitManager(workspaceId);
     }
 
-    async getPropertiesWithEntities(properties: InstanceProperties, template: IProcessDetails['properties'], userId: string) {
+    async getPropertiesWithEntities(properties: InstanceProperties, template: IProcessDetails['properties'], user: IReqUser) {
         const updatedProperties: InstanceProperties = { ...properties };
 
         const entityProperties = Object.entries(template.properties || {}).filter(
@@ -78,7 +79,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
 
         if (entityProperties.length === 0) return properties;
 
-        const userPermissions = await new Authorizer(this.workspaceId).getWorkspacePermissions(userId);
+        const userPermissions = await new Authorizer(this.workspaceId).getWorkspacePermissions(user);
 
         const promises = entityProperties.map(async ([key]) => {
             const entity = await this.instancesService.getEntityInstanceById(properties[key]).catch((error) => {
@@ -105,12 +106,12 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         return updatedProperties;
     }
 
-    private async getPopulatedProcess(process: IMongoProcessInstancePopulated, userId: string): Promise<IMongoProcessInstanceReviewerPopulated> {
+    private async getPopulatedProcess(process: IMongoProcessInstancePopulated, user: IReqUser): Promise<IMongoProcessInstanceReviewerPopulated> {
         const processTemplate = await this.service.getProcessTemplateById(process.templateId);
-        const details = await this.getPropertiesWithEntities(process.details, processTemplate.details.properties, userId);
+        const details = await this.getPropertiesWithEntities(process.details, processTemplate.details.properties, user);
 
         const result = await Promise.all(
-            process.steps.map((step) => this.stepsInstancesManager.getStepInstanceWithEntitiesAndReviewers(step, userId)),
+            process.steps.map((step) => this.stepsInstancesManager.getStepInstanceWithEntitiesAndReviewers(step, user)),
         ).then(async (populatedSteps) => {
             const populatedProcess = {
                 ...process,
@@ -123,15 +124,15 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         return result;
     }
 
-    async getProcessInstance(id: string, userId: string) {
-        const process = await this.service.getProcessInstanceById(id, userId);
-        return this.getPopulatedProcess(process, userId);
+    async getProcessInstance(id: string, user: IReqUser) {
+        const process = await this.service.getProcessInstanceById(id, user);
+        return this.getPopulatedProcess(process, user);
     }
 
-    async getProcessInstanceOrNull(id: string, userId: string) {
+    async getProcessInstanceOrNull(id: string, user: IReqUser) {
         try {
-            const process = await this.service.getProcessInstanceById(id, userId);
-            return this.getPopulatedProcess(process, userId);
+            const process = await this.service.getProcessInstanceById(id, user);
+            return this.getPopulatedProcess(process, user);
             // biome-ignore lint/suspicious/noExplicitAny: error is any
         } catch (error: any) {
             if (error instanceof NotFoundError && error.code === StatusCodes.NOT_FOUND) return null;
@@ -153,12 +154,12 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         );
     }
 
-    async createProcessInstance(processData: IProcessInstance, files: UploadedFile[], userId: string) {
+    async createProcessInstance(processData: IProcessInstance, files: UploadedFile[], user: IReqUser) {
         const processTemplate = await this.service.getProcessTemplateById(processData.templateId);
         this.checkEntityReferenceFields(processData.details, processTemplate.details.properties);
         if (!files.length) {
-            const process = await this.service.createProcessInstance(processData, userId);
-            const populatedProcess = await this.getPopulatedProcess(process, userId);
+            const process = await this.service.createProcessInstance(processData, user._id);
+            const populatedProcess = await this.getPopulatedProcess(process, user);
 
             await Promise.allSettled([
                 this.sendNewProcessNotification(populatedProcess),
@@ -168,7 +169,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         }
         const { props: processDetails, files: filesToUpload } = await this.instancesManager.uploadInstanceFiles(files, processData.details);
 
-        const process = await this.service.createProcessInstance({ ...processData, details: processDetails }, userId).catch(async (error) => {
+        const process = await this.service.createProcessInstance({ ...processData, details: processDetails }, user._id).catch(async (error) => {
             await this.storageService.deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch(() => {
                 throw new ServiceError(undefined, `failed to delete process unused files`, {
                     error,
@@ -176,7 +177,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
             });
             throw error;
         });
-        const populatedProcess = await this.getPopulatedProcess(process, userId);
+        const populatedProcess = await this.getPopulatedProcess(process, user);
 
         await Promise.allSettled([
             this.sendNewProcessNotification(populatedProcess),
@@ -200,8 +201,8 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
             });
     }
 
-    async updateProcessInstance(processId: string, processData: IProcessInstance, files: UploadedFile[], userId: string) {
-        const currProcessInstance = await this.getProcessInstance(processId, userId);
+    async updateProcessInstance(processId: string, processData: IProcessInstance, files: UploadedFile[], user: IReqUser) {
+        const currProcessInstance = await this.getProcessInstance(processId, user);
         const processTemplate = await this.service.getProcessTemplateById(currProcessInstance.templateId);
 
         if (processData.details) this.checkEntityReferenceFields(processData.details, processTemplate.details.properties);
@@ -219,13 +220,13 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
             await this.removeUnusedFileIds(processTemplate.details.properties, currProcessInstance.details, updatedProcessInstance.details);
         }
 
-        const updatedProcess = await this.service.updateProcessInstance(processId, updatedProcessInstance, userId).catch(async (error) => {
+        const updatedProcess = await this.service.updateProcessInstance(processId, updatedProcessInstance, user._id).catch(async (error) => {
             await this.storageService.deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch(() => {
                 throw new ServiceError(undefined, `failed to delete process unused files`, { error });
             });
             throw error;
         });
-        const updatedPopulatedProcess = await this.getPopulatedProcess(updatedProcess, userId);
+        const updatedPopulatedProcess = await this.getPopulatedProcess(updatedProcess, user);
 
         await Promise.allSettled([
             this.sendProcessReviewerUpdateNotification([updatedProcess._id], updatedPopulatedProcess.steps, currProcessInstance.steps),
@@ -233,9 +234,9 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         return updatedPopulatedProcess;
     }
 
-    async archiveProcess(id: string, { archived }, userId: string) {
+    async archiveProcess(id: string, { archived }, user: IReqUser) {
         const updatedProcess = await this.service.archivedProcess(id, archived);
-        const updatedPopulatedProcess = await this.getPopulatedProcess(updatedProcess, userId);
+        const updatedPopulatedProcess = await this.getPopulatedProcess(updatedProcess, user);
 
         await Promise.allSettled([this.sendArchiveProcessNotification(updatedPopulatedProcess, archived)]);
 
@@ -281,9 +282,9 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         return fileIds;
     }
 
-    async deleteProcessInstance(processId: string, userId: string) {
-        const process = await this.service.getProcessInstanceById(processId, userId);
-        const populatedProcess = await this.getPopulatedProcess(process, userId);
+    async deleteProcessInstance(processId: string, user: IReqUser) {
+        const process = await this.service.getProcessInstanceById(processId, user);
+        const populatedProcess = await this.getPopulatedProcess(process, user);
 
         await this.deleteAllProcessFiles(process).catch((error) => {
             throw new ServiceError(undefined, `failed to delete process files`, { error });
@@ -295,16 +296,16 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         return populatedProcess;
     }
 
-    async searchProcessInstances(searchBody: IProcessInstanceSearchProperties, userId: string) {
+    async searchProcessInstances(searchBody: IProcessInstanceSearchProperties, user: IReqUser) {
         const query: IProcessInstanceSearchProperties = { ...searchBody };
 
-        const userPermissions = await new Authorizer(this.workspaceId).getWorkspacePermissions(userId);
+        const userPermissions = await new Authorizer(this.workspaceId).getWorkspacePermissions(user);
 
-        if (!userPermissions.admin?.scope && userPermissions.processes?.scope !== PermissionScope.write) query.reviewerId = userId;
+        if (!userPermissions.admin?.scope && userPermissions.processes?.scope !== PermissionScope.write) query.reviewerId = user._id;
 
-        query.userId = userId;
+        query.userId = user._id;
         const processes = await this.service.searchProcessInstances(query);
-        return Promise.all(processes.map((process) => this.getPopulatedProcess(process, userId)));
+        return Promise.all(processes.map((process) => this.getPopulatedProcess(process, user)));
     }
 
     private async sendNewProcessNotification(process: IMongoProcessInstanceReviewerPopulated) {

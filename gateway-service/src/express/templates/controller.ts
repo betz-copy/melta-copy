@@ -24,7 +24,7 @@ export default class TemplatesController extends DefaultController<TemplatesMana
 
         assert(user, userDoesntExistUnderReq);
 
-        res.json(await this.manager.getAllAllowedTemplates(user.id, permissionsOfUserId));
+        res.json(await this.manager.getAllAllowedTemplates(user, permissionsOfUserId));
     }
 
     // categories
@@ -37,11 +37,11 @@ export default class TemplatesController extends DefaultController<TemplatesMana
         const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
         assert(user, userDoesntExistUnderReq);
 
-        res.json(await this.manager.createCategory(req.body, permissionsOfUserId, user!.id, req.file));
+        res.json(await this.manager.createCategory(req.body, permissionsOfUserId, user._id, req.file));
     }
 
     async deleteCategory(req: Request, res: Response) {
-        res.json(await this.manager.deleteCategory(req.params.id as string, req.user!.id));
+        res.json(await this.manager.deleteCategory(req.params.id as string, req.user!));
     }
 
     async updateCategory(req: Request, res: Response) {
@@ -92,7 +92,7 @@ export default class TemplatesController extends DefaultController<TemplatesMana
         assert(user, userDoesntExistUnderReq);
 
         res.json(
-            await this.manager.createEntityTemplate(req.body, permissionsOfUserId, user!.id, {
+            await this.manager.createEntityTemplate(req.body, permissionsOfUserId, user!._id, {
                 files: req.files,
                 file: req.file ? [req.file] : undefined,
             }),
@@ -108,7 +108,7 @@ export default class TemplatesController extends DefaultController<TemplatesMana
         res.json(
             await this.manager.updateEntityTemplate(
                 req.params.id as string,
-                req.user!.id,
+                req.user!,
                 req.body,
                 {
                     files: req.files,
@@ -142,7 +142,7 @@ export default class TemplatesController extends DefaultController<TemplatesMana
         const { user, permissionsOfUserId, searchQuery } = req as RequestWithSearchEntityTemplateBody;
         assert(user, userDoesntExistUnderReq);
 
-        res.json(await this.manager.searchEntityTemplates(permissionsOfUserId, searchQuery || req.body, user.id));
+        res.json(await this.manager.searchEntityTemplates(permissionsOfUserId, searchQuery || req.body, user));
     }
 
     // childTemplates
@@ -150,12 +150,12 @@ export default class TemplatesController extends DefaultController<TemplatesMana
         const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
         assert(user, userDoesntExistUnderReq);
 
-        res.json(await this.manager.createChildTemplate(req.body, permissionsOfUserId, user!.id));
+        res.json(await this.manager.createChildTemplate(req.body, permissionsOfUserId, user!._id));
     }
 
     async updateChildTemplate(req: Request, res: Response) {
         const { permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
-        res.json(await this.manager.updateChildTemplate(req.params.id as string, req.user!.id, req.body, permissionsOfUserId));
+        res.json(await this.manager.updateChildTemplate(req.params.id as string, req.user!._id, req.body, permissionsOfUserId));
     }
 
     async updateChildTemplateStatus(req: Request, res: Response) {
@@ -176,20 +176,20 @@ export default class TemplatesController extends DefaultController<TemplatesMana
     }
 
     async convertToRelationshipField(req: Request, res: Response) {
-        res.json(await this.manager.convertRelationshipToRelationshipField(req.params.id as string, req.body, req.user!.id));
+        res.json(await this.manager.convertRelationshipToRelationshipField(req.params.id as string, req.body, req.user!._id));
     }
 
     async getAllRelationshipTemplates(req: Request, res: Response) {
         const { user, permissionsOfUserId } = req as RequestWithSearchRelationshipTemplateBody;
         assert(user, userDoesntExistUnderReq);
-        res.json(await this.manager.getAllAllowedRelationshipTemplates(permissionsOfUserId, user!.id));
+        res.json(await this.manager.getAllAllowedRelationshipTemplates(permissionsOfUserId, user));
     }
 
     async searchRelationshipTemplates(req: Request, res: Response) {
         const { user, permissionsOfUserId, searchBody } = req as RequestWithSearchRelationshipTemplateBody;
         assert(user, userDoesntExistUnderReq);
 
-        res.json(await this.manager.searchRelationshipTemplates(permissionsOfUserId, searchBody, user.id));
+        res.json(await this.manager.searchRelationshipTemplates(permissionsOfUserId, searchBody, user));
     }
 
     // rules
@@ -205,14 +205,14 @@ export default class TemplatesController extends DefaultController<TemplatesMana
         const { user, permissionsOfUserId, searchBody } = req as RequestWithSearchRuleTemplateBody;
         assert(user, userDoesntExistUnderReq);
 
-        res.json(await this.manager.searchRulesTemplates(permissionsOfUserId, searchBody, req.user!.id));
+        res.json(await this.manager.searchRulesTemplates(permissionsOfUserId, searchBody, req.user!));
     }
 
     async getManyRulesByIds(req: Request, res: Response) {
         const { user, permissionsOfUserId } = req as RequestWithSearchRuleTemplateBody;
         assert(user, userDoesntExistUnderReq);
 
-        res.json(await this.manager.getManyRulesByIds(req.body.rulesIds, permissionsOfUserId, user!.id));
+        res.json(await this.manager.getManyRulesByIds(req.body.rulesIds, permissionsOfUserId, user));
     }
 
     // Printing Templates

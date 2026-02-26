@@ -3,6 +3,7 @@ import { IChildTemplate, IChildTemplatePopulated, IMongoChildTemplatePopulated }
 import { IEntityTemplate, IMongoEntityTemplate, IMongoEntityTemplatePopulated, ISearchEntityTemplatesBody } from '@packages/entity-template';
 import { ISubCompactPermissions } from '@packages/permission';
 import { IMongoRelationshipTemplate } from '@packages/relationship-template';
+import { IReqUser, IUser } from '@packages/user';
 import { ConfigTypes, ICategoryOrderConfig, IMongoBaseConfig, IMongoCategoryOrderConfig } from '@packages/workspace';
 import config from '../../config';
 import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';
@@ -76,9 +77,9 @@ class EntityTemplateService extends TemplatesManagerService {
     }
 
     // entity templates
-    async searchEntityTemplates(userId: string, body: ISearchEntityTemplatesBody = {}) {
+    async searchEntityTemplates(user: IReqUser | IUser, body: ISearchEntityTemplatesBody = {}) {
         const workspaceId = this.api.defaults.headers[workspaceIdHeaderName]!.toString();
-        const usersPermissions = await new Authorizer(workspaceId).getWorkspacePermissions(userId);
+        const usersPermissions = await new Authorizer(workspaceId).getWorkspacePermissions(user);
 
         const { data: entityTemplates } = await this.api.post<IMongoEntityTemplatePopulated[]>(`${baseEntitiesRoute}/search`, body);
         return usersPermissions.admin

@@ -21,6 +21,7 @@ import {
     IRuleBreachResponseNotificationMetadata,
     IRuleBreachResponseNotificationMetadataPopulated,
 } from '@packages/notification';
+import { IReqUser } from '@packages/user';
 import InstancesService from '../../externalServices/instanceService';
 import NotificationService from '../../externalServices/notificationService';
 import {
@@ -52,39 +53,39 @@ class NotificationsManager extends DefaultManagerProxy<NotificationService> {
         this.processesInstancesManager = new ProcessesInstancesManager(workspaceId);
     }
 
-    async getMyNotifications(user: Express.User, query): Promise<INotificationPopulated[]> {
+    async getMyNotifications(user: IReqUser, query): Promise<INotificationPopulated[]> {
         const startDate = query.startDate && new Date(query.startDate);
         const endDate = query.endDate && new Date(query.endDate);
 
         const notifications = await this.service.getNotifications({
             ...query,
-            viewerId: user.id,
+            viewerId: user._id,
             startDate,
             endDate,
         });
 
-        return this.populateNotifications(notifications, user.id);
+        return this.populateNotifications(notifications, user);
     }
 
     // biome-ignore lint/suspicious/noExplicitAny: query axios any
-    async getMyNotificationCount(user: Express.User, query: Record<string, any>): Promise<number> {
-        return this.service.getNotificationCount({ ...query, viewerId: user.id });
+    async getMyNotificationCount(user: IReqUser, query: Record<string, any>): Promise<number> {
+        return this.service.getNotificationCount({ ...query, viewerId: user._id });
     }
 
     // biome-ignore lint/suspicious/noExplicitAny: query axios any
-    async getMyNotificationGroupCount(user: Express.User, query: Record<string, any>) {
-        return this.service.getNotificationGroupCount({ ...query, viewerId: user.id });
+    async getMyNotificationGroupCount(user: IReqUser, query: Record<string, any>) {
+        return this.service.getNotificationGroupCount({ ...query, viewerId: user._id });
     }
 
-    async notificationsSeen(notificationId: string, user: Express.User): Promise<INotificationPopulated> {
-        const notification = await this.service.notificationSeen(notificationId, user.id);
-        return this.populateNotification(notification, user.id);
+    async notificationsSeen(notificationId: string, user: IReqUser): Promise<INotificationPopulated> {
+        const notification = await this.service.notificationSeen(notificationId, user._id);
+        return this.populateNotification(notification, user);
     }
 
     // biome-ignore lint/suspicious/noExplicitAny: query axios any
-    async manyNotificationsSeen(user: Express.User, query: Record<string, any>): Promise<INotificationPopulated[]> {
-        const notifications = await this.service.manyNotificationsSeen({ ...query, viewerId: user.id });
-        return this.populateNotifications(notifications, user.id);
+    async manyNotificationsSeen(user: IReqUser, query: Record<string, any>): Promise<INotificationPopulated[]> {
+        const notifications = await this.service.manyNotificationsSeen({ ...query, viewerId: user._id });
+        return this.populateNotifications(notifications, user);
     }
 
     private async populateRuleBreachAlertNotificationMetadata(
@@ -101,11 +102,11 @@ class NotificationsManager extends DefaultManagerProxy<NotificationService> {
 
     private async populateStatusUpdateNotificationMetadata(
         metadata: IProcessStatusUpdateNotificationMetadata,
-        userId: string,
+        user: IReqUser,
     ): Promise<IProcessStatusUpdateNotificationMetadataPopulated> {
         const { processId, status, stepId } = metadata;
 
-        const process = await this.processesInstancesManager.getProcessInstanceOrNull(processId, userId);
+        const process = await this.processesInstancesManager.getProcessInstanceOrNull(processId, user);
 
         const populatedMetadata: IProcessStatusUpdateNotificationMetadataPopulated = { process, status };
 
@@ -118,9 +119,9 @@ class NotificationsManager extends DefaultManagerProxy<NotificationService> {
 
     private async populateNewProcessNotificationMetadata(
         metadata: INewProcessNotificationMetadata,
-        userId: string,
+        user: IReqUser,
     ): Promise<INewProcessNotificationMetadataPopulated | null> {
-        const process = await this.processesInstancesManager.getProcessInstanceOrNull(metadata.processId, userId);
+        const process = await this.processesInstancesManager.getProcessInstanceOrNull(metadata.processId, user);
         return { process };
     }
 
@@ -132,19 +133,19 @@ class NotificationsManager extends DefaultManagerProxy<NotificationService> {
 
     private async populateArchiveProcessNotificationMetadata(
         metadata: IArchiveProcessNotificationMetadata,
-        userId: string,
+        user: IReqUser,
     ): Promise<IArchiveProcessNotificationMetadataPopulated | null> {
         const { isArchived } = metadata;
-        const process = await this.processesInstancesManager.getProcessInstanceOrNull(metadata.processId, userId);
+        const process = await this.processesInstancesManager.getProcessInstanceOrNull(metadata.processId, user);
         return { process, isArchived };
     }
 
     private async populateProcessReviewerUpdateNotificationMetadata(
         metadata: IProcessReviewerUpdateNotificationMetadata,
-        userId: string,
+        user: IReqUser,
     ): Promise<IProcessReviewerUpdateNotificationMetadataPopulated | null> {
         const { processId, addedStepIds, deletedStepIds, unchangedStepIds } = metadata;
-        const process = await this.processesInstancesManager.getProcessInstanceOrNull(processId, userId);
+        const process = await this.processesInstancesManager.getProcessInstanceOrNull(processId, user);
 
         if (!process) {
             return {
@@ -190,7 +191,7 @@ class NotificationsManager extends DefaultManagerProxy<NotificationService> {
         };
     }
 
-    async populateNotification(notification: INotification, userId: string): Promise<INotificationPopulated> {
+    async populateNotification(notification: INotification, user: IReqUser): Promise<INotificationPopulated> {
         const { viewers: _viewers, ...restOfNotification } = notification;
 
         let populatedMetadata: INotificationMetadataPopulated | null;
@@ -200,17 +201,17 @@ class NotificationsManager extends DefaultManagerProxy<NotificationService> {
         } else if (isRuleBreachRequestNotification(notification) || isRuleBreachResponseNotification(notification)) {
             populatedMetadata = await this.populateRuleBreachRequestOrResponseNotificationMetadata(notification.metadata);
         } else if (isProcessStatusUpdateNotification(notification)) {
-            populatedMetadata = await this.populateStatusUpdateNotificationMetadata(notification.metadata, userId);
+            populatedMetadata = await this.populateStatusUpdateNotificationMetadata(notification.metadata, user);
         } else if (isNewProcessNotification(notification)) {
-            populatedMetadata = await this.populateNewProcessNotificationMetadata(notification.metadata, userId);
+            populatedMetadata = await this.populateNewProcessNotificationMetadata(notification.metadata, user);
         } else if (isProcessReviewerUpdateNotification(notification)) {
-            populatedMetadata = await this.populateProcessReviewerUpdateNotificationMetadata(notification.metadata, userId);
+            populatedMetadata = await this.populateProcessReviewerUpdateNotificationMetadata(notification.metadata, user);
         } else if (isDateAboutToExpireNotification(notification)) {
             populatedMetadata = await this.populateDateAboutToExpireNotificationMetadata(notification.metadata);
         } else if (isDeleteProcessNotification(notification)) {
             populatedMetadata = await NotificationsManager.populateDeleteProcessNotificationMetadata(notification.metadata);
         } else if (isArchiveProcessNotification(notification)) {
-            populatedMetadata = await this.populateArchiveProcessNotificationMetadata(notification.metadata, userId);
+            populatedMetadata = await this.populateArchiveProcessNotificationMetadata(notification.metadata, user);
         }
         return {
             ...restOfNotification,
@@ -218,8 +219,8 @@ class NotificationsManager extends DefaultManagerProxy<NotificationService> {
         };
     }
 
-    async populateNotifications(notifications: INotification[], userId: string): Promise<INotificationPopulated[]> {
-        return Promise.all(notifications.map((notification) => this.populateNotification(notification, userId)));
+    async populateNotifications(notifications: INotification[], user: IReqUser): Promise<INotificationPopulated[]> {
+        return Promise.all(notifications.map((notification) => this.populateNotification(notification, user)));
     }
 }
 

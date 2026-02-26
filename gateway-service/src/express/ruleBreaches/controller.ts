@@ -8,7 +8,7 @@ class RuleBreachesController extends DefaultController<RuleBreachesManager> {
     }
 
     async createRuleBreachRequest(req: Request, res: Response) {
-        res.json(await this.manager.createRuleBreachRequest(req.body, req.user!.id, req.files));
+        res.json(await this.manager.createRuleBreachRequest(req.body, req.user!, req.files));
     }
 
     async getManyRuleBreachRequests(req: Request, res: Response) {
@@ -44,13 +44,13 @@ class RuleBreachesController extends DefaultController<RuleBreachesManager> {
     async getRuleBreachRequestsById(req: Request, res: Response) {
         const { ruleBreachRequestId } = req.params;
 
-        res.json(await this.manager.getRuleBreachRequestById(ruleBreachRequestId as string, req.user!));
+        res.json(await this.manager.getRuleBreachRequestById(ruleBreachRequestId as string, req.user));
     }
 
     async getRuleBreachAlertsById(req: Request, res: Response) {
         const { ruleBreachAlertId } = req.params;
 
-        res.json(await this.manager.getRuleBreachAlertsById(ruleBreachAlertId as string, req.user!));
+        res.json(await this.manager.getRuleBreachAlertsById(ruleBreachAlertId as string, req.user));
     }
 }
 
