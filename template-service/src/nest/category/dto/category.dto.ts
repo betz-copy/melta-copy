@@ -11,14 +11,10 @@ export const CategorySchema = z.object({
 });
 
 // Create Category DTO
-export class CreateCategoryDto extends createZodDto(
-    CategorySchema.pick({ name: true, displayName: true, color: true, iconFileId: true }),
-) {}
+export class CreateCategoryDto extends createZodDto(CategorySchema.pick({ name: true, displayName: true, color: true, iconFileId: true })) {}
 
 // Update Category DTO - includes templatesOrder for reordering
-export class UpdateCategoryDto extends createZodDto(
-    CategorySchema.partial(),
-) {}
+export class UpdateCategoryDto extends createZodDto(CategorySchema.partial()) {}
 
 // Query DTO for getting categories
 export const GetCategoriesQuerySchema = z.object({

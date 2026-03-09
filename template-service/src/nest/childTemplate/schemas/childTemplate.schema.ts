@@ -21,7 +21,7 @@ export class ChildTemplate {
     description?: string;
 
     @ApiProperty({ example: '507f1f77bcf86cd799439011' })
-    @Prop({ type: Types.ObjectId, ref: 'EntityTemplate', required: true, index: true })
+    @Prop({ type: Types.ObjectId, ref: 'EntityTemplate', required: true })
     parentTemplateId: Types.ObjectId;
 
     @ApiProperty({ example: '507f1f77bcf86cd799439012' })

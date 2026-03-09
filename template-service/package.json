@@ -19,25 +19,30 @@
     "author": "Alexander Gurevich",
     "license": "ISC",
     "dependencies": {
-        "@packages/common": "workspace:*",
         "@packages/category": "workspace:*",
         "@packages/child-template": "workspace:*",
-        "@packages/entity-template": "workspace:*",
+        "@packages/common": "workspace:*",
         "@packages/entity": "workspace:*",
+        "@packages/entity-template": "workspace:*",
         "@packages/global-search": "workspace:*",
+        "@packages/map": "workspace:*",
         "@packages/printing-template": "workspace:*",
         "@packages/relationship-template": "workspace:*",
         "@packages/rule": "workspace:*",
         "@packages/utils": "workspace:*",
-        "@packages/map": "workspace:*",
         "@packages/workspace": "workspace:*",
+        "ajv": "^8.17.1",
+        "ajv-formats": "^3.0.1",
         "date-fns": "^3.6.0",
         "flat": "^6.0.1",
-        "lodash": "^4.17.21"
+        "lodash": "^4.17.21",
+        "menashmq": "^0.1.6",
+        "typescript-actions": "^1.1.1"
     },
     "devDependencies": {
         "@types/lodash": "^4.17.20",
         "@types/supertest": "^6.0.2",
-        "supertest": "^7.0.0"
+        "supertest": "^7.0.0",
+        "typescript": "^5.9.3"
     }
 }
