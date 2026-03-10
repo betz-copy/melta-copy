@@ -1,7 +1,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { BadRequestError } from '@packages/utils';
-import * as ts from 'typescript-actions';
+import * as ts from 'typescript';
 
 const createCustomCompilerHost = (
     defaultCompilerHost: ts.CompilerHost,
